@@ -9,7 +9,7 @@ import { useState } from 'react';
 import AuthSessionStatus from '@/app/(auth)/AuthSessionStatus';
 
 const Page = () => {
-    const { forgotPassword } = useAuth({
+    const { passwordResetRequest } = useAuth({
         middleware: 'guest',
         redirectIfAuthenticated: '/dashboard',
     });
@@ -21,7 +21,7 @@ const Page = () => {
     const submitForm = event => {
         event.preventDefault();
 
-        forgotPassword({ email, setErrors, setStatus });
+        passwordResetRequest({ email, setErrors, setStatus });
     };
 
     return (

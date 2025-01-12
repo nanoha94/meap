@@ -26,7 +26,7 @@ export const useAuth = ({
             .catch(error => {
                 if (error.response.status !== 409) throw error;
 
-                router.push('/verify-email');
+                router.push('/email/verify');
             }),
     );
 
@@ -63,14 +63,14 @@ export const useAuth = ({
             });
     };
 
-    const forgotPassword = async ({ setErrors, setStatus, email }) => {
+    const passwordResetRequest = async ({ setErrors, setStatus, email }) => {
         await csrf();
 
         setErrors([]);
         setStatus(null);
 
         axios
-            .post('/forgot-password', { email })
+            .post('/password/reset/request', { email })
             .then(response => setStatus(response.data.status))
             .catch(error => {
                 if (error.response.status !== 422) throw error;
@@ -86,7 +86,7 @@ export const useAuth = ({
         setStatus(null);
 
         axios
-            .post('/reset-password', { token: params.token, ...props })
+            .post('/password/reset', { token: params.token, ...props })
             .then(response =>
                 router.push('/login?reset=' + btoa(response.data.status)),
             )
@@ -116,10 +116,10 @@ export const useAuth = ({
             router.push(redirectIfAuthenticated);
 
         if (middleware === 'auth' && !user?.email_verified_at)
-            router.push('/verify-email');
+            router.push('/email/verify');
 
         if (
-            window.location.pathname === '/verify-email' &&
+            window.location.pathname === '/email/verify' &&
             user?.email_verified_at
         )
             router.push(redirectIfAuthenticated);
@@ -130,7 +130,7 @@ export const useAuth = ({
         user,
         register,
         login,
-        forgotPassword,
+        passwordResetRequest,
         resetPassword,
         resendEmailVerification,
         logout,
