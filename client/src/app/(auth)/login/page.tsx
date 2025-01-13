@@ -82,9 +82,17 @@ const Inner = () => {
                             <Controller
                                 control={control}
                                 name="email"
-                                rules={{ required: '必須項目です' }}
+                                rules={{
+                                    required: '必須項目です',
+                                    pattern: {
+                                        value: /^[a-zA-Z0-9_+-]+(.[a-zA-Z0-9_+-]+)*@([a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.)+[a-zA-Z]{2,}$/,
+                                        message:
+                                            'メールアドレスの形式で入力してください',
+                                    },
+                                }}
                                 render={({ field: { onChange, value } }) => (
                                     <input
+                                        type="email"
                                         value={value}
                                         onChange={onChange}
                                         className={`py-2 px-4 text-base border rounded-lg ${errors.email?.message ? 'border-alert-main' : 'border-gray-main'}`}
