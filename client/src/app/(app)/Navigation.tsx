@@ -49,7 +49,7 @@ const Navigation = ({ user }: Props) => {
                             align="right"
                             width={48}
                             trigger={
-                                <button className="flex items-center text-sm font-medium text-gray-500 hover:text-gray-700 focus:outline-none transition duration-150 ease-in-out">
+                                <button className="flex items-center text-sm text-gray-500 hover:text-gray-700 focus:outline-none transition duration-150 ease-in-out">
                                     <div>{user?.name}</div>
 
                                     <div className="ml-1">
@@ -137,10 +137,10 @@ const Navigation = ({ user }: Props) => {
                             </div>
 
                             <div className="ml-3">
-                                <div className="font-medium text-base text-gray-800">
+                                <div className="text-base text-gray-800">
                                     {user?.name}
                                 </div>
-                                <div className="font-medium text-sm text-gray-500">
+                                <div className="text-sm text-gray-500">
                                     {user?.email}
                                 </div>
                             </div>

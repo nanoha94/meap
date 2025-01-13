@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import AuthCard from '@/app/(auth)/AuthCard';
 import ApplicationLogo from '@/components/ApplicationLogo';
 
 export const metadata = {
@@ -12,17 +11,11 @@ interface Props {
 
 const Layout = ({ children }: Props) => {
     return (
-        <div>
-            <div className="text-gray-900 antialiased">
-                <AuthCard
-                    logo={
-                        <Link href="/">
-                            <ApplicationLogo className="w-20 h-20 fill-current text-gray-500" />
-                        </Link>
-                    }>
-                    {children}
-                </AuthCard>
-            </div>
+        <div className="max-w-xl mx-auto py-10 px-5 flex flex-col gap-y-16">
+            <Link href="/" className="w-fit mx-auto block">
+                <ApplicationLogo className="w-60 h-auto fill-current text-gray-500" />
+            </Link>
+            {children}
         </div>
     );
 };

@@ -1,5 +1,38 @@
 module.exports = {
     content: ['./src/**/*.{js,jsx,ts,tsx}'],
-    theme: {},
-    plugins: [require('@tailwindcss/forms')],
-}
+    theme: {
+        colors: {
+            white: '#FFFFFF',
+            black: '#333333',
+            red: '#B32208',
+            blue: '#0D0A8A',
+            gray: {
+                main: '#757575',
+                border: '#BDBDBD',
+                background: '#F5F5F5',
+                light: '#EEEEEE',
+            },
+            primary: {
+                main: '#A37F60',
+                light: '#FCE7D0',
+                background: '#FEFAF5',
+            },
+            alert: {
+                main: '#CD3429',
+                light: '#FECDD0',
+            },
+            category: {
+                yellow: '#F5B12E',
+                orange: '#F0762D',
+                pink: '#F89DC0',
+                red: '#EC3D33',
+                'yellow-green': '#88C63C',
+                green: '#4FA260',
+                'sky-blue': '#439CFE',
+                blue: '#2673B8',
+                purple: '#6746B9',
+            },
+        },
+    },
+    plugins: [],
+};

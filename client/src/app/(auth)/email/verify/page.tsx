@@ -22,7 +22,7 @@ const Page = () => {
             </div>
 
             {status === 'verification-link-sent' && (
-                <div className="mb-4 font-medium text-sm text-green-600">
+                <div className="mb-4 text-sm text-green-600">
                     A new verification link has been sent to the email address
                     you provided during registration.
                 </div>

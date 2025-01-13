@@ -1,15 +1,16 @@
-import { Nunito } from 'next/font/google';
+import { Noto_Sans_JP } from 'next/font/google';
 import '@/app/global.css';
 
-const nunitoFont = Nunito({
+const notoSansJp = Noto_Sans_JP({
     subsets: ['latin'],
-    display: 'swap',
+    weight: ['400', '700'],
+    variable: '--font-notoSansJp',
 });
 
 const RootLayout = ({ children }) => {
     return (
-        <html lang="en" className={nunitoFont.className}>
-            <body className="antialiased">{children}</body>
+        <html lang="en" className={notoSansJp.variable}>
+            <body className="text-black">{children}</body>
         </html>
     );
 };
