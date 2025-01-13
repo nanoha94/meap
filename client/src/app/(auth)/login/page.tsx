@@ -2,7 +2,7 @@
 import Button from '@/components/Button';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/auth';
-import React, { Suspense, useEffect, useState } from 'react';
+import React from 'react';
 import { useSearchParams } from 'next/navigation';
 import AuthSessionStatus from '@/app/(auth)/AuthSessionStatus';
 import { FormItem } from '@/components';
@@ -13,6 +13,8 @@ interface FormInputs {
     password: string;
     isKeepLogin: boolean;
 }
+
+type visibleErrorFields = 'email' | 'password';
 
 const Inner = () => {
     const searchParams = useSearchParams();
@@ -34,10 +36,17 @@ const Inner = () => {
         },
     });
 
-    const [apiErrors, setApiErrors] = useState<Record<string, string[]>>({});
-    const [apiStatus, setApiStatus] = useState<string | null>(null);
+    const [apiErrors, setApiErrors] = React.useState<Record<string, string[]>>(
+        {},
+    );
+    const [apiStatus, setApiStatus] = React.useState<string | null>(null);
 
-    useEffect(() => {
+    // 入力エラーがあったとき、入力内容の変更でエラーを非表示にする
+    const [isErrorVisible, setIsErrorVisible] = React.useState<
+        Record<visibleErrorFields, boolean>
+    >({ email: false, password: false });
+
+    React.useEffect(() => {
         const resetToken = searchParams.get('reset');
         if (resetToken?.length > 0 && Object.keys(errors).length === 0) {
             setApiStatus(atob(resetToken));
@@ -47,8 +56,6 @@ const Inner = () => {
     }, []);
 
     const onSubmit: SubmitHandler<FormInputs> = (data: FormInputs) => {
-        console.log(data);
-
         login({
             email: data.email,
             password: data.password,
@@ -56,6 +63,7 @@ const Inner = () => {
             setErrors: setApiErrors,
             setStatus: setApiStatus,
         });
+        setIsErrorVisible({ email: true, password: true });
     };
 
     return (
@@ -65,7 +73,7 @@ const Inner = () => {
                 <div className="relative w-full text-center">
                     <span className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-px bg-gray-main" />
                     <h1 className="relative w-fit mx-auto px-4 bg-white">
-                        アカウント登録
+                        ログイン
                     </h1>
                 </div>
                 <form
@@ -75,10 +83,14 @@ const Inner = () => {
                         {/* Email Address */}
                         <FormItem
                             label="メールアドレス"
-                            errorMessage={[
-                                errors.email?.message,
-                                ...(apiErrors?.email || []),
-                            ]}>
+                            errorMessage={
+                                isErrorVisible
+                                    ? [
+                                          errors.email?.message,
+                                          ...(apiErrors?.email || []),
+                                      ]
+                                    : []
+                            }>
                             <Controller
                                 control={control}
                                 name="email"
@@ -94,8 +106,14 @@ const Inner = () => {
                                     <input
                                         type="email"
                                         value={value}
-                                        onChange={onChange}
-                                        className={`py-2 px-4 text-base border rounded-lg ${errors.email?.message ? 'border-alert-main' : 'border-gray-main'}`}
+                                        onChange={e => {
+                                            onChange(e);
+                                            setIsErrorVisible(prev => ({
+                                                ...prev,
+                                                email: false,
+                                            }));
+                                        }}
+                                        className={`py-2 px-4 text-base border rounded-lg ${isErrorVisible.email && (errors.email?.message || apiErrors.email) ? 'border-alert-main' : 'border-gray-main'}`}
                                     />
                                 )}
                             />
@@ -104,10 +122,14 @@ const Inner = () => {
                         {/* Password */}
                         <FormItem
                             label="パスワード"
-                            errorMessage={[
-                                errors.password?.message,
-                                ...(apiErrors?.password || []),
-                            ]}>
+                            errorMessage={
+                                isErrorVisible
+                                    ? [
+                                          errors.password?.message,
+                                          ...(apiErrors?.password || []),
+                                      ]
+                                    : []
+                            }>
                             <Controller
                                 control={control}
                                 name="password"
@@ -116,8 +138,14 @@ const Inner = () => {
                                     <input
                                         type="password"
                                         value={value}
-                                        onChange={onChange}
-                                        className={`py-2 px-4 text-base border rounded-lg ${errors.email?.message ? 'border-alert-main' : 'border-gray-main'}`}
+                                        onChange={e => {
+                                            onChange(e);
+                                            setIsErrorVisible(prev => ({
+                                                ...prev,
+                                                password: false,
+                                            }));
+                                        }}
+                                        className={`py-2 px-4 text-base border rounded-lg ${isErrorVisible.password && (errors.password?.message || apiErrors.password) ? 'border-alert-main' : 'border-gray-main'}`}
                                     />
                                 )}
                             />
@@ -160,15 +188,27 @@ const Inner = () => {
                     </Link>
                 </div>
             </div>
+            <div className="flex flex-col gap-y-10">
+                <div className="relative w-full text-center">
+                    <span className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-px bg-gray-main" />
+                    <h1 className="relative w-fit mx-auto px-4 bg-white">
+                        他の方法でログイン
+                    </h1>
+                </div>
+                {/* TODO: リンク？ */}
+                <Button type="button" variant="outlined" colorVariant="gray">
+                    Googleアカウントでログイン
+                </Button>
+            </div>
         </>
     );
 };
 
 const Login = () => {
     return (
-        <Suspense>
+        <React.Suspense>
             <Inner />
-        </Suspense>
+        </React.Suspense>
     );
 };
 export default Login;
