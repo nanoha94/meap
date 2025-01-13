@@ -26,9 +26,9 @@ const Button = ({
         },
         outlined: {
             primary:
-                'text-primary-main bg-primary-light border-primary-main hover:bg-primary-light',
-            gray: 'text-gray-main bg-gray-light border-gray-main hover:bg-gray-light',
-            alert: 'text-alert-main bg-alert-light border-alert-main hover:bg-alert-light',
+                'text-primary-main border-2 border-primary-main hover:bg-primary-light',
+            gray: 'text-gray-main border-2 border-gray-main hover:bg-gray-light',
+            alert: 'text-alert-main border-2 border-alert-main hover:bg-alert-light',
         },
     };
 
