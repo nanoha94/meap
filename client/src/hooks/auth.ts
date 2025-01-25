@@ -73,9 +73,11 @@ export const useAuth = ({
             .post('/password/reset/request', { email })
             .then(response => setStatus(response.data.status))
             .catch(error => {
-                if (error.response.status !== 422) throw error;
-
-                setErrors(error.response.data.errors);
+                if (error.response.status !== 422) {
+                    setStatus(error.response.data.message);
+                } else {
+                    setErrors(error.response.data.errors);
+                }
             });
     };
 
@@ -87,13 +89,15 @@ export const useAuth = ({
 
         axios
             .post('/password/reset', { token: params.token, ...props })
-            .then(response =>
-                router.push('/login?reset=' + btoa(response.data.status)),
-            )
+            .then(response => {
+                router.push('/login?reset=' + btoa(response.data.status));
+            })
             .catch(error => {
-                if (error.response.status !== 422) throw error;
-
-                setErrors(error.response.data.errors);
+                if (error.response.status !== 422) {
+                    setStatus(error.response.data.message);
+                } else {
+                    setErrors(error.response.data.errors);
+                }
             });
     };
 

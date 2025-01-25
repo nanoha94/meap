@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Custom\Auth\Interfaces\CustomPasswordBroker;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -29,9 +30,23 @@ class PasswordResetLinkController extends Controller
         );
 
         if ($status != Password::RESET_LINK_SENT) {
-            throw ValidationException::withMessages([
-                'email' => [__($status)],
-            ]);
+            $statusMessages = [
+                Password::INVALID_USER => 422,
+                Password::RESET_THROTTLED => 429,
+                CustomPasswordBroker::RETRY_TOKEN => 500
+            ];
+
+            $statusCode = $statusMessages[$status] ?? 500; // それ以外は500として扱う
+
+            if ($statusCode === 422) {
+                throw ValidationException::withMessages([
+                    'email' => [__($status)],
+                ]);
+            }
+
+            return response()->json([
+                'message' => __($status),
+            ], $statusCode);
         }
 
         return response()->json(['status' => __($status)]);

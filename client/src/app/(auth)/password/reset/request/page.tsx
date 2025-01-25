@@ -1,12 +1,17 @@
 'use client';
 
 import Button from '@/components/Button';
-import Input from '@/components/Input';
-import InputError from '@/components/InputError';
-import Label from '@/components/Label';
 import { useAuth } from '@/hooks/auth';
-import { useState } from 'react';
-import AuthSessionStatus from '@/app/(auth)/AuthSessionStatus';
+import React from 'react';
+import { FormItem } from '@/components';
+import { Controller, SubmitHandler, useForm } from 'react-hook-form';
+import Link from 'next/link';
+
+interface FormInputs {
+    email: string;
+}
+
+type visibleErrorFields = 'email';
 
 const Page = () => {
     const { passwordResetRequest } = useAuth({
@@ -14,49 +19,126 @@ const Page = () => {
         redirectIfAuthenticated: '/dashboard',
     });
 
-    const [email, setEmail] = useState('');
-    const [errors, setErrors] = useState<Record<string, string[]>>({});
-    const [status, setStatus] = useState(null);
+    const {
+        handleSubmit,
+        control,
+        formState: { errors },
+    } = useForm<FormInputs>({
+        defaultValues: {
+            email: '',
+        },
+    });
 
-    const submitForm = event => {
-        event.preventDefault();
+    const [apiErrors, setApiErrors] = React.useState<Record<string, string[]>>(
+        {},
+    );
+    const [apiStatus, setApiStatus] = React.useState<string | null>(null);
 
-        passwordResetRequest({ email, setErrors, setStatus });
+    // 入力エラーがあったとき、その後に入力内容が変更されればエラー有無に関わらずエラー内容を非表示にする
+    const [isErrorVisible, setIsErrorVisible] = React.useState<
+        Record<visibleErrorFields, boolean>
+    >({ email: false });
+
+    const onSubmit: SubmitHandler<FormInputs> = (data: FormInputs) => {
+        passwordResetRequest({
+            email: data.email,
+            setErrors: setApiErrors,
+            setStatus: setApiStatus,
+        });
     };
 
     return (
         <>
-            <div className="mb-4 text-sm text-gray-600">
-                Forgot your password? No problem. Just let us know your email
-                address and we will email you a password reset link that will
-                allow you to choose a new one.
+            <div className="flex flex-col gap-y-10">
+                <div className="relative w-full text-center">
+                    <span className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-px bg-gray-main" />
+                    <h1 className="relative w-fit mx-auto px-4 bg-white">
+                        パスワード再設定
+                    </h1>
+                </div>
+                <p className="text-center">
+                    パスワード再設定のリンクを送信します。
+                    <br />
+                    ご登録のメールアドレスを入力してください。
+                </p>
+                <form
+                    onSubmit={handleSubmit(onSubmit)}
+                    className="flex flex-col gap-y-10">
+                    {/* Email Address */}
+                    <FormItem
+                        label="メールアドレス"
+                        errorMessage={
+                            isErrorVisible.email
+                                ? [
+                                      errors.email?.message,
+                                      ...(apiErrors?.email || []),
+                                  ]
+                                : []
+                        }>
+                        <Controller
+                            control={control}
+                            name="email"
+                            rules={{
+                                required: '必須項目です',
+                                pattern: {
+                                    value: /^[a-zA-Z0-9_+-]+(.[a-zA-Z0-9_+-]+)*@([a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.)+[a-zA-Z]{2,}$/,
+                                    message:
+                                        'メールアドレスの形式で入力してください',
+                                },
+                            }}
+                            render={({ field: { onChange, value } }) => (
+                                <input
+                                    type="email"
+                                    value={value}
+                                    onChange={e => {
+                                        onChange(e);
+                                        setIsErrorVisible(prev => ({
+                                            ...prev,
+                                            email: false,
+                                        }));
+                                    }}
+                                    autoFocus
+                                    className={`py-2 px-4 text-base border rounded-lg ${isErrorVisible.email && (errors.email?.message || apiErrors.email) ? 'border-alert-main' : 'border-gray-main'}`}
+                                />
+                            )}
+                        />
+                    </FormItem>
+                    <div className="flex flex-col gap-y-4">
+                        <Button
+                            type="submit"
+                            onClick={() => setIsErrorVisible({ email: true })}>
+                            送信
+                        </Button>
+                        {!!apiStatus && (
+                            <p className="text-alert-main">{apiStatus}</p>
+                        )}
+                    </div>
+                </form>
+                <div className="flex flex-col items-center gap-y-4">
+                    <Link
+                        href="/register"
+                        className="text-base font-bold text-primary-main underline transition-opacity hover:text-opacity-70">
+                        アカウント登録はこちら
+                    </Link>
+                    <Link
+                        href="/login"
+                        className="text-base font-bold text-primary-main underline transition-opacity hover:text-opacity-70">
+                        ログインはこちら
+                    </Link>
+                </div>
             </div>
-
-            {/* Session Status */}
-            <AuthSessionStatus className="mb-4" status={status} />
-
-            <form onSubmit={submitForm}>
-                {/* Email Address */}
-                <div>
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                        id="email"
-                        type="email"
-                        name="email"
-                        value={email}
-                        className="block mt-1 w-full"
-                        onChange={event => setEmail(event.target.value)}
-                        required
-                        autoFocus
-                    />
-
-                    <InputError messages={errors.email} className="mt-2" />
+            <div className="flex flex-col gap-y-10">
+                <div className="relative w-full text-center">
+                    <span className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-px bg-gray-main" />
+                    <h1 className="relative w-fit mx-auto px-4 bg-white">
+                        他の方法でログイン
+                    </h1>
                 </div>
-
-                <div className="flex items-center justify-end mt-4">
-                    <Button>Email Password Reset Link</Button>
-                </div>
-            </form>
+                {/* TODO: リンク？ */}
+                <Button type="button" variant="outlined" colorVariant="gray">
+                    Googleアカウントでログイン
+                </Button>
+            </div>
         </>
     );
 };

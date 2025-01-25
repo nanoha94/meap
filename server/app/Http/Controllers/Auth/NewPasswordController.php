@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
@@ -23,15 +24,15 @@ class NewPasswordController extends Controller
     {
         $request->validate([
             'token' => ['required'],
-            'email' => ['required', 'email'],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'password' => ['required', 'confirmed', 'min:8', Rules\Password::defaults()],
+            'password_confirmation' => ['required', 'min:8'],
         ]);
 
         // Here we will attempt to reset the user's password. If it is successful we
         // will update the password on an actual user model and persist it to the
         // database. Otherwise we will parse the error and return the response.
         $status = Password::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
+            ['password' => $request->string('password'), 'password_confirmation' => $request->string('password_confirmation'), 'token' => $request->input('token')],
             function ($user) use ($request) {
                 $user->forceFill([
                     'password' => Hash::make($request->string('password')),
@@ -43,11 +44,19 @@ class NewPasswordController extends Controller
         );
 
         if ($status != Password::PASSWORD_RESET) {
-            throw ValidationException::withMessages([
-                'email' => [__($status)],
-            ]);
+            $statusMessages = [
+                Password::INVALID_USER => 422,
+                Password::INVALID_TOKEN => 404,
+            ];
+
+            $statusCode = $statusMessages[$status] ?? 500; // それ以外は500として扱う
+
+            return response()->json([
+                'message' => __($status),
+            ], $statusCode);
         }
 
+        App::setLocale('en');
         return response()->json(['status' => __($status)]);
     }
 }
