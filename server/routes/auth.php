@@ -18,11 +18,11 @@ Route::post('/login', [AuthenticatedSessionController::class, 'store'])
 
 Route::post('/password/reset/request', [PasswordResetLinkController::class, 'store'])
     ->middleware('guest')
-    ->name('password.email');
+    ->name('password.request');
 
 Route::post('/password/reset', [NewPasswordController::class, 'store'])
     ->middleware('guest')
-    ->name('password.store');
+    ->name('password.reset');
 
 Route::get('/email/verify/{id}/{hash}', VerifyEmailController::class)
     ->middleware(['auth', 'signed', 'throttle:6,1'])

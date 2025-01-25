@@ -43,7 +43,7 @@ const Page = () => {
         {},
     );
 
-    // 入力エラーがあったとき、入力内容の変更でエラーを非表示にする
+    // 入力エラーがあったとき、その後に入力内容が変更されればエラー有無に関わらずエラー内容を非表示にする
     const [isErrorVisible, setIsErrorVisible] = React.useState<
         Record<visibleErrorFields, boolean>
     >({
@@ -60,12 +60,6 @@ const Page = () => {
             password: data.password,
             password_confirmation: data.passwordConfirmation,
             setErrors: setApiErrors,
-        });
-        setIsErrorVisible({
-            name: true,
-            email: true,
-            password: true,
-            passwordConfirmation: true,
         });
     };
 
@@ -101,7 +95,7 @@ const Page = () => {
                         <FormItem
                             label="ユーザ名"
                             errorMessage={
-                                isErrorVisible
+                                isErrorVisible.name
                                     ? [
                                           errors.name?.message,
                                           ...(apiErrors?.name || []),
@@ -135,7 +129,7 @@ const Page = () => {
                         <FormItem
                             label="メールアドレス"
                             errorMessage={
-                                isErrorVisible
+                                isErrorVisible.email
                                     ? [
                                           errors.email?.message,
                                           ...(apiErrors?.email || []),
@@ -174,7 +168,7 @@ const Page = () => {
                         <FormItem
                             label="パスワード"
                             errorMessage={
-                                isErrorVisible
+                                isErrorVisible.password
                                     ? [
                                           errors.password?.message,
                                           ...(apiErrors?.password || []),
@@ -206,7 +200,7 @@ const Page = () => {
                         <FormItem
                             label="パスワード（確認用）"
                             errorMessage={
-                                isErrorVisible
+                                isErrorVisible.passwordConfirmation
                                     ? [
                                           errors.passwordConfirmation?.message,
                                           ...(apiErrors?.passwordConfirmation ||
@@ -235,7 +229,18 @@ const Page = () => {
                             />
                         </FormItem>
                     </div>
-                    <Button>アカウント登録</Button>
+                    <Button
+                        type="submit"
+                        onClick={() =>
+                            setIsErrorVisible({
+                                name: true,
+                                email: true,
+                                password: true,
+                                passwordConfirmation: true,
+                            })
+                        }>
+                        アカウント登録
+                    </Button>
                 </form>
                 <div className="flex flex-col items-center gap-y-4">
                     <Link

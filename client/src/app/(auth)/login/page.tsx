@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { useAuth } from '@/hooks/auth';
 import React from 'react';
 import { useSearchParams } from 'next/navigation';
-import AuthSessionStatus from '@/app/(auth)/AuthSessionStatus';
 import { FormItem } from '@/components';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
@@ -41,7 +40,7 @@ const Inner = () => {
     );
     const [apiStatus, setApiStatus] = React.useState<string | null>(null);
 
-    // 入力エラーがあったとき、入力内容の変更でエラーを非表示にする
+    // 入力エラーがあったとき、その後に入力内容が変更されればエラー有無に関わらずエラー内容を非表示にする
     const [isErrorVisible, setIsErrorVisible] = React.useState<
         Record<visibleErrorFields, boolean>
     >({ email: false, password: false });
@@ -49,7 +48,11 @@ const Inner = () => {
     React.useEffect(() => {
         const resetToken = searchParams.get('reset');
         if (resetToken?.length > 0 && Object.keys(errors).length === 0) {
-            setApiStatus(atob(resetToken));
+            setApiStatus(
+                atob(resetToken) === 'Your password has been reset.'
+                    ? 'パスワードをリセットしました。'
+                    : atob(resetToken),
+            );
         } else {
             setApiStatus(null);
         }
@@ -63,12 +66,10 @@ const Inner = () => {
             setErrors: setApiErrors,
             setStatus: setApiStatus,
         });
-        setIsErrorVisible({ email: true, password: true });
     };
 
     return (
         <>
-            <AuthSessionStatus className="mb-4" status={apiStatus} />
             <div className="flex flex-col gap-y-10">
                 <div className="relative w-full text-center">
                     <span className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-px bg-gray-main" />
@@ -84,7 +85,7 @@ const Inner = () => {
                         <FormItem
                             label="メールアドレス"
                             errorMessage={
-                                isErrorVisible
+                                isErrorVisible.email
                                     ? [
                                           errors.email?.message,
                                           ...(apiErrors?.email || []),
@@ -123,7 +124,7 @@ const Inner = () => {
                         <FormItem
                             label="パスワード"
                             errorMessage={
-                                isErrorVisible
+                                isErrorVisible.password
                                     ? [
                                           errors.password?.message,
                                           ...(apiErrors?.password || []),
@@ -173,7 +174,21 @@ const Inner = () => {
                             </label>
                         </div>
                     </div>
-                    <Button>ログイン</Button>
+                    <div className="flex flex-col gap-y-4">
+                        <Button
+                            type="submit"
+                            onClick={() =>
+                                setIsErrorVisible({
+                                    email: true,
+                                    password: true,
+                                })
+                            }>
+                            ログイン
+                        </Button>
+                        {!!apiStatus && (
+                            <p className="text-alert-main">{apiStatus}</p>
+                        )}
+                    </div>
                 </form>
                 <div className="flex flex-col items-center gap-y-4">
                     <Link
