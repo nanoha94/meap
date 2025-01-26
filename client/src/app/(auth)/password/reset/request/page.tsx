@@ -96,9 +96,10 @@ const Page = () => {
                                             ...prev,
                                             email: false,
                                         }));
+                                        setApiErrors({ email: [] });
                                     }}
                                     autoFocus
-                                    className={`py-2 px-4 text-base border rounded-lg ${isErrorVisible.email && (errors.email?.message || apiErrors.email) ? 'border-alert-main' : 'border-gray-main'}`}
+                                    className={`py-2 px-4 text-base border rounded-lg ${isErrorVisible.email && (!!errors.email?.message || (!!apiErrors.email && apiErrors.email?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
                                 />
                             )}
                         />

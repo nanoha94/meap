@@ -113,8 +113,9 @@ const Inner = () => {
                                                 ...prev,
                                                 email: false,
                                             }));
+                                            setApiErrors({ email: [] });
                                         }}
-                                        className={`py-2 px-4 text-base border rounded-lg ${isErrorVisible.email && (errors.email?.message || apiErrors.email) ? 'border-alert-main' : 'border-gray-main'}`}
+                                        className={`py-2 px-4 text-base border rounded-lg ${isErrorVisible.email && (!!errors.email?.message || (!!apiErrors.email && apiErrors.email?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
                                     />
                                 )}
                             />
@@ -145,8 +146,9 @@ const Inner = () => {
                                                 ...prev,
                                                 password: false,
                                             }));
+                                            setApiErrors({ password: [] });
                                         }}
-                                        className={`py-2 px-4 text-base border rounded-lg ${isErrorVisible.password && (errors.password?.message || apiErrors.password) ? 'border-alert-main' : 'border-gray-main'}`}
+                                        className={`py-2 px-4 text-base border rounded-lg ${isErrorVisible.password && (!!errors.password?.message || (!!apiErrors.password && apiErrors.password?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
                                     />
                                 )}
                             />

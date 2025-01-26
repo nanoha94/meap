@@ -118,8 +118,9 @@ const Page = () => {
                                                 ...prev,
                                                 name: false,
                                             }));
+                                            setApiErrors({ name: [] });
                                         }}
-                                        className={`py-2 px-4 text-base border rounded-lg ${isErrorVisible.name && (errors.name || apiErrors.name) ? 'border-alert-main' : 'border-gray-main'}`}
+                                        className={`py-2 px-4 text-base border rounded-lg ${isErrorVisible.name && (!!errors.name?.message || (!!apiErrors.name && apiErrors.name?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
                                     />
                                 )}
                             />
@@ -157,8 +158,9 @@ const Page = () => {
                                                 ...prev,
                                                 email: false,
                                             }));
+                                            setApiErrors({ email: [] });
                                         }}
-                                        className={`py-2 px-4 text-base border rounded-lg ${isErrorVisible.email && (errors.email?.message || apiErrors.email) ? 'border-alert-main' : 'border-gray-main'}`}
+                                        className={`py-2 px-4 text-base border rounded-lg ${isErrorVisible.email && (!!errors.email?.message || (!!apiErrors.email && apiErrors.email?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
                                     />
                                 )}
                             />
@@ -189,8 +191,9 @@ const Page = () => {
                                                 ...prev,
                                                 password: false,
                                             }));
+                                            setApiErrors({ password: [] });
                                         }}
-                                        className={`py-2 px-4 text-base border rounded-lg ${isErrorVisible.password && (errors.password?.message || apiErrors.password) ? 'border-alert-main' : 'border-gray-main'}`}
+                                        className={`py-2 px-4 text-base border rounded-lg ${isErrorVisible.password && (!!errors.password?.message || (!!apiErrors.password && apiErrors.password?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
                                     />
                                 )}
                             />
@@ -222,8 +225,11 @@ const Page = () => {
                                                 ...prev,
                                                 passwordConfirmation: false,
                                             }));
+                                            setApiErrors({
+                                                passwordConfirmation: [],
+                                            });
                                         }}
-                                        className={`py-2 px-4 text-base border rounded-lg ${isErrorVisible.passwordConfirmation && (errors.passwordConfirmation?.message || apiErrors.passwordConfirmation) ? 'border-alert-main' : 'border-gray-main'}`}
+                                        className={`py-2 px-4 text-base border rounded-lg ${isErrorVisible.passwordConfirmation && (!!errors.passwordConfirmation?.message || (!!apiErrors.passwordConfirmation && apiErrors.passwordConfirmation?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
                                     />
                                 )}
                             />
