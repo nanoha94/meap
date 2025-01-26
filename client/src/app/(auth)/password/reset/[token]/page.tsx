@@ -97,8 +97,9 @@ const PasswordReset = () => {
                                                 ...prev,
                                                 password: false,
                                             }));
+                                            setApiErrors({ password: [] });
                                         }}
-                                        className={`py-2 px-4 text-base border rounded-lg ${isErrorVisible.password && (errors.password?.message || apiErrors.password) ? 'border-alert-main' : 'border-gray-main'}`}
+                                        className={`py-2 px-4 text-base border rounded-lg ${isErrorVisible.password && (!!errors.password?.message || (!!apiErrors.password && apiErrors.password?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
                                     />
                                 )}
                             />
@@ -142,8 +143,11 @@ const PasswordReset = () => {
                                                 ...prev,
                                                 password_confirmation: false,
                                             }));
+                                            setApiErrors({
+                                                password_confirmation: [],
+                                            });
                                         }}
-                                        className={`py-2 px-4 text-base border rounded-lg ${isErrorVisible.password_confirmation && (errors.password_confirmation?.message || apiErrors.password_confirmation) ? 'border-alert-main' : 'border-gray-main'}`}
+                                        className={`py-2 px-4 text-base border rounded-lg ${isErrorVisible.password_confirmation && (!!errors.password_confirmation?.message || (!!apiErrors.password_confirmation && apiErrors.password_confirmation?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
                                     />
                                 )}
                             />

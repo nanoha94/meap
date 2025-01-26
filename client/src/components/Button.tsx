@@ -35,7 +35,7 @@ const Button = ({
     return (
         <button
             type={type}
-            className={`${className} p-3 w-full text-base font-bold rounded-lg transition-colors ${colorClass[variant][colorVariant]}`}
+            className={`${className} appearance-none p-3 w-full text-base font-bold rounded-lg transition-colors ${colorClass[variant][colorVariant]}`}
             {...props}
         />
     );
