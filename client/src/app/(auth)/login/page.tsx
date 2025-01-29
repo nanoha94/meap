@@ -20,7 +20,7 @@ const Inner = () => {
 
     const { login } = useAuth({
         middleware: 'guest',
-        redirectIfAuthenticated: '/dashboard',
+        redirectIfAuthenticated: '/plan',
     });
 
     const {

@@ -1,8 +1,9 @@
 'use client';
 
 import { DAY_OF_WEEK_LIST, DayOfWeek } from '@/constants';
-import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { colors } from '@/constants/colors';
 import dayjs, { Dayjs } from 'dayjs';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import React from 'react';
 
 const dayColor = (day: number) => {
@@ -87,10 +88,7 @@ const CalendarHeader = () => {
                     <button
                         onClick={moveToPreviousMonth}
                         className="p-1 appearance-none rounded-full transition-colors hover:bg-gray-light">
-                        <ChevronLeftIcon
-                            className="w-6 h-6 text-primary-main"
-                            strokeWidth={2}
-                        />
+                        <ChevronLeft color={colors.primary.main} size={24} />
                     </button>
                     <span className="whitespace-nowrap">
                         {selectedDate.format('YYYY年MM月')}
@@ -98,10 +96,7 @@ const CalendarHeader = () => {
                     <button
                         onClick={moveToNextMonth}
                         className="p-1 appearance-none rounded-full transition-colors hover:bg-gray-light">
-                        <ChevronRightIcon
-                            className="w-6 h-6 text-primary-main"
-                            strokeWidth={2}
-                        />
+                        <ChevronRight color={colors.primary.main} size={24} />
                     </button>
                 </div>
             </div>
@@ -117,7 +112,7 @@ const CalendarHeader = () => {
                     <button
                         key={idx}
                         onClick={() => setSelectedDate(v)}
-                        className={`py-1 min-h-[50px] flex justify-center  bg-white border-b ${idx % 7 < 6 ? 'border-r' : ''} border-gray-light transition-colors ${v?.isSame(selectedDate, 'day') ? 'bg-primary-light pointer-events-none' : 'hover:bg-primary-background'}`}>
+                        className={`py-1 min-h-[50px] flex justify-center border-b ${idx % 7 < 6 ? 'border-r' : ''} border-gray-light transition-colors ${v?.isSame(selectedDate, 'day') ? 'bg-primary-light pointer-events-none' : 'bg-white hover:bg-primary-background'}`}>
                         <div
                             className={`min-h-6 w-fit text-base ${dateStyle(v?.isSame(dayjs(), 'day'), v?.day())}`}>
                             {v ? v.date() : ''}

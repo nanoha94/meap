@@ -23,7 +23,7 @@ type visibleErrorFields =
 const Page = () => {
     const { register } = useAuth({
         middleware: 'guest',
-        redirectIfAuthenticated: '/dashboard',
+        redirectIfAuthenticated: '/plan',
     });
 
     const {

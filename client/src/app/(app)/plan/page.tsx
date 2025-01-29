@@ -1,14 +1,14 @@
-import Header from '@/app/(app)/Header';
+import Header from '@/app/(app)/_components/Header';
 import { CalendarHeader } from './_components';
 
 export const metadata = {
-    title: 'Laravel - Dashboard',
+    title: 'Laravel - Plan',
 };
 
-const Dashboard = () => {
+const Plan = () => {
     return (
         <>
-            <Header title="Dashboard" />
+            <Header title="Plan" />
             <main className="bg-primary-background">
                 <CalendarHeader />
             </main>
@@ -16,4 +16,4 @@ const Dashboard = () => {
     );
 };
 
-export default Dashboard;
+export default Plan;
