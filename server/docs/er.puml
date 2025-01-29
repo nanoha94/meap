@@ -1,0 +1,267 @@
+@startuml
+!define primary_key(x) <b><&key></b> x
+!define foreign_key(x) <b><&link-intact></b> x
+
+entity users {
+    primary_key(id : string)
+    --
+    * name : string
+    * email : string
+    password : string
+    avatar_url : string
+    provider : string
+    provider_id : string
+    --
+    created_at : date
+    updated_at : date
+}
+
+note top of users
+  アプリのユーザー情報を管理する。
+
+  * name : ユーザ名
+  * email : メールアドレス
+  * password : ログイン用パスワード（ソーシャルログインでは使用しない）
+  * avatar_url : プロフィール画像URL
+  * provider : プロバイダ名（例: 'google'）
+  * provider_id : ソーシャルログイン用ID
+  * created_at : レコード作成日時（UTC）
+  * updated_at : レコード更新日時（UTC）
+end note
+
+
+entity groups {
+    primary_key(id : string)
+    foreign_key(admin_user_id : string)
+}
+
+note top of groups
+  データ共有するユーザー情報を管理する。
+  ユーザは１つのグループにのみ所属できる。（将来的に拡張可能性あり）
+  ユーザがデータを初めて登録するときに、新たにグループを作成する。
+  もしくは、すでに存在しているグループに招待してもらって所属する。
+
+  * admin_user_id : 管理者のユーザID（usersテーブルとのリレーション）
+end note
+
+entity group_user {
+    primary_key(id : string)
+    foreign_key(user_id : string)
+    foreign_key(group_id : string)
+    --
+    * role_in_group : int
+}
+
+note bottom of group_user
+  groupテーブルとuserテーブルの中間テーブル。
+
+  * role_in_group : グループ内での役割（1: 管理者, 2: メンバー）
+end note
+
+entity invite_tokens {
+    primary_key(id : string)
+    foreign_key(group_id : string)
+    foreign_key(inviter_id : string)
+    --
+    * token : string
+    * expires_at : date
+}
+
+note bottom of invite_tokens
+  ユーザ招待トークンを管理する。
+  グループに招待するときにトークンを発行する。
+  一定時間でトークンは使用できなくなり、テーブルからデータを消去する。
+
+  * inviter_id : 招待したユーザID（usersテーブルとのリレーション）
+  * token : トークン（UUID）
+  * expires_at : トークンの有効期限（UTC）
+end note
+
+
+entity meals {
+    primary_key(id : string)
+    foreign_key(group_id : string)
+    foreign_key(meal_type_id : string)
+    ---
+    * date : date
+}
+
+note top of meals
+  献立情報（日付、種別、メニュー）を管理する。
+
+  * group_id : グループID
+  * meal_type_id : 献立種別ID
+  * date : 日付
+end note
+
+entity dishes {
+    primary_key(id : string)
+    foreign_key(group_id : string)
+    --
+    * name : string
+    * url : string
+    * recipe : string
+    * memo : string
+    * lastDate : date
+}
+
+note top of dishes
+  料理情報（名前、カテゴリ、食材、調味料、レシピURL、テキスト入力のレシピ、メモ）を管理する。
+
+  * group_id : グループID
+  * name : 料理名
+  * url : レシピURL
+  * recipe : レシピ（テキスト入力）
+end note
+
+entity dish_types {
+    primary_key(id : string)
+    foreign_key(group_id : string)
+    ---
+    * name : string
+}
+
+note top of dish_types
+  料理種別を管理する。（料理カテゴリとは別物）
+
+  * name : 種別（主食、主菜、副菜、汁物、その他をデフォルトで設定）
+end note
+
+entity meal_dish_type_dish {
+    foreign_key(dish_id : string)   
+    foreign_key(dish_type_id : string)
+    foreign_key(meal_id : string)
+}
+
+note bottom of meal_dish_type_dish
+  mealsテーブル, dish_typesテーブル, dishesテーブルの中間テーブル。
+  料理種別と料理のペアを献立に紐づける。
+end note
+
+entity dish_categories {
+  primary_key(id : string)
+  foreign_key(group_id : string)
+  --
+  * name : string
+}
+
+note bottom of dish_categories
+  料理カテゴリを管理する。
+
+  * group_id : グループID
+  * name : カテゴリ名
+end note
+
+entity dish_category_dish {
+  foreign_key(category_id : string)
+  foreign_key(meal_id : string)
+}
+
+note bottom of dish_category_dish
+  dish_categoriesテーブル, dishesテーブルの中間テーブル。
+  料理カテゴリを料理に紐づける。
+end note
+
+entity ingredients {
+  primary_key(id : string)
+  foreign_key(group_id : string)
+  --
+  * name : string
+  * type : int
+}
+
+note top of ingredients
+  食材・調味料を管理する。
+
+  * group_id : グループID
+  * name : 食材名
+  * type : 種類（1: 食材, 2: 調味料）
+end note
+
+entity dish_ingredient {
+  primary_key(id : string)
+  foreign_key(dish_id : string)
+  foreign_key(ingredient_id : string)
+  foreign_key(unit_id : string)
+  --
+  * amount : float
+}
+
+note bottom of dish_ingredient
+  dishesテーブルとingredientsテーブルの中間テーブル。
+  食材・調味料を料理に紐づける。
+
+  * amount : 食材・調味料の数量
+end note
+
+entity units {
+  primary_key(id : string)
+  foreign_key(group_id : string)
+  --
+  * name : string
+}
+
+note bottom of units
+  単位を管理する。
+
+  * name : 単位
+end note
+
+entity meal_types {
+    primary_key(id : string)
+    foreign_key(group_id : string)
+    --
+    * name : string
+    * color : int
+}
+
+note bottom of meal_types
+  献立種別を管理する。
+
+  * group_id : グループID
+  * name : 種別名
+  * color : 色（1: イエロー, 2: オレンジ, 3: ピンク, 4: レッド, 5: イエローグリーン, 
+                        6: グリーン, 7: スカイブルー, 8: ブルー, 9: パープル）
+end note
+
+entity shopping_items {
+    primary_key(id : string)
+    foreign_key(group_id : string)
+    --
+    * name : string
+    * isPinned : boolean
+    * isChecked : boolean
+}
+
+note bottom of shopping_items
+  買い物リストを管理する。
+
+  * group_id : グループID
+  * name : 買い物アイテム名
+  * isPinned : trueの場合、リスト上部に固定化する
+  * isChecked : trueの場合、アイテムにチェックマークが付く
+end note
+
+
+users ||--o| group_user
+groups }o-|| group_user
+users ||--o{ invite_tokens
+groups ||--o{ invite_tokens
+groups ||--o{ meals
+meals ||--|| meal_dish_type_dish
+groups ||--o{ dish_types
+dish_types ||-|| meal_dish_type_dish
+groups ||--o{ dishes
+dishes }o--|| meal_dish_type_dish
+dishes }|--o{ dish_category_dish
+groups ||--o{ dish_categories
+dish_categories }|--o{ dish_category_dish
+groups ||--o{ ingredients
+dishes }|--o{ dish_ingredient
+ingredients }|--o{ dish_ingredient
+groups ||--o{ units
+units }|--o{ dish_ingredient
+groups ||--o{ meal_types
+meals }|--|| meal_types
+groups ||--o{ shopping_items
+@enduml

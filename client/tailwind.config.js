@@ -9,13 +9,17 @@ module.exports = {
             gray: {
                 main: '#757575',
                 border: '#BDBDBD',
-                background: '#F5F5F5',
+                iconFill: '#E0E0E0',
                 light: '#EEEEEE',
+                background: '#F5F5F5',
             },
             primary: {
                 main: '#A37F60',
                 light: '#FCE7D0',
                 background: '#FEFAF5',
+            },
+            secondary: {
+                main: '#5E6946',
             },
             alert: {
                 main: '#CD3429',

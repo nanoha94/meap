@@ -1,8 +1,9 @@
 'use client';
 
 import { useAuth } from '@/hooks/auth';
-import Navigation from '@/app/(app)/Navigation';
+// import Navigation from '@/app/(app)/Navigation';
 import Loading from '@/app/(app)/Loading';
+import { Navigation } from './_components';
 
 interface Props {
     children: React.ReactNode;
@@ -16,10 +17,10 @@ const AppLayout = ({ children }: Props) => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-100">
-            <Navigation user={user} />
-
-            <main>{children}</main>
+        <div className="h-screen flex flex-col">
+            {/* <Navigation user={user} /> */}
+            <div className="flex-1">{children}</div>
+            <Navigation />
         </div>
     );
 };

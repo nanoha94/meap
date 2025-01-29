@@ -16,7 +16,7 @@ type visibleErrorFields = 'email';
 const Page = () => {
     const { passwordResetRequest } = useAuth({
         middleware: 'guest',
-        redirectIfAuthenticated: '/dashboard',
+        redirectIfAuthenticated: '/plan',
     });
 
     const {
