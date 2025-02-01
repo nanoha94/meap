@@ -9,7 +9,7 @@ const Plan = () => {
     return (
         <>
             <Header title="Plan" />
-            <main className="bg-primary-background">
+            <main>
                 <CalendarHeader />
             </main>
         </>

@@ -2,7 +2,7 @@
 
 import Button from '@/components/Button';
 import Link from 'next/link';
-import { useAuth } from '@/hooks/auth';
+import { useAuth } from '@/hooks';
 import React from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { FormItem } from '@/components';

@@ -1,7 +1,7 @@
 'use client';
 
 import Button from '@/components/Button';
-import { useAuth } from '@/hooks/auth';
+import { useAuth } from '@/hooks';
 import React from 'react';
 import { FormItem } from '@/components';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
