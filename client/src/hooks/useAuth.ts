@@ -1,12 +1,17 @@
-import useSWR from 'swr';
 import axios from '@/lib/axios';
 import { useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import useSWR from 'swr';
+import { User } from '@/types/user';
 
 interface Props {
     middleware?: 'guest' | 'auth';
     redirectIfAuthenticated?: string;
 }
+
+const fetchUser = (): Promise<User | null> => {
+    return axios.get('/api/user').then(res => res.data);
+};
 
 export const useAuth = ({
     middleware,
@@ -15,20 +20,7 @@ export const useAuth = ({
     const router = useRouter();
     const params = useParams();
 
-    const {
-        data: user,
-        error,
-        mutate,
-    } = useSWR('/api/user', () =>
-        axios
-            .get('/api/user')
-            .then(res => res.data)
-            .catch(error => {
-                if (error.response.status !== 409) throw error;
-
-                router.push('/email/verify');
-            }),
-    );
+    const { data: user, error, mutate } = useSWR('/api/user', fetchUser);
 
     const csrf = () => axios.get('/sanctum/csrf-cookie');
 
@@ -116,18 +108,36 @@ export const useAuth = ({
     };
 
     useEffect(() => {
-        if (middleware === 'guest' && redirectIfAuthenticated && user)
+        if (middleware === 'guest' && redirectIfAuthenticated && user) {
             router.push(redirectIfAuthenticated);
+        }
 
-        if (middleware === 'auth' && !user?.email_verified_at)
-            router.push('/email/verify');
+        if (middleware === 'auth') {
+            // 5秒待ってもユーザ情報が取得できない場合はログインページへリダイレクト
+            // TODO: zustandでユーザを管理する？
+            if (!user) {
+                const timer = setTimeout(() => {
+                    if (!user) {
+                        router.push('/login');
+                    }
+                }, 5000);
+                return () => clearTimeout(timer);
+            }
+            if (user && !user.email_verified_at) {
+                router.push('/email/verify');
+            }
+        }
 
         if (
             window.location.pathname === '/email/verify' &&
             user?.email_verified_at
-        )
+        ) {
             router.push(redirectIfAuthenticated);
-        if (middleware === 'auth' && error) logout();
+        }
+
+        if (middleware === 'auth' && error) {
+            logout();
+        }
     }, [user, error]);
 
     return {

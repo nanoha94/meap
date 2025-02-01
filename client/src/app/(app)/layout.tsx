@@ -1,7 +1,7 @@
 'use client';
 
-import { useAuth } from '@/hooks/auth';
-// import Navigation from '@/app/(app)/Navigation';
+import { useAuth } from '@/hooks';
+import Navigation2 from '@/app/(app)/Navigation';
 import Loading from '@/app/(app)/Loading';
 import { Navigation } from './_components';
 
@@ -18,8 +18,8 @@ const AppLayout = ({ children }: Props) => {
 
     return (
         <div className="h-screen flex flex-col">
-            {/* <Navigation user={user} /> */}
-            <div className="flex-1">{children}</div>
+            <Navigation2 user={user} />
+            <div className="flex-1 bg-primary-background">{children}</div>
             <Navigation />
         </div>
     );

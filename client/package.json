@@ -10,6 +10,8 @@
     "lint:fix": "next lint --fix"
   },
   "dependencies": {
+    "@dicebear/collection": "^9.2.2",
+    "@dicebear/core": "^9.2.2",
     "@headlessui/react": "^1.4.2",
     "axios": "^0.21.1",
     "lucide-react": "^0.474.0",
