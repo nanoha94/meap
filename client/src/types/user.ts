@@ -7,3 +7,9 @@ export interface User {
     created_at?: string;
     updated_at?: string;
 }
+
+export interface GroupUser {
+    id: string;
+    custom_id: string;
+    name: string;
+}

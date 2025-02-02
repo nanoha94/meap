@@ -66,6 +66,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     /**
      * ユニークなカスタムIDを生成
+     * TODO: 無限ループの可能性あり
      */
     private static function generateUniqueCustomId(): string
     {
@@ -93,5 +94,15 @@ class User extends Authenticatable implements MustVerifyEmail
             // custom_idを生成して設定
             $user->custom_id = static::generateUniqueCustomId();
         });
+    }
+
+    public function groupUser()
+    {
+        return $this->hasOne(GroupUser::class);
+    }
+
+    public function invitationTokens()
+    {
+        return $this->hasMany(InvitationToken::class, 'inviter_id');
     }
 }

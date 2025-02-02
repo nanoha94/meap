@@ -32,7 +32,7 @@ end note
 
 entity groups {
     primary_key(id : string)
-    foreign_key(admin_user_id : string)
+    group_size : number
 }
 
 note top of groups
@@ -41,33 +41,28 @@ note top of groups
   ユーザがデータを初めて登録するときに、新たにグループを作成する。
   もしくは、すでに存在しているグループに招待してもらって所属する。
 
-  * admin_user_id : 管理者のユーザID（usersテーブルとのリレーション）
+  * group_size : グループに属するユーザの数
 end note
 
 entity group_user {
     primary_key(id : string)
     foreign_key(user_id : string)
-    foreign_key(group_id : string)
-    --
-    * role_in_group : int
+    foreign_key(group_id : string | null)
 }
 
 note bottom of group_user
   groupテーブルとuserテーブルの中間テーブル。
-
-  * role_in_group : グループ内での役割（1: 管理者, 2: メンバー）
 end note
 
-entity invite_tokens {
+entity invitation_tokens {
     primary_key(id : string)
-    foreign_key(group_id : string)
     foreign_key(inviter_id : string)
     --
     * token : string
     * expires_at : date
 }
 
-note bottom of invite_tokens
+note bottom of invitation_tokens
   ユーザ招待トークンを管理する。
   グループに招待するときにトークンを発行する。
   一定時間でトークンは使用できなくなり、テーブルからデータを消去する。
@@ -243,10 +238,9 @@ note bottom of shopping_items
 end note
 
 
-users ||--o| group_user
+users ||--|| group_user
 groups }o-|| group_user
-users ||--o{ invite_tokens
-groups ||--o{ invite_tokens
+users ||--o{ invitation_tokens
 groups ||--o{ meals
 meals ||--|| meal_dish_type_dish
 groups ||--o{ dish_types

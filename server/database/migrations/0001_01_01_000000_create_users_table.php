@@ -43,6 +43,11 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // sessionsテーブルの外部キー制約を削除
+        Schema::table('sessions', function (Blueprint $table) {
+            $table->dropForeign(['user_id']);
+        });
+
         Schema::dropIfExists('users');
         Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');

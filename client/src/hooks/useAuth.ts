@@ -9,9 +9,8 @@ interface Props {
     redirectIfAuthenticated?: string;
 }
 
-const fetchUser = (): Promise<User | null> => {
-    return axios.get('/api/user').then(res => res.data);
-};
+const fetchUser = (): Promise<User | null> =>
+    axios.get('/api/user').then(res => res.data);
 
 export const useAuth = ({
     middleware,
