@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Exception;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Hash;
 
 class InvitationTokenController extends Controller
 {
@@ -21,5 +22,22 @@ class InvitationTokenController extends Controller
         } catch (Exception $e) {
             return response()->json(['message' => $e->getMessage()], 500);
         }
+    }
+
+    public function show(string $token): JsonResponse
+    {
+        $invitationToken = InvitationToken::all()->first(function ($record) use ($token) {
+            return Hash::check($token, $record->token);
+        });
+
+        return response()->json([
+            'token' => $invitationToken->token,
+            'expires_at' => $invitationToken->expires_at,
+            'inviter' => [
+                'id' => $invitationToken->inviter->id,
+                'custom_id' => $invitationToken->inviter->custom_id,
+                'name' => $invitationToken->inviter->name
+            ]
+        ], 200);
     }
 }
