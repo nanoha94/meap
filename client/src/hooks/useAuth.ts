@@ -1,8 +1,8 @@
 import axios from '@/lib/axios';
-import { useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import useSWR from 'swr';
-import { User } from '@/types/user';
+import { User } from '@/types/api';
+import React from 'react';
 
 interface Props {
     middleware?: 'guest' | 'auth';
@@ -106,9 +106,22 @@ export const useAuth = ({
         window.location.pathname = '/login';
     };
 
-    useEffect(() => {
+    React.useEffect(() => {
+        // URLからトークンを取得
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+
+        if (token !== null) {
+            sessionStorage.setItem('invitationToken', token);
+        }
+
         if (middleware === 'guest' && redirectIfAuthenticated && user) {
-            router.push(redirectIfAuthenticated);
+            const token = sessionStorage.getItem('invitationToken');
+            if (token) {
+                router.push(`/settings/account?token=${token}`);
+            } else {
+                router.push(redirectIfAuthenticated);
+            }
         }
 
         if (middleware === 'auth') {
@@ -131,7 +144,12 @@ export const useAuth = ({
             window.location.pathname === '/email/verify' &&
             user?.email_verified_at
         ) {
-            router.push(redirectIfAuthenticated);
+            const token = sessionStorage.getItem('invitationToken');
+            if (token) {
+                router.push(`/settings/account?token=${token}`);
+            } else {
+                router.push(redirectIfAuthenticated);
+            }
         }
 
         if (middleware === 'auth' && error) {

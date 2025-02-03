@@ -1,33 +1,31 @@
 'use client';
 import { icons } from '@dicebear/collection';
-import { createAvatar } from '@dicebear/core';
-import { Dialog, TextButton } from '../../_components';
-import { ChevronRight, Copy, LoaderCircle } from 'lucide-react';
+import { createAvatar, Result } from '@dicebear/core';
+import { TextButton } from '../../_components';
+import { ChevronRight } from 'lucide-react';
 import { useAuth } from '@/hooks';
 import React from 'react';
-import { QRCodeSVG } from 'qrcode.react';
 import axios from '@/lib/axios';
-import { colors } from '@/constants/colors';
-import dayjs from 'dayjs';
-import { GroupUser } from '@/types/user';
+import { GroupUser } from '@/types/api';
 import useSWR from 'swr';
+import { InvitationDialog, JoinDialog } from './_components';
+import { useSearchParams } from 'next/navigation';
 
 const fetchGroupUsers = (): Promise<GroupUser[]> =>
     axios.get('/api/group/users').then(res => res.data);
 
 const Page = () => {
+    const searchParams = useSearchParams();
+    const token = searchParams.get('token');
     const { user } = useAuth();
     const { data: users, error } = useSWR('/api/group/users', fetchGroupUsers);
-    const [invitationLink, setInvitationLink] = React.useState<string | null>(
-        null,
-    );
-    const [tokenExpiresAt, setTokenExpiresAt] = React.useState<string | null>(
-        null,
-    );
+
     const [isOpenInviteDialog, setIsOpenInviteDialog] =
         React.useState<boolean>(false);
+    const [isOpenJoinDialog, setIsOpenJoinDialog] =
+        React.useState<boolean>(!!token);
 
-    const iconAvatar = (id: string) =>
+    const iconAvatar = (id: string): Result =>
         createAvatar(icons, {
             seed: id,
             backgroundColor: [
@@ -42,36 +40,19 @@ const Page = () => {
             ],
         });
 
-    const copyToClipboard = async (link: string) => {
-        try {
-            await navigator.clipboard.writeText(link);
-        } catch (err) {
-            console.error(err);
-        }
-    };
-
-    const fetchInvitationToken = async () => {
-        setInvitationLink(null);
-        try {
-            const res = await axios.get('/api/invitation');
-            if (res.data) {
-                setInvitationLink(
-                    `${process.env.NEXT_PUBLIC_BACKEND_URL}/invitation/${res.data.token}`,
-                );
-                setTokenExpiresAt(res.data.expires_at);
-            }
-        } catch (error) {
-            // TODO: スナックバーでエラー表示
-            console.error(error.response?.data.message);
-        }
-    };
-
     React.useEffect(() => {
         if (error) {
             // TODO: スナックバーでエラー表示
             console.error(error?.response?.data?.message);
         }
     }, [error]);
+
+    // セッションストレージにトークンがある場合は削除
+    if (token) {
+        if (sessionStorage.getItem('invitationToken')) {
+            sessionStorage.removeItem('invitationToken');
+        }
+    }
 
     return (
         <div className="flex flex-col gap-y-5">
@@ -125,10 +106,9 @@ const Page = () => {
                         </div>
                         <TextButton
                             onClick={() => {
-                                fetchInvitationToken();
                                 setIsOpenInviteDialog(true);
                             }}>
-                            メンバーを追加
+                            メンバーを招待
                             <ChevronRight />
                         </TextButton>
                     </>
@@ -137,56 +117,32 @@ const Page = () => {
                         <p>共有メンバーはまだいません。</p>
                         <TextButton
                             onClick={() => {
-                                fetchInvitationToken();
                                 setIsOpenInviteDialog(true);
                             }}>
-                            メンバーを追加
+                            メンバーを招待
                             <ChevronRight />
                         </TextButton>
                     </div>
                 )}
             </div>
+            {/* 招待ダイアログ */}
             {isOpenInviteDialog && (
-                <Dialog
-                    title="メンバーを招待"
-                    onClose={() => setIsOpenInviteDialog(false)}>
-                    <div className="flex flex-col gap-y-5">
-                        <p>
-                            QRコードやリンクを共有して、メンバーを招待しましょう
-                        </p>
-                        {invitationLink ? (
-                            <div className="flex flex-col items-center gap-y-5">
-                                <QRCodeSVG
-                                    value={invitationLink}
-                                    width="200"
-                                    height="200"
-                                    className="p-5"
-                                />
-                                <TextButton
-                                    onClick={() =>
-                                        copyToClipboard(invitationLink)
-                                    }>
-                                    招待リンクをコピー
-                                    <Copy />
-                                </TextButton>
-                                <div>
-                                    有効期限：
-                                    {dayjs(tokenExpiresAt).format(
-                                        'YYYY年MM月DD日 HH:mm',
-                                    )}
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="py-5">
-                                <LoaderCircle
-                                    size={40}
-                                    color={colors.primary.main}
-                                    className="animate-spin mx-auto"
-                                />
-                            </div>
-                        )}
-                    </div>
-                </Dialog>
+                <InvitationDialog
+                    onClose={() => setIsOpenInviteDialog(false)}
+                />
+            )}
+            {/* 参加ダイアログ */}
+            {isOpenJoinDialog && (
+                <JoinDialog
+                    token={token}
+                    iconAvatar={iconAvatar}
+                    onClose={() => {
+                        setIsOpenJoinDialog(false);
+                        const url = new URL(window.location.href);
+                        url.searchParams.delete('token');
+                        window.history.pushState({}, '', url);
+                    }}
+                />
             )}
         </div>
     );

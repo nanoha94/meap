@@ -9,7 +9,7 @@ import { DropdownButton } from '@/components/DropdownLink';
 import { useAuth } from '@/hooks';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { User } from '@/types/user';
+import { User } from '@/types/api';
 
 interface Props {
     user: User;
