@@ -1,4 +1,4 @@
-import { Header } from '../../_components';
+import { Header } from '../_components';
 
 interface Props {
     children: React.ReactNode;
@@ -7,7 +7,7 @@ interface Props {
 const Layout = ({ children }: Props) => {
     return (
         <>
-            <Header title="アカウント設定" />
+            <Header title="買い物リスト" />
             <main className="p-5">{children}</main>
         </>
     );

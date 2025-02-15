@@ -2,7 +2,7 @@ import { Dialog } from '@/app/(app)/_components';
 import { Button } from '@/components';
 import { colors } from '@/constants/colors';
 import axios from '@/lib/axios';
-import { InvitationDetail } from '@/types/api';
+import { IGetInvitationDetail } from '@/types/api';
 import { Result } from '@dicebear/core';
 import dayjs from 'dayjs';
 import { LoaderCircle } from 'lucide-react';
@@ -16,7 +16,7 @@ interface Props {
 
 const InvitationDialog = ({ token, iconAvatar, onClose }: Props) => {
     const [invitationDetail, setInvitationDetail] =
-        React.useState<InvitationDetail | null>(null);
+        React.useState<IGetInvitationDetail | null>(null);
 
     const fetchInvitationDetail = async () => {
         try {

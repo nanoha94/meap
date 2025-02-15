@@ -8,17 +8,18 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Models\InvitationToken;
 use App\Models\Group;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class GroupUsersController extends Controller
 {
-
-
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
         $groupId = $user->groupUser->group_id;
+
+        if (!$groupId) {
+            return response()->json(null);
+        }
 
         // 同じグループに属するユーザーデータを取得
         $users = GroupUser::where('group_id', $groupId)
@@ -56,16 +57,23 @@ class GroupUsersController extends Controller
 
         // 招待者がグループを持っていない場合はグループを作成
         if ($inviter->groupUser->group_id === null) {
-            $group = Group::create([
-                'group_size' => Group::getGroupSize($inviter->group_id) + 1,
-            ]);
+            $group = Group::createGroup($inviter);
+
+            // 招待者にグループを紐づけ
             $inviter->groupUser->group_id = $group->id;
             $inviter->groupUser->save();
+
+            $group->group_size = Group::getGroupSize($group->id);
+            $group->save();
         }
 
         // 招待された人を同じグループに追加
-        $user->groupUser->group_id = $inviter->groupUser->group_id;
+        $group = $inviter->groupUser->group;
+        $user->groupUser->group_id = $group->id;
         $user->groupUser->save();
+
+        $group->group_size = Group::getGroupSize($group->id);
+        $group->save();
 
         return response()->json(['message' => 'グループに参加しました']);
     }
