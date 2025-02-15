@@ -1,7 +1,8 @@
-module.exports = {
+export default {
     content: ['./src/**/*.{js,jsx,ts,tsx}'],
     theme: {
         colors: {
+            transparent: 'transparent',
             white: '#FFFFFF',
             black: '#333333',
             red: '#B32208',

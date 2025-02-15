@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Group extends Model
@@ -17,6 +16,24 @@ class Group extends Model
     protected $fillable = [
         'group_size',
     ];
+
+    // Groupモデルにメソッドを追加
+    public static function createGroup($inviter)
+    {
+        $group = self::create([
+            'group_size' => 0,
+        ]);
+
+        // カテゴリを追加
+        $category = new ShoppingCategory();
+        $category->name = "その他のカテゴリー";
+        $category->group_id = $group->id;
+        $category->is_default = true;
+        $category->order = 0;
+        $category->save();
+
+        return $group;
+    }
 
     public static function getGroupSize($id): int
     {

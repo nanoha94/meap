@@ -9,10 +9,10 @@ import { DropdownButton } from '@/components/DropdownLink';
 import { useAuth } from '@/hooks';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { User } from '@/types/api';
+import { IGetUser } from '@/types/api';
 
 interface Props {
-    user: User;
+    user: IGetUser;
 }
 
 const Navigation = ({ user }: Props) => {

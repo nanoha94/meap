@@ -1,4 +1,4 @@
-export interface InvitationDetail {
+export interface IGetInvitationDetail {
     token: string;
     expires_at: string;
     inviter: {

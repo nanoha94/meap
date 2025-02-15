@@ -6,13 +6,13 @@ import { ChevronRight } from 'lucide-react';
 import { useAuth } from '@/hooks';
 import React from 'react';
 import axios from '@/lib/axios';
-import { GroupUser } from '@/types/api';
+import { IGetGroupUser } from '@/types/api';
 import useSWR from 'swr';
 import { InvitationDialog, JoinDialog } from './_components';
 import { useSearchParams } from 'next/navigation';
 
-const fetchGroupUsers = (): Promise<GroupUser[]> =>
-    axios.get('/api/group/users').then(res => res.data);
+const fetchGroupUsers = (path: string): Promise<IGetGroupUser[]> =>
+    axios.get(path).then(res => res.data);
 
 const Page = () => {
     const searchParams = useSearchParams();
@@ -55,8 +55,8 @@ const Page = () => {
     }
 
     return (
-        <div className="flex flex-col gap-y-5">
-            <div className="py-7 flex gap-x-5 border-b border-gray-border">
+        <div className="flex flex-col">
+            <div className="pt-2 pb-7 mb-7 flex gap-x-5 border-b border-gray-border">
                 {/* TODO: アイコンの指定がある場合はアイコン、指定がない場合はiconsを使用する */}
                 <div
                     className="w-[120px] h-auto aspect-square rounded-full overflow-hidden"

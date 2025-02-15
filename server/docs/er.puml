@@ -222,21 +222,38 @@ end note
 entity shopping_items {
     primary_key(id : string)
     foreign_key(group_id : string)
+    foreign_key(category_id : string)
     --
     * name : string
     * isPinned : boolean
     * isChecked : boolean
+    * order : int
 }
 
 note bottom of shopping_items
   買い物リストを管理する。
 
   * group_id : グループID
+  * category_id : 買い物カテゴリID
   * name : 買い物アイテム名
   * isPinned : trueの場合、リスト上部に固定化する
   * isChecked : trueの場合、アイテムにチェックマークが付く
+  * order : ソート順
 end note
 
+entity shopping_categories {
+    primary_key(id : string)
+    foreign_key(group_id : string)
+    --
+    * name : string
+}
+
+note bottom of shopping_categories
+  買い物カテゴリを管理する。
+
+  * group_id : グループID
+  * name : カテゴリ名
+end note
 
 users ||--|| group_user
 groups }o-|| group_user
@@ -258,4 +275,6 @@ units }|--o{ dish_ingredient
 groups ||--o{ meal_types
 meals }|--|| meal_types
 groups ||--o{ shopping_items
+shopping_items }|--|| shopping_categories
+groups ||--|{ shopping_categories
 @enduml

@@ -1,4 +1,4 @@
-export interface User {
+export interface IGetUser {
     id?: string;
     custom_id?: string;
     name?: string;
@@ -8,7 +8,7 @@ export interface User {
     updated_at?: string;
 }
 
-export interface GroupUser {
+export interface IGetGroupUser {
     id: string;
     custom_id: string;
     name: string;

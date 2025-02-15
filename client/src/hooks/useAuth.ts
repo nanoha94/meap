@@ -1,7 +1,7 @@
 import axios from '@/lib/axios';
 import { useParams, useRouter } from 'next/navigation';
 import useSWR from 'swr';
-import { User } from '@/types/api';
+import { IGetUser } from '@/types/api';
 import React from 'react';
 
 interface Props {
@@ -9,8 +9,8 @@ interface Props {
     redirectIfAuthenticated?: string;
 }
 
-const fetchUser = (): Promise<User | null> =>
-    axios.get('/api/user').then(res => res.data);
+const fetchUser = (path: string): Promise<IGetUser | null> =>
+    axios.get(path).then(res => res.data);
 
 export const useAuth = ({
     middleware,
