@@ -8,15 +8,14 @@ import {
     DragOverlay,
     DragStartEvent,
     KeyboardSensor,
-    PointerSensor,
     useSensor,
     useSensors,
     DragEndEvent,
+    MouseSensor,
 } from '@dnd-kit/core';
 import {
     arrayMove,
     SortableContext,
-    sortableKeyboardCoordinates,
     verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import {
@@ -48,10 +47,12 @@ const Page = () => {
     const router = useRouter();
 
     const sensors = useSensors(
-        useSensor(PointerSensor),
-        useSensor(KeyboardSensor, {
-            coordinateGetter: sortableKeyboardCoordinates,
+        useSensor(MouseSensor, {
+            activationConstraint: {
+                distance: 5, // 5px ドラッグした時にソート機能を有効にする
+            },
         }),
+        useSensor(KeyboardSensor),
     );
 
     const [activeId, setActiveId] = React.useState<string | null>(null);

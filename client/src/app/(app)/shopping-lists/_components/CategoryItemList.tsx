@@ -91,7 +91,6 @@ const SortableItem: React.FC<SortableItemProps> = ({
     const style = {
         transform: CSS.Transform.toString(transform),
         transition,
-        boxShadow: '1px 1px 5px rgba(0, 0, 0, 15%)',
     };
 
     return (
@@ -100,7 +99,7 @@ const SortableItem: React.FC<SortableItemProps> = ({
             style={style}
             {...attributes}
             {...listeners}
-            className="relative rounded bg-white">
+            className="relative">
             <ShoppingItem
                 item={item}
                 onDelete={() => onDelete(item.id)}
