@@ -51,57 +51,55 @@ const ShoppingItem = ({ item, onDelete, onUpdate }: Props) => {
     }, [itemName]);
 
     return (
-        <>
-            <div className="absolute w-full h-full">
+        <div
+            className="relative py-3 px-1 w-full text-left flex items-center justify-between rounded bg-white"
+            style={{ boxShadow: '1px 1px 5px rgba(0, 0, 0, 15%)' }}>
+            <div className="w-full flex items-center gap-x-4">
                 {isPinned && (
                     <div className="absolute -top-3 -left-3 bg-primary-main rounded-full p-1">
                         <Pin color={colors.white} size={20} />
                     </div>
                 )}
-            </div>
-            <div className="py-3 px-1 w-full text-left flex items-center justify-between">
-                <div className="flex items-center gap-x-4">
-                    <GripVertical color={colors.gray.main} />
-                    <div>
-                        <input
-                            type="checkbox"
-                            id={`checkbox-${id}`}
-                            checked={isChecked}
-                            onChange={() => {
-                                onUpdate(itemName, isPinned, !isChecked);
-                            }}
-                            className="hidden"
-                        />
-                        <label
-                            htmlFor={`checkbox-${id}`}
-                            className="relative pl-7 w-full h-full whitespace-nowrap cursor-pointer">
-                            <div
-                                className={`absolute top-1/2 -translate-y-1/2 left-0 w-5 h-5 rounded border-[1.5px] transition-colors ${
-                                    isChecked
-                                        ? 'bg-primary-main border-[transparent]'
-                                        : 'bg-white border-gray-main'
-                                }`}>
-                                {isChecked && (
-                                    <Check
-                                        strokeWidth={3.5}
-                                        color={colors.white}
-                                        size={20}
-                                        className="absolute top-1/2 -translate-y-1/2 left-0"
-                                    />
-                                )}
-                            </div>
-                            {!isEditing ? (
-                                itemName
-                            ) : (
-                                <input
-                                    ref={inputRef}
-                                    type="text"
-                                    className="relative focus-visible:outline-none"
-                                    defaultValue={itemName}
+                <GripVertical color={colors.gray.main} />
+                <div className="flex-1">
+                    <input
+                        type="checkbox"
+                        id={`checkbox-${id}`}
+                        checked={isChecked}
+                        onChange={() => {
+                            onUpdate(itemName, isPinned, !isChecked);
+                        }}
+                        className="hidden"
+                    />
+                    <label
+                        htmlFor={`checkbox-${id}`}
+                        className="relative pl-7 w-full h-full whitespace-nowrap cursor-pointer">
+                        <div
+                            className={`absolute top-1/2 -translate-y-1/2 left-0 w-5 h-5 rounded border-[1.5px] transition-colors ${
+                                isChecked
+                                    ? 'bg-primary-main border-[transparent]'
+                                    : 'bg-white border-gray-main'
+                            }`}>
+                            {isChecked && (
+                                <Check
+                                    strokeWidth={3.5}
+                                    color={colors.white}
+                                    size={20}
+                                    className="absolute top-1/2 -translate-y-1/2 left-0"
                                 />
                             )}
-                        </label>
-                    </div>
+                        </div>
+                        {!isEditing ? (
+                            itemName
+                        ) : (
+                            <input
+                                ref={inputRef}
+                                type="text"
+                                className="relative focus-visible:outline-none"
+                                defaultValue={itemName}
+                            />
+                        )}
+                    </label>
                 </div>
                 <ActionMenu
                     actionButtons={[
@@ -124,7 +122,7 @@ const ShoppingItem = ({ item, onDelete, onUpdate }: Props) => {
                     ]}
                 />
             </div>
-        </>
+        </div>
     );
 };
 

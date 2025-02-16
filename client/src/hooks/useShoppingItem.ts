@@ -13,7 +13,6 @@ export const useShoppingItem = () => {
     );
 
     const updateShoppingItems = async (items: IPostShoppingItem[]) => {
-        console.log('updateShoppingItems', items);
         try {
             const res = await axios.post(`/api/group/shopping/items`, {
                 items,

@@ -8,7 +8,14 @@ import { useShoppingCategory } from '@/hooks';
 import { IPostShoppingCategory } from '@/types/api';
 import { generateUuid } from '@/utils/uuid';
 import { sort } from '@/utils';
-import { DndContext, DragEndEvent } from '@dnd-kit/core';
+import {
+    DndContext,
+    DragEndEvent,
+    KeyboardSensor,
+    MouseSensor,
+    useSensor,
+    useSensors,
+} from '@dnd-kit/core';
 import { arrayMove, SortableContext, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
@@ -32,6 +39,15 @@ const page = () => {
     const filteredCategories = React.useMemo(
         () => shoppingCategories?.filter(v => !v.isDefault),
         [shoppingCategories],
+    );
+
+    const sensors = useSensors(
+        useSensor(MouseSensor, {
+            activationConstraint: {
+                distance: 5, // 5px ドラッグした時にソート機能を有効にする
+            },
+        }),
+        useSensor(KeyboardSensor),
     );
 
     const addEmptyCategory = () => {
@@ -113,7 +129,7 @@ const page = () => {
                     買い物アイテムをカテゴリーごとに管理できます。
                 </p>
                 <div className="flex flex-col gap-y-4">
-                    <DndContext onDragEnd={handleDragEnd}>
+                    <DndContext onDragEnd={handleDragEnd} sensors={sensors}>
                         <SortableContext items={categories}>
                             {categories.map(v => (
                                 <InputItem
