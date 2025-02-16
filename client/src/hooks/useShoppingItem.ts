@@ -12,9 +12,12 @@ export const useShoppingItem = () => {
         fetchShoppingItems,
     );
 
-    const updateShoppingItem = async (item: IPostShoppingItem) => {
+    const updateShoppingItems = async (items: IPostShoppingItem[]) => {
+        console.log('updateShoppingItems', items);
         try {
-            const res = await axios.post(`/api/group/shopping/items`, item);
+            const res = await axios.post(`/api/group/shopping/items`, {
+                items,
+            });
             if (res.data) {
                 // TODO: スナックバーで表示
                 console.log(res.data.message);
@@ -40,6 +43,14 @@ export const useShoppingItem = () => {
         }
     };
 
+    // const updateShoppingItems = async (items: IPostShoppingItem[]) => {
+    //     try {
+    //         await Promise.all(items.map(item => updateShoppingItem(item)));
+    //     } catch (error) {
+    //         console.error('Failed to update shopping items:', error);
+    //     }
+    // };
+
     React.useEffect(() => {
         if (error) {
             // TODO: スナックバーでエラー表示
@@ -49,7 +60,7 @@ export const useShoppingItem = () => {
 
     return {
         shoppingItems,
-        updateShoppingItem,
+        updateShoppingItems,
         deleteShoppingItem,
     };
 };

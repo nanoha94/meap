@@ -2,8 +2,6 @@ import React from 'react';
 import { ActionMenu } from '../../_components';
 import { colors } from '@/constants/colors';
 import { Check, GripVertical, Pencil, Pin, PinOff, Trash } from 'lucide-react';
-import { useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
 import { IGetShoppingItem } from '@/types/api';
 
 interface Props {
@@ -17,15 +15,6 @@ const ShoppingItem = ({ item, onDelete, onUpdate }: Props) => {
     const inputRef = React.useRef<HTMLInputElement>(null);
     const [itemName, setItemName] = React.useState<string>(name);
     const [isEditing, setIsEditing] = React.useState<boolean>(name === '');
-
-    const { attributes, listeners, setNodeRef, transform, transition } =
-        useSortable({ id });
-
-    const style = {
-        transform: CSS.Transform.toString(transform),
-        transition,
-        boxShadow: '1px 1px 5px rgba(0, 0, 0, 15%)',
-    };
 
     const handleClickOutside = (event: MouseEvent) => {
         if (
@@ -62,12 +51,8 @@ const ShoppingItem = ({ item, onDelete, onUpdate }: Props) => {
     }, [itemName]);
 
     return (
-        <div
-            ref={setNodeRef}
-            style={style}
-            {...attributes}
-            className="relative rounded bg-white">
-            <div {...listeners} className="absolute w-full h-full">
+        <>
+            <div className="absolute w-full h-full">
                 {isPinned && (
                     <div className="absolute -top-3 -left-3 bg-primary-main rounded-full p-1">
                         <Pin color={colors.white} size={20} />
@@ -139,7 +124,7 @@ const ShoppingItem = ({ item, onDelete, onUpdate }: Props) => {
                     ]}
                 />
             </div>
-        </div>
+        </>
     );
 };
 
