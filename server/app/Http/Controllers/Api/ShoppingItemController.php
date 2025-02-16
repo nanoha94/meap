@@ -7,6 +7,7 @@ use App\Models\ShoppingCategory;
 use App\Models\ShoppingItem;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ShoppingItemController extends Controller
 {
@@ -16,14 +17,10 @@ class ShoppingItemController extends Controller
         $user = $request->user();
         $groupId = $user->groupUser->group_id;
 
-        $categories = ShoppingCategory::where('group_id', $groupId)->get();
-
-        foreach ($categories as $category) {
-            $items = ShoppingItem::where('group_id', $groupId)->where('category_id', $category->id)->get();
-            if ($items->count() > 0) {
-                foreach ($items as $idx => $item) {
-                    $res[$idx] = ['id' => $item->id, 'name' => $item->name, 'isPinned' => (bool)$item->is_pinned, 'isChecked' => (bool)$item->is_checked, 'categoryId' => $category->id, 'order' => $item->order];
-                }
+        $items = ShoppingItem::where('group_id', $groupId)->get();
+        if ($items->count() > 0) {
+            foreach ($items as $idx => $item) {
+                $res[$idx] = ['id' => $item->id, 'name' => $item->name, 'isPinned' => (bool)$item->is_pinned, 'isChecked' => (bool)$item->is_checked, 'categoryId' => $item->category_id, 'order' => $item->order];
             }
         }
 
@@ -35,15 +32,27 @@ class ShoppingItemController extends Controller
         $user = $request->user();
         $groupId = $user->groupUser->group_id;
 
-        ShoppingItem::upsert([
-            'id' => $request->id,
-            'group_id' => $groupId,
-            'category_id' => $request->categoryId,
-            'name' => $request->name,
-            'is_pinned' => $request->isPinned,
-            'is_checked' => $request->isChecked,
-            'order' => $request->order,
-        ], uniqueBy: ['id'], update: ['name', 'category_id', 'is_pinned', 'is_checked', 'order']);
+        $request_items = $request->items;
+        Log::info('request_items', ['request_items' => $request->all()]);
+
+        if (!is_array($request_items) || empty($request_items)) {
+            return response()->json(['message' => '無効なデータ形式です'], 400);
+        }
+
+        $items = [];
+        foreach ($request->items as $item) {
+            $items[] = [
+                'id' => $item['id'],
+                'group_id' => $groupId,
+                'category_id' => $item['categoryId'],
+                'name' => $item['name'],
+                'is_pinned' => $item['isPinned'],
+                'is_checked' => $item['isChecked'],
+                'order' => $item['order'],
+            ];
+        }
+
+        ShoppingItem::upsert($items, uniqueBy: ['id'], update: ['name', 'category_id', 'is_pinned', 'is_checked', 'order']);
 
         return response()->json(['message' => '買い物リストを更新しました']);
     }
