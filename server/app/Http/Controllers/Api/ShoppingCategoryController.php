@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\ShoppingCategory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 class ShoppingCategoryController extends Controller
 {
@@ -29,7 +28,6 @@ class ShoppingCategoryController extends Controller
     {
         $user = $request->user();
         $groupId = $user->groupUser->group_id;
-        Log::info('storeOrUpdate', ['request' => $request->all()]);
 
         ShoppingCategory::upsert([
             'id' => $request->id,

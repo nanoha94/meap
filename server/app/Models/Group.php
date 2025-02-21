@@ -17,8 +17,8 @@ class Group extends Model
         'group_size',
     ];
 
-    // Groupモデルにメソッドを追加
-    public static function createGroup($inviter)
+    // Groupを作成
+    public static function createGroup()
     {
         $group = self::create([
             'group_size' => 0,
@@ -35,12 +35,14 @@ class Group extends Model
         return $group;
     }
 
+    // グループに属するのユーザー数を取得
     public static function getGroupSize($id): int
     {
         if ($id === null) return 0;
         return GroupUser::where('group_id', $id)->count();
     }
 
+    // グループに属するユーザーを取得
     public function groupUsers(): HasMany
     {
         return $this->hasMany(GroupUser::class);

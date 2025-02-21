@@ -8,6 +8,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Models\InvitationToken;
 use App\Models\Group;
+use App\Models\ShoppingCategory;
+use App\Models\ShoppingItem;
 use Illuminate\Support\Facades\Hash;
 
 class GroupUsersController extends Controller
@@ -43,6 +45,7 @@ class GroupUsersController extends Controller
 
         // ログインしているユーザーを取得
         $user = $request->user();
+        $currentGroup = $user->groupUser->group;
 
         // 招待者
         $inviter = $invitationToken->inviter;
@@ -51,29 +54,40 @@ class GroupUsersController extends Controller
             return response()->json(['message' => '自分自身を招待することはできません。'], 403);
         }
 
-        if ($user->groupUser->group_id !== null) {
-            return response()->json(['message' => 'すでにグループに所属しています。'], 403);
+        // 招待された人がすでに同じグループにいるかチェック
+        if ($currentGroup->id === $inviter->groupUser->group_id) {
+            return response()->json(['message' => 'すでにグループに参加しています。'], 403);
         }
 
-        // 招待者がグループを持っていない場合はグループを作成
-        if ($inviter->groupUser->group_id === null) {
-            $group = Group::createGroup($inviter);
+        // 所属しているグループがあるかチェック
+        if ($currentGroup->group_size > 1) {
+            return response()->json(['message' => 'すでに別のグループに所属しています。'], 409);
+        }
 
-            // 招待者にグループを紐づけ
-            $inviter->groupUser->group_id = $group->id;
-            $inviter->groupUser->save();
-
-            $group->group_size = Group::getGroupSize($group->id);
-            $group->save();
+        // データがあるかチェック
+        if (!$request->isDelete) {
+            if (ShoppingItem::where('group_id', $currentGroup->id)->exists()) {
+                return response()->json(['message' => 'すでに登録済みのデータがあります。'], 409);
+            }
+            if (ShoppingCategory::where('group_id',  $currentGroup->id)->exists()) {
+                return response()->json(['message' => 'すでに登録済みのデータがあります。'], 409);
+            }
         }
 
         // 招待された人を同じグループに追加
+        $group = $inviter->groupUser->group;
+        // // 招待された人を同じグループに追加
         $group = $inviter->groupUser->group;
         $user->groupUser->group_id = $group->id;
         $user->groupUser->save();
 
         $group->group_size = Group::getGroupSize($group->id);
         $group->save();
+
+
+        // // 招待された人のグループを削除
+        $currentGroup->delete();
+
 
         return response()->json(['message' => 'グループに参加しました']);
     }

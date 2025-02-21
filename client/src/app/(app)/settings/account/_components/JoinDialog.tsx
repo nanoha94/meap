@@ -12,9 +12,15 @@ interface Props {
     token: string;
     iconAvatar: (id: string) => Result;
     onClose: () => void;
+    JoinGroupWithToken: () => void;
 }
 
-const InvitationDialog = ({ token, iconAvatar, onClose }: Props) => {
+const InvitationDialog: React.FC<Props> = ({
+    token,
+    iconAvatar,
+    onClose,
+    JoinGroupWithToken,
+}) => {
     const [invitationDetail, setInvitationDetail] =
         React.useState<IGetInvitationDetail | null>(null);
 
@@ -28,20 +34,6 @@ const InvitationDialog = ({ token, iconAvatar, onClose }: Props) => {
             // TODO: スナックバーでエラー表示
             console.error(error.response?.data.message);
         }
-    };
-
-    const joinGroupWithToken = async () => {
-        try {
-            const res = await axios.post(`/api/group/users/join/${token}`);
-            if (res.data) {
-                // TODO: スナックバーで表示
-                console.log(res.data.message);
-            }
-        } catch (error) {
-            // TODO: スナックバーでエラー表示
-            console.error(error.response?.data.message);
-        }
-        onClose();
     };
 
     useEffect(() => {
@@ -80,7 +72,7 @@ const InvitationDialog = ({ token, iconAvatar, onClose }: Props) => {
                                 onClick={onClose}>
                                 キャンセル
                             </Button>
-                            <Button onClick={joinGroupWithToken}>
+                            <Button onClick={JoinGroupWithToken}>
                                 参加する
                             </Button>
                         </div>
