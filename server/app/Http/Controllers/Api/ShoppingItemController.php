@@ -3,11 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\ShoppingCategory;
 use App\Models\ShoppingItem;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 class ShoppingItemController extends Controller
 {
@@ -33,7 +31,6 @@ class ShoppingItemController extends Controller
         $groupId = $user->groupUser->group_id;
 
         $request_items = $request->items;
-        Log::info('request_items', ['request_items' => $request->all()]);
 
         if (!is_array($request_items) || empty($request_items)) {
             return response()->json(['message' => '無効なデータ形式です'], 400);

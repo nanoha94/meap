@@ -38,7 +38,6 @@ entity groups {
 note top of groups
   データ共有するユーザー情報を管理する。
   ユーザは１つのグループにのみ所属できる。（将来的に拡張可能性あり）
-  ユーザがデータを初めて登録するときに、新たにグループを作成する。
   もしくは、すでに存在しているグループに招待してもらって所属する。
 
   * group_size : グループに属するユーザの数
@@ -47,7 +46,7 @@ end note
 entity group_user {
     primary_key(id : string)
     foreign_key(user_id : string)
-    foreign_key(group_id : string | null)
+    foreign_key(group_id : string)
 }
 
 note bottom of group_user
@@ -256,7 +255,7 @@ note bottom of shopping_categories
 end note
 
 users ||--|| group_user
-groups }o-|| group_user
+groups }|-|| group_user
 users ||--o{ invitation_tokens
 groups ||--o{ meals
 meals ||--|| meal_dish_type_dish

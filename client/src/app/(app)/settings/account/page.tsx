@@ -1,7 +1,7 @@
 'use client';
 import { icons } from '@dicebear/collection';
 import { createAvatar, Result } from '@dicebear/core';
-import { TextButton } from '../../_components';
+import { AlertDialog, TextButton } from '../../_components';
 import { ChevronRight } from 'lucide-react';
 import { useAuth } from '@/hooks';
 import React from 'react';
@@ -10,6 +10,7 @@ import { IGetGroupUser } from '@/types/api';
 import useSWR from 'swr';
 import { InvitationDialog, JoinDialog } from './_components';
 import { useSearchParams } from 'next/navigation';
+import { Button } from '@/components';
 
 const fetchGroupUsers = (path: string): Promise<IGetGroupUser[]> =>
     axios.get(path).then(res => res.data);
@@ -24,6 +25,10 @@ const Page = () => {
         React.useState<boolean>(false);
     const [isOpenJoinDialog, setIsOpenJoinDialog] =
         React.useState<boolean>(!!token);
+    const [isOpenAlertDialog, setIsOpenAlertDialog] =
+        React.useState<boolean>(false);
+    const [alertDialogMessage, setAlertDialogMessage] =
+        React.useState<string>('');
 
     const iconAvatar = (id: string): Result =>
         createAvatar(icons, {
@@ -39,6 +44,38 @@ const Page = () => {
                 'aed6f1', // 青
             ],
         });
+
+    const JoinGroupWithToken = async (isDelete: boolean) => {
+        try {
+            const res = await axios.post(`/api/group/users/join/${token}`, {
+                isDelete,
+            });
+
+            if (res.data) {
+                // TODO: スナックバーで表示
+                console.log(res.data.message);
+            }
+        } catch (error) {
+            if (error.response.status === 409) {
+                setAlertDialogMessage(error.response.data.message);
+                setIsOpenAlertDialog(true);
+                setIsOpenJoinDialog(false);
+                return;
+            }
+
+            // TODO: スナックバーでエラー表示
+            console.error(error.response?.data.message);
+        }
+
+        // ダイアログを閉じる
+        setIsOpenJoinDialog(false);
+        setIsOpenAlertDialog(false);
+
+        // URLパラメータを更新
+        const url = new URL(window.location.href);
+        url.searchParams.delete('token');
+        window.history.pushState({}, '', url);
+    };
 
     React.useEffect(() => {
         if (error) {
@@ -138,11 +175,36 @@ const Page = () => {
                     iconAvatar={iconAvatar}
                     onClose={() => {
                         setIsOpenJoinDialog(false);
-                        const url = new URL(window.location.href);
-                        url.searchParams.delete('token');
-                        window.history.pushState({}, '', url);
                     }}
+                    JoinGroupWithToken={() => JoinGroupWithToken(false)}
                 />
+            )}
+            {/* 削除確認ダイアログ */}
+            {isOpenAlertDialog && (
+                <AlertDialog
+                    title="データ削除"
+                    onClose={() => setIsOpenAlertDialog(false)}>
+                    <div className="flex flex-col gap-y-7">
+                        <p className="text-center">
+                            {alertDialogMessage}
+                            <br />
+                            削除してグループに参加しますか？
+                        </p>
+                        <div className="mx-auto max-w-[320px] w-full flex gap-x-3">
+                            <Button
+                                colorVariant="gray"
+                                variant="outlined"
+                                onClick={() => setIsOpenAlertDialog(false)}>
+                                キャンセル
+                            </Button>
+                            <Button
+                                onClick={() => JoinGroupWithToken(true)}
+                                colorVariant="alert">
+                                削除して参加
+                            </Button>
+                        </div>
+                    </div>
+                </AlertDialog>
             )}
         </div>
     );
