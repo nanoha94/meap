@@ -28,6 +28,7 @@ import { ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useShoppingCategory, useShoppingItem } from '@/hooks';
 import { sort, generateUuid } from '@/utils';
+import { useDebounce } from '@/hooks/useDebounce';
 
 enum ItemType {
     ITEM = 'item',
@@ -55,6 +56,7 @@ const Page = () => {
 
     const [activeId, setActiveId] = React.useState<string | null>(null);
     const [items, setItems] = React.useState<ItemsByCategory>({});
+    const debouncedItems = useDebounce(items, 5000);
     const [categories, setCategories] = React.useState<IGetShoppingCategory[]>(
         [],
     );
@@ -110,21 +112,36 @@ const Page = () => {
 
     // 状態が変更されたときにupdateLocalItemsを呼び出す
     React.useEffect(() => {
-        if (categories.length > 0) {
+        if (debouncedItems.length > 0) {
             // APIに送るデータの形式に変換
-            const updates = categories
-                .map(category => {
-                    return items[category.id].map((item, idx) => ({
+            const updateItems = categories
+                ?.map(category => {
+                    return debouncedItems[category.id]?.map((item, idx) => ({
                         ...item,
                         order: idx,
                     }));
                 })
                 .flat()
                 .filter(v => v !== null && v.name.length > 0);
-
-            updateShoppingItems(updates);
+            updateShoppingItems(updateItems);
         }
-    }, [items]);
+
+        // コンポーネントのアンマウント時に強制的に保存
+        return () => {
+            if (Object.keys(items).length > 0) {
+                const updateItems = categories
+                    .map(category => {
+                        return items[category.id].map((item, idx) => ({
+                            ...item,
+                            order: idx,
+                        }));
+                    })
+                    .flat()
+                    .filter(v => v !== null && v.name.length > 0);
+                updateShoppingItems(updateItems);
+            }
+        };
+    }, [debouncedItems, items]);
 
     React.useEffect(() => {
         if (shoppingItems && shoppingCategories) {
