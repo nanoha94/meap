@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ShoppingItem;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ShoppingItemController extends Controller
 {
@@ -48,6 +49,8 @@ class ShoppingItemController extends Controller
                 'order' => $item['order'],
             ];
         }
+
+        Log::info($items);
 
         ShoppingItem::upsert($items, uniqueBy: ['id'], update: ['name', 'category_id', 'is_pinned', 'is_checked', 'order']);
 

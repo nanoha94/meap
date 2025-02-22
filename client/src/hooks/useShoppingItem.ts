@@ -2,6 +2,7 @@ import axios from '@/lib/axios';
 import { IGetShoppingItem, IPostShoppingItem } from '@/types/api';
 import React from 'react';
 import useSWR from 'swr';
+import { useDebounce } from './useDebounce';
 
 const fetchShoppingItems = (path: string): Promise<IGetShoppingItem[]> =>
     axios.get(path).then(res => res.data);
@@ -11,6 +12,28 @@ export const useShoppingItem = () => {
         '/api/group/shopping/items',
         fetchShoppingItems,
     );
+
+    const [localItems, setLocalItems] = React.useState<IPostShoppingItem[]>([]);
+    const debouncedItems = useDebounce(localItems, 5000);
+
+    // コンポーネントのアンマウント時に強制的に保存
+    React.useEffect(() => {
+        return () => {
+            if (localItems.length > 0) {
+                updateShoppingItems(localItems);
+            }
+        };
+    }, [localItems]);
+
+    // ローカルの状態が変更されたら5秒後に自動で更新
+    React.useEffect(() => {
+        if (
+            debouncedItems.length > 0 &&
+            JSON.stringify(debouncedItems) !== JSON.stringify(shoppingItems)
+        ) {
+            updateShoppingItems(debouncedItems);
+        }
+    }, [debouncedItems, shoppingItems]);
 
     const updateShoppingItems = async (items: IPostShoppingItem[]) => {
         try {
@@ -42,14 +65,6 @@ export const useShoppingItem = () => {
         }
     };
 
-    // const updateShoppingItems = async (items: IPostShoppingItem[]) => {
-    //     try {
-    //         await Promise.all(items.map(item => updateShoppingItem(item)));
-    //     } catch (error) {
-    //         console.error('Failed to update shopping items:', error);
-    //     }
-    // };
-
     React.useEffect(() => {
         if (error) {
             // TODO: スナックバーでエラー表示
@@ -59,7 +74,7 @@ export const useShoppingItem = () => {
 
     return {
         shoppingItems,
-        updateShoppingItems,
+        updateShoppingItems: items => setLocalItems(items),
         deleteShoppingItem,
     };
 };
