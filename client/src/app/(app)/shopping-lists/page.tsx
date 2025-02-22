@@ -7,7 +7,6 @@ import {
     DragOverEvent,
     DragOverlay,
     DragStartEvent,
-    KeyboardSensor,
     useSensor,
     useSensors,
     DragEndEvent,
@@ -27,7 +26,7 @@ import { CategoryItemList, ShoppingItem } from './_components';
 import { TextButton } from '../_components';
 import { ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useDebounce, useShoppingCategory, useShoppingItem } from '@/hooks';
+import { useShoppingCategory, useShoppingItem } from '@/hooks';
 import { sort, generateUuid } from '@/utils';
 
 enum ItemType {
@@ -49,15 +48,13 @@ const Page = () => {
     const sensors = useSensors(
         useSensor(MouseSensor, {
             activationConstraint: {
-                distance: 5, // 5px ドラッグした時にソート機能を有効にする
+                distance: 10, // 10pxドラッグした時にソート機能を有効にする
             },
         }),
-        useSensor(KeyboardSensor),
     );
 
     const [activeId, setActiveId] = React.useState<string | null>(null);
     const [items, setItems] = React.useState<ItemsByCategory>({});
-    const debouncedItems = useDebounce(items, 5000);
     const [categories, setCategories] = React.useState<IGetShoppingCategory[]>(
         [],
     );
@@ -111,31 +108,41 @@ const Page = () => {
         }
     };
 
-    // 5秒異常の操作がなければAPIでデータを更新
+    // 状態が変更されたときにupdateLocalItemsを呼び出す
     React.useEffect(() => {
-        if (activeId) return;
-
-        const update = async () => {
-            const updates: IPostShoppingItem[] = categories
+        if (categories.length > 0) {
+            // APIに送るデータの形式に変換
+            const updates = categories
                 .map(category => {
-                    return items[category.id].map((item, idx) => {
-                        return {
-                            ...item,
-                            order: idx,
-                        };
-                        return null;
-                    });
+                    return items[category.id].map((item, idx) => ({
+                        ...item,
+                        order: idx,
+                    }));
                 })
                 .flat()
-                .filter(v => v !== null);
+                .filter(v => v !== null && v.name.length > 0);
 
-            if (updates.length > 0) {
-                await updateShoppingItems(updates);
-            }
-        };
+            updateShoppingItems(updates);
+        }
+    }, [items]);
 
-        update();
-    }, [debouncedItems]);
+    React.useEffect(() => {
+        if (shoppingItems && shoppingCategories) {
+            setCategories(sort(shoppingCategories));
+
+            // カテゴリーごとにアイテムを整理
+            // 表示する際に便利な形式に変換
+            const formattedItemsByCategory: ItemsByCategory = {};
+            shoppingCategories.forEach(category => {
+                formattedItemsByCategory[category.id] = sort(
+                    shoppingItems.filter(
+                        item => item.categoryId === category.id,
+                    ),
+                );
+            });
+            setItems(formattedItemsByCategory);
+        }
+    }, [shoppingCategories, shoppingItems]);
 
     const updateSortableItems = (activeId: string, overId: string) => {
         const overCategoryItemId = categoryIdFromItemId(overId);
@@ -219,23 +226,6 @@ const Page = () => {
         // await updateOrder(active.id as string);
         setActiveId(null);
     };
-
-    React.useEffect(() => {
-        if (shoppingItems && shoppingCategories) {
-            setCategories(sort(shoppingCategories));
-
-            // カテゴリーごとにアイテムを整理
-            const formattedItemsByCategory: ItemsByCategory = {};
-            shoppingCategories.forEach(category => {
-                formattedItemsByCategory[category.id] = sort(
-                    shoppingItems.filter(
-                        item => item.categoryId === category.id,
-                    ),
-                );
-            });
-            setItems(formattedItemsByCategory);
-        }
-    }, [shoppingCategories, shoppingItems]);
 
     return (
         <>
