@@ -23,12 +23,12 @@ import {
     IPostShoppingItem,
 } from '@/types/api';
 import { CategoryItemList, ShoppingItem } from './_components';
-import { TextButton } from '../_components';
 import { ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useShoppingCategory, useShoppingItem } from '@/hooks';
 import { sort, generateUuid } from '@/utils';
 import { useDebounce } from '@/hooks/useDebounce';
+import { TextButton } from '../_components';
 
 enum ItemType {
     ITEM = 'item',
@@ -115,12 +115,12 @@ const Page = () => {
         if (debouncedItems.length > 0) {
             // APIに送るデータの形式に変換
             const updateItems = categories
-                ?.map(category => {
-                    return debouncedItems[category.id]?.map((item, idx) => ({
+                .map(category =>
+                    debouncedItems[category.id].map((item, idx) => ({
                         ...item,
                         order: idx,
-                    }));
-                })
+                    })),
+                )
                 .flat()
                 .filter(v => v !== null && v.name.length > 0);
             updateShoppingItems(updateItems);
@@ -130,18 +130,18 @@ const Page = () => {
         return () => {
             if (Object.keys(items).length > 0) {
                 const updateItems = categories
-                    .map(category => {
-                        return items[category.id].map((item, idx) => ({
+                    .map(category =>
+                        items[category.id].map((item, idx) => ({
                             ...item,
                             order: idx,
-                        }));
-                    })
+                        })),
+                    )
                     .flat()
                     .filter(v => v !== null && v.name.length > 0);
                 updateShoppingItems(updateItems);
             }
         };
-    }, [debouncedItems, items]);
+    }, [debouncedItems, categories, items]);
 
     React.useEffect(() => {
         if (shoppingItems && shoppingCategories) {
