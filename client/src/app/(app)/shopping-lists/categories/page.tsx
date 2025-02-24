@@ -153,7 +153,7 @@ const page = () => {
                     </TextButton>
                 </div>
             </div>
-            <div className="flex gap-x-3">
+            <div className="flex gap-x-6">
                 <Button
                     variant="outlined"
                     colorVariant="gray"

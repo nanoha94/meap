@@ -65,7 +65,7 @@ const InvitationDialog: React.FC<Props> = ({
                         </div>
                     </div>
                     <div className="flex flex-col gap-y-5">
-                        <div className="max-w-[230px] w-full flex gap-x-3">
+                        <div className="max-w-[230px] w-full flex gap-x-6">
                             <Button
                                 colorVariant="gray"
                                 variant="outlined"

@@ -34,6 +34,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/group/shopping/items', [ShoppingItemController::class, 'destroy'])
         ->name('group.shopping.items.destroy');
 
+    Route::delete('/group/shopping/items/all', [ShoppingItemController::class, 'destroyAll'])
+        ->name('group.shopping.items.destroyAll');
+
     Route::get('/group/shopping/categories', [ShoppingCategoryController::class, 'index'])->name('group.shopping.categories.index');
 
     Route::post('/group/shopping/categories', [ShoppingCategoryController::class, 'storeOrUpdate'])
