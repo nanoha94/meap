@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\ShoppingItem;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 class ShoppingItemController extends Controller
 {
@@ -50,8 +49,6 @@ class ShoppingItemController extends Controller
             ];
         }
 
-        Log::info($items);
-
         ShoppingItem::upsert($items, uniqueBy: ['id'], update: ['name', 'category_id', 'is_pinned', 'is_checked', 'order']);
 
         return response()->json(['message' => '買い物リストを更新しました']);
@@ -63,5 +60,13 @@ class ShoppingItemController extends Controller
         $item_name = $item->name;
         $item->delete();
         return response()->json(['message' => $item_name . 'を買い物リストから削除しました']);
+    }
+
+    public function destroyAll(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $groupId = $user->groupUser->group_id;
+        ShoppingItem::where('group_id', $groupId)->where('is_pinned', false | 0)->delete();
+        return response()->json(['message' => '買い物アイテムをすべて削除しました']);
     }
 }

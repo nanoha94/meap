@@ -134,7 +134,7 @@ const ShoppingItem = ({ item, onDelete, onUpdate }: Props) => {
                     onClose={() => setIsOpenDeleteDialog(false)}>
                     <div className="flex flex-col gap-y-7">
                         <p className="text-center">{name}を削除しますか？</p>
-                        <div className="mx-auto max-w-[320px] w-full flex gap-x-3">
+                        <div className="mx-auto max-w-[320px] w-full flex gap-x-6">
                             <Button
                                 colorVariant="gray"
                                 variant="outlined"
@@ -142,7 +142,10 @@ const ShoppingItem = ({ item, onDelete, onUpdate }: Props) => {
                                 キャンセル
                             </Button>
                             <Button
-                                onClick={() => onDelete()}
+                                onClick={() => {
+                                    onDelete();
+                                    setIsOpenDeleteDialog(false);
+                                }}
                                 colorVariant="alert">
                                 削除
                             </Button>

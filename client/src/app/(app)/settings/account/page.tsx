@@ -190,7 +190,7 @@ const Page = () => {
                             <br />
                             削除してグループに参加しますか？
                         </p>
-                        <div className="mx-auto max-w-[320px] w-full flex gap-x-3">
+                        <div className="mx-auto max-w-[320px] w-full flex gap-x-6">
                             <Button
                                 colorVariant="gray"
                                 variant="outlined"
