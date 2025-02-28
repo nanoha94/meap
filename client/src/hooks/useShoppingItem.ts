@@ -35,7 +35,7 @@ export const useShoppingItem = () => {
         try {
             setIsLoading(true);
             const res = await axios.post(`/api/group/shopping/items`, {
-                items,
+                items: items.filter(v => v.name && v.name.length > 0),
             });
             if (res.data) {
                 // TODO: スナックバーで表示
@@ -51,7 +51,9 @@ export const useShoppingItem = () => {
     };
 
     const deleteShoppingItem = async (id: string) => {
-        if (isLoading) return;
+        if (isLoading || !shoppingItems.find(v => v.id === id)) {
+            return;
+        }
 
         try {
             setIsLoading(true);

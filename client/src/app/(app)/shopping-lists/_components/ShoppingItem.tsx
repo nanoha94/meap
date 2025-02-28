@@ -34,8 +34,6 @@ const ShoppingItem = ({ item, onDelete, onUpdate }: Props) => {
                 }
                 setItemName(currentValue);
                 onUpdate(currentValue, isPinned, isChecked);
-            } else if (currentValue === '') {
-                onDelete();
             }
             setIsEditing(false);
         }
