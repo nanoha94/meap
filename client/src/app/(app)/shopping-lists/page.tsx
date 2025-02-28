@@ -121,6 +121,21 @@ const Page = () => {
         });
     };
 
+    // ローディングのタイミングでnameがないアイテムを削除
+    React.useEffect(() => {
+        if (isLoading) {
+            setItems(prev => {
+                const newItems = { ...prev };
+                Object.keys(prev).forEach(categoryId => {
+                    newItems[categoryId] = prev[categoryId].filter(
+                        item => item.name && item.name.length > 0,
+                    );
+                });
+                return newItems;
+            });
+        }
+    }, [isLoading]);
+
     // ５秒間変更がなかったらAPIに送る
     React.useEffect(() => {
         if (debouncedItems.length > 0) {
