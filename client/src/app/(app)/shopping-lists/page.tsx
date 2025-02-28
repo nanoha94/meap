@@ -108,6 +108,19 @@ const Page = () => {
         }
     };
 
+    const unCheckAllItems = () => {
+        setItems(prev => {
+            const newItems = { ...prev };
+            Object.keys(prev).forEach(categoryId => {
+                newItems[categoryId] = prev[categoryId].map(item => ({
+                    ...item,
+                    isChecked: false,
+                }));
+            });
+            return newItems;
+        });
+    };
+
     // ５秒間変更がなかったらAPIに送る
     React.useEffect(() => {
         if (debouncedItems.length > 0) {
@@ -357,7 +370,9 @@ const Page = () => {
                 </div>
                 {!!items && (
                     <div className="flex flex-col gap-y-3">
-                        <Button variant="outlined">チェックをすべて外す</Button>
+                        <Button variant="outlined" onClick={unCheckAllItems}>
+                            チェックをすべて外す
+                        </Button>
                         <Button onClick={() => setIsOpenListEmptyDialog(true)}>
                             買い物リストを空にする
                         </Button>
