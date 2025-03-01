@@ -8,7 +8,7 @@ const Layout = ({ children }: Props) => {
     return (
         <>
             <Header title="買い物リスト" />
-            <main className="p-5">{children}</main>
+            <div className="p-5">{children}</div>
         </>
     );
 };

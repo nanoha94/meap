@@ -1,5 +1,7 @@
 import { Noto_Sans_JP } from 'next/font/google';
 import '@/app/global.css';
+import { Snackbars } from '@/components';
+import { SnackbarsProvider } from '@/contexts/useSnackbars';
 
 const notoSansJp = Noto_Sans_JP({
     subsets: ['latin'],
@@ -10,7 +12,12 @@ const notoSansJp = Noto_Sans_JP({
 const RootLayout = ({ children }) => {
     return (
         <html lang="en" className={notoSansJp.variable}>
-            <body className="text-black">{children}</body>
+            <SnackbarsProvider>
+                <body className="text-black">
+                    {children}
+                    <Snackbars />
+                </body>
+            </SnackbarsProvider>
         </html>
     );
 };

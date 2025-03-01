@@ -33,7 +33,7 @@ class ShoppingItemController extends Controller
         $request_items = $request->items;
 
         if (!is_array($request_items) || empty($request_items)) {
-            return response()->json(['message' => '無効なデータ形式です'], 400);
+            return response()->json(['message' => '無効なデータ形式です。'], 400);
         }
 
         $items = [];
@@ -51,7 +51,7 @@ class ShoppingItemController extends Controller
 
         ShoppingItem::upsert($items, uniqueBy: ['id'], update: ['name', 'category_id', 'is_pinned', 'is_checked', 'order']);
 
-        return response()->json(['message' => '買い物リストを更新しました']);
+        return response()->json(['message' => '買い物リストを更新しました。']);
     }
 
     public function destroy(Request $request): JsonResponse
@@ -59,7 +59,7 @@ class ShoppingItemController extends Controller
         $item =  ShoppingItem::where('id', $request->id)->first();
         $item_name = $item->name;
         $item->delete();
-        return response()->json(['message' => $item_name . 'を買い物リストから削除しました']);
+        return response()->json(['message' => $item_name . 'を買い物リストから削除しました。']);
     }
 
     public function destroyAll(Request $request): JsonResponse
@@ -67,6 +67,6 @@ class ShoppingItemController extends Controller
         $user = $request->user();
         $groupId = $user->groupUser->group_id;
         ShoppingItem::where('group_id', $groupId)->where('is_pinned', false | 0)->delete();
-        return response()->json(['message' => '買い物アイテムをすべて削除しました']);
+        return response()->json(['message' => '買い物アイテムをすべて削除しました。']);
     }
 }

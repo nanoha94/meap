@@ -3,6 +3,7 @@ import { useParams, useRouter } from 'next/navigation';
 import useSWR from 'swr';
 import { IGetUser } from '@/types/api';
 import React from 'react';
+import { useSnackbars } from '@/contexts';
 
 interface Props {
     middleware?: 'guest' | 'auth';
@@ -18,7 +19,7 @@ export const useAuth = ({
 }: Props = {}) => {
     const router = useRouter();
     const params = useParams();
-
+    const { addSnackbar } = useSnackbars();
     const { data: user, error, mutate } = useSWR('/api/user', fetchUser);
 
     const csrf = () => axios.get('/sanctum/csrf-cookie');
@@ -154,6 +155,7 @@ export const useAuth = ({
 
         if (middleware === 'auth' && error) {
             logout();
+            addSnackbar('error', error.response?.data.message);
         }
     }, [user, error]);
 

@@ -11,6 +11,7 @@ import useSWR from 'swr';
 import { InvitationDialog, JoinDialog } from './_components';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components';
+import { useJoinGroup } from '@/hooks/useJoinGroup';
 
 const fetchGroupUsers = (path: string): Promise<IGetGroupUser[]> =>
     axios.get(path).then(res => res.data);
@@ -20,7 +21,7 @@ const Page = () => {
     const token = searchParams.get('token');
     const { user } = useAuth();
     const { data: users, error } = useSWR('/api/group/users', fetchGroupUsers);
-
+    const { joinGroup } = useJoinGroup();
     const [isOpenInviteDialog, setIsOpenInviteDialog] =
         React.useState<boolean>(false);
     const [isOpenJoinDialog, setIsOpenJoinDialog] =
@@ -46,35 +47,22 @@ const Page = () => {
         });
 
     const JoinGroupWithToken = async (isDelete: boolean) => {
-        try {
-            const res = await axios.post(`/api/group/users/join/${token}`, {
-                isDelete,
-            });
+        const res = await joinGroup(token, isDelete);
+        if (res) {
+            // データを削除するか確認
+            setAlertDialogMessage(res);
+            setIsOpenAlertDialog(true);
+            setIsOpenJoinDialog(false);
+        } else {
+            // ダイアログを閉じる
+            setIsOpenAlertDialog(false);
+            setIsOpenJoinDialog(false);
 
-            if (res.data) {
-                // TODO: スナックバーで表示
-                console.log(res.data.message);
-            }
-        } catch (error) {
-            if (error.response.status === 409) {
-                setAlertDialogMessage(error.response.data.message);
-                setIsOpenAlertDialog(true);
-                setIsOpenJoinDialog(false);
-                return;
-            }
-
-            // TODO: スナックバーでエラー表示
-            console.error(error.response?.data.message);
+            // URLパラメータを更新
+            const url = new URL(window.location.href);
+            url.searchParams.delete('token');
+            window.history.pushState({}, '', url);
         }
-
-        // ダイアログを閉じる
-        setIsOpenJoinDialog(false);
-        setIsOpenAlertDialog(false);
-
-        // URLパラメータを更新
-        const url = new URL(window.location.href);
-        url.searchParams.delete('token');
-        window.history.pushState({}, '', url);
     };
 
     React.useEffect(() => {
