@@ -2,11 +2,13 @@ import axios from '@/lib/axios';
 import { IGetShoppingItem, IPostShoppingItem } from '@/types/api';
 import React from 'react';
 import useSWR from 'swr';
+import { useSnackbars } from '@/contexts';
 
 const fetchShoppingItems = (path: string): Promise<IGetShoppingItem[]> =>
     axios.get(path).then(res => res.data);
 
 export const useShoppingItem = () => {
+    const { addSnackbar } = useSnackbars();
     const [isLoading, setIsLoading] = React.useState(false);
     const {
         data: shoppingItems,
@@ -38,13 +40,12 @@ export const useShoppingItem = () => {
                 items: items.filter(v => v.name && v.name.length > 0),
             });
             if (res.data) {
-                // TODO: スナックバーで表示
-                console.log(res.data.message);
+                addSnackbar('success', res.data.message);
                 await mutate();
             }
         } catch (error) {
-            // TODO: スナックバーでエラー表示
             console.error(error.response?.data.message);
+            addSnackbar('error', error.response?.data.message);
         } finally {
             setIsLoading(false);
         }
@@ -61,13 +62,12 @@ export const useShoppingItem = () => {
                 data: { id },
             });
             if (res.data) {
-                // TODO: スナックバーで表示
-                console.log(res.data.message);
+                addSnackbar('success', res.data.message);
                 await mutate();
             }
         } catch (error) {
-            // TODO: スナックバーでエラー表示
             console.error(error.response?.data.message);
+            addSnackbar('error', error.response?.data.message);
         } finally {
             setIsLoading(false);
         }
@@ -81,13 +81,12 @@ export const useShoppingItem = () => {
             const res = await axios.delete(`/api/group/shopping/items/all`);
 
             if (res.data) {
-                // TODO: スナックバーで表示
-                console.log(res.data.message);
+                addSnackbar('success', res.data.message);
                 await mutate();
             }
         } catch (error) {
-            // TODO: スナックバーでエラー表示
             console.error(error.response?.data.message);
+            addSnackbar('error', error.response?.data.message);
         } finally {
             setIsLoading(false);
         }
@@ -95,8 +94,8 @@ export const useShoppingItem = () => {
 
     React.useEffect(() => {
         if (error) {
-            // TODO: スナックバーでエラー表示
             console.error(error?.response?.data?.message);
+            addSnackbar('error', error?.response?.data?.message);
         }
     }, [error]);
 

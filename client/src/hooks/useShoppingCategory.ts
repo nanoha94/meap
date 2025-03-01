@@ -1,3 +1,4 @@
+import { useSnackbars } from '@/contexts';
 import axios from '@/lib/axios';
 import { IGetShoppingCategory, IPostShoppingCategory } from '@/types/api';
 import React from 'react';
@@ -8,6 +9,7 @@ const fetchShoppingCategories = (
 ): Promise<IGetShoppingCategory[]> => axios.get(path).then(res => res.data);
 
 export const useShoppingCategory = () => {
+    const { addSnackbar } = useSnackbars();
     const { data: shoppingCategories, error } = useSWR(
         '/api/group/shopping/categories',
         fetchShoppingCategories,
@@ -25,12 +27,11 @@ export const useShoppingCategory = () => {
                     order: filteredCategories[idx].order ?? idx,
                 });
                 if (res.data) {
-                    // TODO: スナックバーで表示
-                    console.log(res.data.message);
+                    addSnackbar('success', res.data.message);
                 }
             } catch (error) {
-                // TODO: スナックバーでエラー表示
                 console.error(error.response?.data.message);
+                addSnackbar('error', error.response?.data.message);
             }
         }
     };
@@ -41,19 +42,18 @@ export const useShoppingCategory = () => {
                 data: { id },
             });
             if (res.data) {
-                // TODO: スナックバーで表示
-                console.log(res.data.message);
+                addSnackbar('success', res.data.message);
             }
         } catch (error) {
-            // TODO: スナックバーでエラー表示
             console.error(error.response?.data.message);
+            addSnackbar('error', error.response?.data.message);
         }
     };
 
     React.useEffect(() => {
         if (error) {
-            // TODO: スナックバーでエラー表示
             console.error(error?.response?.data?.message);
+            addSnackbar('error', error?.response?.data?.message);
         }
     }, [error]);
 

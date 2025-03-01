@@ -37,7 +37,7 @@ class ShoppingCategoryController extends Controller
             'order' => $request->order,
         ], uniqueBy: ['id'], update: ['name', 'order']);
 
-        return response()->json(['message' => '買い物カテゴリーを更新しました']);
+        return response()->json(['message' => '買い物カテゴリーを更新しました。']);
     }
 
     public function destroy(Request $request): JsonResponse
@@ -45,6 +45,6 @@ class ShoppingCategoryController extends Controller
         $category =  ShoppingCategory::where('id', $request->id)->first();
         $category_name = $category->name;
         $category->delete();
-        return response()->json(['message' => $category_name . 'を買い物カテゴリーから削除しました']);
+        return response()->json(['message' => $category_name . 'を買い物カテゴリーから削除しました。']);
     }
 }

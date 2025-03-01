@@ -89,6 +89,6 @@ class GroupUsersController extends Controller
         $currentGroup->delete();
 
 
-        return response()->json(['message' => 'グループに参加しました']);
+        return response()->json(['message' => 'グループに参加しました。']);
     }
 }

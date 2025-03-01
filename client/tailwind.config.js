@@ -25,6 +25,11 @@ export default {
             alert: {
                 main: '#CD3429',
                 light: '#FECDD0',
+                background: '#FFEBED',
+            },
+            success: {
+                main: '#007100',
+                background: '#EAFAE8',
             },
             category: {
                 yellow: '#F5B12E',

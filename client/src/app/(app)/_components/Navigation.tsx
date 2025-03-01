@@ -90,7 +90,7 @@ const Navigation = () => {
 
     return (
         <div
-            className="w-full flex "
+            className="fixed bottom-0 w-full flex bg-white"
             style={{ boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 10%)' }}>
             {items.map((v, idx) => (
                 <Link
