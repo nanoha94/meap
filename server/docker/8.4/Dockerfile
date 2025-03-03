@@ -2,6 +2,9 @@ FROM ubuntu:24.04
 
 LABEL maintainer="Taylor Otwell"
 
+ENV WWWGROUP=1000
+ENV WWWUSER=1000
+
 ARG WWWGROUP
 ARG NODE_VERSION=22
 ARG MYSQL_CLIENT="mysql-client"
