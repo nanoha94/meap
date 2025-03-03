@@ -10,7 +10,7 @@ ARG NODE_VERSION=22
 ARG MYSQL_CLIENT="mysql-client"
 ARG POSTGRES_VERSION=17
 
-WORKDIR /var/www/html/laravel
+WORKDIR /var/www/html
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ="Asia/Tokyo"
@@ -69,6 +69,9 @@ COPY docker/8.4/start-container /usr/local/bin/start-container
 COPY docker/8.4/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY docker/8.4/php.ini /etc/php/8.4/cli/conf.d/99-sail.ini
 RUN chmod +x /usr/local/bin/start-container
+
+# アプリケーションのファイルをコピー
+COPY . /var/www/html
 
 EXPOSE 80/tcp
 
