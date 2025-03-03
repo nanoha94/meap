@@ -10,7 +10,7 @@ ARG NODE_VERSION=22
 ARG MYSQL_CLIENT="mysql-client"
 ARG POSTGRES_VERSION=17
 
-WORKDIR /var/www/html
+WORKDIR /var/www/html/laravel
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ="Asia/Tokyo"
