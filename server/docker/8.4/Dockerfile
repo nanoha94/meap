@@ -73,6 +73,8 @@ RUN chmod +x /usr/local/bin/start-container
 # アプリケーションのファイルをコピー
 COPY . /var/www/html
 
+RUN composer install --no-interaction --no-dev --optimize-autoloader
+
 EXPOSE 80/tcp
 
 ENTRYPOINT ["start-container"]
