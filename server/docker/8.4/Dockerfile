@@ -78,7 +78,7 @@ RUN composer install --no-interaction --no-dev --optimize-autoloader
 
 # キャッシュをクリア
 RUN php artisan config:clear
-RUN php artisan cache:clear
+# RUN php artisan cache:clear
 RUN php artisan view:clear
 
 EXPOSE 80/tcp
