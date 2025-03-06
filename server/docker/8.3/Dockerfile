@@ -23,8 +23,6 @@ RUN echo "Acquire::http::Pipeline-Depth 0;" > /etc/apt/apt.conf.d/99custom && \
     echo "Acquire::http::No-Cache true;" >> /etc/apt/apt.conf.d/99custom && \
     echo "Acquire::BrokenProxy    true;" >> /etc/apt/apt.conf.d/99custom
 
-    RUN apt-get update && apt-get install -y php8.3-mysqlnd php8.3-mysql
-
 RUN apt-get update && apt-get upgrade -y \
     && mkdir -p /etc/apt/keyrings \
     && apt-get install -y gnupg gosu curl ca-certificates zip unzip git supervisor sqlite3 libcap2-bin libpng-dev python3 dnsutils librsvg2-bin fswatch ffmpeg nano  \
@@ -57,6 +55,7 @@ RUN apt-get update && apt-get upgrade -y \
     && apt-get install -y $MYSQL_CLIENT \
     && apt-get install -y postgresql-client-$POSTGRES_VERSION \
     && apt-get -y autoremove \
+   && docker-php-ext-install mysqli pdo_mysql \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
@@ -76,7 +75,6 @@ COPY . /var/www/html
 # RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
 RUN composer install --no-interaction --no-dev --optimize-autoloader
-
 
 # Cache the various components of the Laravel application
 RUN php artisan config:cache
