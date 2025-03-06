@@ -23,6 +23,8 @@ RUN echo "Acquire::http::Pipeline-Depth 0;" > /etc/apt/apt.conf.d/99custom && \
     echo "Acquire::http::No-Cache true;" >> /etc/apt/apt.conf.d/99custom && \
     echo "Acquire::BrokenProxy    true;" >> /etc/apt/apt.conf.d/99custom
 
+    RUN apt-get update && apt-get install -y php8.3-mysqlnd php8.3-mysql
+
 RUN apt-get update && apt-get upgrade -y \
     && mkdir -p /etc/apt/keyrings \
     && apt-get install -y gnupg gosu curl ca-certificates zip unzip git supervisor sqlite3 libcap2-bin libpng-dev python3 dnsutils librsvg2-bin fswatch ffmpeg nano  \
@@ -69,9 +71,6 @@ COPY docker/8.3/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY docker/8.3/php.ini /etc/php/8.3/cli/conf.d/99-sail.ini
 RUN chmod +x /usr/local/bin/start-container
 
-# mysqlndのインストール
-RUN apt-get install -y php8.3-mysqlnd
-
 COPY . /var/www/html
 # RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 # RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
@@ -79,10 +78,10 @@ COPY . /var/www/html
 RUN composer install --no-interaction --no-dev --optimize-autoloader
 
 # Cache the various components of the Laravel application
-# RUN php artisan config:cache
-# RUN php artisan event:cache
-# RUN php artisan route:cache
-# RUN php artisan view:cache
+RUN php artisan config:cache
+RUN php artisan event:cache
+RUN php artisan route:cache
+RUN php artisan view:cache
 
 EXPOSE 80/tcp
 
