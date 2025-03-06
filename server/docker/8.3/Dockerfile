@@ -53,14 +53,10 @@ RUN apt-get update && apt-get upgrade -y \
     && apt-get update \
     && apt-get install -y yarn \
     && apt-get install -y $MYSQL_CLIENT \
-    && apt-get install -y libmysqlclient-dev libpq-dev \
     && apt-get install -y postgresql-client-$POSTGRES_VERSION \
     && apt-get -y autoremove \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-# Install MySQL PHP Extensions
-RUN docker-php-ext-install mysqli pdo_mysql
 
 RUN setcap "cap_net_bind_service=+ep" /usr/bin/php8.3
 
@@ -77,9 +73,11 @@ COPY . /var/www/html
 # RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 # RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
+COPY composer.json composer.lock ./
 RUN composer install --no-interaction --no-dev --optimize-autoloader
 
 # Cache the various components of the Laravel application
+RUN php artisan config:clear
 RUN php artisan config:cache
 RUN php artisan event:cache
 RUN php artisan route:cache
