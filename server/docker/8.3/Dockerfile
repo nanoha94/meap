@@ -7,6 +7,9 @@ ARG NODE_VERSION=22
 ARG MYSQL_CLIENT="mysql-client"
 ARG POSTGRES_VERSION=17
 
+ENV WWWGROUP=1000
+ENV WWWUSER=1000
+
 WORKDIR /var/www/html
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -61,10 +64,16 @@ RUN userdel -r ubuntu
 RUN groupadd --force -g $WWWGROUP sail
 RUN useradd -ms /bin/bash --no-user-group -g $WWWGROUP -u 1337 sail
 
-COPY start-container /usr/local/bin/start-container
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-COPY php.ini /etc/php/8.3/cli/conf.d/99-sail.ini
+COPY docker/8.3/start-container /usr/local/bin/start-container
+COPY docker/8.3/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY docker/8.3/php.ini /etc/php/8.3/cli/conf.d/99-sail.ini
 RUN chmod +x /usr/local/bin/start-container
+
+# Cache the various components of the Laravel application
+# RUN php artisan config:cache
+# RUN php artisan event:cache
+# RUN php artisan route:cache
+# RUN php artisan view:cache
 
 EXPOSE 80/tcp
 
