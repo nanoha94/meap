@@ -55,7 +55,6 @@ RUN apt-get update && apt-get upgrade -y \
     && apt-get install -y $MYSQL_CLIENT \
     && apt-get install -y postgresql-client-$POSTGRES_VERSION \
     && apt-get -y autoremove \
-   && docker-php-ext-install mysqli pdo_mysql \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
