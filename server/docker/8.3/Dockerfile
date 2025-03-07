@@ -70,8 +70,8 @@ COPY docker/8.3/php.ini /etc/php/8.3/cli/conf.d/99-sail.ini
 RUN chmod +x /usr/local/bin/start-container
 
 COPY . /var/www/html
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/storage/framework/views /var/www/html/bootstrap/cache
+RUN chmod -R 775 /var/www/html/storage /var/www/html/storage/framework/views /var/www/html/bootstrap/cache
 
 RUN composer install --no-interaction --no-dev --optimize-autoloader
 
