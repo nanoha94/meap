@@ -5,4 +5,8 @@ php artisan config:clear
 php artisan cache:clear
 php artisan config:cache
 php artisan tinker --execute="dump(config('database.connections.mysql'))"
-echo "...Pre Deploy End"
+echo "Migration Start..."
+php artisan migrate:reset
+php artisan migrate
+echo "Migration End"
+echo "Pre Deploy End"
