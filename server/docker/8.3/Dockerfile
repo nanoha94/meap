@@ -73,12 +73,10 @@ COPY . /var/www/html
 # RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 # RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-COPY composer.json composer.lock ./
 RUN composer install --no-interaction --no-dev --optimize-autoloader
 
 # Cache the various components of the Laravel application
 RUN php artisan config:clear
-RUN php artisan cache:clear
 RUN php artisan config:cache
 
 EXPOSE 80/tcp
