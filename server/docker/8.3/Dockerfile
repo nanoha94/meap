@@ -76,7 +76,7 @@ RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 RUN composer install --no-interaction --no-dev --optimize-autoloader
 
 # Cache the various components of the Laravel application
-RUN php artisan cache:clear
+# RUN php artisan cache:clear
 RUN php artisan config:clear
 RUN php artisan view:clear
 RUN php artisan route:clear
