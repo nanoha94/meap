@@ -48,7 +48,7 @@ export const useAuth = ({
         setStatus(null);
 
         axios
-            .post('/login', props)
+            .post('/login/', props)
             .then(() => mutate())
             .catch(error => {
                 if (error.response.status !== 422) throw error;
