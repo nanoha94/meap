@@ -22,8 +22,6 @@ export const useAuth = ({
     const { addSnackbar } = useSnackbars();
     const { data: user, error, mutate } = useSWR('/api/user', fetchUser);
 
-    console.log('test');
-
     const csrf = () => axios.get('/sanctum/csrf-cookie');
 
     const register = async ({ setErrors, ...props }) => {
