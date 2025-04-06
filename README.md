@@ -1,5 +1,28 @@
 # meap
 
+## 環境構築
+local-ssl-proxyのインストール
+```
+npm install -g local-ssl-proxy
+```
+mkcertのインストール([chocolatey](https://chocolatey.org/install)を使用する場合)
+```
+choco install mkcert
+```
+証明書のインストール
+```
+mkcert -install
+```
+証明書を作成するディレクトリを用意して移動
+```
+mkdir certificates
+cd certificates
+```
+localhost用の鍵と証明書を作成
+```
+mkcert localhost
+```
+
 ## 環境立ち上げ
 ### フロントエンド
 ```
