@@ -12,7 +12,7 @@ services:
             - SSL_ALT_NAME=${APP_SSL_ALT_NAME:-DNS:localhost}
         volumes:
             - "../certificates/localhost-key.pem:/etc/certs/localhost-key.pem"
-            - "../certificates/localhost-chain.pem:/etc/certs/localhost.pem"
+            - "../certificates/localhost.pem:/etc/certs/localhost.pem"
             - "./docker/nginx/conf.d:/etc/nginx/conf.d"
             - "sail-nginx:/etc/nginx/certs"
             - "./vendor/ryoluo/sail-ssl/nginx/templates:/etc/nginx/templates"
