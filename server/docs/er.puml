@@ -172,25 +172,25 @@ meals }o--|| groups
 meals }o--|| meal_categories
 dish_roles }o--|| groups
 dishes }o--|| groups
-meal_dish_mappings }|--|| meals
+meal_dish_mappings }o--|| meals
 meal_dish_mappings }o--|| dishes
-meal_dish_mappings }|--|| dish_roles
+meal_dish_mappings }o--|| dish_roles
 
 dish_categories }o--|| groups
 dish_category_mappings }o--|| dishes
 dish_category_mappings }o--|| dish_categories
 
-ingredients ||--o{ groups
+ingredients }o--|| groups
 groups ||--o{ ingredient_units
-dish_ingredient_mappings ||--o{ dishes
-dish_ingredient_mappings ||--o{ ingredients
-dish_ingredient_mappings ||--o{ ingredient_units
+dish_ingredient_mappings }o--|| dishes
+dish_ingredient_mappings }o--|| ingredients
+dish_ingredient_mappings }o--|| ingredient_units
 
-seasonings ||--o{ groups
-seasoning_units ||--o{ groups
-dish_seasoning_mappings ||--o{ dishes
-dish_seasoning_mappings ||--o{ seasonings
-dish_seasoning_mappings ||--o{ seasoning_units
+seasonings }o--|| groups
+seasoning_units }o--|| groups
+dish_seasoning_mappings }o--|| dishes
+dish_seasoning_mappings }o--|| seasonings
+dish_seasoning_mappings }o--|| seasoning_units
 
 
 note bottom of groups
