@@ -106,7 +106,8 @@ entity meal_categories {
 entity meal_category_colors {
     * id : string <<generated>>
     --
-    * name : string / 色名（イエロー, オレンジ, ピンク, レッド, イエローグリーン, グリーン, スカイブルー, ブルー, パープル）
+    * name : string / 色名（イエロー, オレンジ, ピンク, レッド, 
+        イエローグリーン, グリーン, スカイブルー, ブルー, パープル）
     * color_code: string / 色コード
     * group_id : string <<FK>>
 }
@@ -172,34 +173,34 @@ meals }o--|| groups
 meals }o--|| meal_categories
 dish_roles }o--|| groups
 dishes }o--|| groups
-meal_dish_mappings }o--|| meals
-meal_dish_mappings }o--|| dishes
+meals ||--o{ meal_dish_mappings
+dishes ||--o{ meal_dish_mappings
 meal_dish_mappings }o--|| dish_roles
 
-dish_categories }o--|| groups
-dish_category_mappings }o--|| dishes
+groups ||--o{ dish_categories
+dishes ||--o{ dish_category_mappings
 dish_category_mappings }o--|| dish_categories
 
 ingredients }o--|| groups
-groups ||--o{ ingredient_units
-dish_ingredient_mappings }o--|| dishes
+ingredient_units }o--|| groups
+dishes ||--o{ dish_ingredient_mappings
 dish_ingredient_mappings }o--|| ingredients
 dish_ingredient_mappings }o--|| ingredient_units
 
 seasonings }o--|| groups
 seasoning_units }o--|| groups
-dish_seasoning_mappings }o--|| dishes
+dishes ||--o{ dish_seasoning_mappings
 dish_seasoning_mappings }o--|| seasonings
 dish_seasoning_mappings }o--|| seasoning_units
 
 
-note bottom of groups
+note right of groups
   データ共有するユーザー情報を管理する。
-  ユーザは１つのグループにのみ所属できる。（将来的に拡張可能性あり）
+  ユーザは１つのグループにのみ所属できる。（拡張可能性あり）
   もしくは、すでに存在しているグループに招待してもらって所属する。
 end note
 
-note top of meals
+note left of meals
   献立情報を管理する。
 end note
 
@@ -207,19 +208,19 @@ note left of meal_categories
   献立種別を管理する。（朝食、昼食、夕食など）
 end note
 
-note top of dishes
+note right of dishes
   料理情報を管理する。
 end note
 
-note bottom of dish_roles
+note top of dish_roles
   料理種別を管理する。（料理カテゴリとは別物）
 end note
 
-note top of dish_categories
+note right of dish_categories
   料理カテゴリを管理する。
 end note
 
-note bottom of invitation_tokens
+note right of invitation_tokens
   ユーザ招待トークンを管理する。
   グループに招待するときにトークンを発行する。
   一定時間でトークンは使用できなくなり、テーブルからデータを消去する。
