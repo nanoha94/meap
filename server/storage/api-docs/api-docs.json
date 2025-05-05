@@ -1,0 +1,68 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "meap api document",
+        "description": "meap api document",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "https://localhost:8000"
+        }
+    ],
+    "paths": {
+        "/group/users": {
+            "get": {
+                "tags": [
+                    "GroupUsers"
+                ],
+                "summary": "同じグループに属するユーザー一覧を取得",
+                "description": "認証ユーザーと同じグループに属するユーザーの一覧を返します。",
+                "operationId": "756ee8ff16065bb1696daf84fb2d74bf",
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "custom_id": {
+                                                "type": "string",
+                                                "example": "abc123"
+                                            },
+                                            "name": {
+                                                "type": "string",
+                                                "example": "山田太郎"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "認証エラー"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "GroupUsers",
+            "description": "GroupUsers"
+        }
+    ]
+}
