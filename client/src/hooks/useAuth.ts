@@ -20,7 +20,7 @@ export const useAuth = ({
     const router = useRouter();
     const params = useParams();
     const { addSnackbar } = useSnackbars();
-    const { data: user, error, mutate } = useSWR('/api/user', fetchUser);
+    const { data: user, error, mutate } = useSWR('/user', fetchUser);
 
     const csrf = () => axios.get('/sanctum/csrf-cookie');
 

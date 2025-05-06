@@ -247,7 +247,7 @@
         "securitySchemes": {
             "sanctum": {
                 "type": "apiKey",
-                "description": "Enter token in format (Bearer <token>)",
+                "description": "Bearer認証(format: Bearer <token>)またはCookie認証によるセッション。ログイン済みの場合は追加設定不要。tokenはpersonal_access_tokensテーブルを参照。",
                 "name": "Authorization",
                 "in": "header"
             }

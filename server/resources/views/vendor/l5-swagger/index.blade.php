@@ -159,8 +159,6 @@
                         // 必要なヘッダーを設定
                         request.headers['X-Requested-With'] = 'XMLHttpRequest';
                         request.headers['Accept'] = 'application/json';
-                        
-                        console.log('Request headers:', request.headers);
                         return request;
                     } catch (error) {
                         console.error('Error in requestInterceptor:', error);
