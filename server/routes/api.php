@@ -3,27 +3,20 @@
 use App\Http\Controllers\Api\GroupUsersController as ApiGroupUsersController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\InvitationTokenController;
+use App\Http\Controllers\Api\InvitationController;
 use App\Http\Controllers\Api\ShoppingCategoryController;
 use App\Http\Controllers\Api\ShoppingItemController;
-use App\Models\ShoppingCategory;
 
 Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
     return $request->user();
 });
 
 Route::middleware('auth')->group(function () {
-    Route::get('/invitation', [InvitationTokenController::class, 'store'])
-        ->name('invitation.request');
+    Route::resource('invitations', InvitationController::class)->only(['store', 'show']);
+    Route::post('/invitations/{token}/join', [InvitationController::class, 'join']);
 
-    Route::get('/invitation/token/{token}', [InvitationTokenController::class, 'show'])
-        ->name('invitation.token.details');
+    Route::get('/users', [ApiGroupUsersController::class, 'index']);
 
-    Route::get('/group/users', [ApiGroupUsersController::class, 'index'])
-        ->name('group.users.index');
-
-    Route::post('/group/users/join/{token}', [ApiGroupUsersController::class, 'join'])
-        ->name('group.users.join');
 
     Route::get('/group/shopping/items', [ShoppingItemController::class, 'index'])
         ->name('group.shopping.items.index');

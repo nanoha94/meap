@@ -57,12 +57,205 @@
                     }
                 ]
             }
+        },
+        "/invitations": {
+            "get": {
+                "tags": [
+                    "Invitations"
+                ],
+                "summary": "招待トークンの詳細を取得",
+                "description": "招待トークンの詳細を取得します。",
+                "operationId": "43cd23ec30793e4100a60ae642a6d9d3",
+                "parameters": [
+                    {
+                        "name": "token",
+                        "in": "query",
+                        "description": "招待トークン",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "token": {
+                                            "type": "string",
+                                            "example": "1234567890"
+                                        },
+                                        "expires_at": {
+                                            "type": "string",
+                                            "example": "2025-01-01 00:00:00"
+                                        },
+                                        "inviter": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "custom_id": {
+                                                    "type": "string",
+                                                    "example": "abc123"
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "山田太郎"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "エラー",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "エラーメッセージ"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Invitations"
+                ],
+                "summary": "グループへの招待トークンを生成",
+                "description": "グループに招待するためのトークンを生成して返します。",
+                "operationId": "c920efb879be91000464e7a4b34aa3ee",
+                "responses": {
+                    "201": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "token": {
+                                            "type": "string",
+                                            "example": "1234567890"
+                                        },
+                                        "expires_at": {
+                                            "type": "string",
+                                            "example": "2025-01-01 00:00:00"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "エラー",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "エラーメッセージ"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/login": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "ログイン",
+                "description": "ユーザーを認証してセッションを作成します。",
+                "operationId": "42f77e072dec84b0e1094cca1228298e",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "example": "user@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "ログイン成功"
+                    },
+                    "401": {
+                        "description": "認証エラー"
+                    }
+                }
+            }
         }
     },
     "tags": [
         {
             "name": "GroupUsers",
             "description": "GroupUsers"
+        },
+        {
+            "name": "Invitations",
+            "description": "Invitations"
+        },
+        {
+            "name": "Authentication",
+            "description": "Authentication"
+        }
+    ],
+    "components": {
+        "securitySchemes": {
+            "sanctum": {
+                "type": "apiKey",
+                "description": "Enter token in format (Bearer <token>)",
+                "name": "Authorization",
+                "in": "header"
+            }
+        }
+    },
+    "security": [
+        {
+            "sanctum": []
         }
     ]
 }

@@ -149,7 +149,7 @@ entity users {
     * updated_at : date
 }
 
-entity invitation_tokens {
+entity invitations {
     * id : string <<generated>>
     --
     * inviter_id : string <<FK>>
@@ -159,7 +159,7 @@ entity invitation_tokens {
 
 groups ||--|| group_user_mappings
 group_user_mappings ||--|| users
-users ||--o{ invitation_tokens
+users ||--o{ invitations
 
 groups ||--o{ shopping_items
 groups ||--o{ shopping_categories
@@ -220,7 +220,7 @@ note right of dish_categories
   料理カテゴリを管理する。
 end note
 
-note right of invitation_tokens
+note right of invitations
   ユーザ招待トークンを管理する。
   グループに招待するときにトークンを発行する。
   一定時間でトークンは使用できなくなり、テーブルからデータを消去する。

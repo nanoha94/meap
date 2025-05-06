@@ -139,9 +139,33 @@
             validatorUrl: {!! isset($validatorUrl) ? '"' . $validatorUrl . '"' : 'null' !!},
             oauth2RedirectUrl: "{{ route('l5-swagger.'.$documentation.'.oauth2_callback', [], $useAbsolutePath) }}",
 
-            requestInterceptor: function(request) {
-                request.headers['X-CSRF-TOKEN'] = '{{ csrf_token() }}';
-                return request;
+            requestInterceptor: async function(request) {
+                    try {
+                        // CSRF-cookieを取得
+                        await fetch('/sanctum/csrf-cookie', {
+                            credentials: 'include'
+                        });
+                        
+                        // XSRFトークンを抽出
+                        const xsrfCookie = document.cookie
+                            .split('; ')
+                            .find(row => row.startsWith('XSRF-TOKEN'));
+                            
+                        if (xsrfCookie) {
+                            const token = xsrfCookie.split('=')[1];
+                            request.headers['X-XSRF-TOKEN'] = decodeURIComponent(token);
+                        }
+                        
+                        // 必要なヘッダーを設定
+                        request.headers['X-Requested-With'] = 'XMLHttpRequest';
+                        request.headers['Accept'] = 'application/json';
+                        
+                        console.log('Request headers:', request.headers);
+                        return request;
+                    } catch (error) {
+                        console.error('Error in requestInterceptor:', error);
+                        return request;
+                    }
             },
 
             presets: [
