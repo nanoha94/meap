@@ -55,14 +55,14 @@ class InvitationController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/invitations",
+     *     path="/invitations/{token}",
      *     summary="招待トークンの詳細を取得",
      *     description="招待トークンの詳細を取得します。",
      *     tags={"Invitations"},
      *     security={{"sanctum":{}}},
-     *     @OA\Parameter(   
+     *     @OA\Parameter(
      *         name="token",
-     *         in="query",
+     *         in="path",
      *         description="招待トークン",
      *         required=true,
      *         @OA\Schema(type="string")
@@ -108,6 +108,46 @@ class InvitationController extends Controller
         ], 200);
     }
 
+    /**
+     * @OA\Post(
+     *     path="/invitations/{token}/join",
+     *     summary="招待トークンを使用してグループに参加",
+     *     description="招待トークンを使用してグループに参加します。",
+     *     tags={"Invitations"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(   
+     *         name="token",
+     *         in="path",
+     *         description="招待トークン",
+     *         required=true,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="成功",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="グループに参加しました。")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="エラー",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="エラーメッセージ")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=409,
+     *         description="エラー",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="エラーメッセージ")
+     *         )
+     *     )
+     * )
+     */
     public function join(Request $request, $token)
     {
         // 有効期限が切れていないトークンを取得
@@ -163,6 +203,6 @@ class InvitationController extends Controller
         // // 招待された人のグループを削除
         $currentGroup->delete();
 
-        return response()->json(['message' => 'グループに参加しました。']);
+        return response()->json(['message' => 'グループに参加しました。'], 200);
     }
 }

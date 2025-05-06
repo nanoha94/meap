@@ -11,14 +11,14 @@
         }
     ],
     "paths": {
-        "/group/users": {
+        "/users": {
             "get": {
                 "tags": [
                     "GroupUsers"
                 ],
                 "summary": "同じグループに属するユーザー一覧を取得",
                 "description": "認証ユーザーと同じグループに属するユーザーの一覧を返します。",
-                "operationId": "756ee8ff16065bb1696daf84fb2d74bf",
+                "operationId": "fd00b482150aa0a44371e1df73ffc52c",
                 "responses": {
                     "200": {
                         "description": "成功",
@@ -59,17 +59,70 @@
             }
         },
         "/invitations": {
+            "post": {
+                "tags": [
+                    "Invitations"
+                ],
+                "summary": "グループへの招待トークンを生成",
+                "description": "グループに招待するためのトークンを生成して返します。",
+                "operationId": "c920efb879be91000464e7a4b34aa3ee",
+                "responses": {
+                    "201": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "token": {
+                                            "type": "string",
+                                            "example": "1234567890"
+                                        },
+                                        "expires_at": {
+                                            "type": "string",
+                                            "example": "2025-01-01 00:00:00"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "エラー",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "エラーメッセージ"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/invitations/{token}": {
             "get": {
                 "tags": [
                     "Invitations"
                 ],
                 "summary": "招待トークンの詳細を取得",
                 "description": "招待トークンの詳細を取得します。",
-                "operationId": "43cd23ec30793e4100a60ae642a6d9d3",
+                "operationId": "756746cde4fd8f71d53b0122e9a0ac33",
                 "parameters": [
                     {
                         "name": "token",
-                        "in": "query",
+                        "in": "path",
                         "description": "招待トークン",
                         "required": true,
                         "schema": {
@@ -137,28 +190,37 @@
                         "sanctum": []
                     }
                 ]
-            },
+            }
+        },
+        "/invitations/{token}/join": {
             "post": {
                 "tags": [
                     "Invitations"
                 ],
-                "summary": "グループへの招待トークンを生成",
-                "description": "グループに招待するためのトークンを生成して返します。",
-                "operationId": "c920efb879be91000464e7a4b34aa3ee",
+                "summary": "招待トークンを使用してグループに参加",
+                "description": "招待トークンを使用してグループに参加します。",
+                "operationId": "46383ac26953e8a9d93e485badf1423b",
+                "parameters": [
+                    {
+                        "name": "token",
+                        "in": "path",
+                        "description": "招待トークン",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "成功",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "token": {
+                                        "message": {
                                             "type": "string",
-                                            "example": "1234567890"
-                                        },
-                                        "expires_at": {
-                                            "type": "string",
-                                            "example": "2025-01-01 00:00:00"
+                                            "example": "グループに参加しました。"
                                         }
                                     },
                                     "type": "object"
@@ -166,7 +228,7 @@
                             }
                         }
                     },
-                    "500": {
+                    "403": {
                         "description": "エラー",
                         "content": {
                             "application/json": {
@@ -175,6 +237,213 @@
                                         "message": {
                                             "type": "string",
                                             "example": "エラーメッセージ"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "エラー",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "エラーメッセージ"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/shopping/categories": {
+            "get": {
+                "tags": [
+                    "Shopping"
+                ],
+                "summary": "買い物カテゴリー一覧を取得",
+                "description": "買い物カテゴリーの一覧を返します。",
+                "operationId": "5a15aaff1e5cb6a2174b38cee84ce04c",
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "isDefault": {
+                                                "type": "boolean"
+                                            },
+                                            "order": {
+                                                "type": "integer"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Shopping"
+                ],
+                "summary": "買い物カテゴリーを作成",
+                "description": "新しい買い物カテゴリーを作成します。",
+                "operationId": "730fb70314780d1715a7df0abb0f9040",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "食料品"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "買い物カテゴリーを作成しました。"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/shopping/categories/{id}": {
+            "put": {
+                "tags": [
+                    "Shopping"
+                ],
+                "summary": "買い物カテゴリーを更新",
+                "description": "指定された買い物カテゴリーを更新します。",
+                "operationId": "932a80e1197f7cb69520fc76704aeb7c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "買い物カテゴリーのID",
+                        "required": true
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "食料品"
+                                    },
+                                    "order": {
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "買い物カテゴリーを更新しました。"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Shopping"
+                ],
+                "summary": "買い物カテゴリーを削除",
+                "description": "指定された買い物カテゴリーを削除します。",
+                "operationId": "253ca5bfccf45405538ce6d376568594",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "買い物カテゴリーのID",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "買い物カテゴリーを削除しました。"
                                         }
                                     },
                                     "type": "object"
@@ -206,7 +475,7 @@
                                 "properties": {
                                     "email": {
                                         "type": "string",
-                                        "example": "user@example.com"
+                                        "example": "test@example.com"
                                     },
                                     "password": {
                                         "type": "string",
@@ -237,6 +506,10 @@
         {
             "name": "Invitations",
             "description": "Invitations"
+        },
+        {
+            "name": "Shopping",
+            "description": "Shopping"
         },
         {
             "name": "Authentication",

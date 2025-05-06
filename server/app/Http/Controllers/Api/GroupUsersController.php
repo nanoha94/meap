@@ -6,21 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Models\GroupUser;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use App\Models\InvitationToken;
-use App\Models\Group;
-use App\Models\ShoppingCategory;
-use App\Models\ShoppingItem;
-use Illuminate\Support\Facades\Hash;
 
 class GroupUsersController extends Controller
 {
-
     /**
      * @OA\Get(
-     *     path="/group/users",
+     *     path="/users",
      *     summary="同じグループに属するユーザー一覧を取得",
      *     description="認証ユーザーと同じグループに属するユーザーの一覧を返します。",
-     *     tags={"GroupUsers"},
+     *     tags={"User"},
      *     security={{"sanctum":{}}},
      *     @OA\Response(
      *         response=200,
@@ -56,6 +50,6 @@ class GroupUsersController extends Controller
             ->get()
             ->pluck('user');
 
-        return response()->json($users);
+        return response()->json($users, 200);
     }
 }

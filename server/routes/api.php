@@ -17,24 +17,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/users', [ApiGroupUsersController::class, 'index']);
 
+    Route::apiResource('/shopping/items', ShoppingItemController::class)->except(['show']);
 
-    Route::get('/group/shopping/items', [ShoppingItemController::class, 'index'])
-        ->name('group.shopping.items.index');
-
-    Route::post('/group/shopping/items', [ShoppingItemController::class, 'storeOrUpdate'])
-        ->name('group.shopping.items.storeOrUpdate');
-
-    Route::delete('/group/shopping/items', [ShoppingItemController::class, 'destroy'])
-        ->name('group.shopping.items.destroy');
-
-    Route::delete('/group/shopping/items/all', [ShoppingItemController::class, 'destroyAll'])
-        ->name('group.shopping.items.destroyAll');
-
-    Route::get('/group/shopping/categories', [ShoppingCategoryController::class, 'index'])->name('group.shopping.categories.index');
-
-    Route::post('/group/shopping/categories', [ShoppingCategoryController::class, 'storeOrUpdate'])
-        ->name('group.shopping.categories.storeOrUpdate');
-
-    Route::delete('/group/shopping/categories', [ShoppingCategoryController::class, 'destroy'])
-        ->name('group.shopping.categories.destroy');
+    Route::apiResource('/shopping/categories', ShoppingCategoryController::class)->except(['show']);
 });
