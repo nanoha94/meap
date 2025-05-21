@@ -16,6 +16,7 @@ class AuthenticatedSessionController extends Controller
      *     summary="ログイン",
      *     description="ユーザーを認証してセッションを作成します。",
      *     tags={"Authentication"},
+     *     security={},
      *     @OA\RequestBody(
      *         required=true,   
      *         @OA\JsonContent(

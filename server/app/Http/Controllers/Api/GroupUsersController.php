@@ -14,7 +14,7 @@ class GroupUsersController extends Controller
      *     path="/users",
      *     summary="同じグループに属するユーザー一覧を取得",
      *     description="認証ユーザーと同じグループに属するユーザーの一覧を返します。",
-     *     tags={"User"},
+     *     tags={"Users"},
      *     security={{"sanctum":{}}},
      *     @OA\Response(
      *         response=200,

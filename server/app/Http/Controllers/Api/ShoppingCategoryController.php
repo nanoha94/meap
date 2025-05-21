@@ -23,10 +23,10 @@ class ShoppingCategoryController extends Controller
      *             type="array",
      *             @OA\Items(
      *                 type="object",
-     *                 @OA\Property(property="id", type="string"),
-     *                 @OA\Property(property="name", type="string"),
-     *                 @OA\Property(property="isDefault", type="boolean"),
-     *                 @OA\Property(property="order", type="integer")
+     *                 @OA\Property(property="id", type="string", description="ID"),
+     *                 @OA\Property(property="name", type="string", description="名前"  ),
+     *                 @OA\Property(property="isDefault", type="boolean", description="デフォルト"),
+     *                 @OA\Property(property="order", type="integer", description="順番")
      *             )
      *         )
      *     )
