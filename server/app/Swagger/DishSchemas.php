@@ -9,10 +9,7 @@ namespace App\Swagger;
  *     @OA\Property(property="id", type="string", description="ID", example="1"),
  *     @OA\Property(property="name", type="string", description="料理名", example="ハンバーグ"),
  *     @OA\Property(property="categories", type="array", description="カテゴリ",
- *         @OA\Items(type="object",
- *             @OA\Property(property="id", type="string", description="ID", example="1"),
- *             @OA\Property(property="name", type="string", description="カテゴリ名", example="肉料理"),
- *         )
+ *         @OA\Items(ref="#/components/schemas/DishCategory")
  *     ),
  *     @OA\Property(property="ingredients", type="array", description="食材", 
  *         @OA\Items(type="object",
@@ -32,5 +29,14 @@ namespace App\Swagger;
  *     @OA\Property(property="recipe", type="string", description="レシピ", example="ハンバーグを作る"),
  *     @OA\Property(property="memo", type="string", description="メモ", example="ハンバーグは美味しい"),
  * )
+ * 
+ * @OA\Schema(
+ *     schema="DishCategory",
+ *     required={"id", "name"},
+ *     @OA\Property(property="id", type="string", description="ID", example="1"),
+ *     @OA\Property(property="name", type="string", description="カテゴリ名", example="肉料理"),
+ * )
  */
+
+
 class DishSchemas {}

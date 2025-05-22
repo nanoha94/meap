@@ -1,0 +1,25 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+
+class MasterController extends Controller
+{
+    /**
+     * @OA\Get(
+     *     path="/master",
+     *     summary="マスターデータを取得",
+     *     tags={"Master"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Response(response=200, ref="#/components/responses/MasterSuccess"),
+     *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
+     *     @OA\Response(response=404, ref="#/components/responses/NotFound")
+     * )
+     */
+    public function __invoke(Request $request)
+    {
+        //
+    }
+}

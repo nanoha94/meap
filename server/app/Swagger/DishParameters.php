@@ -39,6 +39,17 @@ namespace App\Swagger;
  *         example="1"
  *     )
  * )
+ * @OA\Parameter(
+ *     parameter="DishCategoryIdParam",
+ *     name="id",
+ *     in="path",
+ *     description="料理カテゴリID",
+ *     required=true,
+ *     @OA\Schema(
+ *         type="string",
+ *         example="1"
+ *     )
+ * )
  */
 
 class DishParameters {}

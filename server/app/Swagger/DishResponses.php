@@ -45,5 +45,23 @@ namespace App\Swagger;
  *         @OA\Property(property="message", type="string")
  *     )
  * )
+ * @OA\Response(
+ *     response="DishCategoryStoreSuccess",
+ *     description="正常に登録されました",
+ *     @OA\JsonContent(ref="#/components/schemas/DishCategory")
+ * )
+ * @OA\Response(
+ *     response="DishCategoryUpdateSuccess",
+ *     description="正常に更新されました",
+ *     @OA\JsonContent(ref="#/components/schemas/DishCategory")
+ * )
+ * @OA\Response(
+ *     response="DishCategoryDestroySuccess",
+ *     description="正常に削除されました",
+ *     @OA\JsonContent(
+ *         type="object",
+ *         @OA\Property(property="message", type="string")
+ *     )
+ * )
  */
 class DishResponses {}

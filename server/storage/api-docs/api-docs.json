@@ -11,6 +11,98 @@
         }
     ],
     "paths": {
+        "/dishes/categories": {
+            "post": {
+                "tags": [
+                    "Dishes"
+                ],
+                "summary": "料理カテゴリを作成",
+                "description": "新しい料理カテゴリを作成します。",
+                "operationId": "0161ee91fd7d39b03aafcd2c4c65159e",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/DishCategoryRequest"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/DishCategoryStoreSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/dishes/categories/{id}": {
+            "put": {
+                "tags": [
+                    "Dishes"
+                ],
+                "summary": "料理カテゴリを更新",
+                "description": "指定された料理カテゴリを更新します。",
+                "operationId": "ee9ec391653373f111dab83ca8d73615",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/DishCategoryIdParam"
+                    }
+                ],
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/DishCategoryRequest"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/DishCategoryUpdateSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Dishes"
+                ],
+                "summary": "料理カテゴリを削除",
+                "description": "指定された料理カテゴリを削除します。",
+                "operationId": "b1673c72f772434f16151577666b51c4",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/DishCategoryIdParam"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/DishCategoryDestroySuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/dishes": {
             "get": {
                 "tags": [
@@ -421,6 +513,31 @@
                 ]
             }
         },
+        "/master": {
+            "get": {
+                "tags": [
+                    "Master"
+                ],
+                "summary": "マスターデータを取得",
+                "operationId": "63ba56a775b57dd3717b6cf5f41ccfdd",
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/MasterSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/meals": {
             "get": {
                 "tags": [
@@ -752,19 +869,7 @@
                         "description": "カテゴリ",
                         "type": "array",
                         "items": {
-                            "properties": {
-                                "id": {
-                                    "description": "ID",
-                                    "type": "string",
-                                    "example": "1"
-                                },
-                                "name": {
-                                    "description": "カテゴリ名",
-                                    "type": "string",
-                                    "example": "肉料理"
-                                }
-                            },
-                            "type": "object"
+                            "$ref": "#/components/schemas/DishCategory"
                         }
                     },
                     "ingredients": {
@@ -831,6 +936,25 @@
                         "description": "メモ",
                         "type": "string",
                         "example": "ハンバーグは美味しい"
+                    }
+                },
+                "type": "object"
+            },
+            "DishCategory": {
+                "required": [
+                    "id",
+                    "name"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "ID",
+                        "type": "string",
+                        "example": "1"
+                    },
+                    "name": {
+                        "description": "カテゴリ名",
+                        "type": "string",
+                        "example": "肉料理"
                     }
                 },
                 "type": "object"
@@ -936,6 +1060,60 @@
                         }
                     }
                 }
+            },
+            "DishCategoryStoreSuccess": {
+                "description": "正常に登録されました",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/DishCategory"
+                        }
+                    }
+                }
+            },
+            "DishCategoryUpdateSuccess": {
+                "description": "正常に更新されました",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/DishCategory"
+                        }
+                    }
+                }
+            },
+            "DishCategoryDestroySuccess": {
+                "description": "正常に削除されました",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "message": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "MasterSuccess": {
+                "description": "正常に取得されました",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "dishCategories": {
+                                    "description": "料理カテゴリ一覧",
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/DishCategory"
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
             }
         },
         "parameters": {
@@ -971,6 +1149,16 @@
                     "type": "string",
                     "example": "1"
                 }
+            },
+            "DishCategoryIdParam": {
+                "name": "id",
+                "in": "path",
+                "description": "料理カテゴリID",
+                "required": true,
+                "schema": {
+                    "type": "string",
+                    "example": "1"
+                }
             }
         },
         "requestBodies": {
@@ -981,6 +1169,17 @@
                     "application/json": {
                         "schema": {
                             "$ref": "#/components/schemas/Dish"
+                        }
+                    }
+                }
+            },
+            "DishCategoryRequest": {
+                "description": "登録する料理カテゴリデータ",
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/DishCategory"
                         }
                     }
                 }
@@ -1011,6 +1210,10 @@
         {
             "name": "Shopping",
             "description": "買い物関連のAPI"
+        },
+        {
+            "name": "Master",
+            "description": "Master"
         }
     ]
 }
