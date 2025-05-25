@@ -807,6 +807,141 @@
                 ]
             }
         },
+        "/shopping/items": {
+            "get": {
+                "tags": [
+                    "Shopping"
+                ],
+                "summary": "買い物アイテム一覧を取得",
+                "operationId": "1380885ee1d13ad63e55f8c20b3e98a7",
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/ShoppingItemIndexSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Shopping"
+                ],
+                "summary": "買い物アイテムを作成",
+                "operationId": "3a30d10ee755335b0c6f7f93a5ca27b6",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/ShoppingItemRequest"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/ShoppingItemStoreSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/shopping/items/bulk": {
+            "put": {
+                "tags": [
+                    "Shopping"
+                ],
+                "summary": "買い物アイテムを一括更新",
+                "operationId": "9fc979f7f93b13b9e53d8555d7c2498b",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/ShoppingItemBulkUpdateRequest"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/ShoppingItemBulkUpdateSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Shopping"
+                ],
+                "summary": "買い物アイテムを一括削除",
+                "operationId": "69b4a4de8cfd36369385139daf8f9a39",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/ShoppingItemBulkDeleteRequest"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/ShoppingItemDestroySuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/shopping/items/{id}": {
+            "delete": {
+                "tags": [
+                    "Shopping"
+                ],
+                "summary": "買い物アイテムを削除",
+                "operationId": "7711a886aac3f6bb570d6db076199f56",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/ShoppingIdParam"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/ShoppingItemDestroySuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/login": {
             "post": {
                 "tags": [
@@ -955,6 +1090,75 @@
                         "description": "カテゴリ名",
                         "type": "string",
                         "example": "肉料理"
+                    }
+                },
+                "type": "object"
+            },
+            "ShoppingItem": {
+                "required": [
+                    "id",
+                    "name",
+                    "isPinned",
+                    "isChecked",
+                    "categoryId",
+                    "order"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "ID",
+                        "type": "string",
+                        "example": "1"
+                    },
+                    "name": {
+                        "description": "買い物アイテム名（数量込み）",
+                        "type": "string",
+                        "example": "ひき肉100g"
+                    },
+                    "isPinned": {
+                        "description": "ピン留め",
+                        "type": "boolean",
+                        "example": "false"
+                    },
+                    "isChecked": {
+                        "description": "チェック状態",
+                        "type": "boolean",
+                        "example": "false"
+                    },
+                    "categoryId": {
+                        "description": "カテゴリ情報",
+                        "type": "string"
+                    },
+                    "order": {
+                        "description": "順番",
+                        "type": "integer",
+                        "example": 1
+                    }
+                },
+                "type": "object"
+            },
+            "ShoppingCategory": {
+                "required": [
+                    "id",
+                    "name"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "ID",
+                        "type": "string",
+                        "example": "1"
+                    },
+                    "name": {
+                        "description": "カテゴリ名",
+                        "type": "string",
+                        "example": "スーパーA"
+                    },
+                    "isDefault": {
+                        "description": "デフォルト",
+                        "type": "boolean"
+                    },
+                    "order": {
+                        "description": "順番",
+                        "type": "integer"
                     }
                 },
                 "type": "object"
@@ -1114,6 +1318,90 @@
                         }
                     }
                 }
+            },
+            "ShoppingItemIndexSuccess": {
+                "description": "正常に取得されました",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "items": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "category": {
+                                                "$ref": "#/components/schemas/ShoppingCategory"
+                                            },
+                                            "items": {
+                                                "type": "array",
+                                                "items": {
+                                                    "$ref": "#/components/schemas/ShoppingItem"
+                                                }
+                                            },
+                                            "total": {
+                                                "description": "買い物アイテム総数",
+                                                "type": "integer",
+                                                "example": 100
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                },
+                                "total": {
+                                    "description": "買い物カテゴリ総数",
+                                    "type": "integer",
+                                    "example": 100
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "ShoppingItemStoreSuccess": {
+                "description": "正常に登録されました",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ShoppingItem"
+                        }
+                    }
+                }
+            },
+            "ShoppingItemShowSuccess": {
+                "description": "正常に取得されました",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ShoppingItem"
+                        }
+                    }
+                }
+            },
+            "ShoppingItemBulkUpdateSuccess": {
+                "description": "正常に更新されました",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ShoppingItem"
+                        }
+                    }
+                }
+            },
+            "ShoppingItemDestroySuccess": {
+                "description": "正常に削除されました",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "message": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
             }
         },
         "parameters": {
@@ -1159,6 +1447,26 @@
                     "type": "string",
                     "example": "1"
                 }
+            },
+            "ShoppingIdParam": {
+                "name": "id",
+                "in": "path",
+                "description": "買い物アイテムID",
+                "required": true,
+                "schema": {
+                    "type": "string",
+                    "example": "1"
+                }
+            },
+            "ShoppingCategoryIdParam": {
+                "name": "id",
+                "in": "path",
+                "description": "買い物カテゴリID",
+                "required": true,
+                "schema": {
+                    "type": "string",
+                    "example": "1"
+                }
             }
         },
         "requestBodies": {
@@ -1180,6 +1488,69 @@
                     "application/json": {
                         "schema": {
                             "$ref": "#/components/schemas/DishCategory"
+                        }
+                    }
+                }
+            },
+            "ShoppingItemRequest": {
+                "description": "登録する買い物アイテムデータ",
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ShoppingItem"
+                        }
+                    }
+                }
+            },
+            "ShoppingItemBulkUpdateRequest": {
+                "description": "一括更新する買い物アイテムデータ",
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "items": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ShoppingItem"
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "ShoppingItemBulkDeleteRequest": {
+                "description": "一括削除する買い物アイテムデータ",
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "itemIds": {
+                                    "description": "削除する買い物アイテムのID配列",
+                                    "type": "array",
+                                    "items": {
+                                        "description": "買い物アイテムID",
+                                        "type": "string",
+                                        "example": "2"
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "ShoppingCategoryRequest": {
+                "description": "登録する買い物カテゴリデータ",
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ShoppingCategory"
                         }
                     }
                 }

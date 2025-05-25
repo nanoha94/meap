@@ -24,7 +24,9 @@ Route::middleware('auth')->group(function () {
     Route::resource('invitations', InvitationController::class)->only(['store', 'show']);
     Route::post('/invitations/{token}/join', [InvitationController::class, 'join']);
     Route::get('/users', [ApiGroupUsersController::class, 'index']);
-    Route::apiResource('/shopping/items', ShoppingItemController::class)->except(['show']);
+    Route::apiResource('/shopping/items', ShoppingItemController::class)->except(['show', 'update']);
+    Route::put('/shopping/items/bulk', [ShoppingItemController::class, 'bulkUpdate']);
+    Route::delete('/shopping/items/bulk', [ShoppingItemController::class, 'bulkDestroy']);
     Route::apiResource('/shopping/categories', ShoppingCategoryController::class)->except(['show']);
 
     // page

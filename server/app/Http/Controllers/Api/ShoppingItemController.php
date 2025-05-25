@@ -9,6 +9,17 @@ use Illuminate\Http\Request;
 
 class ShoppingItemController extends Controller
 {
+    /**
+     * @OA\Get(
+     *     path="/shopping/items",
+     *     summary="買い物アイテム一覧を取得",
+     *     tags={"Shopping"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Response(response=200, ref="#/components/responses/ShoppingItemIndexSuccess"),
+     *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
+     *     @OA\Response(response=404, ref="#/components/responses/NotFound")
+     * )
+     */
     public function index(Request $request): JsonResponse
     {
         $res = [];
@@ -25,7 +36,19 @@ class ShoppingItemController extends Controller
         return response()->json($res);
     }
 
-    public function storeOrUpdate(Request $request): JsonResponse
+    /**
+     * @OA\Post(
+     *     path="/shopping/items",
+     *     summary="買い物アイテムを作成",
+     *     tags={"Shopping"},
+     *     security={{"sanctum":{}}},
+     *     @OA\RequestBody(ref="#/components/requestBodies/ShoppingItemRequest"),
+     *     @OA\Response(response=200, ref="#/components/responses/ShoppingItemStoreSuccess"),
+     *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
+     *     @OA\Response(response=404, ref="#/components/responses/NotFound")
+     * )
+     */
+    public function store(Request $request): JsonResponse
     {
         $user = $request->user();
         $groupId = $user->groupUser->group_id;
@@ -54,15 +77,56 @@ class ShoppingItemController extends Controller
         return response()->json(['message' => '買い物リストを更新しました。']);
     }
 
-    public function destroy(Request $request): JsonResponse
+    /**
+     * @OA\Put(
+     *     path="/shopping/items/bulk",
+     *     summary="買い物アイテムを一括更新",
+     *     tags={"Shopping"},
+     *     security={{"sanctum":{}}},
+     *     @OA\RequestBody(ref="#/components/requestBodies/ShoppingItemBulkUpdateRequest"),
+     *     @OA\Response(response=200, ref="#/components/responses/ShoppingItemBulkUpdateSuccess"),
+     *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
+     *     @OA\Response(response=404, ref="#/components/responses/NotFound")
+     * )
+     */
+    public function bulkUpdate(Request $request)
     {
-        $item =  ShoppingItem::where('id', $request->id)->first();
+        //
+    }
+
+    /**
+     * @OA\Delete(
+     *     path="/shopping/items/{id}",
+     *     summary="買い物アイテムを削除",
+     *     tags={"Shopping"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(ref="#/components/parameters/ShoppingIdParam"),
+     *     @OA\Response(response=200, ref="#/components/responses/ShoppingItemDestroySuccess"),
+     *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
+     *     @OA\Response(response=404, ref="#/components/responses/NotFound")
+     * )
+     */
+    public function destroy(Request $request, string $id): JsonResponse
+    {
+        $item =  ShoppingItem::where('id', $id)->first();
         $item_name = $item->name;
         $item->delete();
         return response()->json(['message' => $item_name . 'を買い物リストから削除しました。']);
     }
 
-    public function destroyAll(Request $request): JsonResponse
+    /**
+     * @OA\Delete(
+     *     path="/shopping/items/bulk",
+     *     summary="買い物アイテムを一括削除",
+     *     tags={"Shopping"},
+     *     security={{"sanctum":{}}},
+     *     @OA\RequestBody(ref="#/components/requestBodies/ShoppingItemBulkDeleteRequest"),
+     *     @OA\Response(response=200, ref="#/components/responses/ShoppingItemDestroySuccess"),
+     *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
+     *     @OA\Response(response=404, ref="#/components/responses/NotFound")
+     * )
+     */
+    public function bulkDestroy(Request $request): JsonResponse
     {
         $user = $request->user();
         $groupId = $user->groupUser->group_id;
