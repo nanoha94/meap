@@ -130,11 +130,23 @@ entity shopping_categories {
     * group_id : string <<FK>>
 }
 
+entity shopping_tags {
+    * id : string <<generated>>
+    --
+    * name : string
+    * group_id : string <<FK>>
+    * shopping_item_id : string <<FK>>
+}
+
+entity shopping_item_tag_mappings {
+    * item_id : string <<FK>>
+    * tag_id : string <<FK>>
+}
+
 entity group_user_mappings {
     * user_id : string <<FK>>
     * group_id : string <<FK>>
 }
-
 
 entity users {
     * id : string <<generated>>
@@ -164,6 +176,8 @@ users ||--o{ invitations
 groups ||--o{ shopping_items
 groups ||--o{ shopping_categories
 shopping_categories ||--o{ shopping_items
+shopping_items ||--o{ shopping_item_tag_mappings
+shopping_item_tag_mappings }o--|| shopping_tags
 
 groups ||--o{ meal_categories
 groups ||--o{ meal_category_colors

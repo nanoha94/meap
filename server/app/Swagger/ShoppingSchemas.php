@@ -22,6 +22,13 @@ namespace App\Swagger;
  *     @OA\Property(property="isDefault", type="boolean", description="デフォルト"),
  *     @OA\Property(property="order", type="integer", description="順番")
  * )
+ * 
+ * @OA\Schema(
+ *     schema="ShoppingTag",
+ *     required={"id", "name"},
+ *     @OA\Property(property="id", type="string", description="ID", example="1"),
+ *     @OA\Property(property="name", type="string", description="タグ名", example="サラダ"),
+ * )
  */
 
 

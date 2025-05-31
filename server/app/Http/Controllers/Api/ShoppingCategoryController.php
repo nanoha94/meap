@@ -12,24 +12,12 @@ class ShoppingCategoryController extends Controller
     /**
      * @OA\Get(
      *     path="/shopping/categories",
-     *     summary="買い物カテゴリー一覧を取得",
-     *     description="買い物カテゴリーの一覧を返します。",
-     *     tags={"Shopping"}, 
+     *     summary="買い物カテゴリ一覧を取得",
+     *     tags={"Shopping"},
      *     security={{"sanctum":{}}},
-     *     @OA\Response(
-     *         response=200,
-     *         description="成功",
-     *         @OA\JsonContent(
-     *             type="array",
-     *             @OA\Items(
-     *                 type="object",
-     *                 @OA\Property(property="id", type="string", description="ID"),
-     *                 @OA\Property(property="name", type="string", description="名前"  ),
-     *                 @OA\Property(property="isDefault", type="boolean", description="デフォルト"),
-     *                 @OA\Property(property="order", type="integer", description="順番")
-     *             )
-     *         )
-     *     )
+     *     @OA\Response(response=200, ref="#/components/responses/ShoppingCategoryIndexSuccess"),
+     *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
+     *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
     public function index(Request $request): JsonResponse
@@ -55,25 +43,13 @@ class ShoppingCategoryController extends Controller
     /**
      * @OA\Post(
      *     path="/shopping/categories",
-     *     summary="買い物カテゴリーを作成",
-     *     description="新しい買い物カテゴリーを作成します。",
-     *     tags={"Shopping"},       
+     *     summary="買い物カテゴリを作成",
+     *     tags={"Shopping"},
      *     security={{"sanctum":{}}},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             type="object",
-     *             @OA\Property(property="name", type="string", example="食料品")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="成功",
-     *         @OA\JsonContent( 
-     *             type="object",
-     *             @OA\Property(property="message", type="string", example="買い物カテゴリーを作成しました。")
-     *         )
-     *     )
+     *     @OA\RequestBody(ref="#/components/requestBodies/ShoppingCategoryStoreRequest"),
+     *     @OA\Response(response=200, ref="#/components/responses/ShoppingCategoryStoreSuccess"),
+     *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
+     *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
     public function store(Request $request): JsonResponse
@@ -95,33 +71,14 @@ class ShoppingCategoryController extends Controller
 
     /**
      * @OA\Put(
-     *     path="/shopping/categories/{id}",
-     *     summary="買い物カテゴリーを更新",
-     *     description="指定された買い物カテゴリーを更新します。",
-     *     tags={"Shopping"},   
+     *     path="/shopping/categories/bulk",
+     *     summary="買い物カテゴリを一括更新",
+     *     tags={"Shopping"},
      *     security={{"sanctum":{}}},
-     *     @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         required=true,
-     *         description="買い物カテゴリーのID"
-     *     ),
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             type="object",
-     *             @OA\Property(property="name", type="string", example="食料品"),
-     *             @OA\Property(property="order", type="integer", example=1)
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="成功",
-     *         @OA\JsonContent(     
-     *             type="object",
-     *             @OA\Property(property="message", type="string", example="買い物カテゴリーを更新しました。")
-     *         )
-     *     )
+     *     @OA\RequestBody(ref="#/components/requestBodies/ShoppingCategoryBulkUpdateRequest"),
+     *     @OA\Response(response=200, ref="#/components/responses/ShoppingCategoryBulkUpdateSuccess"),
+     *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
+     *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
     public function update(Request $request): JsonResponse
@@ -132,24 +89,13 @@ class ShoppingCategoryController extends Controller
     /**
      * @OA\Delete(
      *     path="/shopping/categories/{id}",
-     *     summary="買い物カテゴリーを削除",
-     *     description="指定された買い物カテゴリーを削除します。",
-     *     tags={"Shopping"},       
+     *     summary="買い物カテゴリを削除",
+     *     tags={"Shopping"},
      *     security={{"sanctum":{}}},
-     *     @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         required=true,
-     *         description="買い物カテゴリーのID"
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="成功",
-     *         @OA\JsonContent(
-     *             type="object",
-     *             @OA\Property(property="message", type="string", example="買い物カテゴリーを削除しました。")
-     *         )
-     *     )
+     *     @OA\Parameter(ref="#/components/parameters/ShoppingCategoryIdParam"),
+     *     @OA\Response(response=200, ref="#/components/responses/ShoppingCategoryDestroySuccess"),
+     *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
+     *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
     public function destroy(Request $request): JsonResponse

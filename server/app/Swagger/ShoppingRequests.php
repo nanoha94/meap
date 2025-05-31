@@ -4,11 +4,11 @@ namespace App\Swagger;
 
 /**
  * @OA\RequestBody(
- *     request="ShoppingItemRequest",
+ *     request="ShoppingItemStoreRequest",
  *     description="登録する買い物アイテムデータ",
  *     required=true,
  *     @OA\JsonContent(ref="#/components/schemas/ShoppingItem")
- * ), 
+ * ) 
  * @OA\RequestBody(
  *     request="ShoppingItemBulkUpdateRequest",
  *     description="一括更新する買い物アイテムデータ",
@@ -21,10 +21,9 @@ namespace App\Swagger;
  *             @OA\Items(ref="#/components/schemas/ShoppingItem")
  *         )
  *     )
- * ),
+ * )
  * @OA\RequestBody(
  *     request="ShoppingItemBulkDeleteRequest",
- *     description="一括削除する買い物アイテムデータ",
  *     required=true,
  *     @OA\JsonContent(
  *         type="object",
@@ -39,12 +38,32 @@ namespace App\Swagger;
  *             )
  *         )
  *     )
- * ),
+ * )
  * @OA\RequestBody(
  *     request="ShoppingCategoryRequest",
  *     description="登録する買い物カテゴリデータ",
  *     required=true,
  *     @OA\JsonContent(ref="#/components/schemas/ShoppingCategory")
+ * )
+ * 
+ * @OA\RequestBody(
+ *     request="ShoppingCategoryStoreRequest",
+ *     description="登録する買い物カテゴリデータ",
+ *     required=true,
+ *     @OA\JsonContent(ref="#/components/schemas/ShoppingCategory")
+ * )
+ * @OA\RequestBody(
+ *     request="ShoppingCategoryBulkUpdateRequest",
+ *     description="一括更新する買い物カテゴリデータ",
+ *     required=true,
+ *     @OA\JsonContent(
+ *         type="object",
+ *         @OA\Property(
+ *             property="items",
+ *             type="array",
+ *             @OA\Items(ref="#/components/schemas/ShoppingCategory")
+ *         )
+ *     )
  * )
  */
 

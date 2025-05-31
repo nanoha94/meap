@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\ShoppingCategoryController;
 use App\Http\Controllers\Api\ShoppingItemController;
 use App\Http\Controllers\Api\MealController;
 use App\Http\Controllers\Api\PageShoppingListController;
+use App\Http\Controllers\Api\ShoppingTagController;
 
 Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
     return $request->user();
@@ -27,7 +28,10 @@ Route::middleware('auth')->group(function () {
     Route::apiResource('/shopping/items', ShoppingItemController::class)->except(['show', 'update']);
     Route::put('/shopping/items/bulk', [ShoppingItemController::class, 'bulkUpdate']);
     Route::delete('/shopping/items/bulk', [ShoppingItemController::class, 'bulkDestroy']);
-    Route::apiResource('/shopping/categories', ShoppingCategoryController::class)->except(['show']);
+    Route::apiResource('/shopping/categories', ShoppingCategoryController::class)->except(['show', 'update']);
+    Route::put('/shopping/categories/bulk', [ShoppingCategoryController::class, 'bulkUpdate']);
+
+    Route::apiResource('/shopping/tags', ShoppingTagController::class)->only(['index']);
 
     // page
     Route::get('/page/shopping-list', PageShoppingListController::class);

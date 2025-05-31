@@ -42,7 +42,7 @@ class ShoppingItemController extends Controller
      *     summary="買い物アイテムを作成",
      *     tags={"Shopping"},
      *     security={{"sanctum":{}}},
-     *     @OA\RequestBody(ref="#/components/requestBodies/ShoppingItemRequest"),
+     *     @OA\RequestBody(ref="#/components/requestBodies/ShoppingItemStoreRequest"),
      *     @OA\Response(response=200, ref="#/components/responses/ShoppingItemStoreSuccess"),
      *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")

@@ -62,6 +62,66 @@ namespace App\Swagger;
  *         @OA\Property(property="message", type="string")
  *     )
  * )
+ * 
+ * /**
+ * @OA\Response(
+ *     response="ShoppingCategoryIndexSuccess",
+ *     description="正常に取得されました",
+ *     @OA\JsonContent(
+ *         type="object",
+ *         @OA\Property(
+ *             property="data",
+ *             type="array",
+ *             description="買い物カテゴリ一覧",
+ *             @OA\Items(ref="#/components/schemas/ShoppingCategory")
+ *         ),
+ *         @OA\Property(
+ *             property="total",
+ *             type="integer",
+ *             description="買い物カテゴリ総数",
+ *             example=100
+ *         )
+ *     )
+ * )
+ * @OA\Response(
+ *     response="ShoppingCategoryStoreSuccess",
+ *     description="正常に登録されました",
+ *     @OA\JsonContent(ref="#/components/schemas/ShoppingCategory")
+ * )
+ * @OA\Response(
+ *     response="ShoppingCategoryBulkUpdateSuccess",
+ *     description="正常に更新されました",
+ *     @OA\JsonContent(ref="#/components/schemas/ShoppingCategory")
+ * )
+ * @OA\Response(
+ *     response="ShoppingCategoryDestroySuccess",
+ *     description="正常に削除されました",
+ *     @OA\JsonContent(
+ *         type="object",
+ *         @OA\Property(property="message", type="string")
+ *     )
+ * )
+ * 
+ * /**
+ * @OA\Response(
+ *     response="ShoppingTagIndexSuccess",
+ *     description="正常に取得されました",
+ *     @OA\JsonContent(
+ *         type="object",
+ *         @OA\Property(
+ *             property="data",
+ *             type="array",
+ *             description="買い物タグ一覧",
+ *             @OA\Items(ref="#/components/schemas/ShoppingTag")
+ *         ),
+ *         @OA\Property(
+ *             property="total",
+ *             type="integer",
+ *             description="買い物タグ総数",
+ *             example=100
+ *         )
+ *     )
+ * )
  */
 
 class ShoppingResponse {}
