@@ -11,7 +11,6 @@ class DishController extends Controller
      * @OA\Get(
      *     path="/dishes",
      *     summary="料理一覧を取得",
-     *     description="料理一覧を返します。",
      *     tags={"Dishes"},
      *     security={{"sanctum":{}}},
      *     @OA\Parameter(ref="#/components/parameters/DishPageParam"),
@@ -30,7 +29,6 @@ class DishController extends Controller
      * @OA\Post(
      *     path="/dishes",
      *     summary="料理を作成",
-     *     description="新しい料理を作成します。",
      *     tags={"Dishes"},
      *     security={{"sanctum":{}}},
      *     @OA\RequestBody(ref="#/components/requestBodies/DishRequest"),
@@ -48,7 +46,6 @@ class DishController extends Controller
      * @OA\Get(
      *     path="/dishes/{id}",
      *     summary="料理の詳細を取得",
-     *     description="指定された料理の詳細を返します。",
      *     tags={"Dishes"},
      *     security={{"sanctum":{}}},
      *     @OA\Parameter(ref="#/components/parameters/DishIdParam"),
@@ -66,7 +63,6 @@ class DishController extends Controller
      * @OA\Put(
      *     path="/dishes/{id}",
      *     summary="料理を更新",
-     *     description="指定された料理を更新します。",
      *     tags={"Dishes"},
      *     security={{"sanctum":{}}},
      *     @OA\Parameter(ref="#/components/parameters/DishIdParam"),
@@ -85,7 +81,6 @@ class DishController extends Controller
      * @OA\Delete(
      *     path="/dishes/{id}",
      *     summary="料理を削除",
-     *     description="指定された料理を削除します。",
      *     tags={"Dishes"},
      *     security={{"sanctum":{}}},
      *     @OA\Parameter(ref="#/components/parameters/DishIdParam"),

@@ -544,65 +544,132 @@
                     "Meals"
                 ],
                 "summary": "献立一覧を取得",
-                "description": "献立一覧を返します。",
                 "operationId": "9db1ba2555fdaf160d82111c7a9a1cf1",
                 "responses": {
                     "200": {
-                        "description": "成功",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "properties": {
-                                            "id": {
-                                                "description": "ID",
-                                                "type": "string"
-                                            },
-                                            "date": {
-                                                "description": "日付",
-                                                "type": "string"
-                                            },
-                                            "mealSets": {
-                                                "description": "同じ日の献立リスト",
-                                                "type": "array",
-                                                "items": {
-                                                    "properties": {
-                                                        "categoryId": {
-                                                            "description": "種別ID",
-                                                            "type": "string"
-                                                        },
-                                                        "dishes": {
-                                                            "description": "料理一覧",
-                                                            "type": "array",
-                                                            "items": {
-                                                                "properties": {
-                                                                    "id": {
-                                                                        "description": "ID",
-                                                                        "type": "string"
-                                                                    },
-                                                                    "roleId": {
-                                                                        "description": "区分",
-                                                                        "type": "string"
-                                                                    },
-                                                                    "name": {
-                                                                        "description": "名前",
-                                                                        "type": "string"
-                                                                    }
-                                                                },
-                                                                "type": "object"
-                                                            }
-                                                        }
-                                                    },
-                                                    "type": "object"
-                                                }
-                                            }
-                                        },
-                                        "type": "object"
-                                    }
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/MealIndexSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Meals"
+                ],
+                "summary": "献立を作成",
+                "description": "献立を作成します。",
+                "operationId": "6095744fc02dfa24a97106abe7a514b3",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/MealRequest"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/MealStoreSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/meals/{id}": {
+            "get": {
+                "tags": [
+                    "Meals"
+                ],
+                "summary": "献立の詳細を取得",
+                "operationId": "a67d3e9b1522d0c454c77b63966a5a6f",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/MealIdParam"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/MealShowSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Meals"
+                ],
+                "summary": "献立を更新",
+                "operationId": "f05c84f61efcf76eb55adb5d1f67d2af",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/MealIdParam"
+                    }
+                ],
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/MealRequest"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/MealUpdateSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Meals"
+                ],
+                "summary": "献立を削除",
+                "operationId": "5b770b2b48159dffba26054f8bdbdf37",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/MealIdParam"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/MealDestroySuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
                     }
                 },
                 "security": [
@@ -1033,6 +1100,102 @@
                 },
                 "type": "object"
             },
+            "Meal": {
+                "required": [
+                    "date",
+                    "category"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "ID",
+                        "type": "string",
+                        "example": "1"
+                    },
+                    "date": {
+                        "description": "日付",
+                        "type": "string",
+                        "format": "date",
+                        "example": "2023-10-05"
+                    },
+                    "category": {
+                        "description": "種別",
+                        "type": "string",
+                        "example": "朝食"
+                    },
+                    "menu": {
+                        "description": "献立メニュー",
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "role": {
+                                    "description": "分類",
+                                    "type": "string",
+                                    "example": "主食"
+                                },
+                                "dishes": {
+                                    "description": "料理",
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Dish"
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "MealCategory": {
+                "required": [
+                    "id",
+                    "name",
+                    "color"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "ID",
+                        "type": "string",
+                        "example": "1"
+                    },
+                    "name": {
+                        "description": "カテゴリ名",
+                        "type": "string",
+                        "example": "朝食"
+                    },
+                    "color": {
+                        "description": "色コード",
+                        "type": "string",
+                        "example": "#F5B12E"
+                    }
+                },
+                "type": "object"
+            },
+            "MealCategoryColor": {
+                "required": [
+                    "id",
+                    "name",
+                    "colorCode"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "ID",
+                        "type": "string",
+                        "example": "1"
+                    },
+                    "name": {
+                        "description": "色名",
+                        "type": "string",
+                        "example": "イエロー"
+                    },
+                    "colorCode": {
+                        "description": "色コード",
+                        "type": "string",
+                        "example": "#F5B12E"
+                    }
+                },
+                "type": "object"
+            },
             "ShoppingItem": {
                 "required": [
                     "id",
@@ -1291,6 +1454,89 @@
                     }
                 }
             },
+            "MealIndexSuccess": {
+                "description": "正常に取得されました",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "meals": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "date": {
+                                                "description": "日付",
+                                                "type": "string",
+                                                "format": "date",
+                                                "example": "2023-10-05"
+                                            },
+                                            "menu": {
+                                                "description": "献立メニュー",
+                                                "type": "array",
+                                                "items": {
+                                                    "$ref": "#/components/schemas/Meal"
+                                                }
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                },
+                                "total": {
+                                    "description": "献立総数",
+                                    "type": "integer",
+                                    "example": 100
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "MealStoreSuccess": {
+                "description": "正常に登録されました",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/Meal"
+                        }
+                    }
+                }
+            },
+            "MealShowSuccess": {
+                "description": "正常に取得されました",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/Meal"
+                        }
+                    }
+                }
+            },
+            "MealUpdateSuccess": {
+                "description": "正常に更新されました",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/Meal"
+                        }
+                    }
+                }
+            },
+            "MealDestroySuccess": {
+                "description": "正常に削除されました",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "message": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
             "ShoppingItemIndexSuccess": {
                 "description": "正常に取得されました",
                 "content": {
@@ -1503,6 +1749,16 @@
                     "example": "1"
                 }
             },
+            "MealIdParam": {
+                "name": "id",
+                "in": "path",
+                "description": "献立ID",
+                "required": true,
+                "schema": {
+                    "type": "string",
+                    "example": "1"
+                }
+            },
             "ShoppingIdParam": {
                 "name": "id",
                 "in": "path",
@@ -1543,6 +1799,28 @@
                     "application/json": {
                         "schema": {
                             "$ref": "#/components/schemas/DishCategory"
+                        }
+                    }
+                }
+            },
+            "MealRequest": {
+                "description": "※新規作成時はid不要",
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/Meal"
+                        }
+                    }
+                }
+            },
+            "MealCategoryRequest": {
+                "description": "登録する献立カテゴリデータ",
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/MealCategory"
                         }
                     }
                 }

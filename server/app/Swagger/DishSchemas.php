@@ -5,7 +5,7 @@ namespace App\Swagger;
 /**
  * @OA\Schema(
  *     schema="Dish",
- *     required={"id", "name"},
+ *     required={"name"},
  *     @OA\Property(property="id", type="string", description="ID", example="1"),
  *     @OA\Property(property="name", type="string", description="料理名", example="ハンバーグ"),
  *     @OA\Property(property="categories", type="array", description="カテゴリ",

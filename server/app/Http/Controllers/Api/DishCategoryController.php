@@ -11,7 +11,6 @@ class DishCategoryController extends Controller
      * @OA\Post(
      *     path="/dishes/categories",
      *     summary="料理カテゴリを作成",
-     *     description="新しい料理カテゴリを作成します。",
      *     tags={"Dishes"},
      *     security={{"sanctum":{}}},
      *     @OA\RequestBody(ref="#/components/requestBodies/DishCategoryRequest"),
@@ -29,7 +28,6 @@ class DishCategoryController extends Controller
      * @OA\Put(
      *     path="/dishes/categories/{id}",
      *     summary="料理カテゴリを更新",
-     *     description="指定された料理カテゴリを更新します。",
      *     tags={"Dishes"},
      *     security={{"sanctum":{}}},
      *     @OA\Parameter(ref="#/components/parameters/DishCategoryIdParam"),
@@ -48,7 +46,6 @@ class DishCategoryController extends Controller
      * @OA\Delete(
      *     path="/dishes/categories/{id}",
      *     summary="料理カテゴリを削除",
-     *     description="指定された料理カテゴリを削除します。",
      *     tags={"Dishes"},
      *     security={{"sanctum":{}}},
      *     @OA\Parameter(ref="#/components/parameters/DishCategoryIdParam"),

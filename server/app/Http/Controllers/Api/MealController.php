@@ -10,35 +10,12 @@ class MealController extends Controller
     /**
      * @OA\Get(
      *     path="/meals",
-     *     summary="献立一覧を取得",
-     *     description="献立一覧を返します。",
-     *     tags={"Meals"}, 
+     *     summary="献立一覧を取得",   
+     *     tags={"Meals"},
      *     security={{"sanctum":{}}},
-     *     @OA\Response(
-     *         response=200,
-     *         description="成功",
-     *         @OA\JsonContent(
-     *             type="array",
-     *             @OA\Items(
-     *                 type="object",
-     *                 @OA\Property(property="id", type="string", description="ID"),
-     *                 @OA\Property(property="date", type="string", description="日付"),
-     *                 @OA\Property(property="mealSets", type="array", description="同じ日の献立リスト", 
-     *                     @OA\Items(type="object", 
-     *                         @OA\Property(property="categoryId", type="string", description="種別ID"),
-     *                         @OA\Property(property="dishes", type="array", description="料理一覧", 
-     *                             @OA\Items(type="object", 
-     *                                 @OA\Property(property="id", type="string", description="ID"),
-     *                                 @OA\Property(property="roleId", type="string", description="区分"),
-     *                                 @OA\Property(property="name", type="string", description="名前"),
-     *                                 )
-     *                             )
-     *                         )
-     *                     )
-     *                 )
-     *             )
-     *         )
-     *     )
+     *     @OA\Response(response=200, ref="#/components/responses/MealIndexSuccess"),
+     *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
+     *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
     public function index()
@@ -47,7 +24,17 @@ class MealController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * @OA\Post(
+     *     path="/meals",
+     *     summary="献立を作成",
+     *     description="献立を作成します。",
+     *     tags={"Meals"},
+     *     security={{"sanctum":{}}},
+     *     @OA\RequestBody(ref="#/components/requestBodies/MealRequest"),
+     *     @OA\Response(response=200, ref="#/components/responses/MealStoreSuccess"),
+     *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
+     *     @OA\Response(response=404, ref="#/components/responses/NotFound")
+     * )
      */
     public function store(Request $request)
     {
@@ -55,7 +42,16 @@ class MealController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * @OA\Get(
+     *     path="/meals/{id}",
+     *     summary="献立の詳細を取得",
+     *     tags={"Meals"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(ref="#/components/parameters/MealIdParam"),
+     *     @OA\Response(response=200, ref="#/components/responses/MealShowSuccess"),
+     *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
+     *     @OA\Response(response=404, ref="#/components/responses/NotFound")
+     * )
      */
     public function show(string $id)
     {
@@ -63,7 +59,17 @@ class MealController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * @OA\Put(
+     *     path="/meals/{id}",
+     *     summary="献立を更新",
+     *     tags={"Meals"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(ref="#/components/parameters/MealIdParam"),
+     *     @OA\RequestBody(ref="#/components/requestBodies/MealRequest"),
+     *     @OA\Response(response=200, ref="#/components/responses/MealUpdateSuccess"),
+     *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
+     *     @OA\Response(response=404, ref="#/components/responses/NotFound")
+     * )
      */
     public function update(Request $request, string $id)
     {
@@ -71,7 +77,16 @@ class MealController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * @OA\Delete(
+     *     path="/meals/{id}",
+     *     summary="献立を削除",
+     *     tags={"Meals"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(ref="#/components/parameters/MealIdParam"),
+     *     @OA\Response(response=200, ref="#/components/responses/MealDestroySuccess"),
+     *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
+     *     @OA\Response(response=404, ref="#/components/responses/NotFound")
+     * )
      */
     public function destroy(string $id)
     {

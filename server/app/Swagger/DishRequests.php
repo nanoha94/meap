@@ -5,13 +5,13 @@ namespace App\Swagger;
 /**
  * @OA\RequestBody(
  *     request="DishRequest",
- *     description="登録する料理データ",
+ *     description="※新規作成時はid不要",
  *     required=true,
  *     @OA\JsonContent(ref="#/components/schemas/Dish")
  * )
  * @OA\RequestBody(
  *     request="DishCategoryRequest",
- *     description="登録する料理カテゴリデータ",
+ *     description="※新規作成時はid不要",
  *     required=true,
  *     @OA\JsonContent(ref="#/components/schemas/DishCategory")
  * )

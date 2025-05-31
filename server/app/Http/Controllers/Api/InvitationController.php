@@ -19,7 +19,6 @@ class InvitationController extends Controller
      * @OA\Post(
      *     path="/invitations",
      *     summary="グループへの招待トークンを生成",
-     *     description="グループに招待するためのトークンを生成して返します。",
      *     tags={"Invitations"},
      *     security={{"sanctum":{}}},
      *     @OA\Response(
@@ -57,7 +56,6 @@ class InvitationController extends Controller
      * @OA\Get(
      *     path="/invitations/{token}",
      *     summary="招待トークンの詳細を取得",
-     *     description="招待トークンの詳細を取得します。",
      *     tags={"Invitations"},
      *     security={{"sanctum":{}}},
      *     @OA\Parameter(
@@ -112,7 +110,6 @@ class InvitationController extends Controller
      * @OA\Post(
      *     path="/invitations/{token}/join",
      *     summary="招待トークンを使用してグループに参加",
-     *     description="招待トークンを使用してグループに参加します。",
      *     tags={"Invitations"},
      *     security={{"sanctum":{}}},
      *     @OA\Parameter(   
