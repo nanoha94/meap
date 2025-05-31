@@ -14,25 +14,13 @@ class AuthenticatedSessionController extends Controller
      * @OA\Post(
      *     path="/login",
      *     summary="ログイン",
-     *     description="ユーザーを認証してセッションを作成します。",
      *     tags={"Authentication"},
      *     security={},
-     *     @OA\RequestBody(
-     *         required=true,   
-     *         @OA\JsonContent(
-     *             type="object",
-     *             @OA\Property(property="email", type="string", example="test@example.com"),
-     *             @OA\Property(property="password", type="string", example="password")
-     *         )
-     *     ),
+     *     @OA\RequestBody(ref="#/components/requestBodies/UserLoginRequest"),
      *     @OA\Response(
-     *         response=200,
-     *         description="ログイン成功"
+     *         response=200, ref="#/components/responses/UserLoginSuccess"
      *     ),
-     *     @OA\Response(
-     *         response=401,
-     *         description="認証エラー"
-     *     )
+     *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
      * )
      */
     public function store(LoginRequest $request): Response

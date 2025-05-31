@@ -17,7 +17,6 @@
                     "Dishes"
                 ],
                 "summary": "料理カテゴリを作成",
-                "description": "新しい料理カテゴリを作成します。",
                 "operationId": "0161ee91fd7d39b03aafcd2c4c65159e",
                 "requestBody": {
                     "$ref": "#/components/requestBodies/DishCategoryRequest"
@@ -46,7 +45,6 @@
                     "Dishes"
                 ],
                 "summary": "料理カテゴリを更新",
-                "description": "指定された料理カテゴリを更新します。",
                 "operationId": "ee9ec391653373f111dab83ca8d73615",
                 "parameters": [
                     {
@@ -78,7 +76,6 @@
                     "Dishes"
                 ],
                 "summary": "料理カテゴリを削除",
-                "description": "指定された料理カテゴリを削除します。",
                 "operationId": "b1673c72f772434f16151577666b51c4",
                 "parameters": [
                     {
@@ -109,7 +106,6 @@
                     "Dishes"
                 ],
                 "summary": "料理一覧を取得",
-                "description": "料理一覧を返します。",
                 "operationId": "b92166fdb50a1384124b0926b46e5546",
                 "parameters": [
                     {
@@ -141,7 +137,6 @@
                     "Dishes"
                 ],
                 "summary": "料理を作成",
-                "description": "新しい料理を作成します。",
                 "operationId": "686872cfc9899f90fc08750037e1620d",
                 "requestBody": {
                     "$ref": "#/components/requestBodies/DishRequest"
@@ -170,7 +165,6 @@
                     "Dishes"
                 ],
                 "summary": "料理の詳細を取得",
-                "description": "指定された料理の詳細を返します。",
                 "operationId": "abc62ceb1a027b431957e1bedbbc444b",
                 "parameters": [
                     {
@@ -199,7 +193,6 @@
                     "Dishes"
                 ],
                 "summary": "料理を更新",
-                "description": "指定された料理を更新します。",
                 "operationId": "ad13b8b580b0a064a261db6ead3c8a97",
                 "parameters": [
                     {
@@ -231,7 +224,6 @@
                     "Dishes"
                 ],
                 "summary": "料理を削除",
-                "description": "指定された料理を削除します。",
                 "operationId": "0df75d205b72c3e13cea9240e238747d",
                 "parameters": [
                     {
@@ -261,39 +253,14 @@
                 "tags": [
                     "Users"
                 ],
-                "summary": "同じグループに属するユーザー一覧を取得",
-                "description": "認証ユーザーと同じグループに属するユーザーの一覧を返します。",
+                "summary": "認証ユーザーと同じグループに属するユーザ一覧を取得",
                 "operationId": "fd00b482150aa0a44371e1df73ffc52c",
                 "responses": {
                     "200": {
-                        "description": "成功",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "properties": {
-                                            "id": {
-                                                "type": "integer",
-                                                "example": 1
-                                            },
-                                            "custom_id": {
-                                                "type": "string",
-                                                "example": "abc123"
-                                            },
-                                            "name": {
-                                                "type": "string",
-                                                "example": "山田太郎"
-                                            }
-                                        },
-                                        "type": "object"
-                                    }
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/UserIndexSuccess"
                     },
                     "401": {
-                        "description": "認証エラー"
+                        "$ref": "#/components/responses/Unauthorized"
                     }
                 },
                 "security": [
@@ -309,28 +276,10 @@
                     "Invitations"
                 ],
                 "summary": "グループへの招待トークンを生成",
-                "description": "グループに招待するためのトークンを生成して返します。",
                 "operationId": "c920efb879be91000464e7a4b34aa3ee",
                 "responses": {
                     "201": {
-                        "description": "成功",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "token": {
-                                            "type": "string",
-                                            "example": "1234567890"
-                                        },
-                                        "expires_at": {
-                                            "type": "string",
-                                            "example": "2025-01-01 00:00:00"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/InvitationStoreSuccess"
                     },
                     "500": {
                         "description": "エラー",
@@ -362,56 +311,15 @@
                     "Invitations"
                 ],
                 "summary": "招待トークンの詳細を取得",
-                "description": "招待トークンの詳細を取得します。",
                 "operationId": "756746cde4fd8f71d53b0122e9a0ac33",
                 "parameters": [
                     {
-                        "name": "token",
-                        "in": "path",
-                        "description": "招待トークン",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
+                        "$ref": "#/components/parameters/InvitationShowParameter"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "成功",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "token": {
-                                            "type": "string",
-                                            "example": "1234567890"
-                                        },
-                                        "expires_at": {
-                                            "type": "string",
-                                            "example": "2025-01-01 00:00:00"
-                                        },
-                                        "inviter": {
-                                            "properties": {
-                                                "id": {
-                                                    "type": "integer",
-                                                    "example": 1
-                                                },
-                                                "custom_id": {
-                                                    "type": "string",
-                                                    "example": "abc123"
-                                                },
-                                                "name": {
-                                                    "type": "string",
-                                                    "example": "山田太郎"
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/InvitationShowSuccess"
                     },
                     "500": {
                         "description": "エラー",
@@ -443,35 +351,15 @@
                     "Invitations"
                 ],
                 "summary": "招待トークンを使用してグループに参加",
-                "description": "招待トークンを使用してグループに参加します。",
                 "operationId": "46383ac26953e8a9d93e485badf1423b",
                 "parameters": [
                     {
-                        "name": "token",
-                        "in": "path",
-                        "description": "招待トークン",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
+                        "$ref": "#/components/parameters/InvitationShowParameter"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "成功",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "グループに参加しました。"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/InvitationJoinSuccess"
                     },
                     "403": {
                         "description": "エラー",
@@ -954,34 +842,16 @@
                     "Authentication"
                 ],
                 "summary": "ログイン",
-                "description": "ユーザーを認証してセッションを作成します。",
                 "operationId": "42f77e072dec84b0e1094cca1228298e",
                 "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "email": {
-                                        "type": "string",
-                                        "example": "test@example.com"
-                                    },
-                                    "password": {
-                                        "type": "string",
-                                        "example": "password"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
+                    "$ref": "#/components/requestBodies/UserLoginRequest"
                 },
                 "responses": {
                     "200": {
-                        "description": "ログイン成功"
+                        "$ref": "#/components/responses/UserLoginSuccess"
                     },
                     "401": {
-                        "description": "認証エラー"
+                        "$ref": "#/components/responses/Unauthorized"
                     }
                 },
                 "security": []
@@ -992,7 +862,6 @@
         "schemas": {
             "Dish": {
                 "required": [
-                    "id",
                     "name"
                 ],
                 "properties": {
@@ -1286,6 +1155,9 @@
             }
         },
         "responses": {
+            "UserLoginSuccess": {
+                "description": "ログインに成功しました"
+            },
             "Unauthorized": {
                 "description": "認証エラー",
                 "content": {
@@ -1309,7 +1181,8 @@
                         "schema": {
                             "properties": {
                                 "message": {
-                                    "type": "string"
+                                    "type": "string",
+                                    "example": "Resource not found."
                                 }
                             },
                             "type": "object"
@@ -1323,7 +1196,7 @@
                     "application/json": {
                         "schema": {
                             "properties": {
-                                "data": {
+                                "dishes": {
                                     "description": "料理データ一覧",
                                     "type": "array",
                                     "items": {
@@ -1414,6 +1287,80 @@
                             "properties": {
                                 "message": {
                                     "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "InvitationStoreSuccess": {
+                "description": "成功",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "token": {
+                                    "type": "string",
+                                    "example": "1234567890"
+                                },
+                                "expires_at": {
+                                    "type": "string",
+                                    "format": "date-time",
+                                    "example": "2025-01-01 00:00:00"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "InvitationShowSuccess": {
+                "description": "成功",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "token": {
+                                    "type": "string",
+                                    "example": "1234567890"
+                                },
+                                "expires_at": {
+                                    "type": "string",
+                                    "example": "2025-01-01 00:00:00"
+                                },
+                                "inviter": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "custom_id": {
+                                            "type": "string",
+                                            "example": "abc123"
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "example": "山田太郎"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "InvitationJoinSuccess": {
+                "description": "成功",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "example": "グループに参加しました。"
                                 }
                             },
                             "type": "object"
@@ -1703,6 +1650,44 @@
                         }
                     }
                 }
+            },
+            "UserIndexSuccess": {
+                "description": "正常に取得されました",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "users": {
+                                    "description": "ユーザ一覧",
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "custom_id": {
+                                                "type": "string",
+                                                "example": "abc123"
+                                            },
+                                            "name": {
+                                                "type": "string",
+                                                "example": "山田太郎"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                },
+                                "total": {
+                                    "description": "ユーザ総数",
+                                    "type": "integer",
+                                    "example": 100
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
             }
         },
         "parameters": {
@@ -1749,6 +1734,15 @@
                     "example": "1"
                 }
             },
+            "InvitationShowParameter": {
+                "name": "token",
+                "in": "query",
+                "required": true,
+                "schema": {
+                    "type": "string",
+                    "example": "1234567890"
+                }
+            },
             "MealIdParam": {
                 "name": "id",
                 "in": "path",
@@ -1781,8 +1775,34 @@
             }
         },
         "requestBodies": {
+            "UserLoginRequest": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "required": [
+                                "email",
+                                "password"
+                            ],
+                            "properties": {
+                                "email": {
+                                    "type": "string",
+                                    "format": "email",
+                                    "example": "test@example.com"
+                                },
+                                "password": {
+                                    "type": "string",
+                                    "format": "password",
+                                    "example": "password"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
             "DishRequest": {
-                "description": "登録する料理データ",
+                "description": "※新規作成時はid不要",
                 "required": true,
                 "content": {
                     "application/json": {
@@ -1793,7 +1813,7 @@
                 }
             },
             "DishCategoryRequest": {
-                "description": "登録する料理カテゴリデータ",
+                "description": "※新規作成時はid不要",
                 "required": true,
                 "content": {
                     "application/json": {
@@ -1810,17 +1830,6 @@
                     "application/json": {
                         "schema": {
                             "$ref": "#/components/schemas/Meal"
-                        }
-                    }
-                }
-            },
-            "MealCategoryRequest": {
-                "description": "登録する献立カテゴリデータ",
-                "required": true,
-                "content": {
-                    "application/json": {
-                        "schema": {
-                            "$ref": "#/components/schemas/MealCategory"
                         }
                     }
                 }

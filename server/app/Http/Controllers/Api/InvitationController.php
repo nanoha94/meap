@@ -23,12 +23,7 @@ class InvitationController extends Controller
      *     security={{"sanctum":{}}},
      *     @OA\Response(
      *         response=201,
-     *         description="成功",
-     *         @OA\JsonContent(
-     *             type="object",
-     *             @OA\Property(property="token", type="string", example="1234567890"),
-     *             @OA\Property(property="expires_at", type="string", example="2025-01-01 00:00:00"),
-     *         )
+     *         ref="#/components/responses/InvitationStoreSuccess"
      *     ),
      *     @OA\Response(
      *         response=500,
@@ -58,26 +53,10 @@ class InvitationController extends Controller
      *     summary="招待トークンの詳細を取得",
      *     tags={"Invitations"},
      *     security={{"sanctum":{}}},
-     *     @OA\Parameter(
-     *         name="token",
-     *         in="path",
-     *         description="招待トークン",
-     *         required=true,
-     *         @OA\Schema(type="string")
-     *     ),
+     *     @OA\Parameter(ref="#/components/parameters/InvitationShowParameter"),
      *     @OA\Response(
      *         response=200,
-     *         description="成功",
-     *         @OA\JsonContent(
-     *             type="object",
-     *             @OA\Property(property="token", type="string", example="1234567890"),
-     *             @OA\Property(property="expires_at", type="string", example="2025-01-01 00:00:00"),
-     *             @OA\Property(property="inviter", type="object",
-     *                 @OA\Property(property="id", type="integer", example=1),
-     *                 @OA\Property(property="custom_id", type="string", example="abc123"),
-     *                 @OA\Property(property="name", type="string", example="山田太郎")
-     *             )
-     *         )
+     *         ref="#/components/responses/InvitationShowSuccess"
      *     ),
      *     @OA\Response(
      *         response=500,
@@ -112,20 +91,10 @@ class InvitationController extends Controller
      *     summary="招待トークンを使用してグループに参加",
      *     tags={"Invitations"},
      *     security={{"sanctum":{}}},
-     *     @OA\Parameter(   
-     *         name="token",
-     *         in="path",
-     *         description="招待トークン",
-     *         required=true,
-     *         @OA\Schema(type="string")
-     *     ),
+     *     @OA\Parameter(ref="#/components/parameters/InvitationShowParameter"),
      *     @OA\Response(
      *         response=200,
-     *         description="成功",
-     *         @OA\JsonContent(
-     *             type="object",
-     *             @OA\Property(property="message", type="string", example="グループに参加しました。")
-     *         )
+     *         ref="#/components/responses/InvitationJoinSuccess"
      *     ),
      *     @OA\Response(
      *         response=403,

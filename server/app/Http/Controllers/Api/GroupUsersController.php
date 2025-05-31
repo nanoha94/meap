@@ -12,26 +12,13 @@ class GroupUsersController extends Controller
     /**
      * @OA\Get(
      *     path="/users",
-     *     summary="認証ユーザーと同じグループに属するユーザー一覧を取得",
+     *     summary="認証ユーザーと同じグループに属するユーザ一覧を取得",
      *     tags={"Users"},
      *     security={{"sanctum":{}}},
      *     @OA\Response(
-     *         response=200,
-     *         description="成功",
-     *         @OA\JsonContent(
-     *             type="array",
-     *             @OA\Items(
-     *                 type="object",
-     *                 @OA\Property(property="id", type="integer", example=1),
-     *                 @OA\Property(property="custom_id", type="string", example="abc123"),
-     *                 @OA\Property(property="name", type="string", example="山田太郎")
-     *             )
-     *         )
+     *         response=200, ref="#/components/responses/UserIndexSuccess"
      *     ),
-     *     @OA\Response(
-     *         response=401,
-     *         description="認証エラー"
-     *     )
+     *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
      * )
      */
     public function index(Request $request): JsonResponse
