@@ -852,9 +852,34 @@
                     },
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationErrors"
                     }
                 },
                 "security": []
+            }
+        },
+        "/logout": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "ログアウト",
+                "operationId": "03afb12b342c2ea43bdc1de4f39e91a8",
+                "responses": {
+                    "204": {
+                        "$ref": "#/components/responses/UserLogoutSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "scalar": "auth"
+                    }
+                ]
             }
         }
     },
@@ -1158,6 +1183,9 @@
             "UserLoginSuccess": {
                 "description": "ログインに成功しました"
             },
+            "UserLogoutSuccess": {
+                "description": "ログアウトに成功しました"
+            },
             "Unauthorized": {
                 "description": "認証エラー",
                 "content": {
@@ -1183,6 +1211,34 @@
                                 "message": {
                                     "type": "string",
                                     "example": "Resource not found."
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "ValidationErrors": {
+                "description": "バリデーションエラー",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "example": "The given data was invalid."
+                                },
+                                "errors": {
+                                    "properties": {
+                                        "XXXXXX": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "example": "The XXXXXX field is required."
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             },
                             "type": "object"

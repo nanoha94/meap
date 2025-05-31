@@ -21,6 +21,7 @@ class AuthenticatedSessionController extends Controller
      *         response=200, ref="#/components/responses/UserLoginSuccess"
      *     ),
      *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
+     *     @OA\Response(response=422, ref="#/components/responses/ValidationErrors"),
      * )
      */
     public function store(LoginRequest $request): Response
@@ -33,7 +34,16 @@ class AuthenticatedSessionController extends Controller
     }
 
     /**
-     * Destroy an authenticated session.
+     * @OA\Post(
+     *     path="/logout",
+     *     summary="ログアウト",
+     *     tags={"Authentication"},
+     *     security={"auth"},
+     *     @OA\Response(
+     *         response=204, ref="#/components/responses/UserLogoutSuccess"
+     *     ),
+     *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
+     * )
      */
     public function destroy(Request $request): Response
     {

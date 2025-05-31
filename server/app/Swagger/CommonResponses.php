@@ -28,6 +28,28 @@ namespace App\Swagger;
  *         )
  *     )
  * )
+ * 
+ * @OA\Response(
+ *     response="ValidationErrors",
+ *     description="バリデーションエラー",
+ *     @OA\JsonContent(
+ *         type="object",
+ *         @OA\Property(
+ *             property="message",
+ *             type="string",
+ *             example="The given data was invalid."
+ *         ),
+ *         @OA\Property(
+ *             property="errors",
+ *             type="object",
+ *             @OA\Property(
+ *                 property="XXXXXX",
+ *                 type="array",
+ *                 @OA\Items(type="string", example="The XXXXXX field is required.")
+ *             )
+ *         )
+ *     )
+ * )
  */
 
 
