@@ -5,7 +5,6 @@ namespace App\Notifications\Auth;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Notifications\Messages\MailMessage;
 
@@ -38,11 +37,6 @@ class CustomVerifyEmailNotification extends VerifyEmail
 
         // URLのベース部分を置き換え
         $url = str_replace(url('/'), $baseUrl, $temporarySignedURL);
-
-        Log::debug('Generated verification URL', [
-            'base_url' => $baseUrl,
-            'url' => $url
-        ]);
 
         return $url;
     }
