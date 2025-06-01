@@ -9,5 +9,5 @@ echo "--------------------------------------------------------------------------
 echo "Swagger UI  :  https://localhost:8000/api/documentation"
 echo "Laravel     :  https://localhost:8000/"
 echo "php MyAdmin :  https://localhost:8080/"
-echo "Mailpit     :  https://localhost:8025/"
+echo "Mailpit     :  http://localhost:8025/"
 echo "--------------------------------------------------------------------------------------"

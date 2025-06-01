@@ -22,14 +22,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // ローカル環境での設定
-        if (app()->environment('local')) {
-            // ベースURLをポート番号なしで設定
-            URL::forceRootUrl('https://localhost');
-        } else {
-            // 本番環境などでの設定
-            URL::forceRootUrl(Config::get('app.url'));
-        }
+        URL::forceRootUrl(Config::get('app.url'));
         URL::forceScheme('https');
 
         // パスワードリセットURLの設定

@@ -20,10 +20,12 @@ class CustomVerifyEmailNotification extends VerifyEmail
         }
 
         $baseUrl = config('app.url');
+        $baseUrlWithoutPort = 'https://localhost';
 
         // ローカル環境の場合、ポート番号を追加
         if (app()->environment('local')) {
-            $baseUrl = 'https://localhost:8000';
+            // ハッシュ生成時はポート番号を含めない
+            URL::forceRootUrl($baseUrlWithoutPort);
         }
 
         $temporarySignedURL = URL::temporarySignedRoute(
@@ -37,6 +39,9 @@ class CustomVerifyEmailNotification extends VerifyEmail
 
         // URLのベース部分を置き換え
         $url = str_replace(url('/'), $baseUrl, $temporarySignedURL);
+
+        // 元のベースURLに戻す
+        URL::forceRootUrl($baseUrl);
 
         return $url;
     }
