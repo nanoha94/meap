@@ -282,20 +282,7 @@
                         "$ref": "#/components/responses/InvitationStoreSuccess"
                     },
                     "500": {
-                        "description": "エラー",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "エラーメッセージ"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/UnexpectedError"
                     }
                 },
                 "security": [
@@ -322,20 +309,7 @@
                         "$ref": "#/components/responses/InvitationShowSuccess"
                     },
                     "500": {
-                        "description": "エラー",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "エラーメッセージ"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/UnexpectedError"
                     }
                 },
                 "security": [
@@ -847,7 +821,7 @@
                     "$ref": "#/components/requestBodies/UserLoginRequest"
                 },
                 "responses": {
-                    "200": {
+                    "204": {
                         "$ref": "#/components/responses/UserLoginSuccess"
                     },
                     "401": {
@@ -880,6 +854,33 @@
                         "scalar": "auth"
                     }
                 ]
+            }
+        },
+        "/register": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "アカウント登録",
+                "operationId": "573de1fed352c1205a32c4d1b9877375",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/UserRegisterRequest"
+                },
+                "responses": {
+                    "204": {
+                        "$ref": "#/components/responses/UserRegisterSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationErrors"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/UnexpectedError"
+                    }
+                },
+                "security": []
             }
         }
     },
@@ -1186,6 +1187,9 @@
             "UserLogoutSuccess": {
                 "description": "ログアウトに成功しました"
             },
+            "UserRegisterSuccess": {
+                "description": "アカウント登録に成功しました"
+            },
             "Unauthorized": {
                 "description": "認証エラー",
                 "content": {
@@ -1239,6 +1243,22 @@
                                         }
                                     },
                                     "type": "object"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "UnexpectedError": {
+                "description": "予期せぬエラー",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "example": "Unexpected error."
                                 }
                             },
                             "type": "object"
@@ -1847,6 +1867,43 @@
                                     "example": "test@example.com"
                                 },
                                 "password": {
+                                    "type": "string",
+                                    "format": "password",
+                                    "example": "password"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "UserRegisterRequest": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "required": [
+                                "name",
+                                "email",
+                                "password",
+                                "password_confirmation"
+                            ],
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "example": "John Doe"
+                                },
+                                "email": {
+                                    "type": "string",
+                                    "format": "email",
+                                    "example": "test@example.com"
+                                },
+                                "password": {
+                                    "type": "string",
+                                    "format": "password",
+                                    "example": "password"
+                                },
+                                "password_confirmation": {
                                     "type": "string",
                                     "format": "password",
                                     "example": "password"

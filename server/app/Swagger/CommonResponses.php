@@ -50,6 +50,19 @@ namespace App\Swagger;
  *         )
  *     )
  * )
+ * 
+ * @OA\Response(
+ *     response="UnexpectedError",
+ *     description="予期せぬエラー",
+ *     @OA\JsonContent(
+ *         type="object",
+ *         @OA\Property(
+ *             property="message",
+ *             type="string",
+ *             example="Unexpected error."
+ *         )
+ *     )
+ * )
  */
 
 

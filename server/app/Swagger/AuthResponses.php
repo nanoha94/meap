@@ -12,5 +12,10 @@ namespace App\Swagger;
  *     response="UserLogoutSuccess",
  *     description="ログアウトに成功しました",
  * )
+ * 
+ * @OA\Response(
+ *     response="UserRegisterSuccess",
+ *     description="アカウント登録に成功しました",
+ * )
  */
 class AuthResponses {}

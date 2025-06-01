@@ -26,12 +26,7 @@ class InvitationController extends Controller
      *         ref="#/components/responses/InvitationStoreSuccess"
      *     ),
      *     @OA\Response(
-     *         response=500,
-     *         description="エラー",
-     *         @OA\JsonContent(
-     *             type="object",
-     *             @OA\Property(property="message", type="string", example="エラーメッセージ")
-     *         )
+     *         response=500, ref="#/components/responses/UnexpectedError"
      *     )
      * )
      */
@@ -59,12 +54,7 @@ class InvitationController extends Controller
      *         ref="#/components/responses/InvitationShowSuccess"
      *     ),
      *     @OA\Response(
-     *         response=500,
-     *         description="エラー",
-     *         @OA\JsonContent(
-     *             type="object",
-     *             @OA\Property(property="message", type="string", example="エラーメッセージ")
-     *         )
+     *         response=500, ref="#/components/responses/UnexpectedError"
      *     )
      * )
      */

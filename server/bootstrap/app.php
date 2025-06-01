@@ -16,7 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->api(prepend: [
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
         ]);
-
+        $middleware->trustProxies(at: '*');
         $middleware->alias([
             // 使っていないのでコメントアウト（TOIDO: 問題なければ後で消す）
             // 'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,

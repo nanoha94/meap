@@ -16,21 +16,14 @@ class VerifyEmailController extends Controller
     public function __invoke(EmailVerificationRequest $request): RedirectResponse
     {
         try {
-            Log::info('Email verification process started', [
-                'user_id' => $request->user()->id ?? 'unknown',
-                'email' => $request->user()->email ?? 'unknown',
-                'hash' => $request->route('hash') ?? 'unknown'
-            ]);
 
             if ($request->user()->hasVerifiedEmail()) {
-                Log::info('User email already verified', ['user_id' => $request->user()->id]);
                 return redirect()->intended(
                     config('app.frontend_url') . '/plan?verified=1'
                 );
             }
 
             if ($request->user()->markEmailAsVerified()) {
-                Log::info('Email marked as verified', ['user_id' => $request->user()->id]);
                 event(new Verified($request->user()));
             }
 
