@@ -6,13 +6,13 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class GroupUser extends Model
+class GroupUserMapping extends Model
 {
     use  HasUuids;
 
     protected $keyType = 'string';
     public $incrementing = false;
-    protected $table = 'group_user';
+    protected $table = 'group_user_mappings';
 
     protected $fillable = [
         'user_id',

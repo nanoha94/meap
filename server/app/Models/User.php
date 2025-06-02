@@ -78,21 +78,18 @@ class User extends Authenticatable implements MustVerifyEmail
 
     /**
      * ユニークなカスタムIDを生成
-     * TODO: 無限ループの可能性あり
      */
     private static function generateUniqueCustomId(): string
     {
         // 使用する文字セット（見間違いやすい文字を除外）
         $characters = 'abcdefghjkmnpqrstuvwxyz23456789';
 
-        do {
-            $customId = '';
-            // 8文字のランダムな文字列を生成
-            for ($i = 0; $i < 8; $i++) {
-                $customId .= $characters[random_int(0, strlen($characters) - 1)];
-            }
-            // 生成したIDが既に存在するかチェック
-        } while (static::where('custom_id', $customId)->exists());
+        $customId = '';
+        // 8文字のランダムな文字列を生成
+        for ($i = 0; $i < 8; $i++) {
+            $customId .= $characters[random_int(0, strlen($characters) - 1)];
+        }
+        // 生成したIDが既に存在するかチェック
 
         return $customId;
     }
@@ -103,14 +100,20 @@ class User extends Authenticatable implements MustVerifyEmail
         parent::boot();
 
         static::creating(function ($user) {
-            // custom_idを生成して設定
-            $user->custom_id = static::generateUniqueCustomId();
+            try {
+                $user->custom_id = static::generateUniqueCustomId();
+            } catch (\Illuminate\Database\QueryException $e) {
+                if (str_contains($e->getMessage(), 'Integrity constraint violation')) {
+                    throw new \Exception('カスタムIDの生成に失敗しました。しばらく時間をおいて再度お試しください。');
+                }
+                throw $e;
+            }
         });
     }
 
     public function groupUser()
     {
-        return $this->hasOne(GroupUser::class);
+        return $this->hasOne(GroupUserMapping::class);
     }
 
     public function invitationTokens()

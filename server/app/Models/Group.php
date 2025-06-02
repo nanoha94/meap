@@ -39,12 +39,12 @@ class Group extends Model
     public static function getGroupSize($id): int
     {
         if ($id === null) return 0;
-        return GroupUser::where('group_id', $id)->count();
+        return GroupUserMapping::where('group_id', $id)->count();
     }
 
     // グループに属するユーザーを取得
     public function groupUsers(): HasMany
     {
-        return $this->hasMany(GroupUser::class);
+        return $this->hasMany(GroupUserMapping::class);
     }
 }
