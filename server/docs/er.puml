@@ -127,6 +127,8 @@ entity shopping_categories {
     * id : string <<generated>>
     --
     * name : string
+    * is_default : boolean / trueの場合、デフォルトカテゴリとして扱う
+    * order : int / ソート順
     * group_id : string <<FK>>
 }
 
@@ -135,12 +137,11 @@ entity shopping_tags {
     --
     * name : string
     * group_id : string <<FK>>
-    * shopping_item_id : string <<FK>>
 }
 
 entity shopping_item_tag_mappings {
-    * item_id : string <<FK>>
-    * tag_id : string <<FK>>
+    * shopping_item_id : string <<FK>>
+    * shopping_tag_id : string <<FK>>
 }
 
 entity group_user_mappings {
@@ -161,7 +162,7 @@ entity users {
     * updated_at : date
 }
 
-entity invitations {
+entity invitation_tokens {
     * id : string <<generated>>
     --
     * inviter_id : string <<FK>>
@@ -171,13 +172,14 @@ entity invitations {
 
 groups ||--|| group_user_mappings
 group_user_mappings ||--|| users
-users ||--o{ invitations
+users ||--o{ invitation_tokens
 
 groups ||--o{ shopping_items
 groups ||--o{ shopping_categories
+groups ||--o{ shopping_tags
 shopping_categories ||--o{ shopping_items
 shopping_items ||--o{ shopping_item_tag_mappings
-shopping_item_tag_mappings }o--|| shopping_tags
+shopping_tags }o--|| shopping_item_tag_mappings
 
 groups ||--o{ meal_categories
 groups ||--o{ meal_category_colors
@@ -187,28 +189,29 @@ meals }o--|| groups
 meals }o--|| meal_categories
 dish_roles }o--|| groups
 dishes }o--|| groups
-meals ||--o{ meal_dish_mappings
 dishes ||--o{ meal_dish_mappings
+meals ||--o{ meal_dish_mappings
 meal_dish_mappings }o--|| dish_roles
 
 groups ||--o{ dish_categories
 dishes ||--o{ dish_category_mappings
 dish_category_mappings }o--|| dish_categories
 
-ingredients }o--|| groups
 ingredient_units }o--|| groups
+ingredients }o--|| groups
 dishes ||--o{ dish_ingredient_mappings
-dish_ingredient_mappings }o--|| ingredients
 dish_ingredient_mappings }o--|| ingredient_units
+dish_ingredient_mappings }o--|| ingredients
 
-seasonings }o--|| groups
+
 seasoning_units }o--|| groups
+seasonings }o--|| groups
 dishes ||--o{ dish_seasoning_mappings
-dish_seasoning_mappings }o--|| seasonings
 dish_seasoning_mappings }o--|| seasoning_units
+dish_seasoning_mappings }o--|| seasonings
 
 
-note right of groups
+note left of groups
   データ共有するユーザー情報を管理する。
   ユーザは１つのグループにのみ所属できる。（拡張可能性あり）
   もしくは、すでに存在しているグループに招待してもらって所属する。
@@ -234,7 +237,7 @@ note right of dish_categories
   料理カテゴリを管理する。
 end note
 
-note right of invitations
+note right of invitation_tokens
   ユーザ招待トークンを管理する。
   グループに招待するときにトークンを発行する。
   一定時間でトークンは使用できなくなり、テーブルからデータを消去する。
