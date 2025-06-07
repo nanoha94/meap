@@ -40,8 +40,8 @@ return new class extends Migration
 
         Schema::create('shopping_item_tag_mappings', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('shopping_item_id')->constrained('shopping_items', 'id')->cascadeOnDelete();
-            $table->foreignUuid('shopping_tag_id')->constrained('shopping_tags', 'id')->cascadeOnDelete();
+            $table->foreignUuid('item_id')->constrained('shopping_items', 'id')->cascadeOnDelete();
+            $table->foreignUuid('tag_id')->constrained('shopping_tags', 'id')->cascadeOnDelete();
             $table->timestamps();
         });
     }

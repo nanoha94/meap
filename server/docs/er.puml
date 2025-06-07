@@ -140,8 +140,8 @@ entity shopping_tags {
 }
 
 entity shopping_item_tag_mappings {
-    * shopping_item_id : string <<FK>>
-    * shopping_tag_id : string <<FK>>
+    * item_id : string <<FK>>
+    * tag_id : string <<FK>>
 }
 
 entity group_user_mappings {

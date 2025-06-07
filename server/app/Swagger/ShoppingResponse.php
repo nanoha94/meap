@@ -70,7 +70,7 @@ namespace App\Swagger;
  *     @OA\JsonContent(
  *         type="object",
  *         @OA\Property(
- *             property="data",
+ *             property="categories",
  *             type="array",
  *             description="買い物カテゴリ一覧",
  *             @OA\Items(ref="#/components/schemas/ShoppingCategory")
@@ -85,7 +85,7 @@ namespace App\Swagger;
  * )
  * @OA\Response(
  *     response="ShoppingCategoryStoreSuccess",
- *     description="正常に登録されました",
+ *     description="買い物カテゴリーを作成しました。",
  *     @OA\JsonContent(ref="#/components/schemas/ShoppingCategory")
  * )
  * @OA\Response(

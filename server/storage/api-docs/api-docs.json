@@ -598,7 +598,7 @@
                     "Shopping"
                 ],
                 "summary": "買い物カテゴリを一括更新",
-                "operationId": "975bedbffc64727328a28fb5e5303f68",
+                "operationId": "0e619738aa3d59840fc495fd3170cfdf",
                 "requestBody": {
                     "$ref": "#/components/requestBodies/ShoppingCategoryBulkUpdateRequest"
                 },
@@ -1650,7 +1650,7 @@
                     "application/json": {
                         "schema": {
                             "properties": {
-                                "data": {
+                                "categories": {
                                     "description": "買い物カテゴリ一覧",
                                     "type": "array",
                                     "items": {
@@ -1669,7 +1669,7 @@
                 }
             },
             "ShoppingCategoryStoreSuccess": {
-                "description": "正常に登録されました",
+                "description": "買い物カテゴリーを作成しました。",
                 "content": {
                     "application/json": {
                         "schema": {
@@ -1998,24 +1998,20 @@
                     }
                 }
             },
-            "ShoppingCategoryRequest": {
-                "description": "登録する買い物カテゴリデータ",
-                "required": true,
-                "content": {
-                    "application/json": {
-                        "schema": {
-                            "$ref": "#/components/schemas/ShoppingCategory"
-                        }
-                    }
-                }
-            },
             "ShoppingCategoryStoreRequest": {
                 "description": "登録する買い物カテゴリデータ",
                 "required": true,
                 "content": {
                     "application/json": {
                         "schema": {
-                            "$ref": "#/components/schemas/ShoppingCategory"
+                            "properties": {
+                                "name": {
+                                    "description": "カテゴリ名",
+                                    "type": "string",
+                                    "example": "スーパーA"
+                                }
+                            },
+                            "type": "object"
                         }
                     }
                 }
@@ -2027,7 +2023,7 @@
                     "application/json": {
                         "schema": {
                             "properties": {
-                                "items": {
+                                "categories": {
                                     "type": "array",
                                     "items": {
                                         "$ref": "#/components/schemas/ShoppingCategory"

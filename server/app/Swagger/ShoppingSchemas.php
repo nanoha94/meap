@@ -11,7 +11,7 @@ namespace App\Swagger;
  *     @OA\Property(property="isPinned", type="boolean", description="ピン留め", example="false"),
  *     @OA\Property(property="isChecked", type="boolean", description="チェック状態", example="false"),
  *     @OA\Property(property="categoryId", type="string", description="カテゴリ情報"),
- *     @OA\Property(property="order", type="integer", description="順番", example=1),
+ *     @OA\Property(property="order", type="integer", description="順番", example=1)
  * )
  * 
  * @OA\Schema(
@@ -27,7 +27,7 @@ namespace App\Swagger;
  *     schema="ShoppingTag",
  *     required={"id", "name"},
  *     @OA\Property(property="id", type="string", description="ID", example="1"),
- *     @OA\Property(property="name", type="string", description="タグ名", example="サラダ"),
+ *     @OA\Property(property="name", type="string", description="タグ名", example="サラダ")
  * )
  */
 

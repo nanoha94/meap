@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ShoppingCategory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ShoppingCategoryController extends Controller
 {
@@ -22,20 +23,13 @@ class ShoppingCategoryController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $res = [];
+        $data = [];
         $user = $request->user();
-        $groupId = $user->group_id;
+        $group = $user->group;
 
-        $categories = ShoppingCategory::where('group_id', $groupId)->get();
+        $categories = $group->shoppingCategories->select('id', 'name', 'is_default', 'order');
 
-        foreach ($categories as $idx => $category) {
-            $res[$idx] = [
-                'id' => $category->id,
-                'name' => $category->name,
-                'isDefault' => (bool)$category->is_default,
-                'order' => $category->order
-            ];
-        }
+        $res = ['categories' => $categories, 'total' => $categories->count()];
 
         return response()->json($res, 200);
     }
@@ -55,18 +49,21 @@ class ShoppingCategoryController extends Controller
     public function store(Request $request): JsonResponse
     {
         $user = $request->user();
-        $groupId = $user->group_id;
+        $group = $user->group;
 
-        // TODO: 要修正
-        ShoppingCategory::upsert([
-            'id' => $request->id,
-            'group_id' => $groupId,
+        $ret = ShoppingCategory::create([
+            'group_id' => $group->id,
             'name' => $request->name,
             'is_default' => false,
-            'order' => $request->order,
-        ], uniqueBy: ['id'], update: ['name', 'order']);
+            'order' => $group->shoppingCategories->count(),
+        ]);
 
-        return response()->json(['message' => '買い物カテゴリーを作成しました。']);
+        return response()->json([
+            'id' => $ret->id,
+            'name' => $ret->name,
+            'is_default' => $ret->is_default,
+            'order' => $ret->order
+        ], 200);
     }
 
     /**
@@ -81,9 +78,22 @@ class ShoppingCategoryController extends Controller
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
-    public function update(Request $request): JsonResponse
+    public function bulkUpdate(Request $request): JsonResponse
     {
-        return response()->json(['message' => '買い物カテゴリーを更新しました。']);
+        $user = $request->user();
+        $group = $user->group;
+
+        foreach ($request->categories as $item) {
+            ShoppingCategory::where('id', $item['id'])->update([
+                'name' => $item['name'],
+                'is_default' => $item['is_default'],
+                'order' => $item['order']
+            ]);
+        }
+
+        $ret = $group->shoppingCategories()->select('id', 'name', 'is_default', 'order')->get();
+
+        return response()->json($ret, 200);
     }
 
     /**
@@ -98,11 +108,33 @@ class ShoppingCategoryController extends Controller
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
-    public function destroy(Request $request): JsonResponse
+    public function destroy(Request $request, string $id): JsonResponse
     {
-        $category =  ShoppingCategory::where('id', $request->id)->first();
-        $category_name = $category->name;
+        $category =  ShoppingCategory::where('id', $id)->first();
+
+        if (!$category) {
+            return response()->json([
+                'message' => '指定されたカテゴリーが見つかりません。'
+            ], 404);
+        }
+        if ($category->is_default) {
+            return response()->json([
+                'message' => $category->name . 'は削除できません。'
+            ], 403);
+        }
+
+        $id = $category->id;
         $category->delete();
-        return response()->json(['message' => $category_name . 'を買い物カテゴリーから削除しました。'], 200);
+
+        // 残りのカテゴリーのorderを整理
+        $remainingCategories = ShoppingCategory::where('group_id', $category->group_id)
+            ->orderBy('order')
+            ->get();
+
+        foreach ($remainingCategories as $index => $remainingCategory) {
+            $remainingCategory->update(['order' => $index]);
+        }
+
+        return response()->json(['id' => $id], 200);
     }
 }
