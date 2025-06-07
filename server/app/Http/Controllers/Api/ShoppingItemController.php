@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\ShoppingItem;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -22,18 +23,42 @@ class ShoppingItemController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $res = [];
         $user = $request->user();
-        $groupId = $user->group_id;
+        $group = $user->group;
 
-        $items = ShoppingItem::where('group_id', $groupId)->get();
-        if ($items->count() > 0) {
-            foreach ($items as $idx => $item) {
-                $res[$idx] = ['id' => $item->id, 'name' => $item->name, 'isPinned' => (bool)$item->is_pinned, 'isChecked' => (bool)$item->is_checked, 'categoryId' => $item->category_id, 'order' => $item->order];
-            }
+        $res = [];
+        $categories = $group->shoppingCategories()
+            ->select('id', 'name', 'is_default as isDefault', 'order')
+            ->orderBy('order', 'asc')
+            ->get();
+
+        foreach ($categories as $category) {
+            $items = $category->shoppingItems()
+                ->select('id', 'name', 'is_pinned', 'is_checked', 'category_id', 'order')
+                ->orderBy('order', 'asc')
+                ->get();
+
+            $res[] = [
+                'category' => [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'isDefault' => $category->is_default,
+                    'order' => $category->order
+                ],
+                'items' => $items->map(function ($item) {
+                    return [
+                        'id' => $item->id,
+                        'name' => $item->name,
+                        'isPinned' => (bool)$item->is_pinned,
+                        'isChecked' => (bool)$item->is_checked,
+                        'categoryId' => $item->category_id,
+                        'order' => $item->order
+                    ];
+                })
+            ];
         }
 
-        return response()->json($res);
+        return response()->json($res, 200);
     }
 
     /**
@@ -51,30 +76,29 @@ class ShoppingItemController extends Controller
     public function store(Request $request): JsonResponse
     {
         $user = $request->user();
-        $groupId = $user->group_id;
+        $group = $user->group;
 
-        $request_items = $request->items;
-
-        if (!is_array($request_items) || empty($request_items)) {
+        if (!$request->categoryId || !$request->name) {
             return response()->json(['message' => '無効なデータ形式です。'], 400);
         }
 
-        $items = [];
-        foreach ($request->items as $item) {
-            $items[] = [
-                'id' => $item['id'],
-                'group_id' => $groupId,
-                'category_id' => $item['categoryId'],
-                'name' => $item['name'],
-                'is_pinned' => $item['isPinned'],
-                'is_checked' => $item['isChecked'],
-                'order' => $item['order'],
-            ];
-        }
+        $ret = ShoppingItem::create([
+            'group_id' => $group->id,
+            'category_id' => $request->categoryId,
+            'name' => $request->name,
+            'is_pinned' => false,
+            'is_checked' => false,
+            'order' => $group->shoppingItems->where('category_id', $request->categoryId)->count()
+        ]);
 
-        ShoppingItem::upsert($items, uniqueBy: ['id'], update: ['name', 'category_id', 'is_pinned', 'is_checked', 'order']);
-
-        return response()->json(['message' => '買い物リストを更新しました。']);
+        return response()->json([
+            'id' => $ret->id,
+            'categoryId' => $ret->category_id,
+            'name' => $ret->name,
+            'isPinned' => $ret->is_pinned,
+            'isChecked' => $ret->is_checked,
+            'order' => $ret->order
+        ], 200);
     }
 
     /**
@@ -89,29 +113,24 @@ class ShoppingItemController extends Controller
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
-    public function bulkUpdate(Request $request)
+    public function bulkUpdate(Request $request): JsonResponse
     {
-        //
-    }
+        $user = $request->user();
+        $group = $user->group;
 
-    /**
-     * @OA\Delete(
-     *     path="/shopping/items/{id}",
-     *     summary="買い物アイテムを削除",
-     *     tags={"Shopping"},
-     *     security={{"sanctum":{}}},
-     *     @OA\Parameter(ref="#/components/parameters/ShoppingIdParam"),
-     *     @OA\Response(response=200, ref="#/components/responses/ShoppingItemDestroySuccess"),
-     *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
-     *     @OA\Response(response=404, ref="#/components/responses/NotFound")
-     * )
-     */
-    public function destroy(Request $request, string $id): JsonResponse
-    {
-        $item =  ShoppingItem::where('id', $id)->first();
-        $item_name = $item->name;
-        $item->delete();
-        return response()->json(['message' => $item_name . 'を買い物リストから削除しました。']);
+        foreach ($request->items as $item) {
+            ShoppingItem::where('id', $item['id'])->update([
+                'category_id' => $item['categoryId'],
+                'name' => $item['name'],
+                'is_pinned' => $item['isPinned'],
+                'is_checked' => $item['isChecked'],
+                'order' => $item['order']
+            ]);
+        }
+
+        $ret = $group->shoppingItems()->select('id', 'category_id as categoryId', 'name', 'is_pinned as isPinned', 'is_checked as isChecked', 'order')->get();
+
+        return response()->json($ret, 200);
     }
 
     /**
@@ -120,17 +139,29 @@ class ShoppingItemController extends Controller
      *     summary="買い物アイテムを一括削除",
      *     tags={"Shopping"},
      *     security={{"sanctum":{}}},
-     *     @OA\RequestBody(ref="#/components/requestBodies/ShoppingItemBulkDeleteRequest"),
-     *     @OA\Response(response=200, ref="#/components/responses/ShoppingItemDestroySuccess"),
+     *     @OA\RequestBody(ref="#/components/requestBodies/ShoppingItemBulkDestroyRequest"),
+     *     @OA\Response(response=200, ref="#/components/responses/ShoppingItemBulkDestroySuccess"),
      *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
     public function bulkDestroy(Request $request): JsonResponse
     {
-        $user = $request->user();
-        $groupId = $user->group_id;
-        ShoppingItem::where('group_id', $groupId)->where('is_pinned', false | 0)->delete();
-        return response()->json(['message' => '買い物アイテムをすべて削除しました。']);
+        Log::info('bulkDestroy', ['ids' => $request->itemIds]);
+        $deletedIds = [];
+        foreach ($request->itemIds as $id) {
+            $item = ShoppingItem::where('id', $id)->first();
+
+            if (!$item) {
+                Log::info('指定されたレコードが見つかりません。', ['function' => 'ShoppingItemController@bulkDestroy', 'id' => $id]);
+                return response()->json([
+                    'message' => '指定されたレコードが見つかりません。'
+                ], 404);
+            }
+
+            $deletedIds[] = [$item->id];
+            $item->delete();
+        }
+        return response()->json(['ids' => $deletedIds], 200);
     }
 }

@@ -7,38 +7,26 @@ namespace App\Swagger;
  *     response="ShoppingItemIndexSuccess",
  *     description="正常に取得されました",
  *     @OA\JsonContent(
- * 　　　　 type="object",
- * 　　　　 @OA\Property(
- * 　　　　 property="items",
- *         type="array",
- *         @OA\Items(
- *             type="object",
- *             @OA\Property(
- *                 property="category",
- *                 ref="#/components/schemas/ShoppingCategory",
- *                 description="カテゴリ情報"
- *             ),
- *             @OA\Property(
- *                 property="items",
- *                 type="array",
- *                 @OA\Items(ref="#/components/schemas/ShoppingItem")
- *             ),
- *             @OA\Property(
- *                 property="total",
- *                 type="integer",
- *                 description="買い物アイテム総数",
- *                 example=100
- *             ),
- *         ),
- *     ),
+ *         type="object",
  *         @OA\Property(
- *             property="total",
- *             type="integer",
- *             description="買い物カテゴリ総数",
- *             example=100
+ *             property="items",
+ *             type="array",
+ *             @OA\Items(
+ *                 type="object",
+ *                 @OA\Property(
+ *                     property="category",
+ *                     ref="#/components/schemas/ShoppingCategory",
+ *                     description="カテゴリ情報"
+ *                 ),
+ *                 @OA\Property(
+ *                     property="items",
+ *                     type="array",
+ *                     @OA\Items(ref="#/components/schemas/ShoppingItem")
+ *                 )
+ *             )
  *         )
  *     )
- * )
+ * ),
  * @OA\Response(
  *     response="ShoppingItemStoreSuccess",
  *     description="正常に登録されました",
@@ -55,15 +43,14 @@ namespace App\Swagger;
  *     @OA\JsonContent(ref="#/components/schemas/ShoppingItem")
  * )
  * @OA\Response(
- *     response="ShoppingItemDestroySuccess",
+ *     response="ShoppingItemBulkDestroySuccess",
  *     description="正常に削除されました",
  *     @OA\JsonContent(
  *         type="object",
- *         @OA\Property(property="message", type="string")
+ *         @OA\Property(property="ids", type="array", @OA\Items(type="string"))
  *     )
  * )
  * 
- * /**
  * @OA\Response(
  *     response="ShoppingCategoryIndexSuccess",
  *     description="正常に取得されました",
@@ -98,11 +85,10 @@ namespace App\Swagger;
  *     description="正常に削除されました",
  *     @OA\JsonContent(
  *         type="object",
- *         @OA\Property(property="message", type="string")
+ *         @OA\Property(property="id", type="string")
  *     )
  * )
  * 
- * /**
  * @OA\Response(
  *     response="ShoppingTagIndexSuccess",
  *     description="正常に取得されました",

@@ -23,7 +23,6 @@ class ShoppingCategoryController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $data = [];
         $user = $request->user();
         $group = $user->group;
 
@@ -61,7 +60,7 @@ class ShoppingCategoryController extends Controller
         return response()->json([
             'id' => $ret->id,
             'name' => $ret->name,
-            'is_default' => $ret->is_default,
+            'isDefault' => (bool)$ret->is_default,
             'order' => $ret->order
         ], 200);
     }
@@ -83,15 +82,15 @@ class ShoppingCategoryController extends Controller
         $user = $request->user();
         $group = $user->group;
 
-        foreach ($request->categories as $item) {
-            ShoppingCategory::where('id', $item['id'])->update([
-                'name' => $item['name'],
-                'is_default' => $item['is_default'],
-                'order' => $item['order']
+        foreach ($request->categories as $category) {
+            ShoppingCategory::where('id', $category['id'])->update([
+                'name' => $category['name'],
+                'is_default' => $category['is_default'],
+                'order' => $category['order']
             ]);
         }
 
-        $ret = $group->shoppingCategories()->select('id', 'name', 'is_default', 'order')->get();
+        $ret = $group->shoppingCategories()->select('id', 'name', 'is_default as isDefault', 'order')->get();
 
         return response()->json($ret, 200);
     }
@@ -114,7 +113,7 @@ class ShoppingCategoryController extends Controller
 
         if (!$category) {
             return response()->json([
-                'message' => '指定されたカテゴリーが見つかりません。'
+                'message' => '指定されたレコードが見つかりません。'
             ], 404);
         }
         if ($category->is_default) {
@@ -123,7 +122,7 @@ class ShoppingCategoryController extends Controller
             ], 403);
         }
 
-        $id = $category->id;
+        $deletedId = $category->id;
         $category->delete();
 
         // 残りのカテゴリーのorderを整理
@@ -135,6 +134,6 @@ class ShoppingCategoryController extends Controller
             $remainingCategory->update(['order' => $index]);
         }
 
-        return response()->json(['id' => $id], 200);
+        return response()->json(['id' => $deletedId], 200);
     }
 }

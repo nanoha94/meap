@@ -10,7 +10,7 @@ namespace App\Swagger;
  *     @OA\Property(property="name", type="string", description="買い物アイテム名（数量込み）", example="ひき肉100g"),
  *     @OA\Property(property="isPinned", type="boolean", description="ピン留め", example="false"),
  *     @OA\Property(property="isChecked", type="boolean", description="チェック状態", example="false"),
- *     @OA\Property(property="categoryId", type="string", description="カテゴリ情報"),
+ *     @OA\Property(property="categoryId", type="string", description="カテゴリID", example="1"),
  *     @OA\Property(property="order", type="integer", description="順番", example=1)
  * )
  * 

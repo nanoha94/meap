@@ -7,7 +7,10 @@ namespace App\Swagger;
  *     request="ShoppingItemStoreRequest",
  *     description="登録する買い物アイテムデータ",
  *     required=true,
- *     @OA\JsonContent(ref="#/components/schemas/ShoppingItem")
+ *     @OA\JsonContent(
+ *         @OA\Property(property="name", type="string", description="買い物アイテム名（数量込み）", example="ひき肉100g"),
+ *         @OA\Property(property="categoryId", type="string", description="カテゴリID", example="1"),
+ *     )
  * )
  * 
  * @OA\RequestBody(
@@ -25,7 +28,7 @@ namespace App\Swagger;
  * )
  * 
  * @OA\RequestBody(
- *     request="ShoppingItemBulkDeleteRequest",
+ *     request="ShoppingItemBulkDestroyRequest",
  *     required=true,
  *     @OA\JsonContent(
  *         type="object",
