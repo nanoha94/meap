@@ -6,7 +6,7 @@ namespace App\Swagger;
  * @OA\Parameter(
  *     parameter="InvitationShowParameter",
  *     name="token",
- *     in="query",
+ *     in="path",
  *     required=true,
  *     @OA\Schema(
  *         type="string",

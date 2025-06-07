@@ -9,6 +9,7 @@ use App\Notifications\Auth\CustomVerifyEmailNotification;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -111,9 +112,14 @@ class User extends Authenticatable implements MustVerifyEmail
         });
     }
 
-    public function groupUser()
+    public function groupUser(): HasOne
     {
         return $this->hasOne(GroupUserMapping::class);
+    }
+
+    public function group()
+    {
+        return $this->hasOneThrough(Group::class, GroupUserMapping::class, 'user_id', 'id', 'id', 'group_id');
     }
 
     public function invitationTokens()

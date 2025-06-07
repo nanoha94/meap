@@ -1812,7 +1812,7 @@
             },
             "InvitationShowParameter": {
                 "name": "token",
-                "in": "query",
+                "in": "path",
                 "required": true,
                 "schema": {
                     "type": "string",

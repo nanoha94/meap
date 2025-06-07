@@ -24,7 +24,7 @@ class ShoppingItemController extends Controller
     {
         $res = [];
         $user = $request->user();
-        $groupId = $user->groupUser->group_id;
+        $groupId = $user->group_id;
 
         $items = ShoppingItem::where('group_id', $groupId)->get();
         if ($items->count() > 0) {
@@ -51,7 +51,7 @@ class ShoppingItemController extends Controller
     public function store(Request $request): JsonResponse
     {
         $user = $request->user();
-        $groupId = $user->groupUser->group_id;
+        $groupId = $user->group_id;
 
         $request_items = $request->items;
 
@@ -129,7 +129,7 @@ class ShoppingItemController extends Controller
     public function bulkDestroy(Request $request): JsonResponse
     {
         $user = $request->user();
-        $groupId = $user->groupUser->group_id;
+        $groupId = $user->group_id;
         ShoppingItem::where('group_id', $groupId)->where('is_pinned', false | 0)->delete();
         return response()->json(['message' => '買い物アイテムをすべて削除しました。']);
     }

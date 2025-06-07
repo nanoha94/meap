@@ -21,6 +21,11 @@ class ShoppingItem extends Model
         'is_checked',
     ];
 
+    public function group(): BelongsTo
+    {
+        return $this->belongsTo(Group::class);
+    }
+
     public function category(): BelongsTo
     {
         return $this->belongsTo(ShoppingCategory::class);

@@ -11,6 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
+        Schema::create('shopping_tags', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->foreignUuid('group_id')->constrained('groups', 'id')->cascadeOnDelete();
+            $table->string('name');
+            $table->timestamps();
+        });
+
         Schema::create('shopping_categories', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('group_id')->constrained('groups', 'id')->cascadeOnDelete();
@@ -30,6 +37,13 @@ return new class extends Migration
             $table->integer('order')->default(0);
             $table->timestamps();
         });
+
+        Schema::create('shopping_item_tag_mappings', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->foreignUuid('shopping_item_id')->constrained('shopping_items', 'id')->cascadeOnDelete();
+            $table->foreignUuid('shopping_tag_id')->constrained('shopping_tags', 'id')->cascadeOnDelete();
+            $table->timestamps();
+        });
     }
 
     /**
@@ -37,8 +51,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('shopping_categories', function (Blueprint $table) {
-            $table->dropForeign(['group_id']);
+        Schema::table('shopping_item_tag_mappings', function (Blueprint $table) {
+            $table->dropForeign(['shopping_item_id']);
+            $table->dropForeign(['shopping_tag_id']);
         });
 
         Schema::table('shopping_items', function (Blueprint $table) {
@@ -46,7 +61,17 @@ return new class extends Migration
             $table->dropForeign(['category_id']);
         });
 
-        Schema::dropIfExists('shopping_categories');
+        Schema::table('shopping_categories', function (Blueprint $table) {
+            $table->dropForeign(['group_id']);
+        });
+
+        Schema::table('shopping_tags', function (Blueprint $table) {
+            $table->dropForeign(['group_id']);
+        });
+
+        Schema::dropIfExists('shopping_item_tag_mappings');
         Schema::dropIfExists('shopping_items');
+        Schema::dropIfExists('shopping_categories');
+        Schema::dropIfExists('shopping_tags');
     }
 };

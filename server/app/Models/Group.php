@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Group extends Model
 {
@@ -21,7 +20,7 @@ class Group extends Model
     public static function createGroup()
     {
         $group = self::create([
-            'group_size' => 0,
+            'group_size' => 1,
         ]);
 
         // カテゴリを追加
@@ -36,15 +35,23 @@ class Group extends Model
     }
 
     // グループに属するのユーザー数を取得
-    public static function getGroupSize($id): int
+    public function getGroupSize(): int
     {
-        if ($id === null) return 0;
-        return GroupUserMapping::where('group_id', $id)->count();
+        return $this->users()->count();
     }
 
-    // グループに属するユーザーを取得
-    public function groupUsers(): HasMany
+    public function users()
     {
-        return $this->hasMany(GroupUserMapping::class);
+        return $this->hasManyThrough(User::class, GroupUserMapping::class, 'group_id', 'id', 'id', 'user_id');
+    }
+
+    public function shoppingItems()
+    {
+        return $this->hasMany(ShoppingItem::class);
+    }
+
+    public function shoppingCategories()
+    {
+        return $this->hasMany(ShoppingCategory::class);
     }
 }

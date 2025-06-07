@@ -24,7 +24,7 @@ class ShoppingCategoryController extends Controller
     {
         $res = [];
         $user = $request->user();
-        $groupId = $user->groupUser->group_id;
+        $groupId = $user->group_id;
 
         $categories = ShoppingCategory::where('group_id', $groupId)->get();
 
@@ -55,7 +55,7 @@ class ShoppingCategoryController extends Controller
     public function store(Request $request): JsonResponse
     {
         $user = $request->user();
-        $groupId = $user->groupUser->group_id;
+        $groupId = $user->group_id;
 
         // TODO: 要修正
         ShoppingCategory::upsert([

@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\Group;
-use App\Models\GroupUser;
+use App\Models\GroupUserMapping;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
@@ -49,15 +49,9 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->string('password')),
         ]);
         $group = Group::createGroup();
-        GroupUser::create(['user_id' => $user->id, 'group_id' => $group->id]);
-
-        // グループのユーザー数を更新
-        $group->group_size = Group::getGroupSize($group->id);
-        $group->save();
+        GroupUserMapping::create(['user_id' => $user->id, 'group_id' => $group->id]);
 
         event(new Registered($user));
-
-        Auth::login($user);
 
         return response()->noContent();
     }

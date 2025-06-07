@@ -117,7 +117,7 @@ class InvitationController extends Controller
 
         // ログインしているユーザーを取得
         $user = $request->user();
-        $currentGroup = $user->groupUser->group;
+        $currentGroup = $user->group;
 
         // 招待者
         $inviter = $invitationToken->inviter;
@@ -127,7 +127,7 @@ class InvitationController extends Controller
         }
 
         // 招待された人がすでに同じグループにいるかチェック
-        if ($currentGroup->id === $inviter->groupUser->group_id) {
+        if ($currentGroup->id === $inviter->group_id) {
             return response()->json(['message' => 'すでにグループに参加しています。'], 403);
         }
 
@@ -138,22 +138,20 @@ class InvitationController extends Controller
 
         // データがあるかチェック
         if (!$request->isDelete) {
-            if (ShoppingItem::where('group_id', $currentGroup->id)->exists()) {
+            if ($currentGroup->shoppingItems()->exists()) {
                 return response()->json(['message' => 'すでに登録済みのデータがあります。'], 409);
             }
-            if (ShoppingCategory::where('group_id',  $currentGroup->id)->exists()) {
+            if ($currentGroup->shoppingCategories()->where('is_default', 0)->exists()) {
                 return response()->json(['message' => 'すでに登録済みのデータがあります。'], 409);
             }
         }
 
         // 招待された人を同じグループに追加
-        $group = $inviter->groupUser->group;
-        // // 招待された人を同じグループに追加
-        $group = $inviter->groupUser->group;
+        $group = $inviter->group;
         $user->groupUser->group_id = $group->id;
         $user->groupUser->save();
 
-        $group->group_size = Group::getGroupSize($group->id);
+        $group->group_size = $group->getGroupSize();
         $group->save();
 
         // // 招待された人のグループを削除
