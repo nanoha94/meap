@@ -3,8 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\ShoppingTag;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ShoppingTagController extends Controller

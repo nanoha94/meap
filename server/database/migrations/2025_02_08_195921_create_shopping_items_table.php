@@ -51,8 +51,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('shopping_item_tag_mappings', function (Blueprint $table) {
-            $table->dropForeign(['shopping_item_id']);
-            $table->dropForeign(['shopping_tag_id']);
+            $table->dropForeign(['item_id']);
+            $table->dropForeign(['tag_id']);
         });
 
         Schema::table('shopping_items', function (Blueprint $table) {
