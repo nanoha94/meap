@@ -54,4 +54,9 @@ class Group extends Model
     {
         return $this->hasMany(ShoppingCategory::class);
     }
+
+    public function shoppingTags()
+    {
+        return $this->hasMany(ShoppingTag::class);
+    }
 }

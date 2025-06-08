@@ -11,6 +11,7 @@ namespace App\Swagger;
  *     @OA\Property(property="isPinned", type="boolean", description="ピン留め", example="false"),
  *     @OA\Property(property="isChecked", type="boolean", description="チェック状態", example="false"),
  *     @OA\Property(property="categoryId", type="string", description="カテゴリID", example="1"),
+ *     @OA\Property(property="tags", type="array", description="買い物タグ配列", @OA\Items(ref="#/components/schemas/ShoppingTag")),
  *     @OA\Property(property="order", type="integer", description="順番", example=1)
  * )
  * 

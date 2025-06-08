@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\ShoppingTag;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ShoppingTagController extends Controller
@@ -19,5 +21,17 @@ class ShoppingTagController extends Controller
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
-    public function index(Request $request) {}
+    public function index(Request $request)
+    {
+        $user = $request->user();
+        $group = $user->group;
+
+        $tags = $group->shoppingTags()->select('id', 'name')->get();
+        $res = [
+            'tags' => $tags,
+            'total' => $tags->count()
+        ];
+
+        return response()->json($res, 200);
+    }
 }

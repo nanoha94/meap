@@ -1096,6 +1096,13 @@
                         "type": "string",
                         "example": "1"
                     },
+                    "tags": {
+                        "description": "買い物タグ配列",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ShoppingTag"
+                        }
+                    },
                     "order": {
                         "description": "順番",
                         "type": "integer",
@@ -1917,6 +1924,10 @@
                 "content": {
                     "application/json": {
                         "schema": {
+                            "required": [
+                                "name",
+                                "categoryId"
+                            ],
                             "properties": {
                                 "name": {
                                     "description": "買い物アイテム名（数量込み）",
@@ -1927,6 +1938,26 @@
                                     "description": "カテゴリID",
                                     "type": "string",
                                     "example": "1"
+                                },
+                                "tags": {
+                                    "description": "買い物タグ配列",
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "description": "買い物タグID",
+                                                "type": "string",
+                                                "example": "1",
+                                                "nullable": true
+                                            },
+                                            "name": {
+                                                "description": "買い物タグ名",
+                                                "type": "string",
+                                                "example": "サラダ"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
                                 }
                             },
                             "type": "object"
@@ -2004,6 +2035,24 @@
                                     "items": {
                                         "$ref": "#/components/schemas/ShoppingCategory"
                                     }
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "ShoppingTagStoreRequest": {
+                "description": "登録する買い物タグデータ",
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "name": {
+                                    "description": "買い物タグ名",
+                                    "type": "string",
+                                    "example": "サラダ"
                                 }
                             },
                             "type": "object"

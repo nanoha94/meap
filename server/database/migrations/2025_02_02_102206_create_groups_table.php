@@ -18,10 +18,9 @@ return new class extends Migration
         });
 
         Schema::create('group_user_mappings', function (Blueprint $table) {
-            $table->uuid('id')->primary();
             $table->foreignUuid('user_id')->constrained('users', 'id')->cascadeOnDelete();
             $table->foreignUuid('group_id')->constrained('groups', 'id');
-            $table->timestamps();
+            $table->primary(['user_id', 'group_id']);
         });
     }
 

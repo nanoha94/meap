@@ -2,15 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
 class GroupUserMapping extends Model
 {
-    use HasUuids;
-
-    protected $keyType = 'string';
+    protected $table = 'group_user_mappings';
+    protected $primaryKey = null;
     public $incrementing = false;
+    public $timestamps = false;
 
     protected $fillable = [
         'user_id',

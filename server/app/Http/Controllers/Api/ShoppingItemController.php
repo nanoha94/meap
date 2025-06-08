@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\ShoppingItem;
+use App\Models\ShoppingTag;
+use App\Models\Group;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -35,6 +37,7 @@ class ShoppingItemController extends Controller
         foreach ($categories as $category) {
             $items = $category->shoppingItems()
                 ->select('id', 'name', 'is_pinned', 'is_checked', 'category_id', 'order')
+                ->with('tags:id,name')
                 ->orderBy('order', 'asc')
                 ->get();
 
@@ -52,6 +55,12 @@ class ShoppingItemController extends Controller
                         'isPinned' => (bool)$item->is_pinned,
                         'isChecked' => (bool)$item->is_checked,
                         'categoryId' => $item->category_id,
+                        'tags' => $item->tags->map(function ($tag) {
+                            return [
+                                'id' => $tag->id,
+                                'name' => $tag->name
+                            ];
+                        }),
                         'order' => $item->order
                     ];
                 })
@@ -91,13 +100,28 @@ class ShoppingItemController extends Controller
             'order' => $group->shoppingItems->where('category_id', $request->categoryId)->count()
         ]);
 
+        // タグの処理
+        if (!empty($request->tags)) {
+            $tagIds = $this->getTagIds($request->tags, $group);
+            $ret->tags()->attach($tagIds);
+        }
+
+        // タグを含めて再取得
+        $ret = $ret->fresh(['tags:id,name']);
+
         return response()->json([
             'id' => $ret->id,
             'categoryId' => $ret->category_id,
             'name' => $ret->name,
             'isPinned' => $ret->is_pinned,
             'isChecked' => $ret->is_checked,
-            'order' => $ret->order
+            'order' => $ret->order,
+            'tags' => $ret->tags->map(function ($tag) {
+                return [
+                    'id' => $tag->id,
+                    'name' => $tag->name
+                ];
+            }),
         ], 200);
     }
 
@@ -118,17 +142,49 @@ class ShoppingItemController extends Controller
         $user = $request->user();
         $group = $user->group;
 
+        $updatedItems = [];
         foreach ($request->items as $item) {
-            ShoppingItem::where('id', $item['id'])->update([
+            $shoppingItem = ShoppingItem::where('id', $item['id'])->first();
+            if (!$shoppingItem) {
+                continue;
+            }
+
+            // 基本情報の更新
+            $shoppingItem->update([
                 'category_id' => $item['categoryId'],
                 'name' => $item['name'],
                 'is_pinned' => $item['isPinned'],
                 'is_checked' => $item['isChecked'],
                 'order' => $item['order']
             ]);
+
+            // タグの更新
+            if (!empty($item['tags'])) {
+                $tagIds = $this->getTagIds($item['tags'], $group);
+                $shoppingItem->tags()->sync($tagIds);
+            }
+
+            $updatedItems[] = $shoppingItem;
         }
 
-        $ret = $group->shoppingItems()->select('id', 'category_id as categoryId', 'name', 'is_pinned as isPinned', 'is_checked as isChecked', 'order')->get();
+        // 更新したアイテムのみを取得
+        $ret = collect($updatedItems)
+            ->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'categoryId' => $item->category_id,
+                    'name' => $item->name,
+                    'isPinned' => $item->is_pinned,
+                    'isChecked' => $item->is_checked,
+                    'order' => $item->order,
+                    'tags' => $item->tags->map(function ($tag) {
+                        return [
+                            'id' => $tag->id,
+                            'name' => $tag->name
+                        ];
+                    })
+                ];
+            });
 
         return response()->json($ret, 200);
     }
@@ -147,13 +203,12 @@ class ShoppingItemController extends Controller
      */
     public function bulkDestroy(Request $request): JsonResponse
     {
-        Log::info('bulkDestroy', ['ids' => $request->itemIds]);
         $deletedIds = [];
         foreach ($request->itemIds as $id) {
             $item = ShoppingItem::where('id', $id)->first();
 
             if (!$item) {
-                Log::info('指定されたレコードが見つかりません。', ['function' => 'ShoppingItemController@bulkDestroy', 'id' => $id]);
+                Log::error('指定されたレコードが見つかりません。', ['function' => 'ShoppingItemController@bulkDestroy', 'id' => $id]);
                 return response()->json([
                     'message' => '指定されたレコードが見つかりません。'
                 ], 404);
@@ -163,5 +218,55 @@ class ShoppingItemController extends Controller
             $item->delete();
         }
         return response()->json(['ids' => $deletedIds], 200);
+    }
+
+    /**
+     * 買い物アイテムと紐づけするタグIDを取得
+     * @param array|null $tags タグ名の配列 [{id: string, name: string}]
+     * @param Group $group グループモデル
+     * @return array タグIDの配列
+     */
+    private function getTagIds(?array $tags, Group $group): array
+    {
+        if (empty($tags)) {
+            return [];
+        }
+
+        $tagIds = [];
+        foreach ($tags as $tag) {
+            if (isset($tag['id'])) {
+                // 既存タグの場合、存在確認
+                $existingTag = ShoppingTag::where('id', $tag['id'])
+                    ->where('group_id', $group->id)
+                    ->first();
+
+                if ($existingTag) {
+                    $tagIds[] = $existingTag->id;
+                }
+            } else {
+                // 新規タグの場合、同じ名前のタグが存在するか確認
+                $existingTag = ShoppingTag::where('group_id', $group->id)
+                    ->where('name', $tag['name'])
+                    ->first();
+
+                if ($existingTag) {
+                    // 既存のタグを使用
+                    $tagIds[] = $existingTag->id;
+                } else {
+                    // 新規タグを作成
+                    $newTag = ShoppingTag::create([
+                        'group_id' => $group->id,
+                        'name' => $tag['name']
+                    ]);
+                    $tagIds[] = $newTag->id;
+                }
+            }
+        }
+        if (!empty($tagIds)) {
+            // 重複を除去
+            $tagIds = array_unique($tagIds);
+        }
+
+        return $tagIds;
     }
 }

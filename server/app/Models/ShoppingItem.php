@@ -20,6 +20,7 @@ class ShoppingItem extends Model
         'name',
         'is_pinned',
         'is_checked',
+        'order',
     ];
 
     public function group(): BelongsTo

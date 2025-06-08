@@ -8,8 +8,20 @@ namespace App\Swagger;
  *     description="登録する買い物アイテムデータ",
  *     required=true,
  *     @OA\JsonContent(
+ *         type="object",
+ *         required={"name", "categoryId"},
  *         @OA\Property(property="name", type="string", description="買い物アイテム名（数量込み）", example="ひき肉100g"),
  *         @OA\Property(property="categoryId", type="string", description="カテゴリID", example="1"),
+ *         @OA\Property(
+ *             property="tags",
+ *             type="array",
+ *             description="買い物タグ配列",
+ *             @OA\Items(
+ *                 type="object",
+ *                 @OA\Property(property="id", type="string", description="買い物タグID", example="1", nullable=true),
+ *                 @OA\Property(property="name", type="string", description="買い物タグ名", example="サラダ")
+ *             )
+ *         )
  *     )
  * )
  * 
@@ -65,6 +77,15 @@ namespace App\Swagger;
  *             type="array",
  *             @OA\Items(ref="#/components/schemas/ShoppingCategory")
  *         )
+ *     )
+ * )
+ * 
+ *  * @OA\RequestBody(
+ *     request="ShoppingTagStoreRequest",
+ *     description="登録する買い物タグデータ",
+ *     required=true,
+ *     @OA\JsonContent(
+ *         @OA\Property(property="name", type="string", description="買い物タグ名", example="サラダ"),
  *     )
  * )
  */

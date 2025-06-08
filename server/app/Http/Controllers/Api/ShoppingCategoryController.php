@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\ShoppingCategory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 class ShoppingCategoryController extends Controller
 {
@@ -26,9 +25,18 @@ class ShoppingCategoryController extends Controller
         $user = $request->user();
         $group = $user->group;
 
-        $categories = $group->shoppingCategories->select('id', 'name', 'is_default', 'order');
-
-        $res = ['categories' => $categories, 'total' => $categories->count()];
+        $categories = $group->shoppingCategories()->select('id', 'name', 'is_default', 'order')->get();
+        $res = [
+            'categories' => $categories->map(function ($category) {
+                return [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'isDefault' => (bool)$category->is_default,
+                    'order' => $category->order
+                ];
+            }),
+            'total' => $categories->count()
+        ];
 
         return response()->json($res, 200);
     }
@@ -90,7 +98,15 @@ class ShoppingCategoryController extends Controller
             ]);
         }
 
-        $ret = $group->shoppingCategories()->select('id', 'name', 'is_default as isDefault', 'order')->get();
+        $categories = $group->shoppingCategories()->select('id', 'name', 'is_default', 'order')->get();
+        $ret = $categories->map(function ($category) {
+            return [
+                'id' => $category->id,
+                'name' => $category->name,
+                'isDefault' => (bool)$category->is_default,
+                'order' => $category->order
+            ];
+        });
 
         return response()->json($ret, 200);
     }

@@ -108,6 +108,7 @@ namespace App\Swagger;
  *         )
  *     )
  * )
+ * 
  */
 
 class ShoppingResponse {}
