@@ -45,6 +45,36 @@ class Group extends Model
         return $this->hasManyThrough(User::class, GroupUserMapping::class, 'group_id', 'id', 'id', 'user_id');
     }
 
+    public function dishes()
+    {
+        return $this->hasMany(Dish::class);
+    }
+
+    public function dishCategories()
+    {
+        return $this->hasMany(DishCategory::class);
+    }
+
+    public function seasonings()
+    {
+        return $this->hasMany(Seasoning::class);
+    }
+
+    public function seasoningUnits()
+    {
+        return $this->hasMany(SeasoningUnit::class);
+    }
+
+    public function ingredients()
+    {
+        return $this->hasMany(Ingredient::class);
+    }
+
+    public function ingredientUnits()
+    {
+        return $this->hasMany(IngredientUnit::class);
+    }
+
     public function shoppingItems()
     {
         return $this->hasMany(ShoppingItem::class);

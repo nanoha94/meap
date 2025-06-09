@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\DishCategory;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class DishCategoryController extends Controller
@@ -19,9 +21,20 @@ class DishCategoryController extends Controller
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
-        //
+        $user = $request->user();
+        $group = $user->group;
+
+        $ret = DishCategory::create([
+            'group_id' => $group->id,
+            'name' => $request->name,
+        ]);
+
+        return response()->json([
+            'id' => $ret->id,
+            'name' => $ret->name,
+        ], 200);
     }
 
     /**
@@ -37,9 +50,18 @@ class DishCategoryController extends Controller
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, string $id): JsonResponse
     {
-        //
+        $user = $request->user();
+        $group = $user->group;
+
+        DishCategory::where('id', $id)->update([
+            'name' => $request->name
+        ]);
+
+        $category = $group->dishCategories()->where('id', $id)->select('id', 'name')->first();
+
+        return response()->json($category, 200);
     }
 
     /**
@@ -54,8 +76,18 @@ class DishCategoryController extends Controller
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
-    public function destroy(string $id)
+    public function destroy(string $id): JsonResponse
     {
-        //
+        $category =  DishCategory::where('id', $id)->first();
+
+        if (!$category) {
+            return response()->json([
+                'message' => '指定されたレコードが見つかりません。'
+            ], 404);
+        }
+
+        $category->delete();
+
+        return response()->json(['id' => $id], 200);
     }
 }

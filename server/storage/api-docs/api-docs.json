@@ -1304,7 +1304,7 @@
                     "application/json": {
                         "schema": {
                             "properties": {
-                                "message": {
+                                "id": {
                                     "type": "string"
                                 }
                             },
@@ -1897,12 +1897,20 @@
                 }
             },
             "DishCategoryRequest": {
-                "description": "※新規作成時はid不要",
                 "required": true,
                 "content": {
                     "application/json": {
                         "schema": {
-                            "$ref": "#/components/schemas/DishCategory"
+                            "required": [
+                                "name"
+                            ],
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "example": "肉料理"
+                                }
+                            },
+                            "type": "object"
                         }
                     }
                 }

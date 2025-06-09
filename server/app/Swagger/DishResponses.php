@@ -42,7 +42,7 @@ namespace App\Swagger;
  *     description="正常に削除されました",
  *     @OA\JsonContent(
  *         type="object",
- *         @OA\Property(property="message", type="string")
+ *         @OA\Property(property="id", type="string")
  *     )
  * )
  * @OA\Response(

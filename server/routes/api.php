@@ -21,7 +21,7 @@ Route::middleware('auth')->group(function () {
     // resource
     Route::apiResource('/meals', MealController::class);
     Route::apiResource('/dishes', DishController::class);
-    Route::apiResource('/dishes/caategories', DishCategoryController::class)->except(['index', 'show']);
+    Route::apiResource('/dishes/categories', DishCategoryController::class)->except(['index', 'show']);
     Route::resource('invitations', InvitationController::class)->only(['store', 'show']);
     Route::post('/invitations/{token}/join', [InvitationController::class, 'join']);
     Route::get('/users', [ApiGroupUsersController::class, 'index']);

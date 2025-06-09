@@ -11,9 +11,12 @@ namespace App\Swagger;
  * )
  * @OA\RequestBody(
  *     request="DishCategoryRequest",
- *     description="※新規作成時はid不要",
  *     required=true,
- *     @OA\JsonContent(ref="#/components/schemas/DishCategory")
+ *      @OA\JsonContent(
+ *         type="object",
+ *         required={"name"},
+ *         @OA\Property(property="name", type="string", example="肉料理"),
+ *     )
  * )
  */
 
