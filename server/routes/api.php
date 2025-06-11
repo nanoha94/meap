@@ -33,9 +33,6 @@ Route::middleware('auth')->group(function () {
 
     Route::apiResource('/shopping/tags', ShoppingTagController::class)->only(['index']);
 
-    // page
-    Route::get('/page/shopping-list', PageShoppingListController::class);
-
     // master
     Route::get('/master', MasterController::class);
 });
