@@ -13,12 +13,7 @@ class SeasoningUnit extends Model
     public $incrementing = false;
 
     protected $fillable = [
-        'group_id',
-        'name'
+        'name',
+        'order'
     ];
-
-    public function dishes()
-    {
-        return $this->belongsToMany(Dish::class, 'dish_seasoning_mappings', 'seasoning_id', 'dish_id');
-    }
 }

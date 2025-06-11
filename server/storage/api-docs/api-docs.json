@@ -882,51 +882,20 @@
                         "description": "食材",
                         "type": "array",
                         "items": {
-                            "properties": {
-                                "name": {
-                                    "description": "食材名",
-                                    "type": "string",
-                                    "example": "牛肉"
-                                },
-                                "quantity": {
-                                    "description": "量",
-                                    "type": "number",
-                                    "format": "double",
-                                    "example": "100"
-                                },
-                                "unit": {
-                                    "description": "単位",
-                                    "type": "string",
-                                    "example": "g"
-                                }
-                            },
-                            "type": "object"
+                            "$ref": "#/components/schemas/Ingredient"
                         }
                     },
                     "seasonings": {
                         "description": "調味料",
                         "type": "array",
                         "items": {
-                            "properties": {
-                                "name": {
-                                    "description": "調味料名",
-                                    "type": "string",
-                                    "example": "塩"
-                                },
-                                "quantity": {
-                                    "description": "量",
-                                    "type": "number",
-                                    "format": "double",
-                                    "example": "1"
-                                },
-                                "unit": {
-                                    "description": "単位",
-                                    "type": "string",
-                                    "example": "g"
-                                }
-                            },
-                            "type": "object"
+                            "$ref": "#/components/schemas/Seasoning"
                         }
+                    },
+                    "thumbnailUrl": {
+                        "description": "サムネイルURL",
+                        "type": "string",
+                        "example": "https://www.google.com"
                     },
                     "url": {
                         "description": "レシピURL",
@@ -961,6 +930,70 @@
                         "description": "カテゴリ名",
                         "type": "string",
                         "example": "肉料理"
+                    }
+                },
+                "type": "object"
+            },
+            "Seasoning": {
+                "required": [
+                    "id",
+                    "name",
+                    "quantity",
+                    "unit"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "ID",
+                        "type": "string",
+                        "example": "1"
+                    },
+                    "name": {
+                        "description": "調味料名",
+                        "type": "string",
+                        "example": "塩"
+                    },
+                    "quantity": {
+                        "description": "量",
+                        "type": "number",
+                        "format": "double",
+                        "example": "1"
+                    },
+                    "unitId": {
+                        "description": "単位",
+                        "type": "string",
+                        "example": "1"
+                    }
+                },
+                "type": "object"
+            },
+            "Ingredient": {
+                "required": [
+                    "id",
+                    "name",
+                    "quantity",
+                    "unit"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "ID",
+                        "type": "string",
+                        "example": "1"
+                    },
+                    "name": {
+                        "description": "食材名",
+                        "type": "string",
+                        "example": "牛肉"
+                    },
+                    "quantity": {
+                        "description": "量",
+                        "type": "number",
+                        "format": "double",
+                        "example": "1"
+                    },
+                    "unitId": {
+                        "description": "単位",
+                        "type": "string",
+                        "example": "1"
                     }
                 },
                 "type": "object"
@@ -1897,20 +1930,12 @@
                 }
             },
             "DishCategoryRequest": {
+                "description": "※新規作成時はid不要",
                 "required": true,
                 "content": {
                     "application/json": {
                         "schema": {
-                            "required": [
-                                "name"
-                            ],
-                            "properties": {
-                                "name": {
-                                    "type": "string",
-                                    "example": "肉料理"
-                                }
-                            },
-                            "type": "object"
+                            "$ref": "#/components/schemas/DishCategory"
                         }
                     }
                 }

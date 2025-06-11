@@ -19,6 +19,6 @@ class DishCategory extends Model
 
     public function dishes()
     {
-        return $this->belongsToMany(Dish::class, 'dishes_category_mappings', 'category_id', 'dish_id');
+        return $this->belongsToMany(Dish::class, 'dish_category_mappings', 'category_id', 'dish_id');
     }
 }

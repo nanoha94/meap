@@ -55,7 +55,7 @@ class DishCategoryController extends Controller
         $user = $request->user();
         $group = $user->group;
 
-        DishCategory::where('id', $id)->update([
+        DishCategory::where('id', $id)->where('group_id', $group->id)->update([
             'name' => $request->name
         ]);
 
@@ -76,9 +76,12 @@ class DishCategoryController extends Controller
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
-    public function destroy(string $id): JsonResponse
+    public function destroy(Request $request, string $id): JsonResponse
     {
-        $category =  DishCategory::where('id', $id)->first();
+        $user = $request->user();
+        $group = $user->group;
+
+        $category =  DishCategory::where('id', $id)->where('group_id', $group->id)->first();
 
         if (!$category) {
             return response()->json([
@@ -86,8 +89,9 @@ class DishCategoryController extends Controller
             ], 404);
         }
 
+        $deletedId = $category->id;
         $category->delete();
 
-        return response()->json(['id' => $id], 200);
+        return response()->json(['id' => $deletedId], 200);
     }
 }

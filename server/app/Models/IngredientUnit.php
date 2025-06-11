@@ -13,12 +13,7 @@ class IngredientUnit extends Model
     public $incrementing = false;
 
     protected $fillable = [
-        'group_id',
-        'name'
+        'name',
+        'order'
     ];
-
-    public function dishes()
-    {
-        return $this->belongsToMany(Dish::class, 'dish_ingredient_mappings', 'unit_id', 'dish_id');
-    }
 }

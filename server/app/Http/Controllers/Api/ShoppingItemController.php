@@ -9,9 +9,12 @@ use App\Models\Group;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use App\Traits\AutoComplement;
 
 class ShoppingItemController extends Controller
 {
+    use AutoComplement;
+
     /**
      * @OA\Get(
      *     path="/shopping/items",
@@ -102,7 +105,7 @@ class ShoppingItemController extends Controller
 
         // タグの処理
         if (!empty($request->tags)) {
-            $tagIds = $this->getTagIds($request->tags, $group);
+            $tagIds = $this->findOrCreateIds($request->tags, $group, ShoppingTag::class);
             $ret->tags()->attach($tagIds);
         }
 
@@ -160,7 +163,7 @@ class ShoppingItemController extends Controller
 
             // タグの更新
             if (!empty($item['tags'])) {
-                $tagIds = $this->getTagIds($item['tags'], $group);
+                $tagIds = $this->findOrCreateIds($item['tags'], $group, ShoppingTag::class);
                 $shoppingItem->tags()->sync($tagIds);
             }
 
@@ -218,55 +221,5 @@ class ShoppingItemController extends Controller
             $item->delete();
         }
         return response()->json(['ids' => $deletedIds], 200);
-    }
-
-    /**
-     * 買い物アイテムと紐づけするタグIDを取得
-     * @param array|null $tags タグ名の配列 [{id: string, name: string}]
-     * @param Group $group グループモデル
-     * @return array タグIDの配列
-     */
-    private function getTagIds(?array $tags, Group $group): array
-    {
-        if (empty($tags)) {
-            return [];
-        }
-
-        $tagIds = [];
-        foreach ($tags as $tag) {
-            if (isset($tag['id'])) {
-                // 既存タグの場合、存在確認
-                $existingTag = ShoppingTag::where('id', $tag['id'])
-                    ->where('group_id', $group->id)
-                    ->first();
-
-                if ($existingTag) {
-                    $tagIds[] = $existingTag->id;
-                }
-            } else {
-                // 新規タグの場合、同じ名前のタグが存在するか確認
-                $existingTag = ShoppingTag::where('group_id', $group->id)
-                    ->where('name', $tag['name'])
-                    ->first();
-
-                if ($existingTag) {
-                    // 既存のタグを使用
-                    $tagIds[] = $existingTag->id;
-                } else {
-                    // 新規タグを作成
-                    $newTag = ShoppingTag::create([
-                        'group_id' => $group->id,
-                        'name' => $tag['name']
-                    ]);
-                    $tagIds[] = $newTag->id;
-                }
-            }
-        }
-        if (!empty($tagIds)) {
-            // 重複を除去
-            $tagIds = array_unique($tagIds);
-        }
-
-        return $tagIds;
     }
 }

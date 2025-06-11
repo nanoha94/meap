@@ -125,7 +125,10 @@ class ShoppingCategoryController extends Controller
      */
     public function destroy(Request $request, string $id): JsonResponse
     {
-        $category =  ShoppingCategory::where('id', $id)->first();
+        $user = $request->user();
+        $group = $user->group;
+
+        $category =  ShoppingCategory::where('id', $id)->where('group_id', $group->id)->first();
 
         if (!$category) {
             return response()->json([

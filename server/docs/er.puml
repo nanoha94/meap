@@ -12,7 +12,6 @@ entity ingredient_units {
     * id : string <<generated>>
     --
     * name : string
-    * group_id : string <<FK>>
 }
 
 entity seasonings {
@@ -26,7 +25,6 @@ entity seasoning_units {
     * id : string <<generated>>
     --
     * name : string
-    * group_id : string <<FK>>
 }
 
 entity dish_category_mappings {
@@ -48,17 +46,15 @@ entity dishes {
 entity dish_ingredient_mappings {
     * dish_id : string <<FK>>
     * ingredient_id : string <<FK>>
-    --
-    * amount : float
     * unit_id : string <<FK>>
+    * quantity : float
 }
 
 entity dish_seasoning_mappings {
     * dish_id : string <<FK>>
     * ingredient_id : string <<FK>>
-    --
-    * amount : float
     * unit_id : string <<FK>>
+    * quantity : float
 }
 
 entity dish_roles {
@@ -197,14 +193,12 @@ groups ||--o{ dish_categories
 dishes ||--o{ dish_category_mappings
 dish_category_mappings }o--|| dish_categories
 
-ingredient_units }o--|| groups
 ingredients }o--|| groups
 dishes ||--o{ dish_ingredient_mappings
 dish_ingredient_mappings }o--|| ingredient_units
 dish_ingredient_mappings }o--|| ingredients
 
 
-seasoning_units }o--|| groups
 seasonings }o--|| groups
 dishes ||--o{ dish_seasoning_mappings
 dish_seasoning_mappings }o--|| seasoning_units

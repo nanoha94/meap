@@ -23,16 +23,18 @@ class Dish extends Model
 
     public function categories()
     {
-        return $this->belongsToMany(DishCategory::class, 'dishes_category_mappings', 'dish_id', 'category_id');
+        return $this->belongsToMany(DishCategory::class, 'dish_category_mappings', 'dish_id', 'category_id');
     }
 
     public function ingredients()
     {
-        return $this->belongsToMany(Ingredient::class, 'dish_ingredient_mappings', 'dish_id', 'ingredient_id');
+        return $this->belongsToMany(Ingredient::class, 'dish_ingredient_mappings', 'dish_id', 'ingredient_id')
+            ->withPivot('quantity', 'unit_id');
     }
 
     public function seasonings()
     {
-        return $this->belongsToMany(Seasoning::class, 'dish_seasoning_mappings', 'dish_id', 'seasoning_id');
+        return $this->belongsToMany(Seasoning::class, 'dish_seasoning_mappings', 'dish_id', 'seasoning_id')
+            ->withPivot('quantity', 'unit_id');
     }
 }
