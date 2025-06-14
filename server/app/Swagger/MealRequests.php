@@ -7,7 +7,27 @@ namespace App\Swagger;
  *     request="MealRequest",
  *     description="※新規作成時はid不要",
  *     required=true,
- *     @OA\JsonContent(ref="#/components/schemas/Meal")
+ *     @OA\JsonContent(
+ *         type="object",
+ *         required={"date", "categoryId"},
+ *         @OA\Property(property="date", type="string", format="date", description="日付", example="2023-10-05"),
+ *         @OA\Property(property="categoryId", type="string", description="種別ID", example="1"),
+ *         @OA\Property(
+ *             property="menu",
+ *             type="array",
+ *             description="献立メニュー",
+ *             @OA\Items(
+ *                 type="object",
+ *                 @OA\Property(property="roleId", type="string", description="料理分類ID", example="1"),
+ *                 @OA\Property(
+ *                     property="dishIds",
+ *                     type="array",
+ *                     description="料理ID",
+ *                     @OA\Items(type="string", description="料理ID", example="1")
+ *                 )
+ *             )
+ *         )
+ *     )
  * )
  * @OA\RequestBody(
  *     request="MealCategoryRequest",

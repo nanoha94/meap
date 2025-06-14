@@ -225,7 +225,7 @@ note right of dishes
 end note
 
 note top of dish_roles
-  料理区分を管理する。（料理カテゴリとは別物）
+  料理分類を管理する。（料理カテゴリとは別物）
 end note
 
 note right of dish_categories

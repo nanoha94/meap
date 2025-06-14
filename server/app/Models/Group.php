@@ -31,7 +31,7 @@ class Group extends Model
         $category->order = 0;
         $category->save();
 
-        // デフォルトの料理区分を追加
+        // デフォルトの料理分類を追加
         $roles = [
             ['name' => '主食', 'order' => 0],
             ['name' => '主菜', 'order' => 1],
@@ -55,7 +55,7 @@ class Group extends Model
         $categories = [
             ['name' => '朝食', 'color_id' => $yellow->id, 'order' => 0],
             ['name' => '昼食', 'color_id' => $red->id, 'order' => 1],
-            ['name' => '夜食', 'color_id' => $blue->id, 'order' => 2],
+            ['name' => '夕食', 'color_id' => $blue->id, 'order' => 2],
         ];
 
         foreach ($categories as $category) {
@@ -84,6 +84,11 @@ class Group extends Model
     public function mealCategories()
     {
         return $this->hasMany(MealCategory::class);
+    }
+
+    public function meals()
+    {
+        return $this->hasMany(Meal::class);
     }
 
     public function dishes()

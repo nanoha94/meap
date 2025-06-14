@@ -37,4 +37,16 @@ class Dish extends Model
         return $this->belongsToMany(Seasoning::class, 'dish_seasoning_mappings', 'dish_id', 'seasoning_id')
             ->withPivot('quantity', 'unit_id');
     }
+
+    public function meals()
+    {
+        return $this->belongsToMany(Meal::class, 'meal_dish_mappings', 'dish_id', 'meal_id')
+            ->withPivot('dish_role_id');
+    }
+
+    public function dishRoles()
+    {
+        return $this->belongsToMany(DishRole::class, 'meal_dish_mappings', 'dish_id', 'dish_role_id')
+            ->withPivot('meal_id');
+    }
 }

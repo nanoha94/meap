@@ -22,4 +22,16 @@ class DishRole extends Model
     {
         return $this->belongsTo(Group::class);
     }
+
+    public function meals()
+    {
+        return $this->belongsToMany(Meal::class, 'meal_dish_mappings', 'dish_role_id', 'meal_id')
+            ->withPivot('dish_id');
+    }
+
+    public function dishes()
+    {
+        return $this->belongsToMany(Dish::class, 'meal_dish_mappings', 'dish_role_id', 'dish_id')
+            ->withPivot('meal_id');
+    }
 }

@@ -30,11 +30,13 @@ class Meal extends Model
 
     public function dishes()
     {
-        return $this->belongsToMany(Dish::class, 'meal_dish_mappings', 'meal_id', 'dish_id');
+        return $this->belongsToMany(Dish::class, 'meal_dish_mappings', 'meal_id', 'dish_id')
+            ->withPivot('dish_role_id');
     }
 
     public function dishRoles()
     {
-        return $this->belongsToMany(DishRole::class, 'meal_dish_mappings', 'meal_id', 'dish_role_id');
+        return $this->belongsToMany(DishRole::class, 'meal_dish_mappings', 'meal_id', 'dish_role_id')
+            ->withPivot('dish_id');
     }
 }

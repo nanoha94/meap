@@ -1127,19 +1127,44 @@
                         "example": "2023-10-05"
                     },
                     "category": {
-                        "description": "種別",
-                        "type": "string",
-                        "example": "朝食"
+                        "properties": {
+                            "id": {
+                                "description": "ID",
+                                "type": "string",
+                                "example": "1"
+                            },
+                            "name": {
+                                "description": "カテゴリ名",
+                                "type": "string",
+                                "example": "朝食"
+                            },
+                            "colorId": {
+                                "description": "色ID",
+                                "type": "string",
+                                "example": "1"
+                            }
+                        },
+                        "type": "object"
                     },
-                    "menu": {
-                        "description": "献立メニュー",
+                    "meals": {
+                        "description": "献立",
                         "type": "array",
                         "items": {
                             "properties": {
                                 "role": {
-                                    "description": "分類",
-                                    "type": "string",
-                                    "example": "主食"
+                                    "properties": {
+                                        "id": {
+                                            "description": "ID",
+                                            "type": "string",
+                                            "example": "1"
+                                        },
+                                        "name": {
+                                            "description": "分類名",
+                                            "type": "string",
+                                            "example": "主食"
+                                        }
+                                    },
+                                    "type": "object"
                                 },
                                 "dishes": {
                                     "description": "料理",
@@ -1463,7 +1488,7 @@
                     "application/json": {
                         "schema": {
                             "properties": {
-                                "message": {
+                                "id": {
                                     "type": "string"
                                 }
                             },
@@ -1653,7 +1678,7 @@
                     "application/json": {
                         "schema": {
                             "properties": {
-                                "message": {
+                                "id": {
                                     "type": "string"
                                 }
                             },
@@ -2098,7 +2123,47 @@
                 "content": {
                     "application/json": {
                         "schema": {
-                            "$ref": "#/components/schemas/Meal"
+                            "required": [
+                                "date",
+                                "categoryId"
+                            ],
+                            "properties": {
+                                "date": {
+                                    "description": "日付",
+                                    "type": "string",
+                                    "format": "date",
+                                    "example": "2023-10-05"
+                                },
+                                "categoryId": {
+                                    "description": "種別ID",
+                                    "type": "string",
+                                    "example": "1"
+                                },
+                                "menu": {
+                                    "description": "献立メニュー",
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "roleId": {
+                                                "description": "料理分類ID",
+                                                "type": "string",
+                                                "example": "1"
+                                            },
+                                            "dishIds": {
+                                                "description": "料理ID",
+                                                "type": "array",
+                                                "items": {
+                                                    "description": "料理ID",
+                                                    "type": "string",
+                                                    "example": "1"
+                                                }
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            },
+                            "type": "object"
                         }
                     }
                 }
