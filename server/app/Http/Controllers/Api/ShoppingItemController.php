@@ -207,7 +207,7 @@ class ShoppingItemController extends Controller
     public function bulkDestroy(Request $request): JsonResponse
     {
         $deletedIds = [];
-        foreach ($request->itemIds as $id) {
+        foreach ($request->ids as $id) {
             $item = ShoppingItem::where('id', $id)->first();
 
             if (!$item) {

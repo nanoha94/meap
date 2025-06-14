@@ -45,7 +45,7 @@ namespace App\Swagger;
  *     @OA\JsonContent(
  *         type="object",
  *         @OA\Property(
- *             property="itemIds",
+ *             property="ids",
  *             type="array",
  *             description="削除する買い物アイテムのID配列",
  *             @OA\Items(

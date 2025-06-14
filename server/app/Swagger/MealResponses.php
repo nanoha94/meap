@@ -49,5 +49,38 @@ namespace App\Swagger;
  *         @OA\Property(property="message", type="string")
  *     )
  * )
+ * 
+ * @OA\Response(
+ *     response="MealCategoryStoreSuccess",
+ *     description="正常に登録されました",
+ *     @OA\JsonContent(
+ *         type="object",
+ *         @OA\Property(
+ *             property="categories",
+ *             type="array",
+ *             @OA\Items(ref="#/components/schemas/MealCategory")
+ *         )
+ *     )
+ * )
+ * @OA\Response(
+ *     response="MealCategoryBulkUpdateSuccess",
+ *     description="正常に更新されました",
+ *     @OA\JsonContent(
+ *         type="object",
+ *         @OA\Property(
+ *             property="categories",
+ *             type="array",
+ *             @OA\Items(ref="#/components/schemas/MealCategory")
+ *         )
+ *     )
+ * )
+ * @OA\Response(
+ *     response="MealCategoryBulkDestroySuccess",
+ *     description="正常に削除されました",
+ *     @OA\JsonContent(
+ *         type="object",
+ *         @OA\Property(property="ids", type="array", @OA\Items(type="string"))
+ *     )
+ * )
  */
 class MealResponses {}

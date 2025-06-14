@@ -400,6 +400,88 @@
                 ]
             }
         },
+        "/meals/categories": {
+            "post": {
+                "tags": [
+                    "Meals"
+                ],
+                "summary": "献立カテゴリを作成",
+                "operationId": "b824b4121b0ca0a70aed08c9f5339de0",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/MealCategoryRequest"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/MealCategoryStoreSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/meals/categories/bulk": {
+            "put": {
+                "tags": [
+                    "Meals"
+                ],
+                "summary": "献立カテゴリを更新",
+                "operationId": "e43d7ba8b44471e427556fb1a9c96849",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/MealCategoryRequest"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/MealCategoryUpdateSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Meals"
+                ],
+                "summary": "献立カテゴリを削除",
+                "operationId": "fe7d07cbf2c3b0fa585e8b0bf71b1809",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/MealCategoryBulkDestroyRequest"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/MealCategoryDestroySuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/meals": {
             "get": {
                 "tags": [
@@ -1571,6 +1653,60 @@
                     }
                 }
             },
+            "MealCategoryStoreSuccess": {
+                "description": "正常に登録されました",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "categories": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/MealCategory"
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "MealCategoryUpdateSuccess": {
+                "description": "正常に更新されました",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "categories": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/MealCategory"
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "MealCategoryDestroySuccess": {
+                "description": "正常に削除されました",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "ids": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
             "ShoppingItemIndexSuccess": {
                 "description": "正常に取得されました",
                 "content": {
@@ -1833,6 +1969,16 @@
                     "example": "1"
                 }
             },
+            "MealCategoryIdParam": {
+                "name": "id",
+                "in": "path",
+                "description": "献立カテゴリID",
+                "required": true,
+                "schema": {
+                    "type": "string",
+                    "example": "1"
+                }
+            },
             "ShoppingIdParam": {
                 "name": "id",
                 "in": "path",
@@ -1947,6 +2093,67 @@
                     "application/json": {
                         "schema": {
                             "$ref": "#/components/schemas/Meal"
+                        }
+                    }
+                }
+            },
+            "MealCategoryRequest": {
+                "description": "※新規作成時はid不要",
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "categories": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/MealCategory"
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "MealCategoryBulkUpdateRequest": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "categoryIds": {
+                                    "description": "更新する献立カテゴリのID配列",
+                                    "type": "array",
+                                    "items": {
+                                        "description": "献立カテゴリID",
+                                        "type": "string",
+                                        "example": "2"
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "MealCategoryBulkDestroyRequest": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "categoryIds": {
+                                    "description": "削除する献立カテゴリのID配列",
+                                    "type": "array",
+                                    "items": {
+                                        "description": "献立カテゴリID",
+                                        "type": "string",
+                                        "example": "2"
+                                    }
+                                }
+                            },
+                            "type": "object"
                         }
                     }
                 }

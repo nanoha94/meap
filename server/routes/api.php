@@ -10,27 +10,37 @@ use App\Http\Controllers\Api\MasterController;
 use App\Http\Controllers\Api\ShoppingCategoryController;
 use App\Http\Controllers\Api\ShoppingItemController;
 use App\Http\Controllers\Api\MealController;
-use App\Http\Controllers\Api\PageShoppingListController;
 use App\Http\Controllers\Api\ShoppingTagController;
+use App\Http\Controllers\Api\MealCategoryController;
 
 Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
     return $request->user();
 });
 
 Route::middleware('auth')->group(function () {
-    // resource
+    // meals
     Route::apiResource('/meals', MealController::class);
+    Route::post('/meals/categories', [MealCategoryController::class, 'store']);
+    Route::put('/meals/categories/bulk', [MealCategoryController::class, 'bulkUpdate']);
+    Route::delete('/meals/categories/bulk', [MealCategoryController::class, 'bulkDestroy']);
+
+    // dishes
     Route::apiResource('/dishes', DishController::class);
     Route::apiResource('/dishes/categories', DishCategoryController::class)->except(['index', 'show']);
+
+    // invitations
     Route::resource('invitations', InvitationController::class)->only(['store', 'show']);
     Route::post('/invitations/{token}/join', [InvitationController::class, 'join']);
+
+    // users
     Route::get('/users', [ApiGroupUsersController::class, 'index']);
+
+    // shopping
     Route::apiResource('/shopping/items', ShoppingItemController::class)->only(['index', 'store']);
     Route::put('/shopping/items/bulk', [ShoppingItemController::class, 'bulkUpdate']);
     Route::delete('/shopping/items/bulk', [ShoppingItemController::class, 'bulkDestroy']);
     Route::apiResource('/shopping/categories', ShoppingCategoryController::class)->except(['show', 'update']);
     Route::put('/shopping/categories/bulk', [ShoppingCategoryController::class, 'bulkUpdate']);
-
     Route::apiResource('/shopping/tags', ShoppingTagController::class)->only(['index']);
 
     // master
