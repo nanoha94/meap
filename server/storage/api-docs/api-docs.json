@@ -436,11 +436,11 @@
                 "summary": "献立カテゴリを更新",
                 "operationId": "e43d7ba8b44471e427556fb1a9c96849",
                 "requestBody": {
-                    "$ref": "#/components/requestBodies/MealCategoryRequest"
+                    "$ref": "#/components/requestBodies/MealCategoryBulkUpdateRequest"
                 },
                 "responses": {
                     "200": {
-                        "$ref": "#/components/responses/MealCategoryUpdateSuccess"
+                        "$ref": "#/components/responses/MealCategoryBulkUpdateSuccess"
                     },
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
@@ -454,16 +454,20 @@
                         "sanctum": []
                     }
                 ]
-            },
+            }
+        },
+        "/meals/categories/{id}": {
             "delete": {
                 "tags": [
                     "Meals"
                 ],
                 "summary": "献立カテゴリを削除",
-                "operationId": "fe7d07cbf2c3b0fa585e8b0bf71b1809",
-                "requestBody": {
-                    "$ref": "#/components/requestBodies/MealCategoryBulkDestroyRequest"
-                },
+                "operationId": "7a197f493006f17431ca415547fdda99",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/MealCategoryIdParam"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "$ref": "#/components/responses/MealCategoryDestroySuccess"
@@ -938,6 +942,31 @@
     },
     "components": {
         "schemas": {
+            "Color": {
+                "properties": {
+                    "id": {
+                        "description": "ID",
+                        "type": "string",
+                        "example": "1"
+                    },
+                    "name": {
+                        "description": "色名",
+                        "type": "string",
+                        "example": "イエロー"
+                    },
+                    "colorode": {
+                        "description": "色コード",
+                        "type": "string",
+                        "example": "#F5B12E"
+                    },
+                    "order": {
+                        "description": "ソート順",
+                        "type": "integer",
+                        "example": "1"
+                    }
+                },
+                "type": "object"
+            },
             "Dish": {
                 "required": [
                     "name"
@@ -1143,35 +1172,15 @@
                         "type": "string",
                         "example": "朝食"
                     },
-                    "color": {
-                        "description": "色コード",
-                        "type": "string",
-                        "example": "#F5B12E"
-                    }
-                },
-                "type": "object"
-            },
-            "MealCategoryColor": {
-                "required": [
-                    "id",
-                    "name",
-                    "colorCode"
-                ],
-                "properties": {
-                    "id": {
-                        "description": "ID",
+                    "colorId": {
+                        "description": "色ID",
                         "type": "string",
                         "example": "1"
                     },
-                    "name": {
-                        "description": "色名",
-                        "type": "string",
-                        "example": "イエロー"
-                    },
-                    "colorCode": {
-                        "description": "色コード",
-                        "type": "string",
-                        "example": "#F5B12E"
+                    "order": {
+                        "description": "ソート順",
+                        "type": "integer",
+                        "example": "1"
                     }
                 },
                 "type": "object"
@@ -1671,7 +1680,7 @@
                     }
                 }
             },
-            "MealCategoryUpdateSuccess": {
+            "MealCategoryBulkUpdateSuccess": {
                 "description": "正常に更新されました",
                 "content": {
                     "application/json": {
@@ -1695,11 +1704,8 @@
                     "application/json": {
                         "schema": {
                             "properties": {
-                                "ids": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "string"
-                                    }
+                                "id": {
+                                    "type": "string"
                                 }
                             },
                             "type": "object"
@@ -2103,12 +2109,20 @@
                 "content": {
                     "application/json": {
                         "schema": {
+                            "required": [
+                                "name",
+                                "colorId"
+                            ],
                             "properties": {
-                                "categories": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/MealCategory"
-                                    }
+                                "name": {
+                                    "description": "カテゴリ名",
+                                    "type": "string",
+                                    "example": "朝食"
+                                },
+                                "colorId": {
+                                    "description": "色ID",
+                                    "type": "string",
+                                    "example": "1"
                                 }
                             },
                             "type": "object"
@@ -2122,13 +2136,10 @@
                     "application/json": {
                         "schema": {
                             "properties": {
-                                "categoryIds": {
-                                    "description": "更新する献立カテゴリのID配列",
+                                "categories": {
                                     "type": "array",
                                     "items": {
-                                        "description": "献立カテゴリID",
-                                        "type": "string",
-                                        "example": "2"
+                                        "$ref": "#/components/schemas/MealCategory"
                                     }
                                 }
                             },
@@ -2143,7 +2154,7 @@
                     "application/json": {
                         "schema": {
                             "properties": {
-                                "categoryIds": {
+                                "ids": {
                                     "description": "削除する献立カテゴリのID配列",
                                     "type": "array",
                                     "items": {
@@ -2230,7 +2241,7 @@
                     "application/json": {
                         "schema": {
                             "properties": {
-                                "itemIds": {
+                                "ids": {
                                     "description": "削除する買い物アイテムのID配列",
                                     "type": "array",
                                     "items": {

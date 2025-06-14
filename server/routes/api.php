@@ -20,9 +20,8 @@ Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
 Route::middleware('auth')->group(function () {
     // meals
     Route::apiResource('/meals', MealController::class);
-    Route::post('/meals/categories', [MealCategoryController::class, 'store']);
+    Route::apiResource('/meals/categories', MealCategoryController::class)->only(['store', 'destroy']);
     Route::put('/meals/categories/bulk', [MealCategoryController::class, 'bulkUpdate']);
-    Route::delete('/meals/categories/bulk', [MealCategoryController::class, 'bulkDestroy']);
 
     // dishes
     Route::apiResource('/dishes', DishController::class);

@@ -75,11 +75,11 @@ namespace App\Swagger;
  *     )
  * )
  * @OA\Response(
- *     response="MealCategoryBulkDestroySuccess",
+ *     response="MealCategoryDestroySuccess",
  *     description="正常に削除されました",
  *     @OA\JsonContent(
  *         type="object",
- *         @OA\Property(property="ids", type="array", @OA\Items(type="string"))
+ *         @OA\Property(property="id", type="string")
  *     )
  * )
  */

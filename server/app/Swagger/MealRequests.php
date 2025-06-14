@@ -15,11 +15,9 @@ namespace App\Swagger;
  *     required=true,
  *     @OA\JsonContent(
  *         type="object",
- *         @OA\Property(
- *             property="categories",
- *             type="array",
- *             @OA\Items(ref="#/components/schemas/MealCategory")
- *         )
+ *         required={"name", "colorId"},
+ *         @OA\Property(property="name", type="string", description="カテゴリ名", example="朝食"),
+ *         @OA\Property(property="colorId", type="string", description="色ID", example="1")
  *     )
  * )
  * @OA\RequestBody(
@@ -28,14 +26,9 @@ namespace App\Swagger;
  *     @OA\JsonContent(
  *         type="object",
  *         @OA\Property(
- *             property="ids",
+ *             property="categories",
  *             type="array",
- *             description="更新する献立カテゴリのID配列",
- *             @OA\Items(
- *                 type="string",
- *                 description="献立カテゴリID",
- *                 example="2"
- *             )
+ *             @OA\Items(ref="#/components/schemas/MealCategory")
  *         )
  *     )
  * )

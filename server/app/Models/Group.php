@@ -33,11 +33,11 @@ class Group extends Model
 
         // デフォルトの料理区分を追加
         $roles = [
-            ['name' => '主食', 'order' => 1],
-            ['name' => '主菜', 'order' => 2],
-            ['name' => '副菜', 'order' => 3],
+            ['name' => '主食', 'order' => 0],
+            ['name' => '主菜', 'order' => 1],
+            ['name' => '副菜', 'order' => 2],
             ['name' => '汁物', 'order' => 3],
-            ['name' => 'その他', 'order' => 3],
+            ['name' => 'その他', 'order' => 4],
         ];
 
         foreach ($roles as $role) {
@@ -53,9 +53,9 @@ class Group extends Model
         $red = Color::where('name', 'レッド')->first();
         $blue = Color::where('name', 'ブルー')->first();
         $categories = [
-            ['name' => '朝食', 'color_id' => $yellow->id, 'order' => 1],
-            ['name' => '昼食', 'color_id' => $red->id, 'order' => 2],
-            ['name' => '夜食', 'color_id' => $blue->id, 'order' => 3],
+            ['name' => '朝食', 'color_id' => $yellow->id, 'order' => 0],
+            ['name' => '昼食', 'color_id' => $red->id, 'order' => 1],
+            ['name' => '夜食', 'color_id' => $blue->id, 'order' => 2],
         ];
 
         foreach ($categories as $category) {
@@ -79,6 +79,11 @@ class Group extends Model
     public function users()
     {
         return $this->hasManyThrough(User::class, GroupUserMapping::class, 'group_id', 'id', 'id', 'user_id');
+    }
+
+    public function mealCategories()
+    {
+        return $this->hasMany(MealCategory::class);
     }
 
     public function dishes()

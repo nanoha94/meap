@@ -24,16 +24,10 @@ namespace App\Swagger;
  *     required={"id", "name", "color"},
  *     @OA\Property(property="id", type="string", description="ID", example="1"),
  *     @OA\Property(property="name", type="string", description="カテゴリ名", example="朝食"),
- *     @OA\Property(property="color", type="string", description="色コード", example="#F5B12E")
+ *     @OA\Property(property="colorId", type="string", description="色ID", example="1"),
+ *     @OA\Property(property="order", type="integer", description="ソート順", example="1"),
  * )
- * 
- * @OA\Schema(
- *     schema="MealCategoryColor",
- *     required={"id", "name", "colorCode"},
- *     @OA\Property(property="id", type="string", description="ID", example="1"),
- *     @OA\Property(property="name", type="string", description="色名", example="イエロー"),
- *     @OA\Property(property="colorCode", type="string", description="色コード", example="#F5B12E")
- * )
+
  */
 
 class MealSchemas {}
