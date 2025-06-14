@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignUuid('ingredient_id')->constrained('ingredients', 'id')->cascadeOnDelete();
             $table->foreignUuid('unit_id')->constrained('ingredient_units', 'id')->cascadeOnDelete();
             $table->float('quantity');
-            $table->primary(['dish_id', 'ingredient_id']);
+            $table->primary(['dish_id', 'ingredient_id', 'unit_id']);
         });
     }
 

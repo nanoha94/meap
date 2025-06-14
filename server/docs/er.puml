@@ -62,6 +62,7 @@ entity dish_roles {
     ---
     * name : string / 種別（主食、主菜、副菜、汁物、その他）
     * group_id : string <<FK>>
+    * order : int / ソート順
 }
 
 entity dish_categories {
@@ -97,15 +98,16 @@ entity meal_categories {
     * name : string
     * color_id : string <<FK>>
     * group_id : string <<FK>>
+    * order : int / ソート順
 }
 
-entity meal_category_colors {
+entity colors {
     * id : string <<generated>>
     --
     * name : string / 色名（イエロー, オレンジ, ピンク, レッド, 
         イエローグリーン, グリーン, スカイブルー, ブルー, パープル）
-    * color_code: string / 色コード
-    * group_id : string <<FK>>
+    * color_code_hex: string / 色コード
+    * order : int / ソート順
 }
 
 entity shopping_items {
@@ -178,8 +180,7 @@ shopping_items ||--o{ shopping_item_tag_mappings
 shopping_tags }o--|| shopping_item_tag_mappings
 
 groups ||--o{ meal_categories
-groups ||--o{ meal_category_colors
-meal_categories |o--|| meal_category_colors
+meal_categories |o--|| colors
 
 meals }o--|| groups
 meals }o--|| meal_categories
@@ -205,7 +206,7 @@ dish_seasoning_mappings }o--|| seasoning_units
 dish_seasoning_mappings }o--|| seasonings
 
 
-note left of groups
+note right of groups
   データ共有するユーザー情報を管理する。
   ユーザは１つのグループにのみ所属できる。（拡張可能性あり）
   もしくは、すでに存在しているグループに招待してもらって所属する。

@@ -23,13 +23,49 @@ class Group extends Model
             'group_size' => 1,
         ]);
 
-        // カテゴリを追加
+        // デフォルトの買い物カテゴリを追加
         $category = new ShoppingCategory();
         $category->name = "その他のカテゴリー";
         $category->group_id = $group->id;
         $category->is_default = true;
         $category->order = 0;
         $category->save();
+
+        // デフォルトの料理区分を追加
+        $roles = [
+            ['name' => '主食', 'order' => 1],
+            ['name' => '主菜', 'order' => 2],
+            ['name' => '副菜', 'order' => 3],
+            ['name' => '汁物', 'order' => 3],
+            ['name' => 'その他', 'order' => 3],
+        ];
+
+        foreach ($roles as $role) {
+            $dishRole = new DishRole();
+            $dishRole->group_id = $group->id;
+            $dishRole->name = $role['name'];
+            $dishRole->order = $role['order'];
+            $dishRole->save();
+        }
+
+        // デフォルトの献立種別を追加
+        $yellow = Color::where('name', 'イエロー')->first();
+        $red = Color::where('name', 'レッド')->first();
+        $blue = Color::where('name', 'ブルー')->first();
+        $categories = [
+            ['name' => '朝食', 'color_id' => $yellow->id, 'order' => 1],
+            ['name' => '昼食', 'color_id' => $red->id, 'order' => 2],
+            ['name' => '夜食', 'color_id' => $blue->id, 'order' => 3],
+        ];
+
+        foreach ($categories as $category) {
+            $mealCategory = new MealCategory();
+            $mealCategory->group_id = $group->id;
+            $mealCategory->color_id = $category['color_id'];
+            $mealCategory->name = $category['name'];
+            $mealCategory->order = $category['order'];
+            $mealCategory->save();
+        }
 
         return $group;
     }

@@ -7,8 +7,6 @@ use Illuminate\Http\Request;
 
 class MealCategoryController extends Controller
 {
-
-
     /**
      * @OA\Post(
      *     path="/meals/categories",
