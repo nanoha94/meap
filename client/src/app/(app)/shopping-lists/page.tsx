@@ -9,7 +9,6 @@ import {
     DragStartEvent,
     useSensor,
     useSensors,
-    DragEndEvent,
     MouseSensor,
 } from '@dnd-kit/core';
 import {
@@ -18,15 +17,14 @@ import {
     verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import {
-    IGetShoppingCategory,
     IGetShoppingItem,
+    IGetShoppingItemsResponse,
     IPostShoppingItem,
 } from '@/types/api';
 import { CategoryItemList, ShoppingItem } from './_components';
 import { ChevronRight, LoaderCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useShoppingCategory, useShoppingItem } from '@/hooks';
-import { sort, generateUuid } from '@/utils';
+import { useShoppingItem } from '@/hooks';
 import { useDebounce } from '@/hooks/useDebounce';
 import { AlertDialog, TextButton } from '../_components';
 import { colors } from '@/constants/colors';
@@ -37,10 +35,6 @@ enum ItemType {
     NONE = null,
 }
 
-type ItemsByCategory = {
-    [key: string]: IGetShoppingItem[];
-};
-
 const Page = () => {
     const {
         isLoading,
@@ -49,7 +43,6 @@ const Page = () => {
         deleteShoppingItem,
         deleteAllShoppingItems,
     } = useShoppingItem();
-    const { shoppingCategories } = useShoppingCategory();
     const router = useRouter();
 
     const sensors = useSensors(
@@ -60,95 +53,80 @@ const Page = () => {
         }),
     );
 
+    // ページに初めてアクセスしたときのみローディングを表示したいので、そのためのフラグ
+    const [isInit, setIsInit] = React.useState(true);
+
+    const [listItems, setListItems] = React.useState<
+        IGetShoppingItemsResponse['data']
+    >([]);
+    const [items, setItems] = React.useState<IGetShoppingItem[]>([]);
     const [activeId, setActiveId] = React.useState<string | null>(null);
-    const [items, setItems] = React.useState<ItemsByCategory>({});
     const debouncedItems = useDebounce(items, 5000);
-    const [categories, setCategories] = React.useState<IGetShoppingCategory[]>(
-        [],
-    );
 
     const [isOpenListEmptyDialog, setIsOpenListEmptyDialog] =
         React.useState(false);
 
+    // shoppingItemsの変更を監視
+    React.useEffect(() => {
+        if (shoppingItems) {
+            setListItems(shoppingItems);
+        }
+    }, [shoppingItems]);
+
+    React.useEffect(() => {
+        console.log('listItems', listItems);
+        setItems(listItems.flatMap(v => v.items));
+    }, [listItems]);
+
+    /**
+     * アイテムのカテゴリーIDを取得
+     * @param itemId アイテムID
+     * @returns カテゴリーID
+     */
     const categoryIdFromItemId = (itemId: string): string | undefined => {
-        return Object.keys(items).find(
-            categoryId =>
-                items[categoryId].find(item => item.id === itemId)?.categoryId,
-        );
-    };
-
-    const addEmptyItem = (categoryId: string) => {
-        const newItem = {
-            id: generateUuid(),
-            name: '',
-            isChecked: false,
-            isPinned: false,
-            categoryId: categoryId,
-            order: items[categoryId].filter(v => v.name.length > 0).length,
-        };
-
-        setItems(prev => ({
-            ...prev,
-            [categoryId]: [...prev[categoryId], newItem],
-        }));
+        return items.find(v => v.id === itemId)?.categoryId;
     };
 
     const updateItem = (item: IPostShoppingItem) => {
         const { id, name, isPinned, isChecked, order } = item;
         const categoryId = categoryIdFromItemId(id);
+
         if (categoryId) {
-            setItems(prev => ({
-                ...prev,
-                [categoryId]: prev[categoryId].map(v =>
-                    v.id === id
-                        ? { ...v, name, isPinned, isChecked, order }
-                        : v,
-                ),
-            }));
+            setListItems(
+                listItems.map(v => ({
+                    ...v,
+                    items: v.items.map(item =>
+                        item.id === id
+                            ? { ...item, name, isPinned, isChecked, order }
+                            : item,
+                    ),
+                })),
+            );
         }
     };
 
-    const unCheckAllItems = () => {
-        setItems(prev => {
-            const newItems = { ...prev };
-            Object.keys(prev).forEach(categoryId => {
-                newItems[categoryId] = prev[categoryId].map(item => ({
-                    ...item,
-                    isChecked: false,
-                }));
-            });
-            return newItems;
-        });
-    };
-
-    // ローディングのタイミングでnameがないアイテムを削除
-    React.useEffect(() => {
-        if (isLoading) {
-            setItems(prev => {
-                const newItems = { ...prev };
-                Object.keys(prev).forEach(categoryId => {
-                    newItems[categoryId] = prev[categoryId].filter(
-                        item => item.name && item.name.length > 0,
-                    );
-                });
-                return newItems;
-            });
-        }
-    }, [isLoading]);
+    // TODO: あとで復活
+    // const unCheckAllItems = () => {
+    //     setItems(prev => {
+    //         const newItems = { ...prev };
+    //         Object.keys(prev).forEach(categoryId => {
+    //             newItems[categoryId] = prev[categoryId].map(item => ({
+    //                 ...item,
+    //                 isChecked: false,
+    //             }));
+    //         });
+    //         return newItems;
+    //     });
+    // };
 
     // ５秒間変更がなかったらAPIに送る
     React.useEffect(() => {
         if (debouncedItems.length > 0) {
             // APIに送るデータの形式に変換
-            const updateItems = categories
-                .map(category =>
-                    debouncedItems[category.id].map((item, idx) => ({
-                        ...item,
-                        order: idx,
-                    })),
-                )
-                .flat()
-                .filter(v => v !== null && v.name.length > 0);
+            const updateItems = debouncedItems.map((item, idx) => ({
+                ...item,
+                order: idx,
+            }));
 
             if (
                 JSON.stringify(debouncedItems) !== JSON.stringify(shoppingItems)
@@ -156,21 +134,16 @@ const Page = () => {
                 updateShoppingItems(updateItems);
             }
         }
-    }, [debouncedItems, categories]);
+    }, [debouncedItems]);
 
     // アンマウント時とページアンロード時の保存処理
     const saveItemsRef = React.useRef(() => {});
     saveItemsRef.current = () => {
         if (Object.keys(items).length > 0) {
-            const updateItems = categories
-                .map(category =>
-                    items[category.id].map((item, idx) => ({
-                        ...item,
-                        order: idx,
-                    })),
-                )
-                .flat()
-                .filter(v => v !== null && v.name.length > 0);
+            const updateItems = items.map((item, idx) => ({
+                ...item,
+                order: idx,
+            }));
             updateShoppingItems(updateItems);
         }
     };
@@ -188,33 +161,22 @@ const Page = () => {
     }, []);
 
     React.useEffect(() => {
-        if (shoppingItems && shoppingCategories) {
-            setCategories(sort(shoppingCategories));
-
-            // カテゴリーごとにアイテムを整理
-            // 表示する際に便利な形式に変換
-            const formattedItemsByCategory: ItemsByCategory = {};
-            shoppingCategories.forEach(category => {
-                formattedItemsByCategory[category.id] = sort(
-                    shoppingItems.filter(
-                        item => item.categoryId === category.id,
-                    ),
-                );
-            });
-            setItems(formattedItemsByCategory);
+        if (isInit && shoppingItems && shoppingItems.length > 0) {
+            setIsInit(false);
         }
-    }, [shoppingCategories, shoppingItems]);
+    }, [shoppingItems]);
 
     const updateSortableItems = (activeId: string, overId: string) => {
+        if (activeId === overId) return;
         const overCategoryItemId = categoryIdFromItemId(overId);
-        const overCategory = categories.find(
-            category => category.id === overId,
-        );
+        const overCategoryInfo = listItems?.find(
+            v => v.category.id === overId,
+        )?.category;
 
         // overIdがitemかcategoryかを判断
         const overType = overCategoryItemId
             ? ItemType.ITEM
-            : overCategory
+            : overCategoryInfo
               ? ItemType.CATEGORY
               : ItemType.NONE;
 
@@ -229,42 +191,65 @@ const Page = () => {
 
         if (!activeCategoryId && !overCategoryId) return;
 
-        const activeItem = items[activeCategoryId].find(
-            item => item.id === activeId,
+        // カテゴリごとのインデックスを取得
+        const activeCategory = listItems.find(
+            v => v.category.id === activeCategoryId,
+        );
+        const overCategory = listItems.find(
+            v => v.category.id === overCategoryId,
         );
 
-        const newIndex =
+        if (!activeCategory || !overCategory) return;
+
+        const activeIndex = activeCategory.items.findIndex(
+            v => v.id === activeId,
+        );
+        const overIndex =
             overType === ItemType.ITEM
-                ? items[overCategoryId].findIndex(item => item.id === overId)
+                ? overCategory.items.findIndex(v => v.id === overId)
                 : 0;
 
+        if (activeIndex === -1 || overIndex === -1) return;
+
+        // 別カテゴリ―での入れ替え
         if (activeCategoryId !== overCategoryId) {
+            const activeItem = activeCategory.items[activeIndex];
             if (activeItem) {
-                setItems(prev => ({
-                    ...prev,
-                    [activeCategoryId]: prev[activeCategoryId].filter(
-                        item => item.id !== activeId,
-                    ),
-                    [overCategoryId]: [
-                        ...prev[overCategoryId].slice(0, newIndex),
-                        { ...activeItem, categoryId: overCategoryId },
-                        ...prev[overCategoryId].slice(newIndex),
-                    ],
+                const removedActiveItems = listItems.map(v => ({
+                    ...v,
+                    items: v.items.filter(item => item.id !== activeId),
                 }));
+
+                const updatedListItems = removedActiveItems.map(v => {
+                    if (v.category.id === overCategoryId) {
+                        const newItems = [...v.items];
+                        newItems.splice(overIndex, 0, {
+                            ...activeItem,
+                            categoryId: overCategoryId,
+                        });
+                        return {
+                            ...v,
+                            items: newItems,
+                        };
+                    }
+                    return v;
+                });
+
+                setListItems(updatedListItems);
             }
-        } else {
-            setItems(prev => ({
-                ...prev,
-                [activeCategoryId]: arrayMove(
-                    prev[activeCategoryId],
-                    prev[activeCategoryId].findIndex(
-                        item => item.id === activeId,
-                    ),
-                    prev[activeCategoryId].findIndex(
-                        item => item.id === overId,
-                    ),
-                ),
-            }));
+        }
+        // 同カテゴリーでの入れ替え
+        else {
+            const updatedListItems = listItems.map(v => {
+                if (v.category.id === activeCategoryId) {
+                    return {
+                        ...v,
+                        items: arrayMove(v.items, activeIndex, overIndex),
+                    };
+                }
+                return v;
+            });
+            setListItems(updatedListItems);
         }
     };
 
@@ -280,14 +265,11 @@ const Page = () => {
         updateSortableItems(active.id as string, over.id as string);
     };
 
-    const handleDragEnd = (event: DragEndEvent) => {
-        const { active, over } = event;
-        if (!over) return;
-        updateSortableItems(active.id as string, over.id as string);
+    const handleDragEnd = () => {
         setActiveId(null);
     };
 
-    if (isLoading) {
+    if (isInit && isLoading) {
         return (
             <div className="py-5">
                 <LoaderCircle
@@ -301,28 +283,22 @@ const Page = () => {
         return (
             <>
                 <div className="pb-12 flex flex-col gap-y-7">
-                    <p className="text-sm">
-                        アイテムのタップで、編集・削除・固定化ができます。
-                        <br />
-                        アイテムのドラッグ＆ドロップで、並び替えができます。
-                    </p>
                     <div className="flex flex-col gap-y-7">
-                        {!!categories && categories.length > 0 ? (
+                        {!!listItems && listItems.length > 0 ? (
                             <DndContext
                                 sensors={sensors}
                                 collisionDetection={closestCenter}
                                 onDragStart={handleDragStart}
                                 onDragEnd={handleDragEnd}
                                 onDragOver={handleDragOver}>
-                                {categories.map(category => (
+                                {listItems.map(v => (
                                     <SortableContext
-                                        key={category.id}
-                                        items={items[category.id]}
+                                        key={v.category.id}
+                                        items={v.items}
                                         strategy={verticalListSortingStrategy}>
                                         <CategoryItemList
-                                            category={category}
-                                            items={items[category.id]}
-                                            addEmptyItem={addEmptyItem}
+                                            category={v.category}
+                                            items={v.items}
                                             deleteItem={deleteShoppingItem}
                                             updateItem={updateItem}
                                         />
@@ -331,9 +307,7 @@ const Page = () => {
                                 <DragOverlay>
                                     {activeId ? (
                                         <ShoppingItem
-                                            item={items[
-                                                categoryIdFromItemId(activeId)
-                                            ].find(
+                                            item={items?.find(
                                                 item => item.id === activeId,
                                             )}
                                             onDelete={() =>
@@ -349,16 +323,12 @@ const Page = () => {
                                                     name,
                                                     isPinned,
                                                     isChecked,
-                                                    categoryId: categories.find(
-                                                        category =>
-                                                            category.id ===
+                                                    categoryId: items?.find(
+                                                        item =>
+                                                            item.id ===
                                                             activeId,
-                                                    )?.id,
-                                                    order: items[
-                                                        categoryIdFromItemId(
-                                                            activeId,
-                                                        )
-                                                    ].find(
+                                                    )?.categoryId,
+                                                    order: items?.find(
                                                         item =>
                                                             item.id ===
                                                             activeId,
@@ -383,16 +353,6 @@ const Page = () => {
                         <ChevronRight size={20} />
                     </TextButton>
                 </div>
-                {!!items && (
-                    <div className="flex flex-col gap-y-3">
-                        <Button variant="outlined" onClick={unCheckAllItems}>
-                            チェックをすべて外す
-                        </Button>
-                        <Button onClick={() => setIsOpenListEmptyDialog(true)}>
-                            買い物リストを空にする
-                        </Button>
-                    </div>
-                )}
                 {isOpenListEmptyDialog && (
                     <AlertDialog
                         title="買い物リストを空にする"

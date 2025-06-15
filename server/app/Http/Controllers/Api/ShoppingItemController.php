@@ -69,7 +69,9 @@ class ShoppingItemController extends Controller
             ];
         }
 
-        return response()->json($res, 200);
+        return response()->json([
+            'data' => $res
+        ], 200);
     }
 
     /**
@@ -145,7 +147,7 @@ class ShoppingItemController extends Controller
         $group = $user->group;
 
         $updatedItems = [];
-        foreach ($request->items as $item) {
+        foreach ($request->data as $item) {
             $shoppingItem = ShoppingItem::where('id', $item['id'])->first();
             if (!$shoppingItem) {
                 continue;

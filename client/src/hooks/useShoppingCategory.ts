@@ -6,15 +6,21 @@ import useSWR from 'swr';
 
 const fetchShoppingCategories = (
     path: string,
-): Promise<IGetShoppingCategory[]> => axios.get(path).then(res => res.data);
+): Promise<{ categories: IGetShoppingCategory[]; total: number }> =>
+    axios.get(path).then(res => res.data);
 
 export const useShoppingCategory = () => {
     const { addSnackbar } = useSnackbars();
-    const { data: shoppingCategories, error } = useSWR(
-        '/api/group/shopping/categories',
+    const { data, error } = useSWR(
+        '/shopping/categories',
         fetchShoppingCategories,
     );
+    const shoppingCategories = data?.categories;
 
+    /**
+     * カテゴリーを更新する
+     * @param categories 更新するカテゴリーの配列
+     */
     const updateShoppingCategories = async (
         categories: IPostShoppingCategory[],
     ) => {
@@ -22,7 +28,7 @@ export const useShoppingCategory = () => {
 
         for (let idx = 0; idx < filteredCategories.length; idx++) {
             try {
-                const res = await axios.post(`/api/group/shopping/categories`, {
+                const res = await axios.post(`/shopping/categories`, {
                     ...filteredCategories[idx],
                     order: filteredCategories[idx].order ?? idx,
                 });
@@ -36,9 +42,13 @@ export const useShoppingCategory = () => {
         }
     };
 
+    /**
+     * カテゴリーを削除する
+     * @param id 削除するカテゴリーのID
+     */
     const deleteShoppingCategory = async (id: string) => {
         try {
-            const res = await axios.delete(`/api/group/shopping/categories`, {
+            const res = await axios.delete(`/shopping/categories`, {
                 data: { id },
             });
             if (res.data) {
@@ -50,6 +60,9 @@ export const useShoppingCategory = () => {
         }
     };
 
+    /**
+     * エラーが発生した場合に、エラーメッセージを表示する
+     */
     React.useEffect(() => {
         if (error) {
             console.error(error?.response?.data?.message);
@@ -58,7 +71,7 @@ export const useShoppingCategory = () => {
     }, [error]);
 
     return {
-        shoppingCategories,
+        shoppingCategories: shoppingCategories,
         updateShoppingCategories,
         deleteShoppingCategory,
     };

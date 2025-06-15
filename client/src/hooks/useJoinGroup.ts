@@ -9,7 +9,7 @@ export const useJoinGroup = () => {
         isDelete: boolean,
     ): Promise<string | null> => {
         try {
-            const res = await axios.post(`/api/group/users/join/${token}`, {
+            const res = await axios.post(`/group/users/join/${token}`, {
                 isDelete,
             });
 

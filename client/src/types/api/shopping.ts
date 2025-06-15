@@ -1,9 +1,17 @@
+export interface IGetShoppingItemsResponse {
+    data: {
+        category: IGetShoppingCategory;
+        items: IGetShoppingItem[];
+    }[];
+}
+
 export interface IGetShoppingItem {
     id: string;
     name: string;
     isPinned: boolean;
     isChecked: boolean;
     categoryId: string;
+    tags: { id: string; name: string }[];
     order: number;
 }
 

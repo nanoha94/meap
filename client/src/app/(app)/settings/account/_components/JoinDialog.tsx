@@ -26,7 +26,7 @@ const InvitationDialog: React.FC<Props> = ({
 
     const fetchInvitationDetail = async () => {
         try {
-            const res = await axios.get(`/api/invitation/token/${token}`);
+            const res = await axios.get(`/invitations/token/${token}`);
             if (res.data) {
                 setInvitationDetail(res.data);
             }

@@ -58,12 +58,27 @@ class ShoppingCategoryController extends Controller
         $user = $request->user();
         $group = $user->group;
 
+        // デフォルトでないカテゴリーの最後の位置を取得
+        $lastNonDefaultOrder = ShoppingCategory::where('group_id', $group->id)
+            ->where('is_default', false)
+            ->max('order') ?? -1;
+
         $ret = ShoppingCategory::create([
             'group_id' => $group->id,
             'name' => $request->name,
             'is_default' => false,
-            'order' => $group->shoppingCategories->count(),
+            'order' => $lastNonDefaultOrder + 1,
         ]);
+
+        // デフォルトカテゴリーを最後に移動
+        $defaultCategories = ShoppingCategory::where('group_id', $group->id)
+            ->where('is_default', true)
+            ->orderBy('order')
+            ->get();
+
+        foreach ($defaultCategories as $index => $defaultCategory) {
+            $defaultCategory->update(['order' => $lastNonDefaultOrder + 2 + $index]);
+        }
 
         return response()->json([
             'id' => $ret->id,

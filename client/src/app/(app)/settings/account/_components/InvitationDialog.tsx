@@ -29,7 +29,7 @@ const InvitationDialog = ({ onClose }: Props) => {
     const fetchInvitationToken = async () => {
         setInvitationLink(null);
         try {
-            const res = await axios.get('/api/invitation');
+            const res = await axios.get('/invitations');
             if (res.data) {
                 setInvitationLink(
                     `${process.env.NEXT_PUBLIC_FRONT_URL}/settings/account?token=${res.data.token}`,

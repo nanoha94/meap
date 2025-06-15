@@ -1,22 +1,24 @@
 import axios from '@/lib/axios';
-import { IGetShoppingItem, IPostShoppingItem } from '@/types/api';
+import { IGetShoppingItemsResponse, IPostShoppingItem } from '@/types/api';
 import React from 'react';
 import useSWR from 'swr';
 import { useSnackbars } from '@/contexts';
 
-const fetchShoppingItems = (path: string): Promise<IGetShoppingItem[]> =>
+const fetchShoppingItems = (path: string): Promise<IGetShoppingItemsResponse> =>
     axios.get(path).then(res => res.data);
 
 export const useShoppingItem = () => {
     const { addSnackbar } = useSnackbars();
     const [isLoading, setIsLoading] = React.useState(false);
-    const {
-        data: shoppingItems,
-        error,
-        mutate,
-        isValidating,
-    } = useSWR('/api/group/shopping/items', fetchShoppingItems);
+    const { data, error, mutate, isValidating } = useSWR(
+        '/shopping/items',
+        fetchShoppingItems,
+    );
+    const shoppingItems: IGetShoppingItemsResponse['data'] = data?.data;
 
+    /**
+     * ローディング中かどうかを管理する
+     */
     React.useEffect(() => {
         if (isValidating) {
             setIsLoading(true);
@@ -25,6 +27,11 @@ export const useShoppingItem = () => {
         }
     }, [isValidating]);
 
+    /**
+     * 更新処理
+     * @param items 更新するアイテム
+     * @returns 更新結果
+     */
     const updateShoppingItems = async (items: IPostShoppingItem[]) => {
         if (
             isLoading ||
@@ -36,11 +43,11 @@ export const useShoppingItem = () => {
 
         try {
             setIsLoading(true);
-            const res = await axios.post(`/api/group/shopping/items`, {
-                items: items.filter(v => v.name && v.name.length > 0),
+            const res = await axios.put(`/shopping/items/bulk`, {
+                data: items.filter(v => v.name && v.name.length > 0),
             });
             if (res.data) {
-                addSnackbar('success', res.data.message);
+                addSnackbar('success', '買い物リストを更新しました');
                 await mutate();
             }
         } catch (error) {
@@ -51,20 +58,26 @@ export const useShoppingItem = () => {
         }
     };
 
+    /**
+     * 削除処理
+     * @param id 削除するアイテムのID
+     * @returns 削除結果
+     */
     const deleteShoppingItem = async (id: string) => {
-        if (isLoading || !shoppingItems.find(v => v.id === id)) {
+        console.log('deleteShoppingItem', id);
+        if (isLoading) {
             return;
         }
 
         try {
             setIsLoading(true);
-            const res = await axios.delete(`/api/group/shopping/items`, {
-                data: { id },
-            });
-            if (res.data) {
-                addSnackbar('success', res.data.message);
-                await mutate();
-            }
+            // const res = await axios.delete(`/shopping/items`, {
+            //     data: { id },
+            // });
+            // if (res.data) {
+            //     addSnackbar('success', res.data.message);
+            //     await mutate();
+            // }
         } catch (error) {
             console.error(error.response?.data.message);
             addSnackbar('error', error.response?.data.message);
@@ -74,16 +87,17 @@ export const useShoppingItem = () => {
     };
 
     const deleteAllShoppingItems = async () => {
+        console.log('deleteAllShoppingItems');
         if (isLoading) return;
-
+        // TODO: API仕様に合わせる
         try {
             setIsLoading(true);
-            const res = await axios.delete(`/api/group/shopping/items/all`);
+            // const res = await axios.delete(`/shopping/items/bulk`);
 
-            if (res.data) {
-                addSnackbar('success', res.data.message);
-                await mutate();
-            }
+            // if (res.data) {
+            //     addSnackbar('success', res.data.message);
+            //     await mutate();
+            // }
         } catch (error) {
             console.error(error.response?.data.message);
             addSnackbar('error', error.response?.data.message);
@@ -92,6 +106,9 @@ export const useShoppingItem = () => {
         }
     };
 
+    /**
+     * エラーが発生した場合に、エラーメッセージを表示する
+     */
     React.useEffect(() => {
         if (error) {
             console.error(error?.response?.data?.message);

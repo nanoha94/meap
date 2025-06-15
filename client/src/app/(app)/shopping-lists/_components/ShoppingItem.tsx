@@ -6,51 +6,16 @@ import { IGetShoppingItem } from '@/types/api';
 import { Button } from '@/components';
 
 interface Props {
-    item: Omit<IGetShoppingItem, 'category'>;
+    item: IGetShoppingItem;
     onDelete: () => void;
     onUpdate: (name: string, isPinned: boolean, isChecked: boolean) => void;
 }
 
 const ShoppingItem = ({ item, onDelete, onUpdate }: Props) => {
     const { id, name, isPinned = false, isChecked = false } = item;
-    const inputRef = React.useRef<HTMLInputElement>(null);
-    const [itemName, setItemName] = React.useState<string>(name);
-    const [isEditing, setIsEditing] = React.useState<boolean>(name === '');
 
     const [isOpenDeleteDialog, setIsOpenDeleteDialog] =
         React.useState<boolean>(false);
-
-    const handleClickOutside = (event: MouseEvent) => {
-        if (
-            inputRef.current &&
-            !inputRef.current.contains(event.target as Node)
-        ) {
-            const currentValue = inputRef.current.value;
-
-            if (currentValue !== itemName) {
-                if (currentValue === '') {
-                    setIsEditing(false);
-                    return;
-                }
-                setItemName(currentValue);
-                onUpdate(currentValue, isPinned, isChecked);
-            }
-            setIsEditing(false);
-        }
-    };
-
-    React.useEffect(() => {
-        if (isEditing) {
-            inputRef.current?.focus();
-        }
-    }, [isEditing]);
-
-    React.useEffect(() => {
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, [itemName]);
 
     return (
         <>
@@ -70,7 +35,7 @@ const ShoppingItem = ({ item, onDelete, onUpdate }: Props) => {
                             id={`checkbox-${id}`}
                             checked={isChecked}
                             onChange={() => {
-                                onUpdate(itemName, isPinned, !isChecked);
+                                onUpdate(name, isPinned, !isChecked);
                             }}
                             className="hidden"
                         />
@@ -92,16 +57,7 @@ const ShoppingItem = ({ item, onDelete, onUpdate }: Props) => {
                                     />
                                 )}
                             </div>
-                            {!isEditing ? (
-                                itemName
-                            ) : (
-                                <input
-                                    ref={inputRef}
-                                    type="text"
-                                    className="relative focus-visible:outline-none"
-                                    defaultValue={itemName}
-                                />
-                            )}
+                            {name}
                         </label>
                     </div>
                     <ActionMenu
@@ -109,7 +65,7 @@ const ShoppingItem = ({ item, onDelete, onUpdate }: Props) => {
                             {
                                 label: '編集する',
                                 icon: <Pencil />,
-                                onClick: () => setIsEditing(true),
+                                onClick: () => {},
                             },
                             {
                                 label: '削除する',
@@ -120,7 +76,7 @@ const ShoppingItem = ({ item, onDelete, onUpdate }: Props) => {
                                 label: isPinned ? '固定解除する' : '固定する',
                                 icon: isPinned ? <PinOff /> : <Pin />,
                                 onClick: () =>
-                                    onUpdate(itemName, !isPinned, isChecked),
+                                    onUpdate(name, !isPinned, isChecked),
                             },
                         ]}
                     />

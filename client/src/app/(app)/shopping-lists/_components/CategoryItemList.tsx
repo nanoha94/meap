@@ -4,7 +4,6 @@ import {
     IGetShoppingItem,
     IPostShoppingItem,
 } from '@/types/api';
-import { EmptyButton } from '../../_components';
 import ShoppingItem from './ShoppingItem';
 import { Settings, Trash } from 'lucide-react';
 import { colors } from '@/constants/colors';
@@ -15,7 +14,6 @@ import { CSS } from '@dnd-kit/utilities';
 interface Props {
     category: IGetShoppingCategory;
     items: IGetShoppingItem[];
-    addEmptyItem: (categoryId: string) => void;
     deleteItem: (id: string) => void;
     updateItem: (item: IPostShoppingItem) => void;
 }
@@ -23,10 +21,10 @@ interface Props {
 const CategoryItemList: React.FC<Props> = ({
     category,
     items,
-    addEmptyItem,
     deleteItem,
     updateItem,
 }) => {
+    // console.log('CategoryItemList', items);
     const router = useRouter();
     const { setNodeRef } = useSortable({ id: category.id });
 
@@ -50,21 +48,25 @@ const CategoryItemList: React.FC<Props> = ({
                 </div>
             </div>
             <div className="flex flex-col gap-y-2">
-                {items.map(item => (
-                    <SortableItem
-                        key={item.id}
-                        item={item}
-                        categoryId={category.id}
-                        onDelete={deleteItem}
-                        onUpdate={updateItem}
-                    />
-                ))}
+                {items.length > 0 ? (
+                    items.map(
+                        (item, idx) =>
+                            !!item && (
+                                <SortableItem
+                                    key={idx}
+                                    item={item}
+                                    categoryId={category.id}
+                                    onDelete={deleteItem}
+                                    onUpdate={updateItem}
+                                />
+                            ),
+                    )
+                ) : (
+                    <div className="text-base">
+                        登録されているアイテムはありません
+                    </div>
+                )}
                 <div ref={setNodeRef} />
-                <EmptyButton onClick={() => addEmptyItem(category.id)}>
-                    テキストで追加
-                </EmptyButton>
-                {/* TODO: クリック処理 */}
-                <EmptyButton onClick={() => {}}>献立から追加</EmptyButton>
             </div>
         </div>
     );
@@ -83,6 +85,7 @@ const SortableItem: React.FC<SortableItemProps> = ({
     onDelete,
     onUpdate,
 }) => {
+    // console.log('SortableItem', item);
     const { setNodeRef, attributes, listeners, transform, transition } =
         useSortable({
             id: item.id,
