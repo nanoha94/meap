@@ -704,23 +704,19 @@
                         "sanctum": []
                     }
                 ]
-            }
-        },
-        "/shopping/categories/{id}": {
+            },
             "delete": {
                 "tags": [
                     "Shopping"
                 ],
                 "summary": "買い物カテゴリを削除",
-                "operationId": "253ca5bfccf45405538ce6d376568594",
-                "parameters": [
-                    {
-                        "$ref": "#/components/parameters/ShoppingCategoryIdParam"
-                    }
-                ],
+                "operationId": "3324b22ccb1871a5c7d339e0491935d6",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/ShoppingCategoryBulkDestroyRequest"
+                },
                 "responses": {
                     "200": {
-                        "$ref": "#/components/responses/ShoppingCategoryDestroySuccess"
+                        "$ref": "#/components/responses/ShoppingCategoryBulkDestroySuccess"
                     },
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
@@ -1901,14 +1897,17 @@
                     }
                 }
             },
-            "ShoppingCategoryDestroySuccess": {
+            "ShoppingCategoryBulkDestroySuccess": {
                 "description": "正常に削除されました",
                 "content": {
                     "application/json": {
                         "schema": {
                             "properties": {
-                                "id": {
-                                    "type": "string"
+                                "ids": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
                                 }
                             },
                             "type": "object"
@@ -2388,10 +2387,30 @@
                     "application/json": {
                         "schema": {
                             "properties": {
-                                "categories": {
+                                "data": {
                                     "type": "array",
                                     "items": {
                                         "$ref": "#/components/schemas/ShoppingCategory"
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "ShoppingCategoryBulkDestroyRequest": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "ids": {
+                                    "type": "array",
+                                    "items": {
+                                        "description": "買い物カテゴリID",
+                                        "type": "string",
+                                        "example": "1"
                                     }
                                 }
                             },

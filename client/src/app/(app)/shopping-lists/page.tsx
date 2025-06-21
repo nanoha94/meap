@@ -23,7 +23,7 @@ import {
 } from '@/types/api';
 import { CategoryItemList, ShoppingItem } from './_components';
 import { ChevronRight, LoaderCircle } from 'lucide-react';
-import { useShoppingItem } from '@/hooks';
+import { useShoppingCategory, useShoppingItem } from '@/hooks';
 import { useDebounce } from '@/hooks/useDebounce';
 import { AlertDialog, TextButton } from '../_components';
 import { colors } from '@/constants/colors';
@@ -42,8 +42,9 @@ const Page = () => {
         updateShoppingItems,
         deleteShoppingItem,
         deleteAllShoppingItems,
-        mutate,
+        mutate: itemMutate,
     } = useShoppingItem();
+    const { shoppingCategories, handleCategoryChange } = useShoppingCategory();
 
     const sensors = useSensors(
         useSensor(MouseSensor, {
@@ -81,6 +82,15 @@ const Page = () => {
     React.useEffect(() => {
         setFlatItems(items.flatMap(v => v.items));
     }, [items]);
+
+    // カテゴリー変更時の処理
+    React.useEffect(() => {
+        if (shoppingItems) {
+            handleCategoryChange(shoppingItems, itemMutate, () => {
+                setIsShowLoading(true);
+            });
+        }
+    }, [shoppingCategories, shoppingItems, handleCategoryChange, itemMutate]);
 
     React.useEffect(() => {
         if (!isLoading && shoppingItems?.length > 0) setIsShowLoading(false);
@@ -353,18 +363,18 @@ const Page = () => {
                         <ChevronRight size={20} />
                     </TextButton>
                 </div>
+                {/* カテゴリー設定ダイアログ */}
                 {isOpenCategorySettingDialog && (
                     <CategorySettingDialog
                         onClose={() => {
                             setIsOpenCategorySettingDialog(false);
                         }}
                         onSave={() => {
-                            mutate();
                             setIsOpenCategorySettingDialog(false);
-                            setIsShowLoading(true);
                         }}
                     />
                 )}
+                {/* 買い物リストを空にするダイアログ */}
                 {isOpenListEmptyDialog && (
                     <AlertDialog
                         title="買い物リストを空にする"

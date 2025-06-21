@@ -74,9 +74,22 @@ namespace App\Swagger;
  *     @OA\JsonContent(
  *         type="object",
  *         @OA\Property(
- *             property="categories",
+ *             property="data",
  *             type="array",
  *             @OA\Items(ref="#/components/schemas/ShoppingCategory")
+ *         )
+ *     )
+ * )
+ * 
+ * @OA\RequestBody(
+ *     request="ShoppingCategoryBulkDestroyRequest",
+ *     required=true,
+ *     @OA\JsonContent(
+ *         type="object",
+ *         @OA\Property(
+ *             property="ids",
+ *             type="array",
+ *             @OA\Items(type="string", description="買い物カテゴリID", example="1")
  *         )
  *     )
  * )

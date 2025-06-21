@@ -38,8 +38,9 @@ Route::middleware('auth')->group(function () {
     Route::apiResource('/shopping/items', ShoppingItemController::class)->only(['index', 'store']);
     Route::put('/shopping/items/bulk', [ShoppingItemController::class, 'bulkUpdate']);
     Route::delete('/shopping/items/bulk', [ShoppingItemController::class, 'bulkDestroy']);
-    Route::apiResource('/shopping/categories', ShoppingCategoryController::class)->except(['show', 'update']);
+    Route::apiResource('/shopping/categories', ShoppingCategoryController::class)->only(['index', 'store']);
     Route::put('/shopping/categories/bulk', [ShoppingCategoryController::class, 'bulkUpdate']);
+    Route::delete('/shopping/categories/bulk', [ShoppingCategoryController::class, 'bulkDestroy']);
     Route::apiResource('/shopping/tags', ShoppingTagController::class)->only(['index']);
 
     // master

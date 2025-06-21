@@ -81,11 +81,11 @@ namespace App\Swagger;
  *     @OA\JsonContent(ref="#/components/schemas/ShoppingCategory")
  * )
  * @OA\Response(
- *     response="ShoppingCategoryDestroySuccess",
+ *     response="ShoppingCategoryBulkDestroySuccess",
  *     description="正常に削除されました",
  *     @OA\JsonContent(
  *         type="object",
- *         @OA\Property(property="id", type="string")
+ *         @OA\Property(property="ids", type="array", @OA\Items(type="string"))
  *     )
  * )
  * 

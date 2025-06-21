@@ -1,7 +1,9 @@
+import { TMP_ID_PREFIX } from '@/constants/ids';
 import { useSnackbars } from '@/contexts';
 import axios from '@/lib/axios';
 import {
     IGetShoppingCategory,
+    IGetShoppingItemsResponse,
     IPostShoppingCategory,
     IPutShoppingCategory,
 } from '@/types/api';
@@ -17,7 +19,7 @@ const fetchShoppingCategories = (
 export const useShoppingCategory = () => {
     const { addSnackbar } = useSnackbars();
     const [isLoading, setIsLoading] = React.useState(false);
-    const { data, error, isValidating } = useSWR(
+    const { data, error, isValidating, mutate } = useSWR(
         '/shopping/categories',
         fetchShoppingCategories,
     );
@@ -29,6 +31,7 @@ export const useShoppingCategory = () => {
      * ローディング中かどうかを管理する
      */
     React.useEffect(() => {
+        // isValidatingがtrueで、かつデータがない場合のみローディング状態にする
         if (isValidating) {
             setIsLoading(true);
         } else {
@@ -38,17 +41,13 @@ export const useShoppingCategory = () => {
 
     React.useEffect(() => {
         setShoppingCategories(data?.categories);
-        console.log(data?.categories);
     }, [data]);
 
-    const createOrUpdateShoppingCategories = async (
-        categories: (IPostShoppingCategory | IPutShoppingCategory)[],
+    const bulkUpdateShoppingCategories = async (
+        categories: IPutShoppingCategory[],
     ) => {
         // 更新データがない場合は処理を終了
-        if (
-            categories.length === 0 ||
-            JSON.stringify(categories) === JSON.stringify(shoppingCategories)
-        ) {
+        if (JSON.stringify(categories) === JSON.stringify(shoppingCategories)) {
             return;
         }
 
@@ -69,99 +68,89 @@ export const useShoppingCategory = () => {
             }
         }
 
+        let hasError = false;
+        setIsLoading(true);
+
+        // 削除するカテゴリーを取得
+        const deleteCategoryIds = shoppingCategories
+            .filter(v => !categories.some(c => c.id === v.id))
+            .map(v => v.id);
+
+        // 削除リクエスト
+        if (deleteCategoryIds.length > 0) {
+            try {
+                await axios.delete(`/shopping/categories/bulk`, {
+                    data: { ids: deleteCategoryIds },
+                });
+            } catch (error) {
+                hasError = true;
+                console.error(error.response?.data.message);
+                addSnackbar('error', error.response?.data.message);
+            }
+        }
+
         const updateCategories: IPutShoppingCategory[] = [];
 
+        // 更新用配列を生成
         for (let i = 0; i < categories.length; i++) {
             // 既存のカテゴリーかどうかを判断
-            const isStored =
-                'id' in categories[i] &&
-                (categories[i] as IPutShoppingCategory).id;
+            const isStored = !categories[i].id?.startsWith(
+                TMP_ID_PREFIX.SHOPPING_CATEGORY,
+            );
 
             // 既存カテゴリ―の場合、更新用配列にセット
             if (isStored) {
-                updateCategories.push(categories[i] as IPutShoppingCategory);
+                if (
+                    JSON.stringify(categories[i]) !==
+                    JSON.stringify(
+                        shoppingCategories.find(v => v.id === categories[i].id),
+                    )
+                ) {
+                    updateCategories.push(
+                        categories[i] as IPutShoppingCategory,
+                    );
+                }
             }
             // まだDBにレコードがない場合は、作成リクエスト
             else {
+                if (!categories[i]) {
+                    continue;
+                }
                 try {
-                    setIsLoading(true);
-                    const res: IGetShoppingCategory = await axios.post(
+                    await axios.post(
                         `/shopping/categories`,
-                        categories[i],
+                        categories[i] as IPostShoppingCategory,
                     );
-                    updateCategories.push(res);
                 } catch (error) {
+                    hasError = true;
                     console.error(error.response?.data.message);
                     addSnackbar('error', error.response?.data.message);
-                } finally {
-                    setIsLoading(false);
                 }
             }
         }
 
         // 更新リクエスト
-        try {
-            setIsLoading(true);
-            const res = await axios.put(`/shopping/categories/bulk`, {
-                categories: updateCategories.map((v, idx) => ({
-                    ...v,
-                    order: idx,
-                })),
-            });
-
-            if (res.status === 200) {
-                setShoppingCategories(res.data);
-                addSnackbar('success', '買い物カテゴリ―を更新しました');
-            }
-        } catch (error) {
-            console.error(error.response?.data.message);
-            addSnackbar('error', error.response?.data.message);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    /**
-     * カテゴリーを更新する
-     * @param categories 更新するカテゴリーの配列
-     */
-    const updateShoppingCategories = async (
-        categories: IPostShoppingCategory[],
-    ) => {
-        const filteredCategories = categories?.filter(v => v.name.length > 0);
-
-        for (let idx = 0; idx < filteredCategories.length; idx++) {
+        if (updateCategories.length > 0) {
             try {
-                const res = await axios.post(`/shopping/categories/bulk`, {
-                    ...filteredCategories[idx],
-                    order: filteredCategories[idx].order ?? idx,
+                const res = await axios.put(`/shopping/categories/bulk`, {
+                    data: updateCategories,
                 });
-                if (res.data) {
-                    addSnackbar('success', res.data.message);
+                if (res.status === 200) {
+                    await mutate();
                 }
             } catch (error) {
+                hasError = true;
                 console.error(error.response?.data.message);
                 addSnackbar('error', error.response?.data.message);
             }
         }
-    };
 
-    /**
-     * カテゴリーを削除する
-     * @param id 削除するカテゴリーのID
-     */
-    const deleteShoppingCategory = async (id: string) => {
-        try {
-            const res = await axios.delete(`/shopping/categories`, {
-                data: { id },
-            });
-            if (res.data) {
-                addSnackbar('success', res.data.message);
-            }
-        } catch (error) {
-            console.error(error.response?.data.message);
-            addSnackbar('error', error.response?.data.message);
+        // すべての処理がエラーなく完了した場合
+        if (!hasError) {
+            addSnackbar('success', '買い物カテゴリーを更新しました');
         }
+
+        setIsLoading(false);
     };
 
     /**
@@ -174,11 +163,33 @@ export const useShoppingCategory = () => {
         }
     }, [error]);
 
+    /**
+     * カテゴリーが変更された場合の処理
+     * @param shoppingItems 買い物アイテムの配列
+     * @param itemMutate アイテムのmutate関数
+     * @param onMutate カテゴリー変更時のコールバック
+     */
+    const handleCategoryChange = React.useCallback(
+        (
+            shoppingItems: IGetShoppingItemsResponse['data'],
+            itemMutate: () => void,
+            onMutate?: () => void,
+        ) => {
+            if (
+                JSON.stringify(shoppingCategories) !==
+                JSON.stringify(shoppingItems.map(v => v.category))
+            ) {
+                itemMutate(); // アイテムのmutate
+                onMutate?.(); // 追加のコールバック
+            }
+        },
+        [shoppingCategories],
+    );
+
     return {
         shoppingCategories: shoppingCategories,
-        createOrUpdateShoppingCategories,
-        updateShoppingCategories,
-        deleteShoppingCategory,
+        bulkUpdateShoppingCategories,
         isLoading,
+        handleCategoryChange,
     };
 };

@@ -34,7 +34,7 @@ class ShoppingItemController extends Controller
         try {
             $res = [];
             $categories = $group->shoppingCategories()
-                ->select('id', 'name', 'is_default as isDefault', 'order')
+                ->select('id', 'name', 'is_default', 'order')
                 ->orderBy('order', 'asc')
                 ->get();
 
@@ -225,9 +225,12 @@ class ShoppingItemController extends Controller
      */
     public function bulkDestroy(Request $request): JsonResponse
     {
+        $user = $request->user();
+        $group = $user->group;
+
         $deletedIds = [];
         foreach ($request->ids as $id) {
-            $item = ShoppingItem::where('id', $id)->first();
+            $item = ShoppingItem::where('id', $id)->where('group_id', $group->id)->first();
 
             if (!$item) {
                 Log::error('指定されたレコードが見つかりません。', ['function' => 'ShoppingItemController@bulkDestroy', 'id' => $id]);

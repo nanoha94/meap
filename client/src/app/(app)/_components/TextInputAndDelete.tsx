@@ -6,17 +6,22 @@ interface Props {
     defaultValue: string;
     onUpdate: (name: string) => void;
     onDelete: () => void;
+    disabledDeleteButton: boolean;
 }
 
 const TextInputAndDelete: React.FC<Props> = ({
     defaultValue,
     onUpdate,
     onDelete,
+    disabledDeleteButton,
 }) => {
     const inputRef = React.useRef<HTMLInputElement | null>(null);
     const [inputValue, setInputVallue] = React.useState<string>(defaultValue);
+    const [isComposing, setIsComposing] = React.useState(false);
 
-    inputRef.current?.focus();
+    React.useEffect(() => {
+        inputRef.current?.focus();
+    }, []);
 
     const handleClickOutside = (event: MouseEvent) => {
         if (
@@ -36,6 +41,21 @@ const TextInputAndDelete: React.FC<Props> = ({
         }
     };
 
+    const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+        // スペースキーが押された時、変換中でない場合はデフォルト動作を防ぐ
+        if (event.key === ' ' && !isComposing) {
+            event.preventDefault();
+        }
+    };
+
+    const handleCompositionStart = () => {
+        setIsComposing(true);
+    };
+
+    const handleCompositionEnd = () => {
+        setIsComposing(false);
+    };
+
     React.useEffect(() => {
         document.addEventListener('mousedown', handleClickOutside);
         return () => {
@@ -52,10 +72,15 @@ const TextInputAndDelete: React.FC<Props> = ({
                 defaultValue={inputValue}
                 placeholder="カテゴリー名を入力"
                 className="py-2 px-4 flex-1 placeholder:text-gray-main outline-none bg-white rounded-lg border border-gray-main"
+                onKeyDown={handleKeyDown}
+                onCompositionStart={handleCompositionStart}
+                onCompositionEnd={handleCompositionEnd}
             />
+
             <button
                 onClick={onDelete}
-                className="p-1 w-fit h-fit rounded-full hover:bg-gray-light transition-colors">
+                className="p-1 w-fit h-fit rounded-full hover:bg-gray-light transition-colors disabled:opacity-0 disabled:cursor-default"
+                disabled={disabledDeleteButton}>
                 <Trash color={colors.primary.main} size={28} />
             </button>
         </div>

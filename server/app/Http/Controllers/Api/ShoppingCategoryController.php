@@ -7,6 +7,7 @@ use App\Models\ShoppingCategory;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ShoppingCategoryController extends Controller
 {
@@ -68,19 +69,15 @@ class ShoppingCategoryController extends Controller
         // 入力値のバリデーション
         $request->validate([
             'name' => 'required|string|max:255',
+            'order' => 'required|integer|min:0',
         ]);
-
-        // デフォルトでないカテゴリーの最後の位置を取得
-        $lastNonDefaultOrder = ShoppingCategory::where('group_id', $group->id)
-            ->where('is_default', false)
-            ->max('order') ?? -1;
 
         try {
             $ret = ShoppingCategory::create([
                 'group_id' => $group->id,
                 'name' => $request->name,
                 'is_default' => false,
-                'order' => $lastNonDefaultOrder + 1,
+                'order' => $request->order,
             ]);
 
             // 作成が失敗した場合のエラー処理
@@ -88,16 +85,6 @@ class ShoppingCategoryController extends Controller
                 return response()->json([
                     'message' => '買い物カテゴリー（' . $request->name . '）の作成に失敗しました。'
                 ], 500);
-            }
-
-            // デフォルトカテゴリーを最後に移動
-            $defaultCategories = ShoppingCategory::where('group_id', $group->id)
-                ->where('is_default', true)
-                ->orderBy('order')
-                ->get();
-
-            foreach ($defaultCategories as $index => $defaultCategory) {
-                $defaultCategory->update(['order' => $lastNonDefaultOrder + 2 + $index]);
             }
 
             return response()->json([
@@ -132,7 +119,7 @@ class ShoppingCategoryController extends Controller
 
         try {
             // 更新処理を実行
-            foreach ($request->categories as $category) {
+            foreach ($request->data as $category) {
                 $ret = ShoppingCategory::where('id', $category['id'])->update([
                     'name' => $category['name'],
                     'is_default' => $category['isDefault'],
@@ -166,36 +153,41 @@ class ShoppingCategoryController extends Controller
 
     /**
      * @OA\Delete(
-     *     path="/shopping/categories/{id}",
+     *     path="/shopping/categories/bulk",
      *     summary="買い物カテゴリを削除",
      *     tags={"Shopping"},
      *     security={{"sanctum":{}}},
-     *     @OA\Parameter(ref="#/components/parameters/ShoppingCategoryIdParam"),
-     *     @OA\Response(response=200, ref="#/components/responses/ShoppingCategoryDestroySuccess"),
+     *     @OA\RequestBody(ref="#/components/requestBodies/ShoppingCategoryBulkDestroyRequest"),
+     *     @OA\Response(response=200, ref="#/components/responses/ShoppingCategoryBulkDestroySuccess"),
      *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
-    public function destroy(Request $request, string $id): JsonResponse
+    public function bulkDestroy(Request $request): JsonResponse
     {
         $user = $request->user();
         $group = $user->group;
 
-        $category =  ShoppingCategory::where('id', $id)->where('group_id', $group->id)->first();
+        $deletedIds = [];
+        foreach ($request->ids as $id) {
+            $category = ShoppingCategory::where('id', $id)->where('group_id', $group->id)->first();
 
-        if (!$category) {
-            return response()->json([
-                'message' => '指定されたレコードが見つかりません。'
-            ], 404);
-        }
-        if ($category->is_default) {
-            return response()->json([
-                'message' => $category->name . 'は削除できません。'
-            ], 403);
-        }
+            if (!$category) {
+                Log::error('指定されたレコードが見つかりません。', ['function' => 'ShoppingCategoryController@bulkDestroy', 'id' => $id]);
+                return response()->json([
+                    'message' => '指定されたレコードが見つかりません。'
+                ], 404);
+            }
 
-        $deletedId = $category->id;
-        $category->delete();
+            if ($category->is_default) {
+                return response()->json([
+                    'message' => $category->name . 'は削除できません。'
+                ], 403);
+            }
+
+            $deletedIds[] = [$category->id];
+            $category->delete();
+        }
 
         // 残りのカテゴリーのorderを整理
         $remainingCategories = ShoppingCategory::where('group_id', $category->group_id)
@@ -206,6 +198,6 @@ class ShoppingCategoryController extends Controller
             $remainingCategory->update(['order' => $index]);
         }
 
-        return response()->json(['id' => $deletedId], 200);
+        return response()->json(['ids' => $deletedIds], 200);
     }
 }
