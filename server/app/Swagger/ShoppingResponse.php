@@ -26,7 +26,7 @@ namespace App\Swagger;
  *             )
  *         )
  *     )
- * ),
+ * )
  * @OA\Response(
  *     response="ShoppingItemStoreSuccess",
  *     description="正常に登録されました",

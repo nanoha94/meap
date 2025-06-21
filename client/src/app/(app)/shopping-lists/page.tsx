@@ -23,11 +23,11 @@ import {
 } from '@/types/api';
 import { CategoryItemList, ShoppingItem } from './_components';
 import { ChevronRight, LoaderCircle } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { useShoppingItem } from '@/hooks';
 import { useDebounce } from '@/hooks/useDebounce';
 import { AlertDialog, TextButton } from '../_components';
 import { colors } from '@/constants/colors';
+import { CategorySettingDialog } from './_dialogs';
 
 enum ItemType {
     ITEM = 'item',
@@ -42,8 +42,8 @@ const Page = () => {
         updateShoppingItems,
         deleteShoppingItem,
         deleteAllShoppingItems,
+        mutate,
     } = useShoppingItem();
-    const router = useRouter();
 
     const sensors = useSensors(
         useSensor(MouseSensor, {
@@ -53,30 +53,38 @@ const Page = () => {
         }),
     );
 
-    // ページに初めてアクセスしたときのみローディングを表示したいので、そのためのフラグ
-    const [isInit, setIsInit] = React.useState(true);
+    // ローディングアニメーションを表示するか
+    // ページリロード時、カテゴリ―更新時に表示する
+    const [isShowLoading, setIsShowLoading] = React.useState(true);
 
-    const [listItems, setListItems] = React.useState<
-        IGetShoppingItemsResponse['data']
-    >([]);
-    const [items, setItems] = React.useState<IGetShoppingItem[]>([]);
+    const [items, setItems] = React.useState<IGetShoppingItemsResponse['data']>(
+        [],
+    );
+    const [flatItems, setFlatItems] = React.useState<IGetShoppingItem[]>([]);
     const [activeId, setActiveId] = React.useState<string | null>(null);
-    const debouncedItems = useDebounce(items, 5000);
+    const debouncedItems = useDebounce(flatItems, 5000);
 
+    // カテゴリー設定ダイアログを表示するか
+    const [isOpenCategorySettingDialog, setIsOpenCategorySettingDialog] =
+        React.useState(false);
+    // 買い物リストを空にするダイアログを表示するか
     const [isOpenListEmptyDialog, setIsOpenListEmptyDialog] =
         React.useState(false);
 
     // shoppingItemsの変更を監視
     React.useEffect(() => {
         if (shoppingItems) {
-            setListItems(shoppingItems);
+            setItems(shoppingItems);
         }
     }, [shoppingItems]);
 
     React.useEffect(() => {
-        console.log('listItems', listItems);
-        setItems(listItems.flatMap(v => v.items));
-    }, [listItems]);
+        setFlatItems(items.flatMap(v => v.items));
+    }, [items]);
+
+    React.useEffect(() => {
+        if (!isLoading && shoppingItems?.length > 0) setIsShowLoading(false);
+    }, [isLoading]);
 
     /**
      * アイテムのカテゴリーIDを取得
@@ -84,7 +92,7 @@ const Page = () => {
      * @returns カテゴリーID
      */
     const categoryIdFromItemId = (itemId: string): string | undefined => {
-        return items.find(v => v.id === itemId)?.categoryId;
+        return flatItems.find(v => v.id === itemId)?.categoryId;
     };
 
     const updateItem = (item: IPostShoppingItem) => {
@@ -92,8 +100,8 @@ const Page = () => {
         const categoryId = categoryIdFromItemId(id);
 
         if (categoryId) {
-            setListItems(
-                listItems.map(v => ({
+            setItems(
+                items.map(v => ({
                     ...v,
                     items: v.items.map(item =>
                         item.id === id
@@ -139,8 +147,8 @@ const Page = () => {
     // アンマウント時とページアンロード時の保存処理
     const saveItemsRef = React.useRef(() => {});
     saveItemsRef.current = () => {
-        if (Object.keys(items).length > 0) {
-            const updateItems = items.map((item, idx) => ({
+        if (Object.keys(flatItems).length > 0) {
+            const updateItems = flatItems.map((item, idx) => ({
                 ...item,
                 order: idx,
             }));
@@ -160,16 +168,10 @@ const Page = () => {
         };
     }, []);
 
-    React.useEffect(() => {
-        if (isInit && shoppingItems && shoppingItems.length > 0) {
-            setIsInit(false);
-        }
-    }, [shoppingItems]);
-
     const updateSortableItems = (activeId: string, overId: string) => {
         if (activeId === overId) return;
         const overCategoryItemId = categoryIdFromItemId(overId);
-        const overCategoryInfo = listItems?.find(
+        const overCategoryInfo = items?.find(
             v => v.category.id === overId,
         )?.category;
 
@@ -192,12 +194,10 @@ const Page = () => {
         if (!activeCategoryId && !overCategoryId) return;
 
         // カテゴリごとのインデックスを取得
-        const activeCategory = listItems.find(
+        const activeCategory = items.find(
             v => v.category.id === activeCategoryId,
         );
-        const overCategory = listItems.find(
-            v => v.category.id === overCategoryId,
-        );
+        const overCategory = items.find(v => v.category.id === overCategoryId);
 
         if (!activeCategory || !overCategory) return;
 
@@ -215,7 +215,7 @@ const Page = () => {
         if (activeCategoryId !== overCategoryId) {
             const activeItem = activeCategory.items[activeIndex];
             if (activeItem) {
-                const removedActiveItems = listItems.map(v => ({
+                const removedActiveItems = items.map(v => ({
                     ...v,
                     items: v.items.filter(item => item.id !== activeId),
                 }));
@@ -235,12 +235,12 @@ const Page = () => {
                     return v;
                 });
 
-                setListItems(updatedListItems);
+                setItems(updatedListItems);
             }
         }
         // 同カテゴリーでの入れ替え
         else {
-            const updatedListItems = listItems.map(v => {
+            const updatedListItems = items.map(v => {
                 if (v.category.id === activeCategoryId) {
                     return {
                         ...v,
@@ -249,7 +249,7 @@ const Page = () => {
                 }
                 return v;
             });
-            setListItems(updatedListItems);
+            setItems(updatedListItems);
         }
     };
 
@@ -269,7 +269,7 @@ const Page = () => {
         setActiveId(null);
     };
 
-    if (isInit && isLoading) {
+    if (isShowLoading && isLoading) {
         return (
             <div className="py-5">
                 <LoaderCircle
@@ -284,14 +284,14 @@ const Page = () => {
             <>
                 <div className="pb-12 flex flex-col gap-y-7">
                     <div className="flex flex-col gap-y-7">
-                        {!!listItems && listItems.length > 0 ? (
+                        {!!items && items.length > 0 ? (
                             <DndContext
                                 sensors={sensors}
                                 collisionDetection={closestCenter}
                                 onDragStart={handleDragStart}
                                 onDragEnd={handleDragEnd}
                                 onDragOver={handleDragOver}>
-                                {listItems.map(v => (
+                                {items.map(v => (
                                     <SortableContext
                                         key={v.category.id}
                                         items={v.items}
@@ -307,7 +307,7 @@ const Page = () => {
                                 <DragOverlay>
                                     {activeId ? (
                                         <ShoppingItem
-                                            item={items?.find(
+                                            item={flatItems?.find(
                                                 item => item.id === activeId,
                                             )}
                                             onDelete={() =>
@@ -323,12 +323,12 @@ const Page = () => {
                                                     name,
                                                     isPinned,
                                                     isChecked,
-                                                    categoryId: items?.find(
+                                                    categoryId: flatItems?.find(
                                                         item =>
                                                             item.id ===
                                                             activeId,
                                                     )?.categoryId,
-                                                    order: items?.find(
+                                                    order: flatItems?.find(
                                                         item =>
                                                             item.id ===
                                                             activeId,
@@ -347,12 +347,24 @@ const Page = () => {
                     </div>
                     <TextButton
                         onClick={() => {
-                            router.push('/shopping-lists/categories');
+                            setIsOpenCategorySettingDialog(true);
                         }}>
                         カテゴリーの追加・編集
                         <ChevronRight size={20} />
                     </TextButton>
                 </div>
+                {isOpenCategorySettingDialog && (
+                    <CategorySettingDialog
+                        onClose={() => {
+                            setIsOpenCategorySettingDialog(false);
+                        }}
+                        onSave={() => {
+                            mutate();
+                            setIsOpenCategorySettingDialog(false);
+                            setIsShowLoading(true);
+                        }}
+                    />
+                )}
                 {isOpenListEmptyDialog && (
                     <AlertDialog
                         title="買い物リストを空にする"

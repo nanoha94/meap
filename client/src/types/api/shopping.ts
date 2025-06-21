@@ -32,7 +32,13 @@ export interface IGetShoppingCategory {
 }
 
 export interface IPostShoppingCategory {
+    name: string;
+    order: number;
+}
+
+export interface IPutShoppingCategory {
     id: string;
     name: string;
-    order?: number;
+    isDefault: boolean;
+    order: number;
 }

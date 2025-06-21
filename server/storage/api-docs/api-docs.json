@@ -954,7 +954,7 @@
                         "type": "string",
                         "example": "イエロー"
                     },
-                    "colorode": {
+                    "colorcode": {
                         "description": "色コード",
                         "type": "string",
                         "example": "#F5B12E"
@@ -962,7 +962,7 @@
                     "order": {
                         "description": "ソート順",
                         "type": "integer",
-                        "example": "1"
+                        "example": 1
                     }
                 },
                 "type": "object"
@@ -1050,7 +1050,7 @@
                     "id",
                     "name",
                     "quantity",
-                    "unit"
+                    "unitId"
                 ],
                 "properties": {
                     "id": {
@@ -1082,7 +1082,7 @@
                     "id",
                     "name",
                     "quantity",
-                    "unit"
+                    "unitId"
                 ],
                 "properties": {
                     "id": {
@@ -1112,7 +1112,7 @@
             "Meal": {
                 "required": [
                     "date",
-                    "category"
+                    "categoryId"
                 ],
                 "properties": {
                     "id": {
@@ -1184,7 +1184,7 @@
                 "required": [
                     "id",
                     "name",
-                    "color"
+                    "colorId"
                 ],
                 "properties": {
                     "id": {
@@ -1205,7 +1205,7 @@
                     "order": {
                         "description": "ソート順",
                         "type": "integer",
-                        "example": "1"
+                        "example": 1
                     }
                 },
                 "type": "object"
@@ -1233,12 +1233,12 @@
                     "isPinned": {
                         "description": "ピン留め",
                         "type": "boolean",
-                        "example": "false"
+                        "example": false
                     },
                     "isChecked": {
                         "description": "チェック状態",
                         "type": "boolean",
-                        "example": "false"
+                        "example": false
                     },
                     "categoryId": {
                         "description": "カテゴリID",
@@ -1278,11 +1278,13 @@
                     },
                     "isDefault": {
                         "description": "デフォルト",
-                        "type": "boolean"
+                        "type": "boolean",
+                        "example": false
                     },
                     "order": {
                         "description": "順番",
-                        "type": "integer"
+                        "type": "integer",
+                        "example": 1
                     }
                 },
                 "type": "object"
@@ -1309,13 +1311,52 @@
         },
         "responses": {
             "UserLoginSuccess": {
-                "description": "ログインに成功しました"
+                "description": "ログインに成功しました",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "example": "ログインに成功しました"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
             },
             "UserLogoutSuccess": {
-                "description": "ログアウトに成功しました"
+                "description": "ログアウトに成功しました",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "example": "ログアウトに成功しました"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
             },
             "UserRegisterSuccess": {
-                "description": "アカウント登録に成功しました"
+                "description": "アカウント登録に成功しました",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "example": "アカウント登録に成功しました"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
             },
             "Unauthorized": {
                 "description": "認証エラー",
@@ -1530,6 +1571,7 @@
                                 },
                                 "expires_at": {
                                     "type": "string",
+                                    "format": "date-time",
                                     "example": "2025-01-01 00:00:00"
                                 },
                                 "inviter": {

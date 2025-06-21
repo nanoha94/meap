@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\ShoppingCategory;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -25,20 +26,26 @@ class ShoppingCategoryController extends Controller
         $user = $request->user();
         $group = $user->group;
 
-        $categories = $group->shoppingCategories()->select('id', 'name', 'is_default', 'order')->get();
-        $res = [
-            'categories' => $categories->map(function ($category) {
-                return [
-                    'id' => $category->id,
-                    'name' => $category->name,
-                    'isDefault' => (bool)$category->is_default,
-                    'order' => $category->order
-                ];
-            }),
-            'total' => $categories->count()
-        ];
+        try {
+            $categories = $group->shoppingCategories()->select('id', 'name', 'is_default', 'order')->orderBy('order', 'asc')->get();
+            $res = [
+                'categories' => $categories->map(function ($category) {
+                    return [
+                        'id' => $category->id,
+                        'name' => $category->name,
+                        'isDefault' => (bool)$category->is_default,
+                        'order' => $category->order
+                    ];
+                }),
+                'total' => $categories->count()
+            ];
 
-        return response()->json($res, 200);
+            return response()->json($res, 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => '買い物カテゴリーの取得中にエラーが発生しました。'
+            ], 500);
+        }
     }
 
     /**
@@ -58,34 +65,52 @@ class ShoppingCategoryController extends Controller
         $user = $request->user();
         $group = $user->group;
 
+        // 入力値のバリデーション
+        $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
         // デフォルトでないカテゴリーの最後の位置を取得
         $lastNonDefaultOrder = ShoppingCategory::where('group_id', $group->id)
             ->where('is_default', false)
             ->max('order') ?? -1;
 
-        $ret = ShoppingCategory::create([
-            'group_id' => $group->id,
-            'name' => $request->name,
-            'is_default' => false,
-            'order' => $lastNonDefaultOrder + 1,
-        ]);
+        try {
+            $ret = ShoppingCategory::create([
+                'group_id' => $group->id,
+                'name' => $request->name,
+                'is_default' => false,
+                'order' => $lastNonDefaultOrder + 1,
+            ]);
 
-        // デフォルトカテゴリーを最後に移動
-        $defaultCategories = ShoppingCategory::where('group_id', $group->id)
-            ->where('is_default', true)
-            ->orderBy('order')
-            ->get();
+            // 作成が失敗した場合のエラー処理
+            if (!$ret) {
+                return response()->json([
+                    'message' => '買い物カテゴリー（' . $request->name . '）の作成に失敗しました。'
+                ], 500);
+            }
 
-        foreach ($defaultCategories as $index => $defaultCategory) {
-            $defaultCategory->update(['order' => $lastNonDefaultOrder + 2 + $index]);
+            // デフォルトカテゴリーを最後に移動
+            $defaultCategories = ShoppingCategory::where('group_id', $group->id)
+                ->where('is_default', true)
+                ->orderBy('order')
+                ->get();
+
+            foreach ($defaultCategories as $index => $defaultCategory) {
+                $defaultCategory->update(['order' => $lastNonDefaultOrder + 2 + $index]);
+            }
+
+            return response()->json([
+                'id' => $ret->id,
+                'name' => $ret->name,
+                'isDefault' => (bool)$ret->is_default,
+                'order' => $ret->order
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => '買い物カテゴリー（' . $request->name . '）の作成中にエラーが発生しました。'
+            ], 500);
         }
-
-        return response()->json([
-            'id' => $ret->id,
-            'name' => $ret->name,
-            'isDefault' => (bool)$ret->is_default,
-            'order' => $ret->order
-        ], 200);
     }
 
     /**
@@ -105,25 +130,38 @@ class ShoppingCategoryController extends Controller
         $user = $request->user();
         $group = $user->group;
 
-        foreach ($request->categories as $category) {
-            ShoppingCategory::where('id', $category['id'])->update([
-                'name' => $category['name'],
-                'is_default' => $category['is_default'],
-                'order' => $category['order']
-            ]);
+        try {
+            // 更新処理を実行
+            foreach ($request->categories as $category) {
+                $ret = ShoppingCategory::where('id', $category['id'])->update([
+                    'name' => $category['name'],
+                    'is_default' => $category['isDefault'],
+                    'order' => $category['order']
+                ]);
+                if (!$ret) {
+                    return response()->json([
+                        'message' => '買い物カテゴリー（' . $category['name'] . '）の更新に失敗しました。'
+                    ], 500);
+                }
+            }
+
+            // 更新後のカテゴリーを全て取得
+            $categories = $group->shoppingCategories()->select('id', 'name', 'is_default', 'order')->get();
+            $ret = $categories->map(function ($category) {
+                return [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'isDefault' => (bool)$category->is_default,
+                    'order' => $category->order
+                ];
+            });
+
+            return response()->json($ret, 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => '買い物カテゴリーの一括更新中にエラーが発生しました。'
+            ], 500);
         }
-
-        $categories = $group->shoppingCategories()->select('id', 'name', 'is_default', 'order')->get();
-        $ret = $categories->map(function ($category) {
-            return [
-                'id' => $category->id,
-                'name' => $category->name,
-                'isDefault' => (bool)$category->is_default,
-                'order' => $category->order
-            ];
-        });
-
-        return response()->json($ret, 200);
     }
 
     /**

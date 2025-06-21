@@ -27,7 +27,7 @@ namespace App\Swagger;
  *     description="正常に登録されました",
  *     @OA\JsonContent(ref="#/components/schemas/Dish")
  * )
- *  * @OA\Response(
+ * @OA\Response(
  *     response="DishShowSuccess",
  *     description="正常に取得されました",
  *     @OA\JsonContent(ref="#/components/schemas/Dish")

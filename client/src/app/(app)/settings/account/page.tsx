@@ -8,7 +8,7 @@ import React from 'react';
 import axios from '@/lib/axios';
 import { IGetGroupUser } from '@/types/api';
 import useSWR from 'swr';
-import { InvitationDialog, JoinDialog } from './_components';
+import { InvitationDialog, JoinDialog } from './_dialogs';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components';
 import { useJoinGroup } from '@/hooks/useJoinGroup';

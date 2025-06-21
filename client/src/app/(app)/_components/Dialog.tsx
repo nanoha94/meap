@@ -15,7 +15,7 @@ const Dialog = ({ title, onClose, children }: Props) => {
             <div
                 onClick={e => e.stopPropagation()}
                 className="absolute top-10 left-1/2 -translate-x-1/2 max-w-[500px] w-[calc(100%-40px)] bg-white rounded-xl">
-                <div className="px-5 py-2 flex justify-between items-center gap-x-5 text-2xl font-bold border-b border-gray-border">
+                <div className="px-5 py-3 flex justify-between items-center gap-x-5 text-xl border-b border-gray-border">
                     {title}
                     <button
                         onClick={onClose}
@@ -23,7 +23,7 @@ const Dialog = ({ title, onClose, children }: Props) => {
                         <X size={32} color={colors.black} />
                     </button>
                 </div>
-                <div className="px-5 pt-5 pb-8">{children}</div>
+                <div className="px-5 py-8">{children}</div>
             </div>
         </div>
     );

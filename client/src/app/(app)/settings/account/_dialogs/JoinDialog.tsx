@@ -15,7 +15,7 @@ interface Props {
     JoinGroupWithToken: () => void;
 }
 
-const InvitationDialog: React.FC<Props> = ({
+const JoinDialog: React.FC<Props> = ({
     token,
     iconAvatar,
     onClose,
@@ -97,4 +97,4 @@ const InvitationDialog: React.FC<Props> = ({
     );
 };
 
-export default InvitationDialog;
+export default JoinDialog;

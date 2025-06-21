@@ -20,19 +20,19 @@ namespace App\Swagger;
  *     @OA\Property(property="thumbnailUrl", type="string", description="サムネイルURL", example="https://www.google.com"),
  *     @OA\Property(property="url", type="string", description="レシピURL", example="https://www.google.com"),
  *     @OA\Property(property="recipe", type="string", description="レシピ", example="ハンバーグを作る"),
- *     @OA\Property(property="memo", type="string", description="メモ", example="ハンバーグは美味しい"),
+ *     @OA\Property(property="memo", type="string", description="メモ", example="ハンバーグは美味しい")
  * )
  * 
  * @OA\Schema(
  *     schema="DishCategory",
  *     required={"id", "name"},
  *     @OA\Property(property="id", type="string", description="ID", example="1"),
- *     @OA\Property(property="name", type="string", description="カテゴリ名", example="肉料理"),
+ *     @OA\Property(property="name", type="string", description="カテゴリ名", example="肉料理")
  * )
  * 
  * @OA\Schema(
  *     schema="Seasoning",
- *     required={"id", "name", "quantity", "unit"},
+ *     required={"id", "name", "quantity", "unitId"},
  *     @OA\Property(property="id", type="string", description="ID", example="1"),
  *     @OA\Property(property="name", type="string", description="調味料名", example="塩"),
  *     @OA\Property(property="quantity", type="double", description="量", example="1"),
@@ -41,7 +41,7 @@ namespace App\Swagger;
  * 
  * @OA\Schema(
  *     schema="Ingredient",
- *     required={"id", "name", "quantity", "unit"},
+ *     required={"id", "name", "quantity", "unitId"},
  *     @OA\Property(property="id", type="string", description="ID", example="1"),
  *     @OA\Property(property="name", type="string", description="食材名", example="牛肉"),
  *     @OA\Property(property="quantity", type="double", description="量", example="1"),

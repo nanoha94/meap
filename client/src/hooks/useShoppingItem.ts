@@ -36,7 +36,10 @@ export const useShoppingItem = () => {
         if (
             isLoading ||
             items.length === 0 ||
-            JSON.stringify(items) === JSON.stringify(shoppingItems)
+            JSON.stringify(items) ===
+                JSON.stringify(
+                    shoppingItems?.flatMap(category => category.items) || [],
+                )
         ) {
             return;
         }
@@ -122,5 +125,6 @@ export const useShoppingItem = () => {
         updateShoppingItems,
         deleteShoppingItem,
         deleteAllShoppingItems,
+        mutate,
     };
 };

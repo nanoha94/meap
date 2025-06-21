@@ -14,7 +14,7 @@ namespace App\Swagger;
  *             description="料理カテゴリ一覧",
  *             @OA\Items(ref="#/components/schemas/DishCategory")
  *         ),
- * 　　　　@OA\Property(
+ *         @OA\Property(
  *             property="shoppingCategories",
  *             type="array",
  *             description="買い物カテゴリ一覧",
@@ -25,7 +25,7 @@ namespace App\Swagger;
  *             type="array",
  *             description="買い物タグ一覧",
  *             @OA\Items(ref="#/components/schemas/ShoppingTag")
- *         ),
+ *         )
  *     )
  * )
  */

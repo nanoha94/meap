@@ -56,7 +56,7 @@ const TextInputAndDelete: React.FC<Props> = ({
             <button
                 onClick={onDelete}
                 className="p-1 w-fit h-fit rounded-full hover:bg-gray-light transition-colors">
-                <Trash color={colors.primary.main} size={32} />
+                <Trash color={colors.primary.main} size={28} />
             </button>
         </div>
     );

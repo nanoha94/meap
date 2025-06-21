@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Traits\AutoComplement;
+use Exception;
 
 class ShoppingItemController extends Controller
 {
@@ -30,48 +31,54 @@ class ShoppingItemController extends Controller
         $user = $request->user();
         $group = $user->group;
 
-        $res = [];
-        $categories = $group->shoppingCategories()
-            ->select('id', 'name', 'is_default as isDefault', 'order')
-            ->orderBy('order', 'asc')
-            ->get();
-
-        foreach ($categories as $category) {
-            $items = $category->shoppingItems()
-                ->select('id', 'name', 'is_pinned', 'is_checked', 'category_id', 'order')
-                ->with('tags:id,name')
+        try {
+            $res = [];
+            $categories = $group->shoppingCategories()
+                ->select('id', 'name', 'is_default as isDefault', 'order')
                 ->orderBy('order', 'asc')
                 ->get();
 
-            $res[] = [
-                'category' => [
-                    'id' => $category->id,
-                    'name' => $category->name,
-                    'isDefault' => $category->is_default,
-                    'order' => $category->order
-                ],
-                'items' => $items->map(function ($item) {
-                    return [
-                        'id' => $item->id,
-                        'name' => $item->name,
-                        'isPinned' => (bool)$item->is_pinned,
-                        'isChecked' => (bool)$item->is_checked,
-                        'categoryId' => $item->category_id,
-                        'tags' => $item->tags->map(function ($tag) {
-                            return [
-                                'id' => $tag->id,
-                                'name' => $tag->name
-                            ];
-                        }),
-                        'order' => $item->order
-                    ];
-                })
-            ];
-        }
+            foreach ($categories as $category) {
+                $items = $category->shoppingItems()
+                    ->select('id', 'name', 'is_pinned', 'is_checked', 'category_id', 'order')
+                    ->with('tags:id,name')
+                    ->orderBy('order', 'asc')
+                    ->get();
 
-        return response()->json([
-            'data' => $res
-        ], 200);
+                $res[] = [
+                    'category' => [
+                        'id' => $category->id,
+                        'name' => $category->name,
+                        'isDefault' => (bool)$category->is_default,
+                        'order' => $category->order
+                    ],
+                    'items' => $items->map(function ($item) {
+                        return [
+                            'id' => $item->id,
+                            'name' => $item->name,
+                            'isPinned' => (bool)$item->is_pinned,
+                            'isChecked' => (bool)$item->is_checked,
+                            'categoryId' => $item->category_id,
+                            'tags' => $item->tags->map(function ($tag) {
+                                return [
+                                    'id' => $tag->id,
+                                    'name' => $tag->name
+                                ];
+                            }),
+                            'order' => $item->order
+                        ];
+                    })
+                ];
+            }
+
+            return response()->json([
+                'data' => $res
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => '買い物アイテムの取得中にエラーが発生しました。'
+            ], 500);
+        }
     }
 
     /**
@@ -95,38 +102,49 @@ class ShoppingItemController extends Controller
             return response()->json(['message' => '無効なデータ形式です。'], 400);
         }
 
-        $ret = ShoppingItem::create([
-            'group_id' => $group->id,
-            'category_id' => $request->categoryId,
-            'name' => $request->name,
-            'is_pinned' => false,
-            'is_checked' => false,
-            'order' => $group->shoppingItems->where('category_id', $request->categoryId)->count()
-        ]);
+        try {
+            $ret = ShoppingItem::create([
+                'group_id' => $group->id,
+                'category_id' => $request->categoryId,
+                'name' => $request->name,
+                'is_pinned' => false,
+                'is_checked' => false,
+                'order' => $group->shoppingItems->where('category_id', $request->categoryId)->count()
+            ]);
+            if (!$ret) {
+                return response()->json([
+                    'message' => '買い物アイテムの作成に失敗しました。'
+                ], 500);
+            }
 
-        // タグの処理
-        if (!empty($request->tags)) {
-            $tagIds = $this->findOrCreateIds($request->tags, $group, ShoppingTag::class);
-            $ret->tags()->attach($tagIds);
+            // タグの処理
+            if (!empty($request->tags)) {
+                $tagIds = $this->findOrCreateIds($request->tags, $group, ShoppingTag::class);
+                $ret->tags()->attach($tagIds);
+            }
+
+            // タグを含めて再取得
+            $ret = $ret->fresh(['tags:id,name']);
+
+            return response()->json([
+                'id' => $ret->id,
+                'categoryId' => $ret->category_id,
+                'name' => $ret->name,
+                'isPinned' => $ret->is_pinned,
+                'isChecked' => $ret->is_checked,
+                'order' => $ret->order,
+                'tags' => $ret->tags->map(function ($tag) {
+                    return [
+                        'id' => $tag->id,
+                        'name' => $tag->name
+                    ];
+                }),
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => '買い物アイテムの作成中にエラーが発生しました。'
+            ], 500);
         }
-
-        // タグを含めて再取得
-        $ret = $ret->fresh(['tags:id,name']);
-
-        return response()->json([
-            'id' => $ret->id,
-            'categoryId' => $ret->category_id,
-            'name' => $ret->name,
-            'isPinned' => $ret->is_pinned,
-            'isChecked' => $ret->is_checked,
-            'order' => $ret->order,
-            'tags' => $ret->tags->map(function ($tag) {
-                return [
-                    'id' => $tag->id,
-                    'name' => $tag->name
-                ];
-            }),
-        ], 200);
     }
 
     /**

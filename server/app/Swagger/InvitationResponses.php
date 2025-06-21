@@ -21,13 +21,13 @@ namespace App\Swagger;
  *         )
  *     )
  * )
- *  @OA\Response(
+ * @OA\Response(
  *     response="InvitationShowSuccess",
  *     description="成功",
  *     @OA\JsonContent(
  *         type="object",
  *         @OA\Property(property="token", type="string", example="1234567890"),
- *         @OA\Property(property="expires_at", type="string", example="2025-01-01 00:00:00"),
+ *         @OA\Property(property="expires_at", type="string", format="date-time", example="2025-01-01 00:00:00"),
  *         @OA\Property(property="inviter", type="object",
  *             @OA\Property(property="id", type="integer", example=1),
  *             @OA\Property(property="custom_id", type="string", example="abc123"),

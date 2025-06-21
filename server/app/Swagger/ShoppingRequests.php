@@ -62,6 +62,7 @@ namespace App\Swagger;
  *     description="登録する買い物カテゴリデータ",
  *     required=true,
  *     @OA\JsonContent(
+ *         type="object",
  *         @OA\Property(property="name", type="string", description="カテゴリ名", example="スーパーA")
  *     )
  * )
@@ -80,12 +81,13 @@ namespace App\Swagger;
  *     )
  * )
  * 
- *  * @OA\RequestBody(
+ * @OA\RequestBody(
  *     request="ShoppingTagStoreRequest",
  *     description="登録する買い物タグデータ",
  *     required=true,
  *     @OA\JsonContent(
- *         @OA\Property(property="name", type="string", description="買い物タグ名", example="サラダ"),
+ *         type="object",
+ *         @OA\Property(property="name", type="string", description="買い物タグ名", example="サラダ")
  *     )
  * )
  */
