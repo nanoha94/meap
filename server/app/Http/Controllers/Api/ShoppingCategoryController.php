@@ -117,6 +117,14 @@ class ShoppingCategoryController extends Controller
         $user = $request->user();
         $group = $user->group;
 
+        // 入力値のバリデーション
+        $request->validate([
+            'data' => 'required|array',
+            'data.*.id' => 'required|string|max:255',
+            'data.*.name' => 'required|string|max:255',
+            'data.*.isDefault' => 'required|boolean',
+        ]);
+
         try {
             // 更新処理を実行
             foreach ($request->data as $category) {
@@ -167,6 +175,12 @@ class ShoppingCategoryController extends Controller
     {
         $user = $request->user();
         $group = $user->group;
+
+        // 入力値のバリデーション
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'required|string|max:255',
+        ]);
 
         $deletedIds = [];
         foreach ($request->ids as $id) {

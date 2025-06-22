@@ -2,7 +2,7 @@ import React from 'react';
 import {
     IGetShoppingCategory,
     IGetShoppingItem,
-    IPostShoppingItem,
+    IPutShoppingItem,
 } from '@/types/api';
 import ShoppingItem from './ShoppingItem';
 import { Settings, Trash } from 'lucide-react';
@@ -15,7 +15,7 @@ interface Props {
     category: IGetShoppingCategory;
     items: IGetShoppingItem[];
     deleteItem: (id: string) => void;
-    updateItem: (item: IPostShoppingItem) => void;
+    updateItem: (item: IPutShoppingItem) => void;
 }
 
 const CategoryItemList: React.FC<Props> = ({
@@ -77,7 +77,7 @@ interface SortableItemProps {
     item: IGetShoppingItem;
     categoryId: string;
     onDelete: (id: string) => void;
-    onUpdate: (item: IPostShoppingItem) => void;
+    onUpdate: (item: IPutShoppingItem) => void;
 }
 const SortableItem: React.FC<SortableItemProps> = ({
     item,

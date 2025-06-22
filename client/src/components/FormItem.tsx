@@ -27,7 +27,7 @@ const FormItem = ({
         </div>
         <div className="flex flex-col gap-y-1">
             {children}
-            {errorMessage.map(
+            {errorMessage?.map(
                 (v, idx) =>
                     !!v && (
                         <p key={idx} className="text-sm text-alert-main">

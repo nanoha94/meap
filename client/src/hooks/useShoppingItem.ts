@@ -1,5 +1,9 @@
 import axios from '@/lib/axios';
-import { IGetShoppingItemsResponse, IPostShoppingItem } from '@/types/api';
+import {
+    IGetShoppingItemsResponse,
+    IPostShoppingItem,
+    IPutShoppingItem,
+} from '@/types/api';
 import React from 'react';
 import useSWR from 'swr';
 import { useSnackbars } from '@/contexts';
@@ -27,12 +31,37 @@ export const useShoppingItem = () => {
         }
     }, [isValidating]);
 
+    const createShoppingItem = async (item: IPostShoppingItem) => {
+        if (isLoading) {
+            return;
+        }
+
+        try {
+            setIsLoading(true);
+            const res = await axios.post(`/shopping/items`, {
+                ...item,
+            });
+            if (res.data) {
+                addSnackbar(
+                    'success',
+                    `買い物リストに${item.name}を追加しました`,
+                );
+                await mutate();
+            }
+        } catch (error) {
+            console.error(error.response?.data.message);
+            addSnackbar('error', error.response?.data.message);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     /**
      * 更新処理
      * @param items 更新するアイテム
      * @returns 更新結果
      */
-    const updateShoppingItems = async (items: IPostShoppingItem[]) => {
+    const updateShoppingItems = async (items: IPutShoppingItem[]) => {
         if (
             isLoading ||
             items.length === 0 ||
@@ -122,6 +151,7 @@ export const useShoppingItem = () => {
     return {
         isLoading,
         shoppingItems,
+        createShoppingItem,
         updateShoppingItems,
         deleteShoppingItem,
         deleteAllShoppingItems,

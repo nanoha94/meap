@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Traits\AutoComplement;
 use Exception;
+use Illuminate\Support\Facades\DB;
 
 class ShoppingItemController extends Controller
 {
@@ -98,11 +99,18 @@ class ShoppingItemController extends Controller
         $user = $request->user();
         $group = $user->group;
 
-        if (!$request->categoryId || !$request->name) {
-            return response()->json(['message' => '無効なデータ形式です。'], 400);
-        }
+        // 入力値のバリデーション
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'categoryId' => 'required|string|max:255',
+            'tags' => 'nullable|array',
+            'tags.*.id' => 'nullable|string|max:255',
+            'tags.*.name' => 'required|string|max:255',
+        ]);
 
         try {
+            DB::beginTransaction();
+
             $ret = ShoppingItem::create([
                 'group_id' => $group->id,
                 'category_id' => $request->categoryId,
@@ -112,6 +120,7 @@ class ShoppingItemController extends Controller
                 'order' => $group->shoppingItems->where('category_id', $request->categoryId)->count()
             ]);
             if (!$ret) {
+                DB::rollBack();
                 return response()->json([
                     'message' => '買い物アイテムの作成に失敗しました。'
                 ], 500);
@@ -119,9 +128,27 @@ class ShoppingItemController extends Controller
 
             // タグの処理
             if (!empty($request->tags)) {
-                $tagIds = $this->findOrCreateIds($request->tags, $group, ShoppingTag::class);
-                $ret->tags()->attach($tagIds);
+                try {
+                    $tagIds = $this->findOrCreateIds($request->tags, $group, ShoppingTag::class);
+                    if (empty($tagIds)) {
+                        Log::warning('タグの作成に失敗しました。', [
+                            'function' => 'ShoppingItemController@store',
+                            'tags' => $request->tags
+                        ]);
+                    } else {
+                        $ret->tags()->attach($tagIds);
+                    }
+                } catch (Exception $e) {
+                    Log::error('タグの処理中にエラーが発生しました。', [
+                        'function' => 'ShoppingItemController@store',
+                        'error' => $e->getMessage(),
+                        'tags' => $request->tags
+                    ]);
+                    // タグ処理でエラーが発生しても、アイテム作成は成功させる
+                }
             }
+
+            DB::commit();
 
             // タグを含めて再取得
             $ret = $ret->fresh(['tags:id,name']);
@@ -141,6 +168,12 @@ class ShoppingItemController extends Controller
                 }),
             ], 200);
         } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('買い物アイテムの作成中にエラーが発生しました。', [
+                'function' => 'ShoppingItemController@store',
+                'error' => $e->getMessage(),
+                'request' => $request->all()
+            ]);
             return response()->json([
                 'message' => '買い物アイテムの作成中にエラーが発生しました。'
             ], 500);
@@ -164,51 +197,85 @@ class ShoppingItemController extends Controller
         $user = $request->user();
         $group = $user->group;
 
-        $updatedItems = [];
-        foreach ($request->data as $item) {
-            $shoppingItem = ShoppingItem::where('id', $item['id'])->first();
-            if (!$shoppingItem) {
-                continue;
+        try {
+            DB::beginTransaction();
+
+            $updatedItems = [];
+            foreach ($request->data as $item) {
+                $shoppingItem = ShoppingItem::where('id', $item['id'])->first();
+                if (!$shoppingItem) {
+                    continue;
+                }
+
+                // 基本情報の更新
+                $shoppingItem->update([
+                    'category_id' => $item['categoryId'],
+                    'name' => $item['name'],
+                    'is_pinned' => $item['isPinned'],
+                    'is_checked' => $item['isChecked'],
+                    'order' => $item['order']
+                ]);
+
+                // タグの更新
+                if (!empty($item['tags'])) {
+                    try {
+                        $tagIds = $this->findOrCreateIds($item['tags'], $group, ShoppingTag::class);
+                        if (empty($tagIds)) {
+                            Log::warning('タグの作成に失敗しました。', [
+                                'function' => 'ShoppingItemController@bulkUpdate',
+                                'item_id' => $item['id'],
+                                'tags' => $item['tags']
+                            ]);
+                        } else {
+                            $shoppingItem->tags()->sync($tagIds);
+                        }
+                    } catch (Exception $e) {
+                        Log::error('タグの処理中にエラーが発生しました。', [
+                            'function' => 'ShoppingItemController@bulkUpdate',
+                            'item_id' => $item['id'],
+                            'error' => $e->getMessage(),
+                            'tags' => $item['tags']
+                        ]);
+                        // タグ処理でエラーが発生しても、アイテム更新は成功させる
+                    }
+                }
+
+                $updatedItems[] = $shoppingItem;
             }
 
-            // 基本情報の更新
-            $shoppingItem->update([
-                'category_id' => $item['categoryId'],
-                'name' => $item['name'],
-                'is_pinned' => $item['isPinned'],
-                'is_checked' => $item['isChecked'],
-                'order' => $item['order']
+            DB::commit();
+
+            // 更新したアイテムのみを取得
+            $ret = collect($updatedItems)
+                ->map(function ($item) {
+                    return [
+                        'id' => $item->id,
+                        'categoryId' => $item->category_id,
+                        'name' => $item->name,
+                        'isPinned' => $item->is_pinned,
+                        'isChecked' => $item->is_checked,
+                        'order' => $item->order,
+                        'tags' => $item->tags->map(function ($tag) {
+                            return [
+                                'id' => $tag->id,
+                                'name' => $tag->name
+                            ];
+                        })
+                    ];
+                });
+
+            return response()->json($ret, 200);
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('買い物アイテムの一括更新中にエラーが発生しました。', [
+                'function' => 'ShoppingItemController@bulkUpdate',
+                'error' => $e->getMessage(),
+                'request' => $request->all()
             ]);
-
-            // タグの更新
-            if (!empty($item['tags'])) {
-                $tagIds = $this->findOrCreateIds($item['tags'], $group, ShoppingTag::class);
-                $shoppingItem->tags()->sync($tagIds);
-            }
-
-            $updatedItems[] = $shoppingItem;
+            return response()->json([
+                'message' => '買い物アイテムの一括更新中にエラーが発生しました。'
+            ], 500);
         }
-
-        // 更新したアイテムのみを取得
-        $ret = collect($updatedItems)
-            ->map(function ($item) {
-                return [
-                    'id' => $item->id,
-                    'categoryId' => $item->category_id,
-                    'name' => $item->name,
-                    'isPinned' => $item->is_pinned,
-                    'isChecked' => $item->is_checked,
-                    'order' => $item->order,
-                    'tags' => $item->tags->map(function ($tag) {
-                        return [
-                            'id' => $tag->id,
-                            'name' => $tag->name
-                        ];
-                    })
-                ];
-            });
-
-        return response()->json($ret, 200);
     }
 
     /**

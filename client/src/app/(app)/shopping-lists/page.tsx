@@ -19,7 +19,7 @@ import {
 import {
     IGetShoppingItem,
     IGetShoppingItemsResponse,
-    IPostShoppingItem,
+    IPutShoppingItem,
 } from '@/types/api';
 import { CategoryItemList, ShoppingItem } from './_components';
 import { ChevronRight, LoaderCircle } from 'lucide-react';
@@ -27,7 +27,7 @@ import { useShoppingCategory, useShoppingItem } from '@/hooks';
 import { useDebounce } from '@/hooks/useDebounce';
 import { AlertDialog, TextButton } from '../_components';
 import { colors } from '@/constants/colors';
-import { SettingCategoryDialog } from './_dialogs';
+import { SettingCategoryDialog, SettingItemDialog } from './_dialogs';
 
 enum ItemType {
     ITEM = 'item',
@@ -65,8 +65,11 @@ const Page = () => {
     const [activeId, setActiveId] = React.useState<string | null>(null);
     const debouncedItems = useDebounce(flatItems, 5000);
 
+    // アイテム追加・編集ダイアログを表示するか
+    const [isOpenSettingItemDialog, setIsOpenSettingItemDialog] =
+        React.useState(false);
     // カテゴリー設定ダイアログを表示するか
-    const [isOpenCategorySettingDialog, setIsOpenCategorySettingDialog] =
+    const [isOpenSettingCategoryDialog, setIsOpenSettingCategoryDialog] =
         React.useState(false);
     // 買い物リストを空にするダイアログを表示するか
     const [isOpenListEmptyDialog, setIsOpenListEmptyDialog] =
@@ -105,7 +108,7 @@ const Page = () => {
         return flatItems.find(v => v.id === itemId)?.categoryId;
     };
 
-    const updateItem = (item: IPostShoppingItem) => {
+    const updateItem = (item: IPutShoppingItem) => {
         const { id, name, isPinned, isChecked, order } = item;
         const categoryId = categoryIdFromItemId(id);
 
@@ -357,20 +360,32 @@ const Page = () => {
                     </div>
                     <TextButton
                         onClick={() => {
-                            setIsOpenCategorySettingDialog(true);
+                            setIsOpenSettingCategoryDialog(true);
                         }}>
                         カテゴリーの追加・編集
                         <ChevronRight size={20} />
                     </TextButton>
+                    <TextButton
+                        onClick={() => {
+                            setIsOpenSettingItemDialog(true);
+                        }}>
+                        アイテムの追加・編集（あとで削除）
+                        <ChevronRight size={20} />
+                    </TextButton>
                 </div>
+                {/* アイテム追加・編集ダイアログ */}
+                {isOpenSettingItemDialog && (
+                    <SettingItemDialog
+                        onClose={() => {
+                            setIsOpenSettingItemDialog(false);
+                        }}
+                    />
+                )}
                 {/* カテゴリー設定ダイアログ */}
-                {isOpenCategorySettingDialog && (
+                {isOpenSettingCategoryDialog && (
                     <SettingCategoryDialog
                         onClose={() => {
-                            setIsOpenCategorySettingDialog(false);
-                        }}
-                        onSave={() => {
-                            setIsOpenCategorySettingDialog(false);
+                            setIsOpenSettingCategoryDialog(false);
                         }}
                     />
                 )}

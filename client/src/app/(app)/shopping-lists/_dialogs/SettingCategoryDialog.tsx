@@ -20,14 +20,13 @@ import { useForm, useFieldArray, Control, Controller } from 'react-hook-form';
 
 interface Props {
     onClose: () => void;
-    onSave?: () => void;
 }
 
 interface FormData {
     categories: IPutShoppingCategory[];
 }
 
-const SettingCategoryDialog: React.FC<Props> = ({ onClose, onSave }) => {
+const SettingCategoryDialog: React.FC<Props> = ({ onClose }) => {
     const { isLoading, shoppingCategories, bulkUpdateShoppingCategories } =
         useShoppingCategory();
 
@@ -87,7 +86,7 @@ const SettingCategoryDialog: React.FC<Props> = ({ onClose, onSave }) => {
                     order: idx,
                 })),
             );
-            onSave();
+            onClose();
         } catch {
             // エラーの場合はダイアログを閉じない
             // エラーハンドリングはbulkUpdateShoppingCategoriesで行う

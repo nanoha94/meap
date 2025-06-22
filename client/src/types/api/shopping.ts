@@ -16,6 +16,12 @@ export interface IGetShoppingItem {
 }
 
 export interface IPostShoppingItem {
+    name: string;
+    categoryId: string;
+    tags: { id?: string; name: string }[];
+}
+
+export interface IPutShoppingItem {
     id: string;
     name: string;
     isPinned: boolean;
