@@ -1,1 +1,1 @@
-export { default as CategorySettingDialog } from './CategorySettingDialog';
+export { default as SettingCategoryDialog } from './SettingCategoryDialog';

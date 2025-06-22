@@ -27,7 +27,7 @@ import { useShoppingCategory, useShoppingItem } from '@/hooks';
 import { useDebounce } from '@/hooks/useDebounce';
 import { AlertDialog, TextButton } from '../_components';
 import { colors } from '@/constants/colors';
-import { CategorySettingDialog } from './_dialogs';
+import { SettingCategoryDialog } from './_dialogs';
 
 enum ItemType {
     ITEM = 'item',
@@ -365,7 +365,7 @@ const Page = () => {
                 </div>
                 {/* カテゴリー設定ダイアログ */}
                 {isOpenCategorySettingDialog && (
-                    <CategorySettingDialog
+                    <SettingCategoryDialog
                         onClose={() => {
                             setIsOpenCategorySettingDialog(false);
                         }}
