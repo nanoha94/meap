@@ -3,6 +3,7 @@ interface Props {
     className?: string;
     size?: 'normal' | 'small';
     disabled?: boolean;
+    colorVariant?: 'primary' | 'gray' | 'accent';
     children: React.ReactNode;
     onClick: () => void;
     type?: 'button' | 'submit' | 'reset';
@@ -12,6 +13,7 @@ const TextButton = ({
     className,
     size = 'normal',
     disabled = false,
+    colorVariant = 'primary',
     children,
     onClick,
     type = 'button',
@@ -20,7 +22,7 @@ const TextButton = ({
         <button
             type={type}
             onClick={onClick}
-            className={`py-1 px-2 w-fit flex items-center gap-x-1 ${size === 'small' ? 'text-sm' : 'text-base'} font-bold text-primary-main bg-white rounded border border-primary-main transition-colors hover:bg-gray-light ${disabled ? 'opacity-50' : ''} ${className}`}
+            className={`py-1 px-2 w-fit flex items-center gap-x-1 ${size === 'small' ? 'text-sm' : 'text-base'} font-bold text-${colorVariant}-main bg-white rounded border border-${colorVariant}-main transition-colors hover:bg-gray-light ${disabled ? 'opacity-50' : ''} ${className}`}
             disabled={disabled}>
             {children}
         </button>

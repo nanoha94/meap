@@ -22,6 +22,10 @@ export default {
             secondary: {
                 main: '#5E6946',
             },
+            accent: {
+                main: '#A36062',
+            },
+
             alert: {
                 main: '#CD3429',
                 light: '#FECDD0',

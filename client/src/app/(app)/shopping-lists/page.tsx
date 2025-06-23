@@ -16,16 +16,17 @@ import {
     SortableContext,
     verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import {
-    IGetShoppingItem,
-    IGetShoppingItemsResponse,
-    IPutShoppingItem,
-} from '@/types/api';
+import { IGetShoppingItemsResponse, IPutShoppingItem } from '@/types/api';
 import { CategoryItemList, ShoppingItem } from './_components';
-import { ChevronRight, LoaderCircle } from 'lucide-react';
+import {
+    CalendarDays,
+    ChevronRight,
+    LoaderCircle,
+    SquarePen,
+} from 'lucide-react';
 import { useShoppingCategory, useShoppingItem } from '@/hooks';
 import { useDebounce } from '@/hooks/useDebounce';
-import { AlertDialog, TextButton } from '../_components';
+import { AlertDialog, Header, TextButton } from '../_components';
 import { colors } from '@/constants/colors';
 import { SettingCategoryDialog, SettingItemDialog } from './_dialogs';
 
@@ -61,7 +62,7 @@ const Page = () => {
     const [items, setItems] = React.useState<IGetShoppingItemsResponse['data']>(
         [],
     );
-    const [flatItems, setFlatItems] = React.useState<IGetShoppingItem[]>([]);
+    const flatItems = React.useMemo(() => items.flatMap(v => v.items), [items]);
     const [activeId, setActiveId] = React.useState<string | null>(null);
     const debouncedItems = useDebounce(flatItems, 5000);
 
@@ -81,10 +82,6 @@ const Page = () => {
             setItems(shoppingItems);
         }
     }, [shoppingItems]);
-
-    React.useEffect(() => {
-        setFlatItems(items.flatMap(v => v.items));
-    }, [items]);
 
     // カテゴリー変更時の処理
     React.useEffect(() => {
@@ -295,133 +292,149 @@ const Page = () => {
     } else {
         return (
             <>
-                <div className="pb-12 flex flex-col gap-y-7">
-                    <div className="flex flex-col gap-y-7">
-                        {!!items && items.length > 0 ? (
-                            <DndContext
-                                sensors={sensors}
-                                collisionDetection={closestCenter}
-                                onDragStart={handleDragStart}
-                                onDragEnd={handleDragEnd}
-                                onDragOver={handleDragOver}>
-                                {items.map(v => (
-                                    <SortableContext
-                                        key={v.category.id}
-                                        items={v.items}
-                                        strategy={verticalListSortingStrategy}>
-                                        <CategoryItemList
-                                            category={v.category}
+                <Header title="買い物リスト">
+                    <div className="flex gap-x-4">
+                        {/* TODO: 実装 */}
+                        <TextButton colorVariant="accent" onClick={() => {}}>
+                            <CalendarDays size={20} />
+                            献立から追加
+                        </TextButton>
+                        <TextButton
+                            colorVariant="gray"
+                            onClick={() => {
+                                setIsOpenSettingItemDialog(true);
+                            }}>
+                            <SquarePen size={20} />
+                            テキストから追加
+                        </TextButton>
+                    </div>
+                </Header>
+                <div className="p-5">
+                    <div className="pb-12 flex flex-col gap-y-7">
+                        <div className="flex flex-col gap-y-7">
+                            {!!items && items.length > 0 ? (
+                                <DndContext
+                                    sensors={sensors}
+                                    collisionDetection={closestCenter}
+                                    onDragStart={handleDragStart}
+                                    onDragEnd={handleDragEnd}
+                                    onDragOver={handleDragOver}>
+                                    {items.map(v => (
+                                        <SortableContext
+                                            key={v.category.id}
                                             items={v.items}
-                                            deleteItem={deleteShoppingItem}
-                                            updateItem={updateItem}
-                                        />
-                                    </SortableContext>
-                                ))}
-                                <DragOverlay>
-                                    {activeId ? (
-                                        <ShoppingItem
-                                            item={flatItems?.find(
-                                                item => item.id === activeId,
-                                            )}
-                                            onDelete={() =>
-                                                deleteShoppingItem(activeId)
-                                            }
-                                            onUpdate={(
-                                                name,
-                                                isPinned,
-                                                isChecked,
-                                            ) =>
-                                                updateItem({
-                                                    id: activeId,
+                                            strategy={
+                                                verticalListSortingStrategy
+                                            }>
+                                            <CategoryItemList
+                                                category={v.category}
+                                                items={v.items}
+                                                deleteItem={deleteShoppingItem}
+                                                updateItem={updateItem}
+                                            />
+                                        </SortableContext>
+                                    ))}
+                                    <DragOverlay>
+                                        {activeId ? (
+                                            <ShoppingItem
+                                                item={flatItems?.find(
+                                                    item =>
+                                                        item.id === activeId,
+                                                )}
+                                                onDelete={() =>
+                                                    deleteShoppingItem(activeId)
+                                                }
+                                                onUpdate={(
                                                     name,
                                                     isPinned,
                                                     isChecked,
-                                                    categoryId: flatItems?.find(
-                                                        item =>
-                                                            item.id ===
-                                                            activeId,
-                                                    )?.categoryId,
-                                                    order: flatItems?.find(
-                                                        item =>
-                                                            item.id ===
-                                                            activeId,
-                                                    )?.order,
-                                                })
-                                            }
-                                        />
-                                    ) : (
-                                        <></>
-                                    )}
-                                </DragOverlay>
-                            </DndContext>
-                        ) : (
-                            <></>
-                        )}
-                    </div>
-                    <TextButton
-                        onClick={() => {
-                            setIsOpenSettingCategoryDialog(true);
-                        }}>
-                        カテゴリーの追加・編集
-                        <ChevronRight size={20} />
-                    </TextButton>
-                    <TextButton
-                        onClick={() => {
-                            setIsOpenSettingItemDialog(true);
-                        }}>
-                        アイテムの追加・編集（あとで削除）
-                        <ChevronRight size={20} />
-                    </TextButton>
-                </div>
-                {/* アイテム追加・編集ダイアログ */}
-                {isOpenSettingItemDialog && (
-                    <SettingItemDialog
-                        onClose={() => {
-                            setIsOpenSettingItemDialog(false);
-                        }}
-                    />
-                )}
-                {/* カテゴリー設定ダイアログ */}
-                {isOpenSettingCategoryDialog && (
-                    <SettingCategoryDialog
-                        onClose={() => {
-                            setIsOpenSettingCategoryDialog(false);
-                        }}
-                    />
-                )}
-                {/* 買い物リストを空にするダイアログ */}
-                {isOpenListEmptyDialog && (
-                    <AlertDialog
-                        title="買い物リストを空にする"
-                        onClose={() => setIsOpenListEmptyDialog(false)}>
-                        <div className="flex flex-col gap-y-7">
-                            <p className="text-center">
-                                買い物リストに登録されているすべてのアイテムを削除しますか？
-                            </p>
-                            <p className="text-sm text-center">
-                                ※固定化アイテムは削除されません
-                            </p>
-                            <div className="mx-auto max-w-[320px] w-full flex gap-x-6">
-                                <Button
-                                    colorVariant="gray"
-                                    variant="outlined"
-                                    onClick={() =>
-                                        setIsOpenListEmptyDialog(false)
-                                    }>
-                                    キャンセル
-                                </Button>
-                                <Button
-                                    onClick={() => {
-                                        deleteAllShoppingItems();
-                                        setIsOpenListEmptyDialog(false);
-                                    }}
-                                    colorVariant="alert">
-                                    削除
-                                </Button>
-                            </div>
+                                                ) =>
+                                                    updateItem({
+                                                        id: activeId,
+                                                        name,
+                                                        isPinned,
+                                                        isChecked,
+                                                        categoryId:
+                                                            flatItems?.find(
+                                                                item =>
+                                                                    item.id ===
+                                                                    activeId,
+                                                            )?.categoryId,
+                                                        order: flatItems?.find(
+                                                            item =>
+                                                                item.id ===
+                                                                activeId,
+                                                        )?.order,
+                                                    })
+                                                }
+                                            />
+                                        ) : (
+                                            <></>
+                                        )}
+                                    </DragOverlay>
+                                </DndContext>
+                            ) : (
+                                <></>
+                            )}
                         </div>
-                    </AlertDialog>
-                )}
+                        <TextButton
+                            onClick={() => {
+                                setIsOpenSettingCategoryDialog(true);
+                            }}>
+                            カテゴリーの追加・編集
+                            <ChevronRight size={20} />
+                        </TextButton>
+                    </div>
+                    {/* アイテム追加・編集ダイアログ */}
+                    {isOpenSettingItemDialog && (
+                        <SettingItemDialog
+                            onClose={() => {
+                                setIsOpenSettingItemDialog(false);
+                            }}
+                        />
+                    )}
+                    {/* カテゴリー設定ダイアログ */}
+                    {isOpenSettingCategoryDialog && (
+                        <SettingCategoryDialog
+                            onClose={() => {
+                                setIsOpenSettingCategoryDialog(false);
+                            }}
+                        />
+                    )}
+                    {/* 買い物リストを空にするダイアログ */}
+                    {isOpenListEmptyDialog && (
+                        <AlertDialog
+                            title="買い物リストを空にする"
+                            onClose={() => setIsOpenListEmptyDialog(false)}>
+                            <div className="flex flex-col gap-y-7">
+                                <p className="text-center">
+                                    買い物リストに登録されているすべてのアイテムを削除しますか？
+                                </p>
+                                <p className="text-sm text-center">
+                                    ※固定化アイテムは削除されません
+                                </p>
+                                <div className="mx-auto max-w-[320px] w-full flex gap-x-6">
+                                    <Button
+                                        colorVariant="gray"
+                                        variant="outlined"
+                                        onClick={() =>
+                                            setIsOpenListEmptyDialog(false)
+                                        }>
+                                        キャンセル
+                                    </Button>
+                                    <Button
+                                        onClick={() => {
+                                            deleteAllShoppingItems();
+                                            setIsOpenListEmptyDialog(false);
+                                        }}
+                                        colorVariant="alert">
+                                        削除
+                                    </Button>
+                                </div>
+                            </div>
+                        </AlertDialog>
+                    )}
+                </div>
             </>
         );
     }
