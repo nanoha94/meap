@@ -1,14 +1,14 @@
 import { Dialog } from '@/app/(app)/_components';
 import { Button, FormItem } from '@/components';
 import { colors } from '@/constants/colors';
-import { useShoppingCategory, useShoppingItem } from '@/hooks';
-import { IPutShoppingItem } from '@/types/api';
+import { useShoppingCategory, useShoppingItem } from '@/hooks/api';
+import { IShoppingItem } from '@/types/api';
 import { ChevronDown, LoaderCircle } from 'lucide-react';
 import React from 'react';
 import { useForm, Controller } from 'react-hook-form';
 
 interface Props {
-    item?: IPutShoppingItem | undefined;
+    item?: IShoppingItem | undefined;
     onClose: () => void;
 }
 

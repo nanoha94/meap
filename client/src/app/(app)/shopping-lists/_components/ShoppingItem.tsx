@@ -2,11 +2,11 @@ import React from 'react';
 import { ActionMenu, AlertDialog } from '../../_components';
 import { colors } from '@/constants/colors';
 import { Check, GripVertical, Pencil, Pin, PinOff, Trash } from 'lucide-react';
-import { IGetShoppingItem } from '@/types/api';
+import { IShoppingItem } from '@/types/api';
 import { Button } from '@/components';
 
 interface Props {
-    item: IGetShoppingItem;
+    item: IShoppingItem;
     onDelete: () => void;
     onUpdate: (name: string, isPinned: boolean, isChecked: boolean) => void;
 }

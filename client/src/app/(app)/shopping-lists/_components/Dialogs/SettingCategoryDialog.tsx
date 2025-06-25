@@ -2,8 +2,7 @@ import { Dialog, TextButton } from '@/app/(app)/_components';
 import { Button } from '@/components';
 import { colors } from '@/constants/colors';
 import { TMP_ID_PREFIX } from '@/constants/ids';
-import { useShoppingCategory } from '@/hooks';
-import { IPutShoppingCategory } from '@/types/api';
+import { IShoppingCategory } from '@/types/api';
 import {
     DndContext,
     DragEndEvent,
@@ -17,13 +16,14 @@ import { CSS } from '@dnd-kit/utilities';
 import { CirclePlus, GripVertical, LoaderCircle, Trash } from 'lucide-react';
 import React from 'react';
 import { useForm, useFieldArray, Control, Controller } from 'react-hook-form';
+import { useShoppingCategory } from '@/hooks/api';
 
 interface Props {
     onClose: () => void;
 }
 
 interface FormData {
-    categories: IPutShoppingCategory[];
+    categories: IShoppingCategory[];
 }
 
 const SettingCategoryDialog: React.FC<Props> = ({ onClose }) => {
@@ -120,7 +120,7 @@ const SettingCategoryDialog: React.FC<Props> = ({ onClose }) => {
 
     React.useEffect(() => {
         // shoppingCategoriesが更新されたらフォームの値を更新
-        if (shoppingCategories.length > 0) {
+        if (shoppingCategories?.length > 0) {
             reset({ categories: shoppingCategories });
         }
     }, [shoppingCategories]);

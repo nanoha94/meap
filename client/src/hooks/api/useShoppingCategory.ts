@@ -2,30 +2,29 @@ import { TMP_ID_PREFIX } from '@/constants/ids';
 import { useSnackbars } from '@/contexts';
 import axios from '@/lib/axios';
 import {
-    IGetShoppingCategory,
+    IShoppingCategory,
     IGetShoppingItemsResponse,
     IPostShoppingCategory,
-    IPutShoppingCategory,
 } from '@/types/api';
 import { waitForLoading } from '@/utils/waitForLoading';
 import React from 'react';
 import useSWR from 'swr';
+import { useShoppingStore } from '@/stores';
 
 const fetchShoppingCategories = (
     path: string,
-): Promise<{ categories: IGetShoppingCategory[]; total: number }> =>
+): Promise<{ categories: IShoppingCategory[]; total: number }> =>
     axios.get(path).then(res => res.data);
 
 export const useShoppingCategory = () => {
     const { addSnackbar } = useSnackbars();
+    const { setCategories } = useShoppingStore();
     const [isLoading, setIsLoading] = React.useState(false);
     const { data, error, isValidating, mutate } = useSWR(
         '/shopping/categories',
         fetchShoppingCategories,
+        { revalidateOnMount: false },
     );
-    const [shoppingCategories, setShoppingCategories] = React.useState<
-        IGetShoppingCategory[]
-    >([]);
 
     /**
      * ローディング中かどうかを管理する
@@ -39,15 +38,18 @@ export const useShoppingCategory = () => {
         }
     }, [isValidating]);
 
+    // フェッチ後にストアにセット
     React.useEffect(() => {
-        setShoppingCategories(data?.categories);
-    }, [data]);
+        if (data?.categories) {
+            setCategories(data.categories);
+        }
+    }, [data, setCategories]);
 
     const bulkUpdateShoppingCategories = async (
-        categories: IPutShoppingCategory[],
+        categories: IShoppingCategory[],
     ) => {
         // 更新データがない場合は処理を終了
-        if (JSON.stringify(categories) === JSON.stringify(shoppingCategories)) {
+        if (JSON.stringify(categories) === JSON.stringify(data?.categories)) {
             return;
         }
 
@@ -72,7 +74,7 @@ export const useShoppingCategory = () => {
         setIsLoading(true);
 
         // 削除するカテゴリーを取得
-        const deleteCategoryIds = shoppingCategories
+        const deleteCategoryIds = data?.categories
             .filter(v => !categories.some(c => c.id === v.id))
             .map(v => v.id);
 
@@ -89,7 +91,7 @@ export const useShoppingCategory = () => {
             }
         }
 
-        const updateCategories: IPutShoppingCategory[] = [];
+        const updateCategories: IShoppingCategory[] = [];
 
         // 更新用配列を生成
         for (let i = 0; i < categories.length; i++) {
@@ -103,12 +105,10 @@ export const useShoppingCategory = () => {
                 if (
                     JSON.stringify(categories[i]) !==
                     JSON.stringify(
-                        shoppingCategories.find(v => v.id === categories[i].id),
+                        data?.categories.find(v => v.id === categories[i].id),
                     )
                 ) {
-                    updateCategories.push(
-                        categories[i] as IPutShoppingCategory,
-                    );
+                    updateCategories.push(categories[i] as IShoppingCategory);
                 }
             }
             // まだDBにレコードがない場合は、作成リクエスト
@@ -176,18 +176,18 @@ export const useShoppingCategory = () => {
             onMutate?: () => void,
         ) => {
             if (
-                JSON.stringify(shoppingCategories) !==
+                JSON.stringify(data?.categories) !==
                 JSON.stringify(shoppingItems.map(v => v.category))
             ) {
                 itemMutate(); // アイテムのmutate
                 onMutate?.(); // 追加のコールバック
             }
         },
-        [shoppingCategories],
+        [data],
     );
 
     return {
-        shoppingCategories: shoppingCategories,
+        shoppingCategories: data?.categories,
         bulkUpdateShoppingCategories,
         isLoading,
         handleCategoryChange,

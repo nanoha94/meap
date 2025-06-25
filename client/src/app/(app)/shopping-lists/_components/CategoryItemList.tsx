@@ -1,21 +1,17 @@
 import React from 'react';
-import {
-    IGetShoppingCategory,
-    IGetShoppingItem,
-    IPutShoppingItem,
-} from '@/types/api';
+
 import ShoppingItem from './ShoppingItem';
-import { Settings, Trash } from 'lucide-react';
+import { EllipsisVertical } from 'lucide-react';
 import { colors } from '@/constants/colors';
-import { useRouter } from 'next/navigation';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { IShoppingCategory, IShoppingItem } from '@/types/api';
 
 interface Props {
-    category: IGetShoppingCategory;
-    items: IGetShoppingItem[];
+    category: IShoppingCategory;
+    items: IShoppingItem[];
     deleteItem: (id: string) => void;
-    updateItem: (item: IPutShoppingItem) => void;
+    updateItem: (item: IShoppingItem) => void;
 }
 
 const CategoryItemList: React.FC<Props> = ({
@@ -24,8 +20,6 @@ const CategoryItemList: React.FC<Props> = ({
     deleteItem,
     updateItem,
 }) => {
-    // console.log('CategoryItemList', items);
-    const router = useRouter();
     const { setNodeRef } = useSortable({ id: category.id });
 
     return (
@@ -33,17 +27,9 @@ const CategoryItemList: React.FC<Props> = ({
             <div className="flex gap-x-4 items-center text-gray-main">
                 {category.name}
                 <div className="flex gap-x-2 items-center">
-                    {!category.isDefault && (
-                        <button
-                            onClick={() => {
-                                router.push('/shopping-lists/categories');
-                            }}>
-                            <Settings size={20} color={colors.primary.main} />
-                        </button>
-                    )}
-                    {/* TODO: クリック処理 */}
+                    {/* TODO: メニュー表示 */}
                     <button onClick={() => {}}>
-                        <Trash size={20} color={colors.primary.main} />
+                        <EllipsisVertical size={20} color={colors.gray.main} />
                     </button>
                 </div>
             </div>
@@ -74,10 +60,10 @@ const CategoryItemList: React.FC<Props> = ({
 export default CategoryItemList;
 
 interface SortableItemProps {
-    item: IGetShoppingItem;
+    item: IShoppingItem;
     categoryId: string;
     onDelete: (id: string) => void;
-    onUpdate: (item: IPutShoppingItem) => void;
+    onUpdate: (item: IShoppingItem) => void;
 }
 const SortableItem: React.FC<SortableItemProps> = ({
     item,
@@ -114,6 +100,7 @@ const SortableItem: React.FC<SortableItemProps> = ({
                         isChecked,
                         categoryId,
                         order: item.order,
+                        tags: item.tags,
                     })
                 }
             />

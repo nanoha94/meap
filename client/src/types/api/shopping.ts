@@ -1,11 +1,11 @@
 export interface IGetShoppingItemsResponse {
     data: {
-        category: IGetShoppingCategory;
-        items: IGetShoppingItem[];
+        category: IShoppingCategory;
+        items: IShoppingItem[];
     }[];
 }
 
-export interface IGetShoppingItem {
+export interface IShoppingItem {
     id: string;
     name: string;
     isPinned: boolean;
@@ -21,16 +21,7 @@ export interface IPostShoppingItem {
     tags: { id?: string; name: string }[];
 }
 
-export interface IPutShoppingItem {
-    id: string;
-    name: string;
-    isPinned: boolean;
-    isChecked: boolean;
-    categoryId: string;
-    order: number;
-}
-
-export interface IGetShoppingCategory {
+export interface IShoppingCategory {
     id: string;
     name: string;
     isDefault: boolean;
@@ -39,12 +30,5 @@ export interface IGetShoppingCategory {
 
 export interface IPostShoppingCategory {
     name: string;
-    order: number;
-}
-
-export interface IPutShoppingCategory {
-    id: string;
-    name: string;
-    isDefault: boolean;
     order: number;
 }

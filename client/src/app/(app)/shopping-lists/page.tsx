@@ -12,11 +12,9 @@ import {
     MouseSensor,
 } from '@dnd-kit/core';
 import {
-    arrayMove,
     SortableContext,
     verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { IGetShoppingItemsResponse, IPutShoppingItem } from '@/types/api';
 import { CategoryItemList, ShoppingItem } from './_components';
 import {
     CalendarDays,
@@ -24,17 +22,15 @@ import {
     LoaderCircle,
     SquarePen,
 } from 'lucide-react';
-import { useShoppingCategory, useShoppingItem } from '@/hooks';
 import { useDebounce } from '@/hooks/useDebounce';
 import { AlertDialog, Header, TextButton } from '../_components';
 import { colors } from '@/constants/colors';
-import { SettingCategoryDialog, SettingItemDialog } from './_dialogs';
-
-enum ItemType {
-    ITEM = 'item',
-    CATEGORY = 'category',
-    NONE = null,
-}
+import {
+    SettingCategoryDialog,
+    SettingItemDialog,
+} from './_components/Dialogs';
+import { useShoppingListLogic } from './_hooks/useShoppingListLogic';
+import { useShoppingCategory, useShoppingItem } from '@/hooks/api';
 
 const Page = () => {
     const {
@@ -47,6 +43,17 @@ const Page = () => {
     } = useShoppingItem();
     const { shoppingCategories, handleCategoryChange } = useShoppingCategory();
 
+    const {
+        items,
+        updateItem,
+        moveItem,
+        setActiveId,
+        activeId,
+        setIsShowLoading,
+        isShowLoading,
+        setItems,
+    } = useShoppingListLogic();
+
     const sensors = useSensors(
         useSensor(MouseSensor, {
             activationConstraint: {
@@ -55,15 +62,11 @@ const Page = () => {
         }),
     );
 
-    // ローディングアニメーションを表示するか
-    // ページリロード時、カテゴリ―更新時に表示する
-    const [isShowLoading, setIsShowLoading] = React.useState(true);
+    // ローカルでflatItemsを計算
+    const flatItems = React.useMemo(() => {
+        return items.flatMap(v => v.items);
+    }, [items]);
 
-    const [items, setItems] = React.useState<IGetShoppingItemsResponse['data']>(
-        [],
-    );
-    const flatItems = React.useMemo(() => items.flatMap(v => v.items), [items]);
-    const [activeId, setActiveId] = React.useState<string | null>(null);
     const debouncedItems = useDebounce(flatItems, 5000);
 
     // アイテム追加・編集ダイアログを表示するか
@@ -95,33 +98,6 @@ const Page = () => {
     React.useEffect(() => {
         if (!isLoading && shoppingItems?.length > 0) setIsShowLoading(false);
     }, [isLoading]);
-
-    /**
-     * アイテムのカテゴリーIDを取得
-     * @param itemId アイテムID
-     * @returns カテゴリーID
-     */
-    const categoryIdFromItemId = (itemId: string): string | undefined => {
-        return flatItems.find(v => v.id === itemId)?.categoryId;
-    };
-
-    const updateItem = (item: IPutShoppingItem) => {
-        const { id, name, isPinned, isChecked, order } = item;
-        const categoryId = categoryIdFromItemId(id);
-
-        if (categoryId) {
-            setItems(
-                items.map(v => ({
-                    ...v,
-                    items: v.items.map(item =>
-                        item.id === id
-                            ? { ...item, name, isPinned, isChecked, order }
-                            : item,
-                    ),
-                })),
-            );
-        }
-    };
 
     // TODO: あとで復活
     // const unCheckAllItems = () => {
@@ -178,91 +154,6 @@ const Page = () => {
         };
     }, []);
 
-    const updateSortableItems = (activeId: string, overId: string) => {
-        if (activeId === overId) return;
-        const overCategoryItemId = categoryIdFromItemId(overId);
-        const overCategoryInfo = items?.find(
-            v => v.category.id === overId,
-        )?.category;
-
-        // overIdがitemかcategoryかを判断
-        const overType = overCategoryItemId
-            ? ItemType.ITEM
-            : overCategoryInfo
-              ? ItemType.CATEGORY
-              : ItemType.NONE;
-
-        // カテゴリーIDを取得
-        const activeCategoryId = categoryIdFromItemId(activeId);
-        const overCategoryId =
-            overType === ItemType.CATEGORY
-                ? overId
-                : overType === ItemType.ITEM
-                  ? overCategoryItemId
-                  : null;
-
-        if (!activeCategoryId && !overCategoryId) return;
-
-        // カテゴリごとのインデックスを取得
-        const activeCategory = items.find(
-            v => v.category.id === activeCategoryId,
-        );
-        const overCategory = items.find(v => v.category.id === overCategoryId);
-
-        if (!activeCategory || !overCategory) return;
-
-        const activeIndex = activeCategory.items.findIndex(
-            v => v.id === activeId,
-        );
-        const overIndex =
-            overType === ItemType.ITEM
-                ? overCategory.items.findIndex(v => v.id === overId)
-                : 0;
-
-        if (activeIndex === -1 || overIndex === -1) return;
-
-        // 別カテゴリ―での入れ替え
-        if (activeCategoryId !== overCategoryId) {
-            const activeItem = activeCategory.items[activeIndex];
-            if (activeItem) {
-                const removedActiveItems = items.map(v => ({
-                    ...v,
-                    items: v.items.filter(item => item.id !== activeId),
-                }));
-
-                const updatedListItems = removedActiveItems.map(v => {
-                    if (v.category.id === overCategoryId) {
-                        const newItems = [...v.items];
-                        newItems.splice(overIndex, 0, {
-                            ...activeItem,
-                            categoryId: overCategoryId,
-                        });
-                        return {
-                            ...v,
-                            items: newItems,
-                        };
-                    }
-                    return v;
-                });
-
-                setItems(updatedListItems);
-            }
-        }
-        // 同カテゴリーでの入れ替え
-        else {
-            const updatedListItems = items.map(v => {
-                if (v.category.id === activeCategoryId) {
-                    return {
-                        ...v,
-                        items: arrayMove(v.items, activeIndex, overIndex),
-                    };
-                }
-                return v;
-            });
-            setItems(updatedListItems);
-        }
-    };
-
     const handleDragStart = (event: DragStartEvent) => {
         const { active } = event;
 
@@ -272,7 +163,7 @@ const Page = () => {
     const handleDragOver = (event: DragOverEvent) => {
         const { active, over } = event;
         if (!over) return;
-        updateSortableItems(active.id as string, over.id as string);
+        moveItem(active.id as string, over.id as string);
     };
 
     const handleDragEnd = () => {
@@ -360,6 +251,11 @@ const Page = () => {
                                                                     item.id ===
                                                                     activeId,
                                                             )?.categoryId,
+                                                        tags: flatItems?.find(
+                                                            item =>
+                                                                item.id ===
+                                                                activeId,
+                                                        )?.tags,
                                                         order: flatItems?.find(
                                                             item =>
                                                                 item.id ===

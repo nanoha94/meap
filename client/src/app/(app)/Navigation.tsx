@@ -6,7 +6,7 @@ import ResponsiveNavLink, {
     ResponsiveNavButton,
 } from '@/components/ResponsiveNavLink';
 import { DropdownButton } from '@/components/DropdownLink';
-import { useAuth } from '@/hooks';
+import { useAuth } from '@/hooks/api';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { IGetUser } from '@/types/api';

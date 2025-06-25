@@ -1,6 +1,6 @@
 'use client';
 import Button from '@/components/Button';
-import { useAuth } from '@/hooks';
+import { useAuth } from '@/hooks/api';
 import { useState } from 'react';
 
 const Page = () => {

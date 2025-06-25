@@ -3,7 +3,7 @@ import { icons } from '@dicebear/collection';
 import { createAvatar, Result } from '@dicebear/core';
 import { AlertDialog, TextButton } from '../../_components';
 import { ChevronRight } from 'lucide-react';
-import { useAuth } from '@/hooks';
+import { useAuth } from '@/hooks/api';
 import React from 'react';
 import axios from '@/lib/axios';
 import { IGetGroupUser } from '@/types/api';
@@ -11,7 +11,7 @@ import useSWR from 'swr';
 import { InvitationDialog, JoinDialog } from './_dialogs';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components';
-import { useJoinGroup } from '@/hooks/useJoinGroup';
+import { useJoinGroup } from '@/hooks/api';
 
 const fetchGroupUsers = (path: string): Promise<IGetGroupUser[]> =>
     axios.get(path).then(res => res.data);

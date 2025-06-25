@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth } from '@/hooks';
+import { useAuth } from '@/hooks/api';
 import Navigation2 from '@/app/(app)/Navigation';
 import Loading from '@/app/(app)/Loading';
 import { Navigation } from './_components';

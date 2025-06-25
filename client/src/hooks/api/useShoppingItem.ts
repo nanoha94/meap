@@ -2,7 +2,7 @@ import axios from '@/lib/axios';
 import {
     IGetShoppingItemsResponse,
     IPostShoppingItem,
-    IPutShoppingItem,
+    IShoppingItem,
 } from '@/types/api';
 import React from 'react';
 import useSWR from 'swr';
@@ -17,6 +17,7 @@ export const useShoppingItem = () => {
     const { data, error, mutate, isValidating } = useSWR(
         '/shopping/items',
         fetchShoppingItems,
+        { revalidateOnMount: false },
     );
     const shoppingItems: IGetShoppingItemsResponse['data'] = data?.data;
 
@@ -61,7 +62,7 @@ export const useShoppingItem = () => {
      * @param items 更新するアイテム
      * @returns 更新結果
      */
-    const updateShoppingItems = async (items: IPutShoppingItem[]) => {
+    const updateShoppingItems = async (items: IShoppingItem[]) => {
         if (
             isLoading ||
             items.length === 0 ||
