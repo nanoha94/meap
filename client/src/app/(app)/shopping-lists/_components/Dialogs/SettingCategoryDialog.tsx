@@ -1,5 +1,5 @@
-import { Dialog, TextButton } from '@/app/(app)/_components';
-import { Button } from '@/components';
+import { Dialog, TextButton } from '@/components/common';
+import { Button } from '@/components/common';
 import { colors } from '@/constants/colors';
 import { TMP_ID_PREFIX } from '@/constants/ids';
 import { IShoppingCategory } from '@/types/api';

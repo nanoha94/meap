@@ -1,9 +1,9 @@
 'use client';
 
 import { useAuth } from '@/hooks/api';
-import Navigation2 from '@/app/(app)/Navigation';
+import Navigation2 from '@/components/xxx/Navigation';
 import Loading from '@/app/(app)/Loading';
-import { Navigation } from './_components';
+import { Navigation } from '@/components/common';
 
 interface Props {
     children: React.ReactNode;

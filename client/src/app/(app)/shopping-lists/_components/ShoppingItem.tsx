@@ -1,9 +1,9 @@
 import React from 'react';
-import { ActionMenu, AlertDialog } from '../../_components';
+import { ActionMenu, AlertDialog } from '@/components/common';
 import { colors } from '@/constants/colors';
 import { Check, GripVertical, Pencil, Pin, PinOff, Trash } from 'lucide-react';
 import { IShoppingItem } from '@/types/api';
-import { Button } from '@/components';
+import { Button } from '@/components/common';
 
 interface Props {
     item: IShoppingItem;

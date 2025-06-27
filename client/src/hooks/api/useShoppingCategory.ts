@@ -6,7 +6,7 @@ import {
     IGetShoppingItemsResponse,
     IPostShoppingCategory,
 } from '@/types/api';
-import { waitForLoading } from '@/utils/waitForLoading';
+import { waitForLoading } from '@/utils';
 import React from 'react';
 import useSWR from 'swr';
 import { useShoppingStore } from '@/stores';

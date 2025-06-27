@@ -1,5 +1,5 @@
 'use client';
-import Button from '@/components/Button';
+import { Button } from '@/components/common';
 import { useAuth } from '@/hooks/api';
 import { useState } from 'react';
 

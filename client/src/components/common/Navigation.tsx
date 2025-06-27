@@ -2,7 +2,12 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import React from 'react';
-import { BookOpenCheck, CalendarDate, CookingPot, Settings } from './svg';
+import {
+    BookOpenCheck,
+    CalendarDate,
+    CookingPot,
+    Settings,
+} from '@/components/svg';
 import { colors } from '@/constants/colors';
 
 const Navigation = () => {

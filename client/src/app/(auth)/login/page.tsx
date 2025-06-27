@@ -1,10 +1,9 @@
 'use client';
-import Button from '@/components/Button';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/api';
 import React from 'react';
 import { useSearchParams } from 'next/navigation';
-import { FormItem } from '@/components';
+import { FormItem, Button } from '@/components/common';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
 interface FormInputs {

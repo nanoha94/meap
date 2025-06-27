@@ -1,5 +1,4 @@
-import { Dialog } from '@/app/(app)/_components';
-import { Button, FormItem } from '@/components';
+import { Dialog, Button, FormItem } from '@/components/common';
 import { colors } from '@/constants/colors';
 import { useShoppingCategory, useShoppingItem } from '@/hooks/api';
 import { IShoppingItem } from '@/types/api';

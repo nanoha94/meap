@@ -1,5 +1,4 @@
-import { Dialog } from '@/app/(app)/_components';
-import { Button } from '@/components';
+import { Dialog, Button } from '@/components/common';
 import { colors } from '@/constants/colors';
 import axios from '@/lib/axios';
 import { IGetInvitationDetail } from '@/types/api';

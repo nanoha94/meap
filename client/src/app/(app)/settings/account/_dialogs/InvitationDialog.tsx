@@ -1,4 +1,4 @@
-import { Dialog, TextButton } from '@/app/(app)/_components';
+import { Dialog, TextButton } from '@/components/common';
 import { colors } from '@/constants/colors';
 import axios from '@/lib/axios';
 import dayjs from 'dayjs';

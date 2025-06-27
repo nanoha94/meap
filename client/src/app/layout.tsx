@@ -1,6 +1,6 @@
 import { Noto_Sans_JP } from 'next/font/google';
 import '@/app/global.css';
-import { Snackbars } from '@/components';
+import { Snackbars } from '@/components/common';
 import { SnackbarsProvider } from '@/contexts/useSnackbars';
 
 const notoSansJp = Noto_Sans_JP({

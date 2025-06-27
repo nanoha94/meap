@@ -1,4 +1,4 @@
-import Header from '@/app/(app)/_components/Header';
+import { Header } from '@/components/common';
 import { CalendarHeader } from './_components';
 
 export const metadata = {

@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { Button } from '@/components';
+import { Button } from '@/components/common';
 import {
     closestCenter,
     DndContext,
@@ -23,7 +23,7 @@ import {
     SquarePen,
 } from 'lucide-react';
 import { useDebounce } from '@/hooks/useDebounce';
-import { AlertDialog, Header, TextButton } from '../_components';
+import { AlertDialog, Header, TextButton } from '@/components/common';
 import { colors } from '@/constants/colors';
 import {
     SettingCategoryDialog,
