@@ -1,6 +1,7 @@
 import { Dialog, Button, FormItem } from '@/components/common';
 import { colors } from '@/constants/colors';
-import { useShoppingCategory, useShoppingItem } from '@/hooks/api';
+import { useShoppingItem } from '@/hooks/api';
+import { useShoppingCategory } from '@/models/shopping/hooks/useShoppingCategory';
 import { IShoppingItem } from '@/types/api';
 import { ChevronDown, LoaderCircle } from 'lucide-react';
 import React from 'react';
@@ -29,7 +30,7 @@ const SettingCategoryDialog: React.FC<Props> = ({
     onClose,
 }) => {
     const { isLoading, createShoppingItem } = useShoppingItem();
-    const { shoppingCategories } = useShoppingCategory();
+    const { storeData } = useShoppingCategory();
 
     const type = React.useMemo(
         () => (item !== undefined ? 'update' : 'create'),
@@ -62,9 +63,9 @@ const SettingCategoryDialog: React.FC<Props> = ({
     React.useEffect(() => {
         reset({
             ...defaultValues,
-            categoryId: shoppingCategories.find(v => v.isDefault)?.id || '',
+            categoryId: storeData.categories.find(v => v.isDefault)?.id || '',
         });
-    }, [shoppingCategories]);
+    }, [storeData.categories]);
 
     const onSubmit = (data: FormData) => {
         createShoppingItem(data);
@@ -135,7 +136,7 @@ const SettingCategoryDialog: React.FC<Props> = ({
                                                             );
                                                         }}
                                                         className="py-2 px-4 w-full text-base border rounded-lg border-gray-main appearance-none outline-none">
-                                                        {shoppingCategories.map(
+                                                        {storeData.categories.map(
                                                             v => (
                                                                 <option
                                                                     key={v.id}

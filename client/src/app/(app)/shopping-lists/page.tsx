@@ -25,13 +25,11 @@ import {
 import { useDebounce } from '@/hooks/useDebounce';
 import { AlertDialog, Header, TextButton } from '@/components/common';
 import { colors } from '@/constants/colors';
-import {
-    SettingCategoryDialog,
-    SettingItemDialog,
-} from './_components/Dialogs';
+import { SettingItemDialog } from './_components/Dialogs';
 import { useShoppingListLogic } from './_hooks/useShoppingListLogic';
-import { useShoppingCategory, useShoppingItem } from '@/hooks/api';
-
+import { useShoppingItem } from '@/hooks/api';
+import { useShoppingCategory } from '@/models/shopping/hooks/useShoppingCategory';
+import ShoppingCategorySettingDialog from '@/models/shopping/components/ShoppingCategorySettingDialog/ShoppingCategorySettingDialog';
 const Page = () => {
     const {
         isLoading,
@@ -41,7 +39,7 @@ const Page = () => {
         deleteAllShoppingItems,
         mutate: itemMutate,
     } = useShoppingItem();
-    const { shoppingCategories, handleCategoryChange } = useShoppingCategory();
+    const { storeData } = useShoppingCategory();
 
     const {
         items,
@@ -88,12 +86,14 @@ const Page = () => {
 
     // カテゴリー変更時の処理
     React.useEffect(() => {
-        if (shoppingItems) {
-            handleCategoryChange(shoppingItems, itemMutate, () => {
-                setIsShowLoading(true);
-            });
+        if (
+            JSON.stringify(storeData.categories) !==
+            JSON.stringify(shoppingItems?.map(v => v.category))
+        ) {
+            itemMutate();
+            setIsShowLoading(true);
         }
-    }, [shoppingCategories, shoppingItems, handleCategoryChange, itemMutate]);
+    }, [storeData.categories, shoppingItems]);
 
     React.useEffect(() => {
         if (!isLoading && shoppingItems?.length > 0) setIsShowLoading(false);
@@ -291,7 +291,7 @@ const Page = () => {
                     )}
                     {/* カテゴリー設定ダイアログ */}
                     {isOpenSettingCategoryDialog && (
-                        <SettingCategoryDialog
+                        <ShoppingCategorySettingDialog
                             onClose={() => {
                                 setIsOpenSettingCategoryDialog(false);
                             }}

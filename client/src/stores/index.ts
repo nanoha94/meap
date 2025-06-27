@@ -1,1 +1,0 @@
-export { useShoppingStore } from './shoppingStore';
