@@ -10,7 +10,6 @@ import { IGetGroupUser } from '@/types/api';
 import useSWR from 'swr';
 import { InvitationDialog, JoinDialog } from './_dialogs';
 import { useSearchParams } from 'next/navigation';
-import { Button } from '@/components/common';
 import { useJoinGroup } from '@/hooks/api';
 
 const fetchGroupUsers = (path: string): Promise<IGetGroupUser[]> =>
@@ -151,49 +150,38 @@ const Page = () => {
                 )}
             </div>
             {/* 招待ダイアログ */}
-            {isOpenInviteDialog && (
-                <InvitationDialog
-                    onClose={() => setIsOpenInviteDialog(false)}
-                />
-            )}
+            <InvitationDialog
+                isOpen={isOpenInviteDialog}
+                onClose={() => setIsOpenInviteDialog(false)}
+            />
+
             {/* 参加ダイアログ */}
-            {isOpenJoinDialog && (
-                <JoinDialog
-                    token={token}
-                    iconAvatar={iconAvatar}
-                    onClose={() => {
-                        setIsOpenJoinDialog(false);
-                    }}
-                    JoinGroupWithToken={() => JoinGroupWithToken(false)}
-                />
-            )}
+            <JoinDialog
+                token={token}
+                iconAvatar={iconAvatar}
+                isOpen={isOpenJoinDialog}
+                onClose={() => {
+                    setIsOpenJoinDialog(false);
+                }}
+                JoinGroupWithToken={() => JoinGroupWithToken(false)}
+            />
             {/* 削除確認ダイアログ */}
-            {isOpenAlertDialog && (
-                <AlertDialog
-                    title="データ削除"
-                    onClose={() => setIsOpenAlertDialog(false)}>
-                    <div className="flex flex-col gap-y-7">
-                        <p className="text-center">
-                            {alertDialogMessage}
-                            <br />
-                            削除してグループに参加しますか？
-                        </p>
-                        <div className="mx-auto max-w-[320px] w-full flex gap-x-6">
-                            <Button
-                                colorVariant="gray"
-                                variant="outlined"
-                                onClick={() => setIsOpenAlertDialog(false)}>
-                                キャンセル
-                            </Button>
-                            <Button
-                                onClick={() => JoinGroupWithToken(true)}
-                                colorVariant="alert">
-                                削除して参加
-                            </Button>
-                        </div>
-                    </div>
-                </AlertDialog>
-            )}
+            <AlertDialog
+                title="データ削除"
+                description={
+                    <p className="text-center">
+                        {alertDialogMessage}
+                        <br />
+                        削除してグループに参加しますか？
+                    </p>
+                }
+                isOpen={isOpenAlertDialog}
+                onClose={() => setIsOpenAlertDialog(false)}
+                actionButton={{
+                    text: '削除して参加',
+                    onClick: () => JoinGroupWithToken(true),
+                }}
+            />
         </div>
     );
 };

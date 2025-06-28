@@ -10,6 +10,7 @@ import React, { useEffect } from 'react';
 interface Props {
     token: string;
     iconAvatar: (id: string) => Result;
+    isOpen: boolean;
     onClose: () => void;
     JoinGroupWithToken: () => void;
 }
@@ -17,6 +18,7 @@ interface Props {
 const JoinDialog: React.FC<Props> = ({
     token,
     iconAvatar,
+    isOpen,
     onClose,
     JoinGroupWithToken,
 }) => {
@@ -40,7 +42,7 @@ const JoinDialog: React.FC<Props> = ({
     }, []);
 
     return (
-        <Dialog title="グループに参加" onClose={onClose}>
+        <Dialog title="グループに参加" isOpen={isOpen} onClose={onClose}>
             {invitationDetail ? (
                 <div className="flex flex-col items-center gap-y-10">
                     <div className="flex flex-col gap-y-5">

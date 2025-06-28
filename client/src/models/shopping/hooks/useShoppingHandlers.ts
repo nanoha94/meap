@@ -1,17 +1,10 @@
 import { useCallback } from 'react';
 import { arrayMove } from '@dnd-kit/sortable';
 import { IShoppingItem } from '@/types/api';
-import { useShoppingStore } from '@/models/shopping/stores';
+import { useShoppingStore } from './stores';
 
-export const useShoppingListLogic = () => {
-    const {
-        items,
-        setItems,
-        setActiveId,
-        activeId,
-        isShowLoading,
-        setIsShowLoading,
-    } = useShoppingStore();
+export const useShoppingHandlers = () => {
+    const { items, setItems } = useShoppingStore();
 
     const categoryIdFromItemId = useCallback(
         (itemId: string) => {
@@ -21,8 +14,8 @@ export const useShoppingListLogic = () => {
         [items],
     );
 
-    // アイテムの更新ロジック
-    const updateItem = useCallback(
+    // アイテムの更新処理
+    const handleUpdateItem = useCallback(
         (item: IShoppingItem) => {
             const { id, name, isPinned, isChecked, order } = item;
             const categoryId = categoryIdFromItemId(id);
@@ -36,26 +29,28 @@ export const useShoppingListLogic = () => {
                             : item,
                     ),
                 }));
+                // ストアデータを更新
                 setItems(updatedItems);
             }
         },
-        [items, categoryIdFromItemId, setItems],
+        [items],
     );
 
     // アイテムの削除ロジック
-    const deleteItem = useCallback(
+    const handleDeleteItem = useCallback(
         (itemId: string) => {
             const updatedItems = items.map(v => ({
                 ...v,
                 items: v.items.filter(item => item.id !== itemId),
             }));
+            // ストアデータを更新
             setItems(updatedItems);
         },
-        [items, setItems],
+        [items],
     );
 
     // アイテムの移動ロジック
-    const moveItem = useCallback(
+    const handleMoveItem = useCallback(
         (activeId: string, overId: string) => {
             if (activeId === overId) return;
 
@@ -64,7 +59,7 @@ export const useShoppingListLogic = () => {
                 v => v.category.id === overId,
             )?.category;
 
-            // overIdがitemかcategoryかを判断（シンプルな真偽値）
+            // overIdがitemかcategoryかを判断
             const isOverItem = !!overCategoryItemId;
             const isOverCategory = !!overCategoryInfo;
 
@@ -138,21 +133,16 @@ export const useShoppingListLogic = () => {
             }
 
             if (updatedItems) {
+                // ストアデータを更新
                 setItems(updatedItems);
             }
         },
-        [items, categoryIdFromItemId, setItems],
+        [items],
     );
 
     return {
-        items,
-        updateItem,
-        deleteItem,
-        moveItem,
-        setActiveId,
-        activeId,
-        setIsShowLoading,
-        isShowLoading,
-        setItems,
+        handleUpdateItem,
+        handleDeleteItem,
+        handleMoveItem,
     };
 };

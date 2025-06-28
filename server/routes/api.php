@@ -35,7 +35,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/users', [ApiGroupUsersController::class, 'index']);
 
     // shopping
-    Route::apiResource('/shopping/items', ShoppingItemController::class)->only(['index', 'store']);
+    Route::apiResource('/shopping/items', ShoppingItemController::class)->only(['index', 'store', 'destroy']);
     Route::put('/shopping/items/bulk', [ShoppingItemController::class, 'bulkUpdate']);
     Route::delete('/shopping/items/bulk', [ShoppingItemController::class, 'bulkDestroy']);
     Route::apiResource('/shopping/categories', ShoppingCategoryController::class)->only(['index', 'store']);

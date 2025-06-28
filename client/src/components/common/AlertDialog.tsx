@@ -1,10 +1,22 @@
+import Button from './Button';
+
 interface Props {
     title: string;
+    description: React.ReactNode;
+    isOpen: boolean;
     onClose: () => void;
-    children: React.ReactNode;
+    actionButton: { text: string; onClick: () => void };
 }
 
-const AlertDialog = ({ title, onClose, children }: Props) => {
+const AlertDialog = ({
+    title,
+    isOpen,
+    onClose,
+    actionButton,
+    description,
+}: Props) => {
+    if (!isOpen) return null;
+
     return (
         <div
             onClick={onClose}
@@ -16,7 +28,22 @@ const AlertDialog = ({ title, onClose, children }: Props) => {
                     <div className="mb-7 px-5 py-2 w-full text-2xl font-bold text-center">
                         {title}
                     </div>
-                    {children}
+                    <div className="flex flex-col gap-y-7">
+                        {description}
+                        <div className="mx-auto max-w-[320px] w-full flex gap-x-6">
+                            <Button
+                                colorVariant="gray"
+                                variant="outlined"
+                                onClick={onClose}>
+                                キャンセル
+                            </Button>
+                            <Button
+                                onClick={actionButton.onClick}
+                                colorVariant="alert">
+                                {actionButton.text}
+                            </Button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

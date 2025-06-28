@@ -837,6 +837,36 @@
                 ]
             }
         },
+        "/shopping/items/{id}": {
+            "delete": {
+                "tags": [
+                    "Shopping"
+                ],
+                "summary": "買い物アイテムを削除",
+                "operationId": "7711a886aac3f6bb570d6db076199f56",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/ShoppingIdParam"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/ShoppingItemDestroySuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/shopping/tags": {
             "get": {
                 "tags": [
@@ -1831,6 +1861,21 @@
                     "application/json": {
                         "schema": {
                             "$ref": "#/components/schemas/ShoppingItem"
+                        }
+                    }
+                }
+            },
+            "ShoppingItemDestroySuccess": {
+                "description": "正常に削除されました",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "id": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
                         }
                     }
                 }

@@ -7,6 +7,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import React, { useEffect } from 'react';
 
 interface Props {
+    isOpen: boolean;
     onClose: () => void;
 }
 
@@ -18,7 +19,7 @@ const copyToClipboard = async (link: string) => {
     }
 };
 
-const InvitationDialog = ({ onClose }: Props) => {
+const InvitationDialog = ({ isOpen, onClose }: Props) => {
     const [invitationLink, setInvitationLink] = React.useState<string | null>(
         null,
     );
@@ -47,7 +48,7 @@ const InvitationDialog = ({ onClose }: Props) => {
     }, []);
 
     return (
-        <Dialog title="メンバー招待" onClose={onClose}>
+        <Dialog title="メンバー招待" isOpen={isOpen} onClose={onClose}>
             <div className="flex flex-col gap-y-5">
                 <p>QRコードやリンクを共有して、メンバーを招待しましょう</p>
                 {invitationLink ? (

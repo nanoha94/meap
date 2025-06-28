@@ -15,8 +15,9 @@ import React from 'react';
 import { IShoppingCategory } from '@/types/api';
 import { useFieldArray, useForm } from 'react-hook-form';
 import EditItem from './EditItem';
-import { useShoppingCategory } from '../../hooks/useShoppingCategory';
 import SpinAnimation from '@/components/common/SpinAnimation';
+import Sortable from '@/components/dnd/Sortable';
+import { useShoppingCategories } from '../../hooks';
 
 interface FormData {
     categories: IShoppingCategory[];
@@ -28,7 +29,7 @@ interface Props {
 
 const EditForm: React.FC<Props> = ({ onBack }) => {
     const { isLoading, storeData, bulkUpdateShoppingCategories } =
-        useShoppingCategory();
+        useShoppingCategories();
 
     const { control, handleSubmit, watch, reset } = useForm<FormData>({
         defaultValues: {
@@ -131,7 +132,7 @@ const EditForm: React.FC<Props> = ({ onBack }) => {
         return (
             <form
                 onSubmit={handleSubmit(onSubmit)}
-                className="w-full flex flex-col gap-y-5">
+                className="w-full flex flex-col gap-y-10">
                 <div className="w-full flex flex-col gap-y-5">
                     <div className="flex flex-col gap-y-2">
                         <DndContext onDragEnd={handleDragEnd} sensors={sensors}>
@@ -142,13 +143,16 @@ const EditForm: React.FC<Props> = ({ onBack }) => {
                                             `${TMP_ID_PREFIX.SHOPPING_CATEGORY}${index}`,
                                     )}>
                                     {fields.map((field, index) => (
-                                        <EditItem
+                                        <Sortable
                                             key={field.id}
-                                            index={index}
-                                            control={control}
-                                            onDelete={() => remove(index)}
-                                            isDefault={field.isDefault}
-                                        />
+                                            id={`${TMP_ID_PREFIX.SHOPPING_CATEGORY}${index}`}>
+                                            <EditItem
+                                                index={index}
+                                                control={control}
+                                                onDelete={() => remove(index)}
+                                                isDefault={field.isDefault}
+                                            />
+                                        </Sortable>
                                     ))}
                                 </SortableContext>
                             )}

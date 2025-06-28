@@ -1,19 +1,19 @@
+'use client';
 import React from 'react';
 import { ActionMenu, AlertDialog } from '@/components/common';
 import { colors } from '@/constants/colors';
 import { Check, GripVertical, Pencil, Pin, PinOff, Trash } from 'lucide-react';
 import { IShoppingItem } from '@/types/api';
-import { Button } from '@/components/common';
+import { useShoppingHandlers, useShoppingItems } from '../../hooks';
 
 interface Props {
     item: IShoppingItem;
-    onDelete: () => void;
-    onUpdate: (name: string, isPinned: boolean, isChecked: boolean) => void;
 }
 
-const ShoppingItem = ({ item, onDelete, onUpdate }: Props) => {
+const ShoppingItemCard = ({ item }: Props) => {
     const { id, name, isPinned = false, isChecked = false } = item;
-
+    const { handleUpdateItem } = useShoppingHandlers();
+    const { deleteShoppingItem } = useShoppingItems();
     const [isOpenDeleteDialog, setIsOpenDeleteDialog] =
         React.useState<boolean>(false);
 
@@ -35,7 +35,10 @@ const ShoppingItem = ({ item, onDelete, onUpdate }: Props) => {
                             id={`checkbox-${id}`}
                             checked={isChecked}
                             onChange={() => {
-                                onUpdate(name, isPinned, !isChecked);
+                                handleUpdateItem({
+                                    ...item,
+                                    isChecked: !isChecked,
+                                });
                             }}
                             className="hidden"
                         />
@@ -76,39 +79,32 @@ const ShoppingItem = ({ item, onDelete, onUpdate }: Props) => {
                                 label: isPinned ? '固定解除する' : '固定する',
                                 icon: isPinned ? <PinOff /> : <Pin />,
                                 onClick: () =>
-                                    onUpdate(name, !isPinned, isChecked),
+                                    handleUpdateItem({
+                                        ...item,
+                                        isPinned: !isPinned,
+                                    }),
                             },
                         ]}
                     />
                 </div>
             </div>
-            {isOpenDeleteDialog && (
-                <AlertDialog
-                    title="買い物アイテムを削除する"
-                    onClose={() => setIsOpenDeleteDialog(false)}>
-                    <div className="flex flex-col gap-y-7">
-                        <p className="text-center">{name}を削除しますか？</p>
-                        <div className="mx-auto max-w-[320px] w-full flex gap-x-6">
-                            <Button
-                                colorVariant="gray"
-                                variant="outlined"
-                                onClick={() => setIsOpenDeleteDialog(false)}>
-                                キャンセル
-                            </Button>
-                            <Button
-                                onClick={() => {
-                                    onDelete();
-                                    setIsOpenDeleteDialog(false);
-                                }}
-                                colorVariant="alert">
-                                削除
-                            </Button>
-                        </div>
-                    </div>
-                </AlertDialog>
-            )}
+            <AlertDialog
+                title="買い物アイテムを削除する"
+                description={
+                    <p className="text-center">{name}を削除しますか？</p>
+                }
+                isOpen={isOpenDeleteDialog}
+                onClose={() => setIsOpenDeleteDialog(false)}
+                actionButton={{
+                    text: '削除',
+                    onClick: () => {
+                        deleteShoppingItem(id);
+                        setIsOpenDeleteDialog(false);
+                    },
+                }}
+            />
         </>
     );
 };
 
-export default ShoppingItem;
+export default ShoppingItemCard;

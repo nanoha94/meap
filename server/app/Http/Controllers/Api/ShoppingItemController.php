@@ -29,10 +29,10 @@ class ShoppingItemController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $user = $request->user();
-        $group = $user->group;
-
         try {
+            $user = $request->user();
+            $group = $user->group;
+
             $res = [];
             $categories = $group->shoppingCategories()
                 ->select('id', 'name', 'is_default', 'order')
@@ -96,19 +96,19 @@ class ShoppingItemController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        $user = $request->user();
-        $group = $user->group;
-
-        // 入力値のバリデーション
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'categoryId' => 'required|string|max:255',
-            'tags' => 'nullable|array',
-            'tags.*.id' => 'nullable|string|max:255',
-            'tags.*.name' => 'required|string|max:255',
-        ]);
-
         try {
+            $user = $request->user();
+            $group = $user->group;
+
+            // 入力値のバリデーション
+            $request->validate([
+                'name' => 'required|string|max:255',
+                'categoryId' => 'required|string|max:255',
+                'tags' => 'nullable|array',
+                'tags.*.id' => 'nullable|string|max:255',
+                'tags.*.name' => 'required|string|max:255',
+            ]);
+
             DB::beginTransaction();
 
             $ret = ShoppingItem::create([
@@ -194,10 +194,10 @@ class ShoppingItemController extends Controller
      */
     public function bulkUpdate(Request $request): JsonResponse
     {
-        $user = $request->user();
-        $group = $user->group;
-
         try {
+            $user = $request->user();
+            $group = $user->group;
+
             DB::beginTransaction();
 
             $updatedItems = [];
@@ -280,6 +280,44 @@ class ShoppingItemController extends Controller
 
     /**
      * @OA\Delete(
+     *     path="/shopping/items/{id}",
+     *     summary="買い物アイテムを削除",
+     *     tags={"Shopping"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(ref="#/components/parameters/ShoppingIdParam"),
+     *     @OA\Response(response=200, ref="#/components/responses/ShoppingItemDestroySuccess"),
+     *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
+     *     @OA\Response(response=404, ref="#/components/responses/NotFound")
+     * )
+     */
+    public function destroy(Request $request, string $id): JsonResponse
+    {
+        try {
+            $user = $request->user();
+            $group = $user->group;
+
+            $item = $group->shoppingItems()->where('id', $id)->first();
+
+            if (!$item) {
+                return response()->json([
+                    'message' => '指定されたレコードが見つかりません。'
+                ], 404);
+            }
+
+            $deletedId = $item->id;
+            $item->delete();
+
+            return response()->json(['id' => $deletedId], 200);
+        } catch (\Exception $e) {
+            Log::error('買い物アイテム削除エラー: ' . $e->getMessage());
+            return response()->json([
+                'message' => '削除処理中にエラーが発生しました。'
+            ], 500);
+        }
+    }
+
+    /**
+     * @OA\Delete(
      *     path="/shopping/items/bulk",
      *     summary="買い物アイテムを一括削除",
      *     tags={"Shopping"},
@@ -292,23 +330,30 @@ class ShoppingItemController extends Controller
      */
     public function bulkDestroy(Request $request): JsonResponse
     {
-        $user = $request->user();
-        $group = $user->group;
+        try {
+            $user = $request->user();
+            $group = $user->group;
 
-        $deletedIds = [];
-        foreach ($request->ids as $id) {
-            $item = ShoppingItem::where('id', $id)->where('group_id', $group->id)->first();
+            $deletedIds = [];
+            foreach ($request->ids as $id) {
+                $item = ShoppingItem::where('id', $id)->where('group_id', $group->id)->first();
 
-            if (!$item) {
-                Log::error('指定されたレコードが見つかりません。', ['function' => 'ShoppingItemController@bulkDestroy', 'id' => $id]);
-                return response()->json([
-                    'message' => '指定されたレコードが見つかりません。'
-                ], 404);
+                if (!$item) {
+                    Log::error('指定されたレコードが見つかりません。', ['function' => 'ShoppingItemController@bulkDestroy', 'id' => $id]);
+                    return response()->json([
+                        'message' => '指定されたレコードが見つかりません。'
+                    ], 404);
+                }
+
+                $deletedIds[] = $item->id;
+                $item->delete();
             }
-
-            $deletedIds[] = [$item->id];
-            $item->delete();
+            return response()->json(['ids' => $deletedIds], 200);
+        } catch (Exception $e) {
+            Log::error('買い物アイテム一括削除エラー: ' . $e->getMessage());
+            return response()->json([
+                'message' => '一括削除処理中にエラーが発生しました。'
+            ], 500);
         }
-        return response()->json(['ids' => $deletedIds], 200);
     }
 }

@@ -43,6 +43,14 @@ namespace App\Swagger;
  *     @OA\JsonContent(ref="#/components/schemas/ShoppingItem")
  * )
  * @OA\Response(
+ *     response="ShoppingItemDestroySuccess",
+ *     description="正常に削除されました",
+ *     @OA\JsonContent(
+ *         type="object",
+ *         @OA\Property(property="id", type="string")
+ *     )
+ * )
+ * @OA\Response(
  *     response="ShoppingItemBulkDestroySuccess",
  *     description="正常に削除されました",
  *     @OA\JsonContent(

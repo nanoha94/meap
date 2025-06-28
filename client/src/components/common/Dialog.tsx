@@ -3,11 +3,14 @@ import { X } from 'lucide-react';
 
 interface Props {
     title: string;
+    isOpen: boolean;
     onClose: () => void;
     children: React.ReactNode;
 }
 
-const Dialog = ({ title, onClose, children }: Props) => {
+const Dialog = ({ title, onClose, isOpen, children }: Props) => {
+    if (!isOpen) return null;
+
     return (
         <div
             onClick={onClose}
