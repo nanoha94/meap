@@ -29,6 +29,8 @@ class ShoppingItemController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
+
+        Log::info("ShoppingItemController:index");
         try {
             $user = $request->user();
             $group = $user->group;

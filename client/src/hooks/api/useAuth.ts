@@ -10,8 +10,23 @@ interface Props {
     redirectIfAuthenticated?: string;
 }
 
-const fetchUser = (path: string): Promise<IGetUser | null> =>
-    axios.get(path).then(res => res.data);
+const fetchUser = async (path: string): Promise<IGetUser | null> => {
+    // 既存のXSRF-TOKENをチェック
+    const existingToken = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('XSRF-TOKEN'));
+
+    // トークンが存在しない場合のみCSRFトークンを取得
+    if (!existingToken) {
+        console.log('XSRF-TOKEN not found, fetching new one...');
+        await axios.get('/sanctum/csrf-cookie');
+    } else {
+        console.log('Using existing XSRF-TOKEN');
+    }
+
+    // ユーザー情報を取得
+    return axios.get(path).then(res => res.data);
+};
 
 export const useAuth = ({
     middleware,
@@ -20,7 +35,14 @@ export const useAuth = ({
     const router = useRouter();
     const params = useParams();
     const { addSnackbar } = useSnackbars();
-    const { data: user, error, mutate } = useSWR('/user', fetchUser);
+    const {
+        data: user,
+        error,
+        mutate,
+    } = useSWR('/user', fetchUser, {
+        revalidateOnFocus: false, // フォーカス時の再取得を無効化
+        revalidateOnReconnect: false, // ネットワーク復旧時の再取得を無効化
+    });
 
     const csrf = () => axios.get('/sanctum/csrf-cookie');
 

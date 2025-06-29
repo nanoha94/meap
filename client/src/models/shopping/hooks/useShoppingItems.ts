@@ -20,6 +20,7 @@ export const useShoppingItems = () => {
                 await waitForLoading({ isLoading });
             } catch (error) {
                 if (error instanceof Error && error.message === 'Timeout') {
+                    console.error(error);
                     addSnackbar(
                         'error',
                         '処理がタイムアウトしました。もう一度お試しください。',

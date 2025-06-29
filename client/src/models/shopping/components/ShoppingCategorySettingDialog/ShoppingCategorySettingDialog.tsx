@@ -1,3 +1,4 @@
+'use client';
 import { Dialog } from '@/components/common';
 import EditForm from './EditForm';
 import { useShoppingDialogs } from '../../hooks';

@@ -12,12 +12,14 @@ use App\Http\Controllers\Api\ShoppingItemController;
 use App\Http\Controllers\Api\MealController;
 use App\Http\Controllers\Api\ShoppingTagController;
 use App\Http\Controllers\Api\MealCategoryController;
+use Illuminate\Support\Facades\Log;
 
-Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
-    return $request->user();
-});
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth:sanctum'])->group(function () {
+    Log::info('Request headers / auth:sanctum', request()->headers->all());
+    Log::info('User authenticated:', ['user' => request()->user()]);
+    Log::info('Request path:', ['path' => request()->path()]);
+
     // meals
     Route::apiResource('/meals', MealController::class);
     Route::apiResource('/meals/categories', MealCategoryController::class)->only(['store', 'destroy']);
@@ -33,6 +35,10 @@ Route::middleware('auth')->group(function () {
 
     // users
     Route::get('/users', [ApiGroupUsersController::class, 'index']);
+    Route::get('/user',  function (Request $request) {
+        Log::info('/user', ['user' => $request->user()]);
+        return $request->user();
+    });
 
     // shopping
     Route::apiResource('/shopping/items', ShoppingItemController::class)->only(['index', 'store', 'destroy']);

@@ -1,4 +1,3 @@
-'use client';
 interface Props {
     className?: string;
     size?: 'normal' | 'small';

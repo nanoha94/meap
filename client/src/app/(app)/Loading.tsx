@@ -1,8 +1,21 @@
+import { Header } from '@/components/common';
+import { colors } from '@/constants/colors';
+import { LoaderCircle } from 'lucide-react';
+
 const Loading = () => {
     return (
-        <div className="flex min-h-screen w-full items-center justify-center bg-gray-100">
-            Loading...
-        </div>
+        <>
+            <div className="opacity-50">
+                <Header title="Loading..." />
+            </div>
+            <div className="py-20">
+                <LoaderCircle
+                    size={60}
+                    color={colors.primary.main}
+                    className="animate-spin mx-auto"
+                />
+            </div>
+        </>
     );
 };
 
