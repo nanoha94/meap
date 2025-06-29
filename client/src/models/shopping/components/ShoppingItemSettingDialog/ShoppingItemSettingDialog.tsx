@@ -4,9 +4,9 @@ import EditForm from './EditForm';
 import React from 'react';
 import { useShoppingStore } from '../../hooks';
 
-const editMode: { [key: string]: string } = {
-    create: '追加',
-    update: '編集',
+const textConfig: { [key: string]: { title: string; buttonText: string } } = {
+    create: { title: '追加', buttonText: '追加' },
+    update: { title: '編集', buttonText: '更新' },
 };
 
 const ShoppingItemSettingDialog: React.FC = () => {
@@ -24,12 +24,12 @@ const ShoppingItemSettingDialog: React.FC = () => {
 
     return (
         <Dialog
-            title={`買い物アイテムを${editMode[type]}`}
+            title={`買い物アイテムを${textConfig[type].title}`}
             isOpen={isOpen}
             onClose={handleClose}>
             <EditForm
-                item={editingItem}
-                actionButtonText={editMode[type]}
+                editingItem={editingItem}
+                actionButtonText={textConfig[type].buttonText}
                 onBack={handleClose}
             />
         </Dialog>

@@ -5,10 +5,14 @@ import { IShoppingItem } from '@/types/api';
 import { Button, FormItem } from '@/components/common';
 import { ChevronDown } from 'lucide-react';
 import { colors } from '@/constants/colors';
-import { useShoppingCategories, useShoppingItems } from '../../hooks';
+import {
+    useShoppingCategories,
+    useShoppingItems,
+    useShoppingStore,
+} from '../../hooks';
 
 interface Props {
-    item?: IShoppingItem | undefined;
+    editingItem?: IShoppingItem | undefined;
     actionButtonText: string;
     onBack: () => void;
 }
@@ -22,13 +26,13 @@ interface FormData {
 type visibleErrorFields = 'name';
 
 const EditForm: React.FC<Props> = ({
-    item = undefined,
+    editingItem = undefined,
     actionButtonText,
     onBack,
 }) => {
-    console.log(item);
     const { createShoppingItem } = useShoppingItems();
     const { storeData } = useShoppingCategories();
+    const { closeDialog } = useShoppingStore();
 
     const defaultValues = {
         name: '',
@@ -56,12 +60,16 @@ const EditForm: React.FC<Props> = ({
     React.useEffect(() => {
         reset({
             ...defaultValues,
-            categoryId: storeData.categories.find(v => v.isDefault)?.id || '',
+            name: editingItem?.name || '',
+            categoryId:
+                editingItem?.categoryId ||
+                storeData.categories.find(v => v.isDefault)?.id,
         });
     }, [storeData.categories]);
 
-    const onSubmit = (data: FormData) => {
-        createShoppingItem(data);
+    const onSubmit = async (data: FormData) => {
+        await createShoppingItem(data);
+        closeDialog('itemSetting');
     };
 
     return (

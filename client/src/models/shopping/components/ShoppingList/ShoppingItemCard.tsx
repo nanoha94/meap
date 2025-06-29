@@ -4,7 +4,11 @@ import { ActionMenu, AlertDialog } from '@/components/common';
 import { colors } from '@/constants/colors';
 import { Check, GripVertical, Pencil, Pin, PinOff, Trash } from 'lucide-react';
 import { IShoppingItem } from '@/types/api';
-import { useShoppingHandlers, useShoppingItems } from '../../hooks';
+import {
+    useShoppingHandlers,
+    useShoppingItems,
+    useShoppingStore,
+} from '../../hooks';
 
 interface Props {
     item: IShoppingItem;
@@ -14,6 +18,7 @@ const ShoppingItemCard = ({ item }: Props) => {
     const { id, name, isPinned = false, isChecked = false } = item;
     const { handleUpdateItem } = useShoppingHandlers();
     const { deleteShoppingItem } = useShoppingItems();
+    const { openDialog } = useShoppingStore();
     const [isOpenDeleteDialog, setIsOpenDeleteDialog] =
         React.useState<boolean>(false);
 
@@ -68,7 +73,9 @@ const ShoppingItemCard = ({ item }: Props) => {
                             {
                                 label: '編集する',
                                 icon: <Pencil />,
-                                onClick: () => {},
+                                onClick: () => {
+                                    openDialog('itemSetting', item);
+                                },
                             },
                             {
                                 label: '削除する',

@@ -5,9 +5,7 @@ import { LoaderCircle } from 'lucide-react';
 const Loading = () => {
     return (
         <>
-            <div className="opacity-50">
-                <Header title="Loading..." />
-            </div>
+            <Header title="Loading..." />
             <div className="py-20">
                 <LoaderCircle
                     size={60}

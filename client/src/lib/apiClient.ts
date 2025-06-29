@@ -60,13 +60,16 @@ export async function apiClient<T>(
         },
         credentials: 'include',
         cache: 'no-store',
+    };
+
+    if (process.env.NODE_ENV === 'development') {
         // @ts-expect-error undiciのAgentをdispatcherに渡す
-        dispatcher: new Agent({
+        fetchOptions.dispatcher = new Agent({
             connect: {
                 rejectUnauthorized: false,
             },
-        }),
-    };
+        });
+    }
 
     const response = await fetch(`${baseUrl}${path}`, fetchOptions);
 

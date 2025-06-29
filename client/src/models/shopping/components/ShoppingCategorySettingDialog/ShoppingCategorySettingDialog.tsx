@@ -2,13 +2,14 @@
 import { Dialog } from '@/components/common';
 import EditForm from './EditForm';
 import { useShoppingStore } from '../../hooks';
+import React from 'react';
 
 const ShoppingCategorySettingDialog = () => {
     const { dialogs, closeDialog } = useShoppingStore();
     const { isOpen } = dialogs.categorySetting;
 
     const handleClose = () => {
-        closeDialog('itemSetting');
+        closeDialog('categorySetting');
     };
 
     return (

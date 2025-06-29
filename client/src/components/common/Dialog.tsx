@@ -9,7 +9,6 @@ interface Props {
 }
 
 const Dialog = ({ title, onClose, isOpen, children }: Props) => {
-    console.log(isOpen);
     if (!isOpen) return null;
 
     return (

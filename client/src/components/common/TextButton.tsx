@@ -17,11 +17,21 @@ const TextButton = ({
     onClick,
     type = 'button',
 }: Props) => {
+    const colorClasses = {
+        primary: 'text-primary-main border-primary-main',
+        gray: 'text-gray-main border-gray-main',
+        accent: 'text-accent-main border-accent-main',
+    };
+
     return (
         <button
             type={type}
             onClick={onClick}
-            className={`py-1 px-2 w-fit flex items-center gap-x-1 ${size === 'small' ? 'text-sm' : 'text-base'} font-bold text-${colorVariant}-main bg-white rounded border border-${colorVariant}-main transition-colors hover:bg-gray-light ${disabled ? 'opacity-50' : ''} ${className}`}
+            className={`py-1 px-2 w-fit flex items-center gap-x-1 ${
+                size === 'small' ? 'text-sm' : 'text-base'
+            } font-bold bg-white rounded border transition-colors hover:bg-gray-light ${
+                colorClasses[colorVariant]
+            } ${disabled ? 'opacity-50' : ''} ${className}`}
             disabled={disabled}>
             {children}
         </button>
