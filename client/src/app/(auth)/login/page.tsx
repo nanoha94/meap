@@ -45,8 +45,12 @@ const Inner = () => {
     >({ email: false, password: false });
 
     React.useEffect(() => {
-        const resetToken = searchParams.get('reset');
-        if (resetToken?.length > 0 && Object.keys(errors).length === 0) {
+        const resetToken = searchParams?.get('reset');
+        if (
+            !!resetToken &&
+            resetToken?.length > 0 &&
+            Object.keys(errors).length === 0
+        ) {
             setApiStatus(
                 atob(resetToken) === 'Your password has been reset.'
                     ? 'パスワードをリセットしました。'
@@ -85,10 +89,10 @@ const Inner = () => {
                             label="メールアドレス"
                             errorMessage={
                                 isErrorVisible.email
-                                    ? [
+                                    ? ([
                                           errors.email?.message,
                                           ...(apiErrors?.email || []),
-                                      ]
+                                      ].filter(Boolean) as string[])
                                     : []
                             }>
                             <Controller
@@ -125,10 +129,10 @@ const Inner = () => {
                             label="パスワード"
                             errorMessage={
                                 isErrorVisible.password
-                                    ? [
+                                    ? ([
                                           errors.password?.message,
                                           ...(apiErrors?.password || []),
-                                      ]
+                                      ].filter(Boolean) as string[])
                                     : []
                             }>
                             <Controller

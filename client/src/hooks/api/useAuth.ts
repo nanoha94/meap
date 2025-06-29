@@ -18,10 +18,7 @@ const fetchUser = async (path: string): Promise<IGetUser | null> => {
 
     // トークンが存在しない場合のみCSRFトークンを取得
     if (!existingToken) {
-        console.log('XSRF-TOKEN not found, fetching new one...');
         await axios.get('/sanctum/csrf-cookie');
-    } else {
-        console.log('Using existing XSRF-TOKEN');
     }
 
     // ユーザー情報を取得
@@ -102,7 +99,7 @@ export const useAuth = ({
         setStatus(null);
 
         axios
-            .post('/password/reset', { token: params.token, ...props })
+            .post('/password/reset', { token: params?.token, ...props })
             .then(response => {
                 router.push('/login?reset=' + btoa(response.data.status));
             })
@@ -170,7 +167,7 @@ export const useAuth = ({
             const token = sessionStorage.getItem('invitationToken');
             if (token) {
                 router.push(`/settings/account?token=${token}`);
-            } else {
+            } else if (redirectIfAuthenticated) {
                 router.push(redirectIfAuthenticated);
             }
         }

@@ -2,7 +2,7 @@ import ShoppingLists from '@/pages/shopping/ShoppingLists';
 import { Suspense } from 'react';
 import { apiClient } from '@/lib/apiClient';
 import { IGetShoppingItemsResponse } from '@/types/api';
-import Loading from '../Loading';
+import Loading from '../loading';
 
 async function ShoppingListsWithData() {
     const items = await apiClient<IGetShoppingItemsResponse>('/shopping/items');

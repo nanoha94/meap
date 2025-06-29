@@ -17,7 +17,7 @@ const fetchGroupUsers = (path: string): Promise<IGetGroupUser[]> =>
 
 const Page = () => {
     const searchParams = useSearchParams();
-    const token = searchParams.get('token');
+    const token = searchParams?.get('token');
     const { user } = useAuth();
     const { data: users, error } = useSWR('/api/group/users', fetchGroupUsers);
     const { joinGroup } = useJoinGroup();
@@ -46,6 +46,9 @@ const Page = () => {
         });
 
     const JoinGroupWithToken = async (isDelete: boolean) => {
+        if (!token) {
+            return;
+        }
         const res = await joinGroup(token, isDelete);
         if (res) {
             // データを削除するか確認
@@ -84,9 +87,11 @@ const Page = () => {
                 {/* TODO: アイコンの指定がある場合はアイコン、指定がない場合はiconsを使用する */}
                 <div
                     className="w-[120px] h-auto aspect-square rounded-full overflow-hidden"
-                    dangerouslySetInnerHTML={{
-                        __html: iconAvatar(user?.custom_id).toString(),
-                    }}
+                    dangerouslySetInnerHTML={
+                        user?.custom_id
+                            ? { __html: iconAvatar(user.custom_id).toString() }
+                            : undefined
+                    }
                 />
                 <div className="flex flex-col gap-y-3">
                     <div className="flex flex-col gap-y-1">
@@ -108,7 +113,7 @@ const Page = () => {
                     <>
                         <div className="grid grid-cols-[repeat(auto-fill,_minmax(80px,_1fr))] gap-6">
                             {users
-                                .filter(v => v.id !== user.id)
+                                .filter(v => v.id !== user?.id)
                                 .map(user => (
                                     <div
                                         key={user.id}
@@ -156,15 +161,17 @@ const Page = () => {
             />
 
             {/* 参加ダイアログ */}
-            <JoinDialog
-                token={token}
-                iconAvatar={iconAvatar}
-                isOpen={isOpenJoinDialog}
-                onClose={() => {
-                    setIsOpenJoinDialog(false);
-                }}
-                JoinGroupWithToken={() => JoinGroupWithToken(false)}
-            />
+            {token && (
+                <JoinDialog
+                    token={token}
+                    iconAvatar={iconAvatar}
+                    isOpen={isOpenJoinDialog}
+                    onClose={() => {
+                        setIsOpenJoinDialog(false);
+                    }}
+                    JoinGroupWithToken={() => JoinGroupWithToken(false)}
+                />
+            )}
             {/* 削除確認ダイアログ */}
             <AlertDialog
                 title="データ削除"

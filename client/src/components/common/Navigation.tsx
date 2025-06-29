@@ -87,6 +87,10 @@ const Navigation = () => {
         },
     ];
 
+    if (!pathname) {
+        return null;
+    }
+
     // URLの深さが2より深い場合は表示しない
     // /settings/account/ など
     if (pathname.split('/').filter(Boolean).length >= 2) {

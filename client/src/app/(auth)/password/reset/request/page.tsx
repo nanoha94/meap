@@ -67,10 +67,10 @@ const Page = () => {
                         label="メールアドレス"
                         errorMessage={
                             isErrorVisible.email
-                                ? [
+                                ? ([
                                       errors.email?.message,
                                       ...(apiErrors?.email || []),
-                                  ]
+                                  ].filter(Boolean) as string[])
                                 : []
                         }>
                         <Controller

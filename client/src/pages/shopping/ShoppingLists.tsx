@@ -16,9 +16,12 @@ interface Props {
 
 const ShoppingLists: React.FC<Props> = ({ fetchItems }) => {
     const { items: storeItems, setItems: setStoreItems } = useShoppingStore();
+    const { openDialog } = useShoppingStore();
 
     React.useEffect(() => {
-        setStoreItems(fetchItems);
+        if (fetchItems) {
+            setStoreItems(fetchItems);
+        }
     }, [fetchItems]);
 
     return (
@@ -31,7 +34,9 @@ const ShoppingLists: React.FC<Props> = ({ fetchItems }) => {
                         <CalendarDays size={20} />
                         献立から追加
                     </TextButton>
-                    <TextButton colorVariant="gray" onClick={() => {}}>
+                    <TextButton
+                        colorVariant="gray"
+                        onClick={() => openDialog('itemSetting', undefined)}>
                         <SquarePen size={20} />
                         テキストから追加
                     </TextButton>
@@ -41,7 +46,10 @@ const ShoppingLists: React.FC<Props> = ({ fetchItems }) => {
                 <div className="pb-12 flex flex-col gap-y-7">
                     {/* 買い物リスト */}
                     <ShoppingList items={storeItems} />
-                    <TextButton onClick={() => {}}>
+                    <TextButton
+                        onClick={() => {
+                            openDialog('categorySetting', undefined);
+                        }}>
                         カテゴリーの追加・編集
                         <ChevronRight size={20} />
                     </TextButton>

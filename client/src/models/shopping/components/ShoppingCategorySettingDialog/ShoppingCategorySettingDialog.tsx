@@ -1,10 +1,11 @@
 'use client';
 import { Dialog } from '@/components/common';
 import EditForm from './EditForm';
-import { useShoppingDialogs } from '../../hooks';
+import { useShoppingStore } from '../../hooks';
 
 const ShoppingCategorySettingDialog = () => {
-    const { dialogs, closeDialog } = useShoppingDialogs();
+    const { dialogs, closeDialog } = useShoppingStore();
+    const { isOpen } = dialogs.categorySetting;
 
     const handleClose = () => {
         closeDialog('itemSetting');
@@ -13,7 +14,7 @@ const ShoppingCategorySettingDialog = () => {
     return (
         <Dialog
             title="買い物カテゴリ―設定"
-            isOpen={dialogs.itemSetting}
+            isOpen={isOpen}
             onClose={handleClose}>
             <EditForm onBack={handleClose} />
         </Dialog>

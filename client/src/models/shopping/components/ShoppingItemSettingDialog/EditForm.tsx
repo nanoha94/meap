@@ -72,7 +72,11 @@ const EditForm: React.FC<Props> = ({
                 <FormItem
                     label="アイテム名/量"
                     errorMessage={
-                        isErrorVisible.name ? [errors.name?.message] : []
+                        isErrorVisible.name
+                            ? ([errors.name?.message].filter(
+                                  Boolean,
+                              ) as string[])
+                            : []
                     }>
                     <Controller
                         control={control}

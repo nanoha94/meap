@@ -2,8 +2,8 @@
 
 import { useAuth } from '@/hooks/api';
 import Navigation2 from '@/components/xxx/Navigation';
-import Loading from '@/app/(app)/Loading';
 import { Navigation } from '@/components/common';
+import Loading from './loading';
 
 interface Props {
     children: React.ReactNode;

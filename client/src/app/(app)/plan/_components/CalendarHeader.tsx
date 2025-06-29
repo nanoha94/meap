@@ -1,5 +1,4 @@
 'use client';
-
 import { DAY_OF_WEEK_LIST, DayOfWeek } from '@/constants';
 import { colors } from '@/constants/colors';
 import dayjs, { Dayjs } from 'dayjs';
@@ -111,10 +110,11 @@ const CalendarHeader = () => {
                 {days.map((v, idx) => (
                     <button
                         key={idx}
-                        onClick={() => setSelectedDate(v)}
-                        className={`py-1 min-h-[50px] flex justify-center border-b ${idx % 7 < 6 ? 'border-r' : ''} border-gray-light transition-colors ${v?.isSame(selectedDate, 'day') ? 'bg-primary-light pointer-events-none' : 'bg-white hover:bg-primary-background'}`}>
+                        onClick={() => v && setSelectedDate(v)}
+                        disabled={!v}
+                        className={`py-1 min-h-[50px] flex justify-center border-b ${idx % 7 < 6 ? 'border-r' : ''} border-gray-light transition-colors ${!v ? 'bg-gray-background' : v?.isSame(selectedDate, 'day') ? 'bg-primary-light pointer-events-none' : 'bg-white hover:bg-primary-background'}`}>
                         <div
-                            className={`min-h-6 w-fit text-base ${dateStyle(v?.isSame(dayjs(), 'day'), v?.day())}`}>
+                            className={`min-h-6 w-fit text-base ${dateStyle(v?.isSame(dayjs(), 'day') ?? false, v?.day() ?? -1)}`}>
                             {v ? v.date() : ''}
                         </div>
                     </button>

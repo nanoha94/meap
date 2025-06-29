@@ -23,6 +23,7 @@ export const useJoinGroup = () => {
             console.error(error.response?.data.message);
             addSnackbar('error', error.response?.data.message);
         }
+        return null;
     };
 
     return {

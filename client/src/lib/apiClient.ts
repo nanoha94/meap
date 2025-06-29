@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers';
+import { Agent } from 'undici';
 
 type ApiClientOptions = Omit<RequestInit, 'body'> & {
     body?: Record<string, unknown> | BodyInit | null;
@@ -59,6 +60,12 @@ export async function apiClient<T>(
         },
         credentials: 'include',
         cache: 'no-store',
+        // @ts-expect-error undiciのAgentをdispatcherに渡す
+        dispatcher: new Agent({
+            connect: {
+                rejectUnauthorized: false,
+            },
+        }),
     };
 
     const response = await fetch(`${baseUrl}${path}`, fetchOptions);

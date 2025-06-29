@@ -86,6 +86,11 @@ const ShoppingList: React.FC<Props> = ({ items }) => {
         }
     }, [debouncedItems]);
 
+    const activeItem = React.useMemo(
+        () => flatItems?.find(item => item.id === activeId),
+        [activeId, flatItems],
+    );
+
     // アンマウント時とページアンロード時の保存処理
     const saveItemsRef = React.useRef(() => {});
     saveItemsRef.current = () => {
@@ -131,15 +136,9 @@ const ShoppingList: React.FC<Props> = ({ items }) => {
                         </SortableContext>
                     ))}
                     <DragOverlay>
-                        {activeId ? (
-                            <ShoppingItemCard
-                                item={flatItems?.find(
-                                    item => item.id === activeId,
-                                )}
-                            />
-                        ) : (
-                            <></>
-                        )}
+                        {activeItem ? (
+                            <ShoppingItemCard item={activeItem} />
+                        ) : null}
                     </DragOverlay>
                 </DndContext>
             ) : (

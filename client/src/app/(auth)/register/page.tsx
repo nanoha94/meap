@@ -94,10 +94,10 @@ const Page = () => {
                             label="ユーザ名"
                             errorMessage={
                                 isErrorVisible.name
-                                    ? [
+                                    ? ([
                                           errors.name?.message,
                                           ...(apiErrors?.name || []),
-                                      ]
+                                      ].filter(Boolean) as string[])
                                     : []
                             }>
                             <Controller
@@ -129,10 +129,10 @@ const Page = () => {
                             label="メールアドレス"
                             errorMessage={
                                 isErrorVisible.email
-                                    ? [
+                                    ? ([
                                           errors.email?.message,
                                           ...(apiErrors?.email || []),
-                                      ]
+                                      ].filter(Boolean) as string[])
                                     : []
                             }>
                             <Controller
@@ -169,10 +169,10 @@ const Page = () => {
                             label="パスワード"
                             errorMessage={
                                 isErrorVisible.password
-                                    ? [
+                                    ? ([
                                           errors.password?.message,
                                           ...(apiErrors?.password || []),
-                                      ]
+                                      ].filter(Boolean) as string[])
                                     : []
                             }>
                             <Controller
@@ -202,11 +202,11 @@ const Page = () => {
                             label="パスワード（確認用）"
                             errorMessage={
                                 isErrorVisible.passwordConfirmation
-                                    ? [
+                                    ? ([
                                           errors.passwordConfirmation?.message,
                                           ...(apiErrors?.passwordConfirmation ||
                                               []),
-                                      ]
+                                      ].filter(Boolean) as string[])
                                     : []
                             }>
                             <Controller

@@ -56,7 +56,7 @@ const EditForm: React.FC<Props> = ({ onBack }) => {
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
 
-        if (active.id !== over?.id) {
+        if (over && active.id !== over.id) {
             const oldIndex = parseInt(
                 active.id
                     .toString()

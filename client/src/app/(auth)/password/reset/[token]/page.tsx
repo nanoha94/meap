@@ -69,10 +69,10 @@ const PasswordReset = () => {
                             label="パスワード"
                             errorMessage={
                                 isErrorVisible.password
-                                    ? [
+                                    ? ([
                                           errors.password?.message,
                                           ...(apiErrors?.password || []),
-                                      ]
+                                      ].filter(Boolean) as string[])
                                     : []
                             }>
                             <Controller
@@ -108,11 +108,11 @@ const PasswordReset = () => {
                             label="パスワード（確認用）"
                             errorMessage={
                                 isErrorVisible.password_confirmation
-                                    ? [
+                                    ? ([
                                           errors.password_confirmation?.message,
                                           ...(apiErrors?.password_confirmation ||
                                               []),
-                                      ]
+                                      ].filter(Boolean) as string[])
                                     : []
                             }>
                             <Controller
