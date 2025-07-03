@@ -1,64 +1,56 @@
 import axios from '@/lib/axios';
-import { useParams, useRouter } from 'next/navigation';
-import useSWR from 'swr';
-import { IGetUser } from '@/types/api';
+import { useParams, useRouter, usePathname } from 'next/navigation';
 import React from 'react';
 import { useSnackbars } from '@/contexts';
 
-interface Props {
-    middleware?: 'guest' | 'auth';
-    redirectIfAuthenticated?: string;
-}
-
-const fetchUser = async (path: string): Promise<IGetUser | null> => {
-    // 既存のXSRF-TOKENをチェック
-    const existingToken = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('XSRF-TOKEN'));
-
-    // トークンが存在しない場合のみCSRFトークンを取得
-    if (!existingToken) {
-        await axios.get('/sanctum/csrf-cookie');
-    }
-
-    // ユーザー情報を取得
-    return axios.get(path).then(res => res.data);
-};
-
-export const useAuth = ({
-    middleware,
-    redirectIfAuthenticated,
-}: Props = {}) => {
+export const useAuth = () => {
     const router = useRouter();
     const params = useParams();
+    const pathname = usePathname();
     const { addSnackbar } = useSnackbars();
-    const {
-        data: user,
-        error,
-        mutate,
-    } = useSWR('/user', fetchUser, {
-        revalidateOnFocus: false, // フォーカス時の再取得を無効化
-        revalidateOnReconnect: false, // ネットワーク復旧時の再取得を無効化
-    });
+    const [isLoading, setIsLoading] = React.useState(false);
+    const [isResetLoading, setIsResetLoading] = React.useState(false);
+    const [prevPath, setPrevPath] = React.useState<string | null>(null);
 
     const csrf = () => axios.get('/sanctum/csrf-cookie');
 
+    /**
+     * ユーザー登録リクエスト
+     * @param setErrors エラーを設定する関数
+     * @param props ユーザー登録フォームの入力値
+     */
     const register = async ({ setErrors, ...props }) => {
+        setIsLoading(true);
         await csrf();
 
         setErrors([]);
 
-        axios
+        await axios
             .post('/register', props)
-            .then(() => mutate())
+            .then(() => {
+                router.push('/email/verify');
+                // ローディング状態はuseEffectでパス変化時に自動リセット
+                setIsResetLoading(true);
+                setPrevPath(pathname);
+            })
             .catch(error => {
                 if (error.response.status !== 422) throw error;
-
                 setErrors(error.response.data.errors);
+                console.error(error);
+                addSnackbar('error', error.response.data.message);
             });
+
+        setIsLoading(false);
     };
 
+    /**
+     * ログインリクエスト
+     * @param setErrors エラーを設定する関数
+     * @param setStatus ステータスを設定する関数
+     * @param props ログインフォームの入力値
+     */
     const login = async ({ setErrors, setStatus, ...props }) => {
+        setIsLoading(true);
         await csrf();
 
         setErrors([]);
@@ -66,21 +58,35 @@ export const useAuth = ({
 
         axios
             .post('/login/', props)
-            .then(() => mutate())
+            .then(() => {
+                router.push('/plan');
+                // ローディング状態はuseEffectでパス変化時に自動リセット
+                setIsResetLoading(true);
+                setPrevPath(pathname);
+            })
             .catch(error => {
                 if (error.response.status !== 422) throw error;
-
                 setErrors(error.response.data.errors);
+                console.error(error);
+                addSnackbar('error', error.response.data.message);
+                setIsLoading(false);
             });
     };
 
+    /**
+     * パスワードリセットリクエスト
+     * @param setErrors エラーを設定する関数
+     * @param setStatus ステータスを設定する関数
+     * @param email メールアドレス
+     */
     const passwordResetRequest = async ({ setErrors, setStatus, email }) => {
+        setIsLoading(true);
         await csrf();
 
         setErrors([]);
         setStatus(null);
 
-        axios
+        await axios
             .post('/password/reset/request', { email })
             .then(response => setStatus(response.data.status))
             .catch(error => {
@@ -89,19 +95,32 @@ export const useAuth = ({
                 } else {
                     setErrors(error.response.data.errors);
                 }
-            });
+                console.error(error);
+                addSnackbar('error', error.response.data.message);
+            })
+            .finally(() => setIsLoading(false));
     };
 
+    /**
+     * パスワードリセットリクエスト
+     * @param setErrors エラーを設定する関数
+     * @param setStatus ステータスを設定する関数
+     * @param props パスワードリセットフォームの入力値
+     */
     const resetPassword = async ({ setErrors, setStatus, ...props }) => {
+        setIsLoading(true);
         await csrf();
 
         setErrors([]);
         setStatus(null);
 
-        axios
+        await axios
             .post('/password/reset', { token: params?.token, ...props })
             .then(response => {
                 router.push('/login?reset=' + btoa(response.data.status));
+                // ローディング状態はuseEffectでパス変化時に自動リセット
+                setIsResetLoading(true);
+                setPrevPath(pathname);
             })
             .catch(error => {
                 if (error.response.status !== 422) {
@@ -109,77 +128,71 @@ export const useAuth = ({
                 } else {
                     setErrors(error.response.data.errors);
                 }
+                console.error(error);
+                addSnackbar('error', error.response.data.message);
+                setIsLoading(false);
             });
     };
 
-    const resendEmailVerification = ({ setStatus }) => {
-        axios
+    /**
+     * メールアドレス再送信リクエスト
+     * @param setStatus ステータスを設定する関数
+     */
+    const resendEmailVerification = async ({ setStatus }) => {
+        setIsLoading(true);
+        await axios
             .post('/email/verification-notification')
             .then(response => setStatus(response.data.status));
+        setIsLoading(false);
     };
 
     const logout = async () => {
-        if (!error) {
-            await axios.post('/logout').then(() => mutate());
-        }
-
+        await axios.post('/logout');
         window.location.pathname = '/login';
     };
 
+    // ログインページから他のページに遷移した時にローディング状態をリセット
     React.useEffect(() => {
-        // URLからトークンを取得
-        const urlParams = new URLSearchParams(window.location.search);
-        const token = urlParams.get('token');
-
-        if (token !== null) {
-            sessionStorage.setItem('invitationToken', token);
+        if (isResetLoading && prevPath && prevPath !== pathname) {
+            setIsLoading(false);
+            setIsResetLoading(false);
+            setPrevPath(null);
         }
+    }, [prevPath, pathname, isResetLoading]);
 
-        if (middleware === 'guest' && redirectIfAuthenticated && user) {
-            const token = sessionStorage.getItem('invitationToken');
-            if (token) {
-                router.push(`/settings/account?token=${token}`);
-            } else {
-                router.push(redirectIfAuthenticated);
-            }
-        }
-
-        if (middleware === 'auth') {
-            // 5秒待ってもユーザ情報が取得できない場合はログインページへリダイレクト
-            // TODO: zustandでユーザを管理する？
-            if (!user) {
-                const timer = setTimeout(() => {
-                    if (!user) {
-                        router.push('/login');
-                    }
-                }, 5000);
-                return () => clearTimeout(timer);
-            }
-            if (user && !user.email_verified_at) {
-                router.push('/email/verify');
-            }
-        }
-
-        if (
-            window.location.pathname === '/email/verify' &&
-            user?.email_verified_at
-        ) {
-            const token = sessionStorage.getItem('invitationToken');
-            if (token) {
-                router.push(`/settings/account?token=${token}`);
-            } else if (redirectIfAuthenticated) {
-                router.push(redirectIfAuthenticated);
-            }
-        }
-
-        if (middleware === 'auth' && error) {
-            logout();
-            addSnackbar('error', error.response?.data.message);
-        }
-    }, [user, error]);
+    // React.useEffect(() => {
+    // TODO: settings/account/page.tsxに移動させる
+    // URLからトークンを取得
+    // const urlParams = new URLSearchParams(window.location.search);
+    // const token = urlParams.get('token');
+    // if (token !== null) {
+    //     sessionStorage.setItem('invitationToken', token);
+    // }
+    // TODO: ログイン後のリダイレクト処理を追加する
+    // if (middleware === 'guest' && redirectIfAuthenticated && user) {
+    //     const token = sessionStorage.getItem('invitationToken');
+    //     if (token) {
+    //         router.push(`/settings/account?token=${token}`);
+    //     } else {
+    //         router.push(redirectIfAuthenticated);
+    //     }
+    // }
+    // TODO: page.tsxに移動させる
+    // if (
+    //     window.location.pathname === '/email/verify' &&
+    //     user?.email_verified_at
+    // ) {
+    //     const token = sessionStorage.getItem('invitationToken');
+    //     if (token) {
+    //         router.push(`/settings/account?token=${token}`);
+    //     } else if (redirectIfAuthenticated) {
+    //         router.push(redirectIfAuthenticated);
+    //     }
+    // }
+    // }, []);
 
     return {
-        user,
+        isLoading,
         register,
         login,
         passwordResetRequest,

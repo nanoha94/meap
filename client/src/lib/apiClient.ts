@@ -24,14 +24,12 @@ export async function apiClient<T>(
         .getAll()
         .map(c => `${c.name}=${c.value}`)
         .join('; ');
-    const xsrfToken = cookieStore.get('XSRF-TOKEN')?.value;
 
     const defaultHeaders: HeadersInit = {
         Accept: 'application/json',
         'X-Requested-With': 'XMLHttpRequest',
         Referer: frontendUrl,
         ...(cookieHeader && { Cookie: cookieHeader }),
-        ...(xsrfToken && { 'X-XSRF-TOKEN': decodeURIComponent(xsrfToken) }),
     };
 
     const { body, ...restOptions } = options;
@@ -72,7 +70,6 @@ export async function apiClient<T>(
     }
 
     const response = await fetch(`${baseUrl}${path}`, fetchOptions);
-
     if (!response.ok) {
         const errorText = await response.text();
         console.error(

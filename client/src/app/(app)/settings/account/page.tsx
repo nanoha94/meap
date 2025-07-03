@@ -6,13 +6,13 @@ import { ChevronRight } from 'lucide-react';
 import { useAuth } from '@/hooks/api';
 import React from 'react';
 import axios from '@/lib/axios';
-import { IGetGroupUser } from '@/types/api';
+import { IGetGroupUserResponse } from '@/types/api';
 import useSWR from 'swr';
 import { InvitationDialog, JoinDialog } from './_dialogs';
 import { useSearchParams } from 'next/navigation';
 import { useJoinGroup } from '@/hooks/api';
 
-const fetchGroupUsers = (path: string): Promise<IGetGroupUser[]> =>
+const fetchGroupUsers = (path: string): Promise<IGetGroupUserResponse[]> =>
     axios.get(path).then(res => res.data);
 
 const Page = () => {

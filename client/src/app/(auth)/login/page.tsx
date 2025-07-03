@@ -5,6 +5,7 @@ import React from 'react';
 import { useSearchParams } from 'next/navigation';
 import { FormItem, Button } from '@/components/common';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
+import LoadingAnimation from '@/components/common/LoadingAnimation';
 
 interface FormInputs {
     email: string;
@@ -14,13 +15,9 @@ interface FormInputs {
 
 type visibleErrorFields = 'email' | 'password';
 
-const Inner = () => {
+const Login = () => {
     const searchParams = useSearchParams();
-
-    const { login } = useAuth({
-        middleware: 'guest',
-        redirectIfAuthenticated: '/plan',
-    });
+    const { isLoading, login } = useAuth();
 
     const {
         handleSubmit,
@@ -73,6 +70,7 @@ const Inner = () => {
 
     return (
         <>
+            {isLoading && <LoadingAnimation />}
             <div className="flex flex-col gap-y-10">
                 <div className="relative w-full text-center">
                     <span className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-px bg-gray-main" />
@@ -221,14 +219,6 @@ const Inner = () => {
                 </Button>
             </div>
         </>
-    );
-};
-
-const Login = () => {
-    return (
-        <React.Suspense>
-            <Inner />
-        </React.Suspense>
     );
 };
 export default Login;

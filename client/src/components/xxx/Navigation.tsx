@@ -1,3 +1,4 @@
+'use client';
 import ApplicationLogo from '@/components/ApplicationLogo';
 import Dropdown from '@/components/xxx/Dropdown';
 import Link from 'next/link';
@@ -9,10 +10,10 @@ import { DropdownButton } from '@/components/xxx/DropdownLink';
 import { useAuth } from '@/hooks/api';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { IGetUser } from '@/types/api';
+import { IGetUserResponse } from '@/types/api';
 
 interface Props {
-    user: IGetUser;
+    user: IGetUserResponse;
 }
 
 const Navigation = ({ user }: Props) => {

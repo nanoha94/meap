@@ -1,25 +1,21 @@
-import { IGetShoppingItemsResponse } from '@/types/api';
+import { IGetShoppingItemsResponse, IGetUserResponse } from '@/types/api';
 import { apiClient } from './apiClient';
 
 // サーバーコンポーネントでのAPIリクエスト
 // Next.jsではfetchを使用するのが推奨
 
-// async function getShoppingCategories() {
-//     try {
-//         const res = await fetch('/shopping/categories');
+// ユーザー取得
+export async function fetchUser(): Promise<IGetUserResponse | null> {
+    try {
+        return await apiClient('/user');
+    } catch (error) {
+        console.error(error);
+        return null;
+    }
+}
 
-//         if (!res.ok) {
-//             throw new Error('Failed to fetch shopping categories');
-//         }
-
-//         return res.json();
-//     } catch (error) {
-//         console.error(error);
-//         return [];
-//     }
-// }
-
-export async function getShoppingItems(): Promise<IGetShoppingItemsResponse> {
+// 買い物アイテム取得
+export async function fetchShoppingItems(): Promise<IGetShoppingItemsResponse> {
     try {
         return await apiClient('/shopping/items');
     } catch (error) {

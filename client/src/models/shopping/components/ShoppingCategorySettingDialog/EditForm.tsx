@@ -15,9 +15,9 @@ import React from 'react';
 import { IShoppingCategory } from '@/types/api';
 import { useFieldArray, useForm } from 'react-hook-form';
 import EditItem from './EditItem';
-import SpinAnimation from '@/components/common/SpinAnimation';
 import Sortable from '@/components/dnd/Sortable';
 import { useShoppingCategories } from '../../hooks';
+import LoadingAnimation from '@/components/common/LoadingAnimation';
 
 interface FormData {
     categories: IShoppingCategory[];
@@ -127,7 +127,7 @@ const EditForm: React.FC<Props> = ({ onBack }) => {
     }, []);
 
     if (isLoading) {
-        return <SpinAnimation />;
+        return <LoadingAnimation />;
     } else {
         return (
             <form

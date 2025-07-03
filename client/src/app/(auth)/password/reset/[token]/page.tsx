@@ -3,6 +3,7 @@ import { useAuth } from '@/hooks/api';
 import React from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { FormItem, Button } from '@/components/common';
+import LoadingAnimation from '@/components/common/LoadingAnimation';
 
 interface FormInputs {
     password: string;
@@ -12,7 +13,7 @@ interface FormInputs {
 type visibleErrorFields = 'password' | 'password_confirmation';
 
 const PasswordReset = () => {
-    const { resetPassword } = useAuth({ middleware: 'guest' });
+    const { isLoading, resetPassword } = useAuth();
 
     const {
         handleSubmit,
@@ -50,6 +51,7 @@ const PasswordReset = () => {
 
     return (
         <>
+            {isLoading && <LoadingAnimation />}
             <div className="flex flex-col gap-y-10">
                 <div className="relative w-full text-center">
                     <span className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-px bg-gray-main" />

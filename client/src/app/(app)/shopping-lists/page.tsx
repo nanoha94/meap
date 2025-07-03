@@ -1,12 +1,13 @@
 import ShoppingLists from '@/pages/shopping/ShoppingLists';
 import { Suspense } from 'react';
-import { apiClient } from '@/lib/apiClient';
-import { IGetShoppingItemsResponse } from '@/types/api';
 import Loading from '../loading';
+import { fetchShoppingItems } from '@/lib/api';
+import { IGetShoppingItemsResponse } from '@/types/api';
 
 async function ShoppingListsWithData() {
-    const items = await apiClient<IGetShoppingItemsResponse>('/shopping/items');
-    return <ShoppingLists fetchItems={items.data} />;
+    const { data: items }: IGetShoppingItemsResponse =
+        await fetchShoppingItems();
+    return <ShoppingLists fetchItems={items} />;
 }
 
 const Page = async () => {

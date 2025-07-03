@@ -1,20 +1,30 @@
-'use client';
-
-import { useAuth } from '@/hooks/api';
 import Navigation2 from '@/components/xxx/Navigation';
 import { Navigation } from '@/components/common';
-import Loading from './loading';
+import { IGetUserResponse } from '@/types/api';
+import { apiClient } from '@/lib/apiClient';
+import { redirect } from 'next/navigation';
 
 interface Props {
     children: React.ReactNode;
 }
 
-const AppLayout = ({ children }: Props) => {
-    const { user } = useAuth({ middleware: 'auth' });
-
-    if (!user) {
-        return <Loading />;
+const AppLayout = async ({ children }: Props) => {
+    let user: IGetUserResponse;
+    try {
+        user = await apiClient('/user');
+    } catch (error) {
+        console.error('Failed to fetch user:', error);
+        redirect('/login');
     }
+
+    if (!user.email_verified_at) {
+        redirect('/email/verify');
+    }
+
+    // const token = sessionStorage.getItem('invitationToken');
+    // if (token) {
+    //     redirect(`/settings/account?token=${token}`);
+    // }
 
     return (
         <div className="h-screen flex flex-col">

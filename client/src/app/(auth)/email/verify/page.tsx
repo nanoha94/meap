@@ -1,18 +1,16 @@
 'use client';
 import { Button } from '@/components/common';
+import LoadingAnimation from '@/components/common/LoadingAnimation';
 import { useAuth } from '@/hooks/api';
 import { useState } from 'react';
 
 const Page = () => {
-    const { resendEmailVerification } = useAuth({
-        middleware: 'auth',
-        redirectIfAuthenticated: '/plan',
-    });
-
+    const { isLoading, resendEmailVerification } = useAuth();
     const [status, setStatus] = useState(null);
 
     return (
         <>
+            {isLoading && <LoadingAnimation />}
             <div className="flex flex-col gap-y-10">
                 <div className="relative w-full text-center">
                     <span className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-px bg-gray-main" />
@@ -38,6 +36,7 @@ const Page = () => {
                     <p>
                         メールが届かない場合は以下のボタンをクリックして再送してください。
                     </p>
+                    {/* TODO: ボタン押下後、ローディングアニメーションを表示する */}
                     <Button
                         onClick={() => resendEmailVerification({ setStatus })}>
                         認証メールを再送する
