@@ -7,6 +7,7 @@ use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -53,6 +54,42 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerateToken();
 
-        return response()->noContent();
+        // Cookieを明示的に削除
+        $response = response()->noContent();
+
+        // 複数のドメインとパスパターンで削除
+        $domains = [config('session.domain'), null, '', '.' . parse_url(config('app.url'), PHP_URL_HOST)];
+        $paths = [config('session.path'), '/', ''];
+
+        foreach ($domains as $d) {
+            foreach ($paths as $p) {
+                $response->cookie(
+                    config('session.cookie'),
+                    '',
+                    -1,
+                    $p,
+                    $d,
+                    config('session.secure'),
+                    config('session.http_only'),
+                    false,
+                    config('session.same_site')
+                );
+
+                $response->cookie(
+                    'XSRF-TOKEN',
+                    '',
+                    -1,
+                    $p,
+                    $d,
+                    config('session.secure'),
+                    false,
+                    false,
+                    config('session.same_site')
+                );
+            }
+        }
+
+
+        return $response;
     }
 }

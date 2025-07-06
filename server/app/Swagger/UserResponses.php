@@ -9,7 +9,7 @@ namespace App\Swagger;
  *     @OA\JsonContent(
  *         type="object",
  *         @OA\Property(
- *             property="users",
+ *             property="data",
  *             type="array",
  *             description="ユーザ一覧",
  *             @OA\Items(

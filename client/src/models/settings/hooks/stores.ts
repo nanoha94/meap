@@ -1,15 +1,12 @@
+import { IGetUserResponse } from '@/types/api';
 import { create } from 'zustand';
-import {
-    IGetShoppingItemsResponse,
-    IShoppingCategory,
-    IShoppingItem,
-} from '@/types/api';
 
 type DialogPayload = {
-    itemSetting: IShoppingItem | undefined;
-    categorySetting: undefined; // データが不要な場合はundefined
+    invitation: undefined; // データが不要な場合はundefined
+    join: undefined;
 };
 
+// TODO: payloadが不要なら削除（とりあえず取っておく）
 type DialogsState = {
     [K in keyof DialogPayload]: {
         isOpen: boolean;
@@ -17,21 +14,15 @@ type DialogsState = {
     };
 };
 
-interface ShoppingState {
-    // アイテムの状態
-    items: IGetShoppingItemsResponse['data'];
-
-    // カテゴリーの状態
-    categories: IShoppingCategory[];
-
+interface AccountState {
     // ダイアログの状態
     dialogs: DialogsState;
 
-    // アイテムのアクション
-    setItems: (items: IGetShoppingItemsResponse['data']) => void;
+    // ログインユーザー
+    loginUser: IGetUserResponse;
 
-    // カテゴリーのアクション
-    setCategories: (categories: IShoppingCategory[]) => void;
+    // 同じグループのユーザー
+    users: IGetUserResponse[];
 
     // ダイアログのアクション
     openDialog: <K extends keyof DialogPayload>(
@@ -39,28 +30,24 @@ interface ShoppingState {
         payload: DialogPayload[K],
     ) => void;
     closeDialog: (dialogName: keyof DialogPayload) => void;
+
+    // ログインユーザーのアクション
+    setLoginUser: (loginUser: IGetUserResponse) => void;
+
+    // 同じグループのユーザーのアクション
+    setUsers: (users: IGetUserResponse[]) => void;
 }
 
 const initialDialogsState: DialogsState = {
-    itemSetting: { isOpen: false, payload: undefined },
-    categorySetting: { isOpen: false, payload: undefined },
+    invitation: { isOpen: false, payload: undefined },
+    join: { isOpen: false, payload: undefined },
 };
 
-export const useShoppingStore = create<ShoppingState>(set => ({
+export const useAccountStore = create<AccountState>(set => ({
     // 初期状態
-    items: [],
-    categories: [],
     dialogs: initialDialogsState,
-
-    // アイテムのアクション
-    setItems: items => {
-        set({ items });
-    },
-
-    // カテゴリーのアクション
-    setCategories: categories => {
-        set({ categories });
-    },
+    loginUser: {} as IGetUserResponse,
+    users: [] as IGetUserResponse[],
 
     // ダイアログのアクション
     openDialog: (dialogName, payload) =>
@@ -80,4 +67,10 @@ export const useShoppingStore = create<ShoppingState>(set => ({
                 },
             },
         })),
+
+    // ログインユーザーのアクション
+    setLoginUser: loginUser => set({ loginUser }),
+
+    // 同じグループのユーザーのアクション
+    setUsers: users => set({ users }),
 }));

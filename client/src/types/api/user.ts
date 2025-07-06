@@ -9,7 +9,10 @@ export interface IGetUserResponse {
 }
 
 export interface IGetGroupUserResponse {
-    id: string;
-    custom_id: string;
-    name: string;
+    data: {
+        id: string;
+        custom_id: string;
+        name: string;
+    }[];
+    total: number;
 }

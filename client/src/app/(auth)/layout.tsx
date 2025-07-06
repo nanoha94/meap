@@ -3,6 +3,7 @@ import ApplicationLogo from '@/components/ApplicationLogo';
 import { IGetUserResponse } from '@/types/api';
 import { redirect } from 'next/navigation';
 import { apiClient } from '@/lib/apiClient';
+import { cookies } from 'next/headers';
 
 export const metadata = {
     title: 'Laravel',
@@ -13,6 +14,11 @@ interface Props {
 }
 
 const AuthLayout = async ({ children }: Props) => {
+    // Cookieからリダイレクトパスを取得
+    const redirectPath = decodeURIComponent(
+        cookies().get('redirectPath')?.value || '',
+    );
+
     let user: IGetUserResponse | null = null;
 
     try {
@@ -24,14 +30,12 @@ const AuthLayout = async ({ children }: Props) => {
 
     // ユーザーが既にログインしている場合は /plan にリダイレクト
     if (user && !!user.email_verified_at) {
-        redirect('/plan');
+        if (redirectPath && redirectPath.length > 0) {
+            redirect(redirectPath);
+        } else {
+            redirect('/plan');
+        }
     }
-
-    // const urlParams = new URLSearchParams(window.location.search);
-    // const token = urlParams.get('token');
-    // if (token !== null) {
-    //     sessionStorage.setItem('invitationToken', token);
-    // }
 
     return (
         <div className="max-w-xl mx-auto pt-10 pb-20 px-5 flex flex-col gap-y-16">

@@ -88,7 +88,7 @@ const Navigation = () => {
     ];
 
     if (!pathname) {
-        return null;
+        return <></>;
     }
 
     // URLの深さが2より深い場合は表示しない

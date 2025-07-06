@@ -131,18 +131,20 @@ class InvitationController extends Controller
             return response()->json(['message' => 'すでにグループに参加しています。'], 403);
         }
 
-        // 所属しているグループがあるかチェック
-        if ($currentGroup->group_size > 1) {
-            return response()->json(['message' => 'すでに別のグループに所属しています。'], 409);
-        }
-
-        // データがあるかチェック
         if (!$request->isDelete) {
-            if ($currentGroup->shoppingItems()->exists()) {
-                return response()->json(['message' => 'すでに登録済みのデータがあります。'], 409);
+            // 所属しているグループがあるかチェック
+            if ($currentGroup->group_size > 1) {
+                return response()->json([
+                    'message' => 'すでに別のグループに所属しています。',
+                    'error_type' => 'already_in_group'
+                ], 409);
             }
-            if ($currentGroup->shoppingCategories()->where('is_default', 0)->exists()) {
-                return response()->json(['message' => 'すでに登録済みのデータがあります。'], 409);
+            // データがあるかチェック
+            if ($currentGroup->shoppingItems()->exists() || $currentGroup->shoppingCategories()->where('is_default', 0)->exists()) {
+                return response()->json([
+                    'message' => 'すでに登録済みのデータがあります。',
+                    'error_type' => 'has_existing_data'
+                ], 409);
             }
         }
 

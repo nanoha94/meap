@@ -1,8 +1,11 @@
+import { LoaderCircle } from 'lucide-react';
 import Button from './Button';
+import { colors } from '@/constants/colors';
 
 interface Props {
     title: string;
     description: React.ReactNode;
+    isLoading?: boolean;
     isOpen: boolean;
     onClose: () => void;
     actionButton: { text: string; onClick: () => void };
@@ -10,12 +13,13 @@ interface Props {
 
 const AlertDialog = ({
     title,
+    description,
+    isLoading,
     isOpen,
     onClose,
     actionButton,
-    description,
 }: Props) => {
-    if (!isOpen) return null;
+    if (!isOpen) return <></>;
 
     return (
         <div
@@ -28,22 +32,32 @@ const AlertDialog = ({
                     <div className="mb-7 px-5 py-2 w-full text-2xl font-bold text-center">
                         {title}
                     </div>
-                    <div className="flex flex-col gap-y-7">
-                        {description}
-                        <div className="mx-auto max-w-[320px] w-full flex gap-x-6">
-                            <Button
-                                colorVariant="gray"
-                                variant="outlined"
-                                onClick={onClose}>
-                                キャンセル
-                            </Button>
-                            <Button
-                                onClick={actionButton.onClick}
-                                colorVariant="alert">
-                                {actionButton.text}
-                            </Button>
+                    {isLoading ? (
+                        <div className="py-5">
+                            <LoaderCircle
+                                size={40}
+                                color={colors.primary.main}
+                                className="animate-spin mx-auto"
+                            />
                         </div>
-                    </div>
+                    ) : (
+                        <div className="flex flex-col gap-y-7">
+                            {description}
+                            <div className="mx-auto max-w-[320px] w-full flex gap-x-6">
+                                <Button
+                                    colorVariant="gray"
+                                    variant="outlined"
+                                    onClick={onClose}>
+                                    キャンセル
+                                </Button>
+                                <Button
+                                    onClick={actionButton.onClick}
+                                    colorVariant="alert">
+                                    {actionButton.text}
+                                </Button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

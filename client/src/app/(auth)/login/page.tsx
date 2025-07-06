@@ -56,7 +56,7 @@ const Login = () => {
         } else {
             setApiStatus(null);
         }
-    }, []);
+    }, [searchParams, errors]);
 
     const onSubmit: SubmitHandler<FormInputs> = (data: FormInputs) => {
         login({

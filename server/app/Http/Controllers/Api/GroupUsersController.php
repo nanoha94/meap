@@ -31,6 +31,9 @@ class GroupUsersController extends Controller
             ];
         });
 
-        return response()->json($users, 200);
+        return response()->json([
+            'data' => $users,
+            'total' => $users->count()
+        ], 200);
     }
 }

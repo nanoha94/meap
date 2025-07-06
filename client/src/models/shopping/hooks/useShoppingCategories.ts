@@ -2,7 +2,6 @@ import { useSnackbars } from '@/contexts';
 import { useShoppingStore } from '../hooks/stores';
 import React from 'react';
 import { IPostShoppingCategory, IShoppingCategory } from '@/types/api';
-import { waitForLoading } from '@/utils';
 import axios from '@/lib/axios';
 import { TMP_ID_PREFIX } from '@/constants/ids';
 import useSWR from 'swr';
@@ -10,7 +9,11 @@ import useSWR from 'swr';
 const fetchShoppingCategories = (
     path: string,
 ): Promise<{ categories: IShoppingCategory[]; total: number }> =>
-    axios.get(path).then(res => res.data);
+    axios
+        .get(path, {
+            timeout: 5000, // 5秒タイムアウト
+        })
+        .then(res => res.data);
 
 export const useShoppingCategories = () => {
     const { addSnackbar } = useSnackbars();
@@ -49,26 +52,6 @@ export const useShoppingCategories = () => {
                 return;
             }
 
-            // ローディング中の場合は、ローディングが終わるまで待つ（タイムアウト＝5秒）
-            if (isLoading) {
-                try {
-                    await waitForLoading({ isLoading });
-                } catch (error) {
-                    if (error instanceof Error && error.message === 'Timeout') {
-                        addSnackbar(
-                            'error',
-                            '処理がタイムアウトしました。もう一度お試しください。',
-                        );
-                    } else {
-                        console.error(error);
-                        addSnackbar(
-                            'error',
-                            '予期しないエラーが発生しました。',
-                        );
-                    }
-                }
-            }
-
             let hasError = false;
             setIsLoading(true);
 
@@ -82,11 +65,19 @@ export const useShoppingCategories = () => {
                 try {
                     await axios.delete(`/shopping/categories/bulk`, {
                         data: { ids: deleteCategoryIds },
+                        timeout: 5000, // 5秒タイムアウト
                     });
                 } catch (error) {
-                    hasError = true;
-                    console.error(error.response?.data.message);
-                    addSnackbar('error', error.response?.data.message);
+                    if (error.code === 'ECONNABORTED') {
+                        addSnackbar(
+                            'error',
+                            'リクエストがタイムアウトしました',
+                        );
+                    } else {
+                        hasError = true;
+                        console.error(error.response?.data.message);
+                        addSnackbar('error', error.response?.data.message);
+                    }
                 }
             }
 
@@ -123,11 +114,21 @@ export const useShoppingCategories = () => {
                         await axios.post(
                             `/shopping/categories`,
                             categories[i] as IPostShoppingCategory,
+                            {
+                                timeout: 5000, // 5秒タイムアウト
+                            },
                         );
                     } catch (error) {
-                        hasError = true;
-                        console.error(error.response?.data.message);
-                        addSnackbar('error', error.response?.data.message);
+                        if (error.code === 'ECONNABORTED') {
+                            addSnackbar(
+                                'error',
+                                'リクエストがタイムアウトしました',
+                            );
+                        } else {
+                            hasError = true;
+                            console.error(error.response?.data.message);
+                            addSnackbar('error', error.response?.data.message);
+                        }
                     }
                 }
             }
@@ -137,14 +138,22 @@ export const useShoppingCategories = () => {
                 try {
                     const res = await axios.put(`/shopping/categories/bulk`, {
                         data: updateCategories,
+                        timeout: 5000, // 5秒タイムアウト
                     });
                     if (res.status === 200) {
                         await mutate();
                     }
                 } catch (error) {
-                    hasError = true;
-                    console.error(error.response?.data.message);
-                    addSnackbar('error', error.response?.data.message);
+                    if (error.code === 'ECONNABORTED') {
+                        addSnackbar(
+                            'error',
+                            'リクエストがタイムアウトしました',
+                        );
+                    } else {
+                        hasError = true;
+                        console.error(error.response?.data.message);
+                        addSnackbar('error', error.response?.data.message);
+                    }
                 }
             }
 
@@ -163,8 +172,12 @@ export const useShoppingCategories = () => {
      */
     React.useEffect(() => {
         if (error) {
-            console.error(error?.response?.data?.message);
-            addSnackbar('error', error?.response?.data?.message);
+            if (error.code === 'ECONNABORTED') {
+                addSnackbar('error', 'リクエストがタイムアウトしました');
+            } else {
+                console.error(error?.response?.data?.message);
+                addSnackbar('error', error?.response?.data?.message);
+            }
         }
     }, [error]);
 

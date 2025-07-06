@@ -18,7 +18,7 @@ class VerifyEmailController extends Controller
         try {
 
             if ($request->user()->hasVerifiedEmail()) {
-                return redirect()->intended(
+                return redirect(
                     config('app.frontend_url') . '/plan?verified=1'
                 );
             }
@@ -27,7 +27,7 @@ class VerifyEmailController extends Controller
                 event(new Verified($request->user()));
             }
 
-            return redirect()->intended(
+            return redirect(
                 config('app.frontend_url') . '/plan?verified=1'
             );
         } catch (\Exception $e) {

@@ -1,14 +1,13 @@
 'use client';
-
 import Link from 'next/link';
-import { useAuth } from '@/hooks/api';
+import { useAccountStore } from '@/models/settings/hooks';
 
 const LoginLinks = () => {
-    const { user } = useAuth({ middleware: 'guest' });
+    const { loginUser } = useAccountStore();
 
     return (
         <div className="fixed top-0 right-0 px-6 py-4">
-            {user ? (
+            {loginUser ? (
                 <Link
                     href="/plan"
                     className="ml-4 text-sm text-gray-700 underline">

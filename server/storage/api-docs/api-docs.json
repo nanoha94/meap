@@ -1990,7 +1990,7 @@
                     "application/json": {
                         "schema": {
                             "properties": {
-                                "users": {
+                                "data": {
                                     "description": "ユーザ一覧",
                                     "type": "array",
                                     "items": {

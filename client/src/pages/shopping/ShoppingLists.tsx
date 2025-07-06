@@ -42,7 +42,8 @@ const ShoppingLists: React.FC<Props> = ({ fetchItems }) => {
                     </TextButton>
                 </div>
             </Header>
-            <div className="p-5">
+            {/* メインコンテンツ */}
+            <main className="p-5">
                 <div className="pb-12 flex flex-col gap-y-7">
                     {/* 買い物リスト */}
                     <ShoppingList items={storeItems} />
@@ -54,7 +55,7 @@ const ShoppingLists: React.FC<Props> = ({ fetchItems }) => {
                         <ChevronRight size={20} />
                     </TextButton>
                 </div>
-            </div>
+            </main>
             {/* アイテム追加・編集ダイアログ */}
             <ShoppingItemSettingDialog />
             {/* カテゴリー設定ダイアログ */}

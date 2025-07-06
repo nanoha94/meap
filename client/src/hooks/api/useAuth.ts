@@ -3,6 +3,20 @@ import { useParams, useRouter, usePathname } from 'next/navigation';
 import React from 'react';
 import { useSnackbars } from '@/contexts';
 
+// Cookie操作のヘルパー関数
+const getCookie = (name: string): string | null => {
+    if (typeof window === 'undefined') return null;
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+    return null;
+};
+
+const deleteCookie = (name: string): void => {
+    if (typeof window === 'undefined') return;
+    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+};
+
 export const useAuth = () => {
     const router = useRouter();
     const params = useParams();
@@ -59,7 +73,26 @@ export const useAuth = () => {
         axios
             .post('/login/', props)
             .then(() => {
-                router.push('/plan');
+                // セッションストレージからリダイレクトURLを取得
+                const sessionRedirectUrl =
+                    sessionStorage.getItem('redirectAfterLogin');
+
+                // cookieからリダイレクトURLを取得
+                const cookieRedirectUrl = getCookie('redirectPath');
+
+                if (sessionRedirectUrl) {
+                    // セッションストレージからのリダイレクト（優先）
+                    sessionStorage.removeItem('redirectAfterLogin');
+                    window.location.href = sessionRedirectUrl;
+                } else if (cookieRedirectUrl) {
+                    // cookieからのリダイレクト
+                    deleteCookie('redirectPath');
+                    window.location.href = cookieRedirectUrl;
+                } else {
+                    // デフォルトのリダイレクト先
+                    router.push('/plan');
+                }
+
                 // ローディング状態はuseEffectでパス変化時に自動リセット
                 setIsResetLoading(true);
                 setPrevPath(pathname);
@@ -140,15 +173,31 @@ export const useAuth = () => {
      */
     const resendEmailVerification = async ({ setStatus }) => {
         setIsLoading(true);
+        await csrf();
+
         await axios
             .post('/email/verification-notification')
-            .then(response => setStatus(response.data.status));
+            .then(response => setStatus(response.data.status))
+            .catch(error => {
+                console.error(error);
+                addSnackbar('error', error.response.data.message);
+            });
         setIsLoading(false);
     };
 
     const logout = async () => {
+        setIsLoading(true);
         await axios.post('/logout');
-        window.location.pathname = '/login';
+
+        // セッションストレージをクリア
+        if (typeof window !== 'undefined') {
+            sessionStorage.removeItem('redirectAfterLogin');
+            // 他のセッション関連データも必要に応じてクリア
+        }
+
+        // Laravel側でCookieは削除されるので、ページをリロード
+        window.location.href = '/login';
+        setIsLoading(false);
     };
 
     // ログインページから他のページに遷移した時にローディング状態をリセット
@@ -159,37 +208,6 @@ export const useAuth = () => {
             setPrevPath(null);
         }
     }, [prevPath, pathname, isResetLoading]);
-
-    // React.useEffect(() => {
-    // TODO: settings/account/page.tsxに移動させる
-    // URLからトークンを取得
-    // const urlParams = new URLSearchParams(window.location.search);
-    // const token = urlParams.get('token');
-    // if (token !== null) {
-    //     sessionStorage.setItem('invitationToken', token);
-    // }
-    // TODO: ログイン後のリダイレクト処理を追加する
-    // if (middleware === 'guest' && redirectIfAuthenticated && user) {
-    //     const token = sessionStorage.getItem('invitationToken');
-    //     if (token) {
-    //         router.push(`/settings/account?token=${token}`);
-    //     } else {
-    //         router.push(redirectIfAuthenticated);
-    //     }
-    // }
-    // TODO: page.tsxに移動させる
-    // if (
-    //     window.location.pathname === '/email/verify' &&
-    //     user?.email_verified_at
-    // ) {
-    //     const token = sessionStorage.getItem('invitationToken');
-    //     if (token) {
-    //         router.push(`/settings/account?token=${token}`);
-    //     } else if (redirectIfAuthenticated) {
-    //         router.push(redirectIfAuthenticated);
-    //     }
-    // }
-    // }, []);
 
     return {
         isLoading,
