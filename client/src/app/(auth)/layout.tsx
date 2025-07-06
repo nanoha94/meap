@@ -3,7 +3,6 @@ import ApplicationLogo from '@/components/ApplicationLogo';
 import { IGetUserResponse } from '@/types/api';
 import { redirect } from 'next/navigation';
 import { apiClient } from '@/lib/apiClient';
-import { cookies } from 'next/headers';
 
 export const metadata = {
     title: 'Laravel',
@@ -14,11 +13,6 @@ interface Props {
 }
 
 const AuthLayout = async ({ children }: Props) => {
-    // Cookieからリダイレクトパスを取得
-    const redirectPath = decodeURIComponent(
-        cookies().get('redirectPath')?.value || '',
-    );
-
     let user: IGetUserResponse | null = null;
 
     try {
@@ -30,11 +24,7 @@ const AuthLayout = async ({ children }: Props) => {
 
     // ユーザーが既にログインしている場合は /plan にリダイレクト
     if (user && !!user.email_verified_at) {
-        if (redirectPath && redirectPath.length > 0) {
-            redirect(redirectPath);
-        } else {
-            redirect('/plan');
-        }
+        redirect('/plan');
     }
 
     return (

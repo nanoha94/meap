@@ -87,7 +87,22 @@ export const useAuth = () => {
                 } else if (cookieRedirectUrl) {
                     // cookieからのリダイレクト
                     deleteCookie('redirectPath');
-                    window.location.href = cookieRedirectUrl;
+
+                    // URLエンコードされたパスを完全にデコード
+                    let decodedPath = cookieRedirectUrl;
+                    try {
+                        // 複数回エンコードされている場合に対応
+                        while (decodedPath.includes('%')) {
+                            const newPath = decodeURIComponent(decodedPath);
+                            if (newPath === decodedPath) break; // これ以上デコードできない場合
+                            decodedPath = newPath;
+                        }
+                    } catch (error) {
+                        console.error('Failed to decode redirectPath:', error);
+                        decodedPath = cookieRedirectUrl; // エラーの場合は元の値を使用
+                    }
+
+                    window.location.href = decodedPath;
                 } else {
                     // デフォルトのリダイレクト先
                     router.push('/plan');

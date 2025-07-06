@@ -4,16 +4,21 @@ import { colors } from '@/constants/colors';
 import dayjs from 'dayjs';
 import { LoaderCircle } from 'lucide-react';
 import React, { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAccountStore } from '../../hooks';
 import { useInvitations } from '../../hooks/useInvitations';
 import { useAccountHandlers } from '../../hooks/useAccountHandlers';
+import { IGetInvitationDetailResponse } from '@/types/api';
+import { JoinCheckDialogConfig } from '../../constants/error';
 
 interface Props {
-    token: string;
+    invitationDetail: IGetInvitationDetailResponse | null;
 }
 
-const JoinDialog: React.FC<Props> = ({ token }) => {
-    const { dialogs, closeDialog } = useAccountStore();
+const JoinDialog = ({ invitationDetail }: Props) => {
+    console.log('invitationDetail', invitationDetail);
+    const router = useRouter();
+    const { dialogs, openDialog, closeDialog } = useAccountStore();
     const { isOpen } = dialogs.join;
     const [isOpenAlertDialog, setIsOpenAlertDialog] = React.useState(false);
     const [alertDialogConfig, setAlertDialogConfig] = React.useState<{
@@ -21,8 +26,7 @@ const JoinDialog: React.FC<Props> = ({ token }) => {
         alertMessage?: string;
         buttonText: string;
     } | null>(null);
-    const { isLoading, invitationDetail, fetchInvitationDetail, joinGroup } =
-        useInvitations();
+    const { isLoading, joinGroup } = useInvitations();
     const { removeTokenFromPath } = useAccountHandlers();
 
     const { iconAvatar } = useAccountHandlers();
@@ -32,48 +36,35 @@ const JoinDialog: React.FC<Props> = ({ token }) => {
         [invitationDetail],
     );
 
-    const fetchInvitation = async () => {
-        const result = await fetchInvitationDetail(token);
-        if (!result.success) {
-            // エラーの場合ダイアログを閉じる
-            handleClose();
-        }
-    };
-
     const joinGroupWithToken = async (isDelete: boolean = false) => {
-        const result = await joinGroup(token, isDelete);
+        const result = await joinGroup(invitationDetail!.token, isDelete);
         // データを削除せずグループに参加しようとした場合
         if (!isDelete) {
             // エラーの場合
             if (!result.success) {
-                // エラーの種類に応じて処理を分ける
-                if (result.errorStatus === 409) {
-                    if (result.errorType === 'already_in_group') {
-                        setAlertDialogConfig({
-                            message:
-                                '現在のグループを退出して\n新しいグループに参加しますか？',
-                            buttonText: '退出して参加',
-                        });
-                    } else if (result.errorType === 'has_existing_data') {
-                        setAlertDialogConfig({
-                            message:
-                                'すでに登録済みのデータがあります。\n削除してグループに参加しますか？',
-                            alertMessage: '※削除したデータは復元できません',
-                            buttonText: '削除して参加',
-                        });
-                    }
+                // エラーの種類に応じてアラートダイアログの内容をセット
+                if (result.errorStatus === 409 && result.errorType) {
+                    setAlertDialogConfig(
+                        JoinCheckDialogConfig[
+                            result.errorType as keyof typeof JoinCheckDialogConfig
+                        ],
+                    );
+                    setIsOpenAlertDialog(true);
                 }
                 closeDialog('join');
-                setIsOpenAlertDialog(true);
             }
             // 成功した場合
             else {
                 handleClose();
+                // ページをリロードしてAPIリクエストを再実行
+                router.refresh();
             }
         }
         // データを削除してグループに参加しようとした場合
         else {
             handleCloseAlertDialog();
+            // ページをリロードしてAPIリクエストを再実行
+            router.refresh();
         }
     };
 
@@ -88,16 +79,16 @@ const JoinDialog: React.FC<Props> = ({ token }) => {
     };
 
     useEffect(() => {
-        if (isOpen) {
-            fetchInvitation();
+        if (invitationDetail) {
+            openDialog('join', undefined);
         }
-    }, [isOpen]);
+    }, [invitationDetail]);
 
     return (
         <>
             <Dialog
                 title="グループに参加"
-                isOpen={isOpen && !!token && token.length > 0}
+                isOpen={isOpen}
                 onClose={handleClose}>
                 {!isLoading && invitationDetail ? (
                     <div className="flex flex-col items-center gap-y-10">
@@ -112,7 +103,7 @@ const JoinDialog: React.FC<Props> = ({ token }) => {
                                     className="max-w-[100px] w-full h-auto aspect-square rounded-full overflow-hidden"
                                     dangerouslySetInnerHTML={{
                                         __html: iconAvatar(
-                                            invitationDetail?.inviter.custom_id,
+                                            invitationDetail?.inviter.id,
                                         ).toString(),
                                     }}
                                 />

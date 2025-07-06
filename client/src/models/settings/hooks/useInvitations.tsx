@@ -111,6 +111,15 @@ export const useInvitations = () => {
             if (error.code === 'ECONNABORTED') {
                 addSnackbar('error', 'リクエストがタイムアウトしました');
                 return { success: false, errorStatus: 408 };
+            }
+            // 409エラーの場合は、その後データ消去確認ダイアログを表示するので、スナックバーは表示しない
+            else if (error.response.status === 409) {
+                console.error(error.response?.data.message);
+                return {
+                    success: false,
+                    errorStatus: error.response.status,
+                    errorType: error.response?.data.error_type,
+                };
             } else {
                 console.error(error.response?.data.message);
                 addSnackbar('error', error.response?.data.message);

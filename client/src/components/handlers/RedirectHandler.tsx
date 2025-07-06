@@ -17,7 +17,6 @@ const RedirectHandler = () => {
 
         if (redirectPath) {
             const decodedPath = decodeURIComponent(redirectPath);
-
             if (decodedPath !== pathname) {
                 router.push(decodedPath);
             }

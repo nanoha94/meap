@@ -3,6 +3,10 @@ import { createAvatar, Result } from '@dicebear/core';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 export const useAccountHandlers = () => {
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+
     const iconAvatar = (id: string): Result =>
         createAvatar(icons, {
             seed: id,
@@ -22,9 +26,6 @@ export const useAccountHandlers = () => {
      * パスからトークンを削除
      */
     const removeTokenFromPath = () => {
-        const router = useRouter();
-        const pathname = usePathname();
-        const searchParams = useSearchParams();
         const newParams = new URLSearchParams(searchParams?.toString());
         newParams.delete('token');
         router.replace(`${pathname}?${newParams.toString()}`);

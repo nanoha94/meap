@@ -7,6 +7,8 @@ export function middleware(request: NextRequest) {
     const searchParams = request.nextUrl.search;
     const token = request.nextUrl.searchParams.get('token');
 
+    const redirectPath = `${pathname}${searchParams}`;
+
     const hasAuthCookie =
         request.cookies.has('laravel_session') ||
         request.cookies.has('XSRF-TOKEN');
@@ -18,7 +20,7 @@ export function middleware(request: NextRequest) {
 
     // /settings/account?token=XXXの場合はリダイレクトパスをCookieに設定
     if (token) {
-        response.cookies.set('redirectPath', `${pathname}${searchParams}`, {
+        response.cookies.set('redirectPath', redirectPath, {
             path: '/',
             maxAge: 3600, // 1時間有効
             sameSite: 'strict',

@@ -1,19 +1,18 @@
 'use client';
 import { TextButton } from '@/components/common';
-import { InvitationDialog, JoinDialog } from '@/models/settings/components';
+import { InvitationDialog } from '@/models/settings/components';
 import { useAccountStore } from '@/models/settings/hooks';
 import { ChevronRight } from 'lucide-react';
 import { IGetGroupUserResponse } from '@/types/api';
 import { useAccountHandlers } from '@/models/settings/hooks/useAccountHandlers';
-
 interface Props {
     users: IGetGroupUserResponse['data'];
-    token: string;
 }
 
-const AccountTop = ({ users, token }: Props) => {
+const AccountTop = ({ users }: Props) => {
     const { openDialog, loginUser } = useAccountStore();
     const { iconAvatar } = useAccountHandlers();
+    console.log('loginUser', loginUser);
 
     return (
         <div className="p-5 flex flex-col">
@@ -85,8 +84,6 @@ const AccountTop = ({ users, token }: Props) => {
             </div>
             {/* 招待ダイアログ */}
             <InvitationDialog />
-            {/* 参加ダイアログ */}
-            <JoinDialog token={token ?? ''} />
         </div>
     );
 };
