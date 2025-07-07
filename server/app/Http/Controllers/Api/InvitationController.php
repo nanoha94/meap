@@ -68,7 +68,6 @@ class InvitationController extends Controller
             'expires_at' => $invitationToken->expires_at,
             'inviter' => [
                 'id' => $invitationToken->inviter->id,
-                'custom_id' => $invitationToken->inviter->custom_id,
                 'name' => $invitationToken->inviter->name
             ]
         ], 200);

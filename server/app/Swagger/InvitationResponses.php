@@ -30,7 +30,6 @@ namespace App\Swagger;
  *         @OA\Property(property="expires_at", type="string", format="date-time", example="2025-01-01 00:00:00"),
  *         @OA\Property(property="inviter", type="object",
  *             @OA\Property(property="id", type="integer", example=1),
- *             @OA\Property(property="custom_id", type="string", example="abc123"),
  *             @OA\Property(property="name", type="string", example="山田太郎")
  *         )
  *     )

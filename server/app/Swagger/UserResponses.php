@@ -15,7 +15,6 @@ namespace App\Swagger;
  *             @OA\Items(
  *                 type="object",
  *                 @OA\Property(property="id", type="integer", example=1),
- *                 @OA\Property(property="custom_id", type="string", example="abc123"),
  *                 @OA\Property(property="name", type="string", example="山田太郎")
  *             )
  *         ),

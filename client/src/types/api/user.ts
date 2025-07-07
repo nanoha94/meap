@@ -1,6 +1,5 @@
 export interface IGetUserResponse {
     id?: string;
-    custom_id?: string;
     name?: string;
     email?: string;
     email_verified_at?: string;
@@ -11,7 +10,6 @@ export interface IGetUserResponse {
 export interface IGetGroupUserResponse {
     data: {
         id: string;
-        custom_id: string;
         name: string;
     }[];
     total: number;

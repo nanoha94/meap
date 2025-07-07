@@ -27,7 +27,6 @@ class GroupUsersController extends Controller
             return [
                 'id' => $user->id,
                 'name' => $user->name,
-                'custom_id' => $user->custom_id
             ];
         });
 

@@ -13,9 +13,7 @@
     "paths": {
         "/dishes/categories": {
             "post": {
-                "tags": [
-                    "Dishes"
-                ],
+                "tags": ["Dishes"],
                 "summary": "料理カテゴリを作成",
                 "operationId": "0161ee91fd7d39b03aafcd2c4c65159e",
                 "requestBody": {
@@ -41,9 +39,7 @@
         },
         "/dishes/categories/{id}": {
             "put": {
-                "tags": [
-                    "Dishes"
-                ],
+                "tags": ["Dishes"],
                 "summary": "料理カテゴリを更新",
                 "operationId": "ee9ec391653373f111dab83ca8d73615",
                 "parameters": [
@@ -72,9 +68,7 @@
                 ]
             },
             "delete": {
-                "tags": [
-                    "Dishes"
-                ],
+                "tags": ["Dishes"],
                 "summary": "料理カテゴリを削除",
                 "operationId": "b1673c72f772434f16151577666b51c4",
                 "parameters": [
@@ -102,9 +96,7 @@
         },
         "/dishes": {
             "get": {
-                "tags": [
-                    "Dishes"
-                ],
+                "tags": ["Dishes"],
                 "summary": "料理一覧を取得",
                 "operationId": "b92166fdb50a1384124b0926b46e5546",
                 "parameters": [
@@ -133,9 +125,7 @@
                 ]
             },
             "post": {
-                "tags": [
-                    "Dishes"
-                ],
+                "tags": ["Dishes"],
                 "summary": "料理を作成",
                 "operationId": "686872cfc9899f90fc08750037e1620d",
                 "requestBody": {
@@ -161,9 +151,7 @@
         },
         "/dishes/{id}": {
             "get": {
-                "tags": [
-                    "Dishes"
-                ],
+                "tags": ["Dishes"],
                 "summary": "料理の詳細を取得",
                 "operationId": "abc62ceb1a027b431957e1bedbbc444b",
                 "parameters": [
@@ -189,9 +177,7 @@
                 ]
             },
             "put": {
-                "tags": [
-                    "Dishes"
-                ],
+                "tags": ["Dishes"],
                 "summary": "料理を更新",
                 "operationId": "ad13b8b580b0a064a261db6ead3c8a97",
                 "parameters": [
@@ -220,9 +206,7 @@
                 ]
             },
             "delete": {
-                "tags": [
-                    "Dishes"
-                ],
+                "tags": ["Dishes"],
                 "summary": "料理を削除",
                 "operationId": "0df75d205b72c3e13cea9240e238747d",
                 "parameters": [
@@ -250,9 +234,7 @@
         },
         "/users": {
             "get": {
-                "tags": [
-                    "Users"
-                ],
+                "tags": ["Users"],
                 "summary": "認証ユーザーと同じグループに属するユーザ一覧を取得",
                 "operationId": "fd00b482150aa0a44371e1df73ffc52c",
                 "responses": {
@@ -272,9 +254,7 @@
         },
         "/invitations": {
             "post": {
-                "tags": [
-                    "Invitations"
-                ],
+                "tags": ["Invitations"],
                 "summary": "グループへの招待トークンを生成",
                 "operationId": "c920efb879be91000464e7a4b34aa3ee",
                 "responses": {
@@ -294,9 +274,7 @@
         },
         "/invitations/{token}": {
             "get": {
-                "tags": [
-                    "Invitations"
-                ],
+                "tags": ["Invitations"],
                 "summary": "招待トークンの詳細を取得",
                 "operationId": "756746cde4fd8f71d53b0122e9a0ac33",
                 "parameters": [
@@ -321,9 +299,7 @@
         },
         "/invitations/{token}/join": {
             "post": {
-                "tags": [
-                    "Invitations"
-                ],
+                "tags": ["Invitations"],
                 "summary": "招待トークンを使用してグループに参加",
                 "operationId": "46383ac26953e8a9d93e485badf1423b",
                 "parameters": [
@@ -377,9 +353,7 @@
         },
         "/master": {
             "get": {
-                "tags": [
-                    "Master"
-                ],
+                "tags": ["Master"],
                 "summary": "マスターデータを取得",
                 "operationId": "63ba56a775b57dd3717b6cf5f41ccfdd",
                 "responses": {
@@ -402,9 +376,7 @@
         },
         "/meals/categories": {
             "post": {
-                "tags": [
-                    "Meals"
-                ],
+                "tags": ["Meals"],
                 "summary": "献立カテゴリを作成",
                 "operationId": "b824b4121b0ca0a70aed08c9f5339de0",
                 "requestBody": {
@@ -430,9 +402,7 @@
         },
         "/meals/categories/bulk": {
             "put": {
-                "tags": [
-                    "Meals"
-                ],
+                "tags": ["Meals"],
                 "summary": "献立カテゴリを更新",
                 "operationId": "e43d7ba8b44471e427556fb1a9c96849",
                 "requestBody": {
@@ -458,9 +428,7 @@
         },
         "/meals/categories/{id}": {
             "delete": {
-                "tags": [
-                    "Meals"
-                ],
+                "tags": ["Meals"],
                 "summary": "献立カテゴリを削除",
                 "operationId": "7a197f493006f17431ca415547fdda99",
                 "parameters": [
@@ -488,9 +456,7 @@
         },
         "/meals": {
             "get": {
-                "tags": [
-                    "Meals"
-                ],
+                "tags": ["Meals"],
                 "summary": "献立一覧を取得",
                 "operationId": "9db1ba2555fdaf160d82111c7a9a1cf1",
                 "responses": {
@@ -511,9 +477,7 @@
                 ]
             },
             "post": {
-                "tags": [
-                    "Meals"
-                ],
+                "tags": ["Meals"],
                 "summary": "献立を作成",
                 "description": "献立を作成します。",
                 "operationId": "6095744fc02dfa24a97106abe7a514b3",
@@ -540,9 +504,7 @@
         },
         "/meals/{id}": {
             "get": {
-                "tags": [
-                    "Meals"
-                ],
+                "tags": ["Meals"],
                 "summary": "献立の詳細を取得",
                 "operationId": "a67d3e9b1522d0c454c77b63966a5a6f",
                 "parameters": [
@@ -568,9 +530,7 @@
                 ]
             },
             "put": {
-                "tags": [
-                    "Meals"
-                ],
+                "tags": ["Meals"],
                 "summary": "献立を更新",
                 "operationId": "f05c84f61efcf76eb55adb5d1f67d2af",
                 "parameters": [
@@ -599,9 +559,7 @@
                 ]
             },
             "delete": {
-                "tags": [
-                    "Meals"
-                ],
+                "tags": ["Meals"],
                 "summary": "献立を削除",
                 "operationId": "5b770b2b48159dffba26054f8bdbdf37",
                 "parameters": [
@@ -629,9 +587,7 @@
         },
         "/shopping/categories": {
             "get": {
-                "tags": [
-                    "Shopping"
-                ],
+                "tags": ["Shopping"],
                 "summary": "買い物カテゴリ一覧を取得",
                 "operationId": "5a15aaff1e5cb6a2174b38cee84ce04c",
                 "responses": {
@@ -652,9 +608,7 @@
                 ]
             },
             "post": {
-                "tags": [
-                    "Shopping"
-                ],
+                "tags": ["Shopping"],
                 "summary": "買い物カテゴリを作成",
                 "operationId": "730fb70314780d1715a7df0abb0f9040",
                 "requestBody": {
@@ -680,9 +634,7 @@
         },
         "/shopping/categories/bulk": {
             "put": {
-                "tags": [
-                    "Shopping"
-                ],
+                "tags": ["Shopping"],
                 "summary": "買い物カテゴリを一括更新",
                 "operationId": "0e619738aa3d59840fc495fd3170cfdf",
                 "requestBody": {
@@ -706,9 +658,7 @@
                 ]
             },
             "delete": {
-                "tags": [
-                    "Shopping"
-                ],
+                "tags": ["Shopping"],
                 "summary": "買い物カテゴリを削除",
                 "operationId": "3324b22ccb1871a5c7d339e0491935d6",
                 "requestBody": {
@@ -734,9 +684,7 @@
         },
         "/shopping/items": {
             "get": {
-                "tags": [
-                    "Shopping"
-                ],
+                "tags": ["Shopping"],
                 "summary": "買い物アイテム一覧を取得",
                 "operationId": "1380885ee1d13ad63e55f8c20b3e98a7",
                 "responses": {
@@ -757,9 +705,7 @@
                 ]
             },
             "post": {
-                "tags": [
-                    "Shopping"
-                ],
+                "tags": ["Shopping"],
                 "summary": "買い物アイテムを作成",
                 "operationId": "3a30d10ee755335b0c6f7f93a5ca27b6",
                 "requestBody": {
@@ -785,9 +731,7 @@
         },
         "/shopping/items/bulk": {
             "put": {
-                "tags": [
-                    "Shopping"
-                ],
+                "tags": ["Shopping"],
                 "summary": "買い物アイテムを一括更新",
                 "operationId": "9fc979f7f93b13b9e53d8555d7c2498b",
                 "requestBody": {
@@ -811,9 +755,7 @@
                 ]
             },
             "delete": {
-                "tags": [
-                    "Shopping"
-                ],
+                "tags": ["Shopping"],
                 "summary": "買い物アイテムを一括削除",
                 "operationId": "69b4a4de8cfd36369385139daf8f9a39",
                 "requestBody": {
@@ -839,9 +781,7 @@
         },
         "/shopping/items/{id}": {
             "delete": {
-                "tags": [
-                    "Shopping"
-                ],
+                "tags": ["Shopping"],
                 "summary": "買い物アイテムを削除",
                 "operationId": "7711a886aac3f6bb570d6db076199f56",
                 "parameters": [
@@ -869,9 +809,7 @@
         },
         "/shopping/tags": {
             "get": {
-                "tags": [
-                    "Shopping"
-                ],
+                "tags": ["Shopping"],
                 "summary": "買い物タグ一覧を取得",
                 "operationId": "34d4074bcdac29a043fbe9e1c02257fe",
                 "responses": {
@@ -894,9 +832,7 @@
         },
         "/login": {
             "post": {
-                "tags": [
-                    "Authentication"
-                ],
+                "tags": ["Authentication"],
                 "summary": "ログイン",
                 "operationId": "42f77e072dec84b0e1094cca1228298e",
                 "requestBody": {
@@ -918,9 +854,7 @@
         },
         "/logout": {
             "post": {
-                "tags": [
-                    "Authentication"
-                ],
+                "tags": ["Authentication"],
                 "summary": "ログアウト",
                 "operationId": "03afb12b342c2ea43bdc1de4f39e91a8",
                 "responses": {
@@ -940,9 +874,7 @@
         },
         "/register": {
             "post": {
-                "tags": [
-                    "Authentication"
-                ],
+                "tags": ["Authentication"],
                 "summary": "アカウント登録",
                 "operationId": "573de1fed352c1205a32c4d1b9877375",
                 "requestBody": {
@@ -994,9 +926,7 @@
                 "type": "object"
             },
             "Dish": {
-                "required": [
-                    "name"
-                ],
+                "required": ["name"],
                 "properties": {
                     "id": {
                         "description": "ID",
@@ -1053,10 +983,7 @@
                 "type": "object"
             },
             "DishCategory": {
-                "required": [
-                    "id",
-                    "name"
-                ],
+                "required": ["id", "name"],
                 "properties": {
                     "id": {
                         "description": "ID",
@@ -1072,12 +999,7 @@
                 "type": "object"
             },
             "Seasoning": {
-                "required": [
-                    "id",
-                    "name",
-                    "quantity",
-                    "unitId"
-                ],
+                "required": ["id", "name", "quantity", "unitId"],
                 "properties": {
                     "id": {
                         "description": "ID",
@@ -1104,12 +1026,7 @@
                 "type": "object"
             },
             "Ingredient": {
-                "required": [
-                    "id",
-                    "name",
-                    "quantity",
-                    "unitId"
-                ],
+                "required": ["id", "name", "quantity", "unitId"],
                 "properties": {
                     "id": {
                         "description": "ID",
@@ -1136,10 +1053,7 @@
                 "type": "object"
             },
             "Meal": {
-                "required": [
-                    "date",
-                    "categoryId"
-                ],
+                "required": ["date", "categoryId"],
                 "properties": {
                     "id": {
                         "description": "ID",
@@ -1207,11 +1121,7 @@
                 "type": "object"
             },
             "MealCategory": {
-                "required": [
-                    "id",
-                    "name",
-                    "colorId"
-                ],
+                "required": ["id", "name", "colorId"],
                 "properties": {
                     "id": {
                         "description": "ID",
@@ -1287,10 +1197,7 @@
                 "type": "object"
             },
             "ShoppingCategory": {
-                "required": [
-                    "id",
-                    "name"
-                ],
+                "required": ["id", "name"],
                 "properties": {
                     "id": {
                         "description": "ID",
@@ -1316,10 +1223,7 @@
                 "type": "object"
             },
             "ShoppingTag": {
-                "required": [
-                    "id",
-                    "name"
-                ],
+                "required": ["id", "name"],
                 "properties": {
                     "id": {
                         "description": "ID",
@@ -1605,10 +1509,6 @@
                                         "id": {
                                             "type": "integer",
                                             "example": 1
-                                        },
-                                        "custom_id": {
-                                            "type": "string",
-                                            "example": "abc123"
                                         },
                                         "name": {
                                             "type": "string",
@@ -1999,10 +1899,6 @@
                                                 "type": "integer",
                                                 "example": 1
                                             },
-                                            "custom_id": {
-                                                "type": "string",
-                                                "example": "abc123"
-                                            },
                                             "name": {
                                                 "type": "string",
                                                 "example": "山田太郎"
@@ -2123,10 +2019,7 @@
                 "content": {
                     "application/json": {
                         "schema": {
-                            "required": [
-                                "email",
-                                "password"
-                            ],
+                            "required": ["email", "password"],
                             "properties": {
                                 "email": {
                                     "type": "string",
@@ -2209,10 +2102,7 @@
                 "content": {
                     "application/json": {
                         "schema": {
-                            "required": [
-                                "date",
-                                "categoryId"
-                            ],
+                            "required": ["date", "categoryId"],
                             "properties": {
                                 "date": {
                                     "description": "日付",
@@ -2260,10 +2150,7 @@
                 "content": {
                     "application/json": {
                         "schema": {
-                            "required": [
-                                "name",
-                                "colorId"
-                            ],
+                            "required": ["name", "colorId"],
                             "properties": {
                                 "name": {
                                     "description": "カテゴリ名",
@@ -2326,10 +2213,7 @@
                 "content": {
                     "application/json": {
                         "schema": {
-                            "required": [
-                                "name",
-                                "categoryId"
-                            ],
+                            "required": ["name", "categoryId"],
                             "properties": {
                                 "name": {
                                     "description": "買い物アイテム名（数量込み）",

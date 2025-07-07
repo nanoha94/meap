@@ -28,7 +28,6 @@ class User extends Authenticatable implements MustVerifyEmail
         'name',
         'email',
         'password',
-        'custom_id',
     ];
 
     /**
@@ -93,23 +92,6 @@ class User extends Authenticatable implements MustVerifyEmail
         // 生成したIDが既に存在するかチェック
 
         return $customId;
-    }
-
-    // モデルのイベントを使用してcustom_idを設定
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($user) {
-            try {
-                $user->custom_id = static::generateUniqueCustomId();
-            } catch (\Illuminate\Database\QueryException $e) {
-                if (str_contains($e->getMessage(), 'Integrity constraint violation')) {
-                    throw new \Exception('カスタムIDの生成に失敗しました。しばらく時間をおいて再度お試しください。');
-                }
-                throw $e;
-            }
-        });
     }
 
     public function groupUser(): HasOne

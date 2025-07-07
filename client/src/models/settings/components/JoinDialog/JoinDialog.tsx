@@ -16,7 +16,6 @@ interface Props {
 }
 
 const JoinDialog = ({ invitationDetail }: Props) => {
-    console.log('invitationDetail', invitationDetail);
     const router = useRouter();
     const { dialogs, openDialog, closeDialog } = useAccountStore();
     const { isOpen } = dialogs.join;
