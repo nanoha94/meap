@@ -3,20 +3,6 @@ import { useParams, useRouter, usePathname } from 'next/navigation';
 import React from 'react';
 import { useSnackbars } from '@/contexts';
 
-// Cookie操作のヘルパー関数
-const getCookie = (name: string): string | null => {
-    if (typeof window === 'undefined') return null;
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
-    return null;
-};
-
-const deleteCookie = (name: string): void => {
-    if (typeof window === 'undefined') return;
-    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
-};
-
 export const useAuth = () => {
     const router = useRouter();
     const params = useParams();
@@ -73,41 +59,7 @@ export const useAuth = () => {
         axios
             .post('/login/', props)
             .then(() => {
-                // セッションストレージからリダイレクトURLを取得
-                const sessionRedirectUrl =
-                    sessionStorage.getItem('redirectAfterLogin');
-
-                // cookieからリダイレクトURLを取得
-                const cookieRedirectUrl = getCookie('redirectPath');
-
-                if (sessionRedirectUrl) {
-                    // セッションストレージからのリダイレクト（優先）
-                    sessionStorage.removeItem('redirectAfterLogin');
-                    window.location.href = sessionRedirectUrl;
-                } else if (cookieRedirectUrl) {
-                    // cookieからのリダイレクト
-                    deleteCookie('redirectPath');
-
-                    // URLエンコードされたパスを完全にデコード
-                    let decodedPath = cookieRedirectUrl;
-                    try {
-                        // 複数回エンコードされている場合に対応
-                        while (decodedPath.includes('%')) {
-                            const newPath = decodeURIComponent(decodedPath);
-                            if (newPath === decodedPath) break; // これ以上デコードできない場合
-                            decodedPath = newPath;
-                        }
-                    } catch (error) {
-                        console.error('Failed to decode redirectPath:', error);
-                        decodedPath = cookieRedirectUrl; // エラーの場合は元の値を使用
-                    }
-
-                    window.location.href = decodedPath;
-                } else {
-                    // デフォルトのリダイレクト先
-                    router.push('/plan');
-                }
-
+                router.push('/plan');
                 // ローディング状態はuseEffectでパス変化時に自動リセット
                 setIsResetLoading(true);
                 setPrevPath(pathname);

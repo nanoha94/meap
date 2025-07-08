@@ -18,8 +18,8 @@ export function middleware(request: NextRequest) {
         ? NextResponse.redirect(new URL('/login', baseUrl))
         : NextResponse.next();
 
-    // /settings/account?token=XXXの場合はリダイレクトパスをCookieに設定
-    if (token) {
+    // /settings/account?token=XXXの場合で未承認の場合のみリダイレクトパスをCookieに設定
+    if (token && !hasAuthCookie) {
         response.cookies.set('redirectPath', redirectPath, {
             path: '/',
             maxAge: 3600, // 1時間有効

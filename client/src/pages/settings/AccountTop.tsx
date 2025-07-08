@@ -12,7 +12,6 @@ interface Props {
 const AccountTop = ({ users }: Props) => {
     const { openDialog, loginUser } = useAccountStore();
     const { iconAvatar } = useAccountHandlers();
-    console.log('loginUser', loginUser);
 
     return (
         <div className="p-5 flex flex-col">

@@ -1,79 +1,29 @@
 'use client';
-import { Dialog, Button, AlertDialog } from '@/components/common';
+import { Dialog, Button } from '@/components/common';
 import { colors } from '@/constants/colors';
 import dayjs from 'dayjs';
 import { LoaderCircle } from 'lucide-react';
 import React, { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { useAccountStore } from '../../hooks';
-import { useInvitations } from '../../hooks/useInvitations';
 import { useAccountHandlers } from '../../hooks/useAccountHandlers';
 import { IGetInvitationDetailResponse } from '@/types/api';
-import { JoinCheckDialogConfig } from '../../constants/error';
-
 interface Props {
     invitationDetail: IGetInvitationDetailResponse | null;
 }
 
 const JoinDialog = ({ invitationDetail }: Props) => {
-    const router = useRouter();
     const { dialogs, openDialog, closeDialog } = useAccountStore();
     const { isOpen } = dialogs.join;
-    const [isOpenAlertDialog, setIsOpenAlertDialog] = React.useState(false);
-    const [alertDialogConfig, setAlertDialogConfig] = React.useState<{
-        message: string;
-        alertMessage?: string;
-        buttonText: string;
-    } | null>(null);
-    const { isLoading, joinGroup } = useInvitations();
-    const { removeTokenFromPath } = useAccountHandlers();
-
-    const { iconAvatar } = useAccountHandlers();
+    const { isLoading, removeTokenFromPath, joinGroupWithToken, iconAvatar } =
+        useAccountHandlers();
 
     const isExpired = React.useMemo(
         () => dayjs(invitationDetail?.expires_at) < dayjs(),
         [invitationDetail],
     );
 
-    const joinGroupWithToken = async (isDelete: boolean = false) => {
-        const result = await joinGroup(invitationDetail!.token, isDelete);
-        // データを削除せずグループに参加しようとした場合
-        if (!isDelete) {
-            // エラーの場合
-            if (!result.success) {
-                // エラーの種類に応じてアラートダイアログの内容をセット
-                if (result.errorStatus === 409 && result.errorType) {
-                    setAlertDialogConfig(
-                        JoinCheckDialogConfig[
-                            result.errorType as keyof typeof JoinCheckDialogConfig
-                        ],
-                    );
-                    setIsOpenAlertDialog(true);
-                }
-                closeDialog('join');
-            }
-            // 成功した場合
-            else {
-                handleClose();
-                // ページをリロードしてAPIリクエストを再実行
-                router.refresh();
-            }
-        }
-        // データを削除してグループに参加しようとした場合
-        else {
-            handleCloseAlertDialog();
-            // ページをリロードしてAPIリクエストを再実行
-            router.refresh();
-        }
-    };
-
     const handleClose = () => {
         closeDialog('join');
-        removeTokenFromPath();
-    };
-
-    const handleCloseAlertDialog = () => {
-        setIsOpenAlertDialog(false);
         removeTokenFromPath();
     };
 
@@ -120,7 +70,12 @@ const JoinDialog = ({ invitationDetail }: Props) => {
                                     キャンセル
                                 </Button>
                                 <Button
-                                    onClick={() => joinGroupWithToken(false)}
+                                    onClick={() =>
+                                        joinGroupWithToken(
+                                            invitationDetail!.token,
+                                            false,
+                                        )
+                                    }
                                     disabled={isExpired}>
                                     参加する
                                 </Button>
@@ -148,27 +103,6 @@ const JoinDialog = ({ invitationDetail }: Props) => {
                     </div>
                 )}
             </Dialog>
-            {/* 削除確認ダイアログ */}
-            <AlertDialog
-                title="データ削除"
-                description={
-                    <div className="flex flex-col gap-y-4">
-                        <p className="text-center whitespace-pre-wrap">
-                            {alertDialogConfig?.message}
-                        </p>
-                        <span className="text-center text-alert-main">
-                            {alertDialogConfig?.alertMessage}
-                        </span>
-                    </div>
-                }
-                isLoading={isLoading}
-                isOpen={isOpenAlertDialog}
-                onClose={handleCloseAlertDialog}
-                actionButton={{
-                    text: alertDialogConfig?.buttonText ?? '削除して参加',
-                    onClick: () => joinGroupWithToken(true),
-                }}
-            />
         </>
     );
 };

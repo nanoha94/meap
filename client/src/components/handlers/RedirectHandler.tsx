@@ -1,30 +1,18 @@
 'use client';
 import { useEffect } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
 
-const RedirectHandler = () => {
-    const router = useRouter();
-    const pathname = usePathname();
+interface Props {
+    redirectPath: string;
+}
 
-    /**
-     * リダイレクトパスがある場合はリダイレクト
-     */
+const RedirectHandler = ({ redirectPath }: Props) => {
     useEffect(() => {
-        const redirectPath = document.cookie
-            .split('; ')
-            .find(row => row.startsWith('redirectPath='))
-            ?.split('=')[1];
+        // リダイレクト
+        window.location.href = redirectPath;
 
-        if (redirectPath) {
-            const decodedPath = decodeURIComponent(redirectPath);
-            if (decodedPath !== pathname) {
-                router.push(decodedPath);
-            }
-
-            // cookieを削除
-            document.cookie = `redirectPath=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; sameSite=strict; secure' : ''}`;
-        }
-    }, [router, pathname]);
+        // クッキーを削除
+        document.cookie = `redirectPath=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; sameSite=strict; secure`;
+    }, []);
 
     return <></>;
 };

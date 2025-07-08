@@ -20,7 +20,9 @@ export const useInvitations = () => {
      * 招待トークンを取得する
      * @returns {Promise<{success: boolean}>} 成功/失敗とタイムアウトかどうかの情報
      */
-    const fetchInvitationToken = async (): Promise<{
+    const fetchInvitationToken = async (
+        onError?: () => void,
+    ): Promise<{
         success: boolean;
     }> => {
         try {
@@ -42,6 +44,7 @@ export const useInvitations = () => {
             } else {
                 console.error(error.response?.data.message);
                 addSnackbar('error', error.response?.data.message);
+                onError?.();
             }
             return { success: false };
         } finally {

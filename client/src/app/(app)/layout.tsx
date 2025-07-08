@@ -5,6 +5,7 @@ import { apiClient } from '@/lib/apiClient';
 import { redirect } from 'next/navigation';
 import UserHandler from '@/components/handlers/UserHandler';
 import { RedirectHandler } from '@/components/handlers';
+import { cookies } from 'next/headers';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,9 +26,13 @@ const AppLayout = async ({ children }: Props) => {
         redirect('/email/verify');
     }
 
+    // RSCでクッキーを取得する正しい方法
+    const cookieStore = cookies();
+    const redirectPath = cookieStore.get('redirectPath')?.value;
+
     return (
         <div className="h-screen flex flex-col">
-            <RedirectHandler />
+            {redirectPath && <RedirectHandler redirectPath={redirectPath} />}
             <UserHandler user={user} />
             <Navigation2 user={user} />
             <div className="flex-1 bg-primary-background">{children}</div>

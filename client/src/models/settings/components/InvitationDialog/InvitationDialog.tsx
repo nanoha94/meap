@@ -15,6 +15,7 @@ const InvitationDialog = () => {
     const { isLoading, invitationLink, tokenExpiresAt, fetchInvitationToken } =
         useInvitations();
 
+    // 招待リンクをコピー
     const copyToClipboard = async (link: string) => {
         try {
             await navigator.clipboard.writeText(link);
@@ -24,25 +25,22 @@ const InvitationDialog = () => {
         }
     };
 
-    const fetchInvitation = async () => {
-        const result = await fetchInvitationToken();
-        if (!result.success) {
-            // エラーの場合ダイアログを閉じる
-            closeDialog('invitation');
-        }
-    };
-
+    // ダイアログが開いたら招待リンクを取得
+    // 取得に失敗したらダイアログを閉じる
     React.useEffect(() => {
         if (isOpen) {
-            fetchInvitation();
+            fetchInvitationToken(() => {
+                closeDialog('invitation');
+            });
         }
     }, [isOpen]);
 
+    // 招待リンクをコピーしたら10秒後にリセット
     React.useEffect(() => {
         if (isCopied) {
             setTimeout(() => {
                 setIsCopied(false);
-            }, 3000);
+            }, 10000);
         }
     }, [isCopied]);
 
@@ -57,7 +55,11 @@ const InvitationDialog = () => {
                     <div className="flex flex-col items-center gap-y-5">
                         <div className="flex flex-col items-center">
                             <button
-                                onClick={fetchInvitationToken}
+                                onClick={() =>
+                                    fetchInvitationToken(() => {
+                                        closeDialog('invitation');
+                                    })
+                                }
                                 className="p-2 w-fit bg-gray-background rounded-full transition-colors hover:bg-gray-light">
                                 <RotateCw
                                     size={24}

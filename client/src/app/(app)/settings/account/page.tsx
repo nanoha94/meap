@@ -9,7 +9,27 @@ import { apiClient } from '@/lib/apiClient';
 import { SnackbarHandler } from '@/components/handlers';
 import Loading from '../../Loading';
 import { timeout_ms } from '@/constants';
-import { JoinDialog } from '@/models/settings/components';
+import dynamic from 'next/dynamic';
+
+// 動的インポートでダイアログコンポーネントを遅延読み込み
+const JoinDialog = dynamic(
+    () => import('@/models/settings/components/JoinDialog/JoinDialog'),
+    {
+        ssr: false, // SSRでは読み込まない
+        loading: () => null, // ローディング中は何も表示しない
+    },
+);
+
+const DeleteCheckDialog = dynamic(
+    () =>
+        import(
+            '@/models/settings/components/DeleteCheckDialog/DeleteCheckDialog'
+        ),
+    {
+        ssr: false, // SSRでは読み込まない
+        loading: () => null, // ローディング中は何も表示しない
+    },
+);
 
 interface AccountWithDataProps {
     token: string;
@@ -58,8 +78,14 @@ const AccountWithData = async ({ token }: AccountWithDataProps) => {
                     <SnackbarHandler type="error" message={errorMessage} />
                 )}
                 <AccountTop users={users['data']} />
-                {/* 参加ダイアログ */}
-                <JoinDialog invitationDetail={invitationDetail} />
+                {invitationDetail && token && (
+                    <>
+                        <JoinDialog invitationDetail={invitationDetail} />
+                        <DeleteCheckDialog
+                            token={invitationDetail?.token ?? token}
+                        />
+                    </>
+                )}
             </main>
         </>
     );
