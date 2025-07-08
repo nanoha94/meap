@@ -31,7 +31,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // users
     Route::get('/users', [ApiGroupUsersController::class, 'index']);
     Route::get('/user',  function (Request $request) {
-        return $request->user();
+        $user = $request->user();
+        return [
+            'name' => $user->name,
+            'email' => $user->email,
+            'email_verified_at' => $user->email_verified_at,
+            'avatar_seed' => $user->avatar_seed,
+        ];
     });
 
     // shopping

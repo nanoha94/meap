@@ -1,4 +1,4 @@
-import { IGetUserResponse } from '@/types/api';
+import { IGetUserResponse, IGetGroupUserResponse } from '@/types/api';
 import { create } from 'zustand';
 import { JoinCheckDialogConfig } from '../types/dialogs';
 
@@ -24,7 +24,7 @@ interface AccountState {
     loginUser: IGetUserResponse;
 
     // 同じグループのユーザー
-    users: IGetUserResponse[];
+    users: IGetGroupUserResponse['data'];
 
     // ダイアログのアクション
     openDialog: <K extends keyof DialogPayload>(
@@ -37,7 +37,7 @@ interface AccountState {
     setLoginUser: (loginUser: IGetUserResponse) => void;
 
     // 同じグループのユーザーのアクション
-    setUsers: (users: IGetUserResponse[]) => void;
+    setUsers: (users: IGetGroupUserResponse['data']) => void;
 }
 
 const initialDialogsState: DialogsState = {
@@ -50,7 +50,7 @@ export const useAccountStore = create<AccountState>(set => ({
     // 初期状態
     dialogs: initialDialogsState,
     loginUser: {} as IGetUserResponse,
-    users: [] as IGetUserResponse[],
+    users: [] as IGetGroupUserResponse['data'],
 
     // ダイアログのアクション
     openDialog: (dialogName, payload) =>

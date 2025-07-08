@@ -20,7 +20,9 @@ const AccountTop = ({ users }: Props) => {
                 <div
                     className="w-[120px] h-auto aspect-square rounded-full overflow-hidden"
                     dangerouslySetInnerHTML={{
-                        __html: iconAvatar(loginUser?.id ?? '').toString(),
+                        __html: iconAvatar(
+                            loginUser?.avatar_seed ?? '',
+                        ).toString(),
                     }}
                 />
                 <div className="flex flex-col gap-y-3">
@@ -40,17 +42,21 @@ const AccountTop = ({ users }: Props) => {
                     <>
                         <div className="grid grid-cols-[repeat(auto-fill,_minmax(80px,_1fr))] gap-6">
                             {users
-                                .filter(v => v.id !== loginUser?.id)
+                                .filter(
+                                    v =>
+                                        v.avatar_seed !==
+                                        loginUser?.avatar_seed,
+                                )
                                 .map(user => (
                                     <div
-                                        key={user.id}
+                                        key={user.avatar_seed}
                                         className="w-full max-w-[100px] mx-auto flex flex-col gap-y-1">
                                         {/* TODO: アイコンの指定がある場合はアイコン、指定がない場合はiconsを使用する */}
                                         <div
                                             className="w-full h-auto aspect-square rounded-full overflow-hidden"
                                             dangerouslySetInnerHTML={{
                                                 __html: iconAvatar(
-                                                    user.id,
+                                                    user.avatar_seed ?? '',
                                                 ).toString(),
                                             }}
                                         />

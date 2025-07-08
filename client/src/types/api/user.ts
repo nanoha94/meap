@@ -1,15 +1,13 @@
 export interface IGetUserResponse {
-    id?: string;
     name?: string;
     email?: string;
     email_verified_at?: string;
-    created_at?: string;
-    updated_at?: string;
+    avatar_seed: string;
 }
 
 export interface IGetGroupUserResponse {
     data: {
-        id: string;
+        avatar_seed: string;
         name: string;
     }[];
     total: number;

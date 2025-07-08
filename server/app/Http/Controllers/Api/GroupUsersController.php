@@ -25,8 +25,8 @@ class GroupUsersController extends Controller
         // 同じグループに属するユーザーデータを取得
         $users = $request->user()->group->users->map(function ($user) {
             return [
-                'id' => $user->id,
                 'name' => $user->name,
+                'avatar_seed' => $user->avatar_seed,
             ];
         });
 

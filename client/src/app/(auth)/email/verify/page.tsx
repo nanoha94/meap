@@ -10,19 +10,21 @@ const Page = () => {
     const [isInitialSent, setIsInitialSent] = React.useState(false);
     const hasInitialSent = React.useRef(false);
 
-    // 初回の自動メール送信（StrictMode対応）
+    /**
+     * 初回のメール送信
+     */
+    const sendInitialEmail = async () => {
+        await resendEmailVerification({
+            setStatus: () => {}, // 初回は状態を設定しない
+        });
+        setIsInitialSent(true);
+    };
+
     React.useEffect(() => {
-        const sendInitialEmail = async () => {
-            if (hasInitialSent.current) return;
+        if (!hasInitialSent.current) {
+            sendInitialEmail();
             hasInitialSent.current = true;
-
-            await resendEmailVerification({
-                setStatus: () => {}, // 初回は状態を設定しない
-            });
-            setIsInitialSent(true);
-        };
-
-        sendInitialEmail();
+        }
     }, []);
 
     // ボタンクリック時の再送（メッセージ表示あり）

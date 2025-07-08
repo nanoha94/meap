@@ -14,8 +14,8 @@ namespace App\Swagger;
  *             description="ユーザ一覧",
  *             @OA\Items(
  *                 type="object",
- *                 @OA\Property(property="id", type="integer", example=1),
- *                 @OA\Property(property="name", type="string", example="山田太郎")
+ *                 @OA\Property(property="name", type="string", example="山田太郎"),
+ *                 @OA\Property(property="avatar_seed", type="string", example="1234567890"),
  *             )
  *         ),
  *         @OA\Property(
