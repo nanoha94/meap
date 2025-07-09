@@ -6,5 +6,6 @@ export { default as EmptyButton } from './EmptyButton';
 export { default as FormItem } from './FormItem';
 export { default as Header } from './Header';
 export { default as Navigation } from './Navigation';
+export { NavigationIcon } from './NavigationIcon';
 export { default as Snackbars } from './Snackbars';
 export { default as TextButton } from './TextButton';

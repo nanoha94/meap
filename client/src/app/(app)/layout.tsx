@@ -13,7 +13,6 @@ interface Props {
     children: React.ReactNode;
 }
 const AppLayout = async ({ children }: Props) => {
-    console.log('AppLayout');
     let user: IGetUserResponse;
     try {
         user = await apiClient('/user');
