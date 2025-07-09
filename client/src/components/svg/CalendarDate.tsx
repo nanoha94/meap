@@ -1,13 +1,17 @@
 import { colors } from '@/constants/colors';
 
 interface Props {
+    strokeWidth?: number;
     strokeColor?: string;
     fillColor?: string;
+    className?: string;
 }
 
 const CalendarDate = ({
+    strokeWidth = 2.5,
     strokeColor = colors.black,
     fillColor = colors.gray.iconFill,
+    className,
 }: Props) => {
     return (
         <svg
@@ -15,12 +19,13 @@ const CalendarDate = ({
             height="36"
             viewBox="0 0 37 36"
             fill="none"
+            className={className}
             xmlns="http://www.w3.org/2000/svg">
             <path
                 d="M12.75 3V9"
                 stroke={strokeColor}
                 className="transition-colors"
-                strokeWidth="2.5"
+                strokeWidth={strokeWidth}
                 strokeLinecap="round"
                 strokeLinejoin="round"
             />
@@ -28,7 +33,7 @@ const CalendarDate = ({
                 d="M24.75 3V9"
                 stroke={strokeColor}
                 className="transition-colors"
-                strokeWidth="2.5"
+                strokeWidth={strokeWidth}
                 strokeLinecap="round"
                 strokeLinejoin="round"
             />
@@ -37,7 +42,7 @@ const CalendarDate = ({
                 fill={fillColor}
                 stroke={strokeColor}
                 className="transition-colors"
-                strokeWidth="2.5"
+                strokeWidth={strokeWidth}
                 strokeLinecap="round"
                 strokeLinejoin="round"
             />
@@ -45,7 +50,7 @@ const CalendarDate = ({
                 d="M5.25 15H32.25"
                 stroke={strokeColor}
                 className="transition-colors"
-                strokeWidth="2.5"
+                strokeWidth={strokeWidth}
                 strokeLinecap="round"
                 strokeLinejoin="round"
             />
@@ -53,7 +58,7 @@ const CalendarDate = ({
                 d="M12.75 21H12.765"
                 stroke={strokeColor}
                 className="transition-colors"
-                strokeWidth="2.5"
+                strokeWidth={strokeWidth}
                 strokeLinecap="round"
                 strokeLinejoin="round"
             />
@@ -61,7 +66,7 @@ const CalendarDate = ({
                 d="M18.75 21H18.765"
                 stroke={strokeColor}
                 className="transition-colors"
-                strokeWidth="2.5"
+                strokeWidth={strokeWidth}
                 strokeLinecap="round"
                 strokeLinejoin="round"
             />
@@ -69,7 +74,7 @@ const CalendarDate = ({
                 d="M24.75 21H24.765"
                 stroke={strokeColor}
                 className="transition-colors"
-                strokeWidth="2.5"
+                strokeWidth={strokeWidth}
                 strokeLinecap="round"
                 strokeLinejoin="round"
             />
@@ -77,7 +82,7 @@ const CalendarDate = ({
                 d="M12.75 27H12.765"
                 stroke={strokeColor}
                 className="transition-colors"
-                strokeWidth="2.5"
+                strokeWidth={strokeWidth}
                 strokeLinecap="round"
                 strokeLinejoin="round"
             />
@@ -85,7 +90,7 @@ const CalendarDate = ({
                 d="M18.75 27H18.765"
                 stroke={strokeColor}
                 className="transition-colors"
-                strokeWidth="2.5"
+                strokeWidth={strokeWidth}
                 strokeLinecap="round"
                 strokeLinejoin="round"
             />
@@ -93,7 +98,7 @@ const CalendarDate = ({
                 d="M24.75 27H24.765"
                 stroke={strokeColor}
                 className="transition-colors"
-                strokeWidth="2.5"
+                strokeWidth={strokeWidth}
                 strokeLinecap="round"
                 strokeLinejoin="round"
             />

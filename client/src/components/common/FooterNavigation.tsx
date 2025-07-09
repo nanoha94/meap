@@ -3,9 +3,13 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import React from 'react';
 import { navigationItems } from '@/constants';
-import { NavigationIcon } from './NavigationIcon';
+import NavigationIcon from './NavigationIcon';
 
-const FooterNavigation = () => {
+interface Props {
+    className?: string;
+}
+
+const FooterNavigation = ({ className }: Props) => {
     const pathname = usePathname();
 
     if (!pathname) {
@@ -20,8 +24,8 @@ const FooterNavigation = () => {
 
     return (
         <div
-            className="fixed bottom-0 w-full flex bg-white md:hidden"
-            style={{ boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 10%)' }}>
+            className={`fixed bottom-0 w-full flex bg-white ${className ? className : ''}`}
+            style={{ boxShadow: 'inset 0 1px 1px 0 rgba(0, 0, 0, 10%)' }}>
             {navigationItems.map((v, idx) => (
                 <Link
                     key={idx}

@@ -60,7 +60,7 @@ const AccountTop = ({ users }: Props) => {
                                                 ).toString(),
                                             }}
                                         />
-                                        <div className="text-xs text-center">
+                                        <div className="text-sm text-center">
                                             {user.name}
                                         </div>
                                     </div>

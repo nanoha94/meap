@@ -3,11 +3,15 @@ import { NavigationItemType, NAVIGATION_ICON_TYPES, colors } from '@/constants';
 import { BookOpenCheck, CalendarDate, CookingPot, Settings } from '../svg';
 
 interface NavigationIconProps {
+    className?: string;
+    strokeWidth?: number;
     iconType: NavigationItemType;
     isCurrentPage: boolean;
 }
 
-export const NavigationIcon: React.FC<NavigationIconProps> = ({
+const NavigationIcon: React.FC<NavigationIconProps> = ({
+    className,
+    strokeWidth = 2.5,
     iconType,
     isCurrentPage,
 }) => {
@@ -23,6 +27,8 @@ export const NavigationIcon: React.FC<NavigationIconProps> = ({
         case NAVIGATION_ICON_TYPES.CALENDAR:
             return (
                 <CalendarDate
+                    className={className}
+                    strokeWidth={strokeWidth}
                     strokeColor={iconStrokeColor()}
                     fillColor={iconFillColor()}
                 />
@@ -30,6 +36,8 @@ export const NavigationIcon: React.FC<NavigationIconProps> = ({
         case NAVIGATION_ICON_TYPES.COOKING_POT:
             return (
                 <CookingPot
+                    className={className}
+                    strokeWidth={strokeWidth}
                     strokeColor={iconStrokeColor()}
                     fillColor={iconFillColor()}
                 />
@@ -37,6 +45,8 @@ export const NavigationIcon: React.FC<NavigationIconProps> = ({
         case NAVIGATION_ICON_TYPES.BOOK_OPEN_CHECK:
             return (
                 <BookOpenCheck
+                    className={className}
+                    strokeWidth={strokeWidth}
                     strokeColor={iconStrokeColor()}
                     fillColor={iconFillColor()}
                 />
@@ -44,6 +54,8 @@ export const NavigationIcon: React.FC<NavigationIconProps> = ({
         case NAVIGATION_ICON_TYPES.SETTINGS:
             return (
                 <Settings
+                    className={className}
+                    strokeWidth={strokeWidth}
                     strokeColor={iconStrokeColor()}
                     fillColor={iconFillColor()}
                 />
@@ -52,3 +64,5 @@ export const NavigationIcon: React.FC<NavigationIconProps> = ({
             return null;
     }
 };
+
+export default NavigationIcon;

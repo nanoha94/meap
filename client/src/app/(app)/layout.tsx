@@ -1,5 +1,4 @@
-import Navigation2 from '@/components/xxx/Navigation';
-import { Navigation } from '@/components/common';
+import { FooterNavigation, SideNavigation } from '@/components/common';
 import { IGetUserResponse } from '@/types/api';
 import { apiClient } from '@/lib/apiClient';
 import { redirect } from 'next/navigation';
@@ -34,9 +33,11 @@ const AppLayout = async ({ children }: Props) => {
         <div className="h-screen flex flex-col">
             {redirectPath && <RedirectHandler redirectPath={redirectPath} />}
             <UserHandler user={user} />
-            <Navigation2 user={user} />
-            <div className="flex-1 bg-primary-background">{children}</div>
-            <Navigation />
+            <div className="flex h-full">
+                <SideNavigation user={user} className="z-10 hidden md:block" />
+                <div className="flex-1 bg-primary-background">{children}</div>
+            </div>
+            <FooterNavigation className="md:hidden" />
         </div>
     );
 };

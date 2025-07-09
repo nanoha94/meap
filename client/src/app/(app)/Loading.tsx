@@ -1,4 +1,4 @@
-import { Header, Navigation } from '@/components/common';
+import { Header } from '@/components/common';
 import { colors } from '@/constants/colors';
 import { LoaderCircle } from 'lucide-react';
 
@@ -15,7 +15,6 @@ const Loading = () => {
                     />
                 </div>
             </div>
-            <Navigation />
         </div>
     );
 };

@@ -4,13 +4,14 @@ import { IGetShoppingItemsResponse } from '@/types/api';
 import Loading from '../Loading';
 import { apiClient } from '@/lib/apiClient';
 import { SnackbarHandler } from '@/components/handlers';
+import { timeout_ms } from '@/constants';
 
 async function ShoppingListsWithData() {
     let items: IGetShoppingItemsResponse;
     let errorMessage: string = '';
     try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        const timeoutId = setTimeout(() => controller.abort(), timeout_ms);
 
         items = await apiClient('/shopping/items', {
             signal: controller.signal,
