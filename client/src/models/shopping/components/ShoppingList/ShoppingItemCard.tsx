@@ -9,6 +9,7 @@ import {
     useShoppingItems,
     useShoppingStore,
 } from '../../hooks';
+import { SHOPPING_ITEM_EDIT_MODE } from '../../constants/dialogs';
 
 interface Props {
     item: IShoppingItem;
@@ -74,7 +75,11 @@ const ShoppingItemCard = ({ item }: Props) => {
                                 label: '編集する',
                                 icon: <Pencil />,
                                 onClick: () => {
-                                    openDialog('itemSetting', item);
+                                    openDialog('itemSetting', {
+                                        item,
+                                        editMode:
+                                            SHOPPING_ITEM_EDIT_MODE.UPDATE,
+                                    });
                                 },
                             },
                             {

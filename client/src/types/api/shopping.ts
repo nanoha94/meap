@@ -20,6 +20,18 @@ export interface IShoppingItem {
     order: number;
 }
 
+export interface IPutShoppingItem {
+    data: {
+        id: string;
+        name: string;
+        isPinned: boolean;
+        isChecked: boolean;
+        categoryId: string;
+        tags: { id?: string; name: string }[];
+        order: number;
+    }[];
+}
+
 export interface IPostShoppingItem {
     name: string;
     categoryId: string;

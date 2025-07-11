@@ -2,13 +2,14 @@ import React from 'react';
 import { useShoppingStore } from '../hooks/stores';
 import { useSnackbars } from '@/contexts';
 import axios from '@/lib/axios';
-import { IPostShoppingItem, IShoppingItem } from '@/types/api';
+import { IPostShoppingItem, IPutShoppingItem } from '@/types/api';
 
 export const useShoppingItems = () => {
     const { addSnackbar } = useSnackbars();
     const {
         items: storeItems,
-        setItems: setStoreItems,
+        setServerItems,
+        setItems,
         isLoadingItems: isLoading,
         setIsLoadingItems: setIsLoading,
     } = useShoppingStore();
@@ -21,7 +22,9 @@ export const useShoppingItems = () => {
             setIsLoading(true);
             const res = await axios.get('/shopping/items');
             if (res.data) {
-                setStoreItems(res.data.data);
+                setServerItems(res.data.data);
+                // ローカル状態もサーバー状態と同期
+                setItems(res.data.data);
             }
         } catch (error) {
             if (error.code === 'ECONNABORTED') {
@@ -76,7 +79,7 @@ export const useShoppingItems = () => {
      * @returns 更新結果
      */
     const updateShoppingItems = React.useCallback(
-        async (items: IShoppingItem[]) => {
+        async (items: IPutShoppingItem['data']) => {
             if (
                 isLoading ||
                 items.length === 0 ||
@@ -145,7 +148,6 @@ export const useShoppingItems = () => {
     };
 
     const deleteAllShoppingItems = async () => {
-        console.log('deleteAllShoppingItems');
         if (isLoading) return;
         // TODO: API仕様に合わせる
         try {

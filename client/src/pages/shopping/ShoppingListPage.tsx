@@ -6,6 +6,7 @@ import {
     ShoppingItemSettingDialog,
     ShoppingList,
 } from '@/models/shopping/components';
+import { SHOPPING_ITEM_EDIT_MODE } from '@/models/shopping/constants/dialogs';
 import { useShoppingStore } from '@/models/shopping/hooks';
 import {
     IGetShoppingCategoriesResponse,
@@ -19,9 +20,10 @@ interface Props {
     fetchCategories?: IGetShoppingCategoriesResponse['data'];
 }
 
-const ShoppingLists: React.FC<Props> = ({ fetchItems, fetchCategories }) => {
+const ShoppingListPage: React.FC<Props> = ({ fetchItems, fetchCategories }) => {
     const {
         items: storeItems,
+        setServerItems,
         setItems: setStoreItems,
         setCategories: setStoreCategories,
         openDialog,
@@ -33,6 +35,7 @@ const ShoppingLists: React.FC<Props> = ({ fetchItems, fetchCategories }) => {
     React.useEffect(() => {
         if (fetchItems) {
             setStoreItems(fetchItems);
+            setServerItems(fetchItems);
         }
         if (fetchCategories) {
             setStoreCategories(fetchCategories);
@@ -56,7 +59,12 @@ const ShoppingLists: React.FC<Props> = ({ fetchItems, fetchCategories }) => {
                     </TextButton>
                     <TextButton
                         colorVariant="gray"
-                        onClick={() => openDialog('itemSetting', undefined)}>
+                        onClick={() =>
+                            openDialog('itemSetting', {
+                                item: undefined,
+                                editMode: SHOPPING_ITEM_EDIT_MODE.CREATE,
+                            })
+                        }>
                         <SquarePen size={20} />
                         テキストから追加
                     </TextButton>
@@ -84,4 +92,4 @@ const ShoppingLists: React.FC<Props> = ({ fetchItems, fetchCategories }) => {
     );
 };
 
-export default ShoppingLists;
+export default ShoppingListPage;

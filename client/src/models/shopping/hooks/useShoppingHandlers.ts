@@ -6,6 +6,7 @@ import { useShoppingStore } from './stores';
 export const useShoppingHandlers = () => {
     const { items, setItems } = useShoppingStore();
 
+    // アイテムIDからカテゴリーIDを取得
     const categoryIdFromItemId = React.useCallback(
         (itemId: string) => {
             return items.find(v => v.items.some(item => item.id === itemId))

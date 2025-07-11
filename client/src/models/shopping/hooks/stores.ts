@@ -4,9 +4,13 @@ import {
     IShoppingCategory,
     IShoppingItem,
 } from '@/types/api';
+import { SHOPPING_ITEM_EDIT_MODE } from '../constants/dialogs';
 
 type DialogPayload = {
-    itemSetting: IShoppingItem | undefined;
+    itemSetting: {
+        item: IShoppingItem | undefined;
+        editMode: (typeof SHOPPING_ITEM_EDIT_MODE)[keyof typeof SHOPPING_ITEM_EDIT_MODE];
+    };
     categorySetting: undefined; // データが不要な場合はundefined
 };
 
@@ -18,10 +22,11 @@ type DialogsState = {
 };
 
 interface ShoppingState {
-    // アイテムの状態
-    items: IGetShoppingItemsResponse['data'];
+    // サーバー状態
+    serverItems: IGetShoppingItemsResponse['data'];
 
-    // カテゴリーの状態
+    // ローカル状態
+    items: IGetShoppingItemsResponse['data'];
     categories: IShoppingCategory[];
 
     // ローディング状態
@@ -30,6 +35,9 @@ interface ShoppingState {
 
     // ダイアログの状態
     dialogs: DialogsState;
+
+    // サーバー状態のアクション
+    setServerItems: (items: IGetShoppingItemsResponse['data']) => void;
 
     // アイテムのアクション
     setItems: (items: IGetShoppingItemsResponse['data']) => void;
@@ -50,17 +58,26 @@ interface ShoppingState {
 }
 
 const initialDialogsState: DialogsState = {
-    itemSetting: { isOpen: false, payload: undefined },
+    itemSetting: {
+        isOpen: false,
+        payload: { item: undefined, editMode: SHOPPING_ITEM_EDIT_MODE.CREATE },
+    },
     categorySetting: { isOpen: false, payload: undefined },
 };
 
 export const useShoppingStore = create<ShoppingState>(set => ({
     // 初期状態
+    serverItems: [],
     items: [],
     categories: [],
     isLoadingCategories: false,
     isLoadingItems: false,
     dialogs: initialDialogsState,
+
+    // サーバー状態のアクション
+    setServerItems: items => {
+        set({ serverItems: items });
+    },
 
     // アイテムのアクション
     setItems: items => {

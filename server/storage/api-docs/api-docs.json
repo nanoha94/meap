@@ -1900,7 +1900,7 @@
                     "application/json": {
                         "schema": {
                             "properties": {
-                                "categories": {
+                                "data": {
                                     "description": "買い物カテゴリ一覧",
                                     "type": "array",
                                     "items": {

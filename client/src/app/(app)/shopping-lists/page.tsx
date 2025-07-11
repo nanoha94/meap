@@ -1,4 +1,4 @@
-import ShoppingLists from '@/pages/shopping/ShoppingLists';
+import ShoppingListPage from '@/pages/shopping/ShoppingListPage';
 import { Suspense } from 'react';
 import {
     IGetShoppingCategoriesResponse,
@@ -40,7 +40,7 @@ async function ShoppingListsWithData() {
             {errorMessage && (
                 <SnackbarHandler type="error" message={errorMessage} />
             )}
-            <ShoppingLists
+            <ShoppingListPage
                 fetchItems={items?.data}
                 fetchCategories={categories?.data}
             />

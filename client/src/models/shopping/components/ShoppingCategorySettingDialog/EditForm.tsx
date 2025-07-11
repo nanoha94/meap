@@ -17,16 +17,17 @@ import { useFieldArray, useForm } from 'react-hook-form';
 import EditItem from './EditItem';
 import Sortable from '@/components/dnd/Sortable';
 import { useShoppingCategories } from '../../hooks';
+import { DRAG_ACTIVATION_DISTANCE } from '../../constants/dnd';
 
 interface FormData {
     categories: IShoppingCategory[];
 }
 
 interface Props {
-    onBack: () => void;
+    onClose: () => void;
 }
 
-const EditForm: React.FC<Props> = ({ onBack }) => {
+const EditForm: React.FC<Props> = ({ onClose }) => {
     const { storeData, bulkUpdateShoppingCategories } = useShoppingCategories();
 
     const { control, handleSubmit, watch, reset } = useForm<FormData>({
@@ -40,17 +41,26 @@ const EditForm: React.FC<Props> = ({ onBack }) => {
         name: 'categories',
     });
 
+    /**
+     * カテゴリーの監視
+     */
     const watchedCategories = watch('categories');
 
+    /**
+     * センサー
+     */
     const sensors = useSensors(
         useSensor(MouseSensor, {
             activationConstraint: {
-                distance: 5, // 5px ドラッグした時にソート機能を有効にする
+                distance: DRAG_ACTIVATION_DISTANCE,
             },
         }),
         useSensor(KeyboardSensor),
     );
 
+    /**
+     * ドラッグ終了
+     */
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
 
@@ -67,6 +77,9 @@ const EditForm: React.FC<Props> = ({ onBack }) => {
         }
     };
 
+    /**
+     * 空のカテゴリーを追加
+     */
     const addEmptyCategory = () => {
         const emptyItem = watchedCategories.filter(item => item.name === '');
 
@@ -95,7 +108,10 @@ const EditForm: React.FC<Props> = ({ onBack }) => {
         append(newItem);
     };
 
-    const onSubmit = async (data: FormData) => {
+    /**
+     * フォームの送信
+     */
+    const onSubmit = (data: FormData) => {
         try {
             // 空のアイテムを除いてデータ更新
             const filteredItems = data.categories.filter(
@@ -110,7 +126,7 @@ const EditForm: React.FC<Props> = ({ onBack }) => {
                     order: idx,
                 })),
             );
-            onBack();
+            onClose();
         } catch {
             // エラーの場合はダイアログを閉じない
             // エラーハンドリングはbulkUpdateShoppingCategoriesで行う
@@ -168,7 +184,7 @@ const EditForm: React.FC<Props> = ({ onBack }) => {
                     type="button"
                     colorVariant="gray"
                     variant="outlined"
-                    onClick={onBack}>
+                    onClick={onClose}>
                     戻る
                 </Button>
                 <Button type="submit">設定</Button>

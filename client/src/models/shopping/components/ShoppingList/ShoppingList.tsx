@@ -23,6 +23,8 @@ import {
     useShoppingHandlers,
     useShoppingItems,
 } from '../../hooks';
+import { DRAG_ACTIVATION_DISTANCE } from '../../constants/dnd';
+import { DEBOUNCE_DELAY } from '../../constants/debounce';
 
 interface Props {
     items: IGetShoppingItemsResponse['data'];
@@ -30,94 +32,155 @@ interface Props {
 
 const ShoppingList: React.FC<Props> = ({ items }) => {
     const { handleMoveItem } = useShoppingHandlers();
-    const { setItems: setStoreItems, items: storeItems } = useShoppingStore();
+    const {
+        setItems: setStoreItems,
+        items: storeItems,
+        serverItems,
+        isLoadingItems,
+    } = useShoppingStore();
     const { updateShoppingItems } = useShoppingItems();
     const [activeId, setActiveId] = React.useState<string | null>(null);
 
+    // 最後に送信したアイテムを記録して重複実行を防ぐ
+    const lastSentItemsRef = React.useRef<string>('');
+
+    // アイテムのフラット化
     const flatItems = React.useMemo(() => {
-        if (!storeItems || !Array.isArray(storeItems)) {
-            return [];
-        }
-        return storeItems.flatMap(v => v.items);
+        return storeItems?.flatMap(v => v.items) || [];
     }, [storeItems]);
 
-    const debouncedItems = useDebounce(flatItems, 5000);
+    // サーバーのアイテムのフラット化
+    const flatServerItems = React.useMemo(() => {
+        return serverItems?.flatMap(v => v.items) || [];
+    }, [serverItems]);
 
+    // デバウンス処理
+    const debouncedItems = useDebounce(flatItems, DEBOUNCE_DELAY);
+
+    // ドラッグ&ドロップ設定
     const sensors = useSensors(
         useSensor(MouseSensor, {
             activationConstraint: {
-                distance: 5, // 5pxドラッグした時にソート機能を有効にする
+                distance: DRAG_ACTIVATION_DISTANCE,
             },
         }),
     );
 
-    const handleDragStart = (event: DragStartEvent) => {
-        const { active } = event;
+    /**
+     * ドラッグ開始
+     */
+    const handleDragStart = React.useCallback((event: DragStartEvent) => {
+        setActiveId(event.active.id as string);
+    }, []);
 
-        setActiveId(active.id as string);
-    };
+    /**
+     * ドラッグオーバー
+     */
+    const handleDragOver = React.useCallback(
+        (event: DragOverEvent) => {
+            const { active, over } = event;
+            if (!over) return;
+            handleMoveItem(active.id as string, over.id as string);
+        },
+        [handleMoveItem],
+    );
 
-    const handleDragOver = (event: DragOverEvent) => {
-        const { active, over } = event;
-        if (!over) return;
-        handleMoveItem(active.id as string, over.id as string);
-    };
-
-    const handleDragEnd = () => {
+    /**
+     * ドラッグ終了
+     */
+    const handleDragEnd = React.useCallback(() => {
         setActiveId(null);
-    };
+    }, []);
 
+    /**
+     * アクティブなアイテム
+     */
+    const activeItem = React.useMemo(
+        () => flatItems.find(item => item.id === activeId),
+        [activeId, flatItems],
+    );
+
+    /**
+     * ストアにアイテムを設定
+     */
     React.useEffect(() => {
         setStoreItems(items);
     }, [items]);
 
-    // ５秒間変更がなかったらAPIに送る
+    /**
+     * デバウンス処理
+     */
     React.useEffect(() => {
-        if (debouncedItems.length > 0) {
-            // APIに送るデータの形式に変換
-            const updateItems = debouncedItems.map((item, idx) => ({
-                ...item,
-                order: idx,
-            }));
+        // debouncedItems が undefined の場合（初期化前）は何もしない
+        if (debouncedItems) {
+            const currentItemsStr = JSON.stringify(debouncedItems);
+            const serverItemsStr = JSON.stringify(flatServerItems);
 
-            if (JSON.stringify(debouncedItems) !== JSON.stringify(storeItems)) {
+            // アイテムの比較と更新処理を直接実行
+            if (
+                debouncedItems.length > 0 &&
+                !isLoadingItems &&
+                currentItemsStr !== serverItemsStr &&
+                currentItemsStr !== lastSentItemsRef.current // 重複送信防止
+            ) {
+                lastSentItemsRef.current = currentItemsStr; // 送信するアイテムを記録
+                const updateItems = debouncedItems.map((item, idx) => ({
+                    ...item,
+                    order: idx,
+                }));
                 updateShoppingItems(updateItems);
             }
         }
-    }, [debouncedItems]);
+    }, [debouncedItems, flatServerItems, isLoadingItems]);
 
-    const activeItem = React.useMemo(
-        () => flatItems?.find(item => item.id === activeId),
-        [activeId, flatItems],
-    );
-
-    // アンマウント時とページアンロード時の保存処理
-    const saveItemsRef = React.useRef(() => {});
-    saveItemsRef.current = () => {
-        if (Object.keys(flatItems).length > 0) {
-            const updateItems = flatItems.map((item, idx) => ({
-                ...item,
-                order: idx,
-            }));
-            updateShoppingItems(updateItems);
-        }
-    };
-
-    // ページアンロード時とアンマウント時の保存設定（初回マウント時のみ設定）
+    /**
+     * アンマウント・ページアンロード時の保存処理
+     */
     React.useEffect(() => {
-        const handleBeforeUnload = () => saveItemsRef.current();
+        // 最新の値を取得するための ref
+        const getCurrentValues = () => ({
+            flatItems: storeItems?.flatMap(v => v.items) || [],
+            serverItems: serverItems?.flatMap(v => v.items) || [],
+            isLoading: isLoadingItems,
+        });
+
+        const handleBeforeUnload = () => {
+            const { flatItems, serverItems, isLoading } = getCurrentValues();
+            if (
+                flatItems.length > 0 &&
+                !isLoading &&
+                JSON.stringify(flatItems) !== JSON.stringify(serverItems)
+            ) {
+                const updateItems = flatItems.map((item, idx) => ({
+                    ...item,
+                    order: idx,
+                }));
+                updateShoppingItems(updateItems);
+            }
+        };
 
         window.addEventListener('beforeunload', handleBeforeUnload);
 
         return () => {
             window.removeEventListener('beforeunload', handleBeforeUnload);
-            saveItemsRef.current();
+            const { flatItems, serverItems, isLoading } = getCurrentValues();
+            if (
+                flatItems.length > 0 &&
+                !isLoading &&
+                JSON.stringify(flatItems) !== JSON.stringify(serverItems)
+            ) {
+                const updateItems = flatItems.map((item, idx) => ({
+                    ...item,
+                    order: idx,
+                }));
+                updateShoppingItems(updateItems);
+            }
         };
     }, []);
 
     return (
         <div className="flex flex-col gap-y-7">
-            {!!storeItems && storeItems.length > 0 ? (
+            {storeItems?.length > 0 && (
                 <DndContext
                     sensors={sensors}
                     collisionDetection={closestCenter}
@@ -136,13 +199,9 @@ const ShoppingList: React.FC<Props> = ({ items }) => {
                         </SortableContext>
                     ))}
                     <DragOverlay>
-                        {activeItem ? (
-                            <ShoppingItemCard item={activeItem} />
-                        ) : null}
+                        {activeItem && <ShoppingItemCard item={activeItem} />}
                     </DragOverlay>
                 </DndContext>
-            ) : (
-                <></>
             )}
         </div>
     );

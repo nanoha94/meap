@@ -17,7 +17,7 @@ const ShoppingCategorySettingDialog = () => {
             title="買い物カテゴリ―設定"
             isOpen={isOpen}
             onClose={handleClose}>
-            <EditForm onBack={handleClose} />
+            <EditForm onClose={handleClose} />
         </Dialog>
     );
 };

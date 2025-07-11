@@ -1,7 +1,6 @@
 'use client';
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { IShoppingItem } from '@/types/api';
 import { Button, FormItem } from '@/components/common';
 import { ChevronDown } from 'lucide-react';
 import { colors } from '@/constants/colors';
@@ -10,11 +9,13 @@ import {
     useShoppingItems,
     useShoppingStore,
 } from '../../hooks';
+import {
+    SHOPPING_ITEM_EDIT_MODE,
+    SHOPPING_ITEM_SETTING_DIALOG_CONFIGS,
+} from '../../constants/dialogs';
 
 interface Props {
-    editingItem?: IShoppingItem | undefined;
-    actionButtonText: string;
-    onBack: () => void;
+    onClose: () => void;
 }
 
 interface FormData {
@@ -23,16 +24,11 @@ interface FormData {
     tags: { id?: string; name: string }[];
 }
 
-type visibleErrorFields = 'name';
-
-const EditForm: React.FC<Props> = ({
-    editingItem = undefined,
-    actionButtonText,
-    onBack,
-}) => {
-    const { createShoppingItem } = useShoppingItems();
+const EditForm: React.FC<Props> = ({ onClose }) => {
+    const { createShoppingItem, updateShoppingItems } = useShoppingItems();
     const { storeData } = useShoppingCategories();
-    const { closeDialog } = useShoppingStore();
+    const { dialogs } = useShoppingStore();
+    const { item: editingItem, editMode } = dialogs.itemSetting.payload;
 
     const defaultValues = {
         name: '',
@@ -40,23 +36,18 @@ const EditForm: React.FC<Props> = ({
         tags: [],
     };
 
-    const {
-        control,
-        handleSubmit,
-        reset,
-        watch,
-        formState: { errors },
-    } = useForm<FormData>({
+    const { control, handleSubmit, reset, watch } = useForm<FormData>({
         defaultValues,
     });
 
+    /**
+     * アイテム名の監視
+     */
     const watchName = watch('name');
 
-    // 入力エラーがあったとき、その後に入力内容が変更されればエラー有無に関わらずエラー内容を非表示にする
-    const [isErrorVisible, setIsErrorVisible] = React.useState<
-        Record<visibleErrorFields, boolean>
-    >({ name: false });
-
+    /**
+     * フォームのリセット
+     */
     React.useEffect(() => {
         reset({
             ...defaultValues,
@@ -67,9 +58,22 @@ const EditForm: React.FC<Props> = ({
         });
     }, [storeData.categories]);
 
-    const onSubmit = async (data: FormData) => {
-        await createShoppingItem(data);
-        closeDialog('itemSetting');
+    /**
+     * フォームの送信処理
+     * @param data フォームのデータ
+     */
+    const onSubmit = (data: FormData) => {
+        if (editMode === SHOPPING_ITEM_EDIT_MODE.CREATE) {
+            createShoppingItem(data);
+        } else if (editingItem) {
+            updateShoppingItems([
+                {
+                    ...editingItem,
+                    ...data,
+                },
+            ]);
+        }
+        onClose();
     };
 
     return (
@@ -77,21 +81,10 @@ const EditForm: React.FC<Props> = ({
             onSubmit={handleSubmit(onSubmit)}
             className="w-full flex flex-col gap-y-10">
             <div className="flex flex-col gap-y-4">
-                <FormItem
-                    label="アイテム名/量"
-                    errorMessage={
-                        isErrorVisible.name
-                            ? ([errors.name?.message].filter(
-                                  Boolean,
-                              ) as string[])
-                            : []
-                    }>
+                <FormItem label="アイテム名/量">
                     <Controller
                         control={control}
                         name="name"
-                        rules={{
-                            required: '必須項目です',
-                        }}
                         render={({ field: { onChange, value } }) => (
                             <input
                                 type="text"
@@ -99,12 +92,8 @@ const EditForm: React.FC<Props> = ({
                                 placeholder="アイテム名と量を入力してください"
                                 onChange={e => {
                                     onChange(e);
-                                    setIsErrorVisible(prev => ({
-                                        ...prev,
-                                        name: false,
-                                    }));
                                 }}
-                                className={`py-2 px-4 text-base border rounded-lg outline-none ${isErrorVisible.name && !!errors.name?.message ? 'border-alert-main' : 'border-gray-main'}`}
+                                className="py-2 px-4 text-base border rounded-lg outline-none border-gray-main"
                             />
                         )}
                     />
@@ -119,10 +108,6 @@ const EditForm: React.FC<Props> = ({
                                     value={value}
                                     onChange={e => {
                                         onChange(e);
-                                        setIsErrorVisible(prev => ({
-                                            ...prev,
-                                            name: false,
-                                        }));
                                     }}
                                     className="py-2 px-4 w-full text-base border rounded-lg border-gray-main appearance-none outline-none">
                                     {storeData.categories.map(v => (
@@ -147,11 +132,11 @@ const EditForm: React.FC<Props> = ({
                     type="button"
                     colorVariant="gray"
                     variant="outlined"
-                    onClick={onBack}>
+                    onClick={onClose}>
                     戻る
                 </Button>
                 <Button type="submit" disabled={watchName.length <= 0}>
-                    {actionButtonText}
+                    {SHOPPING_ITEM_SETTING_DIALOG_CONFIGS[editMode].buttonText}
                 </Button>
             </div>
         </form>
