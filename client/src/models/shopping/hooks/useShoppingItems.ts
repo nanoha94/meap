@@ -6,8 +6,12 @@ import { IPostShoppingItem, IShoppingItem } from '@/types/api';
 
 export const useShoppingItems = () => {
     const { addSnackbar } = useSnackbars();
-    const [isLoading, setIsLoading] = React.useState(false);
-    const { items: storeItems, setItems: setStoreItems } = useShoppingStore();
+    const {
+        items: storeItems,
+        setItems: setStoreItems,
+        isLoadingItems: isLoading,
+        setIsLoadingItems: setIsLoading,
+    } = useShoppingStore();
 
     /**
      * 取得処理（更新処理の後に呼び出す）
@@ -165,8 +169,7 @@ export const useShoppingItems = () => {
     };
 
     return {
-        isLoading,
-        storeData: { items: storeItems },
+        storeData: { isLoading, items: storeItems },
         fetchShoppingItems,
         createShoppingItem,
         updateShoppingItems,

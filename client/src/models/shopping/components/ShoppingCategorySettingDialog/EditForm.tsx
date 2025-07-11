@@ -17,7 +17,6 @@ import { useFieldArray, useForm } from 'react-hook-form';
 import EditItem from './EditItem';
 import Sortable from '@/components/dnd/Sortable';
 import { useShoppingCategories } from '../../hooks';
-import LoadingAnimation from '@/components/common/LoadingAnimation';
 
 interface FormData {
     categories: IShoppingCategory[];
@@ -28,8 +27,7 @@ interface Props {
 }
 
 const EditForm: React.FC<Props> = ({ onBack }) => {
-    const { isLoading, storeData, bulkUpdateShoppingCategories } =
-        useShoppingCategories();
+    const { storeData, bulkUpdateShoppingCategories } = useShoppingCategories();
 
     const { control, handleSubmit, watch, reset } = useForm<FormData>({
         defaultValues: {
@@ -106,7 +104,7 @@ const EditForm: React.FC<Props> = ({ onBack }) => {
                         v.name.length > 0) ||
                     !v.id?.startsWith(TMP_ID_PREFIX.SHOPPING_CATEGORY),
             );
-            await bulkUpdateShoppingCategories(
+            bulkUpdateShoppingCategories(
                 filteredItems.map((v, idx) => ({
                     ...v,
                     order: idx,
@@ -126,61 +124,57 @@ const EditForm: React.FC<Props> = ({ onBack }) => {
         }
     }, []);
 
-    if (isLoading) {
-        return <LoadingAnimation />;
-    } else {
-        return (
-            <form
-                onSubmit={handleSubmit(onSubmit)}
-                className="w-full flex flex-col gap-y-10">
-                <div className="w-full flex flex-col gap-y-5">
-                    <div className="flex flex-col gap-y-2">
-                        <DndContext onDragEnd={handleDragEnd} sensors={sensors}>
-                            {!!fields && fields.length > 0 && (
-                                <SortableContext
-                                    items={fields.map(
-                                        (_, index) =>
-                                            `${TMP_ID_PREFIX.SHOPPING_CATEGORY}${index}`,
-                                    )}>
-                                    {fields.map((field, index) => (
-                                        <Sortable
-                                            key={field.id}
-                                            id={`${TMP_ID_PREFIX.SHOPPING_CATEGORY}${index}`}>
-                                            <EditItem
-                                                index={index}
-                                                control={control}
-                                                onDelete={() => remove(index)}
-                                                isDefault={field.isDefault}
-                                            />
-                                        </Sortable>
-                                    ))}
-                                </SortableContext>
-                            )}
-                        </DndContext>
-                    </div>
-                    <TextButton
-                        type="button"
-                        onClick={() => {
-                            addEmptyCategory();
-                        }}
-                        className="!border-none !bg-transparent">
-                        <CirclePlus size={20} />
-                        追加
-                    </TextButton>
+    return (
+        <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="w-full flex flex-col gap-y-10">
+            <div className="w-full flex flex-col gap-y-5">
+                <div className="flex flex-col gap-y-2">
+                    <DndContext onDragEnd={handleDragEnd} sensors={sensors}>
+                        {!!fields && fields.length > 0 && (
+                            <SortableContext
+                                items={fields.map(
+                                    (_, index) =>
+                                        `${TMP_ID_PREFIX.SHOPPING_CATEGORY}${index}`,
+                                )}>
+                                {fields.map((field, index) => (
+                                    <Sortable
+                                        key={field.id}
+                                        id={`${TMP_ID_PREFIX.SHOPPING_CATEGORY}${index}`}>
+                                        <EditItem
+                                            index={index}
+                                            control={control}
+                                            onDelete={() => remove(index)}
+                                            isDefault={field.isDefault}
+                                        />
+                                    </Sortable>
+                                ))}
+                            </SortableContext>
+                        )}
+                    </DndContext>
                 </div>
-                <div className="mx-auto max-w-[320px] w-full flex gap-x-6">
-                    <Button
-                        type="button"
-                        colorVariant="gray"
-                        variant="outlined"
-                        onClick={onBack}>
-                        戻る
-                    </Button>
-                    <Button type="submit">設定</Button>
-                </div>
-            </form>
-        );
-    }
+                <TextButton
+                    type="button"
+                    onClick={() => {
+                        addEmptyCategory();
+                    }}
+                    className="!border-none !bg-transparent">
+                    <CirclePlus size={20} />
+                    追加
+                </TextButton>
+            </div>
+            <div className="mx-auto max-w-[320px] w-full flex gap-x-6">
+                <Button
+                    type="button"
+                    colorVariant="gray"
+                    variant="outlined"
+                    onClick={onBack}>
+                    戻る
+                </Button>
+                <Button type="submit">設定</Button>
+            </div>
+        </form>
+    );
 };
 
 export default EditForm;

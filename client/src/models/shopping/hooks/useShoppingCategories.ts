@@ -4,44 +4,17 @@ import React from 'react';
 import { IPostShoppingCategory, IShoppingCategory } from '@/types/api';
 import axios from '@/lib/axios';
 import { TMP_ID_PREFIX } from '@/constants/ids';
-import useSWR from 'swr';
-
-const fetchShoppingCategories = (
-    path: string,
-): Promise<{ categories: IShoppingCategory[]; total: number }> =>
-    axios
-        .get(path, {
-            timeout: 5000, // 5秒タイムアウト
-        })
-        .then(res => res.data);
+import { timeout_ms } from '@/constants';
+import { useRouter } from 'next/navigation';
 
 export const useShoppingCategories = () => {
+    const router = useRouter();
     const { addSnackbar } = useSnackbars();
-    const { categories: storeCategories, setCategories } = useShoppingStore();
-    const [isLoading, setIsLoading] = React.useState(false);
-    const { data, error, isValidating, mutate } = useSWR(
-        '/shopping/categories',
-        fetchShoppingCategories,
-    );
-
-    /**
-     * ローディング中かどうかを管理する
-     */
-    React.useEffect(() => {
-        // isValidatingがtrueで、かつデータがない場合のみローディング状態にする
-        if (isValidating) {
-            setIsLoading(true);
-        } else {
-            setIsLoading(false);
-        }
-    }, [isValidating]);
-
-    // フェッチ後にストアにセット
-    React.useEffect(() => {
-        if (data?.categories) {
-            setCategories(data.categories);
-        }
-    }, [data, setCategories]);
+    const {
+        categories: storeCategories,
+        isLoadingCategories: isLoading,
+        setIsLoadingCategories: setIsLoading,
+    } = useShoppingStore();
 
     const bulkUpdateShoppingCategories = React.useCallback(
         async (categories: IShoppingCategory[]) => {
@@ -65,7 +38,7 @@ export const useShoppingCategories = () => {
                 try {
                     await axios.delete(`/shopping/categories/bulk`, {
                         data: { ids: deleteCategoryIds },
-                        timeout: 5000, // 5秒タイムアウト
+                        timeout: timeout_ms,
                     });
                 } catch (error) {
                     if (error.code === 'ECONNABORTED') {
@@ -115,7 +88,7 @@ export const useShoppingCategories = () => {
                             `/shopping/categories`,
                             categories[i] as IPostShoppingCategory,
                             {
-                                timeout: 5000, // 5秒タイムアウト
+                                timeout: timeout_ms,
                             },
                         );
                     } catch (error) {
@@ -138,10 +111,10 @@ export const useShoppingCategories = () => {
                 try {
                     const res = await axios.put(`/shopping/categories/bulk`, {
                         data: updateCategories,
-                        timeout: 5000, // 5秒タイムアウト
+                        timeout: timeout_ms,
                     });
                     if (res.status === 200) {
-                        await mutate();
+                        router.refresh();
                     }
                 } catch (error) {
                     if (error.code === 'ECONNABORTED') {
@@ -160,6 +133,7 @@ export const useShoppingCategories = () => {
             // すべての処理がエラーなく完了した場合
             if (!hasError) {
                 addSnackbar('success', '買い物カテゴリーを更新しました');
+                router.refresh();
             }
 
             setIsLoading(false);
@@ -170,20 +144,19 @@ export const useShoppingCategories = () => {
     /**
      * エラーが発生した場合に、エラーメッセージを表示する
      */
-    React.useEffect(() => {
-        if (error) {
-            if (error.code === 'ECONNABORTED') {
-                addSnackbar('error', 'リクエストがタイムアウトしました');
-            } else {
-                console.error(error?.response?.data?.message);
-                addSnackbar('error', error?.response?.data?.message);
-            }
-        }
-    }, [error]);
+    // React.useEffect(() => {
+    //     if (error) {
+    //         if (error.code === 'ECONNABORTED') {
+    //             addSnackbar('error', 'リクエストがタイムアウトしました');
+    //         } else {
+    //             console.error(error?.response?.data?.message);
+    //             addSnackbar('error', error?.response?.data?.message);
+    //         }
+    //     }
+    // }, [error]);
 
     return {
-        isLoading,
-        storeData: { categories: storeCategories },
+        storeData: { isLoading, categories: storeCategories },
         bulkUpdateShoppingCategories,
     };
 };

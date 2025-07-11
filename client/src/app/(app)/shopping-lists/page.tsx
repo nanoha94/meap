@@ -1,13 +1,17 @@
 import ShoppingLists from '@/pages/shopping/ShoppingLists';
 import { Suspense } from 'react';
-import { IGetShoppingItemsResponse } from '@/types/api';
+import {
+    IGetShoppingCategoriesResponse,
+    IGetShoppingItemsResponse,
+} from '@/types/api';
 import Loading from '../Loading';
 import { apiClient } from '@/lib/apiClient';
 import { SnackbarHandler } from '@/components/handlers';
 import { timeout_ms } from '@/constants';
 
 async function ShoppingListsWithData() {
-    let items: IGetShoppingItemsResponse;
+    let items: IGetShoppingItemsResponse = { data: [] };
+    let categories: IGetShoppingCategoriesResponse = { data: [], total: 0 };
     let errorMessage: string = '';
     try {
         const controller = new AbortController();
@@ -16,9 +20,11 @@ async function ShoppingListsWithData() {
         items = await apiClient('/shopping/items', {
             signal: controller.signal,
         });
+        categories = await apiClient('/shopping/categories', {
+            signal: controller.signal,
+        });
         clearTimeout(timeoutId);
     } catch (error) {
-        items = { data: [] };
         console.error(error);
         // エラーオブジェクトから安全に文字列を抽出
         errorMessage =
@@ -34,7 +40,10 @@ async function ShoppingListsWithData() {
             {errorMessage && (
                 <SnackbarHandler type="error" message={errorMessage} />
             )}
-            <ShoppingLists fetchItems={items?.data} />
+            <ShoppingLists
+                fetchItems={items?.data}
+                fetchCategories={categories?.data}
+            />
         </>
     );
 }

@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import React from 'react';
 import { arrayMove } from '@dnd-kit/sortable';
 import { IShoppingItem } from '@/types/api';
 import { useShoppingStore } from './stores';
@@ -6,7 +6,7 @@ import { useShoppingStore } from './stores';
 export const useShoppingHandlers = () => {
     const { items, setItems } = useShoppingStore();
 
-    const categoryIdFromItemId = useCallback(
+    const categoryIdFromItemId = React.useCallback(
         (itemId: string) => {
             return items.find(v => v.items.some(item => item.id === itemId))
                 ?.category.id;
@@ -15,7 +15,7 @@ export const useShoppingHandlers = () => {
     );
 
     // アイテムの更新処理
-    const handleUpdateItem = useCallback(
+    const handleUpdateItem = React.useCallback(
         (item: IShoppingItem) => {
             const { id, name, isPinned, isChecked, order } = item;
             const categoryId = categoryIdFromItemId(id);
@@ -37,7 +37,7 @@ export const useShoppingHandlers = () => {
     );
 
     // アイテムの削除ロジック
-    const handleDeleteItem = useCallback(
+    const handleDeleteItem = React.useCallback(
         (itemId: string) => {
             const updatedItems = items.map(v => ({
                 ...v,
@@ -50,7 +50,7 @@ export const useShoppingHandlers = () => {
     );
 
     // アイテムの移動ロジック
-    const handleMoveItem = useCallback(
+    const handleMoveItem = React.useCallback(
         (activeId: string, overId: string) => {
             if (activeId === overId) return;
 

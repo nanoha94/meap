@@ -1,31 +1,51 @@
 'use client';
 import { Header, TextButton } from '@/components/common';
+import LoadingAnimation from '@/components/common/LoadingAnimation';
 import {
     ShoppingCategorySettingDialog,
     ShoppingItemSettingDialog,
     ShoppingList,
 } from '@/models/shopping/components';
 import { useShoppingStore } from '@/models/shopping/hooks';
-import { IGetShoppingItemsResponse } from '@/types/api';
+import {
+    IGetShoppingCategoriesResponse,
+    IGetShoppingItemsResponse,
+} from '@/types/api';
 import { CalendarDays, ChevronRight, SquarePen } from 'lucide-react';
 import React from 'react';
 
 interface Props {
     fetchItems?: IGetShoppingItemsResponse['data'];
+    fetchCategories?: IGetShoppingCategoriesResponse['data'];
 }
 
-const ShoppingLists: React.FC<Props> = ({ fetchItems }) => {
-    const { items: storeItems, setItems: setStoreItems } = useShoppingStore();
-    const { openDialog } = useShoppingStore();
+const ShoppingLists: React.FC<Props> = ({ fetchItems, fetchCategories }) => {
+    const {
+        items: storeItems,
+        setItems: setStoreItems,
+        setCategories: setStoreCategories,
+        openDialog,
+        isLoadingCategories,
+        isLoadingItems,
+    } = useShoppingStore();
+    const [isLoading, setIsLoading] = React.useState(false);
 
     React.useEffect(() => {
         if (fetchItems) {
             setStoreItems(fetchItems);
         }
+        if (fetchCategories) {
+            setStoreCategories(fetchCategories);
+        }
     }, [fetchItems]);
+
+    React.useEffect(() => {
+        setIsLoading(isLoadingCategories || isLoadingItems);
+    }, [isLoadingCategories, isLoadingItems]);
 
     return (
         <>
+            {isLoading && <LoadingAnimation />}
             {/* ヘッダー */}
             <Header title="買い物リスト">
                 <div className="flex gap-x-4">

@@ -30,7 +30,7 @@ class ShoppingCategoryController extends Controller
         try {
             $categories = $group->shoppingCategories()->select('id', 'name', 'is_default', 'order')->orderBy('order', 'asc')->get();
             $res = [
-                'categories' => $categories->map(function ($category) {
+                'data' => $categories->map(function ($category) {
                     return [
                         'id' => $category->id,
                         'name' => $category->name,

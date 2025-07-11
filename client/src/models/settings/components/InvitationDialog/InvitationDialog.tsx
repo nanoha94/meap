@@ -51,7 +51,15 @@ const InvitationDialog = () => {
             onClose={() => closeDialog('invitation')}>
             <div className="flex flex-col gap-y-5">
                 <p>QRコードやリンクを共有して、メンバーを招待しましょう</p>
-                {!isLoading && invitationLink ? (
+                {isLoading || !invitationLink ? (
+                    <div className="py-5">
+                        <LoaderCircle
+                            size={40}
+                            color={colors.primary.main}
+                            className="animate-spin mx-auto"
+                        />
+                    </div>
+                ) : (
                     <div className="flex flex-col items-center gap-y-5">
                         <div className="flex flex-col items-center">
                             <button
@@ -96,14 +104,6 @@ const InvitationDialog = () => {
                                 )}
                             </div>
                         )}
-                    </div>
-                ) : (
-                    <div className="py-5">
-                        <LoaderCircle
-                            size={40}
-                            color={colors.primary.main}
-                            className="animate-spin mx-auto"
-                        />
                     </div>
                 )}
             </div>

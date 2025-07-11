@@ -24,6 +24,10 @@ interface ShoppingState {
     // カテゴリーの状態
     categories: IShoppingCategory[];
 
+    // ローディング状態
+    isLoadingCategories: boolean;
+    isLoadingItems: boolean;
+
     // ダイアログの状態
     dialogs: DialogsState;
 
@@ -32,6 +36,10 @@ interface ShoppingState {
 
     // カテゴリーのアクション
     setCategories: (categories: IShoppingCategory[]) => void;
+
+    // ローディング状態のアクション
+    setIsLoadingCategories: (isLoading: boolean) => void;
+    setIsLoadingItems: (isLoading: boolean) => void;
 
     // ダイアログのアクション
     openDialog: <K extends keyof DialogPayload>(
@@ -50,6 +58,8 @@ export const useShoppingStore = create<ShoppingState>(set => ({
     // 初期状態
     items: [],
     categories: [],
+    isLoadingCategories: false,
+    isLoadingItems: false,
     dialogs: initialDialogsState,
 
     // アイテムのアクション
@@ -60,6 +70,14 @@ export const useShoppingStore = create<ShoppingState>(set => ({
     // カテゴリーのアクション
     setCategories: categories => {
         set({ categories });
+    },
+
+    // ローディング状態のアクション
+    setIsLoadingCategories: isLoading => {
+        set({ isLoadingCategories: isLoading });
+    },
+    setIsLoadingItems: isLoading => {
+        set({ isLoadingItems: isLoading });
     },
 
     // ダイアログのアクション

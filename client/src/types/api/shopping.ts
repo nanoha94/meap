@@ -5,6 +5,11 @@ export interface IGetShoppingItemsResponse {
     }[];
 }
 
+export interface IGetShoppingCategoriesResponse {
+    data: IShoppingCategory[];
+    total: number;
+}
+
 export interface IShoppingItem {
     id: string;
     name: string;

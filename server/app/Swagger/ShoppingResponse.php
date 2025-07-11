@@ -65,7 +65,7 @@ namespace App\Swagger;
  *     @OA\JsonContent(
  *         type="object",
  *         @OA\Property(
- *             property="categories",
+ *             property="data",
  *             type="array",
  *             description="買い物カテゴリ一覧",
  *             @OA\Items(ref="#/components/schemas/ShoppingCategory")
