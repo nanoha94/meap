@@ -280,44 +280,6 @@ class ShoppingItemController extends Controller
 
     /**
      * @OA\Delete(
-     *     path="/shopping/items/{id}",
-     *     summary="買い物アイテムを削除",
-     *     tags={"Shopping"},
-     *     security={{"sanctum":{}}},
-     *     @OA\Parameter(ref="#/components/parameters/ShoppingIdParam"),
-     *     @OA\Response(response=200, ref="#/components/responses/ShoppingItemDestroySuccess"),
-     *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
-     *     @OA\Response(response=404, ref="#/components/responses/NotFound")
-     * )
-     */
-    public function destroy(Request $request, string $id): JsonResponse
-    {
-        try {
-            $user = $request->user();
-            $group = $user->group;
-
-            $item = $group->shoppingItems()->where('id', $id)->first();
-
-            if (!$item) {
-                return response()->json([
-                    'message' => '指定されたレコードが見つかりません。'
-                ], 404);
-            }
-
-            $deletedId = $item->id;
-            $item->delete();
-
-            return response()->json(['id' => $deletedId], 200);
-        } catch (\Exception $e) {
-            Log::error('買い物アイテム削除エラー: ' . $e->getMessage());
-            return response()->json([
-                'message' => '削除処理中にエラーが発生しました。'
-            ], 500);
-        }
-    }
-
-    /**
-     * @OA\Delete(
      *     path="/shopping/items/bulk",
      *     summary="買い物アイテムを一括削除",
      *     tags={"Shopping"},
@@ -334,12 +296,25 @@ class ShoppingItemController extends Controller
             $user = $request->user();
             $group = $user->group;
 
+            // IDの配列を取得（単一IDの場合も配列として扱う）
+            $ids = $request->ids;
+
+            // 空の場合はエラー
+            if (empty($ids)) {
+                return response()->json([
+                    'message' => '削除するアイテムのIDを指定してください。'
+                ], 400);
+            }
+
             $deletedIds = [];
-            foreach ($request->ids as $id) {
-                $item = ShoppingItem::where('id', $id)->where('group_id', $group->id)->first();
+            foreach ($ids as $id) {
+                $item = $group->shoppingItems()->where('id', $id)->first();
 
                 if (!$item) {
-                    Log::error('指定されたレコードが見つかりません。', ['function' => 'ShoppingItemController@bulkDestroy', 'id' => $id]);
+                    Log::error('指定されたレコードが見つかりません。', [
+                        'function' => 'ShoppingItemController@bulkDestroy',
+                        'id' => $id
+                    ]);
                     return response()->json([
                         'message' => '指定されたレコードが見つかりません。'
                     ], 404);
@@ -348,11 +323,12 @@ class ShoppingItemController extends Controller
                 $deletedIds[] = $item->id;
                 $item->delete();
             }
+
             return response()->json(['ids' => $deletedIds], 200);
         } catch (Exception $e) {
-            Log::error('買い物アイテム一括削除エラー: ' . $e->getMessage());
+            Log::error('買い物アイテム削除エラー: ' . $e->getMessage());
             return response()->json([
-                'message' => '一括削除処理中にエラーが発生しました。'
+                'message' => '削除処理中にエラーが発生しました。'
             ], 500);
         }
     }

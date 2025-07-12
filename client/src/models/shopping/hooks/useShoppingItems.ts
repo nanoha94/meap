@@ -3,13 +3,15 @@ import { useShoppingStore } from '../hooks/stores';
 import { useSnackbars } from '@/contexts';
 import axios from '@/lib/axios';
 import { IPostShoppingItem, IPutShoppingItem } from '@/types/api';
+import { timeout_ms } from '@/constants';
 
 export const useShoppingItems = () => {
     const { addSnackbar } = useSnackbars();
     const {
         items: storeItems,
+        serverItems,
         setServerItems,
-        setItems,
+        setItems: setStoreItems,
         isLoadingItems: isLoading,
         setIsLoadingItems: setIsLoading,
     } = useShoppingStore();
@@ -17,26 +19,33 @@ export const useShoppingItems = () => {
     /**
      * 取得処理（更新処理の後に呼び出す）
      */
-    const fetchShoppingItems = React.useCallback(async () => {
-        try {
-            setIsLoading(true);
-            const res = await axios.get('/shopping/items');
-            if (res.data) {
-                setServerItems(res.data.data);
-                // ローカル状態もサーバー状態と同期
-                setItems(res.data.data);
+    const fetchShoppingItems = React.useCallback(
+        async (serverOnly = false) => {
+            try {
+                setIsLoading(true);
+                const res = await axios.get('/shopping/items', {
+                    timeout: timeout_ms,
+                });
+                if (res.data) {
+                    setServerItems(res.data.data);
+                    // serverOnlyがfalseの場合のみローカル状態も更新
+                    if (!serverOnly) {
+                        setStoreItems(res.data.data);
+                    }
+                }
+            } catch (error) {
+                if (error.code === 'ECONNABORTED') {
+                    addSnackbar('error', 'リクエストがタイムアウトしました');
+                } else {
+                    console.error(error.response?.data.message);
+                    addSnackbar('error', error.response?.data.message);
+                }
+            } finally {
+                setIsLoading(false);
             }
-        } catch (error) {
-            if (error.code === 'ECONNABORTED') {
-                addSnackbar('error', 'リクエストがタイムアウトしました');
-            } else {
-                console.error(error.response?.data.message);
-                addSnackbar('error', error.response?.data.message);
-            }
-        } finally {
-            setIsLoading(false);
-        }
-    }, [isLoading, addSnackbar]);
+        },
+        [isLoading, addSnackbar],
+    );
 
     /**
      * 作成処理
@@ -52,7 +61,7 @@ export const useShoppingItems = () => {
             setIsLoading(true);
             const res = await axios.post(`/shopping/items`, {
                 ...item,
-                timeout: 5000, // 5秒タイムアウト
+                timeout: timeout_ms,
             });
             if (res.data) {
                 addSnackbar(
@@ -80,13 +89,13 @@ export const useShoppingItems = () => {
      */
     const updateShoppingItems = React.useCallback(
         async (items: IPutShoppingItem['data']) => {
+            const serverItemsFlat =
+                serverItems?.flatMap(category => category.items) || [];
+
             if (
                 isLoading ||
                 items.length === 0 ||
-                JSON.stringify(items) ===
-                    JSON.stringify(
-                        storeItems?.flatMap(category => category.items) || [],
-                    )
+                JSON.stringify(items) === JSON.stringify(serverItemsFlat)
             ) {
                 return;
             }
@@ -95,11 +104,11 @@ export const useShoppingItems = () => {
                 setIsLoading(true);
                 const res = await axios.put(`/shopping/items/bulk`, {
                     data: items.filter(v => v.name && v.name.length > 0),
-                    timeout: 5000, // 5秒タイムアウト
+                    timeout: timeout_ms,
                 });
                 if (res.data) {
+                    await fetchShoppingItems(true); // サーバーデータのみ更新
                     addSnackbar('success', '買い物リストを更新しました');
-                    fetchShoppingItems();
                 }
             } catch (error) {
                 if (error.code === 'ECONNABORTED') {
@@ -112,7 +121,7 @@ export const useShoppingItems = () => {
                 setIsLoading(false);
             }
         },
-        [storeItems, isLoading],
+        [serverItems],
     );
 
     /**
@@ -120,20 +129,29 @@ export const useShoppingItems = () => {
      * @param id 削除するアイテムのID
      * @returns 削除結果
      */
-    const deleteShoppingItem = async (id: string) => {
+    const deleteShoppingItems = async (ids: string[]) => {
         if (isLoading) {
             return;
         }
 
         try {
             setIsLoading(true);
-            const res = await axios.delete(`/shopping/items/${id}`, {
-                data: { id },
-                timeout: 5000, // 5秒タイムアウト
+
+            // 即座にローカルストアから削除（楽観的更新）
+            const updatedItems = storeItems.map(v => ({
+                ...v,
+                items: v.items.filter(item => !ids.includes(item.id)),
+            }));
+            // ストアデータを更新
+            setStoreItems(updatedItems);
+
+            const res = await axios.delete('/shopping/items/bulk', {
+                data: { ids },
+                timeout: timeout_ms,
             });
             if (res.data) {
-                addSnackbar('success', '買い物アイテムを削除しました');
                 await fetchShoppingItems();
+                addSnackbar('success', '買い物アイテムを削除しました');
             }
         } catch (error) {
             if (error.code === 'ECONNABORTED') {
@@ -142,29 +160,8 @@ export const useShoppingItems = () => {
                 console.error(error.response?.data.message);
                 addSnackbar('error', error.response?.data.message);
             }
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const deleteAllShoppingItems = async () => {
-        if (isLoading) return;
-        // TODO: API仕様に合わせる
-        try {
-            setIsLoading(true);
-            // const res = await axios.delete(`/shopping/items/bulk`);
-
-            // if (res.data) {
-            //     addSnackbar('success', res.data.message);
-            //     await mutate();
-            // }
-        } catch (error) {
-            if (error.code === 'ECONNABORTED') {
-                addSnackbar('error', 'リクエストがタイムアウトしました');
-            } else {
-                console.error(error.response?.data.message);
-                addSnackbar('error', error.response?.data.message);
-            }
+            // エラーが発生した場合は再取得して状態を復元
+            await fetchShoppingItems();
         } finally {
             setIsLoading(false);
         }
@@ -175,7 +172,6 @@ export const useShoppingItems = () => {
         fetchShoppingItems,
         createShoppingItem,
         updateShoppingItems,
-        deleteShoppingItem,
-        deleteAllShoppingItems,
+        deleteShoppingItems,
     };
 };

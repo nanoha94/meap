@@ -48,11 +48,6 @@ const ShoppingList: React.FC<Props> = ({ items }) => {
         return storeItems?.flatMap(v => v.items) || [];
     }, [storeItems]);
 
-    // サーバーのアイテムのフラット化
-    const flatServerItems = React.useMemo(() => {
-        return serverItems?.flatMap(v => v.items) || [];
-    }, [serverItems]);
-
     // デバウンス処理
     const debouncedItems = useDebounce(flatItems, DEBOUNCE_DELAY);
 
@@ -113,7 +108,9 @@ const ShoppingList: React.FC<Props> = ({ items }) => {
         // debouncedItems が undefined の場合（初期化前）は何もしない
         if (debouncedItems) {
             const currentItemsStr = JSON.stringify(debouncedItems);
-            const serverItemsStr = JSON.stringify(flatServerItems);
+            // flatServerItemsではなく、直接serverItemsからフラット化して比較
+            const serverItemsFlat = serverItems?.flatMap(v => v.items) || [];
+            const serverItemsStr = JSON.stringify(serverItemsFlat);
 
             // アイテムの比較と更新処理を直接実行
             if (
@@ -130,27 +127,24 @@ const ShoppingList: React.FC<Props> = ({ items }) => {
                 updateShoppingItems(updateItems);
             }
         }
-    }, [debouncedItems, flatServerItems, isLoadingItems]);
+    }, [debouncedItems]);
 
     /**
      * アンマウント・ページアンロード時の保存処理
      */
     React.useEffect(() => {
-        // 最新の値を取得するための ref
-        const getCurrentValues = () => ({
-            flatItems: storeItems?.flatMap(v => v.items) || [],
-            serverItems: serverItems?.flatMap(v => v.items) || [],
-            isLoading: isLoadingItems,
-        });
-
         const handleBeforeUnload = () => {
-            const { flatItems, serverItems, isLoading } = getCurrentValues();
+            const currentFlatItems = storeItems?.flatMap(v => v.items) || [];
+            const currentFlatServerItems =
+                serverItems?.flatMap(v => v.items) || [];
+
             if (
-                flatItems.length > 0 &&
-                !isLoading &&
-                JSON.stringify(flatItems) !== JSON.stringify(serverItems)
+                currentFlatItems.length > 0 &&
+                !isLoadingItems &&
+                JSON.stringify(currentFlatItems) !==
+                    JSON.stringify(currentFlatServerItems)
             ) {
-                const updateItems = flatItems.map((item, idx) => ({
+                const updateItems = currentFlatItems.map((item, idx) => ({
                     ...item,
                     order: idx,
                 }));
@@ -162,20 +156,25 @@ const ShoppingList: React.FC<Props> = ({ items }) => {
 
         return () => {
             window.removeEventListener('beforeunload', handleBeforeUnload);
-            const { flatItems, serverItems, isLoading } = getCurrentValues();
+            // アンマウント時の保存処理
+            const currentFlatItems = storeItems?.flatMap(v => v.items) || [];
+            const currentFlatServerItems =
+                serverItems?.flatMap(v => v.items) || [];
+
             if (
-                flatItems.length > 0 &&
-                !isLoading &&
-                JSON.stringify(flatItems) !== JSON.stringify(serverItems)
+                currentFlatItems.length > 0 &&
+                !isLoadingItems &&
+                JSON.stringify(currentFlatItems) !==
+                    JSON.stringify(currentFlatServerItems)
             ) {
-                const updateItems = flatItems.map((item, idx) => ({
+                const updateItems = currentFlatItems.map((item, idx) => ({
                     ...item,
                     order: idx,
                 }));
                 updateShoppingItems(updateItems);
             }
         };
-    }, []);
+    }, []); // 依存配列を空にして、マウント時に一度だけ実行
 
     return (
         <div className="flex flex-col gap-y-7">

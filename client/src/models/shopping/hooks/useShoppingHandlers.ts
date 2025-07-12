@@ -4,50 +4,55 @@ import { IShoppingItem } from '@/types/api';
 import { useShoppingStore } from './stores';
 
 export const useShoppingHandlers = () => {
-    const { items, setItems } = useShoppingStore();
+    const { items: storeItems, setItems: setStoreItems } = useShoppingStore();
 
     // アイテムIDからカテゴリーIDを取得
     const categoryIdFromItemId = React.useCallback(
         (itemId: string) => {
-            return items.find(v => v.items.some(item => item.id === itemId))
-                ?.category.id;
+            return storeItems.find(v =>
+                v.items.some(item => item.id === itemId),
+            )?.category.id;
         },
-        [items],
+        [storeItems],
     );
 
-    // アイテムの更新処理
+    // 個別アイテムの更新処理
     const handleUpdateItem = React.useCallback(
         (item: IShoppingItem) => {
             const { id, name, isPinned, isChecked, order } = item;
             const categoryId = categoryIdFromItemId(id);
 
             if (categoryId) {
-                const updatedItems = items.map(v => ({
+                const updatedItems = storeItems.map(v => ({
                     ...v,
-                    items: v.items.map(item =>
-                        item.id === id
-                            ? { ...item, name, isPinned, isChecked, order }
-                            : item,
+                    items: v.items.map(storeItem =>
+                        storeItem.id === id
+                            ? { ...storeItem, name, isPinned, isChecked, order }
+                            : storeItem,
                     ),
                 }));
-                // ストアデータを更新
-                setItems(updatedItems);
+                setStoreItems(updatedItems);
             }
         },
-        [items],
+        [storeItems, categoryIdFromItemId, setStoreItems],
     );
 
-    // アイテムの削除ロジック
-    const handleDeleteItem = React.useCallback(
-        (itemId: string) => {
-            const updatedItems = items.map(v => ({
+    // 複数アイテムの一括更新処理
+    const handleUpdateItems = React.useCallback(
+        (items: IShoppingItem[]) => {
+            const updatedItemsMap = new Map(items.map(item => [item.id, item]));
+
+            const updatedItems = storeItems.map(v => ({
                 ...v,
-                items: v.items.filter(item => item.id !== itemId),
+                items: v.items.map(item =>
+                    updatedItemsMap.has(item.id)
+                        ? { ...item, ...updatedItemsMap.get(item.id) }
+                        : item,
+                ),
             }));
-            // ストアデータを更新
-            setItems(updatedItems);
+            setStoreItems(updatedItems);
         },
-        [items],
+        [storeItems, setStoreItems],
     );
 
     // アイテムの移動ロジック
@@ -56,7 +61,7 @@ export const useShoppingHandlers = () => {
             if (activeId === overId) return;
 
             const overCategoryItemId = categoryIdFromItemId(overId);
-            const overCategoryInfo = items?.find(
+            const overCategoryInfo = storeItems?.find(
                 v => v.category.id === overId,
             )?.category;
 
@@ -75,10 +80,10 @@ export const useShoppingHandlers = () => {
             if (!activeCategoryId && !overCategoryId) return;
 
             // カテゴリごとのインデックスを取得
-            const activeCategory = items.find(
+            const activeCategory = storeItems.find(
                 v => v.category.id === activeCategoryId,
             );
-            const overCategory = items.find(
+            const overCategory = storeItems.find(
                 v => v.category.id === overCategoryId,
             );
 
@@ -99,7 +104,7 @@ export const useShoppingHandlers = () => {
             if (activeCategoryId !== overCategoryId) {
                 const activeItem = activeCategory.items[activeIndex];
                 if (activeItem) {
-                    const removedActiveItems = items.map(v => ({
+                    const removedActiveItems = storeItems.map(v => ({
                         ...v,
                         items: v.items.filter(item => item.id !== activeId),
                     }));
@@ -122,7 +127,7 @@ export const useShoppingHandlers = () => {
             }
             // 同カテゴリーでの入れ替え
             else {
-                updatedItems = items.map(v => {
+                updatedItems = storeItems.map(v => {
                     if (v.category.id === activeCategoryId) {
                         return {
                             ...v,
@@ -135,15 +140,15 @@ export const useShoppingHandlers = () => {
 
             if (updatedItems) {
                 // ストアデータを更新
-                setItems(updatedItems);
+                setStoreItems(updatedItems);
             }
         },
-        [items],
+        [storeItems],
     );
 
     return {
         handleUpdateItem,
-        handleDeleteItem,
+        handleUpdateItems,
         handleMoveItem,
     };
 };

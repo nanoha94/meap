@@ -18,7 +18,7 @@ interface Props {
 const ShoppingItemCard = ({ item }: Props) => {
     const { id, name, isPinned = false, isChecked = false } = item;
     const { handleUpdateItem } = useShoppingHandlers();
-    const { deleteShoppingItem } = useShoppingItems();
+    const { deleteShoppingItems } = useShoppingItems();
     const { openDialog } = useShoppingStore();
     const [isOpenDeleteDialog, setIsOpenDeleteDialog] =
         React.useState<boolean>(false);
@@ -97,6 +97,7 @@ const ShoppingItemCard = ({ item }: Props) => {
                                     }),
                             },
                         ]}
+                        placement="top-right"
                     />
                 </div>
             </div>
@@ -110,7 +111,7 @@ const ShoppingItemCard = ({ item }: Props) => {
                 actionButton={{
                     text: '削除',
                     onClick: () => {
-                        deleteShoppingItem(id);
+                        deleteShoppingItems([id]);
                         setIsOpenDeleteDialog(false);
                     },
                 }}

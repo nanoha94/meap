@@ -9,8 +9,12 @@ interface ActionButton {
     onClick: () => void;
 }
 
+type Placement = 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
+
 interface Props {
     actionButtons: ActionButton[];
+    className?: string;
+    placement?: Placement;
 }
 
 const IconWrapper = ({
@@ -22,12 +26,23 @@ const IconWrapper = ({
         {React.cloneElement(children, {
             strokeWidth: 1.5,
             color: colors.black,
-            size: 16,
+            size: 14,
         })}
     </div>
 );
 
-const ActionMenu = ({ actionButtons }: Props) => {
+const positionClass: Record<NonNullable<Props['placement']>, string> = {
+    'top-right': '-top-1 right-1',
+    'top-left': '-top-1 left-1',
+    'bottom-right': '-bottom-1 right-1',
+    'bottom-left': '-bottom-1 left-1',
+};
+
+const ActionMenu = ({
+    actionButtons,
+    className,
+    placement = 'bottom-right',
+}: Props) => {
     const [isOpen, setIsOpen] = React.useState<boolean>(false);
     const containerRef = React.useRef<HTMLDivElement>(null);
 
@@ -41,19 +56,31 @@ const ActionMenu = ({ actionButtons }: Props) => {
             }
         };
 
+        const handleResize = () => {
+            if (isOpen) {
+                setIsOpen(false);
+            }
+        };
+
         document.addEventListener('mousedown', handleClickOutside);
+        window.addEventListener('resize', handleResize);
+
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
+            window.removeEventListener('resize', handleResize);
         };
-    }, []);
+    }, [isOpen]);
 
     return (
-        <div className="relative" ref={containerRef}>
+        <div className="relative leading-none" ref={containerRef}>
             <button onClick={() => setIsOpen(true)}>
-                <EllipsisVertical color={colors.gray.main} />
+                <EllipsisVertical
+                    color={colors.gray.main}
+                    className={className}
+                />
             </button>
             <div
-                className={`z-10 absolute -top-1 right-1 flex flex-col items-start text-sm bg-white rounded border border-gray-main ${
+                className={`z-10 absolute py-1 flex flex-col items-start text-sm bg-white rounded border border-gray-main shadow-lg ${positionClass[placement]} ${
                     isOpen ? itemOpenStyles.open : itemOpenStyles.close
                 }`}>
                 {actionButtons.map((v, idx) => (
@@ -63,7 +90,7 @@ const ActionMenu = ({ actionButtons }: Props) => {
                             v.onClick();
                             setIsOpen(false);
                         }}
-                        className="px-3 py-1.5 flex items-center gap-x-2 whitespace-nowrap transition-colors hover:bg-gray-light">
+                        className="px-3 py-1 w-full flex items-center gap-x-2 whitespace-nowrap transition-colors hover:bg-gray-light">
                         <IconWrapper>{v.icon}</IconWrapper>
                         {v.label}
                     </button>
