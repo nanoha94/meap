@@ -3,7 +3,7 @@ import { Dialog } from '@/components/common';
 import EditForm from './EditForm';
 import React from 'react';
 import { useShoppingStore } from '../../hooks';
-import { SHOPPING_ITEM_SETTING_DIALOG_CONFIGS } from '../../constants/dialogs';
+import { SHOPPING_ITEM_SETTING_DIALOG_CONFIGS } from '../../constants';
 
 const ShoppingItemSettingDialog: React.FC = () => {
     const { dialogs, closeDialog } = useShoppingStore();

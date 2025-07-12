@@ -23,8 +23,7 @@ import {
     useShoppingHandlers,
     useShoppingItems,
 } from '../../hooks';
-import { DRAG_ACTIVATION_DISTANCE } from '../../constants/dnd';
-import { DEBOUNCE_DELAY } from '../../constants/debounce';
+import { DRAG_ACTIVATION_DISTANCE, DEBOUNCE_DELAY } from '../../constants';
 
 interface Props {
     items: IGetShoppingItemsResponse['data'];

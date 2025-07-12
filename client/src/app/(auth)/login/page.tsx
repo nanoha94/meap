@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/api';
-import React from 'react';
+import React, { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { FormItem, Button } from '@/components/common';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
@@ -15,7 +15,7 @@ interface FormInputs {
 
 type visibleErrorFields = 'email' | 'password';
 
-const Login = () => {
+const LoginForm = () => {
     const searchParams = useSearchParams();
     const { isLoading, login } = useAuth();
 
@@ -155,7 +155,6 @@ const Login = () => {
                             />
                         </FormItem>
 
-                        {/* Remember Me */}
                         <div className="w-fit flex items-center gap-x-1.5">
                             <Controller
                                 control={control}
@@ -221,4 +220,13 @@ const Login = () => {
         </>
     );
 };
+
+const Login = () => {
+    return (
+        <Suspense fallback={<LoadingAnimation />}>
+            <LoginForm />
+        </Suspense>
+    );
+};
+
 export default Login;

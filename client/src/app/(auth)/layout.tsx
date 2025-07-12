@@ -4,6 +4,9 @@ import { IGetUserResponse } from '@/types/api';
 import { redirect } from 'next/navigation';
 import { apiClient } from '@/lib/apiClient';
 
+// 動的レンダリングを強制（クッキーを使用するため）
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
     title: 'Laravel',
 };

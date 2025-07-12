@@ -3,9 +3,9 @@ import { useShoppingStore } from '../hooks/stores';
 import React from 'react';
 import { IPostShoppingCategory, IShoppingCategory } from '@/types/api';
 import axios from '@/lib/axios';
-import { TMP_ID_PREFIX } from '@/constants/ids';
 import { timeout_ms } from '@/constants';
 import { useRouter } from 'next/navigation';
+import { TMP_ID_PREFIX } from '../constants';
 
 export const useShoppingCategories = () => {
     const router = useRouter();

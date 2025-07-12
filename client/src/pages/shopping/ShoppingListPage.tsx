@@ -6,7 +6,7 @@ import {
     ShoppingItemSettingDialog,
     ShoppingList,
 } from '@/models/shopping/components';
-import { SHOPPING_ITEM_EDIT_MODE } from '@/models/shopping/constants/dialogs';
+import { SHOPPING_ITEM_EDIT_MODE } from '@/models/shopping/constants';
 import { useShoppingStore } from '@/models/shopping/hooks';
 import {
     IGetShoppingCategoriesResponse,

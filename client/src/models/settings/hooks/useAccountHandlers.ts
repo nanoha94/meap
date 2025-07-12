@@ -3,8 +3,7 @@ import { createAvatar, Result } from '@dicebear/core';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useInvitations } from './useInvitations';
 import { useAccountStore } from './stores';
-import { JOIN_CHECK_DIALOG_CONFIGS } from '../constants/dialogs';
-import { JoinErrorType } from '../constants/error';
+import { JOIN_CHECK_DIALOG_CONFIGS, JOIN_ERROR_TYPE } from '../constants';
 
 export const useAccountHandlers = () => {
     const { isLoading, joinGroup } = useInvitations();
@@ -56,7 +55,7 @@ export const useAccountHandlers = () => {
                     openDialog(
                         'deleteCheck',
                         JOIN_CHECK_DIALOG_CONFIGS[
-                            result.errorType as keyof typeof JoinErrorType
+                            result.errorType as keyof typeof JOIN_ERROR_TYPE
                         ],
                     );
                 }

@@ -12,7 +12,7 @@ import {
 import {
     SHOPPING_ITEM_EDIT_MODE,
     SHOPPING_ITEM_SETTING_DIALOG_CONFIGS,
-} from '../../constants/dialogs';
+} from '../../constants';
 
 interface Props {
     onClose: () => void;

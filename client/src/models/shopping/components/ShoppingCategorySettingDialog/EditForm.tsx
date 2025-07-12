@@ -9,7 +9,6 @@ import {
     useSensors,
 } from '@dnd-kit/core';
 import { SortableContext } from '@dnd-kit/sortable';
-import { TMP_ID_PREFIX } from '@/constants/ids';
 import { CirclePlus } from 'lucide-react';
 import React from 'react';
 import { IShoppingCategory } from '@/types/api';
@@ -17,7 +16,7 @@ import { useFieldArray, useForm } from 'react-hook-form';
 import EditItem from './EditItem';
 import Sortable from '@/components/dnd/Sortable';
 import { useShoppingCategories } from '../../hooks';
-import { DRAG_ACTIVATION_DISTANCE } from '../../constants/dnd';
+import { DRAG_ACTIVATION_DISTANCE, TMP_ID_PREFIX } from '../../constants';
 
 interface FormData {
     categories: IShoppingCategory[];

@@ -1,4 +1,11 @@
-import { ShoppingItemSettingDialogConfig } from '../types/dialogs';
+import { ShoppingItemSettingDialogConfig } from './types';
+
+export enum TMP_ID_PREFIX {
+    SHOPPING_CATEGORY = 'meap-shopping-category-',
+}
+
+export const DEBOUNCE_DELAY = 5000;
+export const DRAG_ACTIVATION_DISTANCE = 5;
 
 export const SHOPPING_ITEM_EDIT_MODE = {
     CREATE: 'create',

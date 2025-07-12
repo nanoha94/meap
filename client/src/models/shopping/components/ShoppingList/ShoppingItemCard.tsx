@@ -9,7 +9,7 @@ import {
     useShoppingItems,
     useShoppingStore,
 } from '../../hooks';
-import { SHOPPING_ITEM_EDIT_MODE } from '../../constants/dialogs';
+import { SHOPPING_ITEM_EDIT_MODE } from '../../constants';
 
 interface Props {
     item: IShoppingItem;

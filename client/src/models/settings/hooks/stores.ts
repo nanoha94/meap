@@ -1,6 +1,6 @@
 import { IGetUserResponse, IGetGroupUserResponse } from '@/types/api';
 import { create } from 'zustand';
-import { JoinCheckDialogConfig } from '../types/dialogs';
+import { JoinCheckDialogConfig } from '../types';
 
 type DialogPayload = {
     invitation: undefined; // データが不要な場合はundefined

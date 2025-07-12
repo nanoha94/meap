@@ -4,7 +4,7 @@ import {
     IGetShoppingCategoriesResponse,
     IGetShoppingItemsResponse,
 } from '@/types/api';
-import Loading from '../Loading';
+import Loading from '../loading';
 import { apiClient } from '@/lib/apiClient';
 import { SnackbarHandler } from '@/components/handlers';
 import { timeout_ms } from '@/constants';

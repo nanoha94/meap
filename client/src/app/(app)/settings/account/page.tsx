@@ -7,7 +7,7 @@ import {
 } from '@/types/api';
 import { apiClient } from '@/lib/apiClient';
 import { SnackbarHandler } from '@/components/handlers';
-import Loading from '../../Loading';
+import Loading from '../../loading';
 import { timeout_ms } from '@/constants';
 import dynamic from 'next/dynamic';
 

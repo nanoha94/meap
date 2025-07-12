@@ -4,7 +4,7 @@ import {
     IShoppingCategory,
     IShoppingItem,
 } from '@/types/api';
-import { SHOPPING_ITEM_EDIT_MODE } from '../constants/dialogs';
+import { SHOPPING_ITEM_EDIT_MODE } from '../constants';
 
 type DialogPayload = {
     itemSetting: {
