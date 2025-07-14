@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import AccountTop from '@/pages/settings/AccountTop';
+import AccountTopPage from '@/pages/settings/AccountTopPage';
 import { Header } from '@/components/common';
 import {
     IGetGroupUserResponse,
@@ -66,7 +66,7 @@ const AccountWithData = async ({ token }: AccountWithDataProps) => {
                 {errorMessage && (
                     <SnackbarHandler type="error" message={errorMessage} />
                 )}
-                <AccountTop users={users['data']} />
+                <AccountTopPage users={users['data']} />
                 {invitationDetail && token && (
                     <JoinDialog invitationDetail={invitationDetail} />
                 )}

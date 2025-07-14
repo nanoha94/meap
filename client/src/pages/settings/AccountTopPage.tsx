@@ -9,7 +9,7 @@ interface Props {
     users: IGetGroupUserResponse['data'];
 }
 
-const AccountTop = ({ users }: Props) => {
+const AccountTopPage = ({ users }: Props) => {
     const { openDialog, loginUser } = useAccountStore();
     const { iconAvatar } = useAccountHandlers();
 
@@ -93,4 +93,4 @@ const AccountTop = ({ users }: Props) => {
     );
 };
 
-export default AccountTop;
+export default AccountTopPage;

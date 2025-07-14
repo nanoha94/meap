@@ -1,7 +1,5 @@
-import { Header } from '@/components/common';
+import { EmailVerifiedHandler, Header } from '@/components/common';
 import { CalendarHeader } from './_components';
-import EmailVerifiedHandler from '@/pages/plans/EmailVerifiedHandler';
-
 export const metadata = {
     title: 'Laravel - Plan',
 };
