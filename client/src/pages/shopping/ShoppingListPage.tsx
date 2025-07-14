@@ -2,6 +2,7 @@
 import { Header, TextButton } from '@/components/common';
 import LoadingAnimation from '@/components/common/LoadingAnimation';
 import {
+    AddShoppingItemButton,
     ShoppingCategorySettingDialog,
     ShoppingItemSettingDialog,
     ShoppingList,
@@ -51,7 +52,7 @@ const ShoppingListPage: React.FC<Props> = ({ fetchItems, fetchCategories }) => {
             {isLoading && <LoadingAnimation />}
             {/* ヘッダー */}
             <Header title="買い物リスト">
-                <div className="flex gap-x-4">
+                <div className="gap-x-4 hidden md:flex">
                     {/* TODO: 実装 */}
                     <TextButton colorVariant="accent" onClick={() => {}}>
                         <CalendarDays size={20} />
@@ -76,6 +77,7 @@ const ShoppingListPage: React.FC<Props> = ({ fetchItems, fetchCategories }) => {
                     {/* 買い物リスト */}
                     <ShoppingList items={storeItems} />
                     <TextButton
+                        colorVariant="secondary"
                         onClick={() => {
                             openDialog('categorySetting', undefined);
                         }}>
@@ -83,6 +85,7 @@ const ShoppingListPage: React.FC<Props> = ({ fetchItems, fetchCategories }) => {
                         <ChevronRight size={20} />
                     </TextButton>
                 </div>
+                <AddShoppingItemButton />
             </main>
             {/* アイテム追加・編集ダイアログ */}
             <ShoppingItemSettingDialog />

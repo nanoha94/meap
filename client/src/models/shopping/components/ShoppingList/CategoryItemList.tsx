@@ -84,7 +84,7 @@ const CategoryItemList: React.FC<Props> = ({ category, items }) => {
                         className="w-5 h-5"
                     />
                 </div>
-                <div className="flex flex-col gap-y-2">
+                <div className="grid grid-cols-[repeat(auto-fill,_minmax(320px,_1fr))] gap-2">
                     {items.length > 0 ? (
                         items.map(
                             (item, idx) =>

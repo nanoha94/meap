@@ -1,8 +1,10 @@
+import React from 'react';
+
 interface Props {
     className?: string;
     size?: 'normal' | 'small';
     disabled?: boolean;
-    colorVariant?: 'primary' | 'gray' | 'accent';
+    colorVariant?: 'primary' | 'secondary' | 'gray' | 'accent';
     children: React.ReactNode;
     onClick: () => void;
     type?: 'button' | 'submit' | 'reset';
@@ -17,11 +19,10 @@ const TextButton = ({
     onClick,
     type = 'button',
 }: Props) => {
-    const colorClasses = {
-        primary: 'text-primary-main border-primary-main',
-        gray: 'text-gray-main border-gray-main',
-        accent: 'text-accent-main border-accent-main',
-    };
+    const colorClasses = React.useMemo(
+        () => `text-${colorVariant}-main border-${colorVariant}-main`,
+        [colorVariant],
+    );
 
     return (
         <button
@@ -30,7 +31,7 @@ const TextButton = ({
             className={`py-1 px-2 w-fit flex items-center gap-x-1 ${
                 size === 'small' ? 'text-sm' : 'text-base'
             } font-bold bg-white rounded border transition-colors hover:bg-gray-light ${
-                colorClasses[colorVariant]
+                colorClasses
             } ${disabled ? 'opacity-50' : ''} ${className}`}
             disabled={disabled}>
             {children}
