@@ -136,15 +136,6 @@ export const useShoppingItems = () => {
 
         try {
             setIsLoading(true);
-
-            // 即座にローカルストアから削除（楽観的更新）
-            const updatedItems = storeItems.map(v => ({
-                ...v,
-                items: v.items.filter(item => !ids.includes(item.id)),
-            }));
-            // ストアデータを更新
-            setStoreItems(updatedItems);
-
             const res = await axios.delete('/shopping/items/bulk', {
                 data: { ids },
                 timeout: timeout_ms,

@@ -1579,6 +1579,10 @@
                                         "name": {
                                             "type": "string",
                                             "example": "山田太郎"
+                                        },
+                                        "avatar_seed": {
+                                            "type": "string",
+                                            "example": "1234567890"
                                         }
                                     },
                                     "type": "object"

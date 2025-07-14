@@ -4,5 +4,6 @@ export interface IGetInvitationDetailResponse {
     inviter: {
         id: string;
         name: string;
+        avatar_seed: string;
     };
 }

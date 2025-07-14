@@ -20,17 +20,6 @@ const JoinDialog = dynamic(
     },
 );
 
-const DeleteCheckDialog = dynamic(
-    () =>
-        import(
-            '@/models/settings/components/DeleteCheckDialog/DeleteCheckDialog'
-        ),
-    {
-        ssr: false, // SSRでは読み込まない
-        loading: () => null, // ローディング中は何も表示しない
-    },
-);
-
 interface AccountWithDataProps {
     token: string;
 }
@@ -79,12 +68,7 @@ const AccountWithData = async ({ token }: AccountWithDataProps) => {
                 )}
                 <AccountTop users={users['data']} />
                 {invitationDetail && token && (
-                    <>
-                        <JoinDialog invitationDetail={invitationDetail} />
-                        <DeleteCheckDialog
-                            token={invitationDetail?.token ?? token}
-                        />
-                    </>
+                    <JoinDialog invitationDetail={invitationDetail} />
                 )}
             </main>
         </>

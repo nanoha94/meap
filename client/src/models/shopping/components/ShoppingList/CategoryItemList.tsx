@@ -6,6 +6,9 @@ import Sortable from '@/components/dnd/Sortable';
 import ShoppingItemCard from './ShoppingItemCard';
 import { ActionMenu, AlertDialog } from '@/components/common';
 import { useShoppingHandlers, useShoppingItems } from '../../hooks';
+import { SHOPPING_ALERT_DIALOG_CONFIGS } from '../../constants';
+import { AlertDialogData } from '@/types/dialog';
+import { ALERT_DIALOG_STATE_DEFAULT } from '@/constants/dialog';
 
 interface Props {
     category: IShoppingCategory;
@@ -16,7 +19,39 @@ const CategoryItemList: React.FC<Props> = ({ category, items }) => {
     const { handleUpdateItems } = useShoppingHandlers();
     const { deleteShoppingItems } = useShoppingItems();
     const { setNodeRef } = useSortable({ id: category.id });
-    const [isOpenDeleteDialog, setIsOpenDeleteDialog] = React.useState(false);
+    const [deleteCheckDialog, setDeleteCheckDialog] =
+        React.useState<AlertDialogData>(ALERT_DIALOG_STATE_DEFAULT);
+
+    /**
+     * 削除確認ダイアログを閉じる
+     */
+    const closeDeleteCheckDialog = () => {
+        setDeleteCheckDialog(ALERT_DIALOG_STATE_DEFAULT);
+    };
+
+    /**
+     * 削除確認ダイアログを開く
+     * @param config ダイアログの設定
+     */
+    const openDeleteCheckDialog = () => {
+        const config = SHOPPING_ALERT_DIALOG_CONFIGS.deleteItemsFromCategory(
+            category.name,
+        );
+        setDeleteCheckDialog({
+            isOpen: true,
+            config,
+            onCancel: closeDeleteCheckDialog,
+            onAction: () => {
+                deleteShoppingItems(
+                    items
+                        .filter(v => !v.isPinned && v.isChecked)
+                        .map(v => v.id),
+                );
+                closeDeleteCheckDialog();
+            },
+            isLoading: false,
+        });
+    };
 
     return (
         <>
@@ -42,9 +77,7 @@ const CategoryItemList: React.FC<Props> = ({ category, items }) => {
                             {
                                 label: 'チェック済みを削除',
                                 icon: <Trash />,
-                                onClick: () => {
-                                    setIsOpenDeleteDialog(true);
-                                },
+                                onClick: openDeleteCheckDialog,
                             },
                         ]}
                         placement="top-left"
@@ -70,31 +103,14 @@ const CategoryItemList: React.FC<Props> = ({ category, items }) => {
                 </div>
             </div>
             <AlertDialog
-                title={`${category.name}から買い物アイテムを削除する`}
-                description={
-                    <div className="flex flex-col gap-y-4">
-                        <p className="text-center whitespace-pre-wrap">
-                            {category.name}
-                            に登録されているすべての買い物アイテムを削除しますか？
-                        </p>
-                        <span className="text-center">
-                            ※固定化アイテムは削除されません
-                        </span>
-                    </div>
-                }
-                isOpen={isOpenDeleteDialog}
-                onClose={() => setIsOpenDeleteDialog(false)}
-                actionButton={{
-                    text: '削除',
-                    onClick: () => {
-                        deleteShoppingItems(
-                            items.filter(v => !v.isPinned).map(v => v.id),
-                        );
-                        setIsOpenDeleteDialog(false);
-                    },
-                }}
+                isOpen={deleteCheckDialog.isOpen}
+                config={deleteCheckDialog.config}
+                onCancel={deleteCheckDialog.onCancel}
+                onAction={deleteCheckDialog.onAction}
+                isLoading={deleteCheckDialog.isLoading}
             />
         </>
     );
 };
+
 export default CategoryItemList;

@@ -1,14 +1,11 @@
 import { IGetUserResponse, IGetGroupUserResponse } from '@/types/api';
 import { create } from 'zustand';
-import { JoinCheckDialogConfig } from '../types';
 
 type DialogPayload = {
     invitation: undefined; // データが不要な場合はundefined
     join: undefined;
-    deleteCheck: JoinCheckDialogConfig | undefined;
 };
 
-// TODO: payloadが不要なら削除（とりあえず取っておく）
 type DialogsState = {
     [K in keyof DialogPayload]: {
         isOpen: boolean;
@@ -43,7 +40,6 @@ interface AccountState {
 const initialDialogsState: DialogsState = {
     invitation: { isOpen: false, payload: undefined },
     join: { isOpen: false, payload: undefined },
-    deleteCheck: { isOpen: false, payload: undefined },
 };
 
 export const useAccountStore = create<AccountState>(set => ({
