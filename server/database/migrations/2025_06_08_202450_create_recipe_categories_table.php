@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('dish_categories', function (Blueprint $table) {
+        Schema::create('recipe_categories', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('group_id')->constrained('groups', 'id')->cascadeOnDelete();
             $table->string('name');
@@ -24,10 +24,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('dish_categories', function (Blueprint $table) {
+        Schema::table('recipe_categories', function (Blueprint $table) {
             $table->dropForeign(['group_id']);
         });
 
-        Schema::dropIfExists('dish_categories');
+        Schema::dropIfExists('recipe_categories');
     }
 };

@@ -4,7 +4,7 @@ namespace App\Swagger;
 
 /**
  * @OA\Parameter(
- *     parameter="MealIdParam",
+ *     parameter="MealPlanIdParam",
  *     name="id",
  *     in="path",
  *     description="献立ID",
@@ -15,7 +15,7 @@ namespace App\Swagger;
  *     )
  * )
  * @OA\Parameter(
- *     parameter="MealCategoryIdParam",
+ *     parameter="MealTypeIdParam",
  *     name="id",
  *     in="path",
  *     description="献立カテゴリID",
@@ -27,4 +27,4 @@ namespace App\Swagger;
  * )
  */
 
-class MealParameters {}
+class MealPlanParameters {}

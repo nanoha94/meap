@@ -24,10 +24,12 @@ class MasterController extends Controller
         $user = $request->user();
         $group = $user->group;
 
+        $courseTypes = $group->courseTypes()->select('id', 'name', 'order')->get();
         $shopping_ategories = $group->shoppingCategories()->select('id', 'name')->get();
         $shopping_tags = $group->shoppingTags()->select('id', 'name')->get();
         $res = [
-            'dishCategories' => [],
+            'recipeCategories' => [],
+            'courseTypes' => $courseTypes,
             'shoppingCategories' => $shopping_ategories,
             'shoppingTags' => $shopping_tags,
         ];

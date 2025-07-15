@@ -32,7 +32,7 @@ class Group extends Model
         $category->save();
 
         // デフォルトの料理分類を追加
-        $roles = [
+        $courseTypes = [
             ['name' => '主食', 'order' => 0],
             ['name' => '主菜', 'order' => 1],
             ['name' => '副菜', 'order' => 2],
@@ -40,12 +40,12 @@ class Group extends Model
             ['name' => 'その他', 'order' => 4],
         ];
 
-        foreach ($roles as $role) {
-            $dishRole = new DishRole();
-            $dishRole->group_id = $group->id;
-            $dishRole->name = $role['name'];
-            $dishRole->order = $role['order'];
-            $dishRole->save();
+        foreach ($courseTypes as $courseType) {
+            $courseType = new CourseType();
+            $courseType->group_id = $group->id;
+            $courseType->name = $courseType['name'];
+            $courseType->order = $courseType['order'];
+            $courseType->save();
         }
 
         // デフォルトの献立種別を追加
@@ -59,12 +59,12 @@ class Group extends Model
         ];
 
         foreach ($categories as $category) {
-            $mealCategory = new MealCategory();
-            $mealCategory->group_id = $group->id;
-            $mealCategory->color_id = $category['color_id'];
-            $mealCategory->name = $category['name'];
-            $mealCategory->order = $category['order'];
-            $mealCategory->save();
+            $mealType = new MealType();
+            $mealType->group_id = $group->id;
+            $mealType->color_id = $category['color_id'];
+            $mealType->name = $category['name'];
+            $mealType->order = $category['order'];
+            $mealType->save();
         }
 
         return $group;
@@ -81,24 +81,29 @@ class Group extends Model
         return $this->hasManyThrough(User::class, GroupUserMapping::class, 'group_id', 'id', 'id', 'user_id');
     }
 
-    public function mealCategories()
+    public function mealTypes()
     {
-        return $this->hasMany(MealCategory::class);
+        return $this->hasMany(MealType::class);
     }
 
-    public function meals()
+    public function mealPlans()
     {
-        return $this->hasMany(Meal::class);
+        return $this->hasMany(MealPlan::class);
     }
 
-    public function dishes()
+    public function recipes()
     {
-        return $this->hasMany(Dish::class);
+        return $this->hasMany(Recipe::class);
     }
 
-    public function dishCategories()
+    public function recipeCategories()
     {
-        return $this->hasMany(DishCategory::class);
+        return $this->hasMany(RecipeCategory::class);
+    }
+
+    public function courseTypes()
+    {
+        return $this->hasMany(CourseType::class);
     }
 
     public function seasonings()

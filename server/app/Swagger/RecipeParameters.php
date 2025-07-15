@@ -4,7 +4,7 @@ namespace App\Swagger;
 
 /**
  * @OA\Parameter(
- *     parameter="DishPageParam",
+ *     parameter="RecipePageParam",
  *     name="page",
  *     in="query",
  *     description="ページ番号",
@@ -16,7 +16,7 @@ namespace App\Swagger;
  *     )
  * )
  * @OA\Parameter(
- *     parameter="DishPerPageParam",
+ *     parameter="RecipePerPageParam",
  *     name="per_page",
  *     in="query",
  *     description="1ページあたりの表示件数",
@@ -29,7 +29,7 @@ namespace App\Swagger;
  *     )
  * )
  * @OA\Parameter(
- *     parameter="DishIdParam",
+ *     parameter="RecipeIdParam",
  *     name="id",
  *     in="path",
  *     description="料理ID",
@@ -40,7 +40,7 @@ namespace App\Swagger;
  *     )
  * )
  * @OA\Parameter(
- *     parameter="DishCategoryIdParam",
+ *     parameter="RecipeCategoryIdParam",
  *     name="id",
  *     in="path",
  *     description="料理カテゴリID",
@@ -52,4 +52,4 @@ namespace App\Swagger;
  * )
  */
 
-class DishParameters {}
+class RecipeParameters {}

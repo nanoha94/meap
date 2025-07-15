@@ -7,7 +7,7 @@ type ApiClientOptions = Omit<RequestInit, 'body'> & {
 
 /**
  * SSR環境で認証情報を付与してAPIリクエストを行う共通関数
- * @param path リクエストパス (例: '/shopping/items')
+ * @param path リクエストパス (例: '/shopping-items')
  * @param options fetchに渡すオプション (method, bodyなど)
  */
 export async function apiClient<T>(

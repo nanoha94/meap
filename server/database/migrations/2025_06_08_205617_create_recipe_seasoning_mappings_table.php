@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('dish_seasoning_mappings', function (Blueprint $table) {
-            $table->foreignUuid('dish_id')->constrained('dishes', 'id')->cascadeOnDelete();
+        Schema::create('recipe_seasoning_mappings', function (Blueprint $table) {
+            $table->foreignUuid('recipe_id')->constrained('recipes', 'id')->cascadeOnDelete();
             $table->foreignUuid('seasoning_id')->constrained('seasonings', 'id')->cascadeOnDelete();
             $table->foreignUuid('unit_id')->constrained('seasoning_units', 'id')->cascadeOnDelete();
             $table->float('quantity');
-            $table->primary(['dish_id', 'seasoning_id', 'unit_id']);
+            $table->primary(['recipe_id', 'seasoning_id', 'unit_id']);
         });
     }
 
@@ -25,12 +25,12 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('dish_seasoning_mappings', function (Blueprint $table) {
-            $table->dropForeign(['dish_id']);
+        Schema::table('recipe_seasoning_mappings', function (Blueprint $table) {
+            $table->dropForeign(['recipe_id']);
             $table->dropForeign(['seasoning_id']);
             $table->dropForeign(['unit_id']);
         });
 
-        Schema::dropIfExists('dish_seasoning_mappings');
+        Schema::dropIfExists('recipe_seasoning_mappings');
     }
 };

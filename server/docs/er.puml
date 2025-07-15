@@ -27,12 +27,12 @@ entity seasoning_units {
     * name : string
 }
 
-entity dish_category_mappings {
-    * dish_id : string <<FK>>
+entity recipe_category_mappings {
+    * recipe_id : string <<FK>>
     * category_id : string <<FK>>
 }
 
-entity dishes {
+entity recipes {
     * id : string <<generated>>
     --
     * name : string
@@ -43,21 +43,21 @@ entity dishes {
     * group_id : string <<FK>>
 }
 
-entity dish_ingredient_mappings {
-    * dish_id : string <<FK>>
+entity recipe_ingredient_mappings {
+    * recipe_id : string <<FK>>
     * ingredient_id : string <<FK>>
     * unit_id : string <<FK>>
     * quantity : float
 }
 
-entity dish_seasoning_mappings {
-    * dish_id : string <<FK>>
-    * ingredient_id : string <<FK>>
+entity recipe_seasoning_mappings {
+    * recipe_id : string <<FK>>
+    * seasoning_id : string <<FK>>
     * unit_id : string <<FK>>
     * quantity : float
 }
 
-entity dish_roles {
+entity course_types {
     * id : string <<generated>>
     ---
     * name : string / 種別（主食、主菜、副菜、汁物、その他）
@@ -65,7 +65,7 @@ entity dish_roles {
     * order : int / ソート順
 }
 
-entity dish_categories {
+entity recipe_categories {
     * id : string <<generated>>
     --
     * name : string
@@ -77,22 +77,22 @@ entity groups {
     * group_size : number / グループに属するユーザの数
 }
 
-entity meal_dish_mappings {
-    * meal_id : string <<FK>>
-    * dish_id : string <<FK>>
-    * dish_role_id : string <<FK>>
+entity meal_plan_recipe_mappings {
+    * meal_plan_id : string <<FK>>
+    * recipe_id : string <<FK>>
+    * course_type_id : string <<FK>>
 }
 
-entity meals {
+entity meal_plans {
     * id : string <<generated>>
     ---
     * date : date
     * group_id : string <<FK>>
-    * meal_category_id : string <<FK>>
+    * meal_type_id : string <<FK>>
 }
 
 
-entity meal_categories {
+entity meal_types {
     * id : string <<generated>>
     --
     * name : string
@@ -179,31 +179,31 @@ shopping_categories ||--o{ shopping_items
 shopping_items ||--o{ shopping_item_tag_mappings
 shopping_tags }o--|| shopping_item_tag_mappings
 
-groups ||--o{ meal_categories
-meal_categories |o--|| colors
+groups ||--o{ meal_types
+meal_types |o--|| colors
 
-meals }o--|| groups
-meals }o--|| meal_categories
-dish_roles }o--|| groups
-dishes }o--|| groups
-dishes ||--o{ meal_dish_mappings
-meals ||--o{ meal_dish_mappings
-meal_dish_mappings }o--|| dish_roles
+meal_plans }o--|| groups
+meal_plans }o--|| meal_types
+course_types }o--|| groups
+recipes }o--|| groups
+recipes ||--o{ meal_plan_recipe_mappings
+meal_plans ||--o{ meal_plan_recipe_mappings
+meal_plan_recipe_mappings }o--|| course_types
 
-groups ||--o{ dish_categories
-dishes ||--o{ dish_category_mappings
-dish_category_mappings }o--|| dish_categories
+groups ||--o{ recipe_categories
+recipes ||--o{ recipe_category_mappings
+recipe_category_mappings }o--|| recipe_categories
 
 ingredients }o--|| groups
-dishes ||--o{ dish_ingredient_mappings
-dish_ingredient_mappings }o--|| ingredient_units
-dish_ingredient_mappings }o--|| ingredients
+recipes ||--o{ recipe_ingredient_mappings
+recipe_ingredient_mappings }o--|| ingredient_units
+recipe_ingredient_mappings }o--|| ingredients
 
 
 seasonings }o--|| groups
-dishes ||--o{ dish_seasoning_mappings
-dish_seasoning_mappings }o--|| seasoning_units
-dish_seasoning_mappings }o--|| seasonings
+recipes ||--o{ recipe_seasoning_mappings
+recipe_seasoning_mappings }o--|| seasoning_units
+recipe_seasoning_mappings }o--|| seasonings
 
 
 note right of groups
@@ -212,23 +212,23 @@ note right of groups
   もしくは、すでに存在しているグループに招待してもらって所属する。
 end note
 
-note left of meals
+note left of meal_plans
   献立情報を管理する。
 end note
 
-note left of meal_categories
+note left of meal_types
   献立種別を管理する。（朝食、昼食、夕食など）
 end note
 
-note right of dishes
+note right of recipes
   料理情報を管理する。
 end note
 
-note top of dish_roles
+note top of course_types
   料理分類を管理する。（料理カテゴリとは別物）
 end note
 
-note right of dish_categories
+note right of recipe_categories
   料理カテゴリを管理する。
 end note
 

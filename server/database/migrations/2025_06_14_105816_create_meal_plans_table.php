@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('meals', function (Blueprint $table) {
+        Schema::create('meal_plans', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('group_id')->constrained('groups', 'id')->cascadeOnDelete();
-            $table->foreignUuid('meal_category_id')->constrained('meal_categories', 'id')->cascadeOnDelete();
+            $table->foreignUuid('meal_type_id')->constrained('meal_types', 'id')->cascadeOnDelete();
             $table->date('date');
             $table->timestamps();
         });
@@ -25,10 +25,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('meals', function (Blueprint $table) {
+        Schema::table('meal_plans', function (Blueprint $table) {
             $table->dropForeign(['group_id']);
         });
 
-        Schema::dropIfExists('meals');
+        Schema::dropIfExists('meal_plans');
     }
 };

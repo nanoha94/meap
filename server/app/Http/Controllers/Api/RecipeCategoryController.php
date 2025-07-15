@@ -3,20 +3,20 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\DishCategory;
+use App\Models\RecipeCategory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class DishCategoryController extends Controller
+class RecipeCategoryController extends Controller
 {
     /**
      * @OA\Post(
-     *     path="/dishes/categories",
+     *     path="/recipe-categories",
      *     summary="料理カテゴリを作成",
-     *     tags={"Dishes"},
+     *     tags={"Recipes"},
      *     security={{"sanctum":{}}},
-     *     @OA\RequestBody(ref="#/components/requestBodies/DishCategoryRequest"),
-     *     @OA\Response(response=200, ref="#/components/responses/DishCategoryStoreSuccess"),
+     *     @OA\RequestBody(ref="#/components/requestBodies/RecipeCategoryRequest"),
+     *     @OA\Response(response=200, ref="#/components/responses/RecipeCategoryStoreSuccess"),
      *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
@@ -26,7 +26,7 @@ class DishCategoryController extends Controller
         $user = $request->user();
         $group = $user->group;
 
-        $ret = DishCategory::create([
+        $ret = RecipeCategory::create([
             'group_id' => $group->id,
             'name' => $request->name,
         ]);
@@ -39,13 +39,13 @@ class DishCategoryController extends Controller
 
     /**
      * @OA\Put(
-     *     path="/dishes/categories/{id}",
+     *     path="/recipe-categories/{id}",
      *     summary="料理カテゴリを更新",
-     *     tags={"Dishes"},
+     *     tags={"Recipes"},
      *     security={{"sanctum":{}}},
-     *     @OA\Parameter(ref="#/components/parameters/DishCategoryIdParam"),
-     *     @OA\RequestBody(ref="#/components/requestBodies/DishCategoryRequest"),
-     *     @OA\Response(response=200, ref="#/components/responses/DishCategoryUpdateSuccess"),
+     *     @OA\Parameter(ref="#/components/parameters/RecipeCategoryIdParam"),
+     *     @OA\RequestBody(ref="#/components/requestBodies/RecipeCategoryRequest"),
+     *     @OA\Response(response=200, ref="#/components/responses/RecipeCategoryUpdateSuccess"),
      *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
@@ -55,23 +55,23 @@ class DishCategoryController extends Controller
         $user = $request->user();
         $group = $user->group;
 
-        DishCategory::where('id', $id)->where('group_id', $group->id)->update([
+        RecipeCategory::where('id', $id)->where('group_id', $group->id)->update([
             'name' => $request->name
         ]);
 
-        $category = $group->dishCategories()->where('id', $id)->select('id', 'name')->first();
+        $category = $group->recipeCategories()->where('id', $id)->select('id', 'name')->first();
 
         return response()->json($category, 200);
     }
 
     /**
      * @OA\Delete(
-     *     path="/dishes/categories/{id}",
+     *     path="/recipe-categories/{id}",
      *     summary="料理カテゴリを削除",
-     *     tags={"Dishes"},
+     *     tags={"Recipes"},
      *     security={{"sanctum":{}}},
-     *     @OA\Parameter(ref="#/components/parameters/DishCategoryIdParam"),
-     *     @OA\Response(response=200, ref="#/components/responses/DishCategoryDestroySuccess"),
+     *     @OA\Parameter(ref="#/components/parameters/RecipeCategoryIdParam"),
+     *     @OA\Response(response=200, ref="#/components/responses/RecipeCategoryDestroySuccess"),
      *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
@@ -81,16 +81,16 @@ class DishCategoryController extends Controller
         $user = $request->user();
         $group = $user->group;
 
-        $category =  DishCategory::where('id', $id)->where('group_id', $group->id)->first();
+        $type =  RecipeCategory::where('id', $id)->where('group_id', $group->id)->first();
 
-        if (!$category) {
+        if (!$type) {
             return response()->json([
                 'message' => '指定されたレコードが見つかりません。'
             ], 404);
         }
 
-        $deletedId = $category->id;
-        $category->delete();
+        $deletedId = $type->id;
+        $type->delete();
 
         return response()->json(['id' => $deletedId], 200);
     }

@@ -3,27 +3,27 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Dish;
+use App\Models\Recipe;
 use App\Models\Ingredient;
 use App\Models\Seasoning;
-use App\Models\DishCategory;
+use App\Models\RecipeCategory;
 use App\Traits\AutoComplement;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class DishController extends Controller
+class RecipeController extends Controller
 {
     use AutoComplement;
 
     /**
      * @OA\Get(
-     *     path="/dishes",
+     *     path="/recipes",
      *     summary="料理一覧を取得",
-     *     tags={"Dishes"},
+     *     tags={"Recipes"},
      *     security={{"sanctum":{}}},
-     *     @OA\Parameter(ref="#/components/parameters/DishPageParam"),
-     *     @OA\Parameter(ref="#/components/parameters/DishPerPageParam"),
-     *     @OA\Response(response=200, ref="#/components/responses/DishIndexSuccess"),
+     *     @OA\Parameter(ref="#/components/parameters/RecipePageParam"),
+     *     @OA\Parameter(ref="#/components/parameters/RecipePerPageParam"),
+     *     @OA\Response(response=200, ref="#/components/responses/RecipeIndexSuccess"),
      *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
@@ -39,27 +39,27 @@ class DishController extends Controller
 
         // TODO: 無限スクロール対応
 
-        $dishes = $group->dishes()->select('id', 'name', 'thumbnail_url', 'url', 'recipe', 'memo')->with(['categories', 'seasonings', 'ingredients'])->get();
+        $recipes = $group->recipes()->select('id', 'name', 'thumbnail_url', 'url', 'recipe', 'memo')->with(['categories', 'seasonings', 'ingredients'])->get();
         $res = [
-            'dishes' => $dishes->map(function ($dish) {
+            'recipes' => $recipes->map(function ($recipe) {
                 return [
-                    'id' => $dish->id,
-                    'name' => $dish->name,
-                    'thumbnailUrl' => $dish->thumbnail_url,
-                    'url' => $dish->url,
-                    'recipe' => $dish->recipe,
-                    'memo' => $dish->memo,
-                    'categories' => $dish->categories->map(fn($item) => [
+                    'id' => $recipe->id,
+                    'name' => $recipe->name,
+                    'thumbnailUrl' => $recipe->thumbnail_url,
+                    'url' => $recipe->url,
+                    'recipe' => $recipe->recipe,
+                    'memo' => $recipe->memo,
+                    'categories' => $recipe->categories->map(fn($item) => [
                         'id' => $item->id,
                         'name' => $item->name
                     ]),
-                    'seasonings' => $dish->seasonings->map(fn($item) => [
+                    'seasonings' => $recipe->seasonings->map(fn($item) => [
                         'id' => $item->id,
                         'name' => $item->name,
                         'quantity' => $item->pivot->quantity,
                         'unitId' => $item->pivot->unit_id
                     ]),
-                    'ingredients' => $dish->ingredients->map(fn($item) => [
+                    'ingredients' => $recipe->ingredients->map(fn($item) => [
                         'id' => $item->id,
                         'name' => $item->name,
                         'quantity' => $item->pivot->quantity,
@@ -67,7 +67,7 @@ class DishController extends Controller
                     ])
                 ];
             }),
-            'total' => $dishes->count()
+            'total' => $recipes->count()
         ];
 
         return response()->json($res, 200);
@@ -75,12 +75,12 @@ class DishController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/dishes",
+     *     path="/recipes",
      *     summary="料理を作成",
-     *     tags={"Dishes"},
+     *     tags={"Recipes"},
      *     security={{"sanctum":{}}},
-     *     @OA\RequestBody(ref="#/components/requestBodies/DishRequest"),
-     *     @OA\Response(response=200, ref="#/components/responses/DishStoreSuccess"),
+     *     @OA\RequestBody(ref="#/components/requestBodies/RecipeRequest"),
+     *     @OA\Response(response=200, ref="#/components/responses/RecipeStoreSuccess"),
      *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
@@ -90,7 +90,7 @@ class DishController extends Controller
         $user = $request->user();
         $group = $user->group;
 
-        $ret = Dish::create([
+        $ret = Recipe::create([
             'group_id' => $group->id,
             'name' => $request->name,
             'thumbnail_url' => $request->thumbnailUrl,
@@ -102,7 +102,7 @@ class DishController extends Controller
         // カテゴリーを紐づけ
         if (!empty($request->categories)) {
             $categoryIds = collect($request->categories)->pluck('id')->toArray();
-            $existingCategoryIds = DishCategory::whereIn('id', $categoryIds)
+            $existingCategoryIds = RecipeCategory::whereIn('id', $categoryIds)
                 ->pluck('id')
                 ->toArray();
 
@@ -175,12 +175,12 @@ class DishController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/dishes/{id}",
+     *     path="/recipes/{id}",
      *     summary="料理の詳細を取得",
-     *     tags={"Dishes"},
+     *     tags={"Recipes"},
      *     security={{"sanctum":{}}},
-     *     @OA\Parameter(ref="#/components/parameters/DishIdParam"),
-     *     @OA\Response(response=200, ref="#/components/responses/DishShowSuccess"),
+     *     @OA\Parameter(ref="#/components/parameters/RecipeIdParam"),
+     *     @OA\Response(response=200, ref="#/components/responses/RecipeShowSuccess"),
      *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
@@ -190,31 +190,31 @@ class DishController extends Controller
         $user = $request->user();
         $group = $user->group;
 
-        $dish = Dish::where('id', $id)->where('group_id', $group->id)->with(['categories', 'seasonings', 'ingredients'])->first();
-        if (!$dish) {
+        $recipe = Recipe::where('id', $id)->where('group_id', $group->id)->with(['categories', 'seasonings', 'ingredients'])->first();
+        if (!$recipe) {
             return response()->json([
                 'message' => '指定されたレコードが見つかりません。'
             ], 404);
         }
 
         $res = [
-            'id' => $dish->id,
-            'name' => $dish->name,
-            'thumbnailUrl' => $dish->thumbnail_url,
-            'url' => $dish->url,
-            'recipe' => $dish->recipe,
-            'memo' => $dish->memo,
-            'categories' => $dish->categories->map(fn($item) => [
+            'id' => $recipe->id,
+            'name' => $recipe->name,
+            'thumbnailUrl' => $recipe->thumbnail_url,
+            'url' => $recipe->url,
+            'recipe' => $recipe->recipe,
+            'memo' => $recipe->memo,
+            'categories' => $recipe->categories->map(fn($item) => [
                 'id' => $item->id,
                 'name' => $item->name
             ]),
-            'seasonings' => $dish->seasonings->map(fn($item) => [
+            'seasonings' => $recipe->seasonings->map(fn($item) => [
                 'id' => $item->id,
                 'name' => $item->name,
                 'quantity' => $item->pivot->quantity,
                 'unitId' => $item->pivot->unit_id
             ]),
-            'ingredients' => $dish->ingredients->map(fn($item) => [
+            'ingredients' => $recipe->ingredients->map(fn($item) => [
                 'id' => $item->id,
                 'name' => $item->name,
                 'quantity' => $item->pivot->quantity,
@@ -227,13 +227,13 @@ class DishController extends Controller
 
     /**
      * @OA\Put(
-     *     path="/dishes/{id}",
+     *     path="/recipes/{id}",
      *     summary="料理を更新",
-     *     tags={"Dishes"},
+     *     tags={"Recipes"},
      *     security={{"sanctum":{}}},
-     *     @OA\Parameter(ref="#/components/parameters/DishIdParam"),
-     *     @OA\RequestBody(ref="#/components/requestBodies/DishRequest"),
-     *     @OA\Response(response=200, ref="#/components/responses/DishUpdateSuccess"),
+     *     @OA\Parameter(ref="#/components/parameters/RecipeIdParam"),
+     *     @OA\RequestBody(ref="#/components/requestBodies/RecipeRequest"),
+     *     @OA\Response(response=200, ref="#/components/responses/RecipeUpdateSuccess"),
      *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
@@ -243,14 +243,14 @@ class DishController extends Controller
         $user = $request->user();
         $group = $user->group;
 
-        $dish =  Dish::where('id', $id)->where('group_id', $group->id)->first();
-        if (!$dish) {
+        $recipe =  Recipe::where('id', $id)->where('group_id', $group->id)->first();
+        if (!$recipe) {
             return response()->json([
                 'message' => '指定されたレコードが見つかりません。'
             ], 404);
         }
 
-        $dish->update([
+        $recipe->update([
             'name' => $request->name,
             'thumbnail_url' => $request->thumbnailUrl,
             'url' => $request->url,
@@ -261,11 +261,11 @@ class DishController extends Controller
         // カテゴリー更新
         if (!empty($request->categories)) {
             $categoryIds = collect($request->categories)->pluck('id')->toArray();
-            $existingCategoryIds = DishCategory::whereIn('id', $categoryIds)
+            $existingCategoryIds = RecipeCategory::whereIn('id', $categoryIds)
                 ->pluck('id')
                 ->toArray();
 
-            $dish->categories()->sync($existingCategoryIds);
+            $recipe->categories()->sync($existingCategoryIds);
         }
 
         // 調味料更新
@@ -284,7 +284,7 @@ class DishController extends Controller
                     'unit_id' => $item['unitId']
                 ]];
             })->toArray();
-            $dish->seasonings()->sync($data);
+            $recipe->seasonings()->sync($data);
         }
 
         // 食材更新
@@ -303,11 +303,11 @@ class DishController extends Controller
                     'unit_id' => $item['unitId']
                 ]];
             })->toArray();
-            $dish->ingredients()->sync($data);
+            $recipe->ingredients()->sync($data);
         }
 
 
-        $updatedItem = $group->dishes()->where('id', $id)->first();
+        $updatedItem = $group->recipes()->where('id', $id)->first();
 
         return response()->json([
             'id' => $updatedItem->id,
@@ -337,12 +337,12 @@ class DishController extends Controller
 
     /**
      * @OA\Delete(
-     *     path="/dishes/{id}",
+     *     path="/recipes/{id}",
      *     summary="料理を削除",
-     *     tags={"Dishes"},
+     *     tags={"Recipes"},
      *     security={{"sanctum":{}}},
-     *     @OA\Parameter(ref="#/components/parameters/DishIdParam"),
-     *     @OA\Response(response=200, ref="#/components/responses/DishDestroySuccess"),
+     *     @OA\Parameter(ref="#/components/parameters/RecipeIdParam"),
+     *     @OA\Response(response=200, ref="#/components/responses/RecipeDestroySuccess"),
      *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
@@ -352,16 +352,16 @@ class DishController extends Controller
         $user = $request->user();
         $group = $user->group;
 
-        $dish =  Dish::where('id', $id)->where('group_id', $group->id)->first();
+        $recipe =  Recipe::where('id', $id)->where('group_id', $group->id)->first();
 
-        if (!$dish) {
+        if (!$recipe) {
             return response()->json([
                 'message' => '指定されたレコードが見つかりません。'
             ], 404);
         }
 
-        $deletedId = $dish->id;
-        $dish->delete();
+        $deletedId = $recipe->id;
+        $recipe->delete();
 
         return response()->json(['id' => $deletedId], 200);
     }

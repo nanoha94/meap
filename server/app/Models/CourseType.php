@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
-class DishRole extends Model
+class CourseType extends Model
 {
     use HasUuids;
 
@@ -23,15 +23,15 @@ class DishRole extends Model
         return $this->belongsTo(Group::class);
     }
 
-    public function meals()
+    public function mealPlans()
     {
-        return $this->belongsToMany(Meal::class, 'meal_dish_mappings', 'dish_role_id', 'meal_id')
-            ->withPivot('dish_id');
+        return $this->belongsToMany(MealPlan::class, 'meal_plan_recipe_mappings', 'course_type_id', 'meal_plan_id')
+            ->withPivot('recipe_id');
     }
 
-    public function dishes()
+    public function recipes()
     {
-        return $this->belongsToMany(Dish::class, 'meal_dish_mappings', 'dish_role_id', 'dish_id')
-            ->withPivot('meal_id');
+        return $this->belongsToMany(Recipe::class, 'meal_plan_recipe_mappings', 'course_type_id', 'recipe_id')
+            ->withPivot('meal_plan_id');
     }
 }

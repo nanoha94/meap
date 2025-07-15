@@ -23,7 +23,7 @@ export const useShoppingItems = () => {
         async (serverOnly = false) => {
             try {
                 setIsLoading(true);
-                const res = await axios.get('/shopping/items', {
+                const res = await axios.get('/shopping-items', {
                     timeout: timeout_ms,
                 });
                 if (res.data) {
@@ -59,7 +59,7 @@ export const useShoppingItems = () => {
 
         try {
             setIsLoading(true);
-            const res = await axios.post(`/shopping/items`, {
+            const res = await axios.post(`/shopping-items`, {
                 ...item,
                 timeout: timeout_ms,
             });
@@ -102,7 +102,7 @@ export const useShoppingItems = () => {
 
             try {
                 setIsLoading(true);
-                const res = await axios.put(`/shopping/items/bulk`, {
+                const res = await axios.put(`/shopping-items/bulk`, {
                     data: items.filter(v => v.name && v.name.length > 0),
                     timeout: timeout_ms,
                 });
@@ -136,7 +136,7 @@ export const useShoppingItems = () => {
 
         try {
             setIsLoading(true);
-            const res = await axios.delete('/shopping/items/bulk', {
+            const res = await axios.delete('/shopping-items/bulk', {
                 data: { ids },
                 timeout: timeout_ms,
             });

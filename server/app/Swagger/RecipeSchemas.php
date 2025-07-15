@@ -4,12 +4,12 @@ namespace App\Swagger;
 
 /**
  * @OA\Schema(
- *     schema="Dish",
+ *     schema="Recipe",
  *     required={"name"},
  *     @OA\Property(property="id", type="string", description="ID", example="1"),
  *     @OA\Property(property="name", type="string", description="料理名", example="ハンバーグ"),
  *     @OA\Property(property="categories", type="array", description="カテゴリ",
- *         @OA\Items(ref="#/components/schemas/DishCategory")
+ *         @OA\Items(ref="#/components/schemas/RecipeCategory")
  *     ),
  *     @OA\Property(property="ingredients", type="array", description="食材", 
  *         @OA\Items(ref="#/components/schemas/Ingredient")
@@ -24,7 +24,7 @@ namespace App\Swagger;
  * )
  * 
  * @OA\Schema(
- *     schema="DishCategory",
+ *     schema="RecipeCategory",
  *     required={"id", "name"},
  *     @OA\Property(property="id", type="string", description="ID", example="1"),
  *     @OA\Property(property="name", type="string", description="カテゴリ名", example="肉料理")
@@ -50,4 +50,4 @@ namespace App\Swagger;
  */
 
 
-class DishSchemas {}
+class RecipeSchemas {}

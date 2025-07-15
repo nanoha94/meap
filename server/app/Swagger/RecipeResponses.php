@@ -4,15 +4,15 @@ namespace App\Swagger;
 
 /**
  * @OA\Response(
- *     response="DishIndexSuccess",
+ *     response="RecipeIndexSuccess",
  *     description="正常に取得されました",
  *     @OA\JsonContent(
  *         type="object",
  *         @OA\Property(
- *             property="dishes",
+ *             property="recipes",
  *             type="array",
  *             description="料理データ一覧",
- *             @OA\Items(ref="#/components/schemas/Dish")
+ *             @OA\Items(ref="#/components/schemas/Recipe")
  *         ),
  *         @OA\Property(
  *             property="total",
@@ -23,22 +23,22 @@ namespace App\Swagger;
  *     )
  * )
  * @OA\Response(
- *     response="DishStoreSuccess",
+ *     response="RecipeStoreSuccess",
  *     description="正常に登録されました",
- *     @OA\JsonContent(ref="#/components/schemas/Dish")
+ *     @OA\JsonContent(ref="#/components/schemas/Recipe")
  * )
  * @OA\Response(
- *     response="DishShowSuccess",
+ *     response="RecipeShowSuccess",
  *     description="正常に取得されました",
- *     @OA\JsonContent(ref="#/components/schemas/Dish")
+ *     @OA\JsonContent(ref="#/components/schemas/Recipe")
  * )
  * @OA\Response(
- *     response="DishUpdateSuccess",
+ *     response="RecipeUpdateSuccess",
  *     description="正常に更新されました",
- *     @OA\JsonContent(ref="#/components/schemas/Dish")
+ *     @OA\JsonContent(ref="#/components/schemas/Recipe")
  * )
  * @OA\Response(
- *     response="DishDestroySuccess",
+ *     response="RecipeDestroySuccess",
  *     description="正常に削除されました",
  *     @OA\JsonContent(
  *         type="object",
@@ -46,17 +46,17 @@ namespace App\Swagger;
  *     )
  * )
  * @OA\Response(
- *     response="DishCategoryStoreSuccess",
+ *     response="RecipeCategoryStoreSuccess",
  *     description="正常に登録されました",
- *     @OA\JsonContent(ref="#/components/schemas/DishCategory")
+ *     @OA\JsonContent(ref="#/components/schemas/RecipeCategory")
  * )
  * @OA\Response(
- *     response="DishCategoryUpdateSuccess",
+ *     response="RecipeCategoryUpdateSuccess",
  *     description="正常に更新されました",
- *     @OA\JsonContent(ref="#/components/schemas/DishCategory")
+ *      @OA\JsonContent(ref="#/components/schemas/RecipeCategory")
  * )
  * @OA\Response(
- *     response="DishCategoryDestroySuccess",
+ *     response="RecipeCategoryDestroySuccess",
  *     description="正常に削除されました",
  *     @OA\JsonContent(
  *         type="object",
@@ -64,4 +64,4 @@ namespace App\Swagger;
  *     )
  * )
  */
-class DishResponses {}
+class RecipeResponses {}

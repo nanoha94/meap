@@ -21,11 +21,11 @@ namespace App\Http\Controllers;
  *     description="招待関連のAPI"
  * )
  * @OA\Tag(
- *     name="Dishes",
+ *     name="Recipes",
  *     description="料理関連のAPI"
  * )
  * @OA\Tag(
- *     name="Meals",
+ *     name="MealPlans",
  *     description="献立関連のAPI"
  * )
  * @OA\Tag(

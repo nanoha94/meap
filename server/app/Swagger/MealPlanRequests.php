@@ -4,7 +4,7 @@ namespace App\Swagger;
 
 /**
  * @OA\RequestBody(
- *     request="MealRequest",
+ *     request="MealPlanRequest",
  *     description="※新規作成時はid不要",
  *     required=true,
  *     @OA\JsonContent(
@@ -20,7 +20,7 @@ namespace App\Swagger;
  *                 type="object",
  *                 @OA\Property(property="roleId", type="string", description="料理分類ID", example="1"),
  *                 @OA\Property(
- *                     property="dishIds",
+ *                     property="recipeIds",
  *                     type="array",
  *                     description="料理ID",
  *                     @OA\Items(type="string", description="料理ID", example="1")
@@ -30,7 +30,7 @@ namespace App\Swagger;
  *     )
  * )
  * @OA\RequestBody(
- *     request="MealCategoryRequest",
+ *     request="MealTypeRequest",
  *     description="※新規作成時はid不要",
  *     required=true,
  *     @OA\JsonContent(
@@ -41,19 +41,19 @@ namespace App\Swagger;
  *     )
  * )
  * @OA\RequestBody(
- *     request="MealCategoryBulkUpdateRequest",
+ *     request="MealTypeBulkUpdateRequest",
  *     required=true,
  *     @OA\JsonContent(
  *         type="object",
  *         @OA\Property(
  *             property="categories",
  *             type="array",
- *             @OA\Items(ref="#/components/schemas/MealCategory")
+ *             @OA\Items(ref="#/components/schemas/MealType")
  *         )
  *     )
  * )
  * @OA\RequestBody(
- *     request="MealCategoryBulkDestroyRequest",
+ *     request="MealTypeBulkDestroyRequest",
  *     required=true,
  *     @OA\JsonContent(
  *         type="object",
@@ -71,4 +71,4 @@ namespace App\Swagger;
  * )
  */
 
-class MealRequests {}
+class MealPlanRequests {}

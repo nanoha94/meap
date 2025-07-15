@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('dish_ingredient_mappings', function (Blueprint $table) {
-            $table->foreignUuid('dish_id')->constrained('dishes', 'id')->cascadeOnDelete();
+        Schema::create('recipe_ingredient_mappings', function (Blueprint $table) {
+            $table->foreignUuid('recipe_id')->constrained('recipes', 'id')->cascadeOnDelete();
             $table->foreignUuid('ingredient_id')->constrained('ingredients', 'id')->cascadeOnDelete();
             $table->foreignUuid('unit_id')->constrained('ingredient_units', 'id')->cascadeOnDelete();
             $table->float('quantity');
-            $table->primary(['dish_id', 'ingredient_id', 'unit_id']);
+            $table->primary(['recipe_id', 'ingredient_id', 'unit_id']);
         });
     }
 
@@ -25,11 +25,11 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('dish_ingredient_mappings', function (Blueprint $table) {
-            $table->dropForeign(['dish_id']);
+        Schema::table('recipe_ingredient_mappings', function (Blueprint $table) {
+            $table->dropForeign(['recipe_id']);
             $table->dropForeign(['ingredient_id']);
             $table->dropForeign(['unit_id']);
         });
-        Schema::dropIfExists('dish_ingredient_mappings');
+        Schema::dropIfExists('recipe_ingredient_mappings');
     }
 };

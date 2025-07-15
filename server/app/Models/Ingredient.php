@@ -17,8 +17,8 @@ class Ingredient extends Model
         'name'
     ];
 
-    public function dishes()
+    public function recipes()
     {
-        return $this->belongsToMany(Dish::class, 'dish_ingredient_mappings', 'ingredient_id', 'dish_id');
+        return $this->belongsToMany(Recipe::class, 'recipe_ingredient_mappings', 'ingredient_id', 'recipe_id');
     }
 }

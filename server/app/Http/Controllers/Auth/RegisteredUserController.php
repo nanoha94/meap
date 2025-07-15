@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\CourseType;
 use App\Models\Group;
 use App\Models\GroupUserMapping;
 use App\Models\User;

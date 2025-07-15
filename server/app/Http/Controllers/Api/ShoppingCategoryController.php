@@ -13,7 +13,7 @@ class ShoppingCategoryController extends Controller
 {
     /**
      * @OA\Get(
-     *     path="/shopping/categories",
+     *     path="/shopping-categories",
      *     summary="買い物カテゴリ一覧を取得",
      *     tags={"Shopping"},
      *     security={{"sanctum":{}}},
@@ -51,7 +51,7 @@ class ShoppingCategoryController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/shopping/categories",
+     *     path="/shopping-categories",
      *     summary="買い物カテゴリを作成",
      *     tags={"Shopping"},
      *     security={{"sanctum":{}}},
@@ -102,7 +102,7 @@ class ShoppingCategoryController extends Controller
 
     /**
      * @OA\Put(
-     *     path="/shopping/categories/bulk",
+     *     path="/shopping-categories/bulk",
      *     summary="買い物カテゴリを一括更新",
      *     tags={"Shopping"},
      *     security={{"sanctum":{}}},
@@ -161,7 +161,7 @@ class ShoppingCategoryController extends Controller
 
     /**
      * @OA\Delete(
-     *     path="/shopping/categories/bulk",
+     *     path="/shopping-categories/bulk",
      *     summary="買い物カテゴリを削除",
      *     tags={"Shopping"},
      *     security={{"sanctum":{}}},

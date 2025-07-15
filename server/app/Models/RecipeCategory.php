@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
-class DishCategory extends Model
+class RecipeCategory extends Model
 {
     use  HasUuids;
 
@@ -17,8 +17,8 @@ class DishCategory extends Model
         'name',
     ];
 
-    public function dishes()
+    public function recipes()
     {
-        return $this->belongsToMany(Dish::class, 'dish_category_mappings', 'category_id', 'dish_id');
+        return $this->belongsToMany(Recipe::class, 'recipe_category_mappings', 'category_id', 'recipe_id');
     }
 }

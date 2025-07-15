@@ -17,10 +17,10 @@ async function ShoppingListsWithData() {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), timeout_ms);
 
-        items = await apiClient('/shopping/items', {
+        items = await apiClient('/shopping-items', {
             signal: controller.signal,
         });
-        categories = await apiClient('/shopping/categories', {
+        categories = await apiClient('/shopping-categories', {
             signal: controller.signal,
         });
         clearTimeout(timeoutId);

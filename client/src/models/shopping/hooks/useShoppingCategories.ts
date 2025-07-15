@@ -36,7 +36,7 @@ export const useShoppingCategories = () => {
             // 削除リクエスト
             if (deleteCategoryIds.length > 0) {
                 try {
-                    await axios.delete(`/shopping/categories/bulk`, {
+                    await axios.delete(`/shopping-categories/bulk`, {
                         data: { ids: deleteCategoryIds },
                         timeout: timeout_ms,
                     });
@@ -85,7 +85,7 @@ export const useShoppingCategories = () => {
                     }
                     try {
                         await axios.post(
-                            `/shopping/categories`,
+                            `/shopping-categories`,
                             categories[i] as IPostShoppingCategory,
                             {
                                 timeout: timeout_ms,
@@ -109,7 +109,7 @@ export const useShoppingCategories = () => {
             // 更新リクエスト
             if (updateCategories.length > 0) {
                 try {
-                    const res = await axios.put(`/shopping/categories/bulk`, {
+                    const res = await axios.put(`/shopping-categories/bulk`, {
                         data: updateCategories,
                         timeout: timeout_ms,
                     });

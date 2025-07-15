@@ -4,17 +4,17 @@ namespace App\Swagger;
 
 /**
  * @OA\RequestBody(
- *     request="DishRequest",
+ *     request="RecipeRequest",
  *     description="※新規作成時はid不要",
  *     required=true,
- *     @OA\JsonContent(ref="#/components/schemas/Dish")
+ *     @OA\JsonContent(ref="#/components/schemas/Recipe")
  * )
  * @OA\RequestBody(
- *     request="DishCategoryRequest",
+ *     request="RecipeCategoryRequest",
  *     description="※新規作成時はid不要",
  *     required=true,
- *     @OA\JsonContent(ref="#/components/schemas/DishCategory")
+ *     @OA\JsonContent(ref="#/components/schemas/RecipeCategory")
  * )
  */
 
-class DishRequests {}
+class RecipeRequests {}

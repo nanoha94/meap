@@ -10,7 +10,7 @@ class ShoppingTagController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/shopping/tags",
+     *     path="/shopping-tags",
      *     summary="買い物タグ一覧を取得",
      *     tags={"Shopping"},
      *     security={{"sanctum":{}}},
