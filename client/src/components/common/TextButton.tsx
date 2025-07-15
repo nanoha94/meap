@@ -19,10 +19,15 @@ const TextButton = ({
     onClick,
     type = 'button',
 }: Props) => {
-    const colorClasses = React.useMemo(
-        () => `text-${colorVariant}-main border-${colorVariant}-main`,
-        [colorVariant],
-    );
+    const colorClasses = React.useMemo(() => {
+        const colorMappings = {
+            primary: 'text-primary-main border-primary-main',
+            secondary: 'text-secondary-main border-secondary-main',
+            gray: 'text-gray-main border-gray-main',
+            accent: 'text-accent-main border-accent-main',
+        };
+        return colorMappings[colorVariant];
+    }, [colorVariant]);
 
     return (
         <button
