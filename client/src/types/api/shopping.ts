@@ -10,16 +10,6 @@ export interface IGetShoppingCategoriesResponse {
     total: number;
 }
 
-export interface IShoppingItem {
-    id: string;
-    name: string;
-    isPinned: boolean;
-    isChecked: boolean;
-    categoryId: string;
-    tags: { id: string; name: string }[];
-    order: number;
-}
-
 export interface IPutShoppingItem {
     data: {
         id: string;
@@ -38,6 +28,21 @@ export interface IPostShoppingItem {
     tags: { id?: string; name: string }[];
 }
 
+export interface IPostShoppingCategory {
+    name: string;
+    order: number;
+}
+
+export interface IShoppingItem {
+    id: string;
+    name: string;
+    isPinned: boolean;
+    isChecked: boolean;
+    categoryId: string;
+    tags: { id: string; name: string }[];
+    order: number;
+}
+
 export interface IShoppingCategory {
     id: string;
     name: string;
@@ -45,7 +50,7 @@ export interface IShoppingCategory {
     order: number;
 }
 
-export interface IPostShoppingCategory {
+export interface IShoppingTag {
+    id: string;
     name: string;
-    order: number;
 }

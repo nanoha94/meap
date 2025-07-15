@@ -9,24 +9,19 @@ import {
 } from '@/models/shopping/components';
 import { SHOPPING_ITEM_EDIT_MODE } from '@/models/shopping/constants';
 import { useShoppingStore } from '@/models/shopping/hooks';
-import {
-    IGetShoppingCategoriesResponse,
-    IGetShoppingItemsResponse,
-} from '@/types/api';
+import { IGetShoppingItemsResponse } from '@/types/api';
 import { CalendarDays, ChevronRight, SquarePen } from 'lucide-react';
 import React from 'react';
 
 interface Props {
     fetchItems?: IGetShoppingItemsResponse['data'];
-    fetchCategories?: IGetShoppingCategoriesResponse['data'];
 }
 
-const ShoppingListPage: React.FC<Props> = ({ fetchItems, fetchCategories }) => {
+const ShoppingListPage: React.FC<Props> = ({ fetchItems }) => {
     const {
         items: storeItems,
         setServerItems,
         setItems: setStoreItems,
-        setCategories: setStoreCategories,
         openDialog,
         isLoadingCategories,
         isLoadingItems,
@@ -37,9 +32,6 @@ const ShoppingListPage: React.FC<Props> = ({ fetchItems, fetchCategories }) => {
         if (fetchItems) {
             setStoreItems(fetchItems);
             setServerItems(fetchItems);
-        }
-        if (fetchCategories) {
-            setStoreCategories(fetchCategories);
         }
     }, [fetchItems]);
 

@@ -42,6 +42,7 @@ const CategoryItemList: React.FC<Props> = ({ category, items }) => {
             config,
             onCancel: closeDeleteCheckDialog,
             onAction: () => {
+                // TODO: 削除可能なものが含まれているかチェックする
                 deleteShoppingItems(
                     items
                         .filter(v => !v.isPinned && v.isChecked)

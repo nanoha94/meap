@@ -22,7 +22,7 @@ export const navigationItems: NavigationItem[] = [
         iconType: NAVIGATION_ICON_TYPES.CALENDAR,
     },
     {
-        link: '/dishes',
+        link: '/recipes',
         name: '料理/レシピ',
         iconType: NAVIGATION_ICON_TYPES.COOKING_POT,
     },

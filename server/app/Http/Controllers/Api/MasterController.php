@@ -25,12 +25,19 @@ class MasterController extends Controller
         $group = $user->group;
 
         $courseTypes = $group->courseTypes()->select('id', 'name', 'order')->get();
-        $shopping_ategories = $group->shoppingCategories()->select('id', 'name')->get();
+        $shopping_ategories = $group->shoppingCategories()->select('id', 'name', 'is_default', 'order')->orderBy('order', 'asc')->get();
         $shopping_tags = $group->shoppingTags()->select('id', 'name')->get();
         $res = [
             'recipeCategories' => [],
             'courseTypes' => $courseTypes,
-            'shoppingCategories' => $shopping_ategories,
+            'shoppingCategories' => $shopping_ategories->map(function ($category) {
+                return [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'isDefault' => (bool)$category->is_default,
+                    'order' => $category->order
+                ];
+            }),
             'shoppingTags' => $shopping_tags,
         ];
 

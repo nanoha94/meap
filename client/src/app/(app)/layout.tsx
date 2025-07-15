@@ -2,9 +2,9 @@ import { FooterNavigation, SideNavigation } from '@/components/common';
 import { IGetUserResponse } from '@/types/api';
 import { apiClient } from '@/lib/apiClient';
 import { redirect } from 'next/navigation';
-import UserHandler from '@/components/handlers/UserHandler';
-import { RedirectHandler } from '@/components/handlers';
+import { DataHandler, RedirectHandler } from '@/components/handlers';
 import { cookies } from 'next/headers';
+import { IGetMasterResponse } from '@/types/api/master';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,6 +13,12 @@ interface Props {
 }
 const AppLayout = async ({ children }: Props) => {
     let user: IGetUserResponse;
+    let masterData: IGetMasterResponse = {
+        recipeCategories: [],
+        courseTypes: [],
+        shoppingCategories: [],
+        shoppingTags: [],
+    };
     try {
         user = await apiClient('/user');
     } catch (error) {
@@ -25,6 +31,14 @@ const AppLayout = async ({ children }: Props) => {
         redirect('/email/verify');
     }
 
+    if (user) {
+        try {
+            masterData = await apiClient('/master');
+        } catch (error) {
+            console.error('Failed to fetch master data:', error);
+        }
+    }
+
     // RSCでクッキーを取得する正しい方法
     const cookieStore = cookies();
     const redirectPath = cookieStore.get('redirectPath')?.value;
@@ -32,7 +46,7 @@ const AppLayout = async ({ children }: Props) => {
     return (
         <div className="h-screen flex flex-col">
             {redirectPath && <RedirectHandler redirectPath={redirectPath} />}
-            <UserHandler user={user} />
+            <DataHandler user={user} masterData={masterData} />
             <div className="flex h-full">
                 <SideNavigation user={user} className="z-10 hidden md:block" />
                 <div className="flex-1 bg-primary-background">{children}</div>
