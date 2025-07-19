@@ -1,7 +1,7 @@
 import React from 'react';
 import { arrayMove } from '@dnd-kit/sortable';
 import { IShoppingItem } from '@/types/api';
-import { useShoppingStore } from './stores';
+import { useShoppingStore } from './shoppingStores';
 
 export const useShoppingHandlers = () => {
     const { items: storeItems, setItems: setStoreItems } = useShoppingStore();

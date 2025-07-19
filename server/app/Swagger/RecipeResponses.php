@@ -9,7 +9,7 @@ namespace App\Swagger;
  *     @OA\JsonContent(
  *         type="object",
  *         @OA\Property(
- *             property="recipes",
+ *             property="data",
  *             type="array",
  *             description="料理データ一覧",
  *             @OA\Items(ref="#/components/schemas/Recipe")

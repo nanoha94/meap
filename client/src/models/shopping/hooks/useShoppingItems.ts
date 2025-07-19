@@ -1,5 +1,5 @@
 import React from 'react';
-import { useShoppingStore } from '../hooks/stores';
+import { useShoppingStore } from './shoppingStores';
 import { useSnackbars } from '@/contexts';
 import axios from '@/lib/axios';
 import { IPostShoppingItem, IPutShoppingItem } from '@/types/api';

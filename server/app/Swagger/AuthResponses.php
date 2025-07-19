@@ -29,5 +29,14 @@ namespace App\Swagger;
  *         @OA\Property(property="message", type="string", example="アカウント登録に成功しました")
  *     )
  * )
+ * 
+ * @OA\Response(
+ *     response="UserAlreadyLoggedIn",
+ *     description="既にログインしています",
+ *     @OA\JsonContent(
+ *         type="object",
+ *         @OA\Property(property="message", type="string", example="既にログインしています")
+ *     )
+ * )
  */
 class AuthResponses {}

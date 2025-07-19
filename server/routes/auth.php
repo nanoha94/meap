@@ -16,8 +16,8 @@ Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
     ->middleware('auth')
     ->name('logout');
 
+// 認証状態をコントローラーで制御するので、middlewareを指定しない
 Route::post('/register', [RegisteredUserController::class, 'store'])
-    ->middleware('guest')
     ->name('register');
 
 Route::post('/password/reset/request', [PasswordResetLinkController::class, 'store'])

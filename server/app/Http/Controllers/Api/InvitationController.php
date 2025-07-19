@@ -69,7 +69,12 @@ class InvitationController extends Controller
             'inviter' => [
                 'id' => $invitationToken->inviter->id,
                 'name' => $invitationToken->inviter->name,
-                'avatar_seed' => $invitationToken->inviter->avatar_seed
+                'avatar' => [
+                    'seed' => $invitationToken->inviter->avatar_seed,
+                    'url' => $invitationToken->inviter->avatar_url,
+                    'width' => $invitationToken->inviter->avatar_width,
+                    'height' => $invitationToken->inviter->avatar_height,
+                ]
             ]
         ], 200);
     }

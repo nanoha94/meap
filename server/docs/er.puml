@@ -37,8 +37,10 @@ entity recipes {
     --
     * name : string
     * thumbnail_url : string / サムネイル画像URL
+    * thumbnail_width : int / サムネイル画像の幅
+    * thumbnail_height : int / サムネイル画像の高さ
     * url : string / レシピURL
-    * recipe : string / レシピ（テキスト入力）
+    * instructions : string / レシピ（テキスト入力）
     * memo : string / メモ
     * group_id : string <<FK>>
 }
@@ -153,7 +155,10 @@ entity users {
     * name : string
     * email : string
     password : string / ログイン用パスワード（ソーシャルログインでは使用しない）
-    avatar_url : string / プロフィール画像URL
+    * avatar_seed : string / プロフィール画像のシード
+    avatar_image_url : string / プロフィール画像URL
+    avatar_image_width : int / プロフィール画像の幅
+    avatar_image_height : int / プロフィール画像の高さ
     provider : string / プロバイダ名（例: 'google'）
     provider_id : string / ソーシャルログイン用ID
     * created_at : date

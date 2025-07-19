@@ -29,6 +29,9 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'password',
         'avatar_seed', // アイコン生成用のシード値
+        'avatar_image_url',
+        'avatar_image_width',
+        'avatar_image_height',
     ];
 
     /**

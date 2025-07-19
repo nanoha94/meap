@@ -15,6 +15,9 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->string('name');
             $table->string('avatar_seed')->nullable();
+            $table->string('avatar_image_url')->nullable();
+            $table->integer('avatar_image_width')->nullable();
+            $table->integer('avatar_image_height')->nullable();
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');

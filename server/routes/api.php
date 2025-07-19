@@ -22,7 +22,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/course-types', [CourseTypeController::class, 'index']);
 
     // recipes
-    Route::apiResource('/recipes', RecipeController::class);
+    Route::apiResource('/recipes', RecipeController::class)->except(['update']);
+    Route::post('/recipes/{id}', [RecipeController::class, 'update']);
     Route::apiResource('/recipe-categories', RecipeCategoryController::class)->except(['index', 'show']);
 
     // invitations

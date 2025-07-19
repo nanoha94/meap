@@ -26,7 +26,12 @@ class GroupUsersController extends Controller
         $users = $request->user()->group->users->map(function ($user) {
             return [
                 'name' => $user->name,
-                'avatar_seed' => $user->avatar_seed,
+                'avatar' => [
+                    'seed' => $user->avatar_seed,
+                    'url' => $user->avatar_url,
+                    'width' => $user->avatar_width,
+                    'height' => $user->avatar_height,
+                ],
             ];
         });
 

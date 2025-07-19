@@ -592,12 +592,12 @@
                     }
                 ]
             },
-            "put": {
+            "post": {
                 "tags": [
                     "Recipes"
                 ],
                 "summary": "料理を更新",
-                "operationId": "b9f1d6135c52c2d7e718025d4d2a83e5",
+                "operationId": "0af7d12401fe56ecf6bd4b57c5b5c316",
                 "parameters": [
                     {
                         "$ref": "#/components/parameters/RecipeIdParam"
@@ -950,6 +950,9 @@
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
                     },
+                    "409": {
+                        "$ref": "#/components/responses/UserAlreadyLoggedIn"
+                    },
                     "422": {
                         "$ref": "#/components/responses/ValidationErrors"
                     },
@@ -1115,9 +1118,6 @@
                 "type": "object"
             },
             "Recipe": {
-                "required": [
-                    "name"
-                ],
                 "properties": {
                     "id": {
                         "description": "ID",
@@ -1150,17 +1150,15 @@
                             "$ref": "#/components/schemas/Seasoning"
                         }
                     },
-                    "thumbnailUrl": {
-                        "description": "サムネイルURL",
-                        "type": "string",
-                        "example": "https://www.google.com"
+                    "thumbnail": {
+                        "$ref": "#/components/schemas/RecipeThumbnail"
                     },
                     "url": {
                         "description": "レシピURL",
                         "type": "string",
                         "example": "https://www.google.com"
                     },
-                    "recipe": {
+                    "instructions": {
                         "description": "レシピ",
                         "type": "string",
                         "example": "ハンバーグを作る"
@@ -1172,6 +1170,27 @@
                     }
                 },
                 "type": "object"
+            },
+            "RecipeThumbnail": {
+                "properties": {
+                    "url": {
+                        "description": "サムネイル画像URL",
+                        "type": "string",
+                        "example": "https://example.com/image.jpg"
+                    },
+                    "width": {
+                        "description": "サムネイル画像幅",
+                        "type": "integer",
+                        "example": 300
+                    },
+                    "height": {
+                        "description": "サムネイル画像高さ",
+                        "type": "integer",
+                        "example": 200
+                    }
+                },
+                "type": "object",
+                "nullable": true
             },
             "RecipeCategory": {
                 "required": [
@@ -1404,6 +1423,22 @@
                     }
                 }
             },
+            "UserAlreadyLoggedIn": {
+                "description": "既にログインしています",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "example": "既にログインしています"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
             "Unauthorized": {
                 "description": "認証エラー",
                 "content": {
@@ -1526,9 +1561,26 @@
                                             "type": "string",
                                             "example": "山田太郎"
                                         },
-                                        "avatar_seed": {
-                                            "type": "string",
-                                            "example": "1234567890"
+                                        "avatar": {
+                                            "properties": {
+                                                "seed": {
+                                                    "type": "string",
+                                                    "example": "1234567890"
+                                                },
+                                                "url": {
+                                                    "type": "string",
+                                                    "example": "https://example.com/image.jpg"
+                                                },
+                                                "width": {
+                                                    "type": "integer",
+                                                    "example": 300
+                                                },
+                                                "height": {
+                                                    "type": "integer",
+                                                    "example": 200
+                                                }
+                                            },
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"
@@ -1759,7 +1811,7 @@
                     "application/json": {
                         "schema": {
                             "properties": {
-                                "recipes": {
+                                "data": {
                                     "description": "料理データ一覧",
                                     "type": "array",
                                     "items": {
@@ -2334,9 +2386,54 @@
                 "description": "※新規作成時はid不要",
                 "required": true,
                 "content": {
-                    "application/json": {
+                    "multipart/form-data": {
                         "schema": {
-                            "$ref": "#/components/schemas/Recipe"
+                            "required": [
+                                "name"
+                            ],
+                            "properties": {
+                                "name": {
+                                    "description": "料理名",
+                                    "type": "string",
+                                    "example": "ハンバーグ"
+                                },
+                                "categories": {
+                                    "description": "カテゴリ（JSON文字列）",
+                                    "type": "string",
+                                    "example": "[{\"id\":\"1\",\"name\":\"肉料理\"}]"
+                                },
+                                "ingredients": {
+                                    "description": "食材（JSON文字列）",
+                                    "type": "string",
+                                    "example": "[{\"id\":\"1\",\"name\":\"牛肉\",\"quantity\":100,\"unitId\":\"1\"}]"
+                                },
+                                "seasonings": {
+                                    "description": "調味料（JSON文字列）",
+                                    "type": "string",
+                                    "example": "[{\"id\":\"1\",\"name\":\"塩\",\"quantity\":1,\"unitId\":\"1\"}]"
+                                },
+                                "thumbnailImage": {
+                                    "description": "サムネイル画像ファイル",
+                                    "type": "string",
+                                    "format": "binary"
+                                },
+                                "url": {
+                                    "description": "レシピURL",
+                                    "type": "string",
+                                    "example": "https://www.google.com"
+                                },
+                                "instructions": {
+                                    "description": "レシピ（テキスト入力）",
+                                    "type": "string",
+                                    "example": "ハンバーグを作る"
+                                },
+                                "memo": {
+                                    "description": "メモ",
+                                    "type": "string",
+                                    "example": "ハンバーグは美味しい"
+                                }
+                            },
+                            "type": "object"
                         }
                     }
                 }

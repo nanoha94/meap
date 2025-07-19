@@ -1,5 +1,5 @@
 import { useSnackbars } from '@/contexts';
-import { useShoppingStore } from '../hooks/stores';
+import { useShoppingStore } from './shoppingStores';
 import React from 'react';
 import { IPostShoppingCategory, IShoppingCategory } from '@/types/api';
 import axios from '@/lib/axios';

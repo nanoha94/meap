@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class Group extends Model
 {
@@ -19,55 +21,65 @@ class Group extends Model
     // Groupを作成
     public static function createGroup()
     {
-        $group = self::create([
-            'group_size' => 1,
-        ]);
+        try {
+            return DB::transaction(function () {
+                $group = self::create([
+                    'group_size' => 1,
+                ]);
 
-        // デフォルトの買い物カテゴリを追加
-        $category = new ShoppingCategory();
-        $category->name = "その他のカテゴリー";
-        $category->group_id = $group->id;
-        $category->is_default = true;
-        $category->order = 0;
-        $category->save();
+                // デフォルトの買い物カテゴリを追加
+                $category = new ShoppingCategory();
+                $category->name = "その他のカテゴリー";
+                $category->group_id = $group->id;
+                $category->is_default = true;
+                $category->order = 0;
+                $category->save();
 
-        // デフォルトの料理分類を追加
-        $courseTypes = [
-            ['name' => '主食', 'order' => 0],
-            ['name' => '主菜', 'order' => 1],
-            ['name' => '副菜', 'order' => 2],
-            ['name' => '汁物', 'order' => 3],
-            ['name' => 'その他', 'order' => 4],
-        ];
+                // デフォルトの料理分類を追加
+                $courseTypes = [
+                    ['name' => '主食', 'order' => 0],
+                    ['name' => '主菜', 'order' => 1],
+                    ['name' => '副菜', 'order' => 2],
+                    ['name' => '汁物', 'order' => 3],
+                    ['name' => 'その他', 'order' => 4],
+                ];
 
-        foreach ($courseTypes as $courseType) {
-            $courseType = new CourseType();
-            $courseType->group_id = $group->id;
-            $courseType->name = $courseType['name'];
-            $courseType->order = $courseType['order'];
-            $courseType->save();
+                foreach ($courseTypes as $courseType) {
+                    $courseTypeObj = new CourseType();
+                    $courseTypeObj->group_id = $group->id;
+                    $courseTypeObj->name = $courseType['name'];
+                    $courseTypeObj->order = $courseType['order'];
+                    $courseTypeObj->save();
+                }
+
+                // デフォルトの献立種別を追加
+                $yellow = Color::where('name', 'イエロー')->first();
+                $red = Color::where('name', 'レッド')->first();
+                $blue = Color::where('name', 'ブルー')->first();
+                $categories = [
+                    ['name' => '朝食', 'color_id' => $yellow->id, 'order' => 0],
+                    ['name' => '昼食', 'color_id' => $red->id, 'order' => 1],
+                    ['name' => '夕食', 'color_id' => $blue->id, 'order' => 2],
+                ];
+
+                foreach ($categories as $category) {
+                    $mealType = new MealType();
+                    $mealType->group_id = $group->id;
+                    $mealType->color_id = $category['color_id'];
+                    $mealType->name = $category['name'];
+                    $mealType->order = $category['order'];
+                    $mealType->save();
+                }
+
+                return $group;
+            });
+        } catch (\Throwable $e) {
+            Log::error('グループ作成エラー', [
+                'function' => 'Group@createGroup',
+                'error' => $e->getMessage()
+            ]);
+            throw $e;
         }
-
-        // デフォルトの献立種別を追加
-        $yellow = Color::where('name', 'イエロー')->first();
-        $red = Color::where('name', 'レッド')->first();
-        $blue = Color::where('name', 'ブルー')->first();
-        $categories = [
-            ['name' => '朝食', 'color_id' => $yellow->id, 'order' => 0],
-            ['name' => '昼食', 'color_id' => $red->id, 'order' => 1],
-            ['name' => '夕食', 'color_id' => $blue->id, 'order' => 2],
-        ];
-
-        foreach ($categories as $category) {
-            $mealType = new MealType();
-            $mealType->group_id = $group->id;
-            $mealType->color_id = $category['color_id'];
-            $mealType->name = $category['name'];
-            $mealType->order = $category['order'];
-            $mealType->save();
-        }
-
-        return $group;
     }
 
     // グループに属するのユーザー数を取得

@@ -31,7 +31,12 @@ namespace App\Swagger;
  *         @OA\Property(property="inviter", type="object",
  *             @OA\Property(property="id", type="integer", example=1),
  *             @OA\Property(property="name", type="string", example="山田太郎"),
- *             @OA\Property(property="avatar_seed", type="string", example="1234567890")
+ *             @OA\Property(property="avatar", type="object",
+ *                 @OA\Property(property="seed", type="string", example="1234567890"),
+ *                 @OA\Property(property="url", type="string", example="https://example.com/image.jpg"),
+ *                 @OA\Property(property="width", type="integer", example=300),
+ *                 @OA\Property(property="height", type="integer", example=200),
+ *             )
  *         )
  *     )
  * )

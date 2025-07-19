@@ -22,17 +22,17 @@ export const navigationItems: NavigationItem[] = [
         iconType: NAVIGATION_ICON_TYPES.CALENDAR,
     },
     {
-        link: '/recipes',
+        link: '/recipe',
         name: '料理/レシピ',
         iconType: NAVIGATION_ICON_TYPES.COOKING_POT,
     },
     {
-        link: '/shopping-lists',
+        link: '/shopping-list',
         name: '買い物リスト',
         iconType: NAVIGATION_ICON_TYPES.BOOK_OPEN_CHECK,
     },
     {
-        link: '/settings',
+        link: '/setting',
         name: '設定',
         iconType: NAVIGATION_ICON_TYPES.SETTINGS,
     },

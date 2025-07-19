@@ -16,8 +16,10 @@ class Recipe extends Model
         'group_id',
         'name',
         'thumbnail_url',
+        'thumbnail_width',
+        'thumbnail_height',
         'url',
-        'recipe',
+        'instructions',
         'memo',
     ];
 
