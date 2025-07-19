@@ -1,23 +1,28 @@
 import { Header } from '@/components/common';
 import { SnackbarHandler } from '@/components/handlers';
 import { timeout_ms } from '@/constants';
-import { apiClient } from '@/lib/apiClient';
-import RecipePage from '@/pages/recipe/RecipePage';
-import { IGetRecipesResponse } from '@/types/api/recipe';
+// import { apiClient } from '@/lib/apiClient';
+// import { IGetRecipesResponse } from '@/types/api/recipe';
 import { Suspense } from 'react';
-import Loading from '../loading';
+import Loading from '../../loading';
 
-const RecipePageWithData = async () => {
-    let recipes: IGetRecipesResponse = { data: [], total: 0 };
+interface Props {
+    params: Promise<{ id: string }>;
+}
+
+const RecipePageWithData = async ({ params }: Props) => {
+    const { id } = await params;
+    console.log(id);
+    // let recipes: IGetRecipesResponse = { data: [], total: 0 };
     let errorMessage: string = '';
 
     try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), timeout_ms);
 
-        recipes = await apiClient('/recipes', {
-            signal: controller.signal,
-        });
+        // recipes = await apiClient('/recipes', {
+        //     signal: controller.signal,
+        // });
         clearTimeout(timeoutId);
     } catch (error) {
         console.error(error);
@@ -41,16 +46,16 @@ const RecipePageWithData = async () => {
                 {errorMessage && (
                     <SnackbarHandler type="error" message={errorMessage} />
                 )}
-                <RecipePage fetchRecipes={recipes['data']} />
+                詳細
             </main>
         </>
     );
 };
 
-const Page = () => {
+const Page = ({ params }: { params: Promise<{ id: string }> }) => {
     return (
         <Suspense fallback={<Loading />}>
-            <RecipePageWithData />
+            <RecipePageWithData params={params} />
         </Suspense>
     );
 };

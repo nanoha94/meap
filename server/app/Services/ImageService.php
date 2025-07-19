@@ -46,7 +46,7 @@ class ImageService
 
         // ファイルを保存
         $path = $file->store($directory, 'public');
-        $url = '/storage/' . $path;
+        $url = env('APP_URL') . '/storage/' . $path;
 
         return [
             'url' => $url,

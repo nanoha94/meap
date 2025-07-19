@@ -6,7 +6,7 @@ export interface IGetRecipesResponse {
 export interface IRecipe {
     id: string;
     name: string;
-    thmbnail: {
+    thumbnail: {
         url: string;
         width: number;
         height: number;

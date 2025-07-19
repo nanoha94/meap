@@ -18,9 +18,9 @@ const FooterNavigation = ({ className }: Props) => {
 
     // URLの深さが2より深い場合は表示しない
     // /settings/account/ など
-    if (pathname.split('/').filter(Boolean).length >= 2) {
-        return <></>;
-    }
+    // if (pathname.split('/').filter(Boolean).length >= 2) {
+    //     return <></>;
+    // }
 
     return (
         <div

@@ -1,5 +1,6 @@
 'use client';
-import { useRecipeStore } from '@/models/recipe/RecipeList/hooks/recipeStores';
+import { useRecipeStore } from '@/models/recipe/hooks/recipeStores';
+import RecipeList from '@/models/recipe/components/RecipeList/RecipeList';
 import { IGetRecipesResponse } from '@/types/api/recipe';
 import React from 'react';
 
@@ -15,7 +16,11 @@ const RecipePage = ({ fetchRecipes }: Props) => {
             setStoreRecipes(fetchRecipes);
         }
     }, [fetchRecipes]);
-    return <div>Enter</div>;
+    return (
+        <div>
+            <RecipeList />
+        </div>
+    );
 };
 
 export default RecipePage;

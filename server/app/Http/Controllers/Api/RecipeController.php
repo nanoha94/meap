@@ -104,18 +104,6 @@ class RecipeController extends Controller
         $user = $request->user();
         $group = $user->group;
 
-        // デバッグ：リクエストの詳細情報をログ出力
-        Log::info('Recipe create request details:', [
-            'content_type' => $request->header('Content-Type'),
-            'method' => $request->method(),
-            'all_data' => $request->all(),
-            'name_value' => $request->name,
-            'name_exists' => $request->has('name'),
-            'name_filled' => $request->filled('name'),
-            'input_name' => $request->input('name'),
-            'json_name' => $request->json('name'),
-        ]);
-
         // リクエストデータのバリデーション
         $request->validate([
             'name' => 'required|string|max:255',
@@ -379,29 +367,12 @@ class RecipeController extends Controller
         $user = $request->user();
         $group = $user->group;
 
-        // デバッグ用ログ
-        Log::info('Recipe update request data:', [
-            'name' => $request->name,
-            'url' => $request->url,
-            'memo' => $request->memo,
-        ]);
         $recipe =  Recipe::where('id', $id)->where('group_id', $group->id)->first();
         if (!$recipe) {
             return response()->json([
                 'message' => '指定されたレコードが見つかりません。'
             ], 404);
         }
-
-        // デバッグ：リクエストの詳細情報をログ出力
-        Log::info('Recipe update request details (after parsing):', [
-            'content_type' => $request->header('Content-Type'),
-            'method' => $request->method(),
-            'all_data' => $request->all(),
-            'name_value' => $request->name,
-            'name_exists' => $request->has('name'),
-            'name_filled' => $request->filled('name'),
-            'input_name' => $request->input('name'),
-        ]);
 
         // リクエストデータのバリデーション
         $request->validate([
@@ -421,17 +392,9 @@ class RecipeController extends Controller
 
         // 画像ファイルの検証（アップロードする場合のみ）
         if ($request->hasFile('thumbnailImage')) {
-            Log::info('PUT request has thumbnail image file:', [
-                'file_name' => $request->file('thumbnailImage')->getClientOriginalName(),
-                'file_size' => $request->file('thumbnailImage')->getSize(),
-                'file_type' => $request->file('thumbnailImage')->getMimeType(),
-            ]);
-
             $request->validate([
                 'thumbnailImage' => $this->imageService->getValidationRules()
             ]);
-        } else {
-            Log::info('PUT request has no thumbnail image file');
         }
 
         try {
@@ -549,14 +512,6 @@ class RecipeController extends Controller
                     $thumbnail_url = $imageData['url'];
                     $thumbnail_width = $imageData['width'];
                     $thumbnail_height = $imageData['height'];
-
-                    // 同じ画像の場合はログに記録
-                    if ($imageData['is_same_image']) {
-                        Log::info('同じ画像が検出されました。再アップロードをスキップしました。', [
-                            'recipe_id' => $recipe->id,
-                            'recipe_name' => $recipe->name
-                        ]);
-                    }
                 }
                 // リクエストボディに画像ファイルが存在しない場合は削除
                 else {
@@ -565,11 +520,6 @@ class RecipeController extends Controller
                     $thumbnail_url = null;
                     $thumbnail_width = null;
                     $thumbnail_height = null;
-
-                    Log::info('レシピのサムネイル画像を削除しました。', [
-                        'recipe_id' => $recipe->id,
-                        'recipe_name' => $recipe->name
-                    ]);
                 }
             }
             // 画像が存在しない場合で、新しい画像がアップロードされた場合
