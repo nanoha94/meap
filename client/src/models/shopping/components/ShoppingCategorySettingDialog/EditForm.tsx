@@ -1,22 +1,12 @@
 'use client';
-import { Button, TextButton } from '@/components/common';
-import {
-    DndContext,
-    DragEndEvent,
-    KeyboardSensor,
-    MouseSensor,
-    useSensor,
-    useSensors,
-} from '@dnd-kit/core';
-import { SortableContext } from '@dnd-kit/sortable';
+import { Button, DndSortableList, TextButton } from '@/components/common';
 import { CirclePlus } from 'lucide-react';
 import React from 'react';
 import { IShoppingCategory } from '@/types/api';
 import { useFieldArray, useForm } from 'react-hook-form';
 import EditItem from './EditItem';
-import Sortable from '@/components/dnd/Sortable';
 import { useShoppingCategories } from '../../hooks';
-import { DRAG_ACTIVATION_DISTANCE, TMP_ID_PREFIX } from '../../constants';
+import { TMP_ID_PREFIX } from '../../constants';
 
 interface FormData {
     categories: IShoppingCategory[];
@@ -44,37 +34,6 @@ const EditForm: React.FC<Props> = ({ onClose }) => {
      * カテゴリーの監視
      */
     const watchedCategories = watch('categories');
-
-    /**
-     * センサー
-     */
-    const sensors = useSensors(
-        useSensor(MouseSensor, {
-            activationConstraint: {
-                distance: DRAG_ACTIVATION_DISTANCE,
-            },
-        }),
-        useSensor(KeyboardSensor),
-    );
-
-    /**
-     * ドラッグ終了
-     */
-    const handleDragEnd = (event: DragEndEvent) => {
-        const { active, over } = event;
-
-        if (over && active.id !== over.id) {
-            const oldIndex = parseInt(
-                active.id
-                    .toString()
-                    .replace(TMP_ID_PREFIX.SHOPPING_CATEGORY, ''),
-            );
-            const newIndex = parseInt(
-                over.id.toString().replace(TMP_ID_PREFIX.SHOPPING_CATEGORY, ''),
-            );
-            move(oldIndex, newIndex);
-        }
-    };
 
     /**
      * 空のカテゴリーを追加
@@ -145,28 +104,21 @@ const EditForm: React.FC<Props> = ({ onClose }) => {
             className="w-full flex flex-col gap-y-10">
             <div className="w-full flex flex-col gap-y-5">
                 <div className="flex flex-col gap-y-2">
-                    <DndContext onDragEnd={handleDragEnd} sensors={sensors}>
-                        {!!fields && fields.length > 0 && (
-                            <SortableContext
-                                items={fields.map(
-                                    (_, index) =>
-                                        `${TMP_ID_PREFIX.SHOPPING_CATEGORY}${index}`,
-                                )}>
-                                {fields.map((field, index) => (
-                                    <Sortable
-                                        key={field.id}
-                                        id={`${TMP_ID_PREFIX.SHOPPING_CATEGORY}${index}`}>
-                                        <EditItem
-                                            index={index}
-                                            control={control}
-                                            onDelete={() => remove(index)}
-                                            isDefault={field.isDefault}
-                                        />
-                                    </Sortable>
-                                ))}
-                            </SortableContext>
+                    <DndSortableList
+                        items={fields}
+                        prefix={TMP_ID_PREFIX.SHOPPING_CATEGORY}
+                        onDragEnd={(oldIndex, newIndex) => {
+                            move(oldIndex, newIndex);
+                        }}
+                        renderItem={(item, index) => (
+                            <EditItem
+                                index={index}
+                                control={control}
+                                onDelete={() => remove(index)}
+                                isDefault={item.isDefault}
+                            />
                         )}
-                    </DndContext>
+                    />
                 </div>
                 <TextButton
                     type="button"
