@@ -2,8 +2,6 @@
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Button, FormItem } from '@/components/common';
-import { ChevronDown } from 'lucide-react';
-import { colors } from '@/constants/colors';
 import {
     useShoppingCategories,
     useShoppingItems,
@@ -13,6 +11,7 @@ import {
     SHOPPING_ITEM_EDIT_MODE,
     SHOPPING_ITEM_SETTING_DIALOG_CONFIGS,
 } from '../../constants';
+import StyledSelect from '@/components/common/StyledSelect';
 
 interface Props {
     onClose: () => void;
@@ -103,26 +102,12 @@ const EditForm: React.FC<Props> = ({ onClose }) => {
                         control={control}
                         name="categoryId"
                         render={({ field: { onChange, value } }) => (
-                            <div className="relative">
-                                <select
-                                    value={value}
-                                    onChange={e => {
-                                        onChange(e);
-                                    }}
-                                    className="py-2 px-4 w-full text-base border rounded-lg border-gray-main appearance-none outline-none">
-                                    {storeData.categories.map(v => (
-                                        <option key={v.id} value={v.id}>
-                                            {v.name}
-                                        </option>
-                                    ))}
-                                </select>
-                                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                    <ChevronDown
-                                        size={20}
-                                        color={colors.black}
-                                    />
-                                </div>
-                            </div>
+                            <StyledSelect
+                                value={value}
+                                name="categoryId"
+                                onChange={onChange}
+                                options={storeData.categories}
+                            />
                         )}
                     />
                 </FormItem>

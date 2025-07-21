@@ -39,6 +39,22 @@ namespace App\Swagger;
  * )
  * 
  * @OA\Schema(
+ *     schema="SeasoningUnit",
+ *     required={"id", "name", "order"},
+ *     @OA\Property(property="id", type="string", description="ID", example="1"),
+ *     @OA\Property(property="name", type="string", description="調味料単位名", example="大さじ"),
+ *     @OA\Property(property="order", type="integer", description="並び順", example=1)
+ * )
+ * 
+ * @OA\Schema(
+ *     schema="IngredientUnit",
+ *     required={"id", "name", "order"},
+ *     @OA\Property(property="id", type="string", description="ID", example="1"),
+ *     @OA\Property(property="name", type="string", description="食材単位名", example="g"),
+ *     @OA\Property(property="order", type="integer", description="並び順", example=1)
+ * )
+ * 
+ * @OA\Schema(
  *     schema="Seasoning",
  *     required={"id", "name", "quantity", "unitId"},
  *     @OA\Property(property="id", type="string", description="ID", example="1"),

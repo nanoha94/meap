@@ -1211,6 +1211,56 @@
                 },
                 "type": "object"
             },
+            "SeasoningUnit": {
+                "required": [
+                    "id",
+                    "name",
+                    "order"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "ID",
+                        "type": "string",
+                        "example": "1"
+                    },
+                    "name": {
+                        "description": "調味料単位名",
+                        "type": "string",
+                        "example": "g"
+                    },
+                    "order": {
+                        "description": "並び順",
+                        "type": "integer",
+                        "example": 1
+                    }
+                },
+                "type": "object"
+            },
+            "IngredientUnit": {
+                "required": [
+                    "id",
+                    "name",
+                    "order"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "ID",
+                        "type": "string",
+                        "example": "1"
+                    },
+                    "name": {
+                        "description": "食材単位名",
+                        "type": "string",
+                        "example": "g"
+                    },
+                    "order": {
+                        "description": "並び順",
+                        "type": "integer",
+                        "example": 1
+                    }
+                },
+                "type": "object"
+            },
             "Seasoning": {
                 "required": [
                     "id",
@@ -1618,6 +1668,20 @@
                                     "type": "array",
                                     "items": {
                                         "$ref": "#/components/schemas/RecipeCategory"
+                                    }
+                                },
+                                "ingredientUnits": {
+                                    "description": "食材単位一覧",
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/IngredientUnit"
+                                    }
+                                },
+                                "seasoningUnits": {
+                                    "description": "調味料単位一覧",
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/SeasoningUnit"
                                     }
                                 },
                                 "courseTypes": {

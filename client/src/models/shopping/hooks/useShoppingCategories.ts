@@ -1,7 +1,7 @@
 import { useSnackbars } from '@/contexts';
 import { useShoppingStore } from './shoppingStores';
 import React from 'react';
-import { IPostShoppingCategory, IShoppingCategory } from '@/types/api';
+import { IPostShoppingCategoryRequest, IShoppingCategory } from '@/types/api';
 import axios from '@/lib/axios';
 import { timeout_ms } from '@/constants';
 import { useRouter } from 'next/navigation';
@@ -86,7 +86,7 @@ export const useShoppingCategories = () => {
                     try {
                         await axios.post(
                             `/shopping-categories`,
-                            categories[i] as IPostShoppingCategory,
+                            categories[i] as IPostShoppingCategoryRequest,
                             {
                                 timeout: timeout_ms,
                             },

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\IngredientUnit;
+use App\Models\SeasoningUnit;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -24,11 +26,16 @@ class MasterController extends Controller
         $user = $request->user();
         $group = $user->group;
 
+        $recipeCategories = $group->recipeCategories()->select('id', 'name')->get();
+        $ingredientUnits = IngredientUnit::select('id', 'name', 'order')->orderBy('order', 'asc')->get();
+        $seasoningUnits = SeasoningUnit::select('id', 'name', 'order')->orderBy('order', 'asc')->get();
         $courseTypes = $group->courseTypes()->select('id', 'name', 'order')->get();
         $shopping_ategories = $group->shoppingCategories()->select('id', 'name', 'is_default', 'order')->orderBy('order', 'asc')->get();
         $shopping_tags = $group->shoppingTags()->select('id', 'name')->get();
         $res = [
-            'recipeCategories' => [],
+            'recipeCategories' =>  $recipeCategories,
+            'ingredientUnits' => $ingredientUnits,
+            'seasoningUnits' => $seasoningUnits,
             'courseTypes' => $courseTypes,
             'shoppingCategories' => $shopping_ategories->map(function ($category) {
                 return [

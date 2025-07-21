@@ -10,7 +10,7 @@ export interface IGetShoppingCategoriesResponse {
     total: number;
 }
 
-export interface IPutShoppingItem {
+export interface IPutShoppingItemRequest {
     data: {
         id: string;
         name: string;
@@ -22,13 +22,13 @@ export interface IPutShoppingItem {
     }[];
 }
 
-export interface IPostShoppingItem {
+export interface IPostShoppingItemRequest {
     name: string;
     categoryId: string;
     tags: { id?: string; name: string }[];
 }
 
-export interface IPostShoppingCategory {
+export interface IPostShoppingCategoryRequest {
     name: string;
     order: number;
 }

@@ -15,6 +15,8 @@ const AppLayout = async ({ children }: Props) => {
     let user: IGetUserResponse;
     let masterData: IGetMasterResponse = {
         recipeCategories: [],
+        ingredientUnits: [],
+        seasoningUnits: [],
         courseTypes: [],
         shoppingCategories: [],
         shoppingTags: [],

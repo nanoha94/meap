@@ -2,6 +2,7 @@ import { colors } from '@/constants/colors';
 import { IShoppingCategory } from '@/types/api';
 import { GripVertical, Trash } from 'lucide-react';
 import { Control, Controller } from 'react-hook-form';
+import { TMP_ID_PREFIX } from '../../constants';
 
 interface FormData {
     categories: IShoppingCategory[];
@@ -24,9 +25,10 @@ const EditItem: React.FC<Props> = ({ index, control, onDelete, isDefault }) => {
                 render={({ field }) => (
                     <input
                         {...field}
+                        data-item-id={`${TMP_ID_PREFIX.SHOPPING_CATEGORY}${index}`}
                         type="text"
                         placeholder="カテゴリー名を入力"
-                        className="py-2 px-4 flex-1 placeholder:text-gray-main outline-none bg-white rounded-lg border border-gray-main"
+                        className="py-2 px-4 flex-1 outline-none bg-white rounded-lg border border-gray-main"
                     />
                 )}
             />

@@ -9,6 +9,7 @@ export default {
             blue: '#0D0A8A',
             gray: {
                 main: '#757575',
+                placeholder: '#9e9e9e',
                 border: '#BDBDBD',
                 iconFill: '#E0E0E0',
                 light: '#EEEEEE',

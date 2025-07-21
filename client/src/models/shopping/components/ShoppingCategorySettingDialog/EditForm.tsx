@@ -88,7 +88,7 @@ const EditForm: React.FC<Props> = ({ onClose }) => {
                 item => item.id === emptyItem[0].id,
             );
             const inputElement = document.querySelector(
-                `[data-item-id="${TMP_ID_PREFIX.SHOPPING_CATEGORY}${emptyIndex}"] input`,
+                `[data-item-id="${TMP_ID_PREFIX.SHOPPING_CATEGORY}${emptyIndex}"]`,
             ) as HTMLInputElement;
             if (inputElement) {
                 inputElement.focus();
@@ -170,10 +170,8 @@ const EditForm: React.FC<Props> = ({ onClose }) => {
                 </div>
                 <TextButton
                     type="button"
-                    onClick={() => {
-                        addEmptyCategory();
-                    }}
-                    className="!border-none !bg-transparent">
+                    onClick={addEmptyCategory}
+                    className="!border-none !bg-transparent hover:!bg-gray-light">
                     <CirclePlus size={20} />
                     追加
                 </TextButton>

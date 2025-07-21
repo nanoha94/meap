@@ -1,4 +1,5 @@
 'use client';
+import { useRecipeStore } from '@/models/recipe/hooks/recipeStores';
 import { useAccountStore } from '@/models/settings/hooks';
 import { useShoppingStore } from '@/models/shopping/hooks';
 import { IGetUserResponse } from '@/types/api';
@@ -13,14 +14,15 @@ interface Props {
 const DataHandler = ({ user, masterData }: Props) => {
     const { setLoginUser } = useAccountStore();
     const { setCategories } = useShoppingStore();
+    const { setIngredientUnits, setSeasoningUnits } = useRecipeStore();
 
     React.useEffect(() => {
         if (user) {
             setLoginUser(user);
         }
-        if (masterData.shoppingCategories) {
-            setCategories(masterData.shoppingCategories);
-        }
+        setCategories(masterData.shoppingCategories);
+        setIngredientUnits(masterData.ingredientUnits);
+        setSeasoningUnits(masterData.seasoningUnits);
     }, [user, masterData]);
 
     return <></>;

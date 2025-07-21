@@ -1,6 +1,6 @@
 'use client';
+import { RecipeList } from '@/models/recipe/components';
 import { useRecipeStore } from '@/models/recipe/hooks/recipeStores';
-import RecipeList from '@/models/recipe/components/RecipeList/RecipeList';
 import { IGetRecipesResponse } from '@/types/api/recipe';
 import React from 'react';
 
