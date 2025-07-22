@@ -26,7 +26,7 @@ const SideNavigation = ({ user, className }: Props) => {
 
     return (
         <div
-            className={`w-[120px] h-full bg-white ${className ? className : ''}`}
+            className={`w-[160px] h-full bg-white ${className ? className : ''}`}
             style={{ boxShadow: '5px 0 8px 0 rgba(0, 0, 0, 10%)' }}>
             <div className="py-3 flex flex-col border-b border-gray-border">
                 <Link href="/" className="w-fit mx-auto block">
@@ -48,12 +48,12 @@ const SideNavigation = ({ user, className }: Props) => {
                                 ).toString(),
                             }}
                         />
-                        <div className="text-base">{user.name}</div>
+                        <div className="text-sm">{user.name}</div>
                     </Link>
                 )}
                 <button
                     onClick={logout}
-                    className="py-2 px-3 flex-1 flex items-center gap-x-2 text-xs font-bold transition-colors hover:bg-gray-light ">
+                    className="py-3 px-4 flex-1 flex items-center gap-x-2 text-base  transition-colors hover:bg-gray-light ">
                     <LogOut strokeWidth={1.5} className="w-5 h-5" />
                     ログアウト
                 </button>
@@ -63,9 +63,9 @@ const SideNavigation = ({ user, className }: Props) => {
                     <Link
                         key={idx}
                         href={v.link}
-                        className={`py-2 px-3 flex-1 transition-colors hover:bg-gray-light ${pathname === v.link ? 'pointer-events-none' : ''} `}>
+                        className={`py-3 px-4 flex-1 transition-colors hover:bg-gray-light ${pathname === v.link ? 'pointer-events-none' : ''} `}>
                         <div
-                            className={`flex items-center gap-x-2 text-xs font-bold whitespace-nowrap ${pathname === v.link ? 'text-primary-main' : 'text-black'} `}>
+                            className={`flex items-center gap-x-2 text-base  whitespace-nowrap ${pathname === v.link ? 'text-primary-main' : 'text-black'} `}>
                             <NavigationIcon
                                 iconType={v.iconType}
                                 isCurrentPage={pathname === v.link}
