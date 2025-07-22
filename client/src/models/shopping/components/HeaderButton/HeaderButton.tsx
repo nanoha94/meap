@@ -1,37 +1,35 @@
-import React from 'react';
-import { colors } from '@/constants/colors';
-import { EllipsisVertical, LucideProps } from 'lucide-react';
+'use client';
+import HeaderTextButton from '@/components/common/HeaderTextButtons/HeaderTextButton';
+import { CalendarDays, CirclePlus, Pencil } from 'lucide-react';
 import itemOpenStyles from '@/styles/itemOpen.module.css';
-import LucideIconWrapper from './LucideIconWrapper';
+import React from 'react';
+import { LucideIconWrapper } from '@/components/common';
+import { colors } from '@/constants';
+import { SHOPPING_ITEM_EDIT_MODE } from '../../constants';
+import { useShoppingStore } from '../../hooks';
 
-interface ActionButton {
-    label: string;
-    icon: React.ReactElement<LucideProps>;
-    onClick: () => void;
-}
-
-type Placement = 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
-
-interface Props {
-    actionButtons: ActionButton[];
-    className?: string;
-    placement?: Placement;
-}
-
-const positionClass: Record<NonNullable<Props['placement']>, string> = {
-    'top-right': '-top-1 right-1',
-    'top-left': '-top-1 left-1',
-    'bottom-right': '-bottom-1 right-1',
-    'bottom-left': '-bottom-1 left-1',
-};
-
-const ActionMenu = ({
-    actionButtons,
-    className,
-    placement = 'bottom-right',
-}: Props) => {
+const HeaderButton = () => {
+    const { openDialog } = useShoppingStore();
     const [isOpen, setIsOpen] = React.useState<boolean>(false);
     const containerRef = React.useRef<HTMLDivElement>(null);
+
+    const actionButtons = [
+        {
+            label: '献立から追加',
+            icon: <CalendarDays />,
+            // TODO: 実装
+            onClick: () => {},
+        },
+        {
+            label: 'テキストで追加',
+            icon: <Pencil />,
+            onClick: () =>
+                openDialog('itemSetting', {
+                    item: undefined,
+                    editMode: SHOPPING_ITEM_EDIT_MODE.CREATE,
+                }),
+        },
+    ];
 
     React.useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -59,15 +57,17 @@ const ActionMenu = ({
     }, [isOpen]);
 
     return (
-        <div className="relative leading-none" ref={containerRef}>
-            <button onClick={() => setIsOpen(true)}>
-                <EllipsisVertical
-                    color={colors.gray.main}
-                    className={className}
-                />
-            </button>
+        <div className="relative leading-none">
+            <HeaderTextButton
+                disabled={isOpen}
+                colorVariant="secondary"
+                onClick={() => setIsOpen(true)}>
+                <CirclePlus size={20} strokeWidth={2} />
+                アイテムを追加
+            </HeaderTextButton>
             <div
-                className={`z-10 absolute py-1 flex flex-col items-start text-sm bg-white rounded border border-gray-main shadow-lg ${positionClass[placement]} ${
+                ref={containerRef}
+                className={`z-10 absolute top-10 right-0 py-1 flex flex-col items-start text-base bg-white rounded border border-gray-main shadow-lg  ${
                     isOpen ? itemOpenStyles.open : itemOpenStyles.close
                 }`}>
                 {actionButtons.map((v, idx) => (
@@ -81,7 +81,7 @@ const ActionMenu = ({
                         <LucideIconWrapper
                             strokeWidth={1.5}
                             color={colors.black}
-                            size={14}>
+                            size={20}>
                             {v.icon}
                         </LucideIconWrapper>
                         {v.label}
@@ -92,4 +92,4 @@ const ActionMenu = ({
     );
 };
 
-export default ActionMenu;
+export default HeaderButton;

@@ -1,5 +1,5 @@
 'use client';
-import { Header, TextButton } from '@/components/common';
+import { TextButton } from '@/components/common';
 import LoadingAnimation from '@/components/common/LoadingAnimation';
 import {
     AddShoppingItemButton,
@@ -7,10 +7,9 @@ import {
     ShoppingItemSettingDialog,
     ShoppingList,
 } from '@/models/shopping/components';
-import { SHOPPING_ITEM_EDIT_MODE } from '@/models/shopping/constants';
 import { useShoppingStore } from '@/models/shopping/hooks';
 import { IGetShoppingItemsResponse } from '@/types/api';
-import { CalendarDays, ChevronRight, SquarePen } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import React from 'react';
 
 interface Props {
@@ -42,27 +41,6 @@ const ShoppingListPage: React.FC<Props> = ({ fetchItems }) => {
     return (
         <>
             {isLoading && <LoadingAnimation />}
-            {/* ヘッダー */}
-            <Header title="買い物リスト">
-                <div className="gap-x-4 hidden md:flex">
-                    {/* TODO: 実装 */}
-                    <TextButton colorVariant="accent" onClick={() => {}}>
-                        <CalendarDays size={20} />
-                        献立から追加
-                    </TextButton>
-                    <TextButton
-                        colorVariant="gray"
-                        onClick={() =>
-                            openDialog('itemSetting', {
-                                item: undefined,
-                                editMode: SHOPPING_ITEM_EDIT_MODE.CREATE,
-                            })
-                        }>
-                        <SquarePen size={20} />
-                        テキストから追加
-                    </TextButton>
-                </div>
-            </Header>
             {/* メインコンテンツ */}
             <main className="p-5">
                 <div className="pb-12 flex flex-col gap-y-7">

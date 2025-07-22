@@ -53,11 +53,36 @@ const ShoppingItemCard = ({ item }: Props) => {
         });
     };
 
+    const actionButtons = [
+        {
+            label: '編集する',
+            icon: <Pencil />,
+            onClick: () => {
+                openDialog('itemSetting', {
+                    item,
+                    editMode: SHOPPING_ITEM_EDIT_MODE.UPDATE,
+                });
+            },
+        },
+        {
+            label: '削除する',
+            icon: <Trash />,
+            onClick: openDeleteCheckDialog,
+        },
+        {
+            label: isPinned ? '固定解除する' : '固定する',
+            icon: isPinned ? <PinOff /> : <Pin />,
+            onClick: () =>
+                handleUpdateItem({
+                    ...item,
+                    isPinned: !isPinned,
+                }),
+        },
+    ];
+
     return (
         <>
-            <div
-                className="relative py-3 px-1 w-full text-left flex items-center justify-between rounded bg-white"
-                style={{ boxShadow: '1px 1px 5px rgba(0, 0, 0, 15%)' }}>
+            <div className="relative py-3 px-1 w-full text-left flex items-center justify-between rounded bg-white shadow-card">
                 <div className="w-full flex items-center gap-x-4">
                     {isPinned && (
                         <div className="absolute -top-3 -left-3 bg-primary-main rounded-full p-1">
@@ -100,33 +125,7 @@ const ShoppingItemCard = ({ item }: Props) => {
                         </label>
                     </div>
                     <ActionMenu
-                        actionButtons={[
-                            {
-                                label: '編集する',
-                                icon: <Pencil />,
-                                onClick: () => {
-                                    openDialog('itemSetting', {
-                                        item,
-                                        editMode:
-                                            SHOPPING_ITEM_EDIT_MODE.UPDATE,
-                                    });
-                                },
-                            },
-                            {
-                                label: '削除する',
-                                icon: <Trash />,
-                                onClick: openDeleteCheckDialog,
-                            },
-                            {
-                                label: isPinned ? '固定解除する' : '固定する',
-                                icon: isPinned ? <PinOff /> : <Pin />,
-                                onClick: () =>
-                                    handleUpdateItem({
-                                        ...item,
-                                        isPinned: !isPinned,
-                                    }),
-                            },
-                        ]}
+                        actionButtons={actionButtons}
                         placement="top-right"
                     />
                 </div>

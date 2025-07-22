@@ -6,6 +6,8 @@ import RecipePage from '@/pages/recipe/RecipePage';
 import { IGetRecipesResponse } from '@/types/api/recipe';
 import { Suspense } from 'react';
 import Loading from '../loading';
+import { CirclePlus } from 'lucide-react';
+import { HeaderLinkTextButton } from '@/components/common/HeaderTextButtons';
 
 const RecipePageWithData = async () => {
     let recipes: IGetRecipesResponse = { data: [], total: 0 };
@@ -36,7 +38,16 @@ const RecipePageWithData = async () => {
     }
     return (
         <>
-            <Header title="料理/レシピ一覧" />
+            <Header title="料理/レシピ一覧">
+                <div className="gap-x-4 hidden md:flex">
+                    <HeaderLinkTextButton
+                        href="/recipe/new"
+                        colorVariant="secondary">
+                        <CirclePlus size={20} />
+                        料理/レシピを追加
+                    </HeaderLinkTextButton>
+                </div>
+            </Header>
             <main>
                 {errorMessage && (
                     <SnackbarHandler type="error" message={errorMessage} />

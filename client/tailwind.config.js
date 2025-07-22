@@ -22,9 +22,11 @@ export default {
             },
             secondary: {
                 main: '#5E6946',
+                background: '#F6F8ED',
             },
             accent: {
                 main: '#A36062',
+                background: '#F8ECEE',
             },
 
             alert: {
@@ -47,6 +49,9 @@ export default {
                 blue: '#2673B8',
                 purple: '#6746B9',
             },
+        },
+        boxShadow: {
+            card: '1px 1px 5px rgba(0, 0, 0, 15%)',
         },
     },
     plugins: [],

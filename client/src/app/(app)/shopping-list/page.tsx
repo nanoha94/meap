@@ -5,6 +5,8 @@ import Loading from '../loading';
 import { apiClient } from '@/lib/apiClient';
 import { SnackbarHandler } from '@/components/handlers';
 import { timeout_ms } from '@/constants';
+import { Header } from '@/components/common';
+import HeaderButton from '@/models/shopping/components/HeaderButton/HeaderButton';
 
 async function ShoppingListsWithData() {
     let items: IGetShoppingItemsResponse = { data: [] };
@@ -34,6 +36,9 @@ async function ShoppingListsWithData() {
             {errorMessage && (
                 <SnackbarHandler type="error" message={errorMessage} />
             )}
+            <Header title="買い物リスト">
+                <HeaderButton />
+            </Header>
             <ShoppingListPage fetchItems={items?.data} />
         </>
     );
