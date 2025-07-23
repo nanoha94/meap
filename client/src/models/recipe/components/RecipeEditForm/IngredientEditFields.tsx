@@ -80,7 +80,7 @@ const IngredientEditFields = ({ control }: Props) => {
     };
 
     return (
-        <div className="flex flex-col gap-y-1">
+        <div className="flex flex-col gap-y-2">
             <div className="text-base">食材</div>
             <DndSortableList
                 items={fields}

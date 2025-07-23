@@ -1226,7 +1226,7 @@
                     "name": {
                         "description": "調味料単位名",
                         "type": "string",
-                        "example": "g"
+                        "example": "大さじ"
                     },
                     "order": {
                         "description": "並び順",

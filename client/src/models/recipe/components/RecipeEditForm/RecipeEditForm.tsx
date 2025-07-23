@@ -6,6 +6,7 @@ import { Button } from '@/components/common';
 import { defaultPostData } from '../../constants';
 import SeasoningEditFields from './SeasoningEditFields';
 import React from 'react';
+import CategoryEditFields from './CategoryEditFields';
 
 type FormData = IPostRecipeRequest;
 
@@ -24,7 +25,11 @@ const RecipeEditForm = () => {
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="py-5 px-10 flex">
             <div className="flex flex-col gap-y-5">
+                {/* カテゴリー */}
+                <CategoryEditFields control={control} />
+                {/* 食材 */}
                 <IngredientEditFields control={control} />
+                {/* 調味料 */}
                 <SeasoningEditFields control={control} />
             </div>
             <div>

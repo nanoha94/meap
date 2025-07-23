@@ -63,6 +63,7 @@ interface RecipeState {
     recipes: IGetRecipesResponse['data'];
 
     // マスターデータ
+    categories: IGetMasterResponse['recipeCategories'];
     ingredientUnits: IGetMasterResponse['ingredientUnits'];
     seasoningUnits: IGetMasterResponse['seasoningUnits'];
 
@@ -73,6 +74,7 @@ interface RecipeState {
     setRecipes: (recipes: IGetRecipesResponse['data']) => void;
 
     // マスターデータのアクション
+    setCategories: (categories: IGetMasterResponse['recipeCategories']) => void;
     setIngredientUnits: (
         ingredientUnits: IGetMasterResponse['ingredientUnits'],
     ) => void;
@@ -91,6 +93,7 @@ interface RecipeState {
 export const useRecipeStore = create<RecipeState>(set => ({
     // 初期状態
     recipes: [],
+    categories: [],
     ingredientUnits: [],
     seasoningUnits: [],
     dialogs: initialDialogsState,
@@ -101,6 +104,9 @@ export const useRecipeStore = create<RecipeState>(set => ({
     },
 
     // マスターデータのアクション
+    setCategories: categories => {
+        set({ categories });
+    },
     setIngredientUnits: ingredientUnits => {
         set({ ingredientUnits });
     },
