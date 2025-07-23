@@ -1,9 +1,9 @@
 'use client';
-import { TextButton } from '@/components/common';
+import { Dialog, TextButton } from '@/components/common';
 import LoadingAnimation from '@/components/common/LoadingAnimation';
 import {
     AddShoppingItemButton,
-    ShoppingCategorySettingDialog,
+    ShoppingCategorySettingForm,
     ShoppingItemSettingDialog,
     ShoppingList,
 } from '@/models/shopping/components';
@@ -21,11 +21,20 @@ const ShoppingListPage: React.FC<Props> = ({ fetchItems }) => {
         items: storeItems,
         setServerItems,
         setItems: setStoreItems,
-        openDialog,
         isLoadingCategories,
         isLoadingItems,
     } = useShoppingStore();
     const [isLoading, setIsLoading] = React.useState(false);
+    const [isOpenCategorySettingDialog, setIsOpenCategorySettingDialog] =
+        React.useState<boolean>(false);
+
+    const handleOpenCategorySettingDialog = () => {
+        setIsOpenCategorySettingDialog(true);
+    };
+
+    const handleCloseCategorySettingDialog = () => {
+        setIsOpenCategorySettingDialog(false);
+    };
 
     React.useEffect(() => {
         if (fetchItems) {
@@ -48,9 +57,7 @@ const ShoppingListPage: React.FC<Props> = ({ fetchItems }) => {
                     <ShoppingList items={storeItems} />
                     <TextButton
                         colorVariant="secondary"
-                        onClick={() => {
-                            openDialog('categorySetting', undefined);
-                        }}>
+                        onClick={handleOpenCategorySettingDialog}>
                         カテゴリーの追加・編集
                         <ChevronRight size={20} />
                     </TextButton>
@@ -60,7 +67,14 @@ const ShoppingListPage: React.FC<Props> = ({ fetchItems }) => {
             {/* アイテム追加・編集ダイアログ */}
             <ShoppingItemSettingDialog />
             {/* カテゴリー設定ダイアログ */}
-            <ShoppingCategorySettingDialog />
+            <Dialog
+                title="買い物カテゴリ―設定"
+                isOpen={isOpenCategorySettingDialog}
+                onClose={handleCloseCategorySettingDialog}>
+                <ShoppingCategorySettingForm
+                    onClose={handleCloseCategorySettingDialog}
+                />
+            </Dialog>
         </>
     );
 };

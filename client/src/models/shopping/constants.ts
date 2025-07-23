@@ -23,7 +23,7 @@ export const SHOPPING_ITEM_SETTING_DIALOG_CONFIGS: Record<
     },
     [SHOPPING_ITEM_EDIT_MODE.UPDATE]: {
         title: '買い物アイテムを編集',
-        buttonText: '更新',
+        buttonText: '保存',
     },
 };
 

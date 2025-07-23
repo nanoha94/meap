@@ -11,7 +11,6 @@ type DialogPayload = {
         item: IShoppingItem | undefined;
         editMode: (typeof SHOPPING_ITEM_EDIT_MODE)[keyof typeof SHOPPING_ITEM_EDIT_MODE];
     };
-    categorySetting: undefined; // データが不要な場合はundefined
 };
 
 type DialogsState = {
@@ -62,7 +61,6 @@ const initialDialogsState: DialogsState = {
         isOpen: false,
         payload: { item: undefined, editMode: SHOPPING_ITEM_EDIT_MODE.CREATE },
     },
-    categorySetting: { isOpen: false, payload: undefined },
 };
 
 export const useShoppingStore = create<ShoppingState>(set => ({

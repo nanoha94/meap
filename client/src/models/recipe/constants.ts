@@ -30,7 +30,7 @@ export const RECIPE_SETTING_DIALOG_CONFIGS: RecipeSettingDialogConfigs = {
         },
         [RECIPE_SETTING_DIALOG_EDIT_MODE.UPDATE]: {
             title: '食材を編集',
-            actionButtonText: '更新',
+            actionButtonText: '保存',
         },
     },
     [RECIPE_SETTING_DIALOG_NAME.SEASONING]: {
@@ -40,7 +40,7 @@ export const RECIPE_SETTING_DIALOG_CONFIGS: RecipeSettingDialogConfigs = {
         },
         [RECIPE_SETTING_DIALOG_EDIT_MODE.UPDATE]: {
             title: '調味料を編集',
-            actionButtonText: '更新',
+            actionButtonText: '保存',
         },
     },
 };
