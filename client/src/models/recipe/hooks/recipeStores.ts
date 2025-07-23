@@ -3,8 +3,6 @@ import {
     IIngredient,
     IRecipeCategory,
     ISeasoning,
-    // IPostRecipeRequest,
-    // IPutRecipeRequest,
 } from '@/types/api/recipe';
 import { create } from 'zustand';
 import { RECIPE_SETTING_DIALOG_EDIT_MODE } from '../constants';
@@ -21,6 +19,7 @@ type DialogPayload = {
         onAction: (value: IIngredient) => void;
     };
     seasoningSetting: {
+        item: ISeasoning | undefined;
         editMode: (typeof RECIPE_SETTING_DIALOG_EDIT_MODE)[keyof typeof RECIPE_SETTING_DIALOG_EDIT_MODE];
         onAction: (value: ISeasoning) => void;
     };
@@ -52,6 +51,7 @@ const initialDialogsState: DialogsState = {
     seasoningSetting: {
         isOpen: false,
         payload: {
+            item: undefined,
             editMode: RECIPE_SETTING_DIALOG_EDIT_MODE.CREATE,
             onAction: () => {},
         },
@@ -61,10 +61,6 @@ const initialDialogsState: DialogsState = {
 interface RecipeState {
     // ローカル状態
     recipes: IGetRecipesResponse['data'];
-
-    // 編集データ
-    // createData: IPostRecipeRequest;
-    // updateData: IPutRecipeRequest;
 
     // マスターデータ
     ingredientUnits: IGetMasterResponse['ingredientUnits'];
@@ -95,27 +91,6 @@ interface RecipeState {
 export const useRecipeStore = create<RecipeState>(set => ({
     // 初期状態
     recipes: [],
-    // createData: {
-    //     name: '',
-    //     url: '',
-    //     recipe: '',
-    //     memo: '',
-    //     categories: [],
-    //     seasonings: [],
-    //     ingredients: [],
-    //     thumbnailImage: new File([], ''),
-    // },
-    // updateData: {
-    //     id: '',
-    //     name: '',
-    //     url: '',
-    //     recipe: '',
-    //     memo: '',
-    //     categories: [],
-    //     seasonings: [],
-    //     ingredients: [],
-    //     thumbnailImage: new File([], ''),
-    // },
     ingredientUnits: [],
     seasoningUnits: [],
     dialogs: initialDialogsState,

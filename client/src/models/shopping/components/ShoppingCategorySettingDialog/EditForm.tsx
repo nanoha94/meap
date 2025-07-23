@@ -1,5 +1,6 @@
 'use client';
-import { Button, DndSortableList, TextButton } from '@/components/common';
+import { Button, TextButton } from '@/components/common';
+import { DndSortableList } from '@/components/dnd';
 import { CirclePlus } from 'lucide-react';
 import React from 'react';
 import { IShoppingCategory } from '@/types/api';

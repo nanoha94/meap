@@ -46,19 +46,19 @@ export const RECIPE_SETTING_DIALOG_CONFIGS: RecipeSettingDialogConfigs = {
 };
 
 export const defaultRecipeCategory = {
-    id: '',
+    id: `${TMP_ID_PREFIX.RECIPE_CATEGORY}-0`,
     name: '',
 };
 export const defaultIngredient = {
-    id: '',
+    id: `${TMP_ID_PREFIX.RECIPE_INGREDIENT}-0`,
     name: '',
     quantity: undefined,
     unitId: '',
 };
 export const defaultSeasoning = {
-    id: '',
+    id: `${TMP_ID_PREFIX.RECIPE_SEASONING}-0`,
     name: '',
-    quantity: 0,
+    quantity: undefined,
     unitId: '',
 };
 export const defaultPostData: IPostRecipeRequest = {

@@ -1,6 +1,9 @@
 'use client';
 
-import { IngredientEditDialog } from '@/models/recipe/components';
+import {
+    IngredientEditDialog,
+    SeasoningEditDialog,
+} from '@/models/recipe/components';
 import RecipeEditForm from '@/models/recipe/components/RecipeEditForm/RecipeEditForm';
 
 const RecipeEditPage = () => {
@@ -8,6 +11,7 @@ const RecipeEditPage = () => {
         <>
             <RecipeEditForm />
             <IngredientEditDialog />
+            <SeasoningEditDialog />
         </>
     );
 };

@@ -4,20 +4,15 @@ import IngredientEditFields from './IngredientEditFields';
 import { IPostRecipeRequest } from '@/types/api/recipe';
 import { Button } from '@/components/common';
 import { defaultPostData } from '../../constants';
+import SeasoningEditFields from './SeasoningEditFields';
+import React from 'react';
 
 type FormData = IPostRecipeRequest;
 
 const RecipeEditForm = () => {
-    const { control, watch, handleSubmit } = useForm<FormData>({
+    const { control, handleSubmit } = useForm<FormData>({
         defaultValues: defaultPostData,
     });
-
-    /**
-     * カテゴリ―、食材、調味料の監視
-     */
-    // const watchedCategories = watch('categories');
-    const watchedIngredients = watch('ingredients');
-    // const watchedSeasonings = watch('seasonings');
 
     /**
      * フォームの送信処理
@@ -29,10 +24,8 @@ const RecipeEditForm = () => {
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="py-5 px-10 flex">
             <div className="flex flex-col gap-y-5">
-                <IngredientEditFields
-                    ingredients={watchedIngredients ?? []}
-                    control={control}
-                />
+                <IngredientEditFields control={control} />
+                <SeasoningEditFields control={control} />
             </div>
             <div>
                 <Button type="submit">追加</Button>

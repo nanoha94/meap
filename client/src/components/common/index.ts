@@ -2,7 +2,6 @@ export { default as ActionMenu } from './ActionMenu';
 export { default as AlertDialog } from './AlertDialog';
 export { default as Button } from './Button';
 export { default as Dialog } from './Dialog';
-export { default as DndSortableList } from './DndSortableList';
 export { default as EmailVerifiedHandler } from './EmailVerifiedHandler';
 export { default as EmptyButton } from './EmptyButton';
 export { default as FooterNavigation } from './FooterNavigation';

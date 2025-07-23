@@ -10,6 +10,7 @@ import {
 } from '@dnd-kit/core';
 import { SortableContext } from '@dnd-kit/sortable';
 import Sortable from '../dnd/Sortable';
+import React from 'react';
 
 interface Props<T extends { id: string }> {
     items: T[];
@@ -24,7 +25,12 @@ const DndSortableList = <T extends { id: string }>({
     onDragEnd,
     renderItem,
 }: Props<T>) => {
-    const itemIds: string[] = items.map((_, index) => `${prefix}${index}`);
+    const id = React.useId();
+
+    const itemIds: string[] = React.useMemo(
+        () => items.map((_, index) => `${prefix}${index}`),
+        [items, prefix],
+    );
 
     /**
      * センサーの設定
@@ -51,7 +57,7 @@ const DndSortableList = <T extends { id: string }>({
     };
 
     return (
-        <DndContext onDragEnd={handleDragEnd} sensors={sensors}>
+        <DndContext id={id} onDragEnd={handleDragEnd} sensors={sensors}>
             {!!items && items.length > 0 && (
                 <SortableContext items={itemIds}>
                     {items.map((item, index) => (

@@ -3,77 +3,76 @@ import { TextButton } from '@/components/common';
 import { DndSortableList } from '@/components/dnd';
 import EditDialogButton from '../EditDialogButton/EditDialogButton';
 import {
-    defaultIngredient,
+    defaultSeasoning,
     RECIPE_SETTING_DIALOG_EDIT_MODE,
     RECIPE_SETTING_DIALOG_NAME,
     TMP_ID_PREFIX,
 } from '../../constants';
 import { useRecipeStore } from '../../hooks/recipeStores';
 import { Control, useFieldArray } from 'react-hook-form';
-import { IIngredient, IPostRecipeRequest } from '@/types/api/recipe';
+import { IPostRecipeRequest, ISeasoning } from '@/types/api/recipe';
 import { CirclePlus } from 'lucide-react';
-import React from 'react';
 
 interface Props {
     control: Control<IPostRecipeRequest>;
 }
 
-const IngredientEditFields = ({ control }: Props) => {
-    const { ingredientUnits, openDialog } = useRecipeStore();
+const SeasoningEditFields = ({ control }: Props) => {
+    const { seasoningUnits, openDialog } = useRecipeStore();
     const { fields, append, remove, update, move } =
         useFieldArray<IPostRecipeRequest>({
             control,
-            name: 'ingredients',
+            name: 'seasonings',
         });
 
     /**
-     * 空の食材を追加
+     * 空の調味料を追加
      */
-    const addEmptyIngredient = () => {
+    const addEmptySeasoning = () => {
         let lastIndex = fields?.length ?? 0;
         const emptyItem = fields?.filter(item => item.name === '');
 
-        // 空の食材がある場合は、その食材のインデックスを取得
+        // 空の調味料がある場合は、その調味料のインデックスを取得
         if (emptyItem && emptyItem.length > 0) {
             lastIndex =
                 fields?.findIndex(item => item.id === emptyItem[0].id) ?? 0;
         }
-        // 空の食材がない場合は、新しい入力項目を追加
+        // 空の調味料がない場合は、新しい入力項目を追加
         else {
-            append(defaultIngredient);
+            append(defaultSeasoning);
         }
 
-        // 食材の編集ダイアログを開く
-        openDialog(RECIPE_SETTING_DIALOG_NAME.INGREDIENT, {
+        // 調味料の編集ダイアログを開く
+        openDialog(RECIPE_SETTING_DIALOG_NAME.SEASONING, {
             item: undefined,
             editMode: RECIPE_SETTING_DIALOG_EDIT_MODE.CREATE,
-            onAction: (value: IIngredient) => update(lastIndex, value),
+            onAction: (value: ISeasoning) => update(lastIndex, value),
         });
     };
 
     /**
-     * 食材を削除
-     * @param index 削除する食材のインデックス
+     * 調味料を削除
+     * @param index 削除する調味料のインデックス
      */
     const removeItem = (index: number) => {
-        // 最初の食材を削除した場合は、デフォルトの食材を設定（入力項目が0個にならないようにするため）
+        // 最初の調味料を削除した場合は、デフォルトの調味料を設定（入力項目が0個にならないようにするため）
         if (index === 0) {
-            update(0, defaultIngredient);
+            update(0, defaultSeasoning);
         } else {
             remove(index);
         }
     };
 
     /**
-     * 食材の値のフォーマット
-     * @param value 食材のデータ
-     * @returns 食材の値
+     * 調味料の値のフォーマット
+     * @param value 調味料のデータ
+     * @returns 調味料の値
      */
-    const formatValue = (value: IIngredient) => {
+    const formatValue = (value: ISeasoning) => {
         let result: string = value.name;
 
         if (result && value.unitId) {
-            result += ` / ${value.quantity || ''}${ingredientUnits.find(v => v.id === value.unitId)?.name}`;
+            result += ` / ${value.quantity || ''}${seasoningUnits.find(v => v.id === value.unitId)?.name}`;
         }
 
         return result;
@@ -81,10 +80,10 @@ const IngredientEditFields = ({ control }: Props) => {
 
     return (
         <div className="flex flex-col gap-y-1">
-            <div className="text-base">食材</div>
+            <div className="text-base">調味料</div>
             <DndSortableList
                 items={fields}
-                prefix={TMP_ID_PREFIX.RECIPE_INGREDIENT}
+                prefix={TMP_ID_PREFIX.RECIPE_SEASONING}
                 onDragEnd={(oldIndex, newIndex) => {
                     move(oldIndex, newIndex);
                 }}
@@ -92,15 +91,15 @@ const IngredientEditFields = ({ control }: Props) => {
                     return (
                         <EditDialogButton
                             key={item.id}
-                            dialogName={RECIPE_SETTING_DIALOG_NAME.INGREDIENT}
+                            dialogName={RECIPE_SETTING_DIALOG_NAME.SEASONING}
                             editMode={RECIPE_SETTING_DIALOG_EDIT_MODE.UPDATE}
                             isDisabled={
                                 index === 0 &&
                                 fields?.length === 1 &&
                                 fields[0].name === ''
                             }
-                            name={`ingredients.${index}`}
-                            placeholder="食材を設定"
+                            name={`seasonings.${index}`}
+                            placeholder="調味料を設定"
                             control={control}
                             onDelete={() => {
                                 removeItem(index);
@@ -112,7 +111,7 @@ const IngredientEditFields = ({ control }: Props) => {
             />
             <TextButton
                 type="button"
-                onClick={addEmptyIngredient}
+                onClick={addEmptySeasoning}
                 className="!border-none !bg-transparent hover:!bg-gray-light">
                 <CirclePlus size={20} />
                 追加
@@ -121,4 +120,4 @@ const IngredientEditFields = ({ control }: Props) => {
     );
 };
 
-export default IngredientEditFields;
+export default SeasoningEditFields;

@@ -1,3 +1,4 @@
+'use client';
 import { Control, Controller, FieldValues, Path } from 'react-hook-form';
 
 interface Props<T extends FieldValues> {
