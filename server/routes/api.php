@@ -24,7 +24,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // recipes
     Route::apiResource('/recipes', RecipeController::class)->except(['update']);
     Route::post('/recipes/{id}', [RecipeController::class, 'update']);
-    Route::apiResource('/recipe-categories', RecipeCategoryController::class)->except(['index', 'show']);
+    Route::apiResource('/recipe-categories', RecipeCategoryController::class)->only(['store']);
+    Route::put('/recipe-categories/bulk', [RecipeCategoryController::class, 'bulkUpdate']);
+    Route::delete('/recipe-categories/bulk', [RecipeCategoryController::class, 'bulkDestroy']);
 
     // invitations
     Route::resource('invitations', InvitationController::class)->only(['store', 'show']);

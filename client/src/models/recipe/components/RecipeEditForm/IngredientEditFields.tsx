@@ -44,6 +44,7 @@ const IngredientEditFields = ({ control }: Props) => {
         }
 
         // 食材の編集ダイアログを開く
+        // TODO: ダイアログのモードを切り替える
         openDialog(RECIPE_SETTING_DIALOG_NAME.INGREDIENT, {
             item: undefined,
             editMode: RECIPE_SETTING_DIALOG_EDIT_MODE.CREATE,

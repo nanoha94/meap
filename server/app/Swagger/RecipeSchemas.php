@@ -33,9 +33,10 @@ namespace App\Swagger;
  * 
  * @OA\Schema(
  *     schema="RecipeCategory",
- *     required={"id", "name"},
+ *     required={"id", "name", "order"},
  *     @OA\Property(property="id", type="string", description="ID", example="1"),
- *     @OA\Property(property="name", type="string", description="カテゴリ名", example="肉料理")
+ *     @OA\Property(property="name", type="string", description="カテゴリ名", example="肉料理"),
+ *     @OA\Property(property="order", type="integer", description="並び順", example=1)
  * )
  * 
  * @OA\Schema(
@@ -60,7 +61,8 @@ namespace App\Swagger;
  *     @OA\Property(property="id", type="string", description="ID", example="1"),
  *     @OA\Property(property="name", type="string", description="調味料名", example="塩"),
  *     @OA\Property(property="quantity", type="double", description="量", example="1"),
- *     @OA\Property(property="unitId", type="string", description="単位", example="1")
+ *     @OA\Property(property="unitId", type="string", description="単位", example="1"),
+ *     @OA\Property(property="order", type="integer", description="並び順", example=1)
  * )
  * 
  * @OA\Schema(
@@ -69,7 +71,8 @@ namespace App\Swagger;
  *     @OA\Property(property="id", type="string", description="ID", example="1"),
  *     @OA\Property(property="name", type="string", description="食材名", example="牛肉"),
  *     @OA\Property(property="quantity", type="double", description="量", example="1"),
- *     @OA\Property(property="unitId", type="string", description="単位", example="1")
+ *     @OA\Property(property="unitId", type="string", description="単位", example="1"),
+ *     @OA\Property(property="order", type="integer", description="並び順", example=1)
  * )
  */
 

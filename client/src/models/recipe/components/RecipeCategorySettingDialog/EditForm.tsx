@@ -6,8 +6,8 @@ import React from 'react';
 import { IShoppingCategory } from '@/types/api';
 import { useFieldArray, useForm } from 'react-hook-form';
 import EditItem from './EditItem';
-import { useShoppingCategories } from '../../hooks';
 import { TMP_ID_PREFIX } from '../../constants';
+import { useRecipeCategories } from '../../hooks/useRecipeCategories';
 
 interface FormData {
     categories: IShoppingCategory[];
@@ -17,9 +17,9 @@ interface Props {
     onClose: () => void;
 }
 
-const ShoppingCategorySettingForm: React.FC<Props> = ({ onClose }) => {
-    const { storeData, bulkUpdateShoppingCategories } = useShoppingCategories();
-    const prefix = TMP_ID_PREFIX.SHOPPING_CATEGORY;
+const EditForm: React.FC<Props> = ({ onClose }) => {
+    const { storeData, bulkUpdateRecipeCategories } = useRecipeCategories();
+    const prefix = TMP_ID_PREFIX.RECIPE_CATEGORY;
 
     const { control, handleSubmit, watch, reset } = useForm<FormData>({
         defaultValues: {
@@ -79,7 +79,7 @@ const ShoppingCategorySettingForm: React.FC<Props> = ({ onClose }) => {
                     (v.id?.startsWith(prefix) && v.name.length > 0) ||
                     !v.id?.startsWith(prefix),
             );
-            bulkUpdateShoppingCategories(
+            bulkUpdateRecipeCategories(
                 filteredItems.map((v, idx) => ({
                     ...v,
                     order: idx,
@@ -143,4 +143,4 @@ const ShoppingCategorySettingForm: React.FC<Props> = ({ onClose }) => {
     );
 };
 
-export default ShoppingCategorySettingForm;
+export default EditForm;

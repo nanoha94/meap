@@ -128,7 +128,7 @@ class ShoppingCategoryController extends Controller
         try {
             // 更新処理を実行
             foreach ($request->data as $category) {
-                $ret = ShoppingCategory::where('id', $category['id'])->update([
+                $ret = ShoppingCategory::where('id', $category['id'])->where('group_id', $group->id)->update([
                     'name' => $category['name'],
                     'is_default' => $category['isDefault'],
                     'order' => $category['order']
@@ -141,7 +141,7 @@ class ShoppingCategoryController extends Controller
             }
 
             // 更新後のカテゴリーを全て取得
-            $categories = $group->shoppingCategories()->select('id', 'name', 'is_default', 'order')->get();
+            $categories = $group->shoppingCategories()->where('group_id', $group->id)->select('id', 'name', 'is_default', 'order')->get();
             $ret = $categories->map(function ($category) {
                 return [
                     'id' => $category->id,

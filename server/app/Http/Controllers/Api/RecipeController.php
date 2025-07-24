@@ -65,19 +65,22 @@ class RecipeController extends Controller
                     'memo' => $recipe->memo,
                     'categories' => $recipe->categories->map(fn($item) => [
                         'id' => $item->id,
-                        'name' => $item->name
+                        'name' => $item->name,
+                        'order' => $item->order
                     ]),
                     'seasonings' => $recipe->seasonings->map(fn($item) => [
                         'id' => $item->id,
                         'name' => $item->name,
                         'quantity' => $item->pivot->quantity,
-                        'unitId' => $item->pivot->unit_id
+                        'unitId' => $item->pivot->unit_id,
+                        'order' => $item->pivot->order
                     ]),
                     'ingredients' => $recipe->ingredients->map(fn($item) => [
                         'id' => $item->id,
                         'name' => $item->name,
                         'quantity' => $item->pivot->quantity,
-                        'unitId' => $item->pivot->unit_id
+                        'unitId' => $item->pivot->unit_id,
+                        'order' => $item->pivot->order
                     ])
                 ];
             }),
@@ -142,17 +145,22 @@ class RecipeController extends Controller
                 ]);
 
                 // 2. カテゴリーを紐づけ
-                if (!empty($request->categories)) {
-                    $categories = is_string($request->categories)
-                        ? json_decode($request->categories, true)
-                        : $request->categories;
+                if (!empty($request->categoryIds)) {
+                    $categoryIds = $request->categoryIds;
 
-                    // 連想配列（単一オブジェクト）の場合は配列でラップ
-                    if (!empty($categories) && is_array($categories) && !array_key_exists(0, $categories)) {
-                        $categories = [$categories];
+                    // もし配列で来ていればそのまま
+                    if (is_array($categoryIds)) {
+                        // 何もしない
+                    }
+                    // もしJSON配列文字列ならdecode
+                    else if (is_string($categoryIds) && preg_match('/^\[.*\]$/', $categoryIds)) {
+                        $categoryIds = json_decode($categoryIds, true);
+                    }
+                    // それ以外（単一IDの文字列）は配列にラップ
+                    else if (is_string($categoryIds)) {
+                        $categoryIds = [$categoryIds];
                     }
 
-                    $categoryIds = collect($categories)->pluck('id')->toArray();
                     $existingCategoryIds = RecipeCategory::whereIn('id', $categoryIds)
                         ->pluck('id')
                         ->toArray();
@@ -190,7 +198,8 @@ class RecipeController extends Controller
                         $data = collect($seasonings)->mapWithKeys(function ($item, $idx) use ($ids) {
                             return [$ids[$idx] => [
                                 'quantity' => $item['quantity'],
-                                'unit_id' => $item['unitId']
+                                'unit_id' => $item['unitId'],
+                                'order' => $item['order'] ?? 0
                             ]];
                         })->toArray();
                         $ret->seasonings()->attach($data);
@@ -211,7 +220,8 @@ class RecipeController extends Controller
                     $ids = $this->findOrCreateIds(
                         collect($ingredients)->map(fn($item) => [
                             'id' => $item['id'] ?? null,
-                            'name' => $item['name']
+                            'name' => $item['name'],
+
                         ])->toArray(),
                         $group,
                         Ingredient::class
@@ -219,7 +229,8 @@ class RecipeController extends Controller
                     $data = collect($ingredients)->mapWithKeys(function ($item, $idx) use ($ids) {
                         return [$ids[$idx] => [
                             'quantity' => $item['quantity'],
-                            'unit_id' => $item['unitId']
+                            'unit_id' => $item['unitId'],
+                            'order' => $item['order'] ?? 0
                         ]];
                     })->toArray();
                     $ret->ingredients()->attach($data);
@@ -265,19 +276,22 @@ class RecipeController extends Controller
                 'memo' => $ret->memo,
                 'categories' => $ret->categories->map(fn($item) => [
                     'id' => $item->id,
-                    'name' => $item->name
+                    'name' => $item->name,
+                    'order' => $item->order
                 ]),
                 'seasonings' => $ret->seasonings->map(fn($item) => [
                     'id' => $item->id,
                     'name' => $item->name,
                     'quantity' => $item->pivot->quantity,
-                    'unitId' => $item->pivot->unit_id
+                    'unitId' => $item->pivot->unit_id,
+                    'order' => $item->pivot->order
                 ]),
                 'ingredients' => $ret->ingredients->map(fn($item) => [
                     'id' => $item->id,
                     'name' => $item->name,
                     'quantity' => $item->pivot->quantity,
-                    'unitId' => $item->pivot->unit_id
+                    'unitId' => $item->pivot->unit_id,
+                    'order' => $item->pivot->order
                 ]),
             ], 200);
         } catch (\Exception $e) {
@@ -330,19 +344,22 @@ class RecipeController extends Controller
             'memo' => $recipe->memo,
             'categories' => $recipe->categories->map(fn($item) => [
                 'id' => $item->id,
-                'name' => $item->name
+                'name' => $item->name,
+                'order' => $item->order
             ]),
             'seasonings' => $recipe->seasonings->map(fn($item) => [
                 'id' => $item->id,
                 'name' => $item->name,
                 'quantity' => $item->pivot->quantity,
-                'unitId' => $item->pivot->unit_id
+                'unitId' => $item->pivot->unit_id,
+                'order' => $item->pivot->order
             ]),
             'ingredients' => $recipe->ingredients->map(fn($item) => [
                 'id' => $item->id,
                 'name' => $item->name,
                 'quantity' => $item->pivot->quantity,
-                'unitId' => $item->pivot->unit_id
+                'unitId' => $item->pivot->unit_id,
+                'order' => $item->pivot->order
             ])
         ];
 
@@ -408,17 +425,21 @@ class RecipeController extends Controller
                 ]);
 
                 // 2. カテゴリー更新
-                if (!empty($request->categories)) {
-                    $categories = is_string($request->categories)
-                        ? json_decode($request->categories, true)
-                        : $request->categories;
-
-                    // 連想配列（単一オブジェクト）の場合は配列でラップ
-                    if (!empty($categories) && is_array($categories) && !array_key_exists(0, $categories)) {
-                        $categories = [$categories];
+                if (!empty($request->categoryIds)) {
+                    $categoryIds = $request->categoryIds;
+                    // もし配列で来ていればそのまま
+                    if (is_array($categoryIds)) {
+                        // 何もしない
+                    }
+                    // もしJSON配列文字列ならdecode
+                    else if (is_string($categoryIds) && preg_match('/^\[.*\]$/', $categoryIds)) {
+                        $categoryIds = json_decode($categoryIds, true);
+                    }
+                    // それ以外（単一IDの文字列）は配列にラップ
+                    else if (is_string($categoryIds)) {
+                        $categoryIds = [$categoryIds];
                     }
 
-                    $categoryIds = collect($categories)->pluck('id')->toArray();
                     $existingCategoryIds = RecipeCategory::whereIn('id', $categoryIds)
                         ->pluck('id')
                         ->toArray();
@@ -456,7 +477,8 @@ class RecipeController extends Controller
                         $data = collect($seasonings)->mapWithKeys(function ($item, $idx) use ($ids) {
                             return [$ids[$idx] => [
                                 'quantity' => $item['quantity'],
-                                'unit_id' => $item['unitId']
+                                'unit_id' => $item['unitId'],
+                                'order' => $item['order'] ?? 0
                             ]];
                         })->toArray();
                         $recipe->seasonings()->sync($data);
@@ -485,7 +507,8 @@ class RecipeController extends Controller
                     $data = collect($ingredients)->mapWithKeys(function ($item, $idx) use ($ids) {
                         return [$ids[$idx] => [
                             'quantity' => $item['quantity'],
-                            'unit_id' => $item['unitId']
+                            'unit_id' => $item['unitId'],
+                            'order' => $item['order'] ?? 0
                         ]];
                     })->toArray();
                     $recipe->ingredients()->sync($data);
@@ -556,19 +579,22 @@ class RecipeController extends Controller
                 'memo' => $updatedItem->memo,
                 'categories' => $updatedItem->categories->map(fn($item) => [
                     'id' => $item->id,
-                    'name' => $item->name
+                    'name' => $item->name,
+                    'order' => $item->order
                 ]),
                 'seasonings' => $updatedItem->seasonings->map(fn($item) => [
                     'id' => $item->id,
                     'name' => $item->name,
                     'quantity' => $item->pivot->quantity,
-                    'unitId' => $item->pivot->unit_id
+                    'unitId' => $item->pivot->unit_id,
+                    'order' => $item->pivot->order
                 ]),
                 'ingredients' => $updatedItem->ingredients->map(fn($item) => [
                     'id' => $item->id,
                     'name' => $item->name,
                     'quantity' => $item->pivot->quantity,
-                    'unitId' => $item->pivot->unit_id
+                    'unitId' => $item->pivot->unit_id,
+                    'order' => $item->pivot->order
                 ]),
             ], 200);
         } catch (\Exception $e) {

@@ -50,6 +50,7 @@ entity recipe_ingredient_mappings {
     * ingredient_id : string <<FK>>
     * unit_id : string <<FK>>
     * quantity : float
+    * order : int / ソート順
 }
 
 entity recipe_seasoning_mappings {
@@ -57,6 +58,7 @@ entity recipe_seasoning_mappings {
     * seasoning_id : string <<FK>>
     * unit_id : string <<FK>>
     * quantity : float
+    * order : int / ソート順
 }
 
 entity course_types {
@@ -71,6 +73,7 @@ entity recipe_categories {
     * id : string <<generated>>
     --
     * name : string
+    * order : int / ソート順
     * group_id : string <<FK>>
 }
 

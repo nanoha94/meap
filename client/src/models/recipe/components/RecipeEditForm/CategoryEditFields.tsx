@@ -1,34 +1,19 @@
 'use client';
-import { Dialog, TextButton } from '@/components/common';
+import { TextButton } from '@/components/common';
 import { Control, Controller } from 'react-hook-form';
 import { IPostRecipeRequest, IRecipeCategory } from '@/types/api/recipe';
 import { Check, ChevronRight } from 'lucide-react';
 import React from 'react';
 import { useRecipeStore } from '../../hooks/recipeStores';
 import { colors } from '@/constants';
+import { RECIPE_SETTING_DIALOG_NAME } from '../../constants';
 
 interface Props {
     control: Control<IPostRecipeRequest>;
 }
 
 const CategoryEditFields = ({ control }: Props) => {
-    const { categories } = useRecipeStore();
-    const [isOpenCategorySettingDialog, setIsOpenCategorySettingDialog] =
-        React.useState<boolean>(false);
-
-    /**
-     * カテゴリー設定ダイアログを開く
-     */
-    const handleOpenCategorySettingDialog = () => {
-        setIsOpenCategorySettingDialog(true);
-    };
-
-    /**
-     * カテゴリー設定ダイアログを閉じる
-     */
-    const handleCloseCategorySettingDialog = () => {
-        setIsOpenCategorySettingDialog(false);
-    };
+    const { categories, openDialog } = useRecipeStore();
 
     /**
      * カテゴリーのラベルの背景色を返す
@@ -129,21 +114,15 @@ const CategoryEditFields = ({ control }: Props) => {
                 </div>
                 <TextButton
                     colorVariant="secondary"
-                    onClick={handleOpenCategorySettingDialog}>
+                    onClick={() =>
+                        openDialog(RECIPE_SETTING_DIALOG_NAME.CATEGORY, {
+                            onAction: () => {},
+                        })
+                    }>
                     カテゴリーの追加・編集
                     <ChevronRight size={20} />
                 </TextButton>
             </div>
-            {/* カテゴリー設定ダイアログ */}
-            <Dialog
-                title="料理カテゴリ―設定"
-                isOpen={isOpenCategorySettingDialog}
-                onClose={handleCloseCategorySettingDialog}>
-                あとで実装
-                {/* <ShoppingCategorySettingForm
-             onClose={handleCloseCategorySettingDialog}
-         /> */}
-            </Dialog>
         </>
     );
 };

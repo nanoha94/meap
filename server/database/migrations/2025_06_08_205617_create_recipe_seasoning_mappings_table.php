@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignUuid('seasoning_id')->constrained('seasonings', 'id')->cascadeOnDelete();
             $table->foreignUuid('unit_id')->constrained('seasoning_units', 'id')->cascadeOnDelete();
             $table->float('quantity');
+            $table->integer('order')->default(0);
             $table->primary(['recipe_id', 'seasoning_id', 'unit_id']);
         });
     }

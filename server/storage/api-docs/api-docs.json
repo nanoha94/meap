@@ -443,24 +443,19 @@
                 ]
             }
         },
-        "/recipe-categories/{id}": {
+        "/recipe-categories/bulk": {
             "put": {
                 "tags": [
                     "Recipes"
                 ],
                 "summary": "料理カテゴリを更新",
-                "operationId": "67c9bc479327bc58d30c33bb533c93a5",
-                "parameters": [
-                    {
-                        "$ref": "#/components/parameters/RecipeCategoryIdParam"
-                    }
-                ],
+                "operationId": "0d4ab9983cbd49759ef8122cbba081df",
                 "requestBody": {
-                    "$ref": "#/components/requestBodies/RecipeCategoryRequest"
+                    "$ref": "#/components/requestBodies/RecipeCategoryBulkUpdateRequest"
                 },
                 "responses": {
                     "200": {
-                        "$ref": "#/components/responses/RecipeCategoryUpdateSuccess"
+                        "$ref": "#/components/responses/RecipeCategoryBulkUpdateSuccess"
                     },
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
@@ -480,15 +475,13 @@
                     "Recipes"
                 ],
                 "summary": "料理カテゴリを削除",
-                "operationId": "642704f150993c3b461e371c29705358",
-                "parameters": [
-                    {
-                        "$ref": "#/components/parameters/RecipeCategoryIdParam"
-                    }
-                ],
+                "operationId": "c88e18cb4ead3c7746a57bb92d29a965",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/RecipeCategoryBulkDestroyRequest"
+                },
                 "responses": {
                     "200": {
-                        "$ref": "#/components/responses/RecipeCategoryDestroySuccess"
+                        "$ref": "#/components/responses/RecipeCategoryBulkDestroySuccess"
                     },
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
@@ -1195,7 +1188,8 @@
             "RecipeCategory": {
                 "required": [
                     "id",
-                    "name"
+                    "name",
+                    "order"
                 ],
                 "properties": {
                     "id": {
@@ -1207,6 +1201,11 @@
                         "description": "カテゴリ名",
                         "type": "string",
                         "example": "肉料理"
+                    },
+                    "order": {
+                        "description": "並び順",
+                        "type": "integer",
+                        "example": 1
                     }
                 },
                 "type": "object"
@@ -1289,6 +1288,11 @@
                         "description": "単位",
                         "type": "string",
                         "example": "1"
+                    },
+                    "order": {
+                        "description": "並び順",
+                        "type": "integer",
+                        "example": 1
                     }
                 },
                 "type": "object"
@@ -1321,6 +1325,11 @@
                         "description": "単位",
                         "type": "string",
                         "example": "1"
+                    },
+                    "order": {
+                        "description": "並び順",
+                        "type": "integer",
+                        "example": 1
                     }
                 },
                 "type": "object"
@@ -1948,7 +1957,7 @@
                     }
                 }
             },
-            "RecipeCategoryUpdateSuccess": {
+            "RecipeCategoryBulkUpdateSuccess": {
                 "description": "正常に更新されました",
                 "content": {
                     "application/json": {
@@ -1958,14 +1967,17 @@
                     }
                 }
             },
-            "RecipeCategoryDestroySuccess": {
+            "RecipeCategoryBulkDestroySuccess": {
                 "description": "正常に削除されました",
                 "content": {
                     "application/json": {
                         "schema": {
                             "properties": {
-                                "id": {
-                                    "type": "string"
+                                "ids": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
                                 }
                             },
                             "type": "object"
@@ -2461,20 +2473,20 @@
                                     "type": "string",
                                     "example": "ハンバーグ"
                                 },
-                                "categories": {
+                                "categoryIds": {
                                     "description": "カテゴリ（JSON文字列）",
                                     "type": "string",
-                                    "example": "[{\"id\":\"1\",\"name\":\"肉料理\"}]"
+                                    "example": "[\"1\"]"
                                 },
                                 "ingredients": {
                                     "description": "食材（JSON文字列）",
                                     "type": "string",
-                                    "example": "[{\"id\":\"1\",\"name\":\"牛肉\",\"quantity\":100,\"unitId\":\"1\"}]"
+                                    "example": "[{\"id\":\"1\",\"name\":\"牛肉\",\"quantity\":100,\"unitId\":\"1\", \"order\":1}]"
                                 },
                                 "seasonings": {
                                     "description": "調味料（JSON文字列）",
                                     "type": "string",
-                                    "example": "[{\"id\":\"1\",\"name\":\"塩\",\"quantity\":1,\"unitId\":\"1\"}]"
+                                    "example": "[{\"id\":\"1\",\"name\":\"塩\",\"quantity\":1,\"unitId\":\"1\", \"order\":1}]"
                                 },
                                 "thumbnailImage": {
                                     "description": "サムネイル画像ファイル",
@@ -2509,6 +2521,45 @@
                     "application/json": {
                         "schema": {
                             "$ref": "#/components/schemas/RecipeCategory"
+                        }
+                    }
+                }
+            },
+            "RecipeCategoryBulkUpdateRequest": {
+                "description": "一括更新する料理カテゴリデータ",
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/RecipeCategory"
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "RecipeCategoryBulkDestroyRequest": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "ids": {
+                                    "type": "array",
+                                    "items": {
+                                        "description": "料理カテゴリID",
+                                        "type": "string",
+                                        "example": "1"
+                                    }
+                                }
+                            },
+                            "type": "object"
                         }
                     }
                 }

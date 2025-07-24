@@ -51,16 +51,16 @@ namespace App\Swagger;
  *     @OA\JsonContent(ref="#/components/schemas/RecipeCategory")
  * )
  * @OA\Response(
- *     response="RecipeCategoryUpdateSuccess",
+ *     response="RecipeCategoryBulkUpdateSuccess",
  *     description="正常に更新されました",
  *      @OA\JsonContent(ref="#/components/schemas/RecipeCategory")
  * )
  * @OA\Response(
- *     response="RecipeCategoryDestroySuccess",
+ *     response="RecipeCategoryBulkDestroySuccess",
  *     description="正常に削除されました",
  *     @OA\JsonContent(
  *         type="object",
- *         @OA\Property(property="id", type="string")
+ *         @OA\Property(property="ids", type="array", @OA\Items(type="string"))
  *     )
  * )
  */

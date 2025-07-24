@@ -15,9 +15,15 @@ export interface IPostRecipeRequest {
 
 export type IPutRecipeRequest = IPostRecipeRequest & { id: string };
 
+export interface IPostRecipeCategoryRequest {
+    name: string;
+    order: number;
+}
+
 export interface IRecipeCategory {
     id: string;
     name?: string; // nameは省略可（idだけで十分な場合もある）
+    order?: number;
 }
 
 export interface ISeasoningUnit {
@@ -31,6 +37,7 @@ export interface ISeasoning {
     name: string;
     quantity?: number;
     unitId: string;
+    order?: number;
 }
 
 export interface IIngredientUnit {
@@ -44,6 +51,7 @@ export interface IIngredient {
     name: string;
     quantity?: number;
     unitId: string;
+    order?: number;
 }
 
 export interface IRecipe {

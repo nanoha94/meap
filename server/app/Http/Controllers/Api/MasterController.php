@@ -26,7 +26,7 @@ class MasterController extends Controller
         $user = $request->user();
         $group = $user->group;
 
-        $recipeCategories = $group->recipeCategories()->select('id', 'name')->get();
+        $recipeCategories = $group->recipeCategories()->select('id', 'name', 'order')->orderBy('order', 'asc')->get();
         $ingredientUnits = IngredientUnit::select('id', 'name', 'order')->orderBy('order', 'asc')->get();
         $seasoningUnits = SeasoningUnit::select('id', 'name', 'order')->orderBy('order', 'asc')->get();
         $courseTypes = $group->courseTypes()->select('id', 'name', 'order')->get();

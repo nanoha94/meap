@@ -63,19 +63,22 @@ class MealPlanController extends Controller
                                         'memo' => $recipe->memo,
                                         'categories' => $recipe->categories->map(fn($category) => [
                                             'id' => $category->id,
-                                            'name' => $category->name
+                                            'name' => $category->name,
+                                            'order' => $category->order
                                         ]),
                                         'seasonings' => $recipe->seasonings->map(fn($seasoning) => [
                                             'id' => $seasoning->id,
                                             'name' => $seasoning->name,
                                             'quantity' => $seasoning->pivot->quantity,
-                                            'unitId' => $seasoning->pivot->unit_id
+                                            'unitId' => $seasoning->pivot->unit_id,
+                                            'order' => $seasoning->pivot->order
                                         ]),
                                         'ingredients' => $recipe->ingredients->map(fn($ingredient) => [
                                             'id' => $ingredient->id,
                                             'name' => $ingredient->name,
                                             'quantity' => $ingredient->pivot->quantity,
-                                            'unitId' => $ingredient->pivot->unit_id
+                                            'unitId' => $ingredient->pivot->unit_id,
+                                            'order' => $ingredient->pivot->order
                                         ])
                                     ])
                                 ];
@@ -154,19 +157,22 @@ class MealPlanController extends Controller
                         'memo' => $recipe->memo,
                         'categories' => $recipe->categories->map(fn($category) => [
                             'id' => $category->id,
-                            'name' => $category->name
+                            'name' => $category->name,
+                            'order' => $category->order
                         ]),
                         'seasonings' => $recipe->seasonings->map(fn($seasoning) => [
                             'id' => $seasoning->id,
                             'name' => $seasoning->name,
                             'quantity' => $seasoning->pivot->quantity,
-                            'unitId' => $seasoning->pivot->unit_id
+                            'unitId' => $seasoning->pivot->unit_id,
+                            'order' => $seasoning->pivot->order
                         ]),
                         'ingredients' => $recipe->ingredients->map(fn($ingredient) => [
                             'id' => $ingredient->id,
                             'name' => $ingredient->name,
                             'quantity' => $ingredient->pivot->quantity,
-                            'unitId' => $ingredient->pivot->unit_id
+                            'unitId' => $ingredient->pivot->unit_id,
+                            'order' => $ingredient->pivot->order
                         ])
                     ])
                 ];
@@ -222,19 +228,22 @@ class MealPlanController extends Controller
                         'memo' => $recipe->memo,
                         'categories' => $recipe->categories->map(fn($category) => [
                             'id' => $category->id,
-                            'name' => $category->name
+                            'name' => $category->name,
+                            'order' => $category->order
                         ]),
                         'seasonings' => $recipe->seasonings->map(fn($seasoning) => [
                             'id' => $seasoning->id,
                             'name' => $seasoning->name,
                             'quantity' => $seasoning->pivot->quantity,
-                            'unitId' => $seasoning->pivot->unit_id
+                            'unitId' => $seasoning->pivot->unit_id,
+                            'order' => $seasoning->pivot->order
                         ]),
                         'ingredients' => $recipe->ingredients->map(fn($ingredient) => [
                             'id' => $ingredient->id,
                             'name' => $ingredient->name,
                             'quantity' => $ingredient->pivot->quantity,
-                            'unitId' => $ingredient->pivot->unit_id
+                            'unitId' => $ingredient->pivot->unit_id,
+                            'order' => $ingredient->pivot->order
                         ])
                     ])
                 ];
@@ -320,19 +329,22 @@ class MealPlanController extends Controller
                         'memo' => $recipe->memo,
                         'categories' => $recipe->categories->map(fn($category) => [
                             'id' => $category->id,
-                            'name' => $category->name
+                            'name' => $category->name,
+                            'order' => $category->order
                         ]),
                         'seasonings' => $recipe->seasonings->map(fn($seasoning) => [
                             'id' => $seasoning->id,
                             'name' => $seasoning->name,
                             'quantity' => $seasoning->pivot->quantity,
-                            'unitId' => $seasoning->pivot->unit_id
+                            'unitId' => $seasoning->pivot->unit_id,
+                            'order' => $seasoning->pivot->order
                         ]),
                         'ingredients' => $recipe->ingredients->map(fn($ingredient) => [
                             'id' => $ingredient->id,
                             'name' => $ingredient->name,
                             'quantity' => $ingredient->pivot->quantity,
-                            'unitId' => $ingredient->pivot->unit_id
+                            'unitId' => $ingredient->pivot->unit_id,
+                            'order' => $ingredient->pivot->order
                         ])
                     ])
                 ];

@@ -1,23 +1,26 @@
 import { useSnackbars } from '@/contexts';
-import { useShoppingStore } from './shoppingStores';
-import React from 'react';
-import { IPostShoppingCategoryRequest, IShoppingCategory } from '@/types/api';
+import { useRouter } from 'next/navigation';
+import { useRecipeStore } from './recipeStores';
+import {
+    IPostRecipeCategoryRequest,
+    IRecipeCategory,
+} from '@/types/api/recipe';
 import axios from '@/lib/axios';
 import { timeout_ms } from '@/constants';
-import { useRouter } from 'next/navigation';
 import { TMP_ID_PREFIX } from '../constants';
+import React from 'react';
 
-export const useShoppingCategories = () => {
-    const router = useRouter();
-    const { addSnackbar } = useSnackbars();
+export const useRecipeCategories = () => {
     const {
         categories: storeCategories,
-        isLoadingCategories: isLoading,
-        setIsLoadingCategories: setIsLoading,
-    } = useShoppingStore();
+        isLoading,
+        setIsLoading,
+    } = useRecipeStore();
+    const router = useRouter();
+    const { addSnackbar } = useSnackbars();
 
-    const bulkUpdateShoppingCategories = React.useCallback(
-        async (categories: IShoppingCategory[]) => {
+    const bulkUpdateRecipeCategories = React.useCallback(
+        async (categories: IRecipeCategory[]) => {
             // 更新データがない場合は処理を終了
             if (
                 JSON.stringify(categories) === JSON.stringify(storeCategories)
@@ -36,7 +39,7 @@ export const useShoppingCategories = () => {
             // 削除リクエスト
             if (deleteCategoryIds.length > 0) {
                 try {
-                    await axios.delete(`/shopping-categories/bulk`, {
+                    await axios.delete(`/recipe-categories/bulk`, {
                         data: { ids: deleteCategoryIds },
                         timeout: timeout_ms,
                     });
@@ -54,13 +57,13 @@ export const useShoppingCategories = () => {
                 }
             }
 
-            const updateCategories: IShoppingCategory[] = [];
+            const updateCategories: IRecipeCategory[] = [];
 
             // 更新用配列を生成
             for (let i = 0; i < categories.length; i++) {
                 // 既存のカテゴリーかどうかを判断
                 const isStored = !categories[i].id?.startsWith(
-                    TMP_ID_PREFIX.SHOPPING_CATEGORY,
+                    TMP_ID_PREFIX.RECIPE_CATEGORY,
                 );
 
                 // 既存カテゴリ―の場合、更新用配列にセット
@@ -73,9 +76,7 @@ export const useShoppingCategories = () => {
                             ),
                         )
                     ) {
-                        updateCategories.push(
-                            categories[i] as IShoppingCategory,
-                        );
+                        updateCategories.push(categories[i] as IRecipeCategory);
                     }
                 }
                 // まだDBにレコードがない場合は、作成リクエスト
@@ -85,8 +86,8 @@ export const useShoppingCategories = () => {
                     }
                     try {
                         await axios.post(
-                            `/shopping-categories`,
-                            categories[i] as IPostShoppingCategoryRequest,
+                            `/recipe-categories`,
+                            categories[i] as IPostRecipeCategoryRequest,
                             {
                                 timeout: timeout_ms,
                             },
@@ -109,7 +110,7 @@ export const useShoppingCategories = () => {
             // 更新リクエスト
             if (updateCategories.length > 0) {
                 try {
-                    const res = await axios.put(`/shopping-categories/bulk`, {
+                    const res = await axios.put(`/recipe-categories/bulk`, {
                         data: updateCategories,
                         timeout: timeout_ms,
                     });
@@ -142,7 +143,7 @@ export const useShoppingCategories = () => {
     );
 
     return {
-        storeData: { isLoading, categories: storeCategories },
-        bulkUpdateShoppingCategories,
+        storeData: { categories: storeCategories },
+        bulkUpdateRecipeCategories,
     };
 };

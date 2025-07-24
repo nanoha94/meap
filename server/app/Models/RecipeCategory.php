@@ -15,6 +15,7 @@ class RecipeCategory extends Model
     protected $fillable = [
         'group_id',
         'name',
+        'order',
     ];
 
     public function recipes()
