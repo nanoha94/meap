@@ -97,7 +97,6 @@ const EditForm: React.FC<Props> = ({ onClose }) => {
                         />
                     )}
                 </VerticalRowField>
-                {/* TODO: カテゴリ―選択なしは選べないようにする */}
                 <VerticalRowField
                     control={control}
                     name="categoryId"
@@ -106,8 +105,9 @@ const EditForm: React.FC<Props> = ({ onClose }) => {
                         <StyledSelect
                             value={value as string}
                             name="categoryId"
-                            onChange={onChange}
                             options={storeData.categories}
+                            isShowPlaceholder={false}
+                            onChange={onChange}
                         />
                     )}
                 </VerticalRowField>

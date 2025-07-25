@@ -5,10 +5,17 @@ interface Props {
     value: string;
     name: string;
     options: { id: string; name: string }[];
+    isShowPlaceholder?: boolean;
     onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
 }
 
-const StyledSelect = ({ value, name, options, onChange }: Props) => {
+const StyledSelect = ({
+    value,
+    name,
+    options,
+    onChange,
+    isShowPlaceholder = true,
+}: Props) => {
     return (
         <div className="relative">
             <select
@@ -20,7 +27,9 @@ const StyledSelect = ({ value, name, options, onChange }: Props) => {
                 className={`py-2 px-4 w-full text-base border rounded-lg border-gray-main appearance-none outline-none cursor-pointer
                     ${value === '' ? 'text-gray-placeholder' : 'text-black'}
                 `}>
-                <option value="">--選択してください--</option>
+                {isShowPlaceholder && (
+                    <option value="">--選択してください--</option>
+                )}
                 {options.map(v => (
                     <option key={v.id} value={v.id} className="text-black">
                         {v.name}
