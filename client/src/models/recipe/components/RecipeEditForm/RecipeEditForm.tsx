@@ -7,6 +7,7 @@ import { defaultPostData } from '../../constants';
 import SeasoningEditFields from './SeasoningEditFields';
 import React from 'react';
 import CategoryEditFields from './CategoryEditFields';
+import { VerticalRowField } from '@/components/react-hook-form';
 
 type FormData = IPostRecipeRequest;
 
@@ -24,7 +25,22 @@ const RecipeEditForm = () => {
     };
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="py-5 px-10 flex">
-            <div className="flex flex-col gap-y-5">
+            <div className="flex-1 flex flex-col gap-y-5">
+                <VerticalRowField
+                    control={control}
+                    name="name"
+                    label="料理名"
+                    required={true}>
+                    {({ value, onChange }) => (
+                        <input
+                            type="text"
+                            value={value as string}
+                            placeholder="料理名を入力"
+                            onChange={e => onChange(e)}
+                            className="py-2 px-4 text-base border rounded-lg "
+                        />
+                    )}
+                </VerticalRowField>
                 {/* カテゴリー */}
                 <CategoryEditFields control={control} />
                 {/* 食材 */}
@@ -32,7 +48,7 @@ const RecipeEditForm = () => {
                 {/* 調味料 */}
                 <SeasoningEditFields control={control} />
             </div>
-            <div>
+            <div className="flex-1">
                 <Button type="submit">追加</Button>
             </div>
         </form>

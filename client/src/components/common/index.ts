@@ -5,7 +5,6 @@ export { default as Dialog } from './Dialog';
 export { default as EmailVerifiedHandler } from './EmailVerifiedHandler';
 export { default as EmptyButton } from './EmptyButton';
 export { default as FooterNavigation } from './FooterNavigation';
-export { default as FormItem } from './FormItem';
 export { default as Header } from './Header';
 export { default as LoadingAnimation } from './LoadingAnimation';
 export { default as LucideIconWrapper } from './LucideIconWrapper';

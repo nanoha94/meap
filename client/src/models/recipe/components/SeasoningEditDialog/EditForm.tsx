@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/common';
-import HorizontalRowField from '@/components/common/HorizontalRowField';
+import { HorizontalRowField } from '@/components/react-hook-form';
 import { useForm } from 'react-hook-form';
 import { useRecipeStore } from '../../hooks/recipeStores';
 import { ISeasoning } from '@/types/api/recipe';

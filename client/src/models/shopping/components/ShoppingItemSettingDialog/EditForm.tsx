@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
-import { Controller, useForm } from 'react-hook-form';
-import { Button, FormItem } from '@/components/common';
+import { useForm } from 'react-hook-form';
+import { Button } from '@/components/common';
 import {
     useShoppingCategories,
     useShoppingItems,
@@ -12,6 +12,7 @@ import {
     SHOPPING_ITEM_SETTING_DIALOG_CONFIGS,
 } from '../../constants';
 import StyledSelect from '@/components/common/StyledSelect';
+import { VerticalRowField } from '@/components/react-hook-form';
 
 interface Props {
     onClose: () => void;
@@ -80,37 +81,36 @@ const EditForm: React.FC<Props> = ({ onClose }) => {
             onSubmit={handleSubmit(onSubmit)}
             className="w-full flex flex-col gap-y-10">
             <div className="flex flex-col gap-y-4">
-                <FormItem label="アイテム名/量">
-                    <Controller
-                        control={control}
-                        name="name"
-                        render={({ field: { onChange, value } }) => (
-                            <input
-                                type="text"
-                                value={value}
-                                placeholder="アイテム名と量を入力してください"
-                                onChange={e => {
-                                    onChange(e);
-                                }}
-                                className="py-2 px-4 text-base border rounded-lg outline-none border-gray-main"
-                            />
-                        )}
-                    />
-                </FormItem>
-                <FormItem label="カテゴリ―">
-                    <Controller
-                        control={control}
-                        name="categoryId"
-                        render={({ field: { onChange, value } }) => (
-                            <StyledSelect
-                                value={value}
-                                name="categoryId"
-                                onChange={onChange}
-                                options={storeData.categories}
-                            />
-                        )}
-                    />
-                </FormItem>
+                <VerticalRowField
+                    control={control}
+                    name="name"
+                    label="アイテム名/量">
+                    {({ value, onChange }) => (
+                        <input
+                            type="text"
+                            value={value as string}
+                            placeholder="アイテム名と量を入力してください"
+                            onChange={e => {
+                                onChange(e);
+                            }}
+                            className="py-2 px-4 text-base border rounded-lg outline-none border-gray-main"
+                        />
+                    )}
+                </VerticalRowField>
+                {/* TODO: カテゴリ―選択なしは選べないようにする */}
+                <VerticalRowField
+                    control={control}
+                    name="categoryId"
+                    label="カテゴリー">
+                    {({ value, onChange }) => (
+                        <StyledSelect
+                            value={value as string}
+                            name="categoryId"
+                            onChange={onChange}
+                            options={storeData.categories}
+                        />
+                    )}
+                </VerticalRowField>
             </div>
             <div className="mx-auto max-w-[320px] w-full flex gap-x-6">
                 <Button
