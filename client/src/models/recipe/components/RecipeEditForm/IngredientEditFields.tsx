@@ -43,7 +43,7 @@ const IngredientEditFields = ({ control }: Props) => {
         }
         // 空の食材がない場合は、新しい入力項目を追加
         else {
-            append({ ...defaultIngredient, id: `${prefix}-${lastIndex}` });
+            append({ ...defaultIngredient, id: `${prefix}${Date.now()}` });
         }
 
         // 食材の編集ダイアログを開く
@@ -61,7 +61,7 @@ const IngredientEditFields = ({ control }: Props) => {
     const removeItem = (index: number) => {
         // 最初の食材を削除した場合は、デフォルトの食材を設定（入力項目が0個にならないようにするため）
         if (index === 0) {
-            update(0, { ...defaultIngredient, id: `${prefix}-0` });
+            update(0, defaultIngredient);
         } else {
             remove(index);
         }

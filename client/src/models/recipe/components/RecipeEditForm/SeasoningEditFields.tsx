@@ -41,7 +41,7 @@ const SeasoningEditFields = ({ control }: Props) => {
         }
         // 空の調味料がない場合は、新しい入力項目を追加
         else {
-            append({ ...defaultSeasoning, id: `${prefix}-${lastIndex}` });
+            append({ ...defaultSeasoning, id: `${prefix}${Date.now()}` });
         }
 
         // 調味料の編集ダイアログを開く
@@ -59,7 +59,7 @@ const SeasoningEditFields = ({ control }: Props) => {
     const removeItem = (index: number) => {
         // 最初の調味料を削除した場合は、デフォルトの調味料を設定（入力項目が0個にならないようにするため）
         if (index === 0) {
-            update(0, { ...defaultSeasoning, id: `${prefix}-0` });
+            update(0, defaultSeasoning);
         } else {
             remove(index);
         }

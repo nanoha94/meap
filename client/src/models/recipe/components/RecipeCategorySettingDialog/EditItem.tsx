@@ -35,6 +35,7 @@ const EditItem: React.FC<Props> = ({
                         data-item-id={`${prefix}${index}`}
                         type="text"
                         placeholder="カテゴリー名を入力"
+                        autoFocus
                         className="py-2 px-4 flex-1 outline-none bg-white rounded-lg border border-gray-main"
                     />
                 )}

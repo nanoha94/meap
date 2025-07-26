@@ -11,8 +11,6 @@ export const useRecipes = () => {
     const { addSnackbar } = useSnackbars();
 
     const storeRecipe = React.useCallback(async (formData: FormData) => {
-        console.log(formData.get('name'));
-
         if (isLoadings.recipe) {
             return;
         }

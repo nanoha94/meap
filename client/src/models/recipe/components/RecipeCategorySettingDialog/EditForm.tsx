@@ -32,8 +32,6 @@ const EditForm: React.FC<Props> = ({ onClose }) => {
         name: 'categories',
     });
 
-    console.log(fields, defaultRecipeCategory);
-
     /**
      * カテゴリーの監視
      */
@@ -60,10 +58,8 @@ const EditForm: React.FC<Props> = ({ onClose }) => {
         }
 
         const newItem = {
+            ...defaultRecipeCategory,
             id: `${prefix}${Date.now()}`,
-            name: '',
-            isDefault: false,
-            order: watchedCategories.length,
         };
 
         // 末尾に追加
@@ -96,7 +92,6 @@ const EditForm: React.FC<Props> = ({ onClose }) => {
                         v.name?.length > 0) ||
                     !v.id?.startsWith(prefix),
             );
-            console.log(filteredItems);
             bulkUpdateRecipeCategories(
                 filteredItems.map((v, idx) => ({
                     ...v,

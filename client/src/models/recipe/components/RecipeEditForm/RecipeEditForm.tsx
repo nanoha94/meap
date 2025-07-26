@@ -65,8 +65,6 @@ const RecipeEditForm = () => {
         formData.append('ingredients', JSON.stringify(sendData.ingredients));
         formData.append('seasonings', JSON.stringify(sendData.seasonings));
 
-        console.log(sendData.ingredients, formData.get('ingredients'));
-
         storeRecipe(formData);
     };
 
