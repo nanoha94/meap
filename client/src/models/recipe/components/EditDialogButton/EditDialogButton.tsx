@@ -54,7 +54,7 @@ function EditDialogButton<T extends FieldValues>({
                     name={name}
                     render={({ field }) => (
                         <div
-                            className="relative cursor-pointer rounded-lg transition-colors group hover:bg-gray-light"
+                            className="relative w-full cursor-pointer rounded-lg transition-colors group hover:bg-gray-light"
                             onClick={() => {
                                 handleOpenDialog(field.value, field.onChange);
                             }}
@@ -70,7 +70,7 @@ function EditDialogButton<T extends FieldValues>({
                                 type="text"
                                 readOnly
                                 placeholder={placeholder}
-                                className="py-2 px-4 flex-1 outline-none bg-white rounded-lg border border-gray-main pointer-events-none"
+                                className="py-2 px-4 w-full flex-1 outline-none bg-white rounded-lg border border-gray-main pointer-events-none"
                             />
                             <button
                                 type="button"

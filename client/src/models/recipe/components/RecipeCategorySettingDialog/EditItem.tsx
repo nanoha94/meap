@@ -1,21 +1,26 @@
 import { colors } from '@/constants/colors';
-import { IShoppingCategory } from '@/types/api';
 import { GripVertical, Trash } from 'lucide-react';
 import { Control, Controller } from 'react-hook-form';
 import { TMP_ID_PREFIX } from '../../constants';
+import { IRecipeCategory } from '@/types/api/recipe';
 
 interface FormData {
-    categories: IShoppingCategory[];
+    categories: IRecipeCategory[];
 }
 
 interface Props {
     index: number;
     control: Control<FormData>;
+    isDisabled?: boolean;
     onDelete: () => void;
-    isDefault: boolean;
 }
 
-const EditItem: React.FC<Props> = ({ index, control, onDelete, isDefault }) => {
+const EditItem: React.FC<Props> = ({
+    index,
+    control,
+    isDisabled = false,
+    onDelete,
+}) => {
     const prefix = TMP_ID_PREFIX.RECIPE_CATEGORY;
 
     return (
@@ -38,7 +43,7 @@ const EditItem: React.FC<Props> = ({ index, control, onDelete, isDefault }) => {
                 type="button"
                 onClick={onDelete}
                 className="p-1 w-fit h-fit rounded-full hover:bg-gray-light transition-colors disabled:opacity-0 disabled:cursor-default"
-                disabled={isDefault}>
+                disabled={isDisabled}>
                 <Trash color={colors.primary.main} size={28} />
             </button>
         </div>

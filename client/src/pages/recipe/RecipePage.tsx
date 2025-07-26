@@ -1,4 +1,5 @@
 'use client';
+import { LoadingAnimation } from '@/components/common';
 import { RecipeList } from '@/models/recipe/components';
 import { useRecipeStore } from '@/models/recipe/hooks/recipeStores';
 import { IGetRecipesResponse } from '@/types/api/recipe';
@@ -9,7 +10,12 @@ interface Props {
 }
 
 const RecipePage = ({ fetchRecipes }: Props) => {
-    const { setRecipes: setStoreRecipes } = useRecipeStore();
+    const { setRecipes: setStoreRecipes, isLoadings } = useRecipeStore();
+    const [isLoading, setIsLoading] = React.useState(false);
+
+    React.useEffect(() => {
+        setIsLoading(isLoadings.recipe || isLoadings.recipeCategory);
+    }, [isLoadings]);
 
     React.useEffect(() => {
         if (fetchRecipes) {
@@ -17,9 +23,10 @@ const RecipePage = ({ fetchRecipes }: Props) => {
         }
     }, [fetchRecipes]);
     return (
-        <div>
+        <>
+            {isLoading && <LoadingAnimation />}
             <RecipeList />
-        </div>
+        </>
     );
 };
 

@@ -1,4 +1,4 @@
-import { IPostRecipeRequest } from '@/types/api/recipe';
+import { IPostRecipeRequest, IRecipeCategory } from '@/types/api/recipe';
 import { RecipeSettingDialogConfigs } from './types';
 
 export enum TMP_ID_PREFIX {
@@ -45,7 +45,7 @@ export const RECIPE_SETTING_DIALOG_CONFIGS: RecipeSettingDialogConfigs = {
     },
 };
 
-export const defaultRecipeCategory = {
+export const defaultRecipeCategory: IRecipeCategory = {
     id: '',
     name: '',
 };
@@ -64,7 +64,7 @@ export const defaultSeasoning = {
 export const defaultPostData: IPostRecipeRequest = {
     name: '',
     url: '',
-    recipe: '',
+    instructions: '',
     memo: '',
     categories: [],
     seasonings: [defaultSeasoning],

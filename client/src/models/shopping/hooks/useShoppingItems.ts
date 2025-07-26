@@ -52,7 +52,7 @@ export const useShoppingItems = () => {
      * @param item 作成するアイテム
      * @returns 作成結果
      */
-    const createShoppingItem = async (item: IPostShoppingItemRequest) => {
+    const storeShoppingItem = async (item: IPostShoppingItemRequest) => {
         if (isLoading) {
             return;
         }
@@ -161,7 +161,7 @@ export const useShoppingItems = () => {
     return {
         storeData: { isLoading, items: storeItems },
         fetchShoppingItems,
-        createShoppingItem,
+        storeShoppingItem,
         updateShoppingItems,
         deleteShoppingItems,
     };

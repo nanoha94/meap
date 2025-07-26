@@ -31,6 +31,11 @@ type DialogsState = {
     };
 };
 
+type LoadingState = {
+    recipe: boolean;
+    recipeCategory: boolean;
+};
+
 const initialDialogsState: DialogsState = {
     categorySetting: {
         isOpen: false,
@@ -61,7 +66,7 @@ interface RecipeState {
     recipes: IGetRecipesResponse['data'];
 
     // ローディング状態
-    isLoading: boolean;
+    isLoadings: LoadingState;
 
     // マスターデータ
     categories: IGetMasterResponse['recipeCategories'];
@@ -75,7 +80,7 @@ interface RecipeState {
     setRecipes: (recipes: IGetRecipesResponse['data']) => void;
 
     // ローディング状態のアクション
-    setIsLoading: (isLoading: boolean) => void;
+    setIsLoadings: (name: keyof LoadingState, isLoading: boolean) => void;
 
     // マスターデータのアクション
     setCategories: (categories: IGetMasterResponse['recipeCategories']) => void;
@@ -97,7 +102,10 @@ interface RecipeState {
 export const useRecipeStore = create<RecipeState>(set => ({
     // 初期状態
     recipes: [],
-    isLoading: false,
+    isLoadings: {
+        recipeCategory: false,
+        recipe: false,
+    },
     categories: [],
     ingredientUnits: [],
     seasoningUnits: [],
@@ -109,8 +117,10 @@ export const useRecipeStore = create<RecipeState>(set => ({
     },
 
     // ローディング状態のアクション
-    setIsLoading: isLoading => {
-        set({ isLoading });
+    setIsLoadings: (name: keyof LoadingState, isLoading: boolean) => {
+        set(state => ({
+            isLoadings: { ...state.isLoadings, [name]: isLoading },
+        }));
     },
 
     // マスターデータのアクション

@@ -9,7 +9,7 @@ import {
     TMP_ID_PREFIX,
 } from '../../constants';
 import { useRecipeStore } from '../../hooks/recipeStores';
-import { Control, useFieldArray } from 'react-hook-form';
+import { Control, useFieldArray, useWatch } from 'react-hook-form';
 import { IIngredient, IPostRecipeRequest } from '@/types/api/recipe';
 import { CirclePlus } from 'lucide-react';
 import React from 'react';
@@ -25,26 +25,28 @@ const IngredientEditFields = ({ control }: Props) => {
             control,
             name: 'ingredients',
         });
+    const ingredients = useWatch({ control, name: 'ingredients' });
+    const prefix: string = TMP_ID_PREFIX.RECIPE_INGREDIENT;
 
     /**
      * 空の食材を追加
      */
     const addEmptyIngredient = () => {
-        let lastIndex = fields?.length ?? 0;
-        const emptyItem = fields?.filter(item => item.name === '');
+        let lastIndex = ingredients?.length ?? 0;
+        const emptyItem = ingredients?.filter(item => item.name === '');
 
         // 空の食材がある場合は、その食材のインデックスを取得
         if (emptyItem && emptyItem.length > 0) {
             lastIndex =
-                fields?.findIndex(item => item.id === emptyItem[0].id) ?? 0;
+                ingredients?.findIndex(item => item.id === emptyItem[0].id) ??
+                0;
         }
         // 空の食材がない場合は、新しい入力項目を追加
         else {
-            append(defaultIngredient);
+            append({ ...defaultIngredient, id: `${prefix}-${lastIndex}` });
         }
 
         // 食材の編集ダイアログを開く
-        // TODO: ダイアログのモードを切り替える
         openDialog(RECIPE_SETTING_DIALOG_NAME.INGREDIENT, {
             item: undefined,
             editMode: RECIPE_SETTING_DIALOG_EDIT_MODE.CREATE,
@@ -59,7 +61,7 @@ const IngredientEditFields = ({ control }: Props) => {
     const removeItem = (index: number) => {
         // 最初の食材を削除した場合は、デフォルトの食材を設定（入力項目が0個にならないようにするため）
         if (index === 0) {
-            update(0, defaultIngredient);
+            update(0, { ...defaultIngredient, id: `${prefix}-0` });
         } else {
             remove(index);
         }

@@ -25,7 +25,7 @@ interface FormData {
 }
 
 const EditForm: React.FC<Props> = ({ onClose }) => {
-    const { createShoppingItem, updateShoppingItems } = useShoppingItems();
+    const { storeShoppingItem, updateShoppingItems } = useShoppingItems();
     const { storeData } = useShoppingCategories();
     const { dialogs } = useShoppingStore();
     const { item: editingItem, editMode } = dialogs.itemSetting.payload;
@@ -64,7 +64,7 @@ const EditForm: React.FC<Props> = ({ onClose }) => {
      */
     const onSubmit = (data: FormData) => {
         if (editMode === SHOPPING_ITEM_EDIT_MODE.CREATE) {
-            createShoppingItem(data);
+            storeShoppingItem(data);
         } else if (editingItem) {
             updateShoppingItems([
                 {

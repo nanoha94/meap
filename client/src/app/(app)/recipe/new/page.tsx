@@ -4,7 +4,7 @@ import RecipeEditPage from '@/pages/recipe/RecipeEditPage';
 const Page = () => {
     return (
         <>
-            <Header title="料理/レシピ登録" />
+            <Header title="料理/レシピ追加" />
             <main>
                 <RecipeEditPage />
             </main>

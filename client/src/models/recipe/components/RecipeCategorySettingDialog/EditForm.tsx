@@ -3,14 +3,14 @@ import { Button, TextButton } from '@/components/common';
 import { DndSortableList } from '@/components/dnd';
 import { CirclePlus } from 'lucide-react';
 import React from 'react';
-import { IShoppingCategory } from '@/types/api';
 import { useFieldArray, useForm } from 'react-hook-form';
 import EditItem from './EditItem';
-import { TMP_ID_PREFIX } from '../../constants';
+import { defaultRecipeCategory, TMP_ID_PREFIX } from '../../constants';
 import { useRecipeCategories } from '../../hooks/useRecipeCategories';
+import { IRecipeCategory } from '@/types/api/recipe';
 
 interface FormData {
-    categories: IShoppingCategory[];
+    categories: IRecipeCategory[];
 }
 
 interface Props {
@@ -23,14 +23,16 @@ const EditForm: React.FC<Props> = ({ onClose }) => {
 
     const { control, handleSubmit, watch, reset } = useForm<FormData>({
         defaultValues: {
-            categories: [],
+            categories: [defaultRecipeCategory],
         },
     });
 
-    const { fields, append, remove, move } = useFieldArray({
+    const { fields, append, remove, update, move } = useFieldArray<FormData>({
         control,
         name: 'categories',
     });
+
+    console.log(fields, defaultRecipeCategory);
 
     /**
      * カテゴリーの監視
@@ -69,6 +71,19 @@ const EditForm: React.FC<Props> = ({ onClose }) => {
     };
 
     /**
+     * カテゴリーを削除
+     * @param index 削除するカテゴリーのインデックス
+     */
+    const removeCategory = (index: number) => {
+        // 最初の食材を削除した場合は、デフォルトの食材を設定（入力項目が0個にならないようにするため）
+        if (index === 0) {
+            update(0, defaultRecipeCategory);
+        } else {
+            remove(index);
+        }
+    };
+
+    /**
      * フォームの送信
      */
     const onSubmit = (data: FormData) => {
@@ -76,9 +91,12 @@ const EditForm: React.FC<Props> = ({ onClose }) => {
             // 空のアイテムを除いてデータ更新
             const filteredItems = data.categories.filter(
                 v =>
-                    (v.id?.startsWith(prefix) && v.name.length > 0) ||
+                    (v.id?.startsWith(prefix) &&
+                        v.name &&
+                        v.name?.length > 0) ||
                     !v.id?.startsWith(prefix),
             );
+            console.log(filteredItems);
             bulkUpdateRecipeCategories(
                 filteredItems.map((v, idx) => ({
                     ...v,
@@ -88,7 +106,7 @@ const EditForm: React.FC<Props> = ({ onClose }) => {
             onClose();
         } catch {
             // エラーの場合はダイアログを閉じない
-            // エラーハンドリングはbulkUpdateShoppingCategoriesで行う
+            // エラーハンドリングはbulkUpdateRecipeCategoriesで行う
         }
     };
 
@@ -115,8 +133,12 @@ const EditForm: React.FC<Props> = ({ onClose }) => {
                             <EditItem
                                 index={index}
                                 control={control}
-                                onDelete={() => remove(index)}
-                                isDefault={item.isDefault}
+                                isDisabled={
+                                    index === 0 &&
+                                    fields?.length === 1 &&
+                                    fields[0].name === ''
+                                }
+                                onDelete={() => removeCategory(index)}
                             />
                         )}
                     />

@@ -104,6 +104,7 @@ class RecipeController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
+        Log::info($request->all());
         $user = $request->user();
         $group = $user->group;
 

@@ -7,20 +7,24 @@ import {
 } from '@/types/api/recipe';
 import axios from '@/lib/axios';
 import { timeout_ms } from '@/constants';
-import { TMP_ID_PREFIX } from '../constants';
 import React from 'react';
+import { TMP_ID_PREFIX } from '../constants';
 
 export const useRecipeCategories = () => {
     const {
         categories: storeCategories,
-        isLoading,
-        setIsLoading,
+        isLoadings,
+        setIsLoadings,
     } = useRecipeStore();
     const router = useRouter();
     const { addSnackbar } = useSnackbars();
 
     const bulkUpdateRecipeCategories = React.useCallback(
         async (categories: IRecipeCategory[]) => {
+            if (isLoadings.recipeCategory) {
+                return;
+            }
+
             // 更新データがない場合は処理を終了
             if (
                 JSON.stringify(categories) === JSON.stringify(storeCategories)
@@ -29,11 +33,14 @@ export const useRecipeCategories = () => {
             }
 
             let hasError = false;
-            setIsLoading(true);
+            setIsLoadings('recipeCategory', true);
 
             // 削除するカテゴリーを取得
             const deleteCategoryIds = storeCategories
-                .filter(v => !categories.some(c => c.id === v.id))
+                .filter(v => {
+                    const found = categories.find(c => c.id === v.id);
+                    return !found || !found.name;
+                })
                 .map(v => v.id);
 
             // 削除リクエスト
@@ -81,7 +88,10 @@ export const useRecipeCategories = () => {
                 }
                 // まだDBにレコードがない場合は、作成リクエスト
                 else {
-                    if (!categories[i]) {
+                    if (
+                        !categories[i] ||
+                        (categories[i].name ?? '').length <= 0
+                    ) {
                         continue;
                     }
                     try {
@@ -137,9 +147,9 @@ export const useRecipeCategories = () => {
                 router.refresh();
             }
 
-            setIsLoading(false);
+            setIsLoadings('recipeCategory', false);
         },
-        [storeCategories, isLoading],
+        [storeCategories, isLoadings.recipeCategory],
     );
 
     return {

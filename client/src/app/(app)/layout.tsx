@@ -46,12 +46,14 @@ const AppLayout = async ({ children }: Props) => {
     const redirectPath = cookieStore.get('redirectPath')?.value;
 
     return (
-        <div className="h-screen flex flex-col">
+        <div className="min-h-screen h-full flex flex-col">
             {redirectPath && <RedirectHandler redirectPath={redirectPath} />}
             <DataHandler user={user} masterData={masterData} />
-            <div className="flex h-full">
+            <div className="flex h-full mb-20 md:mb-0">
                 <SideNavigation user={user} className="z-10 hidden md:block" />
-                <div className="flex-1 bg-primary-background">{children}</div>
+                <div className="flex-1 min-h-screen h-full bg-primary-background md:ml-[160px]">
+                    {children}
+                </div>
             </div>
             <FooterNavigation className="md:hidden" />
         </div>

@@ -5,7 +5,7 @@ export interface IGetRecipesResponse {
 export interface IPostRecipeRequest {
     name: string;
     url?: string;
-    recipe?: string;
+    instructions?: string;
     memo?: string;
     categories?: IRecipeCategory[];
     seasonings?: ISeasoning[];

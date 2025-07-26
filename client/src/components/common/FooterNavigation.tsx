@@ -25,7 +25,7 @@ const FooterNavigation = ({ className }: Props) => {
     return (
         <div
             className={`fixed bottom-0 w-full flex bg-white ${className ? className : ''}`}
-            style={{ boxShadow: 'inset 0 1px 1px 0 rgba(0, 0, 0, 10%)' }}>
+            style={{ boxShadow: 'inset 0 1px 3px 0 rgba(0, 0, 0, 10%)' }}>
             {navigationItems.map((v, idx) => (
                 <Link
                     key={idx}

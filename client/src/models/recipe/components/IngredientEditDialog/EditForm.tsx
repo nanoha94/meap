@@ -23,15 +23,7 @@ const EditForm = ({
     onAction,
 }: Props) => {
     const { ingredientUnits } = useRecipeStore();
-    const defaultValues: FormData = {
-        id: '',
-        name: '',
-        quantity: undefined,
-        unitId: '',
-    };
-    const { control, handleSubmit, reset } = useForm<FormData>({
-        defaultValues,
-    });
+    const { control, handleSubmit, reset } = useForm<FormData>();
     const nameInputRef = React.useRef<HTMLInputElement>(null);
 
     React.useEffect(() => {

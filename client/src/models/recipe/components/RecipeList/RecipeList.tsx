@@ -7,12 +7,12 @@ const RecipeList = () => {
     const { recipes } = useRecipeStore();
 
     return (
-        <div className="p-3 grid grid-cols-[repeat(auto-fill,_minmax(150px,_1fr))] gap-3">
+        <div className="p-5 pb-[60px] grid grid-cols-[repeat(auto-fill,_minmax(150px,_1fr))] gap-3 md:px-10">
             {recipes.map(v => (
                 <Link
                     href={`/recipe/${v.id}`}
                     key={v.id}
-                    className="relative w-full text-left flex flex-col bg-white rounded transition-transform duration-500 cursor-pointer hover:-translate-y-3"
+                    className="relative w-full text-left flex flex-col bg-white rounded transition-transform duration-500 cursor-pointer hover:-translate-y-2"
                     style={{ boxShadow: '1px 1px 5px rgba(0, 0, 0, 15%)' }}>
                     <div className="w-full h-auto aspect-video object-cover bg-gray-background">
                         {v.thumbnail && v.thumbnail.url && (

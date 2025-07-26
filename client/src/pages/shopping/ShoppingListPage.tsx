@@ -51,7 +51,7 @@ const ShoppingListPage: React.FC<Props> = ({ fetchItems }) => {
         <>
             {isLoading && <LoadingAnimation />}
             {/* メインコンテンツ */}
-            <main className="p-5">
+            <main className="p-5 pb-[60px] md:px-10">
                 <div className="pb-12 flex flex-col gap-y-7">
                     {/* 買い物リスト */}
                     <ShoppingList items={storeItems} />

@@ -9,7 +9,7 @@ import {
     TMP_ID_PREFIX,
 } from '../../constants';
 import { useRecipeStore } from '../../hooks/recipeStores';
-import { Control, useFieldArray } from 'react-hook-form';
+import { Control, useFieldArray, useWatch } from 'react-hook-form';
 import { IPostRecipeRequest, ISeasoning } from '@/types/api/recipe';
 import { CirclePlus } from 'lucide-react';
 
@@ -24,26 +24,27 @@ const SeasoningEditFields = ({ control }: Props) => {
             control,
             name: 'seasonings',
         });
+    const seasonings = useWatch({ control, name: 'seasonings' });
+    const prefix: string = TMP_ID_PREFIX.RECIPE_SEASONING;
 
     /**
      * 空の調味料を追加
      */
     const addEmptySeasoning = () => {
-        let lastIndex = fields?.length ?? 0;
-        const emptyItem = fields?.filter(item => item.name === '');
+        let lastIndex = seasonings?.length ?? 0;
+        const emptyItem = seasonings?.filter(item => item.name === '');
 
         // 空の調味料がある場合は、その調味料のインデックスを取得
         if (emptyItem && emptyItem.length > 0) {
             lastIndex =
-                fields?.findIndex(item => item.id === emptyItem[0].id) ?? 0;
+                seasonings?.findIndex(item => item.id === emptyItem[0].id) ?? 0;
         }
         // 空の調味料がない場合は、新しい入力項目を追加
         else {
-            append(defaultSeasoning);
+            append({ ...defaultSeasoning, id: `${prefix}-${lastIndex}` });
         }
 
         // 調味料の編集ダイアログを開く
-        // TODO: ダイアログのモードを切り替える
         openDialog(RECIPE_SETTING_DIALOG_NAME.SEASONING, {
             item: undefined,
             editMode: RECIPE_SETTING_DIALOG_EDIT_MODE.CREATE,
@@ -58,7 +59,7 @@ const SeasoningEditFields = ({ control }: Props) => {
     const removeItem = (index: number) => {
         // 最初の調味料を削除した場合は、デフォルトの調味料を設定（入力項目が0個にならないようにするため）
         if (index === 0) {
-            update(0, defaultSeasoning);
+            update(0, { ...defaultSeasoning, id: `${prefix}-0` });
         } else {
             remove(index);
         }
