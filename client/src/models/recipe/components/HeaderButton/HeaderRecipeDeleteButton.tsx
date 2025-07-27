@@ -3,7 +3,7 @@ import HeaderTextButton from '@/components/common/HeaderTextButtons/HeaderTextBu
 import { Trash } from 'lucide-react';
 import React from 'react';
 
-const HeaderButton = () => {
+const HeaderRecipeDeleteButton = () => {
     return (
         <HeaderTextButton colorVariant="alert" onClick={() => {}}>
             <Trash size={20} strokeWidth={2} />
@@ -12,4 +12,4 @@ const HeaderButton = () => {
     );
 };
 
-export default HeaderButton;
+export default HeaderRecipeDeleteButton;

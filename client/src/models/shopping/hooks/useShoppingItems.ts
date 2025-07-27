@@ -3,7 +3,7 @@ import { useShoppingStore } from './shoppingStores';
 import { useSnackbars } from '@/contexts';
 import axios from '@/lib/axios';
 import { IPostShoppingItemRequest, IPutShoppingItemRequest } from '@/types/api';
-import { timeout_ms } from '@/constants';
+import { TIMEOUT_MS } from '@/constants';
 
 export const useShoppingItems = () => {
     const { addSnackbar } = useSnackbars();
@@ -24,7 +24,7 @@ export const useShoppingItems = () => {
             try {
                 setIsLoading(true);
                 const res = await axios.get('/shopping-items', {
-                    timeout: timeout_ms,
+                    timeout: TIMEOUT_MS,
                 });
                 if (res.data) {
                     setServerItems(res.data.data);
@@ -61,7 +61,7 @@ export const useShoppingItems = () => {
             setIsLoading(true);
             const res = await axios.post(`/shopping-items`, {
                 ...item,
-                timeout: timeout_ms,
+                timeout: TIMEOUT_MS,
             });
             if (res.data) {
                 addSnackbar(
@@ -104,7 +104,7 @@ export const useShoppingItems = () => {
                 setIsLoading(true);
                 const res = await axios.put(`/shopping-items/bulk`, {
                     data: items.filter(v => v.name && v.name.length > 0),
-                    timeout: timeout_ms,
+                    timeout: TIMEOUT_MS,
                 });
                 if (res.data) {
                     await fetchShoppingItems(true); // サーバーデータのみ更新
@@ -138,7 +138,7 @@ export const useShoppingItems = () => {
             setIsLoading(true);
             const res = await axios.delete('/shopping-items/bulk', {
                 data: { ids },
-                timeout: timeout_ms,
+                timeout: TIMEOUT_MS,
             });
             if (res.data) {
                 await fetchShoppingItems();

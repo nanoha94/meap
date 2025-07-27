@@ -1,23 +1,28 @@
+import Loading from '@/app/(app)/loading';
 import { Header } from '@/components/common';
 import { SnackbarHandler } from '@/components/handlers';
 import { TIMEOUT_MS } from '@/constants';
 import { apiClient } from '@/lib/apiClient';
-import RecipePage from '@/pages/recipe/RecipePage';
-import { IGetRecipesResponse } from '@/types/api/recipe';
+import RecipeEditPage from '@/pages/recipe/RecipeEditPage';
+import { IGetRecipeResponse } from '@/types/api/recipe';
 import { Suspense } from 'react';
-import Loading from '../loading';
-import { CirclePlus } from 'lucide-react';
-import { HeaderLinkTextButton } from '@/components/common/HeaderTextButtons';
 
-const RecipePageWithData = async () => {
-    let recipes: IGetRecipesResponse = { data: [], total: 0 };
+interface Props {
+    params: Promise<{ id: string }>;
+}
+
+interface PageWithDataProps {
+    id: string;
+}
+const PageWithData = async ({ id }: PageWithDataProps) => {
+    let recipe: IGetRecipeResponse = {} as IGetRecipeResponse;
     let errorMessage: string = '';
 
     try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
-        recipes = await apiClient('/recipes', {
+        recipe = await apiClient(`/recipes/${id}`, {
             signal: controller.signal,
         });
         clearTimeout(timeoutId);
@@ -36,32 +41,25 @@ const RecipePageWithData = async () => {
                       : 'データの取得に失敗しました';
         }
     }
+
     return (
         <>
-            <Header title="料理/レシピ一覧">
-                <div className="hidden md:flex">
-                    <HeaderLinkTextButton
-                        href="/recipe/new"
-                        colorVariant="secondary">
-                        <CirclePlus size={20} />
-                        料理/レシピを追加
-                    </HeaderLinkTextButton>
-                </div>
-            </Header>
+            <Header title="料理/レシピ編集" />
             <main>
                 {errorMessage && (
                     <SnackbarHandler type="error" message={errorMessage} />
                 )}
-                <RecipePage fetchRecipes={recipes['data']} />
+                <RecipeEditPage recipe={recipe} />
             </main>
         </>
     );
 };
 
-const Page = () => {
+const Page = async ({ params }: Props) => {
+    const { id } = await params;
     return (
         <Suspense fallback={<Loading />}>
-            <RecipePageWithData />
+            <PageWithData id={id} />
         </Suspense>
     );
 };

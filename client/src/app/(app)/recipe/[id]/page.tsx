@@ -1,24 +1,29 @@
 import { Header } from '@/components/common';
 import { SnackbarHandler } from '@/components/handlers';
-import { timeout_ms } from '@/constants';
+import { TIMEOUT_MS } from '@/constants';
 // import { apiClient } from '@/lib/apiClient';
 // import { IGetRecipesResponse } from '@/types/api/recipe';
 import { Suspense } from 'react';
 import Loading from '../../loading';
+import { HeaderRecipeDeleteButton } from '@/models/recipe/components';
+import { Pencil } from 'lucide-react';
+import { HeaderLinkTextButton } from '@/components/common/HeaderTextButtons';
 
 interface Props {
     params: Promise<{ id: string }>;
 }
 
-const RecipePageWithData = async ({ params }: Props) => {
-    const { id } = await params;
+interface RecipePageWithDataProps {
+    id: string;
+}
+const RecipePageWithData = async ({ id }: RecipePageWithDataProps) => {
     console.log(id);
     // let recipes: IGetRecipesResponse = { data: [], total: 0 };
     let errorMessage: string = '';
 
     try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), timeout_ms);
+        const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
         // recipes = await apiClient('/recipes', {
         //     signal: controller.signal,
@@ -41,7 +46,17 @@ const RecipePageWithData = async ({ params }: Props) => {
     }
     return (
         <>
-            <Header title="料理/レシピ一覧" />
+            <Header title="料理/レシピ">
+                <div className="flex items-center gap-x-4">
+                    <HeaderRecipeDeleteButton />
+                    <HeaderLinkTextButton
+                        href={`/recipe/${id}/edit`}
+                        colorVariant="secondary">
+                        <Pencil size={20} />
+                        編集
+                    </HeaderLinkTextButton>
+                </div>
+            </Header>
             <main>
                 {errorMessage && (
                     <SnackbarHandler type="error" message={errorMessage} />
@@ -52,10 +67,11 @@ const RecipePageWithData = async ({ params }: Props) => {
     );
 };
 
-const Page = ({ params }: { params: Promise<{ id: string }> }) => {
+const Page = async ({ params }: Props) => {
+    const { id } = await params;
     return (
         <Suspense fallback={<Loading />}>
-            <RecipePageWithData params={params} />
+            <RecipePageWithData id={id} />
         </Suspense>
     );
 };

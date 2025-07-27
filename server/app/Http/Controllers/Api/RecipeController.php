@@ -104,7 +104,6 @@ class RecipeController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        Log::info($request->all());
         $user = $request->user();
         $group = $user->group;
 
@@ -125,9 +124,9 @@ class RecipeController extends Controller
         ]);
 
         // 画像ファイルの検証（アップロードする場合のみ）
-        if ($request->hasFile('thumbnailImage')) {
+        if ($request->hasFile('thumbnail')) {
             $request->validate([
-                'thumbnailImage' => $this->imageService->getValidationRules()
+                'thumbnail' => $this->imageService->getValidationRules()
             ]);
         }
 
@@ -141,7 +140,7 @@ class RecipeController extends Controller
                     'thumbnail_width' => null, // 後で設定
                     'thumbnail_height' => null, // 後で設定
                     'url' => $request->url,
-                    'recipe' => $request->recipe,
+                    'instructions' => $request->instructions,
                     'memo' => $request->memo,
                 ]);
 
@@ -188,21 +187,25 @@ class RecipeController extends Controller
 
                     // 空でないかつ配列の場合のみ処理
                     if (!empty($seasonings) && is_array($seasonings)) {
-                        $ids = $this->findOrCreateIds(
-                            collect($seasonings)->map(fn($item) => [
-                                'id' => $item['id'] ?? null,
-                                'name' => $item['name']
-                            ])->toArray(),
-                            $group,
-                            Seasoning::class
-                        );
-                        $data = collect($seasonings)->mapWithKeys(function ($item, $idx) use ($ids) {
-                            return [$ids[$idx] => [
-                                'quantity' => $item['quantity'],
-                                'unit_id' => $item['unitId'],
-                                'order' => $item['order'] ?? 0
-                            ]];
-                        })->toArray();
+                        $seasoningData = collect($seasonings)->map(fn($item) => [
+                            'id' => $item['id'] ?? null,
+                            'name' => $item['name']
+                        ])->toArray();
+
+                        $ids = $this->findOrCreateIds($seasoningData, $group, Seasoning::class);
+
+                        // インデックスを保持してマッピング
+                        $data = [];
+                        foreach ($seasonings as $idx => $item) {
+                            if (isset($ids[$idx])) {
+                                $data[$ids[$idx]] = [
+                                    'quantity' => $item['quantity'] ?? null,
+                                    'unit_id' => $item['unitId'],
+                                    'order' => $item['order'] ?? 0
+                                ];
+                            }
+                        }
+
                         $ret->seasonings()->attach($data);
                     }
                 }
@@ -218,22 +221,24 @@ class RecipeController extends Controller
                         $ingredients = [$ingredients];
                     }
 
-                    $ids = $this->findOrCreateIds(
-                        collect($ingredients)->map(fn($item) => [
-                            'id' => $item['id'] ?? null,
-                            'name' => $item['name'],
+                    $ingredientData = collect($ingredients)->map(fn($item) => [
+                        'id' => $item['id'] ?? null,
+                        'name' => $item['name'],
+                    ])->toArray();
 
-                        ])->toArray(),
-                        $group,
-                        Ingredient::class
-                    );
-                    $data = collect($ingredients)->mapWithKeys(function ($item, $idx) use ($ids) {
-                        return [$ids[$idx] => [
-                            'quantity' => $item['quantity'],
-                            'unit_id' => $item['unitId'],
-                            'order' => $item['order'] ?? 0
-                        ]];
-                    })->toArray();
+                    $ids = $this->findOrCreateIds($ingredientData, $group, Ingredient::class);
+
+                    // インデックスを保持してマッピング
+                    $data = [];
+                    foreach ($ingredients as $idx => $item) {
+                        if (isset($ids[$idx])) {
+                            $data[$ids[$idx]] = [
+                                'quantity' => $item['quantity'] ?? null,
+                                'unit_id' => $item['unitId'],
+                                'order' => $item['order'] ?? 0
+                            ];
+                        }
+                    }
                     $ret->ingredients()->attach($data);
                 }
 
@@ -246,9 +251,9 @@ class RecipeController extends Controller
             $thumbnail_height = null;
 
             // 画像ファイルが存在する場合はアップロード
-            if ($request->hasFile('thumbnailImage')) {
+            if ($request->hasFile('thumbnail')) {
                 $imageData = $this->imageService->uploadImage(
-                    $request->file('thumbnailImage'),
+                    $request->file('thumbnail'),
                     "$group->id/recipes/thumbnails"
                 );
 
@@ -273,7 +278,7 @@ class RecipeController extends Controller
                     'height' => $ret->thumbnail_height,
                 ] : null,
                 'url' => $ret->url,
-                'recipe' => $ret->recipe,
+                'instructions' => $ret->instructions,
                 'memo' => $ret->memo,
                 'categories' => $ret->categories->map(fn($item) => [
                     'id' => $item->id,
@@ -341,7 +346,7 @@ class RecipeController extends Controller
                 'height' => $recipe->thumbnail_height,
             ] : null,
             'url' => $recipe->url,
-            'recipe' => $recipe->recipe,
+            'instructions' => $recipe->instructions,
             'memo' => $recipe->memo,
             'categories' => $recipe->categories->map(fn($item) => [
                 'id' => $item->id,
@@ -409,14 +414,14 @@ class RecipeController extends Controller
         ]);
 
         // 画像ファイルの検証（アップロードする場合のみ）
-        if ($request->hasFile('thumbnailImage')) {
+        if ($request->hasFile('thumbnail')) {
             $request->validate([
-                'thumbnailImage' => $this->imageService->getValidationRules()
+                'thumbnail' => $this->imageService->getValidationRules()
             ]);
         }
 
         try {
-            $result = DB::transaction(function () use ($request, $recipe, $group) {
+            DB::transaction(function () use ($request, $recipe, $group) {
                 // 1. データベース更新処理を先に実行
                 $recipe->update([
                     'name' => $request->name,
@@ -454,6 +459,8 @@ class RecipeController extends Controller
                         ? json_decode($request->seasonings, true)
                         : $request->seasonings;
 
+                    Log::info(['request' => $request->seasonings, 'seasonings' => $seasonings]);
+
                     // JSON パースエラーチェック
                     if (is_string($request->seasonings) && json_last_error() !== JSON_ERROR_NONE) {
                         Log::error('JSON decode error for seasonings:', ['error' => json_last_error_msg()]);
@@ -467,21 +474,26 @@ class RecipeController extends Controller
 
                     // 空でないかつ配列の場合のみ処理
                     if (!empty($seasonings) && is_array($seasonings)) {
-                        $ids = $this->findOrCreateIds(
-                            collect($seasonings)->map(fn($item) => [
-                                'id' => $item['id'] ?? null,
-                                'name' => $item['name']
-                            ])->toArray(),
-                            $group,
-                            Seasoning::class
-                        );
-                        $data = collect($seasonings)->mapWithKeys(function ($item, $idx) use ($ids) {
-                            return [$ids[$idx] => [
-                                'quantity' => $item['quantity'],
-                                'unit_id' => $item['unitId'],
-                                'order' => $item['order'] ?? 0
-                            ]];
-                        })->toArray();
+                        $seasoningData = collect($seasonings)->map(fn($item) => [
+                            'id' => $item['id'] ?? null,
+                            'name' => $item['name']
+                        ])->toArray();
+
+                        $ids = $this->findOrCreateIds($seasoningData, $group, Seasoning::class);
+
+                        // インデックスを保持してマッピング
+                        $data = [];
+                        foreach ($seasonings as $idx => $item) {
+                            if (isset($ids[$idx])) {
+                                $data[$ids[$idx]] = [
+                                    'quantity' => $item['quantity'] ?? null,
+                                    'unit_id' => $item['unitId'],
+                                    'order' => $item['order'] ?? 0
+                                ];
+                            }
+                        }
+
+
                         $recipe->seasonings()->sync($data);
                     }
                 }
@@ -497,21 +509,24 @@ class RecipeController extends Controller
                         $ingredients = [$ingredients];
                     }
 
-                    $ids = $this->findOrCreateIds(
-                        collect($ingredients)->map(fn($item) => [
-                            'id' => $item['id'] ?? null,
-                            'name' => $item['name']
-                        ])->toArray(),
-                        $group,
-                        Ingredient::class
-                    );
-                    $data = collect($ingredients)->mapWithKeys(function ($item, $idx) use ($ids) {
-                        return [$ids[$idx] => [
-                            'quantity' => $item['quantity'],
-                            'unit_id' => $item['unitId'],
-                            'order' => $item['order'] ?? 0
-                        ]];
-                    })->toArray();
+                    $ingredientData = collect($ingredients)->map(fn($item) => [
+                        'id' => $item['id'] ?? null,
+                        'name' => $item['name']
+                    ])->toArray();
+
+                    $ids = $this->findOrCreateIds($ingredientData, $group, Ingredient::class);
+
+                    // インデックスを保持してマッピング
+                    $data = [];
+                    foreach ($ingredients as $idx => $item) {
+                        if (isset($ids[$idx])) {
+                            $data[$ids[$idx]] = [
+                                'quantity' => $item['quantity'] ?? null,
+                                'unit_id' => $item['unitId'],
+                                'order' => $item['order'] ?? 0
+                            ];
+                        }
+                    }
                     $recipe->ingredients()->sync($data);
                 }
 
@@ -519,38 +534,26 @@ class RecipeController extends Controller
             });
 
             // 5. データベース処理が成功した場合のみ画像処理を実行
+            // thumbnailDeleteがtrueの場合は画像削除
+            // thumbnailDeleteがfalseの場合、
+            // 1) 画像ファイルが存在する場合はアップロード
+            // 2) 画像ファイルが存在しない場合は現状維持
             $thumbnail_url = $recipe->thumbnail_url; // 既存のURLを保持
             $thumbnail_width = $recipe->thumbnail_width; // 既存のwidthを保持
             $thumbnail_height = $recipe->thumbnail_height; // 既存のheightを保持
 
-            // すでに画像が存在している場合
-            if ($recipe->thumbnail_url) {
-                // リクエストボディに画像ファイルが存在する場合はアップロード
-                if ($request->hasFile('thumbnailImage')) {
-                    $imageData = $this->imageService->uploadImage(
-                        $request->file('thumbnailImage'),
-                        "$group->id/recipes/thumbnails",
-                        $recipe->thumbnail_url
-                    );
-
-                    $thumbnail_url = $imageData['url'];
-                    $thumbnail_width = $imageData['width'];
-                    $thumbnail_height = $imageData['height'];
-                }
-                // リクエストボディに画像ファイルが存在しない場合は削除
-                else {
-                    // 既存画像を削除
-                    $this->imageService->deleteImage($recipe->thumbnail_url);
-                    $thumbnail_url = null;
-                    $thumbnail_width = null;
-                    $thumbnail_height = null;
-                }
-            }
-            // 画像が存在しない場合で、新しい画像がアップロードされた場合
-            else if ($request->hasFile('thumbnailImage')) {
+            if ($request->has('thumbnailDelete') && $request->boolean('thumbnailDelete')) {
+                // 画像削除処理
+                $this->imageService->deleteImage($recipe->thumbnail_url);
+                $thumbnail_url = null;
+                $thumbnail_width = null;
+                $thumbnail_height = null;
+            } elseif ($request->hasFile('thumbnail')) {
+                // 画像アップロード処理
                 $imageData = $this->imageService->uploadImage(
-                    $request->file('thumbnailImage'),
-                    "$group->id/recipes/thumbnails"
+                    $request->file('thumbnail'),
+                    "$group->id/recipes/thumbnails",
+                    $recipe->thumbnail_url
                 );
 
                 $thumbnail_url = $imageData['url'];
@@ -565,7 +568,7 @@ class RecipeController extends Controller
                 'thumbnail_height' => $thumbnail_height,
             ]);
 
-            $updatedItem = $group->recipes()->where('id', $id)->first();
+            $updatedItem = $group->recipes()->where('id', $id)->with(['categories', 'seasonings', 'ingredients'])->first();
 
             return response()->json([
                 'id' => $updatedItem->id,
@@ -576,7 +579,7 @@ class RecipeController extends Controller
                     'height' => $updatedItem->thumbnail_height,
                 ] : null,
                 'url' => $updatedItem->url,
-                'recipe' => $updatedItem->recipe,
+                'instructions' => $updatedItem->instructions,
                 'memo' => $updatedItem->memo,
                 'categories' => $updatedItem->categories->map(fn($item) => [
                     'id' => $item->id,

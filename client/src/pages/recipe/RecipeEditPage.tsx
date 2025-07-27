@@ -8,9 +8,14 @@ import {
 import RecipeCategorySettingDialog from '@/models/recipe/components/RecipeCategorySettingDialog/RecipeCategorySettingDialog';
 import RecipeEditForm from '@/models/recipe/components/RecipeEditForm/RecipeEditForm';
 import { useRecipeStore } from '@/models/recipe/hooks/recipeStores';
+import { IRecipe } from '@/types/api/recipe';
 import React from 'react';
 
-const RecipeEditPage = () => {
+interface Props {
+    recipe?: IRecipe | null;
+}
+
+const RecipeEditPage = ({ recipe = null }: Props) => {
     const { isLoadings } = useRecipeStore();
     const [isLoading, setIsLoading] = React.useState(false);
 
@@ -21,7 +26,7 @@ const RecipeEditPage = () => {
     return (
         <>
             {isLoading && <LoadingAnimation />}
-            <RecipeEditForm />
+            <RecipeEditForm recipe={recipe} />
             <IngredientEditDialog />
             <SeasoningEditDialog />
             <RecipeCategorySettingDialog />

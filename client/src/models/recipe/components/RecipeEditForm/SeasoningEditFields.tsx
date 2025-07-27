@@ -85,7 +85,7 @@ const SeasoningEditFields = ({ control }: Props) => {
             <div className="text-base">調味料</div>
             <DndSortableList
                 items={fields}
-                prefix={TMP_ID_PREFIX.RECIPE_SEASONING}
+                prefix={prefix}
                 onDragEnd={(oldIndex, newIndex) => {
                     move(oldIndex, newIndex);
                 }}

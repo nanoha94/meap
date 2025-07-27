@@ -6,7 +6,7 @@ import {
     IRecipeCategory,
 } from '@/types/api/recipe';
 import axios from '@/lib/axios';
-import { timeout_ms } from '@/constants';
+import { TIMEOUT_MS } from '@/constants';
 import React from 'react';
 import { TMP_ID_PREFIX } from '../constants';
 
@@ -48,7 +48,7 @@ export const useRecipeCategories = () => {
                 try {
                     await axios.delete(`/recipe-categories/bulk`, {
                         data: { ids: deleteCategoryIds },
-                        timeout: timeout_ms,
+                        timeout: TIMEOUT_MS,
                     });
                 } catch (error) {
                     if (error.code === 'ECONNABORTED') {
@@ -99,7 +99,7 @@ export const useRecipeCategories = () => {
                             `/recipe-categories`,
                             categories[i] as IPostRecipeCategoryRequest,
                             {
-                                timeout: timeout_ms,
+                                timeout: TIMEOUT_MS,
                             },
                         );
                     } catch (error) {
@@ -122,7 +122,7 @@ export const useRecipeCategories = () => {
                 try {
                     const res = await axios.put(`/recipe-categories/bulk`, {
                         data: updateCategories,
-                        timeout: timeout_ms,
+                        timeout: TIMEOUT_MS,
                     });
                     if (res.status === 200) {
                         router.refresh();

@@ -136,7 +136,7 @@ class ShoppingItemController extends Controller
                             'tags' => $request->tags
                         ]);
                     } else {
-                        $ret->tags()->attach($tagIds);
+                        $ret->tags()->attach(array_values($tagIds));
                     }
                 } catch (Exception $e) {
                     Log::error('タグの処理中にエラーが発生しました。', [
@@ -227,7 +227,7 @@ class ShoppingItemController extends Controller
                                 'tags' => $item['tags']
                             ]);
                         } else {
-                            $shoppingItem->tags()->sync($tagIds);
+                            $shoppingItem->tags()->sync(array_values($tagIds));
                         }
                     } catch (Exception $e) {
                         Log::error('タグの処理中にエラーが発生しました。', [

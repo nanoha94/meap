@@ -1,4 +1,4 @@
-import { timeout_ms } from '@/constants';
+import { TIMEOUT_MS } from '@/constants';
 import { useSnackbars } from '@/contexts';
 import axios from '@/lib/axios';
 import { IGetInvitationDetailResponse } from '@/types/api';
@@ -28,7 +28,7 @@ export const useInvitations = () => {
         try {
             setIsLoading(true);
             const res = await axios.post('/invitations', {
-                timeout: timeout_ms,
+                timeout: TIMEOUT_MS,
             });
 
             if (res.data) {
@@ -66,7 +66,7 @@ export const useInvitations = () => {
         setInvitationDetail(null);
         try {
             const res = await axios.get(`/invitations/${token}`, {
-                timeout: timeout_ms,
+                timeout: TIMEOUT_MS,
             });
             if (res.data) {
                 setInvitationDetail(res.data);
@@ -103,7 +103,7 @@ export const useInvitations = () => {
         try {
             const res = await axios.post(`/invitations/${token}/join`, {
                 isDelete,
-                timeout: timeout_ms,
+                timeout: TIMEOUT_MS,
             });
 
             if (res.data) {

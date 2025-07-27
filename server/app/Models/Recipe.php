@@ -37,7 +37,7 @@ class Recipe extends Model
     public function seasonings()
     {
         return $this->belongsToMany(Seasoning::class, 'recipe_seasoning_mappings', 'recipe_id', 'seasoning_id')
-            ->withPivot('quantity', 'unit_id');
+            ->withPivot('quantity', 'unit_id', 'order');
     }
 
     public function mealPlans()

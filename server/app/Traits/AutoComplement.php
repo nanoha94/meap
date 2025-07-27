@@ -12,7 +12,7 @@ trait AutoComplement
      * @param array|null $items アイテムの配列 [{id: string, name: string}]
      * @param Group $group グループモデル
      * @param string $modelClass 対象モデルのクラス名
-     * @return array IDの配列
+     * @return array インデックスをキーとしたIDの連想配列
      */
     protected function findOrCreateIds(
         array $items,
@@ -27,7 +27,7 @@ trait AutoComplement
         }
 
         $ids = [];
-        foreach ($items as $item) {
+        foreach ($items as $idx => $item) {
             if (isset($item['id'])) {
                 // 既存アイテムの場合、存在確認
                 $existingItem = $modelClass::where('id', $item['id'])
@@ -35,7 +35,7 @@ trait AutoComplement
                     ->first();
 
                 if ($existingItem) {
-                    $ids[] = $existingItem->id;
+                    $ids[$idx] = $existingItem->id;
                 }
             } else {
                 // 新規アイテムの場合、同じ名前のアイテムが存在するか確認
@@ -45,21 +45,16 @@ trait AutoComplement
 
                 if ($existingItem) {
                     // 既存のアイテムを使用
-                    $ids[] = $existingItem->id;
+                    $ids[$idx] = $existingItem->id;
                 } else {
                     // 新規アイテムを作成
                     $newItem = $modelClass::create([
                         'group_id' => $group->id,
                         'name' => $item['name']
                     ]);
-                    $ids[] = $newItem->id;
+                    $ids[$idx] = $newItem->id;
                 }
             }
-        }
-
-        if (!empty($ids)) {
-            // 重複を除去
-            $ids = array_unique($ids);
         }
 
         return $ids;

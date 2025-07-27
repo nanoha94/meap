@@ -22,7 +22,8 @@ class ImageService
         ?string $existingImageUrl = null
     ): array {
         // 既存画像との重複チェック
-        if ($existingImageUrl && $this->isSameImage($file, $existingImageUrl)) {
+        // アップロードするファイルのサイズが0の場合は、更新しないので、既存の画像を返す
+        if ($file->getSize() === 0 || ($existingImageUrl && $this->isSameImage($file, $existingImageUrl))) {
             // 同じ画像の場合、既存の情報を返す
             $imageInfo = $this->getExistingImageInfo($existingImageUrl);
             return [

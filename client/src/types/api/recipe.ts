@@ -2,15 +2,17 @@ export interface IGetRecipesResponse {
     data: IRecipe[];
     total: number;
 }
+export type IGetRecipeResponse = IRecipe;
+
 export interface IPostRecipeRequest {
     name: string;
-    url?: string;
-    instructions?: string;
-    memo?: string;
-    categories?: IRecipeCategory[];
-    seasonings?: ISeasoning[];
-    ingredients?: IIngredient[];
-    thumbnailImage?: File;
+    url: string | null;
+    instructions: string | null;
+    memo: string | null;
+    categories: IRecipeCategory[];
+    seasonings: ISeasoning[];
+    ingredients: IIngredient[];
+    thumbnail: File | null;
 }
 
 export type IPutRecipeRequest = IPostRecipeRequest & { id: string };
@@ -35,7 +37,7 @@ export interface ISeasoningUnit {
 export interface ISeasoning {
     id?: string; // 新規作成時はidなしも許容
     name: string;
-    quantity?: number;
+    quantity: number | null;
     unitId: string;
     order?: number;
 }
@@ -49,7 +51,7 @@ export interface IIngredientUnit {
 export interface IIngredient {
     id?: string; // 新規作成時はidなしも許容
     name: string;
-    quantity?: number;
+    quantity: number | null;
     unitId: string;
     order?: number;
 }

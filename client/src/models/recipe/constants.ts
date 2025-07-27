@@ -1,4 +1,9 @@
-import { IPostRecipeRequest, IRecipeCategory } from '@/types/api/recipe';
+import {
+    IIngredient,
+    IPostRecipeRequest,
+    IRecipeCategory,
+    ISeasoning,
+} from '@/types/api/recipe';
 import { RecipeSettingDialogConfigs } from './types';
 
 export enum TMP_ID_PREFIX {
@@ -49,16 +54,16 @@ export const defaultRecipeCategory: IRecipeCategory = {
     id: `${TMP_ID_PREFIX.RECIPE_CATEGORY}-0`,
     name: '',
 };
-export const defaultIngredient = {
+export const defaultIngredient: IIngredient = {
     id: `${TMP_ID_PREFIX.RECIPE_INGREDIENT}-0`,
     name: '',
-    quantity: undefined,
+    quantity: null,
     unitId: '',
 };
-export const defaultSeasoning = {
+export const defaultSeasoning: ISeasoning = {
     id: `${TMP_ID_PREFIX.RECIPE_SEASONING}-0`,
     name: '',
-    quantity: undefined,
+    quantity: null,
     unitId: '',
 };
 export const defaultPostData: IPostRecipeRequest = {
@@ -69,5 +74,5 @@ export const defaultPostData: IPostRecipeRequest = {
     categories: [],
     seasonings: [defaultSeasoning],
     ingredients: [defaultIngredient],
-    thumbnailImage: new File([], ''),
+    thumbnail: new File([], ''),
 };

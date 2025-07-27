@@ -9,7 +9,7 @@ import {
     RECIPE_SETTING_DIALOG_EDIT_MODE,
     RECIPE_SETTING_DIALOG_NAME,
 } from '../../constants';
-import { IIngredient } from '@/types/api/recipe';
+import { IIngredient, ISeasoning } from '@/types/api/recipe';
 
 interface Props<T extends FieldValues> {
     dialogName: (typeof RECIPE_SETTING_DIALOG_NAME)[keyof typeof RECIPE_SETTING_DIALOG_NAME];
@@ -19,7 +19,7 @@ interface Props<T extends FieldValues> {
     placeholder: string;
     control: Control<T>;
     onDelete: () => void;
-    formatValue?: (value: T) => string;
+    formatValue?: (value: IIngredient | ISeasoning) => string;
 }
 
 function EditDialogButton<T extends FieldValues>({

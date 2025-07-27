@@ -8,7 +8,7 @@ import {
 import { apiClient } from '@/lib/apiClient';
 import { SnackbarHandler } from '@/components/handlers';
 import Loading from '../../loading';
-import { timeout_ms } from '@/constants';
+import { TIMEOUT_MS } from '@/constants';
 import dynamic from 'next/dynamic';
 
 // 動的インポートでダイアログコンポーネントを遅延読み込み
@@ -30,7 +30,7 @@ const AccountWithData = async ({ token }: AccountWithDataProps) => {
 
     try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), timeout_ms);
+        const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
         users = await apiClient('/users', {
             signal: controller.signal,

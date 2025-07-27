@@ -7,6 +7,7 @@ import { useRecipeStore } from '../../hooks/recipeStores';
 import { IIngredient } from '@/types/api/recipe';
 import StyledSelect from '@/components/common/StyledSelect';
 import React from 'react';
+import { defaultIngredient } from '../../constants';
 
 interface Props {
     editingItem: IIngredient | undefined;
@@ -23,8 +24,17 @@ const EditForm = ({
     onAction,
 }: Props) => {
     const { ingredientUnits } = useRecipeStore();
-    const { control, handleSubmit, reset } = useForm<FormData>();
+    const { control, handleSubmit, reset, watch } = useForm<FormData>({
+        defaultValues: defaultIngredient,
+    });
     const nameInputRef = React.useRef<HTMLInputElement>(null);
+
+    const watchedName = watch('name');
+    const watchedUnitId = watch('unitId');
+
+    const isDisabledSendButton = React.useMemo(() => {
+        return watchedName === '' || watchedUnitId === '';
+    }, [watchedName, watchedUnitId]);
 
     React.useEffect(() => {
         nameInputRef.current?.focus();
@@ -111,7 +121,7 @@ const EditForm = ({
                     </HorizontalRowField>
                 </div>
                 <p className="text-sm text-black">
-                    ※「少々」などの数量で表せない場合は、食材名と単位のみ記入してください。
+                    ※「少々」などの数量で表せない場合は、食材名と単位のみ入力してください。
                 </p>
             </div>
             <div className="mx-auto max-w-[320px] w-full flex gap-x-6">
@@ -122,7 +132,9 @@ const EditForm = ({
                     onClick={onClose}>
                     戻る
                 </Button>
-                <Button type="submit">{actionButtonText}</Button>
+                <Button type="submit" disabled={isDisabledSendButton}>
+                    {actionButtonText}
+                </Button>
             </div>
         </form>
     );
