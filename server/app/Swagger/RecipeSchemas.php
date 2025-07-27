@@ -7,8 +7,8 @@ namespace App\Swagger;
  *     schema="Recipe",
  *     @OA\Property(property="id", type="string", description="ID", example="1"),
  *     @OA\Property(property="name", type="string", description="料理名", example="ハンバーグ"),
- *     @OA\Property(property="categories", type="array", description="カテゴリ",
- *         @OA\Items(ref="#/components/schemas/RecipeCategory")
+ *     @OA\Property(property="categoryIds", type="array", description="カテゴリ",
+ *         @OA\Items(type="string", example="1")
  *     ),
  *     @OA\Property(property="ingredients", type="array", description="食材", 
  *         @OA\Items(ref="#/components/schemas/Ingredient")

@@ -9,7 +9,7 @@ export interface IPostRecipeRequest {
     url: string | null;
     instructions: string | null;
     memo: string | null;
-    categories: IRecipeCategory[];
+    categoryIds: string[];
     seasonings: ISeasoning[];
     ingredients: IIngredient[];
     thumbnail: File | null;
@@ -67,7 +67,7 @@ export interface IRecipe {
     url: string;
     instructions: string;
     memo: string;
-    categories: IRecipeCategory[];
+    categoryIds: string[];
     seasonings: ISeasoning[];
     ingredients: IIngredient[];
 }

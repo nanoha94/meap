@@ -7,6 +7,7 @@ use App\Models\Recipe;
 use App\Models\Ingredient;
 use App\Models\Seasoning;
 use App\Models\RecipeCategory;
+use App\Models\Group;
 use App\Services\ImageService;
 use App\Traits\AutoComplement;
 use Illuminate\Http\JsonResponse;
@@ -63,11 +64,7 @@ class RecipeController extends Controller
                     'url' => $recipe->url,
                     'instructions' => $recipe->instructions,
                     'memo' => $recipe->memo,
-                    'categories' => $recipe->categories->map(fn($item) => [
-                        'id' => $item->id,
-                        'name' => $item->name,
-                        'order' => $item->order
-                    ]),
+                    'categoryIds' => $recipe->categories->pluck('id')->toArray(),
                     'seasonings' => $recipe->seasonings->map(fn($item) => [
                         'id' => $item->id,
                         'name' => $item->name,
@@ -108,27 +105,7 @@ class RecipeController extends Controller
         $group = $user->group;
 
         // リクエストデータのバリデーション
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'url' => 'nullable|string|max:2048',
-            'recipe' => 'nullable|string',
-            'memo' => 'nullable|string',
-        ], [
-            'name.required' => 'レシピ名を入力してください。',
-            'name.string' => 'レシピ名は文字列で入力してください。',
-            'name.max' => 'レシピ名は255文字以内で入力してください。',
-            'url.string' => 'URLは文字列で入力してください。',
-            'url.max' => 'URLは2048文字以内で入力してください。',
-            'recipe.string' => 'レシピ内容は文字列で入力してください。',
-            'memo.string' => 'メモは文字列で入力してください。',
-        ]);
-
-        // 画像ファイルの検証（アップロードする場合のみ）
-        if ($request->hasFile('thumbnail')) {
-            $request->validate([
-                'thumbnail' => $this->imageService->getValidationRules()
-            ]);
-        }
+        $this->validateRecipeRequest($request);
 
         try {
             $ret = DB::transaction(function () use ($request, $group) {
@@ -145,102 +122,13 @@ class RecipeController extends Controller
                 ]);
 
                 // 2. カテゴリーを紐づけ
-                if (!empty($request->categoryIds)) {
-                    $categoryIds = $request->categoryIds;
-
-                    // もし配列で来ていればそのまま
-                    if (is_array($categoryIds)) {
-                        // 何もしない
-                    }
-                    // もしJSON配列文字列ならdecode
-                    else if (is_string($categoryIds) && preg_match('/^\[.*\]$/', $categoryIds)) {
-                        $categoryIds = json_decode($categoryIds, true);
-                    }
-                    // それ以外（単一IDの文字列）は配列にラップ
-                    else if (is_string($categoryIds)) {
-                        $categoryIds = [$categoryIds];
-                    }
-
-                    $existingCategoryIds = RecipeCategory::whereIn('id', $categoryIds)
-                        ->pluck('id')
-                        ->toArray();
-
-                    $ret->categories()->attach($existingCategoryIds);
-                }
+                $this->syncCategories($ret, $request->categoryIds, false);
 
                 // 3. 調味料を紐づけ
-                if (!empty($request->seasonings)) {
-                    $seasonings = is_string($request->seasonings)
-                        ? json_decode($request->seasonings, true)
-                        : $request->seasonings;
-
-                    // JSON パースエラーチェック
-                    if (is_string($request->seasonings) && json_last_error() !== JSON_ERROR_NONE) {
-                        Log::error('JSON decode error for seasonings:', ['error' => json_last_error_msg()]);
-                        $seasonings = [];
-                    }
-
-                    // 連想配列（単一オブジェクト）の場合は配列でラップ
-                    if (!empty($seasonings) && is_array($seasonings) && !array_key_exists(0, $seasonings)) {
-                        $seasonings = [$seasonings];
-                    }
-
-                    // 空でないかつ配列の場合のみ処理
-                    if (!empty($seasonings) && is_array($seasonings)) {
-                        $seasoningData = collect($seasonings)->map(fn($item) => [
-                            'id' => $item['id'] ?? null,
-                            'name' => $item['name']
-                        ])->toArray();
-
-                        $ids = $this->findOrCreateIds($seasoningData, $group, Seasoning::class);
-
-                        // インデックスを保持してマッピング
-                        $data = [];
-                        foreach ($seasonings as $idx => $item) {
-                            if (isset($ids[$idx])) {
-                                $data[$ids[$idx]] = [
-                                    'quantity' => $item['quantity'] ?? null,
-                                    'unit_id' => $item['unitId'],
-                                    'order' => $item['order'] ?? 0
-                                ];
-                            }
-                        }
-
-                        $ret->seasonings()->attach($data);
-                    }
-                }
+                $this->syncSeasonings($ret, $request->seasonings, false, $group);
 
                 // 4. 食材を紐づけ
-                if (!empty($request->ingredients)) {
-                    $ingredients = is_string($request->ingredients)
-                        ? json_decode($request->ingredients, true)
-                        : $request->ingredients;
-
-                    // 連想配列（単一オブジェクト）の場合は配列でラップ
-                    if (!empty($ingredients) && is_array($ingredients) && !array_key_exists(0, $ingredients)) {
-                        $ingredients = [$ingredients];
-                    }
-
-                    $ingredientData = collect($ingredients)->map(fn($item) => [
-                        'id' => $item['id'] ?? null,
-                        'name' => $item['name'],
-                    ])->toArray();
-
-                    $ids = $this->findOrCreateIds($ingredientData, $group, Ingredient::class);
-
-                    // インデックスを保持してマッピング
-                    $data = [];
-                    foreach ($ingredients as $idx => $item) {
-                        if (isset($ids[$idx])) {
-                            $data[$ids[$idx]] = [
-                                'quantity' => $item['quantity'] ?? null,
-                                'unit_id' => $item['unitId'],
-                                'order' => $item['order'] ?? 0
-                            ];
-                        }
-                    }
-                    $ret->ingredients()->attach($data);
-                }
+                $this->syncIngredients($ret, $request->ingredients, false, $group);
 
                 return $ret;
             });
@@ -269,37 +157,7 @@ class RecipeController extends Controller
                 ]);
             }
 
-            return response()->json([
-                'id' => $ret->id,
-                'name' => $ret->name,
-                'thumbnail' => $ret->thumbnail_url ? [
-                    'url' => $ret->thumbnail_url,
-                    'width' => $ret->thumbnail_width,
-                    'height' => $ret->thumbnail_height,
-                ] : null,
-                'url' => $ret->url,
-                'instructions' => $ret->instructions,
-                'memo' => $ret->memo,
-                'categories' => $ret->categories->map(fn($item) => [
-                    'id' => $item->id,
-                    'name' => $item->name,
-                    'order' => $item->order
-                ]),
-                'seasonings' => $ret->seasonings->map(fn($item) => [
-                    'id' => $item->id,
-                    'name' => $item->name,
-                    'quantity' => $item->pivot->quantity,
-                    'unitId' => $item->pivot->unit_id,
-                    'order' => $item->pivot->order
-                ]),
-                'ingredients' => $ret->ingredients->map(fn($item) => [
-                    'id' => $item->id,
-                    'name' => $item->name,
-                    'quantity' => $item->pivot->quantity,
-                    'unitId' => $item->pivot->unit_id,
-                    'order' => $item->pivot->order
-                ]),
-            ], 200);
+            return response()->json($this->formatRecipeResponse($ret), 200);
         } catch (\Exception $e) {
             Log::error('Recipe creation failed:', [
                 'error' => $e->getMessage(),
@@ -337,39 +195,7 @@ class RecipeController extends Controller
             ], 404);
         }
 
-        $res = [
-            'id' => $recipe->id,
-            'name' => $recipe->name,
-            'thumbnail' => $recipe->thumbnail_url ? [
-                'url' => $recipe->thumbnail_url,
-                'width' => $recipe->thumbnail_width,
-                'height' => $recipe->thumbnail_height,
-            ] : null,
-            'url' => $recipe->url,
-            'instructions' => $recipe->instructions,
-            'memo' => $recipe->memo,
-            'categories' => $recipe->categories->map(fn($item) => [
-                'id' => $item->id,
-                'name' => $item->name,
-                'order' => $item->order
-            ]),
-            'seasonings' => $recipe->seasonings->map(fn($item) => [
-                'id' => $item->id,
-                'name' => $item->name,
-                'quantity' => $item->pivot->quantity,
-                'unitId' => $item->pivot->unit_id,
-                'order' => $item->pivot->order
-            ]),
-            'ingredients' => $recipe->ingredients->map(fn($item) => [
-                'id' => $item->id,
-                'name' => $item->name,
-                'quantity' => $item->pivot->quantity,
-                'unitId' => $item->pivot->unit_id,
-                'order' => $item->pivot->order
-            ])
-        ];
-
-        return response()->json($res, 200);
+        return response()->json($this->formatRecipeResponse($recipe), 200);
     }
 
     /**
@@ -398,27 +224,7 @@ class RecipeController extends Controller
         }
 
         // リクエストデータのバリデーション
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'url' => 'nullable|string|max:2048',
-            'recipe' => 'nullable|string',
-            'memo' => 'nullable|string',
-        ], [
-            'name.required' => 'レシピ名を入力してください。',
-            'name.string' => 'レシピ名は文字列で入力してください。',
-            'name.max' => 'レシピ名は255文字以内で入力してください。',
-            'url.string' => 'URLは文字列で入力してください。',
-            'url.max' => 'URLは2048文字以内で入力してください。',
-            'recipe.string' => 'レシピ内容は文字列で入力してください。',
-            'memo.string' => 'メモは文字列で入力してください。',
-        ]);
-
-        // 画像ファイルの検証（アップロードする場合のみ）
-        if ($request->hasFile('thumbnail')) {
-            $request->validate([
-                'thumbnail' => $this->imageService->getValidationRules()
-            ]);
-        }
+        $this->validateRecipeRequest($request);
 
         try {
             DB::transaction(function () use ($request, $recipe, $group) {
@@ -431,104 +237,13 @@ class RecipeController extends Controller
                 ]);
 
                 // 2. カテゴリー更新
-                if (!empty($request->categoryIds)) {
-                    $categoryIds = $request->categoryIds;
-                    // もし配列で来ていればそのまま
-                    if (is_array($categoryIds)) {
-                        // 何もしない
-                    }
-                    // もしJSON配列文字列ならdecode
-                    else if (is_string($categoryIds) && preg_match('/^\[.*\]$/', $categoryIds)) {
-                        $categoryIds = json_decode($categoryIds, true);
-                    }
-                    // それ以外（単一IDの文字列）は配列にラップ
-                    else if (is_string($categoryIds)) {
-                        $categoryIds = [$categoryIds];
-                    }
-
-                    $existingCategoryIds = RecipeCategory::whereIn('id', $categoryIds)
-                        ->pluck('id')
-                        ->toArray();
-
-                    $recipe->categories()->sync($existingCategoryIds);
-                }
+                $this->syncCategories($recipe, $request->categoryIds, true);
 
                 // 3. 調味料更新
-                if (!empty($request->seasonings)) {
-                    $seasonings = is_string($request->seasonings)
-                        ? json_decode($request->seasonings, true)
-                        : $request->seasonings;
-
-                    Log::info(['request' => $request->seasonings, 'seasonings' => $seasonings]);
-
-                    // JSON パースエラーチェック
-                    if (is_string($request->seasonings) && json_last_error() !== JSON_ERROR_NONE) {
-                        Log::error('JSON decode error for seasonings:', ['error' => json_last_error_msg()]);
-                        $seasonings = [];
-                    }
-
-                    // 連想配列（単一オブジェクト）の場合は配列でラップ
-                    if (!empty($seasonings) && is_array($seasonings) && !array_key_exists(0, $seasonings)) {
-                        $seasonings = [$seasonings];
-                    }
-
-                    // 空でないかつ配列の場合のみ処理
-                    if (!empty($seasonings) && is_array($seasonings)) {
-                        $seasoningData = collect($seasonings)->map(fn($item) => [
-                            'id' => $item['id'] ?? null,
-                            'name' => $item['name']
-                        ])->toArray();
-
-                        $ids = $this->findOrCreateIds($seasoningData, $group, Seasoning::class);
-
-                        // インデックスを保持してマッピング
-                        $data = [];
-                        foreach ($seasonings as $idx => $item) {
-                            if (isset($ids[$idx])) {
-                                $data[$ids[$idx]] = [
-                                    'quantity' => $item['quantity'] ?? null,
-                                    'unit_id' => $item['unitId'],
-                                    'order' => $item['order'] ?? 0
-                                ];
-                            }
-                        }
-
-
-                        $recipe->seasonings()->sync($data);
-                    }
-                }
+                $this->syncSeasonings($recipe, $request->seasonings, true, $group);
 
                 // 4. 食材更新
-                if (!empty($request->ingredients)) {
-                    $ingredients = is_string($request->ingredients)
-                        ? json_decode($request->ingredients, true)
-                        : $request->ingredients;
-
-                    // 連想配列（単一オブジェクト）の場合は配列でラップ
-                    if (!empty($ingredients) && is_array($ingredients) && !array_key_exists(0, $ingredients)) {
-                        $ingredients = [$ingredients];
-                    }
-
-                    $ingredientData = collect($ingredients)->map(fn($item) => [
-                        'id' => $item['id'] ?? null,
-                        'name' => $item['name']
-                    ])->toArray();
-
-                    $ids = $this->findOrCreateIds($ingredientData, $group, Ingredient::class);
-
-                    // インデックスを保持してマッピング
-                    $data = [];
-                    foreach ($ingredients as $idx => $item) {
-                        if (isset($ids[$idx])) {
-                            $data[$ids[$idx]] = [
-                                'quantity' => $item['quantity'] ?? null,
-                                'unit_id' => $item['unitId'],
-                                'order' => $item['order'] ?? 0
-                            ];
-                        }
-                    }
-                    $recipe->ingredients()->sync($data);
-                }
+                $this->syncIngredients($recipe, $request->ingredients, true, $group);
 
                 return true;
             });
@@ -570,37 +285,7 @@ class RecipeController extends Controller
 
             $updatedItem = $group->recipes()->where('id', $id)->with(['categories', 'seasonings', 'ingredients'])->first();
 
-            return response()->json([
-                'id' => $updatedItem->id,
-                'name' => $updatedItem->name,
-                'thumbnail' => $updatedItem->thumbnail_url ? [
-                    'url' => $updatedItem->thumbnail_url,
-                    'width' => $updatedItem->thumbnail_width,
-                    'height' => $updatedItem->thumbnail_height,
-                ] : null,
-                'url' => $updatedItem->url,
-                'instructions' => $updatedItem->instructions,
-                'memo' => $updatedItem->memo,
-                'categories' => $updatedItem->categories->map(fn($item) => [
-                    'id' => $item->id,
-                    'name' => $item->name,
-                    'order' => $item->order
-                ]),
-                'seasonings' => $updatedItem->seasonings->map(fn($item) => [
-                    'id' => $item->id,
-                    'name' => $item->name,
-                    'quantity' => $item->pivot->quantity,
-                    'unitId' => $item->pivot->unit_id,
-                    'order' => $item->pivot->order
-                ]),
-                'ingredients' => $updatedItem->ingredients->map(fn($item) => [
-                    'id' => $item->id,
-                    'name' => $item->name,
-                    'quantity' => $item->pivot->quantity,
-                    'unitId' => $item->pivot->unit_id,
-                    'order' => $item->pivot->order
-                ]),
-            ], 200);
+            return response()->json($this->formatRecipeResponse($updatedItem), 200);
         } catch (\Exception $e) {
             Log::error('Recipe update failed:', [
                 'recipe_id' => $recipe->id,
@@ -648,5 +333,201 @@ class RecipeController extends Controller
         $recipe->delete();
 
         return response()->json(['id' => $deletedId], 200);
+    }
+
+    /**
+     * レシピリクエストのバリデーション
+     */
+    private function validateRecipeRequest(Request $request): void
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'url' => 'nullable|string|max:2048',
+            'instructions' => 'nullable|string',
+            'memo' => 'nullable|string',
+        ], [
+            'name.required' => 'レシピ名を入力してください。',
+            'name.string' => 'レシピ名は文字列で入力してください。',
+            'name.max' => 'レシピ名は255文字以内で入力してください。',
+            'url.string' => 'URLは文字列で入力してください。',
+            'url.max' => 'URLは2048文字以内で入力してください。',
+            'instructions.string' => 'レシピ（テキスト入力）は文字列で入力してください。',
+            'memo.string' => 'メモは文字列で入力してください。',
+        ]);
+
+        // 画像ファイルの検証（アップロードする場合のみ）
+        if ($request->hasFile('thumbnail')) {
+            $request->validate([
+                'thumbnail' => $this->imageService->getValidationRules()
+            ]);
+        }
+    }
+
+    /**
+     * カテゴリーの同期処理
+     */
+    private function syncCategories(Recipe $recipe, $categoryIds, bool $isUpdate = false): void
+    {
+        if (empty($categoryIds)) {
+            return;
+        }
+
+        // もし配列で来ていればそのまま
+        if (is_array($categoryIds)) {
+            // 何もしない
+        }
+        // もしJSON配列文字列ならdecode
+        else if (is_string($categoryIds) && preg_match('/^\[.*\]$/', $categoryIds)) {
+            $categoryIds = json_decode($categoryIds, true);
+        }
+        // それ以外（単一IDの文字列）は配列にラップ
+        else if (is_string($categoryIds)) {
+            $categoryIds = [$categoryIds];
+        }
+
+        $existingCategoryIds = RecipeCategory::whereIn('id', $categoryIds)
+            ->pluck('id')
+            ->toArray();
+
+        Log::info('syncCategories', ['categoryIds' => $categoryIds, 'existingCategoryIds' => $existingCategoryIds]);
+
+        if ($isUpdate) {
+            $recipe->categories()->sync($existingCategoryIds);
+        } else {
+            $recipe->categories()->attach($existingCategoryIds);
+        }
+    }
+
+    /**
+     * 調味料の同期処理
+     */
+    private function syncSeasonings(Recipe $recipe, $seasonings, bool $isUpdate = false, Group $group): void
+    {
+        if (empty($seasonings)) {
+            return;
+        }
+
+        $seasonings = is_string($seasonings)
+            ? json_decode($seasonings, true)
+            : $seasonings;
+
+        // JSON パースエラーチェック
+        if (is_string($seasonings) && json_last_error() !== JSON_ERROR_NONE) {
+            Log::error('JSON decode error for seasonings:', ['error' => json_last_error_msg()]);
+            $seasonings = [];
+        }
+
+        // 連想配列（単一オブジェクト）の場合は配列でラップ
+        if (!empty($seasonings) && is_array($seasonings) && !array_key_exists(0, $seasonings)) {
+            $seasonings = [$seasonings];
+        }
+
+        // 空でないかつ配列の場合のみ処理
+        if (!empty($seasonings) && is_array($seasonings)) {
+            $seasoningData = collect($seasonings)->map(fn($item) => [
+                'id' => $item['id'] ?? null,
+                'name' => $item['name']
+            ])->toArray();
+
+            // groupが渡されていない場合はrecipeから取得
+            $ids = $this->findOrCreateIds($seasoningData,  $group ?? $recipe->group, Seasoning::class);
+
+            // インデックスを保持してマッピング
+            $data = [];
+            foreach ($seasonings as $idx => $item) {
+                if (isset($ids[$idx])) {
+                    $data[$ids[$idx]] = [
+                        'quantity' => $item['quantity'] ?? null,
+                        'unit_id' => $item['unitId'],
+                        'order' => $item['order'] ?? 0
+                    ];
+                }
+            }
+
+            if ($isUpdate) {
+                $recipe->seasonings()->sync($data);
+            } else {
+                $recipe->seasonings()->attach($data);
+            }
+        }
+    }
+
+    /**
+     * 食材の同期処理
+     */
+    private function syncIngredients(Recipe $recipe, $ingredients, bool $isUpdate = false, Group $group): void
+    {
+        if (empty($ingredients)) {
+            return;
+        }
+
+        $ingredients = is_string($ingredients)
+            ? json_decode($ingredients, true)
+            : $ingredients;
+
+        // 連想配列（単一オブジェクト）の場合は配列でラップ
+        if (!empty($ingredients) && is_array($ingredients) && !array_key_exists(0, $ingredients)) {
+            $ingredients = [$ingredients];
+        }
+
+        $ingredientData = collect($ingredients)->map(fn($item) => [
+            'id' => $item['id'] ?? null,
+            'name' => $item['name'],
+        ])->toArray();
+
+        // groupが渡されていない場合はrecipeから取得
+        $ids = $this->findOrCreateIds($ingredientData, $group ?? $recipe->group, Ingredient::class);
+
+        // インデックスを保持してマッピング
+        $data = [];
+        foreach ($ingredients as $idx => $item) {
+            if (isset($ids[$idx])) {
+                $data[$ids[$idx]] = [
+                    'quantity' => $item['quantity'] ?? null,
+                    'unit_id' => $item['unitId'],
+                    'order' => $item['order'] ?? 0
+                ];
+            }
+        }
+
+        if ($isUpdate) {
+            $recipe->ingredients()->sync($data);
+        } else {
+            $recipe->ingredients()->attach($data);
+        }
+    }
+
+    /**
+     * レシピレスポンスのフォーマット
+     */
+    private function formatRecipeResponse(Recipe $recipe): array
+    {
+        return [
+            'id' => $recipe->id,
+            'name' => $recipe->name,
+            'thumbnail' => $recipe->thumbnail_url ? [
+                'url' => $recipe->thumbnail_url,
+                'width' => $recipe->thumbnail_width,
+                'height' => $recipe->thumbnail_height,
+            ] : null,
+            'url' => $recipe->url,
+            'instructions' => $recipe->instructions,
+            'memo' => $recipe->memo,
+            'categoryIds' => $recipe->categories->pluck('id')->toArray(),
+            'seasonings' => $recipe->seasonings->map(fn($item) => [
+                'id' => $item->id,
+                'name' => $item->name,
+                'quantity' => $item->pivot->quantity,
+                'unitId' => $item->pivot->unit_id,
+                'order' => $item->pivot->order
+            ]),
+            'ingredients' => $recipe->ingredients->map(fn($item) => [
+                'id' => $item->id,
+                'name' => $item->name,
+                'quantity' => $item->pivot->quantity,
+                'unitId' => $item->pivot->unit_id,
+                'order' => $item->pivot->order
+            ]),
+        ];
     }
 }

@@ -26,6 +26,7 @@ interface Props {
 type EditMode = 'create' | 'update';
 
 const RecipeEditForm = ({ recipe = null }: Props) => {
+    console.log(recipe);
     const { storeRecipe, updateRecipe } = useRecipes();
     const methods = useForm<FormData>({
         defaultValues: {
@@ -100,13 +101,14 @@ const RecipeEditForm = ({ recipe = null }: Props) => {
         formData.append('url', sendData.url ?? '');
         formData.append('instructions', sendData.instructions ?? '');
         formData.append('memo', sendData.memo ?? '');
-        formData.append('categories', JSON.stringify(sendData.categories));
+        formData.append('categoryIds', JSON.stringify(sendData.categoryIds));
         formData.append('ingredients', JSON.stringify(sendData.ingredients));
         formData.append('seasonings', JSON.stringify(sendData.seasonings));
 
         if (editMode === 'create') {
             storeRecipe(formData);
         } else {
+            console.log(formData.get('categoryIds'));
             updateRecipe(formData);
         }
     };

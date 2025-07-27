@@ -3,7 +3,6 @@
 namespace App\Traits;
 
 use App\Models\Group;
-use Illuminate\Support\Facades\Log;
 
 trait AutoComplement
 {
@@ -19,9 +18,6 @@ trait AutoComplement
         Group $group,
         string $modelClass
     ): array {
-
-        Log::info('findOrCreateIds', ['items' => $items, 'group' => $group, 'modelClass' => $modelClass]);
-
         if (empty($items)) {
             return [];
         }

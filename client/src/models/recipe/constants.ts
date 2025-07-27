@@ -71,7 +71,7 @@ export const defaultPostData: IPostRecipeRequest = {
     url: '',
     instructions: '',
     memo: '',
-    categories: [],
+    categoryIds: [],
     seasonings: [defaultSeasoning],
     ingredients: [defaultIngredient],
     thumbnail: new File([], ''),

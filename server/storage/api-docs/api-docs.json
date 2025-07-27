@@ -1122,11 +1122,12 @@
                         "type": "string",
                         "example": "ハンバーグ"
                     },
-                    "categories": {
+                    "categoryIds": {
                         "description": "カテゴリ",
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/RecipeCategory"
+                            "type": "string",
+                            "example": "1"
                         }
                     },
                     "ingredients": {
@@ -2488,7 +2489,12 @@
                                     "type": "string",
                                     "example": "[{\"id\":\"1\",\"name\":\"塩\",\"quantity\":1,\"unitId\":\"1\", \"order\":1}]"
                                 },
-                                "thumbnailImage": {
+                                "thumbnailDelete": {
+                                    "description": "サムネイル画像を削除するかどうか",
+                                    "type": "boolean",
+                                    "example": "false"
+                                },
+                                "thumbnail": {
                                     "description": "サムネイル画像ファイル",
                                     "type": "string",
                                     "format": "binary"

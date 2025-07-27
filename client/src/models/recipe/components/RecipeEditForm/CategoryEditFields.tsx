@@ -1,7 +1,7 @@
 'use client';
 import { TextButton } from '@/components/common';
 import { Control, Controller } from 'react-hook-form';
-import { IPostRecipeRequest, IRecipeCategory } from '@/types/api/recipe';
+import { IPostRecipeRequest } from '@/types/api/recipe';
 import { Check, ChevronRight } from 'lucide-react';
 import React from 'react';
 import { useRecipeStore } from '../../hooks/recipeStores';
@@ -45,19 +45,13 @@ const CategoryEditFields = ({ control }: Props) => {
                     {categories.length > 0 ? (
                         <Controller
                             control={control}
-                            name="categories"
+                            name="categoryIds"
                             render={({ field: { onChange, value } }) => {
-                                const handleChange = (
-                                    checkedValue: IRecipeCategory,
-                                ) => {
-                                    if (
-                                        value?.find(
-                                            v => v.id === checkedValue.id,
-                                        )
-                                    ) {
+                                const handleChange = (checkedValue: string) => {
+                                    if (value?.includes(checkedValue)) {
                                         onChange(
                                             value?.filter(
-                                                v => v.id !== checkedValue.id,
+                                                v => v !== checkedValue,
                                             ),
                                         );
                                     } else {
@@ -72,7 +66,7 @@ const CategoryEditFields = ({ control }: Props) => {
                                     <div className="flex flex-wrap gap-y-2 gap-x-3">
                                         {categories.map(category => {
                                             const isChecked = value?.find(
-                                                v => v.id === category.id,
+                                                v => v === category.id,
                                             )
                                                 ? true
                                                 : false;
@@ -85,7 +79,7 @@ const CategoryEditFields = ({ control }: Props) => {
                                                         checked={isChecked}
                                                         onChange={() =>
                                                             handleChange(
-                                                                category,
+                                                                category.id,
                                                             )
                                                         }
                                                         className="hidden"
