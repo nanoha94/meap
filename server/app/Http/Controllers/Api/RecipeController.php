@@ -48,8 +48,7 @@ class RecipeController extends Controller
         $perPage = $request->input('per_page', 15);
         $page = $request->input('page', 1);
 
-        // TODO: 無限スクロール対応
-
+        // TODO: 無限スクロール対応？
         $recipes = $group->recipes()->select('id', 'name', 'thumbnail_url', 'thumbnail_width', 'thumbnail_height', 'url', 'instructions', 'memo')->with(['categories', 'seasonings', 'ingredients'])->get();
         $res = [
             'data' => $recipes->map(function ($recipe) {
@@ -64,7 +63,10 @@ class RecipeController extends Controller
                     'url' => $recipe->url,
                     'instructions' => $recipe->instructions,
                     'memo' => $recipe->memo,
-                    'categoryIds' => $recipe->categories->pluck('id')->toArray(),
+                    'categories' => $recipe->categories->sortBy('order')->map(fn($item) => [
+                        'id' => $item->id,
+                        'name' => $item->name,
+                    ]),
                     'seasonings' => $recipe->seasonings->map(fn($item) => [
                         'id' => $item->id,
                         'name' => $item->name,
@@ -328,7 +330,9 @@ class RecipeController extends Controller
         $deletedId = $recipe->id;
 
         // 画像ファイルを削除
-        $this->imageService->deleteImage($recipe->thumbnail_url);
+        if ($recipe->thumbnail_url) {
+            $this->imageService->deleteImage($recipe->thumbnail_url);
+        }
 
         $recipe->delete();
 
@@ -388,8 +392,6 @@ class RecipeController extends Controller
         $existingCategoryIds = RecipeCategory::whereIn('id', $categoryIds)
             ->pluck('id')
             ->toArray();
-
-        Log::info('syncCategories', ['categoryIds' => $categoryIds, 'existingCategoryIds' => $existingCategoryIds]);
 
         if ($isUpdate) {
             $recipe->categories()->sync($existingCategoryIds);
@@ -513,7 +515,10 @@ class RecipeController extends Controller
             'url' => $recipe->url,
             'instructions' => $recipe->instructions,
             'memo' => $recipe->memo,
-            'categoryIds' => $recipe->categories->pluck('id')->toArray(),
+            'categories' => $recipe->categories->sortBy('order')->map(fn($item) => [
+                'id' => $item->id,
+                'name' => $item->name,
+            ]),
             'seasonings' => $recipe->seasonings->map(fn($item) => [
                 'id' => $item->id,
                 'name' => $item->name,

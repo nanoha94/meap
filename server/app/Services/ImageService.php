@@ -60,10 +60,10 @@ class ImageService
     /**
      * 画像ファイルを削除
      *
-     * @param string $imageUrl
+     * @param string|null $imageUrl
      * @return void
      */
-    public function deleteImage(string $imageUrl): void
+    public function deleteImage(?string $imageUrl): void
     {
         if (empty($imageUrl)) {
             return;

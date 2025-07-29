@@ -67,7 +67,7 @@ export interface IRecipe {
     url: string;
     instructions: string;
     memo: string;
-    categoryIds: string[];
+    categories: IRecipeCategory[];
     seasonings: ISeasoning[];
     ingredients: IIngredient[];
 }

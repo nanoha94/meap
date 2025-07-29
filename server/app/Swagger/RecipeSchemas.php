@@ -7,8 +7,8 @@ namespace App\Swagger;
  *     schema="Recipe",
  *     @OA\Property(property="id", type="string", description="ID", example="1"),
  *     @OA\Property(property="name", type="string", description="料理名", example="ハンバーグ"),
- *     @OA\Property(property="categoryIds", type="array", description="カテゴリ",
- *         @OA\Items(type="string", example="1")
+ *     @OA\Property(property="categories", type="array", description="カテゴリ",
+ *         @OA\Items(ref="#/components/schemas/RecipeCategory")
  *     ),
  *     @OA\Property(property="ingredients", type="array", description="食材", 
  *         @OA\Items(ref="#/components/schemas/Ingredient")
@@ -33,7 +33,7 @@ namespace App\Swagger;
  * 
  * @OA\Schema(
  *     schema="RecipeCategory",
- *     required={"id", "name", "order"},
+ *     required={"id", "name"},
  *     @OA\Property(property="id", type="string", description="ID", example="1"),
  *     @OA\Property(property="name", type="string", description="カテゴリ名", example="肉料理"),
  *     @OA\Property(property="order", type="integer", description="並び順", example=1)

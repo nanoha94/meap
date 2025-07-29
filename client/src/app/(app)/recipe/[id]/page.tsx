@@ -1,33 +1,34 @@
 import { Header } from '@/components/common';
 import { SnackbarHandler } from '@/components/handlers';
 import { TIMEOUT_MS } from '@/constants';
-// import { apiClient } from '@/lib/apiClient';
-// import { IGetRecipesResponse } from '@/types/api/recipe';
 import { Suspense } from 'react';
 import Loading from '../../loading';
 import { HeaderRecipeDeleteButton } from '@/models/recipe/components';
 import { Pencil } from 'lucide-react';
 import { HeaderLinkTextButton } from '@/components/common/HeaderTextButtons';
+import { apiClient } from '@/lib/apiClient';
+import { IGetRecipeResponse } from '@/types/api/recipe';
+import RecipeDetailPage from '@/pages/recipe/RecipeDetailPage';
+import { notFound } from 'next/navigation';
 
 interface Props {
     params: Promise<{ id: string }>;
 }
 
-interface RecipePageWithDataProps {
+interface PageWithDataProps {
     id: string;
 }
-const RecipePageWithData = async ({ id }: RecipePageWithDataProps) => {
-    console.log(id);
-    // let recipes: IGetRecipesResponse = { data: [], total: 0 };
+const PageWithData = async ({ id }: PageWithDataProps) => {
+    let recipe: IGetRecipeResponse = {} as IGetRecipeResponse;
     let errorMessage: string = '';
 
     try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
-        // recipes = await apiClient('/recipes', {
-        //     signal: controller.signal,
-        // });
+        recipe = await apiClient(`/recipes/${id}`, {
+            signal: controller.signal,
+        });
         clearTimeout(timeoutId);
     } catch (error) {
         console.error(error);
@@ -43,12 +44,14 @@ const RecipePageWithData = async ({ id }: RecipePageWithDataProps) => {
                       ? error
                       : 'データの取得に失敗しました';
         }
+        notFound();
     }
+
     return (
         <>
             <Header title="料理/レシピ">
                 <div className="flex items-center gap-x-4">
-                    <HeaderRecipeDeleteButton />
+                    <HeaderRecipeDeleteButton id={id} name={recipe.name} />
                     <HeaderLinkTextButton
                         href={`/recipe/${id}/edit`}
                         colorVariant="secondary">
@@ -61,7 +64,7 @@ const RecipePageWithData = async ({ id }: RecipePageWithDataProps) => {
                 {errorMessage && (
                     <SnackbarHandler type="error" message={errorMessage} />
                 )}
-                詳細
+                <RecipeDetailPage recipe={recipe} />
             </main>
         </>
     );
@@ -71,7 +74,7 @@ const Page = async ({ params }: Props) => {
     const { id } = await params;
     return (
         <Suspense fallback={<Loading />}>
-            <RecipePageWithData id={id} />
+            <PageWithData id={id} />
         </Suspense>
     );
 };

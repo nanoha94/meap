@@ -9,7 +9,7 @@ interface Props {
     fetchRecipes: IGetRecipesResponse['data'];
 }
 
-const RecipePage = ({ fetchRecipes }: Props) => {
+const RecipeListPage = ({ fetchRecipes }: Props) => {
     const { setRecipes: setStoreRecipes, isLoadings } = useRecipeStore();
     const [isLoading, setIsLoading] = React.useState(false);
 
@@ -30,4 +30,4 @@ const RecipePage = ({ fetchRecipes }: Props) => {
     );
 };
 
-export default RecipePage;
+export default RecipeListPage;

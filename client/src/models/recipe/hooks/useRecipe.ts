@@ -21,8 +21,8 @@ export const useRecipes = () => {
                 timeout: TIMEOUT_MS,
             });
             if (res.data) {
-                addSnackbar('success', `${formData.get('name')}を追加しました`);
                 router.push('/recipe/');
+                addSnackbar('success', `${formData.get('name')}を追加しました`);
             }
         } catch (error) {
             if (error.code === 'ECONNABORTED') {
@@ -51,8 +51,32 @@ export const useRecipes = () => {
                 },
             );
             if (res.data) {
-                addSnackbar('success', `${formData.get('name')}を更新しました`);
                 router.push(`/recipe/${formData.get('id')}`);
+                addSnackbar('success', `${formData.get('name')}を更新しました`);
+            }
+        } catch (error) {
+            if (error.code === 'ECONNABORTED') {
+                addSnackbar('error', 'リクエストがタイムアウトしました');
+            } else {
+                console.error(error.response?.data.message);
+                addSnackbar('error', error.response?.data.message);
+            }
+        } finally {
+            setIsLoadings('recipe', false);
+        }
+    }, []);
+
+    const deleteRecipe = React.useCallback(async (id: string, name: string) => {
+        if (isLoadings.recipe) {
+            return;
+        }
+
+        try {
+            setIsLoadings('recipe', true);
+            const res = await axios.delete(`/recipes/${id}`);
+            if (res.data) {
+                addSnackbar('success', `${name}を削除しました`);
+                router.push('/recipe/');
             }
         } catch (error) {
             if (error.code === 'ECONNABORTED') {
@@ -69,5 +93,6 @@ export const useRecipes = () => {
     return {
         storeRecipe,
         updateRecipe,
+        deleteRecipe,
     };
 };

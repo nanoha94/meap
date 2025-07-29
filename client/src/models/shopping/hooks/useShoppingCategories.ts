@@ -132,8 +132,8 @@ export const useShoppingCategories = () => {
 
             // すべての処理がエラーなく完了した場合
             if (!hasError) {
-                addSnackbar('success', '買い物カテゴリーを更新しました');
                 router.refresh();
+                addSnackbar('success', '買い物カテゴリーを更新しました');
             }
 
             setIsLoading(false);

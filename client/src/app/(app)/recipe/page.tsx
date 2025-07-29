@@ -2,7 +2,7 @@ import { Header } from '@/components/common';
 import { SnackbarHandler } from '@/components/handlers';
 import { TIMEOUT_MS } from '@/constants';
 import { apiClient } from '@/lib/apiClient';
-import RecipePage from '@/pages/recipe/RecipePage';
+import RecipeListPage from '@/pages/recipe/RecipeListPage';
 import { IGetRecipesResponse } from '@/types/api/recipe';
 import { Suspense } from 'react';
 import Loading from '../loading';
@@ -52,7 +52,7 @@ const RecipePageWithData = async () => {
                 {errorMessage && (
                     <SnackbarHandler type="error" message={errorMessage} />
                 )}
-                <RecipePage fetchRecipes={recipes['data']} />
+                <RecipeListPage fetchRecipes={recipes['data']} />
             </main>
         </>
     );

@@ -16,6 +16,7 @@ import { VerticalRowField } from '@/components/react-hook-form';
 import ThumbnailEditField from './ThumbnailEditField';
 import { useRecipes } from '../../hooks/useRecipe';
 import { MAX_IMAGE_SIZE } from '@/constants';
+import { useRouter } from 'next/navigation';
 
 type FormData = IPostRecipeRequest;
 
@@ -26,12 +27,13 @@ interface Props {
 type EditMode = 'create' | 'update';
 
 const RecipeEditForm = ({ recipe = null }: Props) => {
-    console.log(recipe);
+    const router = useRouter();
     const { storeRecipe, updateRecipe } = useRecipes();
     const methods = useForm<FormData>({
         defaultValues: {
             ...defaultPostData,
             ...recipe,
+            categoryIds: recipe?.categories.map(v => v.id),
             thumbnail: new File([], ''),
         },
     });
@@ -108,7 +110,6 @@ const RecipeEditForm = ({ recipe = null }: Props) => {
         if (editMode === 'create') {
             storeRecipe(formData);
         } else {
-            console.log(formData.get('categoryIds'));
             updateRecipe(formData);
         }
     };
@@ -198,7 +199,9 @@ const RecipeEditForm = ({ recipe = null }: Props) => {
                             type="button"
                             colorVariant="gray"
                             variant="outlined"
-                            onClick={() => {}}>
+                            onClick={() => {
+                                router.push(`/recipe/${recipe?.id}`);
+                            }}>
                             戻る
                         </Button>
                         <Button
