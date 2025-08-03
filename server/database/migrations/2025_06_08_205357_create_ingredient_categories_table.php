@@ -11,10 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('seasoning_units', function (Blueprint $table) {
+        Schema::create('ingredient_categories', function (Blueprint $table) {
             $table->uuid('id')->primary();
+            $table->foreignUuid('group_id')->constrained('groups', 'id')->cascadeOnDelete();
             $table->string('name');
-            $table->integer('order');
+            $table->integer('order')->default(0);
             $table->timestamps();
         });
     }
@@ -24,6 +25,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('seasoning_units');
+        Schema::table('ingredient_categories', function (Blueprint $table) {
+            $table->dropForeign(['group_id']);
+        });
+
+        Schema::dropIfExists('ingredient_categories');
     }
 };

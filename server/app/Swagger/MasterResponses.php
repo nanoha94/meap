@@ -15,16 +15,16 @@ namespace App\Swagger;
  *             @OA\Items(ref="#/components/schemas/RecipeCategory")
  *         ),
  *         @OA\Property(
+ *             property="ingredientCategories",
+ *             type="array",
+ *             description="食材カテゴリ一覧",
+ *             @OA\Items(ref="#/components/schemas/IngredientCategory")
+ *         ),
+ *         @OA\Property(
  *             property="ingredientUnits",
  *             type="array",
  *             description="食材単位一覧",
  *             @OA\Items(ref="#/components/schemas/IngredientUnit")
- *         ),
- *         @OA\Property(
- *             property="seasoningUnits",
- *             type="array",
- *             description="調味料単位一覧",
- *             @OA\Items(ref="#/components/schemas/SeasoningUnit")
  *         ),
  *         @OA\Property(
  *             property="courseTypes",

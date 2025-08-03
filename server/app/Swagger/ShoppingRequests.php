@@ -59,12 +59,9 @@ namespace App\Swagger;
  * 
  * @OA\RequestBody(
  *     request="ShoppingCategoryStoreRequest",
- *     description="登録する買い物カテゴリデータ",
+ *     description="※新規作成時はid不要",
  *     required=true,
- *     @OA\JsonContent(
- *         type="object",
- *         @OA\Property(property="name", type="string", description="カテゴリ名", example="スーパーA")
- *     )
+ *     @OA\JsonContent(ref="#/components/schemas/ShoppingCategory")
  * )
  * 
  * @OA\RequestBody(

@@ -58,6 +58,111 @@
                 ]
             }
         },
+        "/ingredient-categories": {
+            "get": {
+                "tags": [
+                    "Ingredients"
+                ],
+                "summary": "食材カテゴリ一覧を取得",
+                "operationId": "7f9d9d8a1477158b6e52b35a50284eef",
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/IngredientCategoryIndexSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Ingredients"
+                ],
+                "summary": "食材カテゴリを作成",
+                "operationId": "f9033c30ee41553f18b1c01d183fc022",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/IngredientCategoryStoreRequest"
+                },
+                "responses": {
+                    "201": {
+                        "$ref": "#/components/responses/IngredientCategoryStoreSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationErrors"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/ingredient-categories/bulk": {
+            "put": {
+                "tags": [
+                    "Ingredients"
+                ],
+                "summary": "食材カテゴリを一括更新",
+                "operationId": "b426e97617348d2b2f3a7f6e64ea7ff6",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/IngredientCategoryBulkUpdateRequest"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/IngredientCategoryBulkUpdateSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationErrors"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Ingredients"
+                ],
+                "summary": "食材カテゴリを削除",
+                "operationId": "8f1f5ae691627a40a8be92f4bbc7d226",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/IngredientCategoryBulkDestroyRequest"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/IngredientCategoryBulkDestroySuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationErrors"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/invitations": {
             "post": {
                 "tags": [
@@ -984,6 +1089,103 @@
                 },
                 "type": "object"
             },
+            "Ingredient": {
+                "required": [
+                    "id",
+                    "name",
+                    "quantity",
+                    "unitId"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "ID",
+                        "type": "string",
+                        "example": "1"
+                    },
+                    "name": {
+                        "description": "食材名",
+                        "type": "string",
+                        "example": "牛肉"
+                    },
+                    "quantity": {
+                        "description": "量",
+                        "type": "number",
+                        "format": "double",
+                        "example": "1"
+                    },
+                    "unitId": {
+                        "description": "単位",
+                        "type": "string",
+                        "example": "1"
+                    },
+                    "order": {
+                        "description": "並び順",
+                        "type": "integer",
+                        "example": 1
+                    }
+                },
+                "type": "object"
+            },
+            "IngredientCategory": {
+                "required": [
+                    "id",
+                    "name"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "ID",
+                        "type": "string",
+                        "example": "1"
+                    },
+                    "name": {
+                        "description": "カテゴリ名",
+                        "type": "string",
+                        "example": "食材"
+                    },
+                    "order": {
+                        "description": "順番",
+                        "type": "integer",
+                        "example": 1
+                    }
+                },
+                "type": "object"
+            },
+            "IngredientUnit": {
+                "required": [
+                    "id",
+                    "name",
+                    "requiresQuantity",
+                    "order"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "ID",
+                        "type": "string",
+                        "example": "1"
+                    },
+                    "name": {
+                        "description": "食材単位名",
+                        "type": "string",
+                        "example": "g"
+                    },
+                    "position": {
+                        "description": "単位の位置（prefix: 数値の前、suffix: 数値の後）",
+                        "type": "string",
+                        "example": "prefix"
+                    },
+                    "requiresQuantity": {
+                        "description": "量を入力するかどうか",
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "order": {
+                        "description": "並び順",
+                        "type": "integer",
+                        "example": 1
+                    }
+                },
+                "type": "object"
+            },
             "MealPlan": {
                 "required": [
                     "date",
@@ -1122,12 +1324,11 @@
                         "type": "string",
                         "example": "ハンバーグ"
                     },
-                    "categoryIds": {
+                    "categories": {
                         "description": "カテゴリ",
                         "type": "array",
                         "items": {
-                            "type": "string",
-                            "example": "1"
+                            "$ref": "#/components/schemas/RecipeCategory"
                         }
                     },
                     "ingredients": {
@@ -1135,13 +1336,6 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/Ingredient"
-                        }
-                    },
-                    "seasonings": {
-                        "description": "調味料",
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/Seasoning"
                         }
                     },
                     "thumbnail": {
@@ -1152,10 +1346,12 @@
                         "type": "string",
                         "example": "https://www.google.com"
                     },
-                    "instructions": {
-                        "description": "レシピ",
-                        "type": "string",
-                        "example": "ハンバーグを作る"
+                    "steps": {
+                        "description": "手順",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/RecipeStep"
+                        }
                     },
                     "memo": {
                         "description": "メモ",
@@ -1186,11 +1382,59 @@
                 "type": "object",
                 "nullable": true
             },
+            "RecipeStep": {
+                "required": [
+                    "id",
+                    "instruction",
+                    "order"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "ID",
+                        "type": "string",
+                        "example": "1"
+                    },
+                    "instruction": {
+                        "description": "手順",
+                        "type": "string",
+                        "example": "ハンバーグを作る"
+                    },
+                    "image": {
+                        "$ref": "#/components/schemas/RecipeStepImage"
+                    },
+                    "order": {
+                        "description": "並び順",
+                        "type": "integer",
+                        "example": 1
+                    }
+                },
+                "type": "object"
+            },
+            "RecipeStepImage": {
+                "properties": {
+                    "url": {
+                        "description": "画像URL",
+                        "type": "string",
+                        "example": "https://example.com/step1.jpg"
+                    },
+                    "width": {
+                        "description": "画像幅",
+                        "type": "integer",
+                        "example": 300
+                    },
+                    "height": {
+                        "description": "画像高さ",
+                        "type": "integer",
+                        "example": 200
+                    }
+                },
+                "type": "object",
+                "nullable": true
+            },
             "RecipeCategory": {
                 "required": [
                     "id",
-                    "name",
-                    "order"
+                    "name"
                 ],
                 "properties": {
                     "id": {
@@ -1202,130 +1446,6 @@
                         "description": "カテゴリ名",
                         "type": "string",
                         "example": "肉料理"
-                    },
-                    "order": {
-                        "description": "並び順",
-                        "type": "integer",
-                        "example": 1
-                    }
-                },
-                "type": "object"
-            },
-            "SeasoningUnit": {
-                "required": [
-                    "id",
-                    "name",
-                    "order"
-                ],
-                "properties": {
-                    "id": {
-                        "description": "ID",
-                        "type": "string",
-                        "example": "1"
-                    },
-                    "name": {
-                        "description": "調味料単位名",
-                        "type": "string",
-                        "example": "大さじ"
-                    },
-                    "order": {
-                        "description": "並び順",
-                        "type": "integer",
-                        "example": 1
-                    }
-                },
-                "type": "object"
-            },
-            "IngredientUnit": {
-                "required": [
-                    "id",
-                    "name",
-                    "order"
-                ],
-                "properties": {
-                    "id": {
-                        "description": "ID",
-                        "type": "string",
-                        "example": "1"
-                    },
-                    "name": {
-                        "description": "食材単位名",
-                        "type": "string",
-                        "example": "g"
-                    },
-                    "order": {
-                        "description": "並び順",
-                        "type": "integer",
-                        "example": 1
-                    }
-                },
-                "type": "object"
-            },
-            "Seasoning": {
-                "required": [
-                    "id",
-                    "name",
-                    "quantity",
-                    "unitId"
-                ],
-                "properties": {
-                    "id": {
-                        "description": "ID",
-                        "type": "string",
-                        "example": "1"
-                    },
-                    "name": {
-                        "description": "調味料名",
-                        "type": "string",
-                        "example": "塩"
-                    },
-                    "quantity": {
-                        "description": "量",
-                        "type": "number",
-                        "format": "double",
-                        "example": "1"
-                    },
-                    "unitId": {
-                        "description": "単位",
-                        "type": "string",
-                        "example": "1"
-                    },
-                    "order": {
-                        "description": "並び順",
-                        "type": "integer",
-                        "example": 1
-                    }
-                },
-                "type": "object"
-            },
-            "Ingredient": {
-                "required": [
-                    "id",
-                    "name",
-                    "quantity",
-                    "unitId"
-                ],
-                "properties": {
-                    "id": {
-                        "description": "ID",
-                        "type": "string",
-                        "example": "1"
-                    },
-                    "name": {
-                        "description": "食材名",
-                        "type": "string",
-                        "example": "牛肉"
-                    },
-                    "quantity": {
-                        "description": "量",
-                        "type": "number",
-                        "format": "double",
-                        "example": "1"
-                    },
-                    "unitId": {
-                        "description": "単位",
-                        "type": "string",
-                        "example": "1"
                     },
                     "order": {
                         "description": "並び順",
@@ -1575,6 +1695,68 @@
                     }
                 }
             },
+            "IngredientCategoryIndexSuccess": {
+                "description": "正常に取得されました",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "description": "食材カテゴリ一覧",
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/IngredientCategory"
+                                    }
+                                },
+                                "total": {
+                                    "description": "買い物カテゴリ総数",
+                                    "type": "integer",
+                                    "example": 100
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "IngredientCategoryStoreSuccess": {
+                "description": "食材カテゴリーを作成しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/IngredientCategory"
+                        }
+                    }
+                }
+            },
+            "IngredientCategoryBulkUpdateSuccess": {
+                "description": "正常に更新されました",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/IngredientCategory"
+                        }
+                    }
+                }
+            },
+            "IngredientCategoryBulkDestroySuccess": {
+                "description": "正常に削除されました",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "ids": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
             "InvitationStoreSuccess": {
                 "description": "成功",
                 "content": {
@@ -1680,18 +1862,18 @@
                                         "$ref": "#/components/schemas/RecipeCategory"
                                     }
                                 },
+                                "ingredientCategories": {
+                                    "description": "食材カテゴリ一覧",
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/IngredientCategory"
+                                    }
+                                },
                                 "ingredientUnits": {
                                     "description": "食材単位一覧",
                                     "type": "array",
                                     "items": {
                                         "$ref": "#/components/schemas/IngredientUnit"
-                                    }
-                                },
-                                "seasoningUnits": {
-                                    "description": "調味料単位一覧",
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/SeasoningUnit"
                                     }
                                 },
                                 "courseTypes": {
@@ -2342,6 +2524,56 @@
                     }
                 }
             },
+            "IngredientCategoryStoreRequest": {
+                "description": "※新規作成時はid不要",
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/IngredientCategory"
+                        }
+                    }
+                }
+            },
+            "IngredientCategoryBulkUpdateRequest": {
+                "description": "一括更新する食材カテゴリデータ",
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/IngredientCategory"
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "IngredientCategoryBulkDestroyRequest": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "ids": {
+                                    "type": "array",
+                                    "items": {
+                                        "description": "カテゴリID",
+                                        "type": "string",
+                                        "example": "1"
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
             "MealPlanRequest": {
                 "description": "※新規作成時はid不要",
                 "required": true,
@@ -2484,11 +2716,6 @@
                                     "type": "string",
                                     "example": "[{\"id\":\"1\",\"name\":\"牛肉\",\"quantity\":100,\"unitId\":\"1\", \"order\":1}]"
                                 },
-                                "seasonings": {
-                                    "description": "調味料（JSON文字列）",
-                                    "type": "string",
-                                    "example": "[{\"id\":\"1\",\"name\":\"塩\",\"quantity\":1,\"unitId\":\"1\", \"order\":1}]"
-                                },
                                 "thumbnailDelete": {
                                     "description": "サムネイル画像を削除するかどうか",
                                     "type": "boolean",
@@ -2504,10 +2731,10 @@
                                     "type": "string",
                                     "example": "https://www.google.com"
                                 },
-                                "instructions": {
-                                    "description": "レシピ（テキスト入力）",
+                                "steps": {
+                                    "description": "手順（JSON文字列）",
                                     "type": "string",
-                                    "example": "ハンバーグを作る"
+                                    "example": "[{\"id\":\"1\",\"instruction\":\"ハンバーグを作る\",\"image\":{\"url\":\"https://www.google.com\",\"width\":100,\"height\":100},\"order\":1}]"
                                 },
                                 "memo": {
                                     "description": "メモ",
@@ -2658,19 +2885,12 @@
                 }
             },
             "ShoppingCategoryStoreRequest": {
-                "description": "登録する買い物カテゴリデータ",
+                "description": "※新規作成時はid不要",
                 "required": true,
                 "content": {
                     "application/json": {
                         "schema": {
-                            "properties": {
-                                "name": {
-                                    "description": "カテゴリ名",
-                                    "type": "string",
-                                    "example": "スーパーA"
-                                }
-                            },
-                            "type": "object"
+                            "$ref": "#/components/schemas/ShoppingCategory"
                         }
                     }
                 }
@@ -2750,6 +2970,10 @@
         {
             "name": "Recipes",
             "description": "料理関連のAPI"
+        },
+        {
+            "name": "Ingredients",
+            "description": "食材関連のAPI"
         },
         {
             "name": "MealPlans",

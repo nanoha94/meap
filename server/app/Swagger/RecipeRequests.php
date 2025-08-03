@@ -14,11 +14,10 @@ namespace App\Swagger;
  *             @OA\Property(property="name", type="string", description="料理名", example="ハンバーグ"),
  *             @OA\Property(property="categoryIds", type="string", description="カテゴリ（JSON文字列）", example="[""1""]"),
  *             @OA\Property(property="ingredients", type="string", description="食材（JSON文字列）", example="[{""id"":""1"",""name"":""牛肉"",""quantity"":100,""unitId"":""1"", ""order"":1}]"),
- *             @OA\Property(property="seasonings", type="string", description="調味料（JSON文字列）", example="[{""id"":""1"",""name"":""塩"",""quantity"":1,""unitId"":""1"", ""order"":1}]"),
  *             @OA\Property(property="thumbnailDelete", type="boolean", description="サムネイル画像を削除するかどうか", example="false"),
  *             @OA\Property(property="thumbnail", type="string", format="binary", description="サムネイル画像ファイル"),
  *             @OA\Property(property="url", type="string", description="レシピURL", example="https://www.google.com"),
- *             @OA\Property(property="instructions", type="string", description="レシピ（テキスト入力）", example="ハンバーグを作る"),
+ *             @OA\Property(property="steps", type="string", description="手順（JSON文字列）", example="[{""id"":""1"",""instruction"":""ハンバーグを作る"",""image"":{""url"":""https://www.google.com"",""width"":100,""height"":100},""order"":1}]"),
  *             @OA\Property(property="memo", type="string", description="メモ", example="ハンバーグは美味しい")
  *         )
  *     )

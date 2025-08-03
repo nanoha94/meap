@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
-class SeasoningUnit extends Model
+class RecipeStep extends Model
 {
     use  HasUuids;
 
@@ -13,7 +13,16 @@ class SeasoningUnit extends Model
     public $incrementing = false;
 
     protected $fillable = [
-        'name',
-        'order'
+        'recipe_id',
+        'instruction',
+        'image_url',
+        'image_width',
+        'image_height',
+        'order',
     ];
+
+    public function recipe()
+    {
+        return $this->belongsTo(Recipe::class);
+    }
 }

@@ -11,8 +11,6 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call(SeasoningUnitSeeder::class);
-        $this->call(IngredientUnitSeeder::class);
         $this->call(ColorSeeder::class);
     }
 }

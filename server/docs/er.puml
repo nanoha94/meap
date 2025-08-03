@@ -12,19 +12,18 @@ entity ingredient_units {
     * id : string <<generated>>
     --
     * name : string
-}
-
-entity seasonings {
-    * id : string <<generated>>
-    --
-    * name : string
+    * position : string / 'prefix'（数字の前）または'suffix'（数字の後）
+    * requires_quantity : boolean / 量を入力するかどうか
+    * order : int / ソート順
     * group_id : string <<FK>>
 }
 
-entity seasoning_units {
+entity ingredient_categories {
     * id : string <<generated>>
     --
     * name : string
+    * order : int / ソート順
+    * group_id : string <<FK>>
 }
 
 entity recipe_category_mappings {
@@ -36,32 +35,29 @@ entity recipes {
     * id : string <<generated>>
     --
     * name : string
-    * thumbnail_url : string / サムネイル画像URL
-    * thumbnail_width : int / サムネイル画像の幅
-    * thumbnail_height : int / サムネイル画像の高さ
     * url : string / レシピURL
-    * instructions : string / レシピ（テキスト入力）
     * memo : string / メモ
     * group_id : string <<FK>>
+}
+
+entity recipe_steps{
+    * id : string <<generated>>
+    --
+    * recipe_id : string <<FK>>
+    * instruction : string / 手順
+    * order : int / ソート順
 }
 
 entity recipe_ingredient_mappings {
     * recipe_id : string <<FK>>
     * ingredient_id : string <<FK>>
+    * category_id : string <<FK>>
     * unit_id : string <<FK>>
     * quantity : float
     * order : int / ソート順
 }
 
-entity recipe_seasoning_mappings {
-    * recipe_id : string <<FK>>
-    * seasoning_id : string <<FK>>
-    * unit_id : string <<FK>>
-    * quantity : float
-    * order : int / ソート順
-}
-
-entity course_types {
+entity courses {
     * id : string <<generated>>
     ---
     * name : string / 種別（主食、主菜、副菜、汁物、その他）
@@ -85,7 +81,7 @@ entity groups {
 entity meal_plan_recipe_mappings {
     * meal_plan_id : string <<FK>>
     * recipe_id : string <<FK>>
-    * course_type_id : string <<FK>>
+    * course_id : string <<FK>>
 }
 
 entity meal_plans {
@@ -159,9 +155,6 @@ entity users {
     * email : string
     password : string / ログイン用パスワード（ソーシャルログインでは使用しない）
     * avatar_seed : string / プロフィール画像のシード
-    avatar_image_url : string / プロフィール画像URL
-    avatar_image_width : int / プロフィール画像の幅
-    avatar_image_height : int / プロフィール画像の高さ
     provider : string / プロバイダ名（例: 'google'）
     provider_id : string / ソーシャルログイン用ID
     * created_at : date
@@ -174,6 +167,26 @@ entity invitation_tokens {
     * inviter_id : string <<FK>>
     * token : string
     * expires_at : date
+}
+
+entity images {
+    * id : string <<generated>>
+    --
+    * url : string / 画像URL
+    * width : int / 画像の幅
+    * height : int / 画像の高さ
+    * created_at : timestamp
+    * updated_at : timestamp
+}
+
+entity image_mappings {
+    * id : string <<generated>>
+    --
+    * image_id : string <<FK>>
+    * mappable_type : string / 関連するモデルの型（'Recipe', 'RecipeStep', 'User'など）
+    * mappable_id : string / 関連するモデルのID
+    * mapping_type : string / 添付タイプ（'thumbnail', 'step_image', 'avatar'など）
+    * order : int / ソート順（複数画像がある場合）
 }
 
 groups ||--o{ group_user_mappings
@@ -192,27 +205,29 @@ meal_types |o--|| colors
 
 meal_plans }o--|| groups
 meal_plans }o--|| meal_types
-course_types }o--|| groups
+courses }o--|| groups
 recipes }o--|| groups
 recipes ||--o{ meal_plan_recipe_mappings
 meal_plans ||--o{ meal_plan_recipe_mappings
-meal_plan_recipe_mappings }o--|| course_types
+meal_plan_recipe_mappings }o--|| courses
 
 groups ||--o{ recipe_categories
 recipes ||--o{ recipe_category_mappings
 recipe_category_mappings }o--|| recipe_categories
+recipes ||--o{ recipe_steps
+
+image_mappings }o--|| images
+recipes ||--o{ image_mappings
+recipe_steps ||--o{ image_mappings
+image_mappings }o--|| users
 
 ingredients }o--|| groups
+ingredient_units }o--|| groups
+ingredient_categories }o--|| groups
 recipes ||--o{ recipe_ingredient_mappings
-recipe_ingredient_mappings }o--|| ingredient_units
 recipe_ingredient_mappings }o--|| ingredients
-
-
-seasonings }o--|| groups
-recipes ||--o{ recipe_seasoning_mappings
-recipe_seasoning_mappings }o--|| seasoning_units
-recipe_seasoning_mappings }o--|| seasonings
-
+recipe_ingredient_mappings }o--|| ingredient_units
+recipe_ingredient_mappings }o--|| ingredient_categories
 
 note right of groups
   データ共有するユーザー情報を管理する。
@@ -224,7 +239,7 @@ note left of meal_plans
   献立情報を管理する。
 end note
 
-note left of meal_types
+note right of meal_types
   献立種別を管理する。（朝食、昼食、夕食など）
 end note
 
@@ -232,19 +247,26 @@ note right of recipes
   料理情報を管理する。
 end note
 
-note top of course_types
+note bottom of recipe_steps
+  料理手順を管理する。
+end note
+
+note top of courses
   料理分類を管理する。（料理カテゴリとは別物）
 end note
 
-note right of recipe_categories
+note left of recipe_categories
   料理カテゴリを管理する。
 end note
 
-note right of invitation_tokens
+note left of invitation_tokens
   ユーザ招待トークンを管理する。
   グループに招待するときにトークンを発行する。
   一定時間でトークンは使用できなくなり、テーブルからデータを消去する。
 end note
 
+note top of image_mappings
+  画像と他のテーブルとの中間テーブル。
+end note
 
 @enduml

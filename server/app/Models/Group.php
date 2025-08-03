@@ -71,6 +71,51 @@ class Group extends Model
                     $mealType->save();
                 }
 
+                // デフォルトの食材単位を追加
+                $units = [
+                    // 数値 + 単位（suffix）
+                    ['name' => 'g', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 0],
+                    ['name' => 'ml', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 1],
+                    ['name' => 'cc', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 2],
+                    ['name' => 'カップ', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 3],
+                    ['name' => '個', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 4],
+                    ['name' => '枚', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 5],
+                    ['name' => '本', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 6],
+                    ['name' => '片', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 7],
+                    ['name' => '粒', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 8],
+                    ['name' => '房', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 9],
+                    ['name' => '束', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 10],
+                    ['name' => '袋', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 11],
+                    ['name' => '缶', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 12],
+                    ['name' => '丁', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 13],
+                    ['name' => '合', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 14],
+                    ['name' => '杯', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 15],
+                    ['name' => '切れ', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 16],
+                    ['name' => 'パック', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 17],
+                    ['name' => 'セット', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 18],
+                    ['name' => 'ケース', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 19],
+                    ['name' => 'cm', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 27],
+                    ['name' => '滴', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 28],
+                    ['name' => 'L', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 29],
+
+                    // 単位 + 数値（prefix）
+                    ['name' => '大さじ', 'position' => 'prefix', 'requires_quantity' => true, 'order' => 20],
+                    ['name' => '小さじ', 'position' => 'prefix', 'requires_quantity' => true, 'order' => 21],
+
+                    // 数値不要な単位（prefix）
+                    ['name' => '少々', 'position' => 'prefix', 'requires_quantity' => false, 'order' => 22],
+                    ['name' => 'ひとつまみ', 'position' => 'prefix', 'requires_quantity' => false, 'order' => 23],
+                    ['name' => 'ふたつまみ', 'position' => 'prefix', 'requires_quantity' => false, 'order' => 24],
+                    ['name' => '適量', 'position' => 'prefix', 'requires_quantity' => false, 'order' => 25],
+                    ['name' => 'お好み', 'position' => 'prefix', 'requires_quantity' => false, 'order' => 26],
+                ];
+
+                foreach ($units as $unit) {
+                    $unit = new IngredientUnit($unit);
+                    $unit->group_id = $group->id;
+                    $unit->save();
+                }
+
                 return $group;
             });
         } catch (\Throwable $e) {
@@ -118,19 +163,14 @@ class Group extends Model
         return $this->hasMany(CourseType::class);
     }
 
-    public function seasonings()
-    {
-        return $this->hasMany(Seasoning::class);
-    }
-
-    public function seasoningUnits()
-    {
-        return $this->hasMany(SeasoningUnit::class);
-    }
-
     public function ingredients()
     {
         return $this->hasMany(Ingredient::class);
+    }
+
+    public function ingredientCategories()
+    {
+        return $this->hasMany(IngredientCategory::class);
     }
 
     public function ingredientUnits()

@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('recipe_ingredient_mappings', function (Blueprint $table) {
             $table->foreignUuid('recipe_id')->constrained('recipes', 'id')->cascadeOnDelete();
             $table->foreignUuid('ingredient_id')->constrained('ingredients', 'id')->cascadeOnDelete();
+            $table->foreignUuid('category_id')->constrained('ingredient_categories', 'id')->cascadeOnDelete();
             $table->foreignUuid('unit_id')->constrained('ingredient_units', 'id')->cascadeOnDelete();
             $table->float('quantity')->nullable();
             $table->integer('order')->default(0);

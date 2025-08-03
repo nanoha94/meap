@@ -19,7 +19,6 @@ return new class extends Migration
             $table->integer('thumbnail_width')->nullable();
             $table->integer('thumbnail_height')->nullable();
             $table->string('url')->nullable();
-            $table->string('instructions')->nullable();
             $table->string('memo')->nullable();
             $table->timestamps();
         });

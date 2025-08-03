@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\CourseTypeController;
 use App\Http\Controllers\Api\GroupUsersController as ApiGroupUsersController;
+use App\Http\Controllers\Api\IngredientCategoryController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\InvitationController;
@@ -27,6 +28,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::apiResource('/recipe-categories', RecipeCategoryController::class)->only(['store']);
     Route::put('/recipe-categories/bulk', [RecipeCategoryController::class, 'bulkUpdate']);
     Route::delete('/recipe-categories/bulk', [RecipeCategoryController::class, 'bulkDestroy']);
+
+    // ingredients
+    Route::apiResource('/ingredient-categories', IngredientCategoryController::class)->only(['index', 'store']);
+    Route::put('/ingredient-categories/bulk', [IngredientCategoryController::class, 'bulkUpdate']);
+    Route::delete('/ingredient-categories/bulk', [IngredientCategoryController::class, 'bulkDestroy']);
 
     // invitations
     Route::resource('invitations', InvitationController::class)->only(['store', 'show']);

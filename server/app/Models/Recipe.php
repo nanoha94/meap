@@ -19,7 +19,6 @@ class Recipe extends Model
         'thumbnail_width',
         'thumbnail_height',
         'url',
-        'instructions',
         'memo',
     ];
 
@@ -34,12 +33,6 @@ class Recipe extends Model
             ->withPivot('quantity', 'unit_id', 'order');
     }
 
-    public function seasonings()
-    {
-        return $this->belongsToMany(Seasoning::class, 'recipe_seasoning_mappings', 'recipe_id', 'seasoning_id')
-            ->withPivot('quantity', 'unit_id', 'order');
-    }
-
     public function mealPlans()
     {
         return $this->belongsToMany(MealPlan::class, 'meal_plan_recipe_mappings', 'recipe_id', 'meal_plan_id')
@@ -50,5 +43,10 @@ class Recipe extends Model
     {
         return $this->belongsToMany(CourseType::class, 'meal_plan_recipe_mappings', 'recipe_id', 'course_type_id')
             ->withPivot('meal_plan_id');
+    }
+
+    public function steps()
+    {
+        return $this->hasMany(RecipeStep::class);
     }
 }

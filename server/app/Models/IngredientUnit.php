@@ -14,6 +14,8 @@ class IngredientUnit extends Model
 
     protected $fillable = [
         'name',
+        'position',
+        'requires_quantity',
         'order'
     ];
 }

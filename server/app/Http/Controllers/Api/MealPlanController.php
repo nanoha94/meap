@@ -29,7 +29,7 @@ class MealPlanController extends Controller
         // TODO: 月別に取得できるようにする
         $meal_plans = $group->mealPlans()
             ->select('id', 'date', 'meal_type_id')
-            ->with(['mealType', 'recipes.courseTypes', 'recipes.categories', 'recipes.seasonings', 'recipes.ingredients'])
+            ->with(['mealType', 'recipes.courseTypes', 'recipes.categories', 'recipes.ingredients'])
             ->get()
             ->groupBy('date')
             ->values();
@@ -65,13 +65,6 @@ class MealPlanController extends Controller
                                             'id' => $category->id,
                                             'name' => $category->name,
                                             'order' => $category->order
-                                        ]),
-                                        'seasonings' => $recipe->seasonings->map(fn($seasoning) => [
-                                            'id' => $seasoning->id,
-                                            'name' => $seasoning->name,
-                                            'quantity' => $seasoning->pivot->quantity,
-                                            'unitId' => $seasoning->pivot->unit_id,
-                                            'order' => $seasoning->pivot->order
                                         ]),
                                         'ingredients' => $recipe->ingredients->map(fn($ingredient) => [
                                             'id' => $ingredient->id,
@@ -160,13 +153,6 @@ class MealPlanController extends Controller
                             'name' => $category->name,
                             'order' => $category->order
                         ]),
-                        'seasonings' => $recipe->seasonings->map(fn($seasoning) => [
-                            'id' => $seasoning->id,
-                            'name' => $seasoning->name,
-                            'quantity' => $seasoning->pivot->quantity,
-                            'unitId' => $seasoning->pivot->unit_id,
-                            'order' => $seasoning->pivot->order
-                        ]),
                         'ingredients' => $recipe->ingredients->map(fn($ingredient) => [
                             'id' => $ingredient->id,
                             'name' => $ingredient->name,
@@ -197,7 +183,7 @@ class MealPlanController extends Controller
         $user = $request->user();
         $group = $user->group;
 
-        $meal = MealPlan::where('id', $id)->where('group_id', $group->id)->with(['mealType', 'recipes.courseTypes', 'recipes.categories', 'recipes.seasonings', 'recipes.ingredients'])->first();
+        $meal = MealPlan::where('id', $id)->where('group_id', $group->id)->with(['mealType', 'recipes.courseTypes', 'recipes.categories', 'recipes.ingredients'])->first();
         if (!$meal) {
             return response()->json([
                 'message' => '指定されたレコードが見つかりません。'
@@ -230,13 +216,6 @@ class MealPlanController extends Controller
                             'id' => $category->id,
                             'name' => $category->name,
                             'order' => $category->order
-                        ]),
-                        'seasonings' => $recipe->seasonings->map(fn($seasoning) => [
-                            'id' => $seasoning->id,
-                            'name' => $seasoning->name,
-                            'quantity' => $seasoning->pivot->quantity,
-                            'unitId' => $seasoning->pivot->unit_id,
-                            'order' => $seasoning->pivot->order
                         ]),
                         'ingredients' => $recipe->ingredients->map(fn($ingredient) => [
                             'id' => $ingredient->id,
@@ -303,7 +282,7 @@ class MealPlanController extends Controller
             }
         }
 
-        $updatedItem = $group->mealPlans()->where('id', $id)->first()->select('id', 'date', 'meal_type_id')->with(['mealType', 'recipes.courseTypes', 'recipes.categories', 'recipes.seasonings', 'recipes.ingredients'])->first();
+        $updatedItem = $group->mealPlans()->where('id', $id)->first()->select('id', 'date', 'meal_type_id')->with(['mealType', 'recipes.courseTypes', 'recipes.categories', 'recipes.ingredients'])->first();
 
         return response()->json([
             'id' => $updatedItem->id,
@@ -331,13 +310,6 @@ class MealPlanController extends Controller
                             'id' => $category->id,
                             'name' => $category->name,
                             'order' => $category->order
-                        ]),
-                        'seasonings' => $recipe->seasonings->map(fn($seasoning) => [
-                            'id' => $seasoning->id,
-                            'name' => $seasoning->name,
-                            'quantity' => $seasoning->pivot->quantity,
-                            'unitId' => $seasoning->pivot->unit_id,
-                            'order' => $seasoning->pivot->order
                         ]),
                         'ingredients' => $recipe->ingredients->map(fn($ingredient) => [
                             'id' => $ingredient->id,
