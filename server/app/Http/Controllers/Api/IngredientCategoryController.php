@@ -7,6 +7,7 @@ use App\Models\IngredientCategory;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class IngredientCategoryController extends ApiController
@@ -41,7 +42,7 @@ class IngredientCategoryController extends ApiController
                 ];
             });
 
-            return $this->indexResponse($formattedData, $categories->count(), '食材カテゴリー一覧を取得しました。');
+            return $this->indexResponse($formattedData, $formattedData->count(), '食材カテゴリーを' . $formattedData->count() . '件取得しました。');
         } catch (Exception $e) {
             return $this->handleException($e, '食材カテゴリーの取得中にエラーが発生しました。');
         }
@@ -76,6 +77,9 @@ class IngredientCategoryController extends ApiController
                 'name' => $validated['name'],
                 'order' => $validated['order'],
             ]);
+            if (!$category) {
+                throw new Exception('食材カテゴリー（' . $validated['name'] . '）の作成に失敗しました。');
+            }
 
             $data = [
                 'id' => $category->id,
@@ -117,8 +121,10 @@ class IngredientCategoryController extends ApiController
             ]);
 
             $updatedCount = 0;
+            $updatedIds = [];
+
             // 更新処理を実行
-            foreach ($request->data as $category) {
+            foreach ($validated['data'] as $category) {
                 $ret = IngredientCategory::where('id', $category['id'])->where('group_id', $group->id)->update([
                     'name' => $category['name'],
                     'order' => $category['order']
@@ -127,12 +133,26 @@ class IngredientCategoryController extends ApiController
                     throw new Exception('食材カテゴリー（' . $category['name'] . '）の更新に失敗しました。');
                 } else {
                     $updatedCount++;
+                    $updatedIds[] = $category['id'];
                 }
             }
 
-            return $this->updatedResponse(
-                $updatedCount . '件の食材カテゴリーを更新しました。'
-            );
+            // 更新されたデータを取得
+            $updatedCategories = $group->ingredientCategories()
+                ->whereIn('id', $updatedIds)
+                ->select('id', 'name', 'order')
+                ->orderBy('order', 'asc')
+                ->get();
+
+            $formattedData = $updatedCategories->map(function ($category) {
+                return [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'order' => $category->order
+                ];
+            });
+
+            return $this->updatedResponse($formattedData, $updatedCount . '件の食材カテゴリーを更新しました。');
         } catch (ValidationException $e) {
             return $this->validationErrorResponse($e);
         } catch (Exception $e) {
@@ -161,10 +181,30 @@ class IngredientCategoryController extends ApiController
             // 入力値のバリデーション
             $validated = $request->validate([
                 'ids' => 'required|array',
-                'ids.*' => 'string|exists:ingredient_categories,id',
+                'ids.*' => 'string',
             ]);
 
-            $deletedCount = $group->ingredientCategories()
+            // 削除対象のカテゴリを取得して検証
+            $categories = $group->ingredientCategories()
+                ->whereIn('id', $validated['ids'])
+                ->get();
+
+            // 見つからなかったIDを特定
+            $foundIds = $categories->pluck('id')->toArray();
+            $notFoundIds = array_diff($validated['ids'], $foundIds);
+
+            if (!empty($notFoundIds)) {
+                Log::error('指定されたレコードが見つかりません。', [
+                    'function' => 'IngredientCategoryController@bulkDestroy',
+                    'notFoundIds' => $notFoundIds,
+                    'requestedIds' => $validated['ids'],
+                    'group_id' => $group->id
+                ]);
+                throw new Exception('以下のIDのレコードが見つかりません: ' . implode(', ', $notFoundIds));
+            }
+
+            $deletedCount = $categories->count();
+            $group->ingredientCategories()
                 ->whereIn('id', $validated['ids'])
                 ->delete();
 
