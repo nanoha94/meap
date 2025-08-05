@@ -30,6 +30,7 @@ return new class extends Migration
         Schema::table('recipe_ingredient_mappings', function (Blueprint $table) {
             $table->dropForeign(['recipe_id']);
             $table->dropForeign(['ingredient_id']);
+            $table->dropForeign(['category_id']);
             $table->dropForeign(['unit_id']);
         });
         Schema::dropIfExists('recipe_ingredient_mappings');

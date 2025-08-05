@@ -2,19 +2,20 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\ApiController;
 use App\Models\Recipe;
 use App\Models\Ingredient;
-use App\Models\RecipeCategory;
 use App\Models\Group;
 use App\Services\ImageService;
 use App\Traits\AutoComplement;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
-class RecipeController extends Controller
+class RecipeController extends ApiController
 {
     use AutoComplement;
 
@@ -40,17 +41,17 @@ class RecipeController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $user = $request->user();
-        $group = $user->group;
+        try {
+            $user = $request->user();
+            $group = $user->group;
 
-        // ページネーションのパラメータを取得（デフォルト値も設定）
-        $perPage = $request->input('per_page', 15);
-        $page = $request->input('page', 1);
+            // ページネーションのパラメータを取得（デフォルト値も設定）
+            $perPage = $request->input('per_page', 15);
+            $page = $request->input('page', 1);
 
-        // TODO: 無限スクロール対応？
-        $recipes = $group->recipes()->select('id', 'name', 'thumbnail_url', 'thumbnail_width', 'thumbnail_height', 'url', 'memo')->with(['categories', 'ingredients', 'steps'])->get();
-        $res = [
-            'data' => $recipes->map(function ($recipe) {
+            // TODO: 無限スクロール対応？
+            $recipes = $group->recipes()->select('id', 'name', 'thumbnail_url', 'thumbnail_width', 'thumbnail_height', 'url', 'memo')->with(['categories', 'ingredients', 'steps'])->get();
+            $formattedData = $recipes->map(function ($recipe) {
                 return [
                     'id' => $recipe->id,
                     'name' => $recipe->name,
@@ -80,14 +81,15 @@ class RecipeController extends Controller
                         'name' => $item->name,
                         'quantity' => $item->pivot->quantity,
                         'unitId' => $item->pivot->unit_id,
+                        'categoryId' => $item->pivot->category_id,
                         'order' => $item->pivot->order
                     ])
                 ];
-            }),
-            'total' => $recipes->count()
-        ];
-
-        return response()->json($res, 200);
+            });
+            return $this->indexResponse($formattedData, $formattedData->count(), 'レシピを' . $formattedData->count() . '件取得しました。');
+        } catch (Exception $e) {
+            return $this->handleException($e, $request, 'レシピの取得に失敗しました。');
+        }
     }
 
     /**
@@ -104,13 +106,12 @@ class RecipeController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        $user = $request->user();
-        $group = $user->group;
-
-        // リクエストデータのバリデーション
-        $this->validateRecipeRequest($request);
-
         try {
+            $user = $request->user();
+            $group = $user->group;
+
+            // リクエストデータのバリデーション
+            $this->validateRecipeRequest($request);
             $ret = DB::transaction(function () use ($request, $group) {
                 // 1. データベース処理を先に実行（画像情報は後で設定）
                 $ret = Recipe::create([
@@ -157,20 +158,13 @@ class RecipeController extends Controller
                 ]);
             }
 
-            return response()->json($this->formatRecipeResponse($ret), 200);
+            return $this->successResponse($this->formatRecipeResponse($ret));
+        } catch (ValidationException $e) {
+            return $this->validationErrorResponse($e);
         } catch (\Exception $e) {
-            Log::error('Recipe creation failed:', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return response()->json([
-                'message' => 'レシピの作成に失敗しました。',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->handleException($e, $request, 'レシピの作成に失敗しました。');
         }
     }
-
     /**
      * @OA\Get(
      *     path="/recipes/{id}",
@@ -185,17 +179,19 @@ class RecipeController extends Controller
      */
     public function show(Request $request, string $id): JsonResponse
     {
-        $user = $request->user();
-        $group = $user->group;
+        try {
+            $user = $request->user();
+            $group = $user->group;
 
-        $recipe = Recipe::where('id', $id)->where('group_id', $group->id)->with(['categories', 'ingredients'])->first();
-        if (!$recipe) {
-            return response()->json([
-                'message' => '指定されたレコードが見つかりません。'
-            ], 404);
+            $recipe = $group->recipes()->where('id', $id)->with(['categories', 'ingredients', 'steps'])->first();
+            if (!$recipe) {
+                return $this->notFoundResponse('指定されたレコードが見つかりません。');
+            }
+
+            return $this->successResponse($this->formatRecipeResponse($recipe));
+        } catch (\Exception $e) {
+            return $this->handleException($e, $request, 'レシピの取得に失敗しました。');
         }
-
-        return response()->json($this->formatRecipeResponse($recipe), 200);
     }
 
     /**
@@ -213,20 +209,19 @@ class RecipeController extends Controller
      */
     public function update(Request $request, string $id): JsonResponse
     {
-        $user = $request->user();
-        $group = $user->group;
-
-        $recipe =  Recipe::where('id', $id)->where('group_id', $group->id)->first();
-        if (!$recipe) {
-            return response()->json([
-                'message' => '指定されたレコードが見つかりません。'
-            ], 404);
-        }
-
-        // リクエストデータのバリデーション
-        $this->validateRecipeRequest($request);
-
         try {
+            $user = $request->user();
+            $group = $user->group;
+
+            $recipe =  $group->recipes()->where('id', $id)->first();
+            if (!$recipe) {
+                return $this->notFoundResponse('指定されたレコードが見つかりません。');
+            }
+
+            // リクエストデータのバリデーション
+            $this->validateRecipeRequest($request);
+
+
             DB::transaction(function () use ($request, $recipe, $group) {
                 // 1. データベース更新処理を先に実行
                 $recipe->update([
@@ -282,18 +277,16 @@ class RecipeController extends Controller
 
             $updatedItem = $group->recipes()->where('id', $id)->with(['categories', 'ingredients'])->first();
 
-            return response()->json($this->formatRecipeResponse($updatedItem), 200);
+            return $this->updatedResponse($this->formatRecipeResponse($updatedItem), 'レシピ(' . $request->name . ')を更新しました。');
+        } catch (ValidationException $e) {
+            return $this->validationErrorResponse($e);
         } catch (\Exception $e) {
             Log::error('Recipe update failed:', [
                 'recipe_id' => $recipe->id,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-
-            return response()->json([
-                'message' => 'レシピの更新に失敗しました。',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->handleException($e, $request, 'レシピの更新に失敗しました。');
         }
     }
 
@@ -311,27 +304,29 @@ class RecipeController extends Controller
      */
     public function destroy(Request $request, string $id): JsonResponse
     {
-        $user = $request->user();
-        $group = $user->group;
+        try {
+            $user = $request->user();
+            $group = $user->group;
 
-        $recipe =  Recipe::where('id', $id)->where('group_id', $group->id)->first();
+            $recipe =  $group->recipes()->where('id', $id)->first();
 
-        if (!$recipe) {
-            return response()->json([
-                'message' => '指定されたレコードが見つかりません。'
-            ], 404);
+            if (!$recipe) {
+                return $this->notFoundResponse('指定されたレコードが見つかりません。');
+            }
+
+            $deletedId = $recipe->id;
+
+            // 画像ファイルを削除
+            if ($recipe->thumbnail_url) {
+                $this->imageService->deleteImage($recipe->thumbnail_url);
+            }
+
+            $recipe->delete();
+
+            return $this->deletedResponse('レシピ(' . $recipe->name . ')を削除しました。');
+        } catch (\Exception $e) {
+            return $this->handleException($e, $request, 'レシピの削除に失敗しました。');
         }
-
-        $deletedId = $recipe->id;
-
-        // 画像ファイルを削除
-        if ($recipe->thumbnail_url) {
-            $this->imageService->deleteImage($recipe->thumbnail_url);
-        }
-
-        $recipe->delete();
-
-        return response()->json(['id' => $deletedId], 200);
     }
 
     /**
@@ -342,6 +337,7 @@ class RecipeController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'url' => 'nullable|string|max:2048',
+            'ingredients' => 'nullable|string',
             'steps' => 'nullable|string',
             'steps.*.id' => 'nullable|string',
             'steps.*.instruction' => 'nullable|string',
@@ -369,6 +365,110 @@ class RecipeController extends Controller
                 'thumbnail' => $this->imageService->getValidationRules()
             ]);
         }
+
+        // ingredientsのバリデーション
+        if ($request->has('ingredients') && !empty($request->ingredients)) {
+            $this->validateIngredients($request->ingredients);
+        }
+    }
+
+    /**
+     * ingredientsのバリデーション
+     */
+    private function validateIngredients($ingredients): void
+    {
+        // JSON文字列の場合はデコード
+        if (is_string($ingredients)) {
+            $ingredients = json_decode($ingredients, true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw new ValidationException(
+                    validator([], []),
+                    response()->json(['message' => 'ingredientsのJSON形式が正しくありません。'], 422)
+                );
+            }
+        }
+
+        // 配列でない場合はエラー
+        if (!is_array($ingredients)) {
+            throw new ValidationException(
+                validator([], []),
+                response()->json(['message' => 'ingredientsは配列形式で指定してください。'], 422)
+            );
+        }
+
+        // 連想配列（単一オブジェクト）の場合は配列でラップ
+        if (!empty($ingredients) && !array_key_exists(0, $ingredients)) {
+            $ingredients = [$ingredients];
+        }
+
+        // 各食材のバリデーション
+        foreach ($ingredients as $index => $ingredient) {
+            if (!is_array($ingredient)) {
+                throw new ValidationException(
+                    validator([], []),
+                    response()->json(['message' => "食材 {$index} はオブジェクト形式で指定してください。"], 422)
+                );
+            }
+
+            // 必須フィールドのチェック
+            if (!isset($ingredient['name']) || empty($ingredient['name'])) {
+                throw new ValidationException(
+                    validator([], []),
+                    response()->json(['message' => "食材 {$index} の名前が指定されていません。"], 422)
+                );
+            }
+
+            if (!isset($ingredient['unitId']) || empty($ingredient['unitId'])) {
+                throw new ValidationException(
+                    validator([], []),
+                    response()->json(['message' => "食材 {$index} の単位IDが指定されていません。"], 422)
+                );
+            }
+
+            if (!isset($ingredient['categoryId']) || empty($ingredient['categoryId'])) {
+                throw new ValidationException(
+                    validator([], []),
+                    response()->json(['message' => "食材 {$index} のカテゴリIDが指定されていません。"], 422)
+                );
+            }
+
+            // データ型のチェック
+            if (!is_string($ingredient['name'])) {
+                throw new ValidationException(
+                    validator([], []),
+                    response()->json(['message' => "食材 {$index} の名前は文字列で指定してください。"], 422)
+                );
+            }
+
+            if (!is_string($ingredient['unitId'])) {
+                throw new ValidationException(
+                    validator([], []),
+                    response()->json(['message' => "食材 {$index} の単位IDは文字列で指定してください。"], 422)
+                );
+            }
+
+            if (!is_string($ingredient['categoryId'])) {
+                throw new ValidationException(
+                    validator([], []),
+                    response()->json(['message' => "食材 {$index} のカテゴリIDは文字列で指定してください。"], 422)
+                );
+            }
+
+            // オプションフィールドのチェック
+            if (isset($ingredient['quantity']) && !is_numeric($ingredient['quantity'])) {
+                throw new ValidationException(
+                    validator([], []),
+                    response()->json(['message' => "食材 {$index} の数量は数値で指定してください。"], 422)
+                );
+            }
+
+            if (isset($ingredient['order']) && !is_numeric($ingredient['order'])) {
+                throw new ValidationException(
+                    validator([], []),
+                    response()->json(['message' => "食材 {$index} の順番は数値で指定してください。"], 422)
+                );
+            }
+        }
     }
 
     /**
@@ -393,7 +493,8 @@ class RecipeController extends Controller
             $categoryIds = [$categoryIds];
         }
 
-        $existingCategoryIds = RecipeCategory::whereIn('id', $categoryIds)
+        $existingCategoryIds = $recipe->group->recipeCategories()
+            ->whereIn('id', $categoryIds)
             ->pluck('id')
             ->toArray();
 
@@ -428,7 +529,7 @@ class RecipeController extends Controller
         ])->toArray();
 
         // groupが渡されていない場合はrecipeから取得
-        $ids = $this->findOrCreateIds($ingredientData, $group ?? $recipe->group, Ingredient::class);
+        $ids = $this->findOrCreateIds($ingredientData, $group, Ingredient::class);
 
         // インデックスを保持してマッピング
         $data = [];
@@ -437,6 +538,7 @@ class RecipeController extends Controller
                 $data[$ids[$idx]] = [
                     'quantity' => $item['quantity'] ?? null,
                     'unit_id' => $item['unitId'],
+                    'category_id' => $item['categoryId'],
                     'order' => $item['order'] ?? 0
                 ];
             }
@@ -518,6 +620,7 @@ class RecipeController extends Controller
                 'name' => $item->name,
                 'quantity' => $item->pivot->quantity,
                 'unitId' => $item->pivot->unit_id,
+                'categoryId' => $item->pivot->category_id,
                 'order' => $item->pivot->order
             ]),
         ];

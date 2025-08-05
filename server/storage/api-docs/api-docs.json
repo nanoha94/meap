@@ -806,7 +806,7 @@
                 "tags": [
                     "Shopping"
                 ],
-                "summary": "買い物カテゴリを一括更新",
+                "summary": "買い物カテゴリを一括更新（isDefaultは更新不可）",
                 "operationId": "ca6454518b6642e1cc7c5be1bdebd4f7",
                 "requestBody": {
                     "$ref": "#/components/requestBodies/ShoppingCategoryBulkUpdateRequest"
@@ -2714,7 +2714,7 @@
                                 "ingredients": {
                                     "description": "食材（JSON文字列）",
                                     "type": "string",
-                                    "example": "[{\"id\":\"1\",\"name\":\"牛肉\",\"quantity\":100,\"unitId\":\"1\", \"order\":1}]"
+                                    "example": "[{\"id\":\"1\",\"name\":\"牛肉\",\"quantity\":100,\"unitId\":\"1\",\"categoryId\":\"1\",\"order\":1}]"
                                 },
                                 "thumbnailDelete": {
                                     "description": "サムネイル画像を削除するかどうか",

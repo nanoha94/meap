@@ -4,6 +4,7 @@ namespace App\Traits;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 trait ApiResponse
@@ -109,10 +110,20 @@ trait ApiResponse
     /**
      * 例外をキャッチしてエラーレスポンスを返す
      */
-    protected function handleException(\Exception $e, string $defaultMessage = 'エラーが発生しました。'): JsonResponse
+    protected function handleException(\Exception $e, Request $request, string $defaultMessage = 'エラーが発生しました。'): JsonResponse
     {
+        $user = $request->user();
+        $group = $user->group;
         $message = $e->getMessage() ?: $defaultMessage;
         $statusCode = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500;
+
+        Log::error('Exception:', [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+            'function' => $e->getFile() . ':' . $e->getLine(),
+            'group_id' => $group->id ?? null,
+            'user_id' => $user->id ?? null,
+        ]);
 
         return $this->errorResponse($message, $statusCode);
     }

@@ -30,7 +30,7 @@ class Recipe extends Model
     public function ingredients()
     {
         return $this->belongsToMany(Ingredient::class, 'recipe_ingredient_mappings', 'recipe_id', 'ingredient_id')
-            ->withPivot('quantity', 'unit_id', 'order');
+            ->withPivot('quantity', 'unit_id', 'category_id', 'order');
     }
 
     public function mealPlans()
@@ -48,5 +48,10 @@ class Recipe extends Model
     public function steps()
     {
         return $this->hasMany(RecipeStep::class);
+    }
+
+    public function group()
+    {
+        return $this->belongsTo(Group::class);
     }
 }

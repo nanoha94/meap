@@ -44,7 +44,7 @@ class IngredientCategoryController extends ApiController
 
             return $this->indexResponse($formattedData, $formattedData->count(), '食材カテゴリーを' . $formattedData->count() . '件取得しました。');
         } catch (Exception $e) {
-            return $this->handleException($e, '食材カテゴリーの取得中にエラーが発生しました。');
+            return $this->handleException($e, $request, '食材カテゴリーの取得中にエラーが発生しました。');
         }
     }
 
@@ -87,11 +87,11 @@ class IngredientCategoryController extends ApiController
                 'order' => $category->order
             ];
 
-            return $this->createdResponse($data, '食材カテゴリー「' . $validated['name'] . '」を作成しました。');
+            return $this->createdResponse($data, '食材カテゴリー(' . $validated['name'] . ')を作成しました。');
         } catch (ValidationException $e) {
             return $this->validationErrorResponse($e);
         } catch (Exception $e) {
-            return $this->handleException($e, '食材カテゴリーの作成中にエラーが発生しました。');
+            return $this->handleException($e, $request, '食材カテゴリーの作成中にエラーが発生しました。');
         }
     }
 
@@ -156,7 +156,7 @@ class IngredientCategoryController extends ApiController
         } catch (ValidationException $e) {
             return $this->validationErrorResponse($e);
         } catch (Exception $e) {
-            return $this->handleException($e, '食材カテゴリーの一括更新中にエラーが発生しました。');
+            return $this->handleException($e, $request, '食材カテゴリーの一括更新中にエラーが発生しました。');
         }
     }
 
@@ -221,7 +221,7 @@ class IngredientCategoryController extends ApiController
         } catch (ValidationException $e) {
             return $this->validationErrorResponse($e);
         } catch (Exception $e) {
-            return $this->handleException($e, '食材カテゴリーの削除中にエラーが発生しました。');
+            return $this->handleException($e, $request, '食材カテゴリーの削除中にエラーが発生しました。');
         }
     }
 }
