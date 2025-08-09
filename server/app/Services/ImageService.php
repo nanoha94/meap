@@ -2,82 +2,115 @@
 
 namespace App\Services;
 
+use App\Models\Image;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class ImageService
 {
     /**
-     * 画像をアップロードして情報を返す（重複チェック付き）
+     * 画像をアップロードしてデータベースに保存（新規作成）
      *
      * @param UploadedFile $file
-     * @param string $directory アップロード先ディレクトリ
-     * @param string|null $existingImageUrl 既存の画像URL（更新時）
-     * @return array
+     * @param string $directory
+     * @return Image
      */
-    public function uploadImage(
+    public function uploadAndSaveImage(
         UploadedFile $file,
-        string $directory,
-        ?string $existingImageUrl = null
-    ): array {
-        // 既存画像との重複チェック
-        // アップロードするファイルのサイズが0の場合は、更新しないので、既存の画像を返す
-        if ($file->getSize() === 0 || ($existingImageUrl && $this->isSameImage($file, $existingImageUrl))) {
-            // 同じ画像の場合、既存の情報を返す
-            $imageInfo = $this->getExistingImageInfo($existingImageUrl);
-            return [
-                'url' => $existingImageUrl,
-                'width' => $imageInfo['width'],
-                'height' => $imageInfo['height'],
-                'is_same_image' => true // 同じ画像であることを示すフラグ
-            ];
+        string $directory
+    ): Image {
+        try {
+            return DB::transaction(function () use ($file, $directory) {
+                $imageData = $this->uploadImage($file, $directory, null);
+
+                // 新しい画像レコードを作成
+                return Image::create([
+                    'src' => $imageData['src'],
+                    'width' => $imageData['width'],
+                    'height' => $imageData['height'],
+                ]);
+            });
+        } catch (\Exception $e) {
+            Log::error('画像のアップロードと保存に失敗しました: ' . $e->getMessage(), [
+                'directory' => $directory
+            ]);
+            throw $e;
         }
-
-        // 既存画像を削除（新しい画像の場合のみ）
-        if ($existingImageUrl) {
-            $this->deleteImage($existingImageUrl);
-        }
-
-        // 画像サイズを取得
-        $imageInfo = getimagesize($file->getRealPath());
-        if (!$imageInfo) {
-            throw new \Exception('画像情報を取得できませんでした。');
-        }
-
-        // ファイルを保存
-        $path = $file->store($directory, 'public');
-        $url = env('APP_URL') . '/storage/' . $path;
-
-        return [
-            'url' => $url,
-            'width' => $imageInfo[0],
-            'height' => $imageInfo[1],
-            'is_same_image' => false
-        ];
     }
 
     /**
-     * 画像ファイルを削除
+     * 画像を更新（ファイルとデータベース）
      *
-     * @param string|null $imageUrl
-     * @return void
+     * @param UploadedFile $file
+     * @param string $directory
+     * @param Image $image
+     * @return Image
      */
-    public function deleteImage(?string $imageUrl): void
-    {
-        if (empty($imageUrl)) {
-            return;
-        }
-
+    public function updateImage(
+        UploadedFile $file,
+        string $directory,
+        Image $image
+    ): Image {
         try {
-            $path = str_replace('/storage/', '', $imageUrl);
-            Storage::disk('public')->delete($path);
+            return DB::transaction(function () use ($file, $directory, $image) {
+                $imageData = $this->uploadImage($file, $directory, $image->src);
+
+                // 同じ画像の場合は既存のレコードを返す
+                if ($imageData['is_same_image']) {
+                    return $image;
+                }
+
+                // 新しい画像の場合、既存の画像ファイルを削除   
+                $this->deleteImage($image->src);
+
+                // レコードを更新して返す
+                $image->update([
+                    'src' => $imageData['src'],
+                    'width' => $imageData['width'],
+                    'height' => $imageData['height'],
+                ]);
+
+                return $image;
+            });
         } catch (\Exception $e) {
-            Log::warning('画像削除に失敗しました: ' . $e->getMessage(), [
-                'image_url' => $imageUrl
+            Log::error('画像の更新に失敗しました: ' . $e->getMessage(), [
+                'image_id' => $image->id,
+                'directory' => $directory
             ]);
+            throw $e;
         }
     }
+
+
+    /**
+     * 画像を完全削除（ファイルとデータベース）
+     *
+     * @param Image $image
+     * @return bool
+     */
+    public function deleteImageRecord(Image $image): bool
+    {
+        try {
+            DB::transaction(function () use ($image) {
+                // ファイルを削除
+                $this->deleteImage($image->src);
+
+                // データベースレコードを削除
+                $image->delete();
+            });
+
+            return true;
+        } catch (\Exception $e) {
+            Log::error('画像レコードの削除に失敗しました: ' . $e->getMessage(), [
+                'image_id' => $image->id,
+                'image_src' => $image->src
+            ]);
+            return false;
+        }
+    }
+
 
     /**
      * 画像のバリデーションルールを取得
@@ -95,17 +128,89 @@ class ImageService
     }
 
     /**
+     * 画像をアップロードして情報を返す（重複チェック付き）
+     *
+     * @param UploadedFile $file
+     * @param string $directory アップロード先ディレクトリ
+     * @param string|null $existingImageSrc 既存の画像Src（更新時）
+     * @return array
+     */
+    private function uploadImage(
+        UploadedFile $file,
+        string $directory,
+        ?string $existingImageSrc = null
+    ): array {
+        // 既存画像との重複チェック
+        // アップロードするファイルのサイズが0の場合は、更新しないので、既存の画像を返す
+        if ($file->getSize() === 0 || ($existingImageSrc && $this->isSameImage($file, $existingImageSrc))) {
+            // 同じ画像の場合、既存の情報を返す
+            $imageInfo = $this->getExistingImageInfo($existingImageSrc);
+            return [
+                'src' => $existingImageSrc,
+                'width' => $imageInfo['width'],
+                'height' => $imageInfo['height'],
+                'is_same_image' => true // 同じ画像であることを示すフラグ
+            ];
+        }
+
+        // 既存画像を削除（新しい画像の場合のみ）
+        if ($existingImageSrc) {
+            $this->deleteImage($existingImageSrc);
+        }
+
+        // 画像サイズを取得
+        $imageInfo = getimagesize($file->getRealPath());
+        if (!$imageInfo) {
+            throw new \Exception('画像情報を取得できませんでした。');
+        }
+
+        // ファイルを保存
+        $path = $file->store($directory, 'public');
+        $src = '/storage/' . $path;
+
+        return [
+            'src' => $src,
+            'width' => $imageInfo[0],
+            'height' => $imageInfo[1],
+            'is_same_image' => false
+        ];
+    }
+
+    /**
+     * 画像ファイルを削除
+     *
+     * @param string|null $imageSrc
+     * @return void
+     */
+    private function deleteImage(?string $imageSrc): void
+    {
+        if (empty($imageSrc)) {
+            return;
+        }
+
+        try {
+            $path = $this->getStoragePath($imageSrc);
+            Storage::disk('public')->delete($path);
+        } catch (\Exception $e) {
+            Log::warning('画像削除に失敗しました: ' . $e->getMessage(), [
+                'image_src' => $imageSrc
+            ]);
+        }
+    }
+
+
+    /**
      * 新しい画像と既存の画像が同じかどうかをチェック
      *
      * @param UploadedFile $newFile
-     * @param string $existingImageUrl
+     * @param string $existingImageSrc
      * @return bool
      */
-    public function isSameImage(UploadedFile $newFile, string $existingImageUrl): bool
+    private function isSameImage(UploadedFile $newFile, string $existingImageSrc): bool
     {
         try {
             // 既存ファイルのパスを取得
-            $existingPath = $this->getStoragePath($existingImageUrl);
+            $existingPath = $this->getStoragePath($existingImageSrc);
             $existingFullPath = Storage::disk('public')->path($existingPath);
 
             // 既存ファイルが存在するかチェック
@@ -128,7 +233,7 @@ class ImageService
             return $newFileHash === $existingFileHash;
         } catch (\Exception $e) {
             Log::warning('画像比較に失敗しました: ' . $e->getMessage(), [
-                'existing_url' => $existingImageUrl
+                'existing_src' => $existingImageSrc
             ]);
             return false;
         }
@@ -137,13 +242,13 @@ class ImageService
     /**
      * 既存画像の情報を取得
      *
-     * @param string $imageUrl
+     * @param string $imageSrc
      * @return array
      */
-    public function getExistingImageInfo(string $imageUrl): array
+    private function getExistingImageInfo(string $imageSrc): array
     {
         try {
-            $existingPath = $this->getStoragePath($imageUrl);
+            $existingPath = $this->getStoragePath($imageSrc);
             $existingFullPath = Storage::disk('public')->path($existingPath);
 
             if (!Storage::disk('public')->exists($existingPath)) {
@@ -161,7 +266,7 @@ class ImageService
             ];
         } catch (\Exception $e) {
             Log::warning('既存画像情報の取得に失敗しました: ' . $e->getMessage(), [
-                'image_url' => $imageUrl
+                'image_src' => $imageSrc
             ]);
 
             // デフォルト値を返す
@@ -173,13 +278,13 @@ class ImageService
     }
 
     /**
-     * 画像URLからストレージパスを取得
+     * 画像Srcからストレージパスを取得
      *
-     * @param string $imageUrl
+     * @param string $imageSrc
      * @return string
      */
-    private function getStoragePath(string $imageUrl): string
+    private function getStoragePath(string $imageSrc): string
     {
-        return str_replace('/storage/', '', $imageUrl);
+        return str_replace('/storage/', '', $imageSrc);
     }
 }

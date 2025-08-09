@@ -27,6 +27,27 @@ trait ApiResponse
     }
 
     /**
+     * 警告メッセージを含む成功レスポンスを返す
+     */
+    protected function successResponseWithWarning(mixed $data = null, string $message = '', string $warning = '', int $statusCode = 200): JsonResponse
+    {
+        $response = [
+            'success' => true,
+            'message' => $message,
+        ];
+
+        if ($data !== null) {
+            $response['data'] = $data;
+        }
+
+        if ($warning) {
+            $response['warning'] = $warning;
+        }
+
+        return response()->json($response, $statusCode);
+    }
+
+    /**
      * エラーレスポンスを返す
      */
     protected function errorResponse(string $message, int $statusCode = 400, mixed $errors = null): JsonResponse

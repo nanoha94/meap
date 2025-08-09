@@ -15,9 +15,6 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('group_id')->constrained('groups', 'id')->cascadeOnDelete();
             $table->string('name');
-            $table->string('thumbnail_url')->nullable();
-            $table->integer('thumbnail_width')->nullable();
-            $table->integer('thumbnail_height')->nullable();
             $table->string('url')->nullable();
             $table->string('memo')->nullable();
             $table->timestamps();

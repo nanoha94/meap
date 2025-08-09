@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\ApiController;
 use App\Models\Recipe;
 use App\Models\Ingredient;
 use App\Models\Group;
+use App\Models\Image;
 use App\Services\ImageService;
 use App\Traits\AutoComplement;
 use Exception;
@@ -50,15 +51,16 @@ class RecipeController extends ApiController
             $page = $request->input('page', 1);
 
             // TODO: 無限スクロール対応？
-            $recipes = $group->recipes()->select('id', 'name', 'thumbnail_url', 'thumbnail_width', 'thumbnail_height', 'url', 'memo')->with(['categories', 'ingredients', 'steps'])->get();
+            $recipes = $group->recipes()->select('id', 'name', 'url', 'memo')->with(['categories', 'ingredients', 'steps', 'thumbnails'])->get();
+
             $formattedData = $recipes->map(function ($recipe) {
                 return [
                     'id' => $recipe->id,
                     'name' => $recipe->name,
-                    'thumbnail' => $recipe->thumbnail_url ? [
-                        'url' => $recipe->thumbnail_url,
-                        'width' => $recipe->thumbnail_width,
-                        'height' => $recipe->thumbnail_height,
+                    'thumbnail' => $recipe->thumbnails->first() ? [
+                        'url' => $recipe->thumbnails->first()->src,
+                        'width' => $recipe->thumbnails->first()->width,
+                        'height' => $recipe->thumbnails->first()->height,
                     ] : null,
                     'url' => $recipe->url,
                     'steps' => $recipe->steps->map(fn($item) => [
@@ -88,6 +90,10 @@ class RecipeController extends ApiController
             });
             return $this->indexResponse($formattedData, $formattedData->count(), 'レシピを' . $formattedData->count() . '件取得しました。');
         } catch (Exception $e) {
+            Log::error('Recipe index failed:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return $this->handleException($e, $request, 'レシピの取得に失敗しました。');
         }
     }
@@ -112,59 +118,74 @@ class RecipeController extends ApiController
 
             // リクエストデータのバリデーション
             $this->validateRecipeRequest($request);
-            $ret = DB::transaction(function () use ($request, $group) {
-                // 1. データベース処理を先に実行（画像情報は後で設定）
-                $ret = Recipe::create([
+
+            $recipe = DB::transaction(function () use ($request, $group) {
+                // データベース処理を先に実行（画像情報は後で設定）
+                $recipe = Recipe::create([
                     'group_id' => $group->id,
                     'name' => $request->name,
-                    'thumbnail_url' => null, // 後で設定
-                    'thumbnail_width' => null, // 後で設定
-                    'thumbnail_height' => null, // 後で設定
                     'url' => $request->url,
-                    'steps' => null, // 後で設定
                     'memo' => $request->memo,
                 ]);
 
-                // 2. カテゴリーを紐づけ
-                $this->syncCategories($ret, $request->categoryIds, false);
+                // カテゴリーを紐づけ
+                $this->syncCategories($recipe, $request->categoryIds, false);
 
-                // 3. 食材を紐づけ
-                $this->syncIngredients($ret, $request->ingredients, false, $group);
+                // 食材を紐づけ
+                $this->syncIngredients($recipe, $request->ingredients, false, $group);
 
-                return $ret;
+                // 手順を紐づけ
+                // $this->syncSteps($recipe, $request->steps, false, $group);
+
+                return $recipe;
             });
 
-            // 5. データベース処理が成功した場合のみ画像処理を実行
-            $thumbnail_url = null;
-            $thumbnail_width = null;
-            $thumbnail_height = null;
+            $thumbnailError = null;
 
-            // 画像ファイルが存在する場合はアップロード
+            // 画像ファイルが存在する場合はアップロード（トランザクション外で実行）
             if ($request->hasFile('thumbnail')) {
-                $imageData = $this->imageService->uploadImage(
-                    $request->file('thumbnail'),
-                    "$group->id/recipes/thumbnails"
-                );
+                try {
+                    $image = $this->imageService->uploadAndSaveImage(
+                        $request->file('thumbnail'),
+                        "$group->id/recipes/thumbnails"
+                    );
 
-                $thumbnail_url = $imageData['url'];
-                $thumbnail_width = $imageData['width'];
-                $thumbnail_height = $imageData['height'];
-
-                // 6. 画像情報をデータベースに反映
-                $ret->update([
-                    'thumbnail_url' => $thumbnail_url,
-                    'thumbnail_width' => $thumbnail_width,
-                    'thumbnail_height' => $thumbnail_height,
-                ]);
+                    // レシピとサムネイルを紐づけ
+                    $recipe->thumbnails()->attach($image->id, [
+                        'group_id' => $recipe->group_id,
+                        'related_model' => Recipe::class,
+                        'image_type' => 'thumbnail',
+                        'order' => 0
+                    ]);
+                } catch (Exception $e) {
+                    Log::error('Recipe thumbnail upload failed:', [
+                        'recipe_id' => $recipe->id,
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                    $thumbnailError = '画像のアップロードに失敗しました。';
+                }
             }
 
-            return $this->successResponse($this->formatRecipeResponse($ret));
+            $response = $this->formatRecipeResponse($recipe);
+
+            // 画像アップロードに失敗した場合は警告メッセージを含める
+            if ($thumbnailError) {
+                return $this->successResponseWithWarning($response, 'レシピを作成しました。', $thumbnailError);
+            }
+
+            return $this->successResponse($response, 'レシピを作成しました。');
         } catch (ValidationException $e) {
             return $this->validationErrorResponse($e);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
+            Log::error('Recipe store failed:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return $this->handleException($e, $request, 'レシピの作成に失敗しました。');
         }
     }
+
     /**
      * @OA\Get(
      *     path="/recipes/{id}",
@@ -189,7 +210,12 @@ class RecipeController extends ApiController
             }
 
             return $this->successResponse($this->formatRecipeResponse($recipe));
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
+            Log::error('Recipe show failed:', [
+                'recipe_id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return $this->handleException($e, $request, 'レシピの取得に失敗しました。');
         }
     }
@@ -213,14 +239,13 @@ class RecipeController extends ApiController
             $user = $request->user();
             $group = $user->group;
 
-            $recipe =  $group->recipes()->where('id', $id)->first();
+            $recipe = $group->recipes()->where('id', $id)->first();
             if (!$recipe) {
                 return $this->notFoundResponse('指定されたレコードが見つかりません。');
             }
 
             // リクエストデータのバリデーション
             $this->validateRecipeRequest($request);
-
 
             DB::transaction(function () use ($request, $recipe, $group) {
                 // 1. データベース更新処理を先に実行
@@ -240,49 +265,23 @@ class RecipeController extends ApiController
                 return true;
             });
 
-            // 5. データベース処理が成功した場合のみ画像処理を実行
-            // thumbnailDeleteがtrueの場合は画像削除
-            // thumbnailDeleteがfalseの場合、
-            // 1) 画像ファイルが存在する場合はアップロード
-            // 2) 画像ファイルが存在しない場合は現状維持
-            $thumbnail_url = $recipe->thumbnail_url; // 既存のURLを保持
-            $thumbnail_width = $recipe->thumbnail_width; // 既存のwidthを保持
-            $thumbnail_height = $recipe->thumbnail_height; // 既存のheightを保持
-
-            if ($request->has('thumbnailDelete') && $request->boolean('thumbnailDelete')) {
-                // 画像削除処理
-                $this->imageService->deleteImage($recipe->thumbnail_url);
-                $thumbnail_url = null;
-                $thumbnail_width = null;
-                $thumbnail_height = null;
-            } elseif ($request->hasFile('thumbnail')) {
-                // 画像アップロード処理
-                $imageData = $this->imageService->uploadImage(
-                    $request->file('thumbnail'),
-                    "$group->id/recipes/thumbnails",
-                    $recipe->thumbnail_url
-                );
-
-                $thumbnail_url = $imageData['url'];
-                $thumbnail_width = $imageData['width'];
-                $thumbnail_height = $imageData['height'];
-            }
-
-            // 6. 画像情報をデータベースに反映
-            $recipe->update([
-                'thumbnail_url' => $thumbnail_url,
-                'thumbnail_width' => $thumbnail_width,
-                'thumbnail_height' => $thumbnail_height,
-            ]);
+            // 画像処理（トランザクション外で実行）
+            $thumbnailError = $this->handleThumbnailUpdate($request, $recipe, $group);
 
             $updatedItem = $group->recipes()->where('id', $id)->with(['categories', 'ingredients'])->first();
+            $response = $this->formatRecipeResponse($updatedItem);
 
-            return $this->updatedResponse($this->formatRecipeResponse($updatedItem), 'レシピ(' . $request->name . ')を更新しました。');
+            // 画像処理に失敗した場合は警告メッセージを含める
+            if ($thumbnailError) {
+                return $this->successResponseWithWarning($response, 'レシピ(' . $request->name . ')を更新しました。', $thumbnailError);
+            }
+
+            return $this->updatedResponse($response, 'レシピ(' . $request->name . ')を更新しました。');
         } catch (ValidationException $e) {
             return $this->validationErrorResponse($e);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Recipe update failed:', [
-                'recipe_id' => $recipe->id,
+                'recipe_id' => $id,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
@@ -308,24 +307,89 @@ class RecipeController extends ApiController
             $user = $request->user();
             $group = $user->group;
 
-            $recipe =  $group->recipes()->where('id', $id)->first();
+            $recipe = $group->recipes()->where('id', $id)->first();
 
             if (!$recipe) {
                 return $this->notFoundResponse('指定されたレコードが見つかりません。');
             }
 
-            $deletedId = $recipe->id;
+            $recipeName = $recipe->name;
 
-            // 画像ファイルを削除
-            if ($recipe->thumbnail_url) {
-                $this->imageService->deleteImage($recipe->thumbnail_url);
-            }
+            DB::transaction(function () use ($recipe) {
+                // 画像ファイルを削除
+                $existingThumbnail = $recipe->thumbnails()->first();
+                if ($existingThumbnail) {
+                    // 画像レコードを削除
+                    $this->imageService->deleteImageRecord($existingThumbnail);
+                }
 
-            $recipe->delete();
+                // レシピを削除
+                $recipe->delete();
+            });
 
-            return $this->deletedResponse('レシピ(' . $recipe->name . ')を削除しました。');
-        } catch (\Exception $e) {
+            return $this->deletedResponse('レシピ(' . $recipeName . ')を削除しました。');
+        } catch (Exception $e) {
+            Log::error('Recipe destroy failed:', [
+                'recipe_id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return $this->handleException($e, $request, 'レシピの削除に失敗しました。');
+        }
+    }
+
+    /**
+     * サムネイル更新処理
+     * @return string|null エラーメッセージ（成功時はnull）
+     */
+    private function handleThumbnailUpdate(Request $request, Recipe $recipe, Group $group): ?string
+    {
+        try {
+            // thumbnailDeleteがtrueの場合は画像削除
+            // 更新のときにフロントから画像を送信したくないので、thumbnailDeleteで更新か削除かを判断する
+            if ($request->has('thumbnailDelete') && $request->boolean('thumbnailDelete')) {
+                $existingThumbnail = $recipe->thumbnails()->first();
+                if ($existingThumbnail) {
+                    $this->imageService->deleteImageRecord($existingThumbnail);
+                }
+            }
+            // 画像アップロード
+            elseif ($request->hasFile('thumbnail')) {
+                $existingThumbnail = $recipe->thumbnails()->first();
+                // 既存のサムネイルがある場合は更新
+                if ($existingThumbnail) {
+                    $this->imageService->updateImage(
+                        $request->file('thumbnail'),
+                        "$group->id/recipes/thumbnails",
+                        $existingThumbnail
+                    );
+                }
+                // 既存のサムネイルがない場合は新規作成
+                else {
+                    $image = $this->imageService->uploadAndSaveImage(
+                        $request->file('thumbnail'),
+                        "$group->id/recipes/thumbnails"
+                    );
+
+                    // レシピとサムネイルの紐づけ
+                    $recipe->thumbnails()->attach($image->id, [
+                        'group_id' => $recipe->group_id,
+                        'related_model' => Recipe::class,
+                        'image_type' => 'thumbnail',
+                        'order' => 0
+                    ]);
+                }
+            }
+            // 成功した場合はnullを返す
+            return null;
+        } catch (Exception $e) {
+            Log::error('Recipe thumbnail update failed:', [
+                'recipe_id' => $recipe->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            // 失敗した場合はエラーメッセージを返す
+            return '画像のアップロードに失敗しました。';
         }
     }
 
@@ -528,7 +592,7 @@ class RecipeController extends ApiController
             'name' => $item['name'],
         ])->toArray();
 
-        // groupが渡されていない場合はrecipeから取得
+        // 食材IDを取得
         $ids = $this->findOrCreateIds($ingredientData, $group, Ingredient::class);
 
         // インデックスを保持してマッピング
@@ -593,10 +657,10 @@ class RecipeController extends ApiController
         return [
             'id' => $recipe->id,
             'name' => $recipe->name,
-            'thumbnail' => $recipe->thumbnail_url ? [
-                'url' => $recipe->thumbnail_url,
-                'width' => $recipe->thumbnail_width,
-                'height' => $recipe->thumbnail_height,
+            'thumbnail' => $recipe->thumbnails->first() ? [
+                'url' => $recipe->thumbnails->first()->src,
+                'width' => $recipe->thumbnails->first()->width,
+                'height' => $recipe->thumbnails->first()->height,
             ] : null,
             'url' => $recipe->url,
             'steps' => $recipe->steps->map(fn($item) => [

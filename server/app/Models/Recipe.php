@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Recipe extends Model
 {
@@ -15,9 +17,6 @@ class Recipe extends Model
     protected $fillable = [
         'group_id',
         'name',
-        'thumbnail_url',
-        'thumbnail_width',
-        'thumbnail_height',
         'url',
         'memo',
     ];
@@ -50,8 +49,15 @@ class Recipe extends Model
         return $this->hasMany(RecipeStep::class);
     }
 
-    public function group()
+    public function group(): BelongsTo
     {
         return $this->belongsTo(Group::class);
+    }
+
+    public function thumbnails(): BelongsToMany
+    {
+        return $this->belongsToMany(Image::class, 'image_mappings', 'related_id', 'image_id')
+            ->wherePivot('related_model', static::class)
+            ->wherePivot('image_type', 'thumbnail');
     }
 }
