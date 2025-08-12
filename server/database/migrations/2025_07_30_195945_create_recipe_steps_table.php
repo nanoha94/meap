@@ -15,9 +15,6 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('recipe_id')->constrained('recipes', 'id')->cascadeOnDelete();
             $table->string('instruction');
-            $table->string('image_url')->nullable();
-            $table->integer('image_width')->nullable();
-            $table->integer('image_height')->nullable();
             $table->integer('order');
             $table->timestamps();
         });

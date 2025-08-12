@@ -7,6 +7,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Ramsey\Uuid\Type\Integer;
 
 class ImageService
 {
@@ -83,34 +84,21 @@ class ImageService
         }
     }
 
-
-    /**
-     * 画像を完全削除（ファイルとデータベース）
-     *
-     * @param Image $image
-     * @return bool
-     */
-    public function deleteImageRecord(Image $image): bool
+    public function deleteImages(array $imageIds): int
     {
-        try {
-            DB::transaction(function () use ($image) {
-                // ファイルを削除
-                $this->deleteImage($image->src);
-
-                // データベースレコードを削除
-                $image->delete();
-            });
-
-            return true;
-        } catch (\Exception $e) {
-            Log::error('画像レコードの削除に失敗しました: ' . $e->getMessage(), [
-                'image_id' => $image->id,
-                'image_src' => $image->src
-            ]);
-            return false;
-        }
+        return DB::transaction(function () use ($imageIds) {
+            $images = Image::whereIn('id', $imageIds)->get();
+            foreach ($images as $image) {
+                $path = $this->getStoragePath($image->src);
+                if (Storage::disk('public')->exists($path)) {
+                    Storage::disk('public')->delete($path);
+                }
+            }
+            // データベースレコード一括削除
+            Image::whereIn('id', $imageIds)->delete();
+            return $images->count();
+        });
     }
-
 
     /**
      * 画像のバリデーションルールを取得

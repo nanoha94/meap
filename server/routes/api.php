@@ -14,6 +14,8 @@ use App\Http\Controllers\Api\ShoppingTagController;
 use App\Http\Controllers\Api\MealTypeController;
 use App\Http\Controllers\Api\RecipeCategoryController;
 use App\Http\Controllers\Api\RecipeController;
+use App\Http\Controllers\Api\ImageController;
+use Illuminate\Routing\Router;
 
 Route::middleware(['auth:sanctum'])->group(function () {
     // meal-plans
@@ -23,11 +25,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/course-types', [CourseTypeController::class, 'index']);
 
     // recipes
-    Route::apiResource('/recipes', RecipeController::class)->except(['update']);
-    Route::post('/recipes/{id}', [RecipeController::class, 'update']);
+    Route::apiResource('/recipes', RecipeController::class);
     Route::apiResource('/recipe-categories', RecipeCategoryController::class)->only(['store']);
     Route::put('/recipe-categories/bulk', [RecipeCategoryController::class, 'bulkUpdate']);
     Route::delete('/recipe-categories/bulk', [RecipeCategoryController::class, 'bulkDestroy']);
+
+    // images
+    Route::post('/images/upload-bulk', [ImageController::class, 'uploadBulk']);
+    Route::delete('/images/bulk', [ImageController::class, 'deleteBulk']);
 
     // ingredients
     Route::apiResource('/ingredient-categories', IngredientCategoryController::class)->only(['index', 'store']);

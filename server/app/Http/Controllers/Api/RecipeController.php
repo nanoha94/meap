@@ -7,6 +7,7 @@ use App\Models\Recipe;
 use App\Models\Ingredient;
 use App\Models\Group;
 use App\Models\Image;
+use App\Models\RecipeStep;
 use App\Services\ImageService;
 use App\Traits\AutoComplement;
 use Exception;
@@ -120,13 +121,15 @@ class RecipeController extends ApiController
             $this->validateRecipeRequest($request);
 
             $recipe = DB::transaction(function () use ($request, $group) {
-                // データベース処理を先に実行（画像情報は後で設定）
                 $recipe = Recipe::create([
                     'group_id' => $group->id,
                     'name' => $request->name,
                     'url' => $request->url,
                     'memo' => $request->memo,
                 ]);
+
+                // サムネイルを紐づけ
+                $this->syncThumbnail($recipe, $request->thumbnailId, false);
 
                 // カテゴリーを紐づけ
                 $this->syncCategories($recipe, $request->categoryIds, false);
@@ -137,42 +140,11 @@ class RecipeController extends ApiController
                 // 手順を紐づけ
                 // $this->syncSteps($recipe, $request->steps, false, $group);
 
+
                 return $recipe;
             });
 
-            $thumbnailError = null;
-
-            // 画像ファイルが存在する場合はアップロード（トランザクション外で実行）
-            if ($request->hasFile('thumbnail')) {
-                try {
-                    $image = $this->imageService->uploadAndSaveImage(
-                        $request->file('thumbnail'),
-                        "$group->id/recipes/thumbnails"
-                    );
-
-                    // レシピとサムネイルを紐づけ
-                    $recipe->thumbnails()->attach($image->id, [
-                        'group_id' => $recipe->group_id,
-                        'related_model' => Recipe::class,
-                        'image_type' => 'thumbnail',
-                        'order' => 0
-                    ]);
-                } catch (Exception $e) {
-                    Log::error('Recipe thumbnail upload failed:', [
-                        'recipe_id' => $recipe->id,
-                        'error' => $e->getMessage(),
-                        'trace' => $e->getTraceAsString()
-                    ]);
-                    $thumbnailError = '画像のアップロードに失敗しました。';
-                }
-            }
-
             $response = $this->formatRecipeResponse($recipe);
-
-            // 画像アップロードに失敗した場合は警告メッセージを含める
-            if ($thumbnailError) {
-                return $this->successResponseWithWarning($response, 'レシピを作成しました。', $thumbnailError);
-            }
 
             return $this->successResponse($response, 'レシピを作成しました。');
         } catch (ValidationException $e) {
@@ -221,7 +193,7 @@ class RecipeController extends ApiController
     }
 
     /**
-     * @OA\Post(
+     * @OA\Put(
      *     path="/recipes/{id}",
      *     summary="料理を更新",
      *     tags={"Recipes"},
@@ -252,9 +224,11 @@ class RecipeController extends ApiController
                 $recipe->update([
                     'name' => $request->name,
                     'url' => $request->url,
-                    'steps' => $request->steps,
                     'memo' => $request->memo,
                 ]);
+
+                // サムネイルを紐づけ
+                $this->syncThumbnail($recipe, $request->thumbnailId, true);
 
                 // 2. カテゴリー更新
                 $this->syncCategories($recipe, $request->categoryIds, true);
@@ -262,19 +236,15 @@ class RecipeController extends ApiController
                 // 3. 食材更新
                 $this->syncIngredients($recipe, $request->ingredients, true, $group);
 
+                // 4. 手順更新（必要に応じて実装）
+                // $this->syncSteps($recipe, $request->steps, true, $group);
+
                 return true;
             });
 
-            // 画像処理（トランザクション外で実行）
-            $thumbnailError = $this->handleThumbnailUpdate($request, $recipe, $group);
-
-            $updatedItem = $group->recipes()->where('id', $id)->with(['categories', 'ingredients'])->first();
-            $response = $this->formatRecipeResponse($updatedItem);
-
-            // 画像処理に失敗した場合は警告メッセージを含める
-            if ($thumbnailError) {
-                return $this->successResponseWithWarning($response, 'レシピ(' . $request->name . ')を更新しました。', $thumbnailError);
-            }
+            // 既存の$recipeを使用し、必要なリレーションをロード
+            $recipe->load(['categories', 'ingredients', 'thumbnails', 'steps']);
+            $response = $this->formatRecipeResponse($recipe);
 
             return $this->updatedResponse($response, 'レシピ(' . $request->name . ')を更新しました。');
         } catch (ValidationException $e) {
@@ -320,7 +290,7 @@ class RecipeController extends ApiController
                 $existingThumbnail = $recipe->thumbnails()->first();
                 if ($existingThumbnail) {
                     // 画像レコードを削除
-                    $this->imageService->deleteImageRecord($existingThumbnail);
+                    $this->imageService->deleteImages([$existingThumbnail->id]);
                 }
 
                 // レシピを削除
@@ -339,61 +309,6 @@ class RecipeController extends ApiController
     }
 
     /**
-     * サムネイル更新処理
-     * @return string|null エラーメッセージ（成功時はnull）
-     */
-    private function handleThumbnailUpdate(Request $request, Recipe $recipe, Group $group): ?string
-    {
-        try {
-            // thumbnailDeleteがtrueの場合は画像削除
-            // 更新のときにフロントから画像を送信したくないので、thumbnailDeleteで更新か削除かを判断する
-            if ($request->has('thumbnailDelete') && $request->boolean('thumbnailDelete')) {
-                $existingThumbnail = $recipe->thumbnails()->first();
-                if ($existingThumbnail) {
-                    $this->imageService->deleteImageRecord($existingThumbnail);
-                }
-            }
-            // 画像アップロード
-            elseif ($request->hasFile('thumbnail')) {
-                $existingThumbnail = $recipe->thumbnails()->first();
-                // 既存のサムネイルがある場合は更新
-                if ($existingThumbnail) {
-                    $this->imageService->updateImage(
-                        $request->file('thumbnail'),
-                        "$group->id/recipes/thumbnails",
-                        $existingThumbnail
-                    );
-                }
-                // 既存のサムネイルがない場合は新規作成
-                else {
-                    $image = $this->imageService->uploadAndSaveImage(
-                        $request->file('thumbnail'),
-                        "$group->id/recipes/thumbnails"
-                    );
-
-                    // レシピとサムネイルの紐づけ
-                    $recipe->thumbnails()->attach($image->id, [
-                        'group_id' => $recipe->group_id,
-                        'related_model' => Recipe::class,
-                        'image_type' => 'thumbnail',
-                        'order' => 0
-                    ]);
-                }
-            }
-            // 成功した場合はnullを返す
-            return null;
-        } catch (Exception $e) {
-            Log::error('Recipe thumbnail update failed:', [
-                'recipe_id' => $recipe->id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            // 失敗した場合はエラーメッセージを返す
-            return '画像のアップロードに失敗しました。';
-        }
-    }
-
-    /**
      * レシピリクエストのバリデーション
      */
     private function validateRecipeRequest(Request $request): void
@@ -401,8 +316,15 @@ class RecipeController extends ApiController
         $request->validate([
             'name' => 'required|string|max:255',
             'url' => 'nullable|string|max:2048',
-            'ingredients' => 'nullable|string',
-            'steps' => 'nullable|string',
+            'categoryIds' => 'nullable|array',
+            'categoryIds.*' => 'required|string',
+            'ingredients' => 'nullable|array',
+            'ingredients.*.name' => 'required|string',
+            'ingredients.*.unitId' => 'required|string',
+            'ingredients.*.categoryId' => 'required|string',
+            'ingredients.*.quantity' => 'nullable|numeric',
+            'ingredients.*.order' => 'nullable|integer',
+            'steps' => 'nullable|array',
             'steps.*.id' => 'nullable|string',
             'steps.*.instruction' => 'nullable|string',
             'steps.*.order' => 'nullable|integer',
@@ -430,109 +352,32 @@ class RecipeController extends ApiController
             ]);
         }
 
-        // ingredientsのバリデーション
-        if ($request->has('ingredients') && !empty($request->ingredients)) {
-            $this->validateIngredients($request->ingredients);
+        // step_imagesのバリデーション
+        if ($request->hasFile('step_images')) {
+            $request->validate([
+                'step_images.*' => $this->imageService->getValidationRules()
+            ]);
         }
     }
 
-    /**
-     * ingredientsのバリデーション
-     */
-    private function validateIngredients($ingredients): void
+    private function syncThumbnail(Recipe $recipe, $thumbnailId, bool $isUpdate = false): void
     {
-        // JSON文字列の場合はデコード
-        if (is_string($ingredients)) {
-            $ingredients = json_decode($ingredients, true);
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                throw new ValidationException(
-                    validator([], []),
-                    response()->json(['message' => 'ingredientsのJSON形式が正しくありません。'], 422)
-                );
-            }
+        if (!$thumbnailId) {
+            return;
         }
 
-        // 配列でない場合はエラー
-        if (!is_array($ingredients)) {
-            throw new ValidationException(
-                validator([], []),
-                response()->json(['message' => 'ingredientsは配列形式で指定してください。'], 422)
-            );
+        // サムネイル画像を紐づけ
+        $image = Image::find($thumbnailId);
+        if (!$image) {
+            throw new Exception('サムネイル画像が見つかりません。');
         }
-
-        // 連想配列（単一オブジェクト）の場合は配列でラップ
-        if (!empty($ingredients) && !array_key_exists(0, $ingredients)) {
-            $ingredients = [$ingredients];
-        }
-
-        // 各食材のバリデーション
-        foreach ($ingredients as $index => $ingredient) {
-            if (!is_array($ingredient)) {
-                throw new ValidationException(
-                    validator([], []),
-                    response()->json(['message' => "食材 {$index} はオブジェクト形式で指定してください。"], 422)
-                );
-            }
-
-            // 必須フィールドのチェック
-            if (!isset($ingredient['name']) || empty($ingredient['name'])) {
-                throw new ValidationException(
-                    validator([], []),
-                    response()->json(['message' => "食材 {$index} の名前が指定されていません。"], 422)
-                );
-            }
-
-            if (!isset($ingredient['unitId']) || empty($ingredient['unitId'])) {
-                throw new ValidationException(
-                    validator([], []),
-                    response()->json(['message' => "食材 {$index} の単位IDが指定されていません。"], 422)
-                );
-            }
-
-            if (!isset($ingredient['categoryId']) || empty($ingredient['categoryId'])) {
-                throw new ValidationException(
-                    validator([], []),
-                    response()->json(['message' => "食材 {$index} のカテゴリIDが指定されていません。"], 422)
-                );
-            }
-
-            // データ型のチェック
-            if (!is_string($ingredient['name'])) {
-                throw new ValidationException(
-                    validator([], []),
-                    response()->json(['message' => "食材 {$index} の名前は文字列で指定してください。"], 422)
-                );
-            }
-
-            if (!is_string($ingredient['unitId'])) {
-                throw new ValidationException(
-                    validator([], []),
-                    response()->json(['message' => "食材 {$index} の単位IDは文字列で指定してください。"], 422)
-                );
-            }
-
-            if (!is_string($ingredient['categoryId'])) {
-                throw new ValidationException(
-                    validator([], []),
-                    response()->json(['message' => "食材 {$index} のカテゴリIDは文字列で指定してください。"], 422)
-                );
-            }
-
-            // オプションフィールドのチェック
-            if (isset($ingredient['quantity']) && !is_numeric($ingredient['quantity'])) {
-                throw new ValidationException(
-                    validator([], []),
-                    response()->json(['message' => "食材 {$index} の数量は数値で指定してください。"], 422)
-                );
-            }
-
-            if (isset($ingredient['order']) && !is_numeric($ingredient['order'])) {
-                throw new ValidationException(
-                    validator([], []),
-                    response()->json(['message' => "食材 {$index} の順番は数値で指定してください。"], 422)
-                );
-            }
-        }
+        // レシピとサムネイルを紐づけ
+        $recipe->thumbnails()->attach($image->id, [
+            'group_id' => $recipe->group_id,
+            'related_model' => Recipe::class,
+            'image_type' => 'thumbnail',
+            'order' => 0
+        ]);
     }
 
     /**
@@ -540,21 +385,8 @@ class RecipeController extends ApiController
      */
     private function syncCategories(Recipe $recipe, $categoryIds, bool $isUpdate = false): void
     {
-        if (empty($categoryIds)) {
+        if (empty($categoryIds) || !is_array($categoryIds)) {
             return;
-        }
-
-        // もし配列で来ていればそのまま
-        if (is_array($categoryIds)) {
-            // 何もしない
-        }
-        // もしJSON配列文字列ならdecode
-        else if (is_string($categoryIds) && preg_match('/^\[.*\]$/', $categoryIds)) {
-            $categoryIds = json_decode($categoryIds, true);
-        }
-        // それ以外（単一IDの文字列）は配列にラップ
-        else if (is_string($categoryIds)) {
-            $categoryIds = [$categoryIds];
         }
 
         $existingCategoryIds = $recipe->group->recipeCategories()
@@ -574,17 +406,8 @@ class RecipeController extends ApiController
      */
     private function syncIngredients(Recipe $recipe, $ingredients, bool $isUpdate = false, Group $group): void
     {
-        if (empty($ingredients)) {
+        if (empty($ingredients) || !is_array($ingredients)) {
             return;
-        }
-
-        $ingredients = is_string($ingredients)
-            ? json_decode($ingredients, true)
-            : $ingredients;
-
-        // 連想配列（単一オブジェクト）の場合は配列でラップ
-        if (!empty($ingredients) && is_array($ingredients) && !array_key_exists(0, $ingredients)) {
-            $ingredients = [$ingredients];
         }
 
         $ingredientData = collect($ingredients)->map(fn($item) => [
@@ -618,36 +441,76 @@ class RecipeController extends ApiController
     /**
      * 手順の同期処理
      */
-    private function syncSteps(Recipe $recipe, $steps, bool $isUpdate = false): void
-    {
-        if (empty($steps)) {
-            return;
-        }
+    // private function syncSteps(Recipe $recipe, $steps, bool $isUpdate = false, Group $group): void
+    // {
+    //     if (empty($steps) || !is_array($steps)) {
+    //         return;
+    //     }
 
-        $steps = is_string($steps)
-            ? json_decode($steps, true)
-            : $steps;
+    //     // JSONリクエストでは既に配列として渡されるため、文字列処理は不要
 
-        // 連想配列（単一オブジェクト）の場合は配列でラップ
-        if (!empty($steps) && is_array($steps) && !array_key_exists(0, $steps)) {
-            $steps = [$steps];
-        }
+    //     foreach ($steps as $stepData) {
+    //         $createdStep = RecipeStep::create([
+    //             'recipe_id' => $recipe->id,
+    //             'instruction' => $stepData['instruction'],
+    //             'order' => $stepData['order'] ?? 0
+    //         ]);
 
-        $stepData = collect($steps)->map(fn($item) => [
-            'id' => $item['id'] ?? null,
-            'instruction' => $item['instruction'],
-            'image_url' => $item['image']['url'] ?? null,
-            'image_width' => $item['image']['width'] ?? null,
-            'image_height' => $item['image']['height'] ?? null,
-            'order' => $item['order'] ?? 0,
-        ])->toArray();
+    //         // 画像がある場合の処理
+    //         if (isset($stepData['image']) && !empty($stepData['image'])) {
+    //             $imageData = $stepData['image'];
 
-        if ($isUpdate) {
-            $recipe->steps()->sync($stepData);
-        } else {
-            $recipe->steps()->attach($stepData);
-        }
-    }
+    //             // URLが指定されている場合（既存の画像またはアップロード済み画像）
+    //             if (isset($imageData['url']) && !empty($imageData['url'])) {
+    //                 try {
+    //                     // 画像URLから画像情報を取得または作成
+    //                     $image = $this->processStepImageUrl($imageData['url'], $group);
+
+    //                     if ($image) {
+    //                         // レシピステップと画像を紐づけ
+    //                         $createdStep->images()->attach($image->id, [
+    //                             'group_id' => $recipe->group_id,
+    //                             'related_model' => RecipeStep::class,
+    //                             'image_type' => 'image',
+    //                             'order' => 0
+    //                         ]);
+    //                     }
+    //                 } catch (Exception $e) {
+    //                     Log::error('Recipe step image processing failed:', [
+    //                         'step_id' => $createdStep->id,
+    //                         'url' => $imageData['url'],
+    //                         'error' => $e->getMessage(),
+    //                         'trace' => $e->getTraceAsString()
+    //                     ]);
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
+
+    /**
+     * ステップ画像URLを処理
+     */
+    // private function processStepImageUrl(string $url, Group $group): ?Image
+    // {
+    //     // 既存の画像を検索
+    //     $existingImage = Image::where('src', $url)->first();
+
+    //     if ($existingImage) {
+    //         return $existingImage;
+    //     }
+
+    //     // 新しい画像として作成（URLが外部URLの場合）
+    //     if (filter_var($url, FILTER_VALIDATE_URL)) {
+    //         return Image::create([
+    //             'src' => $url,
+    //             'width' => 0, // 後で取得可能
+    //             'height' => 0, // 後で取得可能
+    //         ]);
+    //     }
+
+    //     return null;
+    // }
 
     /**
      * レシピレスポンスのフォーマット

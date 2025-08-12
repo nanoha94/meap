@@ -58,6 +58,62 @@
                 ]
             }
         },
+        "/images/upload-bulk": {
+            "post": {
+                "tags": [
+                    "Images"
+                ],
+                "summary": "画像をアップロード（単一または複数対応）",
+                "operationId": "d8a42b60da8552657f1d99ed27e9b8a8",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/ImageUploadBulkRequest"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/ImageUploadBulkSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationErrors"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/images/bulk": {
+            "delete": {
+                "tags": [
+                    "Images"
+                ],
+                "summary": "画像を一括削除",
+                "operationId": "d0410b84c046764f13daceae60d8e5cb",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/ImageDeleteBulkRequest"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/ImageDeleteBulkSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationErrors"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/ingredient-categories": {
             "get": {
                 "tags": [
@@ -690,12 +746,12 @@
                     }
                 ]
             },
-            "post": {
+            "put": {
                 "tags": [
                     "Recipes"
                 ],
                 "summary": "料理を更新",
-                "operationId": "0af7d12401fe56ecf6bd4b57c5b5c316",
+                "operationId": "b9f1d6135c52c2d7e718025d4d2a83e5",
                 "parameters": [
                     {
                         "$ref": "#/components/parameters/RecipeIdParam"
@@ -1695,6 +1751,70 @@
                     }
                 }
             },
+            "ImageUploadBulkSuccess": {
+                "description": "複数画像アップロード成功",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "画像をアップロードしました。"
+                                },
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "string",
+                                                "example": "1"
+                                            },
+                                            "src": {
+                                                "type": "string",
+                                                "example": "/storage/group_id/recipes/steps/filename.jpg"
+                                            },
+                                            "width": {
+                                                "type": "integer",
+                                                "example": 800
+                                            },
+                                            "height": {
+                                                "type": "integer",
+                                                "example": 600
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "ImageDeleteBulkSuccess": {
+                "description": "画像一括削除成功",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "○○件の画像を削除しました。"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
             "IngredientCategoryIndexSuccess": {
                 "description": "正常に取得されました",
                 "content": {
@@ -2524,6 +2644,55 @@
                     }
                 }
             },
+            "ImageUploadBulkRequest": {
+                "required": true,
+                "content": {
+                    "multipart/form-data": {
+                        "schema": {
+                            "required": [
+                                "images"
+                            ],
+                            "properties": {
+                                "images": {
+                                    "description": "アップロードする画像ファイル配列",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "directory": {
+                                    "description": "アップロード先ディレクトリ",
+                                    "type": "string",
+                                    "example": "recipes/steps"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "ImageDeleteBulkRequest": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "required": [
+                                "image_ids"
+                            ],
+                            "properties": {
+                                "image_ids": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
             "IngredientCategoryStoreRequest": {
                 "description": "※新規作成時はid不要",
                 "required": true,
@@ -2695,11 +2864,8 @@
                 "description": "※新規作成時はid不要",
                 "required": true,
                 "content": {
-                    "multipart/form-data": {
+                    "application/json": {
                         "schema": {
-                            "required": [
-                                "name"
-                            ],
                             "properties": {
                                 "name": {
                                     "description": "料理名",
@@ -2707,24 +2873,24 @@
                                     "example": "ハンバーグ"
                                 },
                                 "categoryIds": {
-                                    "description": "カテゴリ（JSON文字列）",
-                                    "type": "string",
-                                    "example": "[\"1\"]"
+                                    "description": "カテゴリID",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string",
+                                        "example": "1"
+                                    }
                                 },
                                 "ingredients": {
-                                    "description": "食材（JSON文字列）",
-                                    "type": "string",
-                                    "example": "[{\"id\":\"1\",\"name\":\"牛肉\",\"quantity\":100,\"unitId\":\"1\",\"categoryId\":\"1\",\"order\":1}]"
+                                    "description": "食材",
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Ingredient"
+                                    }
                                 },
-                                "thumbnailDelete": {
-                                    "description": "サムネイル画像を削除するかどうか",
-                                    "type": "boolean",
-                                    "example": "false"
-                                },
-                                "thumbnail": {
-                                    "description": "サムネイル画像ファイル",
+                                "thumbnailId": {
+                                    "description": "サムネイル画像ID",
                                     "type": "string",
-                                    "format": "binary"
+                                    "example": "1"
                                 },
                                 "url": {
                                     "description": "レシピURL",
@@ -2732,9 +2898,11 @@
                                     "example": "https://www.google.com"
                                 },
                                 "steps": {
-                                    "description": "手順（JSON文字列）",
-                                    "type": "string",
-                                    "example": "[{\"id\":\"1\",\"instruction\":\"ハンバーグを作る\",\"image\":{\"url\":\"https://www.google.com\",\"width\":100,\"height\":100},\"order\":1}]"
+                                    "description": "手順",
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/RecipeStep"
+                                    }
                                 },
                                 "memo": {
                                     "description": "メモ",
@@ -2982,6 +3150,10 @@
         {
             "name": "Shopping",
             "description": "買い物関連のAPI"
+        },
+        {
+            "name": "Images",
+            "description": "画像関連のAPI"
         },
         {
             "name": "Master",

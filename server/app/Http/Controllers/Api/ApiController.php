@@ -43,7 +43,10 @@ use Illuminate\Validation\ValidationException;
  *     name="Shopping",
  *     description="買い物関連のAPI"
  * )
- * 
+ * @OA\Tag(
+ *     name="Images",
+ *     description="画像関連のAPI"
+ * )
  */
 
 abstract class ApiController extends Controller
@@ -71,7 +74,7 @@ abstract class ApiController extends Controller
      */
     protected function handleGeneralException(Exception $e, string $defaultMessage = 'エラーが発生しました。'): JsonResponse
     {
-        return $this->handleException($e, $defaultMessage);
+        return $this->handleException($e, request(), $defaultMessage);
     }
 
     /**

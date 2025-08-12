@@ -15,14 +15,18 @@ class RecipeStep extends Model
     protected $fillable = [
         'recipe_id',
         'instruction',
-        'image_url',
-        'image_width',
-        'image_height',
         'order',
     ];
 
     public function recipe()
     {
         return $this->belongsTo(Recipe::class);
+    }
+
+    public function images()
+    {
+        return $this->belongsToMany(Image::class, 'image_mappings', 'related_id', 'image_id')
+            ->wherePivot('related_model', static::class)
+            ->wherePivot('image_type', 'image');
     }
 }
