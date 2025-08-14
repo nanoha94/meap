@@ -15,7 +15,6 @@ class RecipeStep extends Model
     protected $fillable = [
         'recipe_id',
         'instruction',
-        'order',
     ];
 
     public function recipe()
@@ -27,6 +26,7 @@ class RecipeStep extends Model
     {
         return $this->belongsToMany(Image::class, 'image_mappings', 'related_id', 'image_id')
             ->wherePivot('related_model', static::class)
-            ->wherePivot('image_type', 'image');
+            ->wherePivot('image_type', 'image')
+            ->orderBy('order');
     }
 }

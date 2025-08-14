@@ -14,7 +14,13 @@ namespace App\Swagger;
  *         @OA\Property(property="ingredients", type="array", description="食材", @OA\Items(ref="#/components/schemas/Ingredient")),
  *         @OA\Property(property="thumbnailId", type="string", description="サムネイル画像ID", example="1"),
  *         @OA\Property(property="url", type="string", description="レシピURL", example="https://www.google.com"),
- *         @OA\Property(property="steps", type="array", description="手順", @OA\Items(ref="#/components/schemas/RecipeStep")),
+ *         @OA\Property(property="steps", type="array", description="手順", 
+ *            @OA\Items(
+ *                type="object",
+ *                @OA\Property(property="instruction", type="string", description="手順", example="ハンバーグを作る"),
+ *                @OA\Property(property="imageId", type="string", description="画像ID", example="1"),
+ *                @OA\Property(property="order", type="integer", description="並び順", example=1)
+ *            )),
  *         @OA\Property(property="memo", type="string", description="メモ", example="ハンバーグは美味しい")
  *     )
  * )

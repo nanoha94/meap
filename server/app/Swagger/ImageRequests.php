@@ -9,12 +9,36 @@ namespace App\Swagger;
  *     @OA\MediaType(
  *         mediaType="multipart/form-data",
  *         @OA\Schema(
- *             required={"images"},
+ *             required={"images[0]"},
  *             @OA\Property(
- *                 property="images",
- *                 type="array",
- *                 @OA\Items(type="string", format="binary"),
- *                 description="アップロードする画像ファイル配列"
+ *                 property="images[0]",
+ *                 type="string",
+ *                 format="binary",
+ *                 description="1枚目の画像ファイル（必須）"
+ *             ),
+ *             @OA\Property(
+ *                 property="images[1]",
+ *                 type="string",
+ *                 format="binary",
+ *                 description="2枚目の画像ファイル（オプション）"
+ *             ),
+ *             @OA\Property(
+ *                 property="images[2]",
+ *                 type="string",
+ *                 format="binary",
+ *                 description="3枚目の画像ファイル（オプション）"
+ *             ),
+ *             @OA\Property(
+ *                 property="images[3]",
+ *                 type="string",
+ *                 format="binary",
+ *                 description="4枚目の画像ファイル（オプション）"
+ *             ),
+ *             @OA\Property(
+ *                 property="images[4]",
+ *                 type="string",
+ *                 format="binary",
+ *                 description="5枚目の画像ファイル（オプション）"
  *             ),
  *             @OA\Property(
  *                 property="directory",

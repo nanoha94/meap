@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Api\ApiController;
 use App\Models\Recipe;
 use App\Models\Ingredient;
-use App\Models\Group;
 use App\Models\Image;
 use App\Models\RecipeStep;
 use App\Services\ImageService;
@@ -51,7 +50,7 @@ class RecipeController extends ApiController
             $perPage = $request->input('per_page', 15);
             $page = $request->input('page', 1);
 
-            // TODO: 無限スクロール対応？
+            // TODO: 将来的に無限スクロール対応を検討（現在は全件取得）
             $recipes = $group->recipes()->select('id', 'name', 'url', 'memo')->with(['categories', 'ingredients', 'steps', 'thumbnails'])->get();
 
             $formattedData = $recipes->map(function ($recipe) {
@@ -67,12 +66,12 @@ class RecipeController extends ApiController
                     'steps' => $recipe->steps->map(fn($item) => [
                         'id' => $item->id,
                         'instruction' => $item->instruction,
-                        'image' => $item->image_url ? [
-                            'url' => $item->image_url,
-                            'width' => $item->image_width,
-                            'height' => $item->image_height,
+                        'image' => $item->images->first() ? [
+                            'url' => $item->images->first()->src,
+                            'width' => $item->images->first()->width,
+                            'height' => $item->images->first()->height,
                         ] : null,
-                        'order' => $item->order,
+                        'order' => $item->pivot->order,
                     ]),
                     'memo' => $recipe->memo,
                     'categories' => $recipe->categories->sortBy('order')->map(fn($item) => [
@@ -129,16 +128,16 @@ class RecipeController extends ApiController
                 ]);
 
                 // サムネイルを紐づけ
-                $this->syncThumbnail($recipe, $request->thumbnailId, false);
+                $this->syncThumbnail($recipe, $request->thumbnailId);
 
                 // カテゴリーを紐づけ
-                $this->syncCategories($recipe, $request->categoryIds, false);
+                $this->syncCategories($recipe, $request->categoryIds);
 
                 // 食材を紐づけ
-                $this->syncIngredients($recipe, $request->ingredients, false, $group);
+                $this->syncIngredients($recipe, $request->ingredients);
 
                 // 手順を紐づけ
-                // $this->syncSteps($recipe, $request->steps, false, $group);
+                $this->syncSteps($recipe, $request->steps);
 
 
                 return $recipe;
@@ -151,6 +150,8 @@ class RecipeController extends ApiController
             return $this->validationErrorResponse($e);
         } catch (Exception $e) {
             Log::error('Recipe store failed:', [
+                'user_id' => $request->user()->id,
+                'group_id' => $request->user()->group->id,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
@@ -185,6 +186,8 @@ class RecipeController extends ApiController
         } catch (Exception $e) {
             Log::error('Recipe show failed:', [
                 'recipe_id' => $id,
+                'user_id' => $request->user()->id,
+                'group_id' => $request->user()->group->id,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
@@ -211,7 +214,7 @@ class RecipeController extends ApiController
             $user = $request->user();
             $group = $user->group;
 
-            $recipe = $group->recipes()->where('id', $id)->first();
+            $recipe = $group->recipes()->where('id', $id)->with(['categories', 'ingredients', 'steps'])->first();
             if (!$recipe) {
                 return $this->notFoundResponse('指定されたレコードが見つかりません。');
             }
@@ -219,27 +222,17 @@ class RecipeController extends ApiController
             // リクエストデータのバリデーション
             $this->validateRecipeRequest($request);
 
-            DB::transaction(function () use ($request, $recipe, $group) {
-                // 1. データベース更新処理を先に実行
+            DB::transaction(function () use ($request, $recipe) {
                 $recipe->update([
                     'name' => $request->name,
                     'url' => $request->url,
                     'memo' => $request->memo,
                 ]);
 
-                // サムネイルを紐づけ
-                $this->syncThumbnail($recipe, $request->thumbnailId, true);
-
-                // 2. カテゴリー更新
-                $this->syncCategories($recipe, $request->categoryIds, true);
-
-                // 3. 食材更新
-                $this->syncIngredients($recipe, $request->ingredients, true, $group);
-
-                // 4. 手順更新（必要に応じて実装）
-                // $this->syncSteps($recipe, $request->steps, true, $group);
-
-                return true;
+                $this->syncThumbnail($recipe, $request->thumbnailId);
+                $this->syncCategories($recipe, $request->categoryIds);
+                $this->syncIngredients($recipe, $request->ingredients);
+                $this->syncSteps($recipe, $request->steps);
             });
 
             // 既存の$recipeを使用し、必要なリレーションをロード
@@ -252,6 +245,8 @@ class RecipeController extends ApiController
         } catch (Exception $e) {
             Log::error('Recipe update failed:', [
                 'recipe_id' => $id,
+                'user_id' => $request->user()->id,
+                'group_id' => $request->user()->group->id,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
@@ -301,6 +296,8 @@ class RecipeController extends ApiController
         } catch (Exception $e) {
             Log::error('Recipe destroy failed:', [
                 'recipe_id' => $id,
+                'user_id' => $request->user()->id,
+                'group_id' => $request->user()->group->id,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
@@ -360,7 +357,7 @@ class RecipeController extends ApiController
         }
     }
 
-    private function syncThumbnail(Recipe $recipe, $thumbnailId, bool $isUpdate = false): void
+    private function syncThumbnail(Recipe $recipe, $thumbnailId): void
     {
         if (!$thumbnailId) {
             return;
@@ -383,7 +380,7 @@ class RecipeController extends ApiController
     /**
      * カテゴリーの同期処理
      */
-    private function syncCategories(Recipe $recipe, $categoryIds, bool $isUpdate = false): void
+    private function syncCategories(Recipe $recipe, $categoryIds): void
     {
         if (empty($categoryIds) || !is_array($categoryIds)) {
             return;
@@ -394,17 +391,14 @@ class RecipeController extends ApiController
             ->pluck('id')
             ->toArray();
 
-        if ($isUpdate) {
-            $recipe->categories()->sync($existingCategoryIds);
-        } else {
-            $recipe->categories()->attach($existingCategoryIds);
-        }
+
+        $recipe->categories()->sync($existingCategoryIds);
     }
 
     /**
      * 食材の同期処理
      */
-    private function syncIngredients(Recipe $recipe, $ingredients, bool $isUpdate = false, Group $group): void
+    private function syncIngredients(Recipe $recipe, $ingredients): void
     {
         if (empty($ingredients) || !is_array($ingredients)) {
             return;
@@ -416,7 +410,7 @@ class RecipeController extends ApiController
         ])->toArray();
 
         // 食材IDを取得
-        $ids = $this->findOrCreateIds($ingredientData, $group, Ingredient::class);
+        $ids = $this->findOrCreateIds($ingredientData, $recipe->group, Ingredient::class);
 
         // インデックスを保持してマッピング
         $data = [];
@@ -431,86 +425,120 @@ class RecipeController extends ApiController
             }
         }
 
-        if ($isUpdate) {
-            $recipe->ingredients()->sync($data);
-        } else {
-            $recipe->ingredients()->attach($data);
-        }
+        // 新規作成時も更新時もsyncを使用
+        $recipe->ingredients()->sync($data);
     }
 
     /**
      * 手順の同期処理
      */
-    // private function syncSteps(Recipe $recipe, $steps, bool $isUpdate = false, Group $group): void
-    // {
-    //     if (empty($steps) || !is_array($steps)) {
-    //         return;
-    //     }
+    private function syncSteps(Recipe $recipe, $steps): void
+    {
+        // 手順と画像を事前にロード
+        $recipe->load(['steps.images']);
 
-    //     // JSONリクエストでは既に配列として渡されるため、文字列処理は不要
+        // 画像IDをまとめて取得（$stepsがnullの場合は空配列）
+        $imageIds = $steps ? collect($steps)->pluck('imageId')->filter()->unique()->values()->toArray() : [];
+        $images = !empty($imageIds) ? Image::whereIn('id', $imageIds)->get()->keyBy('id') : collect();
 
-    //     foreach ($steps as $stepData) {
-    //         $createdStep = RecipeStep::create([
-    //             'recipe_id' => $recipe->id,
-    //             'instruction' => $stepData['instruction'],
-    //             'order' => $stepData['order'] ?? 0
-    //         ]);
+        $syncData = [];
+        $stepsToDelete = [];
+        $imagesToDelete = [];
 
-    //         // 画像がある場合の処理
-    //         if (isset($stepData['image']) && !empty($stepData['image'])) {
-    //             $imageData = $stepData['image'];
+        // 既存の手順を処理
+        foreach ($recipe->steps as $step) {
+            $stepId = $step->id;
 
-    //             // URLが指定されている場合（既存の画像またはアップロード済み画像）
-    //             if (isset($imageData['url']) && !empty($imageData['url'])) {
-    //                 try {
-    //                     // 画像URLから画像情報を取得または作成
-    //                     $image = $this->processStepImageUrl($imageData['url'], $group);
+            // $stepsから該当する手順を検索
+            $stepData = null;
+            if ($steps && is_array($steps)) {
+                foreach ($steps as $stepItem) {
+                    if (isset($stepItem['id']) && $stepItem['id'] === $stepId) {
+                        $stepData = $stepItem;
+                        break;
+                    }
+                }
+            }
 
-    //                     if ($image) {
-    //                         // レシピステップと画像を紐づけ
-    //                         $createdStep->images()->attach($image->id, [
-    //                             'group_id' => $recipe->group_id,
-    //                             'related_model' => RecipeStep::class,
-    //                             'image_type' => 'image',
-    //                             'order' => 0
-    //                         ]);
-    //                     }
-    //                 } catch (Exception $e) {
-    //                     Log::error('Recipe step image processing failed:', [
-    //                         'step_id' => $createdStep->id,
-    //                         'url' => $imageData['url'],
-    //                         'error' => $e->getMessage(),
-    //                         'trace' => $e->getTraceAsString()
-    //                     ]);
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
+            if ($stepData) {
+                // 手順の内容が変更されているかチェック
+                if ($step->instruction !== $stepData['instruction']) {
+                    $step->update(['instruction' => $stepData['instruction']]);
+                }
 
-    /**
-     * ステップ画像URLを処理
-     */
-    // private function processStepImageUrl(string $url, Group $group): ?Image
-    // {
-    //     // 既存の画像を検索
-    //     $existingImage = Image::where('src', $url)->first();
+                // 画像の処理
+                $imageId = $stepData['imageId'] ?? null;
+                $currentImageId = $step->images->first()?->id;
 
-    //     if ($existingImage) {
-    //         return $existingImage;
-    //     }
+                if ($imageId !== $currentImageId) {
+                    // 既存画像を削除対象に追加
+                    if ($step->images->isNotEmpty()) {
+                        $imagesToDelete = array_merge($imagesToDelete, $step->images->pluck('id')->toArray());
+                    }
 
-    //     // 新しい画像として作成（URLが外部URLの場合）
-    //     if (filter_var($url, FILTER_VALIDATE_URL)) {
-    //         return Image::create([
-    //             'src' => $url,
-    //             'width' => 0, // 後で取得可能
-    //             'height' => 0, // 後で取得可能
-    //         ]);
-    //     }
+                    // 新しい画像を関連付け
+                    if (!empty($imageId) && isset($images[$imageId]) && $images[$imageId]->group_id === $recipe->group_id) {
+                        $step->images()->attach($imageId, [
+                            'group_id' => $recipe->group_id,
+                            'related_model' => RecipeStep::class,
+                            'image_type' => 'image',
+                            'order' => 0
+                        ]);
+                    }
+                }
 
-    //     return null;
-    // }
+                $syncData[$step->id] = ['order' => $stepData['order'] ?? 0];
+            } else {
+                // 削除対象に追加
+                $stepsToDelete[] = $step->id;
+                if ($step->images->isNotEmpty()) {
+                    $imagesToDelete = array_merge($imagesToDelete, $step->images->pluck('id')->toArray());
+                }
+            }
+        }
+
+        // 新規作成
+        if ($steps && is_array($steps)) {
+            foreach ($steps as $index => $stepData) {
+                // IDが存在しない場合は新規作成
+                if (!isset($stepData['id']) || empty($stepData['id'])) {
+                    $currentStep = RecipeStep::create([
+                        'recipe_id' => $recipe->id,
+                        'instruction' => $stepData['instruction'],
+                    ]);
+
+                    $imageId = $stepData['imageId'] ?? null;
+                    if (!empty($imageId) && isset($images[$imageId]) && $images[$imageId]->group_id === $recipe->group_id) {
+                        $currentStep->images()->attach($imageId, [
+                            'group_id' => $recipe->group_id,
+                            'related_model' => RecipeStep::class,
+                            'image_type' => 'image',
+                            'order' => 0
+                        ]);
+                    }
+
+                    $syncData[$currentStep->id] = [
+                        'order' => $stepData['order'] ?? ($index + 1)
+                    ];
+                }
+            }
+        }
+
+        // 一括削除
+        if (!empty($stepsToDelete)) {
+            RecipeStep::whereIn('id', $stepsToDelete)->delete();
+        }
+
+        // 一括画像削除
+        if (!empty($imagesToDelete)) {
+            $this->imageService->deleteImages(array_unique($imagesToDelete));
+        }
+
+        // 一括更新
+        if (!empty($syncData)) {
+            $recipe->steps()->sync($syncData);
+        }
+    }
 
     /**
      * レシピレスポンスのフォーマット
@@ -529,12 +557,12 @@ class RecipeController extends ApiController
             'steps' => $recipe->steps->map(fn($item) => [
                 'id' => $item->id,
                 'instruction' => $item->instruction,
-                'image' => $item->image_url ? [
-                    'url' => $item->image_url,
-                    'width' => $item->image_width,
-                    'height' => $item->image_height,
+                'image' => $item->images->first() ? [
+                    'url' => $item->images->first()->src,
+                    'width' => $item->images->first()->width,
+                    'height' => $item->images->first()->height,
                 ] : null,
-                'order' => $item->order,
+                'order' => $item->pivot->order,
             ]),
             'memo' => $recipe->memo,
             'categories' => $recipe->categories->sortBy('order')->map(fn($item) => [

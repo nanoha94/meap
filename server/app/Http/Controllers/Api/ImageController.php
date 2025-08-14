@@ -38,49 +38,45 @@ class ImageController extends ApiController
             $group = $user->group;
 
             // バリデーション
-            $request->validate([
-                'images' => 'required',
-                'images.*' => $this->imageService->getValidationRules(),
-                'directory' => 'nullable|string|max:255'
-            ], [
-                'images.required' => '画像ファイルを選択してください。',
+            $validationRules = ['images.0' => 'required|file|' . implode('|', $this->imageService->getValidationRules())];
+
+            // 2枚目から20枚目までを任意フィールドとして追加
+            for ($i = 1; $i < 20; $i++) {
+                $validationRules["images.{$i}"] = 'nullable|file|' . implode('|', $this->imageService->getValidationRules());
+            }
+
+            $validationRules['directory'] = 'nullable|string|max:255';
+
+            $request->validate($validationRules, [
+                'images.0.required' => '1枚目の画像ファイルを選択してください。',
+                'images.0.file' => '1枚目は有効なファイルを選択してください。',
+                'images.*.file' => '有効なファイルを選択してください。',
                 'directory.max' => 'ディレクトリ名は255文字以内で入力してください。'
             ]);
 
-            // 画像ファイルの処理（単一ファイルまたは配列に対応）
-            $imageFiles = $request->file('images');
-            if (!is_array($imageFiles)) {
-                $imageFiles = [$imageFiles];
-            }
-
-            // 配列の長さチェック
-            if (empty($imageFiles) || count($imageFiles) > 20) {
-                return $this->validationErrorResponse(
-                    new ValidationException(
-                        validator(['images' => 'max:20'], ['images.max' => '画像は最大20枚までアップロードできます。']),
-                        response()->json(['message' => '画像は最大20枚までアップロードできます。'], 422)
-                    )
-                );
-            }
+            // 画像ファイルを取得
+            $imageFiles = collect(range(0, 19))
+                ->map(fn($i) => $request->file("images.{$i}"))
+                ->filter(fn($file) => $file && $file->isValid())
+                ->values()
+                ->toArray();
 
             // ディレクトリの設定
             $directory = $request->input('directory', 'general');
             $uploadPath = "$group->id/$directory";
 
-            $uploadedImages = [];
-
-            // 画像を並列処理（単一ファイルまたは複数ファイルに対応）
-            foreach ($imageFiles as $file) {
-                $image = $this->imageService->uploadAndSaveImage($file, $uploadPath);
-                $uploadedImages[] = [
+            // 画像をアップロード
+            $uploadedImages = collect($imageFiles)
+                ->map(fn($file) => $this->imageService->uploadAndSaveImage($file, $uploadPath))
+                ->map(fn($image) => [
                     'id' => $image->id,
                     'src' => $image->src,
                     'width' => $image->width,
                     'height' => $image->height,
-                ];
-            }
+                ])
+                ->toArray();
 
-            return $this->successResponse($uploadedImages, '画像をアップロードしました。');
+            return $this->successResponse($uploadedImages, count($uploadedImages) . '枚の画像をアップロードしました。');
         } catch (ValidationException $e) {
             return $this->validationErrorResponse($e);
         } catch (Exception $e) {

@@ -45,7 +45,6 @@ entity recipe_steps{
     --
     * recipe_id : string <<FK>>
     * instruction : string / 手順
-    * order : int / ソート順
 }
 
 entity recipe_step_mappings {

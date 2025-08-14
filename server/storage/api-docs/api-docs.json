@@ -2650,16 +2650,33 @@
                     "multipart/form-data": {
                         "schema": {
                             "required": [
-                                "images"
+                                "images[0]"
                             ],
                             "properties": {
-                                "images": {
-                                    "description": "アップロードする画像ファイル配列",
-                                    "type": "array",
-                                    "items": {
-                                        "type": "string",
-                                        "format": "binary"
-                                    }
+                                "images[0]": {
+                                    "description": "1枚目の画像ファイル（必須）",
+                                    "type": "string",
+                                    "format": "binary"
+                                },
+                                "images[1]": {
+                                    "description": "2枚目の画像ファイル（オプション）",
+                                    "type": "string",
+                                    "format": "binary"
+                                },
+                                "images[2]": {
+                                    "description": "3枚目の画像ファイル（オプション）",
+                                    "type": "string",
+                                    "format": "binary"
+                                },
+                                "images[3]": {
+                                    "description": "4枚目の画像ファイル（オプション）",
+                                    "type": "string",
+                                    "format": "binary"
+                                },
+                                "images[4]": {
+                                    "description": "5枚目の画像ファイル（オプション）",
+                                    "type": "string",
+                                    "format": "binary"
                                 },
                                 "directory": {
                                     "description": "アップロード先ディレクトリ",
@@ -2901,7 +2918,24 @@
                                     "description": "手順",
                                     "type": "array",
                                     "items": {
-                                        "$ref": "#/components/schemas/RecipeStep"
+                                        "properties": {
+                                            "instruction": {
+                                                "description": "手順",
+                                                "type": "string",
+                                                "example": "ハンバーグを作る"
+                                            },
+                                            "imageId": {
+                                                "description": "画像ID",
+                                                "type": "string",
+                                                "example": "1"
+                                            },
+                                            "order": {
+                                                "description": "並び順",
+                                                "type": "integer",
+                                                "example": 1
+                                            }
+                                        },
+                                        "type": "object"
                                     }
                                 },
                                 "memo": {

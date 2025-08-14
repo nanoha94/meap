@@ -44,9 +44,10 @@ class Recipe extends Model
             ->withPivot('meal_plan_id');
     }
 
-    public function steps()
+    public function steps(): BelongsToMany
     {
-        return $this->hasMany(RecipeStep::class);
+        return $this->belongsToMany(RecipeStep::class, 'recipe_step_mappings', 'recipe_id', 'step_id')
+            ->withPivot('order');
     }
 
     public function group(): BelongsTo
@@ -58,6 +59,7 @@ class Recipe extends Model
     {
         return $this->belongsToMany(Image::class, 'image_mappings', 'related_id', 'image_id')
             ->wherePivot('related_model', static::class)
-            ->wherePivot('image_type', 'thumbnail');
+            ->wherePivot('image_type', 'thumbnail')
+            ->orderBy('order');
     }
 }
