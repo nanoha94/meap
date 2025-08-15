@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Models\IngredientUnit;
+use App\Http\Controllers\Api\ApiController;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class MasterController extends Controller
+class MasterController extends ApiController
 {
     /**
      * @OA\Get(
@@ -29,14 +28,14 @@ class MasterController extends Controller
         $ingredientCategories = $group->ingredientCategories()->select('id', 'name', 'order')->orderBy('order', 'asc')->get();
         $ingredientUnits = $group->ingredientUnits()->select('id', 'name', 'position', 'requires_quantity', 'order')->orderBy('order', 'asc')->get();
         $courseTypes = $group->courseTypes()->select('id', 'name', 'order')->get();
-        $shopping_ategories = $group->shoppingCategories()->select('id', 'name', 'is_default', 'order')->orderBy('order', 'asc')->get();
+        $shopping_categories = $group->shoppingCategories()->select('id', 'name', 'is_default', 'order')->orderBy('order', 'asc')->get();
         $shopping_tags = $group->shoppingTags()->select('id', 'name')->get();
         $res = [
             'recipeCategories' =>  $recipeCategories,
             'ingredientCategories' => $ingredientCategories,
             'ingredientUnits' => $ingredientUnits,
             'courseTypes' => $courseTypes,
-            'shoppingCategories' => $shopping_ategories->map(function ($category) {
+            'shoppingCategories' => $shopping_categories->map(function ($category) {
                 return [
                     'id' => $category->id,
                     'name' => $category->name,
@@ -47,6 +46,6 @@ class MasterController extends Controller
             'shoppingTags' => $shopping_tags,
         ];
 
-        return response()->json($res, 200);
+        return $this->successResponse($res, 'マスターデータを取得しました。');
     }
 }

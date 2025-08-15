@@ -48,14 +48,13 @@ class NewPasswordController extends Controller
                 Password::INVALID_TOKEN => 404,
             ];
 
-            $statusCode = $statusMessages[$status] ?? 500; // それ以外は500として扱う
+            // それ以外は500として扱う
+            $statusCode = $statusMessages[$status] ?? 500;
 
-            return response()->json([
-                'message' => __($status),
-            ], $statusCode);
+            return $this->errorResponse(__($status), $statusCode);
         }
 
         App::setLocale('en');
-        return response()->json(['status' => __($status)]);
+        return $this->successResponse(null, __($status));
     }
 }

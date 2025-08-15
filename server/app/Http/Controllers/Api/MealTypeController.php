@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Models\Color;
+use App\Http\Controllers\Api\ApiController;
 use App\Models\MealType;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class MealTypeController extends Controller
+class MealTypeController extends ApiController
 {
     /**
      * @OA\Post(
@@ -34,12 +33,13 @@ class MealTypeController extends Controller
             'order' => $group->mealTypes->count(),
         ]);
 
-        return response()->json([
+        $res = [
             'id' => $ret->id,
             'name' => $ret->name,
             'colorId' => $ret->color_id,
             'order' => $ret->order,
-        ], 200);
+        ];
+        return $this->createdResponse($res, '献立種別(' . $ret->name . ')を作成しました。');
     }
 
     /**
@@ -82,7 +82,7 @@ class MealTypeController extends Controller
             ];
         });
 
-        return response()->json($ret, 200);
+        return $this->updatedResponse($ret, '献立種別を' . $types->count() . '件更新しました。');
     }
 
     /**
@@ -105,14 +105,10 @@ class MealTypeController extends Controller
         $type =  MealType::where('id', $id)->where('group_id', $group->id)->first();
 
         if (!$type) {
-            return response()->json([
-                'message' => '指定されたレコードが見つかりません。'
-            ], 404);
+            return $this->notFoundResponse('指定されたレコードが見つかりません。');
         }
         if ($type->is_default) {
-            return response()->json([
-                'message' => $type->name . 'は削除できません。'
-            ], 403);
+            return $this->errorResponse($type->name . 'は削除できません。', 403);
         }
 
         $deletedId = $type->id;
@@ -127,6 +123,6 @@ class MealTypeController extends Controller
             $remainingType->update(['order' => $index]);
         }
 
-        return response()->json(['id' => $deletedId], 200);
+        return $this->deletedResponse('献立種別(' . $type->name . ')を削除しました。');
     }
 }

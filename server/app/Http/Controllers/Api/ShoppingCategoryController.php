@@ -41,7 +41,7 @@ class ShoppingCategoryController extends ApiController
 
             return $this->indexResponse($formattedData, $formattedData->count(), '買い物カテゴリーを' . $formattedData->count() . '件取得しました。');
         } catch (Exception $e) {
-            return $this->handleException($e, '買い物カテゴリーの取得中にエラーが発生しました。');
+            return $this->handleException($e, $request, '買い物カテゴリーの取得中にエラーが発生しました。');
         }
     }
 
@@ -90,7 +90,7 @@ class ShoppingCategoryController extends ApiController
         } catch (ValidationException $e) {
             return $this->validationErrorResponse($e);
         } catch (Exception $e) {
-            return $this->handleException($e, '買い物カテゴリー（' . $validated['name'] . '）の作成中にエラーが発生しました。');
+            return $this->handleException($e, $request, '買い物カテゴリー（' . $validated['name'] . '）の作成中にエラーが発生しました。');
         }
     }
 
@@ -157,7 +157,7 @@ class ShoppingCategoryController extends ApiController
         } catch (ValidationException $e) {
             return $this->validationErrorResponse($e);
         } catch (Exception $e) {
-            return $this->handleException($e, '買い物カテゴリーの一括更新中にエラーが発生しました。');
+            return $this->handleException($e, $request, '買い物カテゴリーの一括更新中にエラーが発生しました。');
         }
     }
 
@@ -229,7 +229,7 @@ class ShoppingCategoryController extends ApiController
         } catch (ValidationException $e) {
             return $this->validationErrorResponse($e);
         } catch (Exception $e) {
-            return $this->handleException($e, '買い物カテゴリーの削除中にエラーが発生しました。');
+            return $this->handleException($e, $request, '買い物カテゴリーの削除中にエラーが発生しました。');
         }
     }
 }

@@ -6,9 +6,11 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use App\Traits\LoggingTrait;
 
 trait ApiResponse
 {
+    use LoggingTrait;
     /**
      * 成功レスポンスを返す
      */
@@ -50,11 +52,12 @@ trait ApiResponse
     /**
      * エラーレスポンスを返す
      */
-    protected function errorResponse(string $message, int $statusCode = 400, mixed $errors = null): JsonResponse
+    protected function errorResponse(string $message, int $statusCode = 400, mixed $errors = null, string $errorType = ''): JsonResponse
     {
         $response = [
             'success' => false,
             'message' => $message,
+            'error_type' => $errorType,
         ];
 
         if ($errors !== null) {
@@ -89,7 +92,7 @@ trait ApiResponse
      */
     protected function updatedResponse(mixed $data = null, string $message = '更新が完了しました。'): JsonResponse
     {
-        return $this->successResponse($data, $message, 200);
+        return $this->successResponse($data, $message);
     }
 
     /**
@@ -97,7 +100,7 @@ trait ApiResponse
      */
     protected function deletedResponse(string $message = '削除が完了しました。'): JsonResponse
     {
-        return $this->successResponse(null, $message, 200);
+        return $this->successResponse(null, $message);
     }
 
     /**
@@ -125,7 +128,7 @@ trait ApiResponse
      */
     protected function showResponse(mixed $data, string $message = ''): JsonResponse
     {
-        return $this->successResponse($data, $message, 200);
+        return $this->successResponse($data, $message);
     }
 
     /**
@@ -133,17 +136,13 @@ trait ApiResponse
      */
     protected function handleException(\Exception $e, Request $request, string $defaultMessage = 'エラーが発生しました。'): JsonResponse
     {
-        $user = $request->user();
-        $group = $user->group;
         $message = $e->getMessage() ?: $defaultMessage;
         $statusCode = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500;
 
-        Log::error('Exception:', [
-            'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString(),
-            'function' => $e->getFile() . ':' . $e->getLine(),
-            'group_id' => $group->id ?? null,
-            'user_id' => $user->id ?? null,
+        // 新しいLoggingTraitを使用してエラーログを記録
+        $this->logError(__('operations.general.exception_handling'), $e, $request, [
+            'default_message' => $defaultMessage,
+            'status_code' => $statusCode
         ]);
 
         return $this->errorResponse($message, $statusCode);

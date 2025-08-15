@@ -12,7 +12,6 @@ use App\Traits\AutoComplement;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -90,10 +89,7 @@ class RecipeController extends ApiController
             });
             return $this->indexResponse($formattedData, $formattedData->count(), 'レシピを' . $formattedData->count() . '件取得しました。');
         } catch (Exception $e) {
-            Log::error('Recipe index failed:', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
+            $this->logError(__('operations.recipe.index'), $e, $request, []);
             return $this->handleException($e, $request, 'レシピの取得に失敗しました。');
         }
     }
@@ -149,11 +145,9 @@ class RecipeController extends ApiController
         } catch (ValidationException $e) {
             return $this->validationErrorResponse($e);
         } catch (Exception $e) {
-            Log::error('Recipe store failed:', [
-                'user_id' => $request->user()->id,
-                'group_id' => $request->user()->group->id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+            $this->logError(__('operations.recipe.store'), $e, $request, [
+                'operation' => 'store',
+                'recipe_name' => $request->name ?? null
             ]);
             return $this->handleException($e, $request, 'レシピの作成に失敗しました。');
         }
@@ -182,14 +176,10 @@ class RecipeController extends ApiController
                 return $this->notFoundResponse('指定されたレコードが見つかりません。');
             }
 
-            return $this->successResponse($this->formatRecipeResponse($recipe));
+            return $this->successResponse($this->formatRecipeResponse($recipe), 'レシピ(' . $recipe->name . ')を取得しました。');
         } catch (Exception $e) {
-            Log::error('Recipe show failed:', [
-                'recipe_id' => $id,
-                'user_id' => $request->user()->id,
-                'group_id' => $request->user()->group->id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+            $this->logError(__('operations.recipe.show'), $e, $request, [
+                'recipe_id' => $id
             ]);
             return $this->handleException($e, $request, 'レシピの取得に失敗しました。');
         }
@@ -243,12 +233,8 @@ class RecipeController extends ApiController
         } catch (ValidationException $e) {
             return $this->validationErrorResponse($e);
         } catch (Exception $e) {
-            Log::error('Recipe update failed:', [
+            $this->logError(__('operations.recipe.update'), $e, $request, [
                 'recipe_id' => $id,
-                'user_id' => $request->user()->id,
-                'group_id' => $request->user()->group->id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
             ]);
             return $this->handleException($e, $request, 'レシピの更新に失敗しました。');
         }
@@ -294,12 +280,8 @@ class RecipeController extends ApiController
 
             return $this->deletedResponse('レシピ(' . $recipeName . ')を削除しました。');
         } catch (Exception $e) {
-            Log::error('Recipe destroy failed:', [
+            $this->logError(__('operations.recipe.destroy'), $e, $request, [
                 'recipe_id' => $id,
-                'user_id' => $request->user()->id,
-                'group_id' => $request->user()->group->id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
             ]);
             return $this->handleException($e, $request, 'レシピの削除に失敗しました。');
         }

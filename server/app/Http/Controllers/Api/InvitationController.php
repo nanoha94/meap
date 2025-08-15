@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\ApiController;
 use App\Models\GroupUserMapping;
 use App\Models\InvitationToken;
 use Illuminate\Http\Request;
@@ -12,7 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 
-class InvitationController extends Controller
+class InvitationController extends ApiController
 {
     /**
      * @OA\Post(
@@ -35,9 +35,13 @@ class InvitationController extends Controller
             $expiresAt = Carbon::now()->addHour(); // 現在時刻から1時間後
             // トークンをデータベースに保存
             $invitationToken = InvitationToken::createWithExpiration(auth()->id(), $expiresAt);
-            return response()->json(['token' =>  $invitationToken, 'expires_at' => $expiresAt], 201);
+            $data = [
+                'token' => $invitationToken,
+                'expires_at' => $expiresAt
+            ];
+            return $this->createdResponse($data, '招待トークンを作成しました。');
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 500);
+            return $this->handleException($e, $request, '招待トークンの作成に失敗しました。');
         }
     }
 
@@ -69,14 +73,14 @@ class InvitationController extends Controller
         // });
 
         // if (!$invitationToken) {
-        //     return response()->json(['message' => '無効なトークンです。'], 403);
+        //     return $this->errorResponse('無効なトークンです。', 403);
         // }
 
         $invitationToken = InvitationToken::all()->first(function ($record) use ($token) {
             return Hash::check($token, $record->token);
         });
 
-        return response()->json([
+        $data = [
             'token' => $token,
             'expires_at' => $invitationToken->expires_at,
             'inviter' => [
@@ -89,7 +93,8 @@ class InvitationController extends Controller
                     'height' => $invitationToken->inviter->avatar_height,
                 ]
             ]
-        ], 200);
+        ];
+        return $this->showResponse($data, '招待トークンの詳細を取得しました。');
     }
 
     /**
@@ -129,7 +134,7 @@ class InvitationController extends Controller
         });
 
         if (!$invitationToken) {
-            return response()->json(['message' => '無効なトークンです。'], 403);
+            return $this->errorResponse('無効なトークンです。', 403);
         }
 
         // ログインしているユーザーを取得
@@ -140,34 +145,27 @@ class InvitationController extends Controller
         $inviter = $invitationToken->inviter;
 
         if ($invitationToken->inviter_id === $user->id) {
-            return response()->json(['message' => '自分自身を招待することはできません。'], 403);
+            return $this->errorResponse('自分自身を招待することはできません。', 403);
         }
 
         // 招待された人がすでに同じグループにいるかチェック
         if ($currentGroup->id === $inviter->group->id) {
-            return response()->json(['message' => 'すでにグループに参加しています。'], 403);
+            return $this->errorResponse('すでにグループに参加しています。', 403);
         }
 
         if (!$request->isDelete) {
             // 所属しているグループがあるかチェック
             if ($currentGroup->group_size > 1) {
-                return response()->json([
-                    'message' => 'すでに別のグループに所属しています。',
-                    'error_type' => 'already_in_group'
-                ], 409);
+                return $this->errorResponse('すでに別のグループに所属しています。', 409, null, 'already_in_group');
             }
             // データがあるかチェック
             if ($currentGroup->shoppingItems()->exists() || $currentGroup->shoppingCategories()->where('is_default', 0)->exists()) {
-                return response()->json([
-                    'message' => 'すでに登録済みのデータがあります。',
-                    'error_type' => 'has_existing_data'
-                ], 409);
+                return $this->errorResponse('すでに登録済みのデータがあります。', 409, null, 'has_existing_data');
             }
         }
 
         // 招待された人を同じグループに追加
         $group = $inviter->group;
-        Log::info('invitation_controller.join', ['group' => $group, 'user' => $user, 'inviter' => $inviter]);
 
         // 既存のグループユーザーマッピングを削除
         $user->groupUser()->delete();
@@ -190,6 +188,6 @@ class InvitationController extends Controller
             $currentGroup->delete();
         }
 
-        return response()->json(['message' => 'グループに参加しました。'], 200);
+        return $this->successResponse(null, 'グループに参加しました。');
     }
 }

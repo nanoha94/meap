@@ -1,5 +1,6 @@
 <?php
 
+use Monolog\Formatter\NormalizerFormatter;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
@@ -63,14 +64,17 @@ return [
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
             'replace_placeholders' => true,
+            'formatter' => NormalizerFormatter::class,
         ],
 
         'daily' => [
             'driver' => 'daily',
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
-            'days' => env('LOG_DAILY_DAYS', 14),
+            'days' => env('LOG_DAILY_DAYS', 30),
             'replace_placeholders' => true,
+            'formatter' => NormalizerFormatter::class,
+            'permission' => 0664,
         ],
 
         'slack' => [
@@ -89,9 +93,19 @@ return [
             'handler_with' => [
                 'host' => env('PAPERTRAIL_URL'),
                 'port' => env('PAPERTRAIL_PORT'),
-                'connectionString' => 'tls://'.env('PAPERTRAIL_URL').':'.env('PAPERTRAIL_PORT'),
+                'connectionString' => 'tls://' . env('PAPERTRAIL_URL') . ':' . env('PAPERTRAIL_PORT'),
             ],
             'processors' => [PsrLogMessageProcessor::class],
+        ],
+
+        'error' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/error.log'),
+            'level' => env('LOG_ERROR_LEVEL', 'error'),
+            'days' => env('LOG_ERROR_DAYS', 90),
+            'replace_placeholders' => true,
+            'formatter' => NormalizerFormatter::class,
+            'permission' => 0664,
         ],
 
         'stderr' => [

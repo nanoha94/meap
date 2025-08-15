@@ -20,6 +20,6 @@ class EmailVerificationNotificationController extends Controller
 
         $request->user()->sendEmailVerificationNotification();
 
-        return response()->json(['status' => 'verification-link-sent']);
+        return $this->successResponse(null, '登録時に入力されたメールアドレス宛にメールアドレス確認リンクを再送しました');
     }
 }

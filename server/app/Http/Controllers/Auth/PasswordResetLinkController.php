@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Custom\Auth\Interfaces\CustomPasswordBroker;
 use App\Http\Controllers\Controller;
+use App\Custom\Auth\Interfaces\CustomPasswordBroker;
+use App\Http\Controllers\Auth\AuthController;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
@@ -44,11 +45,9 @@ class PasswordResetLinkController extends Controller
                 ]);
             }
 
-            return response()->json([
-                'message' => __($status),
-            ], $statusCode);
+            return $this->errorResponse(__($status), $statusCode);
         }
 
-        return response()->json(['status' => __($status)]);
+        return $this->successResponse(null, __($status));
     }
 }

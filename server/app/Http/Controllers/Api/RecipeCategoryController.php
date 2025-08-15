@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\ApiController;
 use App\Models\RecipeCategory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
-class RecipeCategoryController extends Controller
+class RecipeCategoryController extends ApiController
 {
     /**
      * @OA\Post(
@@ -33,11 +33,12 @@ class RecipeCategoryController extends Controller
             'order' => $request->order,
         ]);
 
-        return response()->json([
+        $res = [
             'id' => $ret->id,
             'name' => $ret->name,
             'order' => $ret->order,
-        ], 200);
+        ];
+        return $this->createdResponse($res, '料理カテゴリー(' . $ret->name . ')を作成しました。');
     }
 
     /**
@@ -72,20 +73,16 @@ class RecipeCategoryController extends Controller
                     'order' => $category['order']
                 ]);
                 if (!$ret) {
-                    return response()->json([
-                        'message' => '料理カテゴリー（' . $category['name'] . '）の更新に失敗しました。'
-                    ], 500);
+                    return $this->errorResponse('料理カテゴリー（' . $category['name'] . '）の更新に失敗しました。', 500);
                 }
             }
 
             // 更新後の料理カテゴリーを取得
             $categories = $group->recipeCategories()->where('group_id', $group->id)->select('id', 'name', 'order')->get();
 
-            return response()->json($categories, 200);
+            return $this->updatedResponse($categories, '料理カテゴリーを' . $categories->count() . '件更新しました。');
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => '料理カテゴリの一括更新中にエラーが発生しました。'
-            ], 500);
+            return $this->handleException($e, $request, '料理カテゴリーの一括更新中にエラーが発生しました。');
         }
     }
 
@@ -118,9 +115,7 @@ class RecipeCategoryController extends Controller
 
             if (!$category) {
                 Log::error('指定されたレコードが見つかりません。', ['function' => 'ShoppingCategoryController@bulkDestroy', 'id' => $id]);
-                return response()->json([
-                    'message' => '指定されたレコードが見つかりません。'
-                ], 404);
+                return $this->notFoundResponse('指定されたレコードが見つかりません。');
             }
 
             $deletedIds[] = [$category->id];
@@ -136,6 +131,6 @@ class RecipeCategoryController extends Controller
             $remainingCategory->update(['order' => $index]);
         }
 
-        return response()->json(['ids' => $deletedIds], 200);
+        return $this->deletedResponse('料理カテゴリーを' . count($deletedIds) . '件削除しました。');
     }
 }

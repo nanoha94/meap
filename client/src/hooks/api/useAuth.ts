@@ -142,13 +142,13 @@ export const useAuth = () => {
      * メールアドレス再送信リクエスト
      * @param setStatus ステータスを設定する関数
      */
-    const resendEmailVerification = async ({ setStatus }) => {
+    const resendEmailVerification = async ({ setMessage }) => {
         setIsLoading(true);
         await csrf();
 
         await axios
             .post('/email/verification-notification')
-            .then(response => setStatus(response.data.status))
+            .then(response => setMessage(response.data.message))
             .catch(error => {
                 console.error(error);
                 addSnackbar('error', error.response.data.message);

@@ -4,10 +4,10 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -25,13 +25,13 @@ class AuthenticatedSessionController extends Controller
      *     @OA\Response(response=422, ref="#/components/responses/ValidationErrors"),
      * )
      */
-    public function store(LoginRequest $request): Response
+    public function store(LoginRequest $request): JsonResponse
     {
         $request->authenticate();
 
         $request->session()->regenerate();
 
-        return response()->noContent();
+        return $this->successResponse(null, 'ログインに成功しました。');
     }
 
     /**
@@ -46,7 +46,7 @@ class AuthenticatedSessionController extends Controller
      *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
      * )
      */
-    public function destroy(Request $request): Response
+    public function destroy(Request $request): JsonResponse
     {
         Auth::guard('web')->logout();
 
@@ -55,7 +55,7 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerateToken();
 
         // Cookieを明示的に削除
-        $response = response()->noContent();
+        $response = $this->successResponse(null, 'ログアウトに成功しました。');
 
         // 複数のドメインとパスパターンで削除
         $domains = [config('session.domain'), null, '', '.' . parse_url(config('app.url'), PHP_URL_HOST)];

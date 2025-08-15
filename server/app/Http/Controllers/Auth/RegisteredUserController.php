@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\CourseType;
 use App\Models\Group;
 use App\Models\GroupUserMapping;
 use App\Models\User;
@@ -49,13 +48,7 @@ class RegisteredUserController extends Controller
                 'requested_email' => $request->email
             ]);
 
-            return response()->json([
-                'message' => '既にログインしています。新しいアカウントを作成するには、まずログアウトしてください。',
-                'current_user' => [
-                    'name' => Auth::user()->name,
-                    'email' => Auth::user()->email
-                ]
-            ], 409); // 409 Conflict
+            return $this->errorResponse('既にログインしています。新しいアカウントを作成するには、まずログアウトしてください。', 409);
         }
 
         $request->validate([
@@ -84,21 +77,16 @@ class RegisteredUserController extends Controller
             if ($user) {
                 event(new Registered($user));
                 Auth::login($user);
-                return response()->noContent();
+                return $this->successResponse(null, 'ユーザー登録に成功しました。');
             }
-            return response()->json([
-                'message' => 'ユーザー登録に失敗しました。'
-            ], 500);
+            return $this->errorResponse('ユーザー登録に失敗しました。', 500);
         } catch (\Throwable $e) {
             Log::error('ユーザー登録エラー', [
                 'function' => 'RegisteredUserController@store',
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'message' => 'ユーザー登録に失敗しました。',
-                'error' => $e->getMessage(),
-            ], 500);
+            return $this->errorResponse('ユーザー登録に失敗しました。', 500, $e->getMessage());
         }
     }
 }

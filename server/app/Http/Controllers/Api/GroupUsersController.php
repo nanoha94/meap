@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\ApiController;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class GroupUsersController extends Controller
+class GroupUsersController extends ApiController
 {
     /**
      * @OA\Get(
@@ -35,9 +35,6 @@ class GroupUsersController extends Controller
             ];
         });
 
-        return response()->json([
-            'data' => $users,
-            'total' => $users->count()
-        ], 200);
+        return $this->indexResponse($users, $users->count(), '同じグループのユーザーを' . $users->count() . '件取得しました。');
     }
 }

@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\ApiController;
 use App\Models\CourseType;
 use App\Models\MealPlan;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class MealPlanController extends Controller
+class MealPlanController extends ApiController
 {
     /**
      * @OA\Get(
@@ -82,7 +82,7 @@ class MealPlanController extends Controller
             })->values()
         ];
 
-        return response()->json($res, 200);
+        return $this->indexResponse($res, $meal_plans->count(), '献立を' . $meal_plans->count() . '件取得しました。');
     }
 
     /**
@@ -126,7 +126,7 @@ class MealPlanController extends Controller
             }
         }
 
-        return response()->json([
+        $res = [
             'id' => $ret->id,
             'date' => $ret->date,
             'category' => [
@@ -163,7 +163,8 @@ class MealPlanController extends Controller
                     ])
                 ];
             })->values(),
-        ], 200);
+        ];
+        return $this->createdResponse($res, '献立を作成しました。');
     }
 
     /**
@@ -185,9 +186,7 @@ class MealPlanController extends Controller
 
         $meal = MealPlan::where('id', $id)->where('group_id', $group->id)->with(['mealType', 'recipes.courseTypes', 'recipes.categories', 'recipes.ingredients'])->first();
         if (!$meal) {
-            return response()->json([
-                'message' => '指定されたレコードが見つかりません。'
-            ], 404);
+            return $this->notFoundResponse('指定されたレコードが見つかりません。');
         }
 
         $res = [
@@ -229,7 +228,7 @@ class MealPlanController extends Controller
             })->values()
         ];
 
-        return response()->json($res, 200);
+        return $this->showResponse($res, '献立を取得しました。');
     }
 
     /**
@@ -252,9 +251,7 @@ class MealPlanController extends Controller
 
         $meal =  MealPlan::where('id', $id)->where('group_id', $group->id)->first();
         if (!$meal) {
-            return response()->json([
-                'message' => '指定されたレコードが見つかりません。'
-            ], 404);
+            return $this->notFoundResponse('指定されたレコードが見つかりません。');
         }
 
         $meal->update([
@@ -284,7 +281,7 @@ class MealPlanController extends Controller
 
         $updatedItem = $group->mealPlans()->where('id', $id)->first()->select('id', 'date', 'meal_type_id')->with(['mealType', 'recipes.courseTypes', 'recipes.categories', 'recipes.ingredients'])->first();
 
-        return response()->json([
+        $res = [
             'id' => $updatedItem->id,
             'date' => $updatedItem->date,
             'category' => [
@@ -321,7 +318,8 @@ class MealPlanController extends Controller
                     ])
                 ];
             })->values(),
-        ], 200);
+        ];
+        return $this->updatedResponse($res, '献立(' . $updatedItem->date . ')を更新しました。');
     }
 
     /**
@@ -344,14 +342,11 @@ class MealPlanController extends Controller
         $meal =  MealPlan::where('id', $id)->where('group_id', $group->id)->first();
 
         if (!$meal) {
-            return response()->json([
-                'message' => '指定されたレコードが見つかりません。'
-            ], 404);
+            return $this->notFoundResponse('指定されたレコードが見つかりません。');
         }
 
-        $deletedId = $meal->id;
         $meal->delete();
 
-        return response()->json(['id' => $deletedId], 200);
+        return $this->deletedResponse('献立(' . $meal->name . ')を削除しました。');
     }
 }

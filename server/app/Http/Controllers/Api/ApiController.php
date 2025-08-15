@@ -3,8 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Traits\ApiResponse;
-use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -51,8 +49,6 @@ use Illuminate\Validation\ValidationException;
 
 abstract class ApiController extends Controller
 {
-    use ApiResponse;
-
     /**
      * ユーザーのグループを取得
      */
@@ -67,14 +63,6 @@ abstract class ApiController extends Controller
     protected function handleValidationError(ValidationException $e): JsonResponse
     {
         return $this->validationErrorResponse($e);
-    }
-
-    /**
-     * 一般的な例外をハンドリング
-     */
-    protected function handleGeneralException(Exception $e, string $defaultMessage = 'エラーが発生しました。'): JsonResponse
-    {
-        return $this->handleException($e, request(), $defaultMessage);
     }
 
     /**

@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\ApiController;
 use Illuminate\Http\Request;
 
-class ShoppingTagController extends Controller
+class ShoppingTagController extends ApiController
 {
 
     /**
@@ -30,6 +30,6 @@ class ShoppingTagController extends Controller
             'total' => $tags->count()
         ];
 
-        return response()->json($res, 200);
+        return $this->indexResponse($res, $tags->count(), '買い物タグを' . $tags->count() . '件取得しました。');
     }
 }

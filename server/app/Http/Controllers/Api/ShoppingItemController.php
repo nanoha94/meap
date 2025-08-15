@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\ApiController;
 use App\Models\ShoppingItem;
 use App\Models\ShoppingTag;
 use Illuminate\Support\Facades\Log;
@@ -12,7 +12,7 @@ use App\Traits\AutoComplement;
 use Exception;
 use Illuminate\Support\Facades\DB;
 
-class ShoppingItemController extends Controller
+class ShoppingItemController extends ApiController
 {
     use AutoComplement;
 
@@ -72,13 +72,9 @@ class ShoppingItemController extends Controller
                 ];
             }
 
-            return response()->json([
-                'data' => $res
-            ], 200);
+            return $this->indexResponse($res, $categories->count(), '買い物アイテムを' . $categories->count() . '件取得しました。');
         } catch (Exception $e) {
-            return response()->json([
-                'message' => '買い物アイテムの取得中にエラーが発生しました。'
-            ], 500);
+            return $this->handleException($e, $request, '買い物アイテムの取得中にエラーが発生しました。');
         }
     }
 
@@ -121,9 +117,7 @@ class ShoppingItemController extends Controller
             ]);
             if (!$ret) {
                 DB::rollBack();
-                return response()->json([
-                    'message' => '買い物アイテムの作成に失敗しました。'
-                ], 500);
+                return $this->errorResponse('買い物アイテムの作成に失敗しました。', 500);
             }
 
             // タグの処理
@@ -139,10 +133,10 @@ class ShoppingItemController extends Controller
                         $ret->tags()->attach(array_values($tagIds));
                     }
                 } catch (Exception $e) {
-                    Log::error('タグの処理中にエラーが発生しました。', [
+                    $this->logWarning('タグ処理', 'タグの処理中にエラーが発生しました', $request, [
                         'function' => 'ShoppingItemController@store',
-                        'error' => $e->getMessage(),
-                        'tags' => $request->tags
+                        'tags' => $request->tags,
+                        'error_message' => $e->getMessage()
                     ]);
                     // タグ処理でエラーが発生しても、アイテム作成は成功させる
                 }
@@ -153,7 +147,7 @@ class ShoppingItemController extends Controller
             // タグを含めて再取得
             $ret = $ret->fresh(['tags:id,name']);
 
-            return response()->json([
+            $res = [
                 'id' => $ret->id,
                 'categoryId' => $ret->category_id,
                 'name' => $ret->name,
@@ -166,7 +160,8 @@ class ShoppingItemController extends Controller
                         'name' => $tag->name
                     ];
                 }),
-            ], 200);
+            ];
+            return $this->createdResponse($res, '買い物アイテムを作成しました。');
         } catch (Exception $e) {
             DB::rollBack();
             Log::error('買い物アイテムの作成中にエラーが発生しました。', [
@@ -174,9 +169,7 @@ class ShoppingItemController extends Controller
                 'error' => $e->getMessage(),
                 'request' => $request->all()
             ]);
-            return response()->json([
-                'message' => '買い物アイテムの作成中にエラーが発生しました。'
-            ], 500);
+            return $this->handleException($e, $request, '買い物アイテムの作成中にエラーが発生しました。');
         }
     }
 
@@ -264,7 +257,7 @@ class ShoppingItemController extends Controller
                     ];
                 });
 
-            return response()->json($ret, 200);
+            return $this->updatedResponse($ret, '買い物アイテムを' . $ret->count() . '件更新しました。');
         } catch (Exception $e) {
             DB::rollBack();
             Log::error('買い物アイテムの一括更新中にエラーが発生しました。', [
@@ -272,9 +265,7 @@ class ShoppingItemController extends Controller
                 'error' => $e->getMessage(),
                 'request' => $request->all()
             ]);
-            return response()->json([
-                'message' => '買い物アイテムの一括更新中にエラーが発生しました。'
-            ], 500);
+            return $this->handleException($e, $request, '買い物アイテムの一括更新中にエラーが発生しました。');
         }
     }
 
@@ -301,9 +292,7 @@ class ShoppingItemController extends Controller
 
             // 空の場合はエラー
             if (empty($ids)) {
-                return response()->json([
-                    'message' => '削除するアイテムのIDを指定してください。'
-                ], 400);
+                return $this->errorResponse('削除するアイテムのIDを指定してください。', 400);
             }
 
             $deletedIds = [];
@@ -315,21 +304,16 @@ class ShoppingItemController extends Controller
                         'function' => 'ShoppingItemController@bulkDestroy',
                         'id' => $id
                     ]);
-                    return response()->json([
-                        'message' => '指定されたレコードが見つかりません。'
-                    ], 404);
+                    return $this->notFoundResponse('指定されたレコードが見つかりません。');
                 }
 
                 $deletedIds[] = $item->id;
                 $item->delete();
             }
 
-            return response()->json(['ids' => $deletedIds], 200);
+            return $this->deletedResponse('買い物アイテムを' . count($deletedIds) . '件削除しました。');
         } catch (Exception $e) {
-            Log::error('買い物アイテム削除エラー: ' . $e->getMessage());
-            return response()->json([
-                'message' => '削除処理中にエラーが発生しました。'
-            ], 500);
+            return $this->handleException($e, $request, '買い物アイテムの削除中にエラーが発生しました。');
         }
     }
 }

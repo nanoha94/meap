@@ -5,8 +5,9 @@
 このプロジェクトでは、JSON API 制御を統一するために以下の改善を行いました：
 
 1. **ApiResponse Trait** - 統一されたレスポンス形式を提供
-2. **ApiController 基底クラス** - 共通の API 機能を提供
-3. **統一されたエラーハンドリング** - 一貫性のあるエラーレスポンス
+2. **Controller 基底クラス** - 基本的なレスポンス機能を提供
+3. **ApiController 基底クラス** - API 機能が必要な場合の共通機能を提供
+4. **統一されたエラーハンドリング** - 一貫性のあるエラーレスポンス
 
 ## レスポンス形式
 
@@ -48,16 +49,24 @@
 -   `validationErrorResponse($exception)` - バリデーションエラー
 -   `handleException($e, $defaultMessage)` - 例外ハンドリング
 
+### Controller 基底クラス
+
+すべてのコントローラーで使用可能な基本的なレスポンス機能を提供します。
+
 ### ApiController 基底クラス
 
+API 機能が必要な場合のみ使用する基底クラスです：
+
 -   `getUserGroup($request)` - ユーザーのグループ取得
+-   `handleValidationError($exception)` - バリデーションエラーハンドリング
+-   `handleGeneralException($exception, $defaultMessage)` - 一般的な例外ハンドリング
 -   `notFoundResponse($message)` - 404 エラー
 -   `forbiddenResponse($message)` - 403 エラー
 -   `unauthorizedResponse($message)` - 401 エラー
 
 ## 実装例
 
-### コントローラーの実装
+### API コントローラーの実装
 
 ```php
 <?php
@@ -108,6 +117,36 @@ class ExampleController extends ApiController
 }
 ```
 
+### 認証コントローラーの実装
+
+認証関連のコントローラーは `Controller` を直接継承し、`ApiResponse` トレイトの機能を使用します。
+
+```php
+<?php
+
+namespace App\Http\Controllers\Auth;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class RegisteredUserController extends Controller
+{
+    public function store(Request $request): JsonResponse
+    {
+        // ログイン状態チェック
+        if (Auth::check()) {
+            return $this->errorResponse('既にログインしています。', 409);
+        }
+
+        // ... 処理 ...
+
+        return $this->successResponse($user, 'ユーザー登録が完了しました。');
+    }
+}
+```
+
 ## メリット
 
 1. **一貫性** - すべての API エンドポイントで統一されたレスポンス形式
@@ -115,13 +154,35 @@ class ExampleController extends ApiController
 3. **開発効率** - 共通機能の再利用
 4. **エラーハンドリング** - 統一されたエラー処理
 5. **型安全性** - JsonResponse の型指定
+6. **適切な継承** - 必要に応じて適切な基底クラスを選択
 
 ## 移行ガイド
 
 既存のコントローラーを新しい形式に移行する場合：
 
+### API 機能が必要な場合
+
 1. `Controller` を `ApiController` に変更
-2. `use ApiResponse;` を削除（基底クラスで提供）
+2. `use ApiResponse;` は不要（Controller 基底クラスで提供）
 3. `response()->json()` を適切なメソッドに変更
 4. 例外処理を `try-catch` で囲む
 5. バリデーションエラーを `ValidationException` でキャッチ
+
+### 基本的な機能のみ必要な場合
+
+1. `Controller` を継承したまま
+2. `use ApiResponse;` は不要（Controller 基底クラスで提供）
+3. `response()->json()` を適切なメソッドに変更
+4. 必要に応じて例外処理を追加
+
+## 継承関係
+
+```
+Controller (ApiResponseトレイトを含む)
+├── 認証コントローラー (RegisteredUserController, LoginController等)
+├── その他の基本コントローラー
+└── ApiController
+    └── API機能が必要なコントローラー (RecipeController, ShoppingController等)
+```
+
+この設計により、必要最小限の機能のみを継承し、コードの重複を避けることができます。
