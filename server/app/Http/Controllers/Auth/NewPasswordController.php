@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use Exception;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -51,6 +52,7 @@ class NewPasswordController extends Controller
             // それ以外は500として扱う
             $statusCode = $statusMessages[$status] ?? 500;
 
+            $this->logError(__('operations.password.reset'), new Exception(__($status)), $request);
             return $this->errorResponse(__($status), $statusCode);
         }
 

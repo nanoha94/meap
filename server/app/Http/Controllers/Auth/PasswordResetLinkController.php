@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Custom\Auth\Interfaces\CustomPasswordBroker;
 use App\Http\Controllers\Auth\AuthController;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
@@ -45,6 +46,7 @@ class PasswordResetLinkController extends Controller
                 ]);
             }
 
+            $this->logError(__('operations.password.reset_link'), new Exception(__($status)), $request);
             return $this->errorResponse(__($status), $statusCode);
         }
 

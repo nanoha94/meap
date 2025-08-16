@@ -4,9 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\ApiController;
 use App\Models\RecipeCategory;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 class RecipeCategoryController extends ApiController
 {
@@ -24,21 +25,29 @@ class RecipeCategoryController extends ApiController
      */
     public function store(Request $request): JsonResponse
     {
-        $user = $request->user();
-        $group = $user->group;
+        try {
+            $user = $request->user();
+            $group = $user->group;
 
-        $ret = RecipeCategory::create([
-            'group_id' => $group->id,
-            'name' => $request->name,
-            'order' => $request->order,
-        ]);
+            $ret = RecipeCategory::create([
+                'group_id' => $group->id,
+                'name' => $request->name,
+                'order' => $request->order,
+            ]);
 
-        $res = [
-            'id' => $ret->id,
-            'name' => $ret->name,
-            'order' => $ret->order,
-        ];
-        return $this->createdResponse($res, __('api.recipe.category_created', ['name' => $ret->name]));
+            $res = [
+                'id' => $ret->id,
+                'name' => $ret->name,
+                'order' => $ret->order,
+            ];
+            return $this->createdResponse($res, __('api.recipe.category_created', ['name' => $ret->name]));
+        } catch (ValidationException $e) {
+            $this->logError(__('operations.recipe_category.store'), $e, $request);
+            return $this->validationErrorResponse($e);
+        } catch (Exception $e) {
+            $this->logError(__('operations.recipe_category.store'), $e, $request);
+            return $this->handleException($e, $request, __('api.recipe.category_creation_failed'));
+        }
     }
 
     /**
@@ -55,17 +64,17 @@ class RecipeCategoryController extends ApiController
      */
     public function bulkUpdate(Request $request): JsonResponse
     {
-        $user = $request->user();
-        $group = $user->group;
-
-        $request->validate([
-            'data' => 'required|array',
-            'data.*.id' => 'required|string',
-            'data.*.name' => 'required|string',
-            'data.*.order' => 'required|integer',
-        ]);
-
         try {
+            $user = $request->user();
+            $group = $user->group;
+
+            $request->validate([
+                'data' => 'required|array',
+                'data.*.id' => 'required|string',
+                'data.*.name' => 'required|string',
+                'data.*.order' => 'required|integer',
+            ]);
+
             // 料理カテゴリーの一括更新
             foreach ($request->data as $category) {
                 $ret = RecipeCategory::where('id', $category['id'])->where('group_id', $group->id)->update([
@@ -73,6 +82,10 @@ class RecipeCategoryController extends ApiController
                     'order' => $category['order']
                 ]);
                 if (!$ret) {
+                    $this->logError(__('operations.recipe_category.bulk_update'), new Exception(__('api.recipe.category_update_failed')), $request, [
+                        'category_id' => $category['id'],
+                        'category_name' => $category['name']
+                    ]);
                     return $this->errorResponse(__('api.recipe.category_update_failed'), 500);
                 }
             }
@@ -81,7 +94,11 @@ class RecipeCategoryController extends ApiController
             $categories = $group->recipeCategories()->where('group_id', $group->id)->select('id', 'name', 'order')->get();
 
             return $this->updatedResponse($categories, __('api.recipe.category_updated', ['count' => $categories->count()]));
-        } catch (\Exception $e) {
+        } catch (ValidationException $e) {
+            $this->logError(__('operations.recipe_category.bulk_update'), $e, $request);
+            return $this->validationErrorResponse($e);
+        } catch (Exception $e) {
+            $this->logError(__('operations.recipe_category.bulk_update'), $e, $request);
             return $this->handleException($e, $request, __('api.recipe.category_bulk_update_failed'));
         }
     }
@@ -100,37 +117,44 @@ class RecipeCategoryController extends ApiController
      */
     public function bulkDestroy(Request $request): JsonResponse
     {
-        $user = $request->user();
-        $group = $user->group;
+        try {
+            $user = $request->user();
+            $group = $user->group;
 
-        // 入力値のバリデーション
-        $request->validate([
-            'ids' => 'required|array',
-            'ids.*' => 'required|string|max:255',
-        ]);
+            // 入力値のバリデーション
+            $request->validate([
+                'ids' => 'required|array',
+                'ids.*' => 'required|string|max:255',
+            ]);
 
-        $deletedIds = [];
-        foreach ($request->ids as $id) {
-            $category =  RecipeCategory::where('id', $id)->where('group_id', $group->id)->first();
+            $deletedIds = [];
+            foreach ($request->ids as $id) {
+                $category =  RecipeCategory::where('id', $id)->where('group_id', $group->id)->first();
 
-            if (!$category) {
-                Log::error('指定されたレコードが見つかりません。', ['function' => 'ShoppingCategoryController@bulkDestroy', 'id' => $id]);
-                return $this->notFoundResponse(__('api.general.not_found'));
+                if (!$category) {
+                    return $this->notFoundResponse(__('api.general.not_found'));
+                }
+
+                $deletedIds[] = [$category->id];
+                $category->delete();
             }
 
-            $deletedIds[] = [$category->id];
-            $category->delete();
+            // 残りのカテゴリーのorderを整理
+            $remainingCategories = RecipeCategory::where('group_id', $group->id)
+                ->orderBy('order')
+                ->get();
+
+            foreach ($remainingCategories as $index => $remainingCategory) {
+                $remainingCategory->update(['order' => $index]);
+            }
+
+            return $this->deletedResponse(__('api.recipe.category_deleted', ['count' => count($deletedIds)]));
+        } catch (ValidationException $e) {
+            $this->logError(__('operations.recipe_category.bulk_destroy'), $e, $request);
+            return $this->validationErrorResponse($e);
+        } catch (Exception $e) {
+            $this->logError(__('operations.recipe_category.bulk_destroy'), $e, $request);
+            return $this->handleException($e, $request, __('api.recipe.category_deletion_failed'));
         }
-
-        // 残りのカテゴリーのorderを整理
-        $remainingCategories = RecipeCategory::where('group_id', $category->group_id)
-            ->orderBy('order')
-            ->get();
-
-        foreach ($remainingCategories as $index => $remainingCategory) {
-            $remainingCategory->update(['order' => $index]);
-        }
-
-        return $this->deletedResponse(__('api.recipe.category_deleted', ['count' => count($deletedIds)]));
     }
 }

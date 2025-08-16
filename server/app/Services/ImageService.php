@@ -5,8 +5,8 @@ namespace App\Services;
 use App\Models\Image;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ImageService
 {
@@ -33,10 +33,15 @@ class ImageService
                 ]);
             });
         } catch (\Exception $e) {
-            Log::error('画像のアップロードと保存に失敗しました: ' . $e->getMessage(), [
-                'directory' => $directory
+            Log::error('画像アップロード・保存エラー', [
+                'operation' => 'upload_and_save_image',
+                'file_name' => $file->getClientOriginalName(),
+                'directory' => $directory,
+                'error_message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
             ]);
-            throw $e;
+            throw new \Exception(__('api.image.upload_failed') . ': ' . $e->getMessage());
         }
     }
 
@@ -75,28 +80,44 @@ class ImageService
                 return $image;
             });
         } catch (\Exception $e) {
-            Log::error('画像の更新に失敗しました: ' . $e->getMessage(), [
+            Log::error('画像更新エラー', [
+                'operation' => 'update_image',
+                'file_name' => $file->getClientOriginalName(),
+                'directory' => $directory,
                 'image_id' => $image->id,
-                'directory' => $directory
+                'error_message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
             ]);
-            throw $e;
+            throw new \Exception(__('api.image.update_failed') . ': ' . $e->getMessage());
         }
     }
 
     public function deleteImages(array $imageIds): int
     {
-        return DB::transaction(function () use ($imageIds) {
-            $images = Image::whereIn('id', $imageIds)->get();
-            foreach ($images as $image) {
-                $path = $this->getStoragePath($image->src);
-                if (Storage::disk('public')->exists($path)) {
-                    Storage::disk('public')->delete($path);
+        try {
+            return DB::transaction(function () use ($imageIds) {
+                $images = Image::whereIn('id', $imageIds)->get();
+                foreach ($images as $image) {
+                    $path = $this->getStoragePath($image->src);
+                    if (Storage::disk('public')->exists($path)) {
+                        Storage::disk('public')->delete($path);
+                    }
                 }
-            }
-            // データベースレコード一括削除
-            Image::whereIn('id', $imageIds)->delete();
-            return $images->count();
-        });
+                // データベースレコード一括削除
+                Image::whereIn('id', $imageIds)->delete();
+                return $images->count();
+            });
+        } catch (\Exception $e) {
+            Log::error('画像一括削除エラー', [
+                'operation' => 'delete_images',
+                'image_ids' => $imageIds,
+                'error_message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
+            throw new \Exception(__('api.image.bulk_deletion_failed') . ': ' . $e->getMessage());
+        }
     }
 
     /**
@@ -127,40 +148,53 @@ class ImageService
         string $directory,
         ?string $existingImageSrc = null
     ): array {
-        // 既存画像との重複チェック
-        // アップロードするファイルのサイズが0の場合は、更新しないので、既存の画像を返す
-        if ($file->getSize() === 0 || ($existingImageSrc && $this->isSameImage($file, $existingImageSrc))) {
-            // 同じ画像の場合、既存の情報を返す
-            $imageInfo = $this->getExistingImageInfo($existingImageSrc);
+        try {
+            // 既存画像との重複チェック
+            // アップロードするファイルのサイズが0の場合は、更新しないので、既存の画像を返す
+            if ($file->getSize() === 0 || ($existingImageSrc && $this->isSameImage($file, $existingImageSrc))) {
+                // 同じ画像の場合、既存の情報を返す
+                $imageInfo = $this->getExistingImageInfo($existingImageSrc);
+                return [
+                    'src' => $existingImageSrc,
+                    'width' => $imageInfo['width'],
+                    'height' => $imageInfo['height'],
+                    'is_same_image' => true // 同じ画像であることを示すフラグ
+                ];
+            }
+
+            // 既存画像を削除（新しい画像の場合のみ）
+            if ($existingImageSrc) {
+                $this->deleteImage($existingImageSrc);
+            }
+
+            // 画像サイズを取得
+            $imageInfo = getimagesize($file->getRealPath());
+            if (!$imageInfo) {
+                throw new \Exception('画像情報を取得できませんでした。');
+            }
+
+            // ファイルを保存
+            $path = $file->store($directory, 'public');
+            $src = '/storage/' . $path;
+
             return [
-                'src' => $existingImageSrc,
-                'width' => $imageInfo['width'],
-                'height' => $imageInfo['height'],
-                'is_same_image' => true // 同じ画像であることを示すフラグ
+                'src' => $src,
+                'width' => $imageInfo[0],
+                'height' => $imageInfo[1],
+                'is_same_image' => false
             ];
+        } catch (\Exception $e) {
+            Log::error('画像アップロード処理エラー', [
+                'operation' => 'upload_image',
+                'file_name' => $file->getClientOriginalName(),
+                'directory' => $directory,
+                'existing_image_src' => $existingImageSrc,
+                'error_message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
+            throw $e;
         }
-
-        // 既存画像を削除（新しい画像の場合のみ）
-        if ($existingImageSrc) {
-            $this->deleteImage($existingImageSrc);
-        }
-
-        // 画像サイズを取得
-        $imageInfo = getimagesize($file->getRealPath());
-        if (!$imageInfo) {
-            throw new \Exception('画像情報を取得できませんでした。');
-        }
-
-        // ファイルを保存
-        $path = $file->store($directory, 'public');
-        $src = '/storage/' . $path;
-
-        return [
-            'src' => $src,
-            'width' => $imageInfo[0],
-            'height' => $imageInfo[1],
-            'is_same_image' => false
-        ];
     }
 
     /**
@@ -179,12 +213,17 @@ class ImageService
             $path = $this->getStoragePath($imageSrc);
             Storage::disk('public')->delete($path);
         } catch (\Exception $e) {
-            Log::warning('画像削除に失敗しました: ' . $e->getMessage(), [
-                'image_src' => $imageSrc
+            Log::error('画像ファイル削除エラー', [
+                'operation' => 'delete_image_file',
+                'image_src' => $imageSrc,
+                'storage_path' => $this->getStoragePath($imageSrc),
+                'error_message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
             ]);
+            throw new \Exception(__('api.image.deletion_failed') . ': ' . $e->getMessage());
         }
     }
-
 
     /**
      * 新しい画像と既存の画像が同じかどうかをチェック
@@ -219,10 +258,15 @@ class ImageService
 
             return $newFileHash === $existingFileHash;
         } catch (\Exception $e) {
-            Log::warning('画像比較に失敗しました: ' . $e->getMessage(), [
-                'existing_src' => $existingImageSrc
+            Log::error('画像比較処理エラー', [
+                'operation' => 'is_same_image',
+                'new_file_name' => $newFile->getClientOriginalName(),
+                'existing_image_src' => $existingImageSrc,
+                'error_message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
             ]);
-            return false;
+            throw new \Exception(__('api.image.comparison_failed') . ': ' . $e->getMessage());
         }
     }
 
@@ -252,15 +296,15 @@ class ImageService
                 'height' => $imageInfo[1],
             ];
         } catch (\Exception $e) {
-            Log::warning('既存画像情報の取得に失敗しました: ' . $e->getMessage(), [
-                'image_src' => $imageSrc
+            Log::error('既存画像情報取得エラー', [
+                'operation' => 'get_existing_image_info',
+                'image_src' => $imageSrc,
+                'storage_path' => $this->getStoragePath($imageSrc),
+                'error_message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
             ]);
-
-            // デフォルト値を返す
-            return [
-                'width' => 300,
-                'height' => 200,
-            ];
+            throw new \Exception(__('api.image.info_get_failed') . ': ' . $e->getMessage());
         }
     }
 

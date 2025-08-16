@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Log;
 
 class VerifyEmailController extends Controller
 {
@@ -31,9 +30,7 @@ class VerifyEmailController extends Controller
                 config('app.frontend_url') . '/plan?verified=1'
             );
         } catch (\Exception $e) {
-            Log::error('Email verification error', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
+            $this->logError(__('operations.auth.email_verification'), $e, $request, [
                 'user_id' => $request->user()->id ?? 'unknown',
                 'route_params' => $request->route()->parameters()
             ]);

@@ -7,7 +7,6 @@ use App\Services\ImageService;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class ImageController extends ApiController
@@ -78,11 +77,12 @@ class ImageController extends ApiController
 
             return $this->successResponse($uploadedImages, __('api.image.uploaded', ['count' => count($uploadedImages)]));
         } catch (ValidationException $e) {
+            $this->logError(__('operations.image.upload_bulk'), $e, $request);
             return $this->validationErrorResponse($e);
         } catch (Exception $e) {
-            Log::error('Bulk image upload failed:', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+            $this->logError(__('operations.image.upload_bulk'), $e, $request, [
+                'directory' => $request->input('directory'),
+                'image_count' => count($request->file('images', []))
             ]);
             return $this->handleException($e, $request, __('api.image.upload_failed'));
         }
@@ -119,11 +119,11 @@ class ImageController extends ApiController
 
             return $this->successResponse(null, __('api.image.bulk_deleted', ['count' => $deletedCount]));
         } catch (ValidationException $e) {
+            $this->logError(__('operations.image.delete_bulk'), $e, $request);
             return $this->validationErrorResponse($e);
         } catch (Exception $e) {
-            Log::error('Bulk image delete failed:', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+            $this->logError(__('operations.image.delete_bulk'), $e, $request, [
+                'image_ids' => $request->input('image_ids')
             ]);
             return $this->handleException($e, $request, __('api.image.bulk_deletion_failed'));
         }

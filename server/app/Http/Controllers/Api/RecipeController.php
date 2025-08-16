@@ -90,7 +90,7 @@ class RecipeController extends ApiController
             return $this->indexResponse($formattedData, $formattedData->count(), __('api.recipe.list_retrieved', ['count' => $formattedData->count()]));
         } catch (Exception $e) {
             $this->logError(__('operations.recipe.index'), $e, $request, []);
-            return $this->handleException($e, $request, __('api.recipe.retrieval_failed'));
+            return $this->handleException($e, $request, __('api.recipe.get_failed'));
         }
     }
 
@@ -143,12 +143,10 @@ class RecipeController extends ApiController
 
             return $this->successResponse($response, __('api.recipe.created', ['name' => $request->name]));
         } catch (ValidationException $e) {
+            $this->logError(__('operations.recipe.store'), $e, $request);
             return $this->validationErrorResponse($e);
         } catch (Exception $e) {
-            $this->logError(__('operations.recipe.store'), $e, $request, [
-                'operation' => 'store',
-                'recipe_name' => $request->name ?? null
-            ]);
+            $this->logError(__('operations.recipe.store'), $e, $request);
             return $this->handleException($e, $request, __('api.recipe.creation_failed'));
         }
     }
@@ -181,7 +179,7 @@ class RecipeController extends ApiController
             $this->logError(__('operations.recipe.show'), $e, $request, [
                 'recipe_id' => $id
             ]);
-            return $this->handleException($e, $request, __('api.recipe.retrieval_failed'));
+            return $this->handleException($e, $request, __('api.recipe.get_failed'));
         }
     }
 
@@ -231,6 +229,7 @@ class RecipeController extends ApiController
 
             return $this->updatedResponse($response, __('api.recipe.updated', ['name' => $request->name]));
         } catch (ValidationException $e) {
+            $this->logError(__('operations.recipe.update'), $e, $request);
             return $this->validationErrorResponse($e);
         } catch (Exception $e) {
             $this->logError(__('operations.recipe.update'), $e, $request, [
@@ -348,8 +347,12 @@ class RecipeController extends ApiController
         // サムネイル画像を紐づけ
         $image = Image::find($thumbnailId);
         if (!$image) {
-            throw new Exception(__('api.image.thumbnail_not_found'));
+            // 例外をスローしてトランザクションをロールバック
+            throw new Exception(__('api.recipe.thumbnail_not_found', [
+                'thumbnail_id' => $thumbnailId
+            ]));
         }
+
         // レシピとサムネイルを紐づけ
         $recipe->thumbnails()->attach($image->id, [
             'group_id' => $recipe->group_id,

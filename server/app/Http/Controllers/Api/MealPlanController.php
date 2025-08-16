@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Api\ApiController;
 use App\Models\CourseType;
 use App\Models\MealPlan;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -23,66 +24,71 @@ class MealPlanController extends ApiController
      */
     public function index(Request $request): JsonResponse
     {
-        $user = $request->user();
-        $group = $user->group;
+        try {
+            $user = $request->user();
+            $group = $user->group;
 
-        // TODO: 月別に取得できるようにする
-        $meal_plans = $group->mealPlans()
-            ->select('id', 'date', 'meal_type_id')
-            ->with(['mealType', 'recipes.courseTypes', 'recipes.categories', 'recipes.ingredients'])
-            ->get()
-            ->groupBy('date')
-            ->values();
+            // TODO: 月別に取得できるようにする
+            $meal_plans = $group->mealPlans()
+                ->select('id', 'date', 'meal_type_id')
+                ->with(['mealType', 'recipes.courseTypes', 'recipes.categories', 'recipes.ingredients'])
+                ->get()
+                ->groupBy('date')
+                ->values();
 
-        $res = [
-            'mealPlans' => $meal_plans->map(function ($dateMeals, $date) {
-                return [
-                    'date' => $date,
-                    'mealPlans' => $dateMeals->map(function ($mealPlan) {
-                        return [
-                            'id' => $mealPlan->id,
-                            'date' => $mealPlan->date,
-                            'category' => [
-                                "id" => $mealPlan->mealType->id,
-                                "name" => $mealPlan->mealType->name,
-                                "colorId" => $mealPlan->mealType->color_id,
-                            ],
-                            'menu' => $mealPlan->recipes->groupBy('pivot.course_type_id')->map(function ($recipes, $courseTypeId) {
-                                $courseType = CourseType::find($courseTypeId);
-                                return [
-                                    'courseType' => [
-                                        'id' => $courseType->id,
-                                        'name' => $courseType->name
-                                    ],
-                                    'recipes' => $recipes->map(fn($recipe) => [
-                                        'id' => $recipe->id,
-                                        'name' => $recipe->name,
-                                        'thumbnailUrl' => $recipe->thumbnail_url,
-                                        'url' => $recipe->url,
-                                        'recipe' => $recipe->recipe,
-                                        'memo' => $recipe->memo,
-                                        'categories' => $recipe->categories->map(fn($category) => [
-                                            'id' => $category->id,
-                                            'name' => $category->name,
-                                            'order' => $category->order
-                                        ]),
-                                        'ingredients' => $recipe->ingredients->map(fn($ingredient) => [
-                                            'id' => $ingredient->id,
-                                            'name' => $ingredient->name,
-                                            'quantity' => $ingredient->pivot->quantity,
-                                            'unitId' => $ingredient->pivot->unit_id,
-                                            'order' => $ingredient->pivot->order
+            $res = [
+                'mealPlans' => $meal_plans->map(function ($dateMeals, $date) {
+                    return [
+                        'date' => $date,
+                        'mealPlans' => $dateMeals->map(function ($mealPlan) {
+                            return [
+                                'id' => $mealPlan->id,
+                                'date' => $mealPlan->date,
+                                'category' => [
+                                    "id" => $mealPlan->mealType->id,
+                                    "name" => $mealPlan->mealType->name,
+                                    "colorId" => $mealPlan->mealType->color_id,
+                                ],
+                                'menu' => $mealPlan->recipes->groupBy('pivot.course_type_id')->map(function ($recipes, $courseTypeId) {
+                                    $courseType = CourseType::find($courseTypeId);
+                                    return [
+                                        'courseType' => [
+                                            'id' => $courseType->id,
+                                            'name' => $courseType->name
+                                        ],
+                                        'recipes' => $recipes->map(fn($recipe) => [
+                                            'id' => $recipe->id,
+                                            'name' => $recipe->name,
+                                            'thumbnailUrl' => $recipe->thumbnail_url,
+                                            'url' => $recipe->url,
+                                            'recipe' => $recipe->recipe,
+                                            'memo' => $recipe->memo,
+                                            'categories' => $recipe->categories->map(fn($category) => [
+                                                'id' => $category->id,
+                                                'name' => $category->name,
+                                                'order' => $category->order
+                                            ]),
+                                            'ingredients' => $recipe->ingredients->map(fn($ingredient) => [
+                                                'id' => $ingredient->id,
+                                                'name' => $ingredient->name,
+                                                'quantity' => $ingredient->pivot->quantity,
+                                                'unitId' => $ingredient->pivot->unit_id,
+                                                'order' => $ingredient->pivot->order
+                                            ])
                                         ])
-                                    ])
-                                ];
-                            })->values()
-                        ];
-                    })
-                ];
-            })->values()
-        ];
+                                    ];
+                                })->values()
+                            ];
+                        })
+                    ];
+                })->values()
+            ];
 
-        return $this->indexResponse($res, $meal_plans->count(), __('api.meal_plan.list_retrieved', ['count' => $meal_plans->count()]));
+            return $this->indexResponse($res, $meal_plans->count(), __('api.meal_plan.list_retrieved', ['count' => $meal_plans->count()]));
+        } catch (Exception $e) {
+            $this->logError(__('operations.meal_plan.index'), $e, $request, []);
+            return $this->handleException($e, $request, __('api.meal_plan.get_failed'));
+        }
     }
 
     /**
@@ -100,71 +106,76 @@ class MealPlanController extends ApiController
      */
     public function store(Request $request): JsonResponse
     {
-        $user = $request->user();
-        $group = $user->group;
+        try {
+            $user = $request->user();
+            $group = $user->group;
 
-        $ret = MealPlan::create([
-            'group_id' => $group->id,
-            'meal_type_id' => $request->mealTypeId,
-            'date' => $request->date,
-        ]);
+            $ret = MealPlan::create([
+                'group_id' => $group->id,
+                'meal_type_id' => $request->mealTypeId,
+                'date' => $request->date,
+            ]);
 
-        // 料理を紐づけ
-        if (!empty($request->menu)) {
-            foreach ($request->menu as $item) {
-                if (!isset($item['recipeIds'])) {
-                    continue;
+            // 料理を紐づけ
+            if (!empty($request->menu)) {
+                foreach ($request->menu as $item) {
+                    if (!isset($item['recipeIds'])) {
+                        continue;
+                    }
+                    $data = collect($item['recipeIds'])->unique()->map(function ($recipeId) use ($ret, $item) {
+                        return [
+                            'meal_plan_id' => $ret->id,
+                            'recipe_id' => $recipeId,
+                            'course_type_id' => $item['courseTypeId']
+                        ];
+                    })->toArray();
+                    $ret->recipes()->attach($data);
                 }
-                $data = collect($item['recipeIds'])->unique()->map(function ($recipeId) use ($ret, $item) {
-                    return [
-                        'meal_plan_id' => $ret->id,
-                        'recipe_id' => $recipeId,
-                        'course_type_id' => $item['courseTypeId']
-                    ];
-                })->toArray();
-                $ret->recipes()->attach($data);
             }
-        }
 
-        $res = [
-            'id' => $ret->id,
-            'date' => $ret->date,
-            'category' => [
-                "id" => $ret->mealType->id,
-                "name" => $ret->mealType->name,
-                "colorId" => $ret->mealType->color_id,
-            ],
-            'menu' => $ret->recipes->groupBy('pivot.course_type_id')->map(function ($recipes, $courseTypeId) {
-                $courseType = CourseType::find($courseTypeId);
-                return [
-                    'courseType' => [
-                        "id" => $courseType->id,
-                        "name" => $courseType->name
-                    ],
-                    'recipes' => $recipes->map(fn($recipe) => [
-                        'id' => $recipe->id,
-                        'name' => $recipe->name,
-                        'thumbnailUrl' => $recipe->thumbnail_url,
-                        'url' => $recipe->url,
-                        'recipe' => $recipe->recipe,
-                        'memo' => $recipe->memo,
-                        'categories' => $recipe->categories->map(fn($category) => [
-                            'id' => $category->id,
-                            'name' => $category->name,
-                            'order' => $category->order
-                        ]),
-                        'ingredients' => $recipe->ingredients->map(fn($ingredient) => [
-                            'id' => $ingredient->id,
-                            'name' => $ingredient->name,
-                            'quantity' => $ingredient->pivot->quantity,
-                            'unitId' => $ingredient->pivot->unit_id,
-                            'order' => $ingredient->pivot->order
+            $res = [
+                'id' => $ret->id,
+                'date' => $ret->date,
+                'category' => [
+                    "id" => $ret->mealType->id,
+                    "name" => $ret->mealType->name,
+                    "colorId" => $ret->mealType->color_id,
+                ],
+                'menu' => $ret->recipes->groupBy('pivot.course_type_id')->map(function ($recipes, $courseTypeId) {
+                    $courseType = CourseType::find($courseTypeId);
+                    return [
+                        'courseType' => [
+                            "id" => $courseType->id,
+                            "name" => $courseType->name
+                        ],
+                        'recipes' => $recipes->map(fn($recipe) => [
+                            'id' => $recipe->id,
+                            'name' => $recipe->name,
+                            'thumbnailUrl' => $recipe->thumbnail_url,
+                            'url' => $recipe->url,
+                            'recipe' => $recipe->recipe,
+                            'memo' => $recipe->memo,
+                            'categories' => $recipe->categories->map(fn($category) => [
+                                'id' => $category->id,
+                                'name' => $category->name,
+                                'order' => $category->order
+                            ]),
+                            'ingredients' => $recipe->ingredients->map(fn($ingredient) => [
+                                'id' => $ingredient->id,
+                                'name' => $ingredient->name,
+                                'quantity' => $ingredient->pivot->quantity,
+                                'unitId' => $ingredient->pivot->unit_id,
+                                'order' => $ingredient->pivot->order
+                            ])
                         ])
-                    ])
-                ];
-            })->values(),
-        ];
-        return $this->createdResponse($res, __('api.meal_plan.created', ['date' => $res['date']]));
+                    ];
+                })->values(),
+            ];
+            return $this->createdResponse($res, __('api.meal_plan.created', ['date' => $res['date']]));
+        } catch (Exception $e) {
+            $this->logError(__('operations.meal_plan.store'), $e, $request);
+            return $this->handleException($e, $request, __('api.meal_plan.creation_failed'));
+        }
     }
 
     /**
@@ -181,54 +192,61 @@ class MealPlanController extends ApiController
      */
     public function show(Request $request, string $id): JsonResponse
     {
-        $user = $request->user();
-        $group = $user->group;
+        try {
+            $user = $request->user();
+            $group = $user->group;
 
-        $meal = MealPlan::where('id', $id)->where('group_id', $group->id)->with(['mealType', 'recipes.courseTypes', 'recipes.categories', 'recipes.ingredients'])->first();
-        if (!$meal) {
-            return $this->notFoundResponse(__('api.meal_plan.not_found'));
-        }
+            $meal = MealPlan::where('id', $id)->where('group_id', $group->id)->with(['mealType', 'recipes.courseTypes', 'recipes.categories', 'recipes.ingredients'])->first();
+            if (!$meal) {
+                return $this->notFoundResponse(__('api.meal_plan.not_found'));
+            }
 
-        $res = [
-            'id' => $meal->id,
-            'date' => $meal->date,
-            'category' => [
-                "id" => $meal->mealType->id,
-                "name" => $meal->mealType->name,
-                "colorId" => $meal->mealType->color_id,
-            ],
-            'menu' => $meal->recipes->groupBy('pivot.course_type_id')->map(function ($recipes, $courseTypeId) {
-                $courseType = CourseType::find($courseTypeId);
-                return [
-                    'courseType' => [
-                        'id' => $courseType->id,
-                        'name' => $courseType->name
-                    ],
-                    'recipes' => $recipes->map(fn($recipe) => [
-                        'id' => $recipe->id,
-                        'name' => $recipe->name,
-                        'thumbnailUrl' => $recipe->thumbnail_url,
-                        'url' => $recipe->url,
-                        'recipe' => $recipe->recipe,
-                        'memo' => $recipe->memo,
-                        'categories' => $recipe->categories->map(fn($category) => [
-                            'id' => $category->id,
-                            'name' => $category->name,
-                            'order' => $category->order
-                        ]),
-                        'ingredients' => $recipe->ingredients->map(fn($ingredient) => [
-                            'id' => $ingredient->id,
-                            'name' => $ingredient->name,
-                            'quantity' => $ingredient->pivot->quantity,
-                            'unitId' => $ingredient->pivot->unit_id,
-                            'order' => $ingredient->pivot->order
+            $res = [
+                'id' => $meal->id,
+                'date' => $meal->date,
+                'category' => [
+                    "id" => $meal->mealType->id,
+                    "name" => $meal->mealType->name,
+                    "colorId" => $meal->mealType->color_id,
+                ],
+                'menu' => $meal->recipes->groupBy('pivot.course_type_id')->map(function ($recipes, $courseTypeId) {
+                    $courseType = CourseType::find($courseTypeId);
+                    return [
+                        'courseType' => [
+                            'id' => $courseType->id,
+                            'name' => $courseType->name
+                        ],
+                        'recipes' => $recipes->map(fn($recipe) => [
+                            'id' => $recipe->id,
+                            'name' => $recipe->name,
+                            'thumbnailUrl' => $recipe->thumbnail_url,
+                            'url' => $recipe->url,
+                            'recipe' => $recipe->recipe,
+                            'memo' => $recipe->memo,
+                            'categories' => $recipe->categories->map(fn($category) => [
+                                'id' => $category->id,
+                                'name' => $category->name,
+                                'order' => $category->order
+                            ]),
+                            'ingredients' => $recipe->ingredients->map(fn($ingredient) => [
+                                'id' => $ingredient->id,
+                                'name' => $ingredient->name,
+                                'quantity' => $ingredient->pivot->quantity,
+                                'unitId' => $ingredient->pivot->unit_id,
+                                'order' => $ingredient->pivot->order
+                            ])
                         ])
-                    ])
-                ];
-            })->values()
-        ];
+                    ];
+                })->values()
+            ];
 
-        return $this->showResponse($res, __('api.meal_plan.retrieved', ['date' => $meal->date]));
+            return $this->showResponse($res, __('api.meal_plan.retrieved', ['date' => $meal->date]));
+        } catch (Exception $e) {
+            $this->logError(__('operations.meal_plan.show'), $e, $request, [
+                'meal_plan_id' => $id
+            ]);
+            return $this->handleException($e, $request, __('api.meal_plan.get_failed'));
+        }
     }
 
     /**
@@ -246,80 +264,87 @@ class MealPlanController extends ApiController
      */
     public function update(Request $request, string $id): JsonResponse
     {
-        $user = $request->user();
-        $group = $user->group;
+        try {
+            $user = $request->user();
+            $group = $user->group;
 
-        $meal =  MealPlan::where('id', $id)->where('group_id', $group->id)->first();
-        if (!$meal) {
-            return $this->notFoundResponse(__('api.meal_plan.not_found'));
-        }
-
-        $meal->update([
-            'group_id' => $group->id,
-            'meal_type_id' => $request->mealTypeId,
-            'date' => $request->date,
-        ]);
-
-        // 料理更新
-        if (!empty($request->menu)) {
-            foreach ($request->menu as $item) {
-                if (!isset($item['recipeIds'])) {
-                    continue;
-                }
-                $data = collect($item['recipeIds'])
-                    ->unique()
-                    ->map(function ($recipeId) use ($meal, $item) {
-                        return [
-                            'meal_plan_id' => $meal->id,
-                            'recipe_id' => $recipeId,
-                            'course_type_id' => $item['courseTypeId']
-                        ];
-                    })->toArray();
-                $meal->recipes()->sync($data);
+            $meal =  MealPlan::where('id', $id)->where('group_id', $group->id)->first();
+            if (!$meal) {
+                return $this->notFoundResponse(__('api.meal_plan.not_found'));
             }
-        }
 
-        $updatedItem = $group->mealPlans()->where('id', $id)->first()->select('id', 'date', 'meal_type_id')->with(['mealType', 'recipes.courseTypes', 'recipes.categories', 'recipes.ingredients'])->first();
+            $meal->update([
+                'group_id' => $group->id,
+                'meal_type_id' => $request->mealTypeId,
+                'date' => $request->date,
+            ]);
 
-        $res = [
-            'id' => $updatedItem->id,
-            'date' => $updatedItem->date,
-            'category' => [
-                "id" => $updatedItem->mealType->id,
-                "name" => $updatedItem->mealType->name,
-                "colorId" => $updatedItem->mealType->color_id,
-            ],
-            'menu' => $updatedItem->recipes->groupBy('pivot.course_type_id')->map(function ($recipes, $courseTypeId) {
-                $courseType = CourseType::find($courseTypeId);
-                return [
-                    'courseType' => [
-                        "id" => $courseType->id,
-                        "name" => $courseType->name
-                    ],
-                    'recipes' => $recipes->map(fn($recipe) => [
-                        'id' => $recipe->id,
-                        'name' => $recipe->name,
-                        'thumbnailUrl' => $recipe->thumbnail_url,
-                        'url' => $recipe->url,
-                        'recipe' => $recipe->recipe,
-                        'memo' => $recipe->memo,
-                        'categories' => $recipe->categories->map(fn($category) => [
-                            'id' => $category->id,
-                            'name' => $category->name,
-                            'order' => $category->order
-                        ]),
-                        'ingredients' => $recipe->ingredients->map(fn($ingredient) => [
-                            'id' => $ingredient->id,
-                            'name' => $ingredient->name,
-                            'quantity' => $ingredient->pivot->quantity,
-                            'unitId' => $ingredient->pivot->unit_id,
-                            'order' => $ingredient->pivot->order
+            // 料理更新
+            if (!empty($request->menu)) {
+                foreach ($request->menu as $item) {
+                    if (!isset($item['recipeIds'])) {
+                        continue;
+                    }
+                    $data = collect($item['recipeIds'])
+                        ->unique()
+                        ->map(function ($recipeId) use ($meal, $item) {
+                            return [
+                                'meal_plan_id' => $meal->id,
+                                'recipe_id' => $recipeId,
+                                'course_type_id' => $item['courseTypeId']
+                            ];
+                        })->toArray();
+                    $meal->recipes()->sync($data);
+                }
+            }
+
+            $updatedItem = $group->mealPlans()->where('id', $id)->first()->select('id', 'date', 'meal_type_id')->with(['mealType', 'recipes.courseTypes', 'recipes.categories', 'recipes.ingredients'])->first();
+
+            $res = [
+                'id' => $updatedItem->id,
+                'date' => $updatedItem->date,
+                'category' => [
+                    "id" => $updatedItem->mealType->id,
+                    "name" => $updatedItem->mealType->name,
+                    "colorId" => $updatedItem->mealType->color_id,
+                ],
+                'menu' => $updatedItem->recipes->groupBy('pivot.course_type_id')->map(function ($recipes, $courseTypeId) {
+                    $courseType = CourseType::find($courseTypeId);
+                    return [
+                        'courseType' => [
+                            "id" => $courseType->id,
+                            "name" => $courseType->name
+                        ],
+                        'recipes' => $recipes->map(fn($recipe) => [
+                            'id' => $recipe->id,
+                            'name' => $recipe->name,
+                            'thumbnailUrl' => $recipe->thumbnail_url,
+                            'url' => $recipe->url,
+                            'recipe' => $recipe->recipe,
+                            'memo' => $recipe->memo,
+                            'categories' => $recipe->categories->map(fn($category) => [
+                                'id' => $category->id,
+                                'name' => $category->name,
+                                'order' => $category->order
+                            ]),
+                            'ingredients' => $recipe->ingredients->map(fn($ingredient) => [
+                                'id' => $ingredient->id,
+                                'name' => $ingredient->name,
+                                'quantity' => $ingredient->pivot->quantity,
+                                'unitId' => $ingredient->pivot->unit_id,
+                                'order' => $ingredient->pivot->order
+                            ])
                         ])
-                    ])
-                ];
-            })->values(),
-        ];
-        return $this->updatedResponse($res, __('api.meal_plan.updated', ['date' => $updatedItem->date]));
+                    ];
+                })->values(),
+            ];
+            return $this->updatedResponse($res, __('api.meal_plan.updated', ['date' => $updatedItem->date]));
+        } catch (Exception $e) {
+            $this->logError(__('operations.meal_plan.update'), $e, $request, [
+                'meal_plan_id' => $id
+            ]);
+            return $this->handleException($e, $request, __('api.meal_plan.update_failed'));
+        }
     }
 
     /**
@@ -336,17 +361,24 @@ class MealPlanController extends ApiController
      */
     public function destroy(Request $request, string $id): JsonResponse
     {
-        $user = $request->user();
-        $group = $user->group;
+        try {
+            $user = $request->user();
+            $group = $user->group;
 
-        $meal =  MealPlan::where('id', $id)->where('group_id', $group->id)->first();
+            $meal =  MealPlan::where('id', $id)->where('group_id', $group->id)->first();
 
-        if (!$meal) {
-            return $this->notFoundResponse(__('api.meal_plan.not_found'));
+            if (!$meal) {
+                return $this->notFoundResponse(__('api.meal_plan.not_found'));
+            }
+
+            $meal->delete();
+
+            return $this->deletedResponse(__('api.meal_plan.deleted', ['date' => $meal->date]));
+        } catch (Exception $e) {
+            $this->logError(__('operations.meal_plan.destroy'), $e, $request, [
+                'meal_plan_id' => $id
+            ]);
+            return $this->handleException($e, $request, __('api.meal_plan.deletion_failed'));
         }
-
-        $meal->delete();
-
-        return $this->deletedResponse(__('api.meal_plan.deleted', ['date' => $meal->date]));
     }
 }

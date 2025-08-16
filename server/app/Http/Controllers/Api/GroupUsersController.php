@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\ApiController;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -22,20 +23,25 @@ class GroupUsersController extends ApiController
      */
     public function index(Request $request): JsonResponse
     {
-        // 同じグループに属するユーザーデータを取得
-        $users = $request->user()->group->users->map(function ($user) {
-            return [
-                'name' => $user->name,
-                'language' => $user->language,
-                'avatar' => [
-                    'seed' => $user->avatar_seed,
-                    'url' => $user->avatar_url,
-                    'width' => $user->avatar_width,
-                    'height' => $user->avatar_height,
-                ],
-            ];
-        });
+        try {
+            // 同じグループに属するユーザーデータを取得
+            $users = $request->user()->group->users->map(function ($user) {
+                return [
+                    'name' => $user->name,
+                    'language' => $user->language,
+                    'avatar' => [
+                        'seed' => $user->avatar_seed,
+                        'url' => $user->avatar_url,
+                        'width' => $user->avatar_width,
+                        'height' => $user->avatar_height,
+                    ],
+                ];
+            });
 
-        return $this->indexResponse($users, $users->count(), __('api.users.list_retrieved', ['count' => $users->count()]));
+            return $this->indexResponse($users, $users->count(), __('api.users.list_retrieved', ['count' => $users->count()]));
+        } catch (Exception $e) {
+            $this->logError(__('operations.users.index'), $e, $request);
+            return $this->handleException($e, $request, __('api.users.get_failed'));
+        }
     }
 }

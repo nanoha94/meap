@@ -71,6 +71,23 @@ trait LoggingTrait
     }
 
     /**
+     * 統一された警告ログを記録
+     *
+     * @param string $operation 実行中の操作
+     * @param string $message 警告メッセージ
+     * @param Request $request リクエストインスタンス
+     * @param array $additionalContext 追加のコンテキスト情報
+     */
+    protected function logWarning(
+        string $operation,
+        string $message,
+        Request $request,
+        array $additionalContext = []
+    ): void {
+        $this->logMessage('warning', $operation, $message, $request, $additionalContext);
+    }
+
+    /**
      * 機密情報をフィルタリング
      *
      * @param array $context ログコンテキスト

@@ -32,7 +32,7 @@ class InvitationToken extends Model
         return Str::random(32);
     }
 
-    public static function createWithExpiration($inviterId,  $expiresAt): string
+    public static function createWithExpiration($inviterId,  $expiresAt): ?string
     {
         $maxAttempts = 5; // 最大試行回数
         $attempt = 0;
@@ -43,7 +43,8 @@ class InvitationToken extends Model
             $token = self::generateToken();
 
             if ($attempt >= $maxAttempts) {
-                throw new Exception('トークン生成に失敗しました。');
+                // 最大試行回数に達した場合はnullを返す
+                return null;
             }
         } while (InvitationToken::where('token', $token)->exists());
 

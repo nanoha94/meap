@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Group;
 use App\Models\GroupUserMapping;
 use App\Models\User;
+use Exception;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -42,12 +43,7 @@ class RegisteredUserController extends Controller
     {
         // ログイン状態をチェック
         if (Auth::check()) {
-            Log::info('ログイン中のユーザーが登録を試行', [
-                'user_id' => Auth::id(),
-                'email' => Auth::user()->email,
-                'requested_email' => $request->email
-            ]);
-
+            $this->logError(__('operations.auth.registration'), new Exception(__('api.auth.already_logged_in')), $request);
             return $this->errorResponse(__('api.auth.already_logged_in'), 409);
         }
 
@@ -79,13 +75,10 @@ class RegisteredUserController extends Controller
                 Auth::login($user);
                 return $this->successResponse(null, __('api.auth.registration_success'));
             }
+            $this->logError(__('operations.auth.registration'), new Exception(__('api.auth.registration_failed')), $request);
             return $this->errorResponse(__('api.auth.registration_failed'), 500);
         } catch (\Throwable $e) {
-            Log::error('ユーザー登録エラー', [
-                'function' => 'RegisteredUserController@store',
-                'error' => $e->getMessage(),
-            ]);
-
+            $this->logError(__('operations.auth.registration'), $e, $request);
             return $this->errorResponse(__('api.auth.registration_failed'), 500, $e->getMessage());
         }
     }

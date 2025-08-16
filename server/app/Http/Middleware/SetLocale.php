@@ -17,14 +17,6 @@ class SetLocale
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // より目立つログ出力でテスト
-        Log::error('=== SETLOCALE MIDDLEWARE EXECUTED ===', [
-            'url' => $request->url(),
-            'method' => $request->method(),
-            'user' => $request->user() ? 'authenticated' : 'guest',
-            'timestamp' => now()->toISOString()
-        ]);
-
         // 認証済みユーザーの場合、ユーザーの言語設定を優先
         if ($request->user()) {
             LocalizationHelper::setLocaleFromUser($request->user());

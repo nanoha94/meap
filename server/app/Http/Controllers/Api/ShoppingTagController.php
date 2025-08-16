@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\ApiController;
+use Exception;
 use Illuminate\Http\Request;
 
 class ShoppingTagController extends ApiController
@@ -21,15 +22,20 @@ class ShoppingTagController extends ApiController
      */
     public function index(Request $request)
     {
-        $user = $request->user();
-        $group = $user->group;
+        try {
+            $user = $request->user();
+            $group = $user->group;
 
-        $tags = $group->shoppingTags()->select('id', 'name')->get();
-        $res = [
-            'tags' => $tags,
-            'total' => $tags->count()
-        ];
+            $tags = $group->shoppingTags()->select('id', 'name')->get();
+            $res = [
+                'tags' => $tags,
+                'total' => $tags->count()
+            ];
 
-        return $this->indexResponse($res, $tags->count(), __('api.shopping_tag.list_retrieved', ['count' => $tags->count()]));
+            return $this->indexResponse($res, $tags->count(), __('api.shopping_tag.list_retrieved', ['count' => $tags->count()]));
+        } catch (Exception $e) {
+            $this->logError(__('operations.shopping_tag.index'), $e, $request);
+            return $this->handleException($e, $request, __('api.shopping_tag.get_failed'));
+        }
     }
 }

@@ -3,7 +3,6 @@
 namespace App\Helpers;
 
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Log;
 
 class LocalizationHelper
 {
@@ -20,7 +19,6 @@ class LocalizationHelper
      */
     public static function setLocale(string $locale): void
     {
-        Log::info('setLocale', ['locale' => $locale]);
         App::setLocale($locale);
     }
 
@@ -55,7 +53,6 @@ class LocalizationHelper
     {
         if ($user && $user->language) {
             $locale = $user->language;
-            Log::info('setLocaleFromUser', ['locale' => $locale]);
             if (self::isLocaleSupported($locale)) {
                 self::setLocale($locale);
             }

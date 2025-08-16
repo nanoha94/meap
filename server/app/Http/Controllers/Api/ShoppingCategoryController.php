@@ -7,7 +7,6 @@ use App\Models\ShoppingCategory;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class ShoppingCategoryController extends ApiController
@@ -41,7 +40,8 @@ class ShoppingCategoryController extends ApiController
 
             return $this->indexResponse($formattedData, $formattedData->count(), __('api.shopping.category_list_retrieved', ['count' => $formattedData->count()]));
         } catch (Exception $e) {
-            return $this->handleException($e, $request, __('api.shopping.category_retrieval_failed'));
+            $this->logError(__('operations.shopping_category.index'), $e, $request, []);
+            return $this->handleException($e, $request, __('api.shopping.category_get_failed'));
         }
     }
 
@@ -76,7 +76,8 @@ class ShoppingCategoryController extends ApiController
                 'order' => $validated['order'],
             ]);
             if (!$category) {
-                throw new Exception(__('api.shopping.category_creation_failed'));
+                $this->logError(__('operations.shopping_category.store'), new Exception(__('api.shopping.category_creation_failed')), $request);
+                return $this->errorResponse(__('api.shopping.category_creation_failed'), 500);
             }
 
             $data = [
@@ -88,8 +89,10 @@ class ShoppingCategoryController extends ApiController
 
             return $this->createdResponse($data, __('api.shopping.category_created', ['name' => $validated['name']]));
         } catch (ValidationException $e) {
+            $this->logError(__('operations.shopping_category.store'), $e, $request);
             return $this->validationErrorResponse($e);
         } catch (Exception $e) {
+            $this->logError(__('operations.shopping_category.store'), $e, $request);
             return $this->handleException($e, $request, __('api.shopping.category_creation_failed'));
         }
     }
@@ -130,7 +133,12 @@ class ShoppingCategoryController extends ApiController
                     'order' => $category['order']
                 ]);
                 if (!$ret) {
-                    throw new Exception(__('api.shopping.category_update_failed'));
+                    $this->logWarning(__('operations.shopping_category.bulk_update'), __('api.shopping.category_update_failed'), $request, [
+                        'category_id' => $category['id'],
+                        'category_name' => $category['name']
+                    ]);
+                    // 更新に失敗した場合は、そのカテゴリーをスキップして続行
+                    continue;
                 } else {
                     $updatedCount++;
                     $updatedIds[] = $category['id'];
@@ -155,8 +163,10 @@ class ShoppingCategoryController extends ApiController
 
             return $this->updatedResponse($formattedData, __('api.shopping.category_bulk_updated', ['count' => $updatedCount]));
         } catch (ValidationException $e) {
+            $this->logError(__('operations.shopping_category.bulk_update'), $e, $request);
             return $this->validationErrorResponse($e);
         } catch (Exception $e) {
+            $this->logError(__('operations.shopping_category.bulk_update'), $e, $request);
             return $this->handleException($e, $request, __('api.general.bulk_operation_failed'));
         }
     }
@@ -195,19 +205,19 @@ class ShoppingCategoryController extends ApiController
             $notFoundIds = array_diff($validated['ids'], $foundIds);
 
             if (!empty($notFoundIds)) {
-                Log::error('指定されたレコードが見つかりません。', [
-                    'function' => 'ShoppingCategoryController@bulkDestroy',
-                    'notFoundIds' => $notFoundIds,
-                    'requestedIds' => $validated['ids'],
-                    'group_id' => $group->id
+                $this->logWarning(__('operations.shopping_category.bulk_destroy'), __('api.shopping.not_found'), $request, [
+                    'notFoundIds' => $notFoundIds
                 ]);
-                throw new Exception(__('api.shopping.not_found'));
+                return $this->errorResponse(__('api.shopping.not_found'), 404);
             }
 
             // デフォルトカテゴリのチェック
             $defaultCategory = $categories->where('is_default', true)->first();
             if ($defaultCategory) {
-                throw new Exception(__('api.shopping.default_category_deletion_error', ['name' => $defaultCategory->name]));
+                $this->logWarning(__('operations.shopping_category.bulk_destroy'), __('api.shopping.default_category_deletion_error', ['name' => $defaultCategory->name]), $request, [
+                    'default_category_name' => $defaultCategory->name
+                ]);
+                return $this->errorResponse(__('api.shopping.default_category_deletion_error', ['name' => $defaultCategory->name]), 400);
             }
 
             // 一括削除
@@ -227,8 +237,12 @@ class ShoppingCategoryController extends ApiController
 
             return $this->deletedResponse(__('api.shopping.category_bulk_deleted', ['count' => count($deletedIds)]));
         } catch (ValidationException $e) {
+            $this->logError(__('operations.shopping_category.bulk_destroy'), $e, $request);
             return $this->validationErrorResponse($e);
         } catch (Exception $e) {
+            $this->logError(__('operations.shopping_category.bulk_destroy'), $e, $request, [
+                'notFoundIds' => $notFoundIds ?? []
+            ]);
             return $this->handleException($e, $request, __('api.shopping.category_deletion_failed'));
         }
     }

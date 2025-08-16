@@ -5,12 +5,12 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Api\ApiController;
 use App\Models\ShoppingItem;
 use App\Models\ShoppingTag;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Traits\AutoComplement;
 use Exception;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class ShoppingItemController extends ApiController
 {
@@ -74,7 +74,8 @@ class ShoppingItemController extends ApiController
 
             return $this->indexResponse($res, $categories->count(), __('api.shopping.list_retrieved', ['count' => $categories->count()]));
         } catch (Exception $e) {
-            return $this->handleException($e, $request, __('api.shopping.retrieval_failed'));
+            $this->logError(__('operations.shopping_item.index'), $e, $request);
+            return $this->handleException($e, $request, __('api.shopping.list_get_failed'));
         }
     }
 
@@ -117,6 +118,7 @@ class ShoppingItemController extends ApiController
             ]);
             if (!$ret) {
                 DB::rollBack();
+                $this->logError(__('operations.shopping_item.store'), new Exception(__('api.shopping.creation_failed')), $request);
                 return $this->errorResponse(__('api.shopping.creation_failed'), 500);
             }
 
@@ -125,16 +127,15 @@ class ShoppingItemController extends ApiController
                 try {
                     $tagIds = $this->findOrCreateIds($request->tags, $group, ShoppingTag::class);
                     if (empty($tagIds)) {
-                        Log::warning('タグの作成に失敗しました。', [
-                            'function' => 'ShoppingItemController@store',
+                        $this->logWarning(__('operations.shopping_item.tag_processing'), __('api.shopping.tag_creation_failed'), $request, [
                             'tags' => $request->tags
                         ]);
+                        // タグ作成に失敗した場合は、タグなしでアイテム作成を続行
                     } else {
                         $ret->tags()->attach(array_values($tagIds));
                     }
                 } catch (Exception $e) {
-                    $this->logWarning('タグ処理', __('api.shopping.tag_processing_error'), $request, [
-                        'function' => 'ShoppingItemController@store',
+                    $this->logWarning(__('operations.shopping_item.tag_processing'), __('api.shopping.tag_processing_error'), $request, [
                         'tags' => $request->tags,
                         'error_message' => $e->getMessage()
                     ]);
@@ -162,13 +163,12 @@ class ShoppingItemController extends ApiController
                 }),
             ];
             return $this->createdResponse($res, __('api.shopping.item_created', ['name' => $request->name]));
+        } catch (ValidationException $e) {
+            $this->logError(__('operations.shopping_item.store'), $e, $request);
+            return $this->validationErrorResponse($e);
         } catch (Exception $e) {
             DB::rollBack();
-            Log::error('買い物アイテムの作成中にエラーが発生しました。', [
-                'function' => 'ShoppingItemController@store',
-                'error' => $e->getMessage(),
-                'request' => $request->all()
-            ]);
+            $this->logError(__('operations.shopping_item.store'), $e, $request);
             return $this->handleException($e, $request, __('api.shopping.creation_failed'));
         }
     }
@@ -214,19 +214,17 @@ class ShoppingItemController extends ApiController
                     try {
                         $tagIds = $this->findOrCreateIds($item['tags'], $group, ShoppingTag::class);
                         if (empty($tagIds)) {
-                            Log::warning('タグの作成に失敗しました。', [
-                                'function' => 'ShoppingItemController@bulkUpdate',
+                            $this->logWarning(__('operations.shopping_item.tag_processing'), __('api.shopping.tag_creation_failed'), $request, [
                                 'item_id' => $item['id'],
                                 'tags' => $item['tags']
                             ]);
+                            // タグ作成に失敗した場合は、タグなしでアイテム更新を続行
                         } else {
                             $shoppingItem->tags()->sync(array_values($tagIds));
                         }
                     } catch (Exception $e) {
-                        Log::error(__('api.shopping.tag_processing_error'), [
-                            'function' => 'ShoppingItemController@bulkUpdate',
+                        $this->logError(__('operations.shopping_item.bulk_update'), $e, $request, [
                             'item_id' => $item['id'],
-                            'error' => $e->getMessage(),
                             'tags' => $item['tags']
                         ]);
                         // タグ処理でエラーが発生しても、アイテム更新は成功させる
@@ -260,11 +258,7 @@ class ShoppingItemController extends ApiController
             return $this->updatedResponse($ret, __('api.shopping.item_bulk_updated', ['count' => $ret->count()]));
         } catch (Exception $e) {
             DB::rollBack();
-            Log::error('買い物アイテムの一括更新中にエラーが発生しました。', [
-                'function' => 'ShoppingItemController@bulkUpdate',
-                'error' => $e->getMessage(),
-                'request' => $request->all()
-            ]);
+            $this->logError(__('operations.shopping_item.bulk_update'), $e, $request);
             return $this->handleException($e, $request, __('api.general.bulk_operation_failed'));
         }
     }
@@ -292,27 +286,42 @@ class ShoppingItemController extends ApiController
 
             // 空の場合はエラー
             if (empty($ids)) {
+                $this->logError(__('operations.shopping_item.bulk_destroy'), new Exception(__('api.shopping.invalid_ids')), $request);
                 return $this->errorResponse(__('api.shopping.invalid_ids'), 400);
             }
 
             $deletedIds = [];
+            $notFoundIds = [];
+
             foreach ($ids as $id) {
                 $item = $group->shoppingItems()->where('id', $id)->first();
 
                 if (!$item) {
-                    Log::error('指定されたレコードが見つかりません。', [
-                        'function' => 'ShoppingItemController@bulkDestroy',
-                        'id' => $id
-                    ]);
-                    return $this->notFoundResponse(__('api.shopping.not_found'));
+                    $notFoundIds[] = $id;
+                    continue;
                 }
 
                 $deletedIds[] = $item->id;
                 $item->delete();
             }
 
+            // 見つからなかったアイテムがある場合は警告ログを出力
+            if (!empty($notFoundIds)) {
+                $this->logWarning(__('operations.shopping_item.bulk_destroy'), __('api.shopping.some_items_not_found'), $request, [
+                    'not_found_ids' => $notFoundIds,
+                    'deleted_ids' => $deletedIds
+                ]);
+            }
+
+            // 削除されたアイテムがない場合はエラー
+            if (empty($deletedIds)) {
+                $this->logError(__('operations.shopping_item.bulk_destroy'), new Exception(__('api.shopping.no_items_deleted')), $request);
+                return $this->errorResponse(__('api.shopping.no_items_deleted'), 400);
+            }
+
             return $this->deletedResponse(__('api.shopping.item_bulk_deleted', ['count' => count($deletedIds)]));
         } catch (Exception $e) {
+            $this->logError(__('operations.shopping_item.bulk_destroy'), $e, $request);
             return $this->handleException($e, $request, __('api.shopping.deletion_failed'));
         }
     }

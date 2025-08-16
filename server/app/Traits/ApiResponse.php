@@ -82,7 +82,7 @@ trait ApiResponse
     /**
      * データ作成成功レスポンスを返す
      */
-    protected function createdResponse(mixed $data = null, string $message = null): JsonResponse
+    protected function createdResponse(mixed $data = null, ?string $message = null): JsonResponse
     {
         $message = $message ?? __('api.general.data_created');
         return $this->successResponse($data, $message, 201);
@@ -91,7 +91,7 @@ trait ApiResponse
     /**
      * データ更新成功レスポンスを返す
      */
-    protected function updatedResponse(mixed $data = null, string $message = null): JsonResponse
+    protected function updatedResponse(mixed $data = null, ?string $message = null): JsonResponse
     {
         $message = $message ?? __('api.general.data_updated');
         return $this->successResponse($data, $message);
@@ -100,7 +100,7 @@ trait ApiResponse
     /**
      * データ削除成功レスポンスを返す
      */
-    protected function deletedResponse(string $message = null): JsonResponse
+    protected function deletedResponse(?string $message = null): JsonResponse
     {
         $message = $message ?? __('api.general.data_deleted');
         return $this->successResponse(null, $message);
@@ -137,13 +137,13 @@ trait ApiResponse
     /**
      * 例外をキャッチしてエラーレスポンスを返す
      */
-    protected function handleException(\Exception $e, Request $request, string $defaultMessage = null): JsonResponse
+    protected function handleException(\Exception $e, Request $request, ?string $defaultMessage = null): JsonResponse
     {
         $defaultMessage = $defaultMessage ?? __('api.general.error');
         $message = $e->getMessage() ?: $defaultMessage;
         $statusCode = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500;
 
-        // 新しいLoggingTraitを使用してエラーログを記録
+        // エラーログを記録
         $this->logError(__('operations.general.exception_handling'), $e, $request, [
             'default_message' => $defaultMessage,
             'status_code' => $statusCode

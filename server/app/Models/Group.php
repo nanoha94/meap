@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
+use Exception;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class Group extends Model
 {
-    use  HasUuids;
+    use HasUuids;
 
     protected $keyType = 'string';
     public $incrementing = false;
@@ -21,110 +21,102 @@ class Group extends Model
     // Groupを作成
     public static function createGroup()
     {
-        try {
-            return DB::transaction(function () {
-                $group = self::create([
-                    'group_size' => 1,
-                ]);
-
-                // デフォルトの買い物カテゴリを追加
-                $category = new ShoppingCategory();
-                $category->name = "その他のカテゴリー";
-                $category->group_id = $group->id;
-                $category->is_default = true;
-                $category->order = 0;
-                $category->save();
-
-                // デフォルトの料理分類を追加
-                $courseTypes = [
-                    ['name' => '主食', 'order' => 0],
-                    ['name' => '主菜', 'order' => 1],
-                    ['name' => '副菜', 'order' => 2],
-                    ['name' => '汁物', 'order' => 3],
-                    ['name' => 'その他', 'order' => 4],
-                ];
-
-                foreach ($courseTypes as $courseType) {
-                    $courseTypeObj = new CourseType();
-                    $courseTypeObj->group_id = $group->id;
-                    $courseTypeObj->name = $courseType['name'];
-                    $courseTypeObj->order = $courseType['order'];
-                    $courseTypeObj->save();
-                }
-
-                // デフォルトの献立種別を追加
-                $yellow = Color::where('name', 'イエロー')->first();
-                $red = Color::where('name', 'レッド')->first();
-                $blue = Color::where('name', 'ブルー')->first();
-                $categories = [
-                    ['name' => '朝食', 'color_id' => $yellow->id, 'order' => 0],
-                    ['name' => '昼食', 'color_id' => $red->id, 'order' => 1],
-                    ['name' => '夕食', 'color_id' => $blue->id, 'order' => 2],
-                ];
-
-                foreach ($categories as $category) {
-                    $mealType = new MealType();
-                    $mealType->group_id = $group->id;
-                    $mealType->color_id = $category['color_id'];
-                    $mealType->name = $category['name'];
-                    $mealType->order = $category['order'];
-                    $mealType->save();
-                }
-
-                // デフォルトの食材単位を追加
-                $units = [
-                    // 数値 + 単位（suffix）
-                    ['name' => 'g', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 0],
-                    ['name' => 'ml', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 1],
-                    ['name' => 'cc', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 2],
-                    ['name' => 'カップ', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 3],
-                    ['name' => '個', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 4],
-                    ['name' => '枚', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 5],
-                    ['name' => '本', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 6],
-                    ['name' => '片', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 7],
-                    ['name' => '粒', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 8],
-                    ['name' => '房', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 9],
-                    ['name' => '束', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 10],
-                    ['name' => '袋', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 11],
-                    ['name' => '缶', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 12],
-                    ['name' => '丁', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 13],
-                    ['name' => '合', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 14],
-                    ['name' => '杯', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 15],
-                    ['name' => '切れ', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 16],
-                    ['name' => 'パック', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 17],
-                    ['name' => 'セット', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 18],
-                    ['name' => 'ケース', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 19],
-                    ['name' => 'cm', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 27],
-                    ['name' => '滴', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 28],
-                    ['name' => 'L', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 29],
-
-                    // 単位 + 数値（prefix）
-                    ['name' => '大さじ', 'position' => 'prefix', 'requires_quantity' => true, 'order' => 20],
-                    ['name' => '小さじ', 'position' => 'prefix', 'requires_quantity' => true, 'order' => 21],
-
-                    // 数値不要な単位（prefix）
-                    ['name' => '少々', 'position' => 'prefix', 'requires_quantity' => false, 'order' => 22],
-                    ['name' => 'ひとつまみ', 'position' => 'prefix', 'requires_quantity' => false, 'order' => 23],
-                    ['name' => 'ふたつまみ', 'position' => 'prefix', 'requires_quantity' => false, 'order' => 24],
-                    ['name' => '適量', 'position' => 'prefix', 'requires_quantity' => false, 'order' => 25],
-                    ['name' => 'お好み', 'position' => 'prefix', 'requires_quantity' => false, 'order' => 26],
-                ];
-
-                foreach ($units as $unit) {
-                    $unit = new IngredientUnit($unit);
-                    $unit->group_id = $group->id;
-                    $unit->save();
-                }
-
-                return $group;
-            });
-        } catch (\Throwable $e) {
-            Log::error('グループ作成エラー', [
-                'function' => 'Group@createGroup',
-                'error' => $e->getMessage()
+        return DB::transaction(function () {
+            $group = self::create([
+                'group_size' => 1,
             ]);
-            throw $e;
-        }
+
+            // デフォルトの買い物カテゴリを追加
+            $category = new ShoppingCategory();
+            $category->name = "その他のカテゴリー";
+            $category->group_id = $group->id;
+            $category->is_default = true;
+            $category->order = 0;
+            $category->save();
+
+            // デフォルトの料理分類を追加
+            $courseTypes = [
+                ['name' => '主食', 'order' => 0],
+                ['name' => '主菜', 'order' => 1],
+                ['name' => '副菜', 'order' => 2],
+                ['name' => '汁物', 'order' => 3],
+                ['name' => 'その他', 'order' => 4],
+            ];
+
+            foreach ($courseTypes as $courseType) {
+                $courseTypeObj = new CourseType();
+                $courseTypeObj->group_id = $group->id;
+                $courseTypeObj->name = $courseType['name'];
+                $courseTypeObj->order = $courseType['order'];
+                $courseTypeObj->save();
+            }
+
+            // デフォルトの献立種別を追加
+            $yellow = Color::where('name', 'イエロー')->first();
+            $red = Color::where('name', 'レッド')->first();
+            $blue = Color::where('name', 'ブルー')->first();
+            $categories = [
+                ['name' => '朝食', 'color_id' => $yellow->id, 'order' => 0],
+                ['name' => '昼食', 'color_id' => $red->id, 'order' => 1],
+                ['name' => '夕食', 'color_id' => $blue->id, 'order' => 2],
+            ];
+
+            foreach ($categories as $category) {
+                $mealType = new MealType();
+                $mealType->group_id = $group->id;
+                $mealType->color_id = $category['color_id'];
+                $mealType->name = $category['name'];
+                $mealType->order = $category['order'];
+                $mealType->save();
+            }
+
+            // デフォルトの食材単位を追加
+            $units = [
+                // 数値 + 単位（suffix）
+                ['name' => 'g', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 0],
+                ['name' => 'ml', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 1],
+                ['name' => 'cc', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 2],
+                ['name' => 'カップ', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 3],
+                ['name' => '個', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 4],
+                ['name' => '枚', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 5],
+                ['name' => '本', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 6],
+                ['name' => '片', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 7],
+                ['name' => '粒', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 8],
+                ['name' => '房', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 9],
+                ['name' => '束', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 10],
+                ['name' => '袋', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 11],
+                ['name' => '缶', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 12],
+                ['name' => '丁', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 13],
+                ['name' => '合', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 14],
+                ['name' => '杯', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 15],
+                ['name' => '切れ', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 16],
+                ['name' => 'パック', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 17],
+                ['name' => 'セット', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 18],
+                ['name' => 'ケース', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 19],
+                ['name' => 'cm', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 27],
+                ['name' => '滴', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 28],
+                ['name' => 'L', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 29],
+
+                // 単位 + 数値（prefix）
+                ['name' => '大さじ', 'position' => 'prefix', 'requires_quantity' => true, 'order' => 20],
+                ['name' => '小さじ', 'position' => 'prefix', 'requires_quantity' => true, 'order' => 21],
+
+                // 数値不要な単位（prefix）
+                ['name' => '少々', 'position' => 'prefix', 'requires_quantity' => false, 'order' => 22],
+                ['name' => 'ひとつまみ', 'position' => 'prefix', 'requires_quantity' => false, 'order' => 23],
+                ['name' => 'ふたつまみ', 'position' => 'prefix', 'requires_quantity' => false, 'order' => 24],
+                ['name' => '適量', 'position' => 'prefix', 'requires_quantity' => false, 'order' => 25],
+                ['name' => 'お好み', 'position' => 'prefix', 'requires_quantity' => false, 'order' => 26],
+            ];
+
+            foreach ($units as $unit) {
+                $unit = new IngredientUnit($unit);
+                $unit->group_id = $group->id;
+                $unit->save();
+            }
+
+            return $group;
+        });
     }
 
     // グループに属するのユーザー数を取得
