@@ -2,6 +2,7 @@ export interface IGetUserResponse {
     name?: string;
     email?: string;
     email_verified_at?: string;
+    language?: string;
     avatar_seed: string;
 }
 

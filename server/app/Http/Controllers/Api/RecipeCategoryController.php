@@ -38,7 +38,7 @@ class RecipeCategoryController extends ApiController
             'name' => $ret->name,
             'order' => $ret->order,
         ];
-        return $this->createdResponse($res, '料理カテゴリー(' . $ret->name . ')を作成しました。');
+        return $this->createdResponse($res, __('api.recipe.category_created', ['name' => $ret->name]));
     }
 
     /**
@@ -73,16 +73,16 @@ class RecipeCategoryController extends ApiController
                     'order' => $category['order']
                 ]);
                 if (!$ret) {
-                    return $this->errorResponse('料理カテゴリー（' . $category['name'] . '）の更新に失敗しました。', 500);
+                    return $this->errorResponse(__('api.recipe.category_update_failed'), 500);
                 }
             }
 
             // 更新後の料理カテゴリーを取得
             $categories = $group->recipeCategories()->where('group_id', $group->id)->select('id', 'name', 'order')->get();
 
-            return $this->updatedResponse($categories, '料理カテゴリーを' . $categories->count() . '件更新しました。');
+            return $this->updatedResponse($categories, __('api.recipe.category_updated', ['count' => $categories->count()]));
         } catch (\Exception $e) {
-            return $this->handleException($e, $request, '料理カテゴリーの一括更新中にエラーが発生しました。');
+            return $this->handleException($e, $request, __('api.recipe.category_bulk_update_failed'));
         }
     }
 
@@ -115,7 +115,7 @@ class RecipeCategoryController extends ApiController
 
             if (!$category) {
                 Log::error('指定されたレコードが見つかりません。', ['function' => 'ShoppingCategoryController@bulkDestroy', 'id' => $id]);
-                return $this->notFoundResponse('指定されたレコードが見つかりません。');
+                return $this->notFoundResponse(__('api.general.not_found'));
             }
 
             $deletedIds[] = [$category->id];
@@ -131,6 +131,6 @@ class RecipeCategoryController extends ApiController
             $remainingCategory->update(['order' => $index]);
         }
 
-        return $this->deletedResponse('料理カテゴリーを' . count($deletedIds) . '件削除しました。');
+        return $this->deletedResponse(__('api.recipe.category_deleted', ['count' => count($deletedIds)]));
     }
 }

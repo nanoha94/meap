@@ -31,7 +31,7 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return $this->successResponse(null, 'ログインに成功しました。');
+        return $this->successResponse(null, __('api.auth.login_success'));
     }
 
     /**
@@ -55,7 +55,7 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerateToken();
 
         // Cookieを明示的に削除
-        $response = $this->successResponse(null, 'ログアウトに成功しました。');
+        $response = $this->successResponse(null, __('api.auth.logout_success'));
 
         // 複数のドメインとパスパターンで削除
         $domains = [config('session.domain'), null, '', '.' . parse_url(config('app.url'), PHP_URL_HOST)];

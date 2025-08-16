@@ -87,10 +87,10 @@ class RecipeController extends ApiController
                     ])
                 ];
             });
-            return $this->indexResponse($formattedData, $formattedData->count(), 'レシピを' . $formattedData->count() . '件取得しました。');
+            return $this->indexResponse($formattedData, $formattedData->count(), __('api.recipe.list_retrieved', ['count' => $formattedData->count()]));
         } catch (Exception $e) {
             $this->logError(__('operations.recipe.index'), $e, $request, []);
-            return $this->handleException($e, $request, 'レシピの取得に失敗しました。');
+            return $this->handleException($e, $request, __('api.recipe.retrieval_failed'));
         }
     }
 
@@ -141,7 +141,7 @@ class RecipeController extends ApiController
 
             $response = $this->formatRecipeResponse($recipe);
 
-            return $this->successResponse($response, 'レシピを作成しました。');
+            return $this->successResponse($response, __('api.recipe.created', ['name' => $request->name]));
         } catch (ValidationException $e) {
             return $this->validationErrorResponse($e);
         } catch (Exception $e) {
@@ -149,7 +149,7 @@ class RecipeController extends ApiController
                 'operation' => 'store',
                 'recipe_name' => $request->name ?? null
             ]);
-            return $this->handleException($e, $request, 'レシピの作成に失敗しました。');
+            return $this->handleException($e, $request, __('api.recipe.creation_failed'));
         }
     }
 
@@ -173,15 +173,15 @@ class RecipeController extends ApiController
 
             $recipe = $group->recipes()->where('id', $id)->with(['categories', 'ingredients', 'steps'])->first();
             if (!$recipe) {
-                return $this->notFoundResponse('指定されたレコードが見つかりません。');
+                return $this->notFoundResponse(__('api.general.not_found'));
             }
 
-            return $this->successResponse($this->formatRecipeResponse($recipe), 'レシピ(' . $recipe->name . ')を取得しました。');
+            return $this->successResponse($this->formatRecipeResponse($recipe), __('api.recipe.details_retrieved', ['name' => $recipe->name]));
         } catch (Exception $e) {
             $this->logError(__('operations.recipe.show'), $e, $request, [
                 'recipe_id' => $id
             ]);
-            return $this->handleException($e, $request, 'レシピの取得に失敗しました。');
+            return $this->handleException($e, $request, __('api.recipe.retrieval_failed'));
         }
     }
 
@@ -206,7 +206,7 @@ class RecipeController extends ApiController
 
             $recipe = $group->recipes()->where('id', $id)->with(['categories', 'ingredients', 'steps'])->first();
             if (!$recipe) {
-                return $this->notFoundResponse('指定されたレコードが見つかりません。');
+                return $this->notFoundResponse(__('api.general.not_found'));
             }
 
             // リクエストデータのバリデーション
@@ -229,14 +229,14 @@ class RecipeController extends ApiController
             $recipe->load(['categories', 'ingredients', 'thumbnails', 'steps']);
             $response = $this->formatRecipeResponse($recipe);
 
-            return $this->updatedResponse($response, 'レシピ(' . $request->name . ')を更新しました。');
+            return $this->updatedResponse($response, __('api.recipe.updated', ['name' => $request->name]));
         } catch (ValidationException $e) {
             return $this->validationErrorResponse($e);
         } catch (Exception $e) {
             $this->logError(__('operations.recipe.update'), $e, $request, [
                 'recipe_id' => $id,
             ]);
-            return $this->handleException($e, $request, 'レシピの更新に失敗しました。');
+            return $this->handleException($e, $request, __('api.recipe.update_failed'));
         }
     }
 
@@ -261,7 +261,7 @@ class RecipeController extends ApiController
             $recipe = $group->recipes()->where('id', $id)->first();
 
             if (!$recipe) {
-                return $this->notFoundResponse('指定されたレコードが見つかりません。');
+                return $this->notFoundResponse(__('api.general.not_found'));
             }
 
             $recipeName = $recipe->name;
@@ -278,12 +278,12 @@ class RecipeController extends ApiController
                 $recipe->delete();
             });
 
-            return $this->deletedResponse('レシピ(' . $recipeName . ')を削除しました。');
+            return $this->deletedResponse(__('api.recipe.deleted', ['name' => $recipeName]));
         } catch (Exception $e) {
             $this->logError(__('operations.recipe.destroy'), $e, $request, [
                 'recipe_id' => $id,
             ]);
-            return $this->handleException($e, $request, 'レシピの削除に失敗しました。');
+            return $this->handleException($e, $request, __('api.recipe.deletion_failed'));
         }
     }
 
@@ -309,19 +309,19 @@ class RecipeController extends ApiController
             'steps.*.order' => 'nullable|integer',
             'memo' => 'nullable|string',
         ], [
-            'name.required' => 'レシピ名を入力してください。',
-            'name.string' => 'レシピ名は文字列で入力してください。',
-            'name.max' => 'レシピ名は255文字以内で入力してください。',
-            'url.string' => 'URLは文字列で入力してください。',
-            'url.max' => 'URLは2048文字以内で入力してください。',
-            'steps.*.id.string' => '手順IDは文字列で入力してください。',
-            'steps.*.instruction.string' => '手順は文字列で入力してください。',
-            'steps.*.image.array' => '手順の画像は配列で入力してください。',
-            'steps.*.image.url.string' => '手順の画像URLは文字列で入力してください。',
-            'steps.*.image.width.integer' => '手順の画像幅は整数で入力してください。',
-            'steps.*.image.height.integer' => '手順の画像高さは整数で入力してください。',
-            'steps.*.order.integer' => '手順の順番は整数で入力してください。',
-            'memo.string' => 'メモは文字列で入力してください。',
+            'name.required' => __('validation_custom.recipe.name.required'),
+            'name.string' => __('validation_custom.recipe.name.string'),
+            'name.max' => __('validation_custom.recipe.name.max'),
+            'url.string' => __('validation_custom.recipe.url.string'),
+            'url.max' => __('validation_custom.recipe.url.max'),
+            'steps.*.id.string' => __('validation_custom.recipe.steps.id.string'),
+            'steps.*.instruction.string' => __('validation_custom.recipe.steps.instruction.string'),
+            'steps.*.image.array' => __('validation_custom.recipe.steps.image.array'),
+            'steps.*.image.url.string' => __('validation_custom.recipe.steps.image.url.string'),
+            'steps.*.image.width.integer' => __('validation_custom.recipe.steps.image.width.integer'),
+            'steps.*.image.height.integer' => __('validation_custom.recipe.steps.image.height.integer'),
+            'steps.*.order.integer' => __('validation_custom.recipe.steps.order.integer'),
+            'memo.string' => __('validation_custom.recipe.memo.string'),
         ]);
 
         // 画像ファイルの検証（アップロードする場合のみ）
@@ -348,7 +348,7 @@ class RecipeController extends ApiController
         // サムネイル画像を紐づけ
         $image = Image::find($thumbnailId);
         if (!$image) {
-            throw new Exception('サムネイル画像が見つかりません。');
+            throw new Exception(__('api.image.thumbnail_not_found'));
         }
         // レシピとサムネイルを紐づけ
         $recipe->thumbnails()->attach($image->id, [

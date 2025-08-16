@@ -82,7 +82,7 @@ class MealPlanController extends ApiController
             })->values()
         ];
 
-        return $this->indexResponse($res, $meal_plans->count(), '献立を' . $meal_plans->count() . '件取得しました。');
+        return $this->indexResponse($res, $meal_plans->count(), __('api.meal_plan.list_retrieved', ['count' => $meal_plans->count()]));
     }
 
     /**
@@ -164,7 +164,7 @@ class MealPlanController extends ApiController
                 ];
             })->values(),
         ];
-        return $this->createdResponse($res, '献立を作成しました。');
+        return $this->createdResponse($res, __('api.meal_plan.created', ['date' => $res['date']]));
     }
 
     /**
@@ -186,7 +186,7 @@ class MealPlanController extends ApiController
 
         $meal = MealPlan::where('id', $id)->where('group_id', $group->id)->with(['mealType', 'recipes.courseTypes', 'recipes.categories', 'recipes.ingredients'])->first();
         if (!$meal) {
-            return $this->notFoundResponse('指定されたレコードが見つかりません。');
+            return $this->notFoundResponse(__('api.meal_plan.not_found'));
         }
 
         $res = [
@@ -228,7 +228,7 @@ class MealPlanController extends ApiController
             })->values()
         ];
 
-        return $this->showResponse($res, '献立を取得しました。');
+        return $this->showResponse($res, __('api.meal_plan.retrieved', ['date' => $meal->date]));
     }
 
     /**
@@ -251,7 +251,7 @@ class MealPlanController extends ApiController
 
         $meal =  MealPlan::where('id', $id)->where('group_id', $group->id)->first();
         if (!$meal) {
-            return $this->notFoundResponse('指定されたレコードが見つかりません。');
+            return $this->notFoundResponse(__('api.meal_plan.not_found'));
         }
 
         $meal->update([
@@ -319,7 +319,7 @@ class MealPlanController extends ApiController
                 ];
             })->values(),
         ];
-        return $this->updatedResponse($res, '献立(' . $updatedItem->date . ')を更新しました。');
+        return $this->updatedResponse($res, __('api.meal_plan.updated', ['date' => $updatedItem->date]));
     }
 
     /**
@@ -342,11 +342,11 @@ class MealPlanController extends ApiController
         $meal =  MealPlan::where('id', $id)->where('group_id', $group->id)->first();
 
         if (!$meal) {
-            return $this->notFoundResponse('指定されたレコードが見つかりません。');
+            return $this->notFoundResponse(__('api.meal_plan.not_found'));
         }
 
         $meal->delete();
 
-        return $this->deletedResponse('献立(' . $meal->name . ')を削除しました。');
+        return $this->deletedResponse(__('api.meal_plan.deleted', ['date' => $meal->date]));
     }
 }

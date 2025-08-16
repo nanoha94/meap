@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('name');
+            $table->string('language')->default('ja');
             $table->string('avatar_seed')->nullable();
             $table->string('avatar_image_url')->nullable();
             $table->integer('avatar_image_width')->nullable();

@@ -39,9 +39,9 @@ class InvitationController extends ApiController
                 'token' => $invitationToken,
                 'expires_at' => $expiresAt
             ];
-            return $this->createdResponse($data, '招待トークンを作成しました。');
+            return $this->createdResponse($data, __('api.auth.invitation_token_created'));
         } catch (Exception $e) {
-            return $this->handleException($e, $request, '招待トークンの作成に失敗しました。');
+            return $this->handleException($e, $request, __('api.auth.invitation_token_creation_failed'));
         }
     }
 

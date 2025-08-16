@@ -39,7 +39,7 @@ class MealTypeController extends ApiController
             'colorId' => $ret->color_id,
             'order' => $ret->order,
         ];
-        return $this->createdResponse($res, '献立種別(' . $ret->name . ')を作成しました。');
+        return $this->createdResponse($res, __('api.meal_type.created', ['name' => $ret->name]));
     }
 
     /**
@@ -82,7 +82,7 @@ class MealTypeController extends ApiController
             ];
         });
 
-        return $this->updatedResponse($ret, '献立種別を' . $types->count() . '件更新しました。');
+        return $this->updatedResponse($ret, __('api.meal_type.updated', ['count' => $types->count()]));
     }
 
     /**
@@ -108,7 +108,7 @@ class MealTypeController extends ApiController
             return $this->notFoundResponse('指定されたレコードが見つかりません。');
         }
         if ($type->is_default) {
-            return $this->errorResponse($type->name . 'は削除できません。', 403);
+            return $this->errorResponse(__('api.meal_type.cannot_delete', ['name' => $type->name]), 403);
         }
 
         $deletedId = $type->id;
@@ -123,6 +123,6 @@ class MealTypeController extends ApiController
             $remainingType->update(['order' => $index]);
         }
 
-        return $this->deletedResponse('献立種別(' . $type->name . ')を削除しました。');
+        return $this->deletedResponse(__('api.meal_type.deleted', ['name' => $type->name]));
     }
 }

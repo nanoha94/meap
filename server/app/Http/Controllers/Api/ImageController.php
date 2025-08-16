@@ -48,10 +48,10 @@ class ImageController extends ApiController
             $validationRules['directory'] = 'nullable|string|max:255';
 
             $request->validate($validationRules, [
-                'images.0.required' => '1枚目の画像ファイルを選択してください。',
-                'images.0.file' => '1枚目は有効なファイルを選択してください。',
-                'images.*.file' => '有効なファイルを選択してください。',
-                'directory.max' => 'ディレクトリ名は255文字以内で入力してください。'
+                'images.0.required' => __('validation_custom.image.images.required'),
+                'images.0.file' => __('validation_custom.image.images.file'),
+                'images.*.file' => __('validation_custom.image.images.file'),
+                'directory.max' => __('validation_custom.image.directory.max')
             ]);
 
             // 画像ファイルを取得
@@ -76,7 +76,7 @@ class ImageController extends ApiController
                 ])
                 ->toArray();
 
-            return $this->successResponse($uploadedImages, count($uploadedImages) . '枚の画像をアップロードしました。');
+            return $this->successResponse($uploadedImages, __('api.image.uploaded', ['count' => count($uploadedImages)]));
         } catch (ValidationException $e) {
             return $this->validationErrorResponse($e);
         } catch (Exception $e) {
@@ -84,7 +84,7 @@ class ImageController extends ApiController
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            return $this->handleException($e, $request, '画像のアップロードに失敗しました。');
+            return $this->handleException($e, $request, __('api.image.upload_failed'));
         }
     }
 
@@ -117,7 +117,7 @@ class ImageController extends ApiController
             $imageIds = $request->input('image_ids');
             $deletedCount = $this->imageService->deleteImages($imageIds);
 
-            return $this->successResponse(null, $deletedCount . '件の画像を削除しました。');
+            return $this->successResponse(null, __('api.image.bulk_deleted', ['count' => $deletedCount]));
         } catch (ValidationException $e) {
             return $this->validationErrorResponse($e);
         } catch (Exception $e) {
@@ -125,7 +125,7 @@ class ImageController extends ApiController
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            return $this->handleException($e, $request, '件の画像の削除に失敗しました。');
+            return $this->handleException($e, $request, __('api.image.bulk_deletion_failed'));
         }
     }
 }

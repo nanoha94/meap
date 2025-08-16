@@ -30,6 +30,6 @@ class ShoppingTagController extends ApiController
             'total' => $tags->count()
         ];
 
-        return $this->indexResponse($res, $tags->count(), '買い物タグを' . $tags->count() . '件取得しました。');
+        return $this->indexResponse($res, $tags->count(), __('api.shopping_tag.list_retrieved', ['count' => $tags->count()]));
     }
 }

@@ -42,9 +42,9 @@ class IngredientCategoryController extends ApiController
                 ];
             });
 
-            return $this->indexResponse($formattedData, $formattedData->count(), '食材カテゴリーを' . $formattedData->count() . '件取得しました。');
+            return $this->indexResponse($formattedData, $formattedData->count(), __('api.ingredient.list_retrieved', ['count' => $formattedData->count()]));
         } catch (Exception $e) {
-            return $this->handleException($e, $request, '食材カテゴリーの取得中にエラーが発生しました。');
+            return $this->handleException($e, $request, __('api.ingredient.creation_failed'));
         }
     }
 
@@ -78,7 +78,7 @@ class IngredientCategoryController extends ApiController
                 'order' => $validated['order'],
             ]);
             if (!$category) {
-                throw new Exception('食材カテゴリー（' . $validated['name'] . '）の作成に失敗しました。');
+                throw new Exception(__('api.ingredient.creation_failed'));
             }
 
             $data = [
@@ -87,11 +87,11 @@ class IngredientCategoryController extends ApiController
                 'order' => $category->order
             ];
 
-            return $this->createdResponse($data, '食材カテゴリー(' . $validated['name'] . ')を作成しました。');
+            return $this->createdResponse($data, __('api.ingredient.created', ['name' => $validated['name']]));
         } catch (ValidationException $e) {
             return $this->validationErrorResponse($e);
         } catch (Exception $e) {
-            return $this->handleException($e, $request, '食材カテゴリーの作成中にエラーが発生しました。');
+            return $this->handleException($e, $request, __('api.ingredient.creation_failed'));
         }
     }
 
@@ -130,7 +130,7 @@ class IngredientCategoryController extends ApiController
                     'order' => $category['order']
                 ]);
                 if (!$ret) {
-                    throw new Exception('食材カテゴリー（' . $category['name'] . '）の更新に失敗しました。');
+                    throw new Exception(__('api.ingredient.update_failed'));
                 } else {
                     $updatedCount++;
                     $updatedIds[] = $category['id'];
@@ -152,11 +152,11 @@ class IngredientCategoryController extends ApiController
                 ];
             });
 
-            return $this->updatedResponse($formattedData, $updatedCount . '件の食材カテゴリーを更新しました。');
+            return $this->updatedResponse($formattedData, __('api.ingredient.updated', ['count' => $updatedCount]));
         } catch (ValidationException $e) {
             return $this->validationErrorResponse($e);
         } catch (Exception $e) {
-            return $this->handleException($e, $request, '食材カテゴリーの一括更新中にエラーが発生しました。');
+            return $this->handleException($e, $request, __('api.ingredient.bulk_update_failed'));
         }
     }
 
@@ -200,7 +200,7 @@ class IngredientCategoryController extends ApiController
                     'requestedIds' => $validated['ids'],
                     'group_id' => $group->id
                 ]);
-                throw new Exception('以下のIDのレコードが見つかりません: ' . implode(', ', $notFoundIds));
+                throw new Exception(__('api.ingredient.not_found'));
             }
 
             $deletedCount = $categories->count();
@@ -217,11 +217,11 @@ class IngredientCategoryController extends ApiController
                 $remainingCategory->update(['order' => $index]);
             }
 
-            return $this->deletedResponse($deletedCount . '件の食材カテゴリーを削除しました。');
+            return $this->deletedResponse(__('api.ingredient.deleted', ['count' => $deletedCount]));
         } catch (ValidationException $e) {
             return $this->validationErrorResponse($e);
         } catch (Exception $e) {
-            return $this->handleException($e, $request, '食材カテゴリーの削除中にエラーが発生しました。');
+            return $this->handleException($e, $request, __('api.ingredient.deletion_failed'));
         }
     }
 }

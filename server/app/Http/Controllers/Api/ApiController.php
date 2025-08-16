@@ -68,24 +68,27 @@ abstract class ApiController extends Controller
     /**
      * データが見つからない場合のエラーレスポンス
      */
-    protected function notFoundResponse(string $message = 'データが見つかりませんでした。'): JsonResponse
+    protected function notFoundResponse(string $message = null): JsonResponse
     {
+        $message = $message ?? __('api.general.not_found');
         return $this->errorResponse($message, 404);
     }
 
     /**
      * 権限エラーレスポンス
      */
-    protected function forbiddenResponse(string $message = 'アクセス権限がありません。'): JsonResponse
+    protected function forbiddenResponse(string $message = null): JsonResponse
     {
+        $message = $message ?? __('api.general.forbidden');
         return $this->errorResponse($message, 403);
     }
 
     /**
      * 認証エラーレスポンス
      */
-    protected function unauthorizedResponse(string $message = '認証が必要です。'): JsonResponse
+    protected function unauthorizedResponse(string $message = null): JsonResponse
     {
+        $message = $message ?? __('api.general.unauthorized');
         return $this->errorResponse($message, 401);
     }
 }

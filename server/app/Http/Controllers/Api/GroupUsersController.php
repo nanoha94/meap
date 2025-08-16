@@ -35,6 +35,6 @@ class GroupUsersController extends ApiController
             ];
         });
 
-        return $this->indexResponse($users, $users->count(), '同じグループのユーザーを' . $users->count() . '件取得しました。');
+        return $this->indexResponse($users, $users->count(), __('api.users.list_retrieved', ['count' => $users->count()]));
     }
 }

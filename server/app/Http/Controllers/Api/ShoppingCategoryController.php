@@ -39,9 +39,9 @@ class ShoppingCategoryController extends ApiController
                 ];
             });
 
-            return $this->indexResponse($formattedData, $formattedData->count(), '買い物カテゴリーを' . $formattedData->count() . '件取得しました。');
+            return $this->indexResponse($formattedData, $formattedData->count(), __('api.shopping.category_list_retrieved', ['count' => $formattedData->count()]));
         } catch (Exception $e) {
-            return $this->handleException($e, $request, '買い物カテゴリーの取得中にエラーが発生しました。');
+            return $this->handleException($e, $request, __('api.shopping.category_retrieval_failed'));
         }
     }
 
@@ -76,7 +76,7 @@ class ShoppingCategoryController extends ApiController
                 'order' => $validated['order'],
             ]);
             if (!$category) {
-                throw new Exception('買い物カテゴリー（' . $validated['name'] . '）の作成に失敗しました。');
+                throw new Exception(__('api.shopping.category_creation_failed'));
             }
 
             $data = [
@@ -86,11 +86,11 @@ class ShoppingCategoryController extends ApiController
                 'order' => $category->order
             ];
 
-            return $this->createdResponse($data, '買い物カテゴリー(' . $validated['name'] . ')を作成しました。');
+            return $this->createdResponse($data, __('api.shopping.category_created', ['name' => $validated['name']]));
         } catch (ValidationException $e) {
             return $this->validationErrorResponse($e);
         } catch (Exception $e) {
-            return $this->handleException($e, $request, '買い物カテゴリー（' . $validated['name'] . '）の作成中にエラーが発生しました。');
+            return $this->handleException($e, $request, __('api.shopping.category_creation_failed'));
         }
     }
 
@@ -130,7 +130,7 @@ class ShoppingCategoryController extends ApiController
                     'order' => $category['order']
                 ]);
                 if (!$ret) {
-                    throw new Exception('買い物カテゴリー（' . $category['name'] . '）の更新に失敗しました。');
+                    throw new Exception(__('api.shopping.category_update_failed'));
                 } else {
                     $updatedCount++;
                     $updatedIds[] = $category['id'];
@@ -153,11 +153,11 @@ class ShoppingCategoryController extends ApiController
                 ];
             });
 
-            return $this->updatedResponse($formattedData, $updatedCount . '件の買い物カテゴリーを更新しました。');
+            return $this->updatedResponse($formattedData, __('api.shopping.category_bulk_updated', ['count' => $updatedCount]));
         } catch (ValidationException $e) {
             return $this->validationErrorResponse($e);
         } catch (Exception $e) {
-            return $this->handleException($e, $request, '買い物カテゴリーの一括更新中にエラーが発生しました。');
+            return $this->handleException($e, $request, __('api.general.bulk_operation_failed'));
         }
     }
 
@@ -201,13 +201,13 @@ class ShoppingCategoryController extends ApiController
                     'requestedIds' => $validated['ids'],
                     'group_id' => $group->id
                 ]);
-                throw new Exception('以下のIDのレコードが見つかりません: ' . implode(', ', $notFoundIds));
+                throw new Exception(__('api.shopping.not_found'));
             }
 
             // デフォルトカテゴリのチェック
             $defaultCategory = $categories->where('is_default', true)->first();
             if ($defaultCategory) {
-                throw new Exception($defaultCategory->name . 'は削除できません。');
+                throw new Exception(__('api.shopping.default_category_deletion_error', ['name' => $defaultCategory->name]));
             }
 
             // 一括削除
@@ -225,11 +225,11 @@ class ShoppingCategoryController extends ApiController
                 $remainingCategory->update(['order' => $index]);
             }
 
-            return $this->deletedResponse(count($deletedIds) . '件の買い物カテゴリーを削除しました。');
+            return $this->deletedResponse(__('api.shopping.category_bulk_deleted', ['count' => count($deletedIds)]));
         } catch (ValidationException $e) {
             return $this->validationErrorResponse($e);
         } catch (Exception $e) {
-            return $this->handleException($e, $request, '買い物カテゴリーの削除中にエラーが発生しました。');
+            return $this->handleException($e, $request, __('api.shopping.category_deletion_failed'));
         }
     }
 }

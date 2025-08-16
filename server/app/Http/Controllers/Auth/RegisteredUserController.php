@@ -48,7 +48,7 @@ class RegisteredUserController extends Controller
                 'requested_email' => $request->email
             ]);
 
-            return $this->errorResponse('既にログインしています。新しいアカウントを作成するには、まずログアウトしてください。', 409);
+            return $this->errorResponse(__('api.auth.already_logged_in'), 409);
         }
 
         $request->validate([
@@ -77,16 +77,16 @@ class RegisteredUserController extends Controller
             if ($user) {
                 event(new Registered($user));
                 Auth::login($user);
-                return $this->successResponse(null, 'ユーザー登録に成功しました。');
+                return $this->successResponse(null, __('api.auth.registration_success'));
             }
-            return $this->errorResponse('ユーザー登録に失敗しました。', 500);
+            return $this->errorResponse(__('api.auth.registration_failed'), 500);
         } catch (\Throwable $e) {
             Log::error('ユーザー登録エラー', [
                 'function' => 'RegisteredUserController@store',
                 'error' => $e->getMessage(),
             ]);
 
-            return $this->errorResponse('ユーザー登録に失敗しました。', 500, $e->getMessage());
+            return $this->errorResponse(__('api.auth.registration_failed'), 500, $e->getMessage());
         }
     }
 }

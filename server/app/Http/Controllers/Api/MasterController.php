@@ -46,6 +46,6 @@ class MasterController extends ApiController
             'shoppingTags' => $shopping_tags,
         ];
 
-        return $this->successResponse($res, 'マスターデータを取得しました。');
+        return $this->successResponse($res, __('api.master.data_retrieved'));
     }
 }

@@ -15,7 +15,6 @@ use App\Http\Controllers\Api\MealTypeController;
 use App\Http\Controllers\Api\RecipeCategoryController;
 use App\Http\Controllers\Api\RecipeController;
 use App\Http\Controllers\Api\ImageController;
-use Illuminate\Routing\Router;
 
 Route::middleware(['auth:sanctum'])->group(function () {
     // meal-plans

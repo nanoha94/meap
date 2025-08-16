@@ -1,10 +1,11 @@
 <?php
 
-use Monolog\Formatter\NormalizerFormatter;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
 use Monolog\Processor\PsrLogMessageProcessor;
+use App\Helpers\CustomLogFormatter;
+use Monolog\Formatter\LineFormatter;
 
 return [
 
@@ -64,7 +65,6 @@ return [
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
             'replace_placeholders' => true,
-            'formatter' => NormalizerFormatter::class,
         ],
 
         'daily' => [
@@ -73,7 +73,6 @@ return [
             'level' => env('LOG_LEVEL', 'debug'),
             'days' => env('LOG_DAILY_DAYS', 30),
             'replace_placeholders' => true,
-            'formatter' => NormalizerFormatter::class,
             'permission' => 0664,
         ],
 
@@ -104,7 +103,6 @@ return [
             'level' => env('LOG_ERROR_LEVEL', 'error'),
             'days' => env('LOG_ERROR_DAYS', 90),
             'replace_placeholders' => true,
-            'formatter' => NormalizerFormatter::class,
             'permission' => 0664,
         ],
 

@@ -73,7 +73,7 @@ trait ApiResponse
     protected function validationErrorResponse(ValidationException $exception): JsonResponse
     {
         return $this->errorResponse(
-            'バリデーションエラーが発生しました。',
+            __('api.general.validation_error'),
             422,
             $exception->errors()
         );
@@ -82,24 +82,27 @@ trait ApiResponse
     /**
      * データ作成成功レスポンスを返す
      */
-    protected function createdResponse(mixed $data = null, string $message = '作成が完了しました。'): JsonResponse
+    protected function createdResponse(mixed $data = null, string $message = null): JsonResponse
     {
+        $message = $message ?? __('api.general.data_created');
         return $this->successResponse($data, $message, 201);
     }
 
     /**
      * データ更新成功レスポンスを返す
      */
-    protected function updatedResponse(mixed $data = null, string $message = '更新が完了しました。'): JsonResponse
+    protected function updatedResponse(mixed $data = null, string $message = null): JsonResponse
     {
+        $message = $message ?? __('api.general.data_updated');
         return $this->successResponse($data, $message);
     }
 
     /**
      * データ削除成功レスポンスを返す
      */
-    protected function deletedResponse(string $message = '削除が完了しました。'): JsonResponse
+    protected function deletedResponse(string $message = null): JsonResponse
     {
+        $message = $message ?? __('api.general.data_deleted');
         return $this->successResponse(null, $message);
     }
 
@@ -134,8 +137,9 @@ trait ApiResponse
     /**
      * 例外をキャッチしてエラーレスポンスを返す
      */
-    protected function handleException(\Exception $e, Request $request, string $defaultMessage = 'エラーが発生しました。'): JsonResponse
+    protected function handleException(\Exception $e, Request $request, string $defaultMessage = null): JsonResponse
     {
+        $defaultMessage = $defaultMessage ?? __('api.general.error');
         $message = $e->getMessage() ?: $defaultMessage;
         $statusCode = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500;
 
