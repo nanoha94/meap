@@ -8,7 +8,9 @@ namespace App\Swagger;
  *     description="ログインに成功しました",
  *     @OA\JsonContent(
  *         type="object",
- *         @OA\Property(property="message", type="string", example="ログインに成功しました")
+ *         @OA\Property(property="success", type="boolean", example=true),
+ *         @OA\Property(property="message", type="string", example="ログインに成功しました"),
+ *         @OA\Property(property="data", type="null", example=null)
  *     )
  * )
  * 
@@ -17,7 +19,9 @@ namespace App\Swagger;
  *     description="ログアウトに成功しました",
  *     @OA\JsonContent(
  *         type="object",
- *         @OA\Property(property="message", type="string", example="ログアウトに成功しました")
+ *         @OA\Property(property="success", type="boolean", example=true),
+ *         @OA\Property(property="message", type="string", example="ログアウトに成功しました"),
+ *         @OA\Property(property="data", type="null", example=null)
  *     )
  * )
  * 
@@ -26,7 +30,9 @@ namespace App\Swagger;
  *     description="アカウント登録に成功しました",
  *     @OA\JsonContent(
  *         type="object",
- *         @OA\Property(property="message", type="string", example="アカウント登録に成功しました")
+ *         @OA\Property(property="success", type="boolean", example=true),
+ *         @OA\Property(property="message", type="string", example="アカウント登録に成功しました"),
+ *         @OA\Property(property="data", type="null", example=null)
  *     )
  * )
  * 
@@ -35,7 +41,9 @@ namespace App\Swagger;
  *     description="既にログインしています",
  *     @OA\JsonContent(
  *         type="object",
- *         @OA\Property(property="message", type="string", example="既にログインしています")
+ *         @OA\Property(property="success", type="boolean", example=true),
+ *         @OA\Property(property="message", type="string", example="既にログインしています"),
+ *         @OA\Property(property="data", type="null", example=null)
  *     )
  * )
  */

@@ -5,9 +5,11 @@ namespace App\Swagger;
 /**
  * @OA\Response(
  *     response="RecipeIndexSuccess",
- *     description="正常に取得されました",
+ *     description="レシピを10件取得しました。",
  *     @OA\JsonContent(
  *         type="object",
+ *         @OA\Property(property="success", type="boolean", example=true),
+ *         @OA\Property(property="message", type="string", example="レシピを10件取得しました。"),
  *         @OA\Property(
  *             property="data",
  *             type="array",
@@ -18,49 +20,78 @@ namespace App\Swagger;
  *             property="total",
  *             type="integer",
  *             description="料理総数",
- *             example=100
+ *             example=10
  *         )
  *     )
  * )
  * @OA\Response(
  *     response="RecipeStoreSuccess",
- *     description="正常に登録されました",
- *     @OA\JsonContent(ref="#/components/schemas/Recipe")
+ *     description="レシピ(カレーライス)を作成しました。",
+ *     @OA\JsonContent(
+ *         type="object",
+ *         @OA\Property(property="success", type="boolean", example=true),
+ *         @OA\Property(property="message", type="string", example="レシピ(カレーライス)を作成しました。"),
+ *         @OA\Property(property="data", ref="#/components/schemas/Recipe")
+ *     )
  * )
  * @OA\Response(
  *     response="RecipeShowSuccess",
- *     description="正常に取得されました",
- *     @OA\JsonContent(ref="#/components/schemas/Recipe")
+ *     description="レシピ(カレーライス)を取得しました。",
+ *     @OA\JsonContent(
+ *         type="object",
+ *         @OA\Property(property="success", type="boolean", example=true),
+ *         @OA\Property(property="message", type="string", example="レシピ(カレーライス)を取得しました。"),
+ *         @OA\Property(property="data", ref="#/components/schemas/Recipe")
+ *     )
  * )
  * @OA\Response(
  *     response="RecipeUpdateSuccess",
- *     description="正常に更新されました",
- *     @OA\JsonContent(ref="#/components/schemas/Recipe")
+ *     description="レシピ(カレーライス)を更新しました。",
+ *     @OA\JsonContent(
+ *         type="object",
+ *         @OA\Property(property="success", type="boolean", example=true),
+ *         @OA\Property(property="message", type="string", example="レシピ(カレーライス)を更新しました。"),
+ *         @OA\Property(property="data", ref="#/components/schemas/Recipe")
+ *     )
  * )
  * @OA\Response(
  *     response="RecipeDestroySuccess",
- *     description="正常に削除されました",
+ *     description="レシピ(カレーライス)を削除しました。",
  *     @OA\JsonContent(
  *         type="object",
- *         @OA\Property(property="id", type="string")
+ *         @OA\Property(property="success", type="boolean", example=true),
+ *         @OA\Property(property="message", type="string", example="レシピ(カレーライス)を削除しました。"),
+ *         @OA\Property(property="data", type="null", example=null)
  *     )
  * )
  * @OA\Response(
  *     response="RecipeCategoryStoreSuccess",
- *     description="正常に登録されました",
- *     @OA\JsonContent(ref="#/components/schemas/RecipeCategory")
+ *     description="料理カテゴリー(和食)を作成しました。",
+ *     @OA\JsonContent(
+ *         type="object",
+ *         @OA\Property(property="success", type="boolean", example=true),
+ *         @OA\Property(property="message", type="string", example="料理カテゴリー(和食)を作成しました。"),
+ *         @OA\Property(property="data", ref="#/components/schemas/RecipeCategory")
+ *     )
  * )
  * @OA\Response(
  *     response="RecipeCategoryBulkUpdateSuccess",
- *     description="正常に更新されました",
- *      @OA\JsonContent(ref="#/components/schemas/RecipeCategory")
+ *     description="料理カテゴリーを3件更新しました。",
+ *      @OA\JsonContent(
+ *          type="object",
+ *          @OA\Property(property="success", type="boolean", example=true),
+ *          @OA\Property(property="message", type="string", example="料理カテゴリーを3件更新しました。"),
+ *          @OA\Property(property="data", ref="#/components/schemas/RecipeCategory")
+ *      )
  * )
  * @OA\Response(
  *     response="RecipeCategoryBulkDestroySuccess",
- *     description="正常に削除されました",
+ *     description="料理カテゴリーを2件削除しました。",
  *     @OA\JsonContent(
  *         type="object",
- *         @OA\Property(property="ids", type="array", @OA\Items(type="string"))
+ *         @OA\Property(property="success", type="boolean", example=true),
+ *         @OA\Property(property="message", type="string", example="料理カテゴリーを2件削除しました。"),
+ *         @OA\Property(property="data", type="null", example=null)
  *     )
  * )
  */

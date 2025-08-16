@@ -1617,9 +1617,17 @@
                     "application/json": {
                         "schema": {
                             "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
                                 "message": {
                                     "type": "string",
                                     "example": "ログインに成功しました"
+                                },
+                                "data": {
+                                    "type": "null",
+                                    "example": null
                                 }
                             },
                             "type": "object"
@@ -1633,9 +1641,17 @@
                     "application/json": {
                         "schema": {
                             "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
                                 "message": {
                                     "type": "string",
                                     "example": "ログアウトに成功しました"
+                                },
+                                "data": {
+                                    "type": "null",
+                                    "example": null
                                 }
                             },
                             "type": "object"
@@ -1649,9 +1665,17 @@
                     "application/json": {
                         "schema": {
                             "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
                                 "message": {
                                     "type": "string",
                                     "example": "アカウント登録に成功しました"
+                                },
+                                "data": {
+                                    "type": "null",
+                                    "example": null
                                 }
                             },
                             "type": "object"
@@ -1665,9 +1689,17 @@
                     "application/json": {
                         "schema": {
                             "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
                                 "message": {
                                     "type": "string",
                                     "example": "既にログインしています"
+                                },
+                                "data": {
+                                    "type": "null",
+                                    "example": null
                                 }
                             },
                             "type": "object"
@@ -1681,9 +1713,13 @@
                     "application/json": {
                         "schema": {
                             "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": false
+                                },
                                 "message": {
                                     "type": "string",
-                                    "example": "Unauthenticated."
+                                    "example": "認証が必要です。"
                                 }
                             },
                             "type": "object"
@@ -1697,9 +1733,13 @@
                     "application/json": {
                         "schema": {
                             "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": false
+                                },
                                 "message": {
                                     "type": "string",
-                                    "example": "Resource not found."
+                                    "example": "指定されたレコードが見つかりません。"
                                 }
                             },
                             "type": "object"
@@ -1713,17 +1753,21 @@
                     "application/json": {
                         "schema": {
                             "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": false
+                                },
                                 "message": {
                                     "type": "string",
-                                    "example": "The given data was invalid."
+                                    "example": "入力内容に誤りがあります。"
                                 },
                                 "errors": {
                                     "properties": {
-                                        "XXXXXX": {
+                                        "name": {
                                             "type": "array",
                                             "items": {
                                                 "type": "string",
-                                                "example": "The XXXXXX field is required."
+                                                "example": "名前は必須です。"
                                             }
                                         }
                                     },
@@ -1741,9 +1785,13 @@
                     "application/json": {
                         "schema": {
                             "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": false
+                                },
                                 "message": {
                                     "type": "string",
-                                    "example": "Unexpected error."
+                                    "example": "エラーが発生しました。"
                                 }
                             },
                             "type": "object"
@@ -1763,7 +1811,7 @@
                                 },
                                 "message": {
                                     "type": "string",
-                                    "example": "画像をアップロードしました。"
+                                    "example": "5枚の画像をアップロードしました。"
                                 },
                                 "data": {
                                     "type": "array",
@@ -1807,7 +1855,11 @@
                                 },
                                 "message": {
                                     "type": "string",
-                                    "example": "○○件の画像を削除しました。"
+                                    "example": "3件の画像を削除しました。"
+                                },
+                                "data": {
+                                    "type": "null",
+                                    "example": null
                                 }
                             },
                             "type": "object"
@@ -1816,11 +1868,19 @@
                 }
             },
             "IngredientCategoryIndexSuccess": {
-                "description": "正常に取得されました",
+                "description": "食材カテゴリーを5件取得しました。",
                 "content": {
                     "application/json": {
                         "schema": {
                             "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "食材カテゴリーを5件取得しました。"
+                                },
                                 "data": {
                                     "description": "食材カテゴリ一覧",
                                     "type": "array",
@@ -1829,9 +1889,9 @@
                                     }
                                 },
                                 "total": {
-                                    "description": "買い物カテゴリ総数",
+                                    "description": "食材カテゴリ総数",
                                     "type": "integer",
-                                    "example": 100
+                                    "example": 5
                                 }
                             },
                             "type": "object"
@@ -1840,36 +1900,68 @@
                 }
             },
             "IngredientCategoryStoreSuccess": {
-                "description": "食材カテゴリーを作成しました。",
+                "description": "食材カテゴリー(野菜)を作成しました。",
                 "content": {
                     "application/json": {
                         "schema": {
-                            "$ref": "#/components/schemas/IngredientCategory"
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "食材カテゴリー(野菜)を作成しました。"
+                                },
+                                "data": {
+                                    "$ref": "#/components/schemas/IngredientCategory"
+                                }
+                            },
+                            "type": "object"
                         }
                     }
                 }
             },
             "IngredientCategoryBulkUpdateSuccess": {
-                "description": "正常に更新されました",
+                "description": "3件の食材カテゴリーを更新しました。",
                 "content": {
                     "application/json": {
                         "schema": {
-                            "$ref": "#/components/schemas/IngredientCategory"
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "3件の食材カテゴリーを更新しました。"
+                                },
+                                "data": {
+                                    "$ref": "#/components/schemas/IngredientCategory"
+                                }
+                            },
+                            "type": "object"
                         }
                     }
                 }
             },
             "IngredientCategoryBulkDestroySuccess": {
-                "description": "正常に削除されました",
+                "description": "2件の食材カテゴリーを削除しました。",
                 "content": {
                     "application/json": {
                         "schema": {
                             "properties": {
-                                "ids": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "string"
-                                    }
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "2件の食材カテゴリーを削除しました。"
+                                },
+                                "data": {
+                                    "type": "null",
+                                    "example": null
                                 }
                             },
                             "type": "object"
@@ -1878,19 +1970,32 @@
                 }
             },
             "InvitationStoreSuccess": {
-                "description": "成功",
+                "description": "招待トークンを作成しました。",
                 "content": {
                     "application/json": {
                         "schema": {
                             "properties": {
-                                "token": {
-                                    "type": "string",
-                                    "example": "1234567890"
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
                                 },
-                                "expires_at": {
+                                "message": {
                                     "type": "string",
-                                    "format": "date-time",
-                                    "example": "2025-01-01 00:00:00"
+                                    "example": "招待トークンを作成しました。"
+                                },
+                                "data": {
+                                    "properties": {
+                                        "token": {
+                                            "type": "string",
+                                            "example": "1234567890"
+                                        },
+                                        "expires_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2025-01-01 00:00:00"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             },
                             "type": "object"
@@ -1899,47 +2004,60 @@
                 }
             },
             "InvitationShowSuccess": {
-                "description": "成功",
+                "description": "招待情報を取得しました。",
                 "content": {
                     "application/json": {
                         "schema": {
                             "properties": {
-                                "token": {
-                                    "type": "string",
-                                    "example": "1234567890"
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
                                 },
-                                "expires_at": {
+                                "message": {
                                     "type": "string",
-                                    "format": "date-time",
-                                    "example": "2025-01-01 00:00:00"
+                                    "example": "招待情報を取得しました。"
                                 },
-                                "inviter": {
+                                "data": {
                                     "properties": {
-                                        "id": {
-                                            "type": "integer",
-                                            "example": 1
-                                        },
-                                        "name": {
+                                        "token": {
                                             "type": "string",
-                                            "example": "山田太郎"
+                                            "example": "1234567890"
                                         },
-                                        "avatar": {
+                                        "expires_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2025-01-01 00:00:00"
+                                        },
+                                        "inviter": {
                                             "properties": {
-                                                "seed": {
-                                                    "type": "string",
-                                                    "example": "1234567890"
-                                                },
-                                                "url": {
-                                                    "type": "string",
-                                                    "example": "https://example.com/image.jpg"
-                                                },
-                                                "width": {
+                                                "id": {
                                                     "type": "integer",
-                                                    "example": 300
+                                                    "example": 1
                                                 },
-                                                "height": {
-                                                    "type": "integer",
-                                                    "example": 200
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "山田太郎"
+                                                },
+                                                "avatar": {
+                                                    "properties": {
+                                                        "seed": {
+                                                            "type": "string",
+                                                            "example": "1234567890"
+                                                        },
+                                                        "url": {
+                                                            "type": "string",
+                                                            "example": "https://example.com/image.jpg"
+                                                        },
+                                                        "width": {
+                                                            "type": "integer",
+                                                            "example": 300
+                                                        },
+                                                        "height": {
+                                                            "type": "integer",
+                                                            "example": 200
+                                                        }
+                                                    },
+                                                    "type": "object"
                                                 }
                                             },
                                             "type": "object"
@@ -1954,14 +2072,22 @@
                 }
             },
             "InvitationJoinSuccess": {
-                "description": "成功",
+                "description": "グループに参加しました。",
                 "content": {
                     "application/json": {
                         "schema": {
                             "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
                                 "message": {
                                     "type": "string",
                                     "example": "グループに参加しました。"
+                                },
+                                "data": {
+                                    "type": "null",
+                                    "example": null
                                 }
                             },
                             "type": "object"
@@ -1970,52 +2096,65 @@
                 }
             },
             "MasterSuccess": {
-                "description": "正常に取得されました",
+                "description": "マスターデータを取得しました。",
                 "content": {
                     "application/json": {
                         "schema": {
                             "properties": {
-                                "recipeCategories": {
-                                    "description": "料理カテゴリ一覧",
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/RecipeCategory"
-                                    }
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
                                 },
-                                "ingredientCategories": {
-                                    "description": "食材カテゴリ一覧",
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/IngredientCategory"
-                                    }
+                                "message": {
+                                    "type": "string",
+                                    "example": "マスターデータを取得しました。"
                                 },
-                                "ingredientUnits": {
-                                    "description": "食材単位一覧",
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/IngredientUnit"
-                                    }
-                                },
-                                "courseTypes": {
-                                    "description": "コースタイプ一覧",
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/CourseType"
-                                    }
-                                },
-                                "shoppingCategories": {
-                                    "description": "買い物カテゴリ一覧",
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/ShoppingCategory"
-                                    }
-                                },
-                                "shoppingTags": {
-                                    "description": "買い物タグ一覧",
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/ShoppingTag"
-                                    }
+                                "data": {
+                                    "properties": {
+                                        "recipeCategories": {
+                                            "description": "料理カテゴリ一覧",
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/RecipeCategory"
+                                            }
+                                        },
+                                        "ingredientCategories": {
+                                            "description": "食材カテゴリ一覧",
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/IngredientCategory"
+                                            }
+                                        },
+                                        "ingredientUnits": {
+                                            "description": "食材単位一覧",
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/IngredientUnit"
+                                            }
+                                        },
+                                        "courseTypes": {
+                                            "description": "コースタイプ一覧",
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/CourseType"
+                                            }
+                                        },
+                                        "shoppingCategories": {
+                                            "description": "買い物カテゴリ一覧",
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ShoppingCategory"
+                                            }
+                                        },
+                                        "shoppingTags": {
+                                            "description": "買い物タグ一覧",
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ShoppingTag"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             },
                             "type": "object"
@@ -2024,36 +2163,49 @@
                 }
             },
             "MealPlanIndexSuccess": {
-                "description": "正常に取得されました",
+                "description": "献立を5件取得しました。",
                 "content": {
                     "application/json": {
                         "schema": {
                             "properties": {
-                                "mealPlans": {
-                                    "type": "array",
-                                    "items": {
-                                        "properties": {
-                                            "date": {
-                                                "description": "日付",
-                                                "type": "string",
-                                                "format": "date",
-                                                "example": "2023-10-05"
-                                            },
-                                            "menu": {
-                                                "description": "献立メニュー",
-                                                "type": "array",
-                                                "items": {
-                                                    "$ref": "#/components/schemas/MealPlan"
-                                                }
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "献立を5件取得しました。"
+                                },
+                                "data": {
+                                    "properties": {
+                                        "mealPlans": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "date": {
+                                                        "description": "日付",
+                                                        "type": "string",
+                                                        "format": "date",
+                                                        "example": "2023-10-05"
+                                                    },
+                                                    "menu": {
+                                                        "description": "献立メニュー",
+                                                        "type": "array",
+                                                        "items": {
+                                                            "$ref": "#/components/schemas/MealPlan"
+                                                        }
+                                                    }
+                                                },
+                                                "type": "object"
                                             }
-                                        },
-                                        "type": "object"
-                                    }
+                                        }
+                                    },
+                                    "type": "object"
                                 },
                                 "total": {
                                     "description": "献立総数",
                                     "type": "integer",
-                                    "example": 100
+                                    "example": 5
                                 }
                             },
                             "type": "object"
@@ -2062,43 +2214,91 @@
                 }
             },
             "MealPlanStoreSuccess": {
-                "description": "正常に登録されました",
+                "description": "献立(2024-01-15)を作成しました。",
                 "content": {
                     "application/json": {
                         "schema": {
-                            "$ref": "#/components/schemas/MealPlan"
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "献立(2024-01-15)を作成しました。"
+                                },
+                                "data": {
+                                    "$ref": "#/components/schemas/MealPlan"
+                                }
+                            },
+                            "type": "object"
                         }
                     }
                 }
             },
             "MealPlanShowSuccess": {
-                "description": "正常に取得されました",
+                "description": "献立(2024-01-15)を取得しました。",
                 "content": {
                     "application/json": {
                         "schema": {
-                            "$ref": "#/components/schemas/MealPlan"
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "献立(2024-01-15)を取得しました。"
+                                },
+                                "data": {
+                                    "$ref": "#/components/schemas/MealPlan"
+                                }
+                            },
+                            "type": "object"
                         }
                     }
                 }
             },
             "MealPlanUpdateSuccess": {
-                "description": "正常に更新されました",
+                "description": "献立(2024-01-15)を更新しました。",
                 "content": {
                     "application/json": {
                         "schema": {
-                            "$ref": "#/components/schemas/MealPlan"
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "献立(2024-01-15)を更新しました。"
+                                },
+                                "data": {
+                                    "$ref": "#/components/schemas/MealPlan"
+                                }
+                            },
+                            "type": "object"
                         }
                     }
                 }
             },
             "MealPlanDestroySuccess": {
-                "description": "正常に削除されました",
+                "description": "献立(2024-01-15)を削除しました。",
                 "content": {
                     "application/json": {
                         "schema": {
                             "properties": {
-                                "id": {
-                                    "type": "string"
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "献立(2024-01-15)を削除しました。"
+                                },
+                                "data": {
+                                    "type": "null",
+                                    "example": null
                                 }
                             },
                             "type": "object"
@@ -2107,16 +2307,39 @@
                 }
             },
             "MealTypeStoreSuccess": {
-                "description": "正常に登録されました",
+                "description": "献立種別(朝食)を作成しました。",
                 "content": {
                     "application/json": {
                         "schema": {
                             "properties": {
-                                "categories": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/MealType"
-                                    }
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "献立種別(朝食)を作成しました。"
+                                },
+                                "data": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "example": "1"
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "example": "朝食"
+                                        },
+                                        "colorId": {
+                                            "type": "string",
+                                            "example": "2"
+                                        },
+                                        "order": {
+                                            "type": "integer",
+                                            "example": 0
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             },
                             "type": "object"
@@ -2125,12 +2348,20 @@
                 }
             },
             "MealTypeBulkUpdateSuccess": {
-                "description": "正常に更新されました",
+                "description": "3件の献立種別を更新しました。",
                 "content": {
                     "application/json": {
                         "schema": {
                             "properties": {
-                                "categories": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "3件の献立種別を更新しました。"
+                                },
+                                "data": {
                                     "type": "array",
                                     "items": {
                                         "$ref": "#/components/schemas/MealType"
@@ -2143,13 +2374,22 @@
                 }
             },
             "MealTypeDestroySuccess": {
-                "description": "正常に削除されました",
+                "description": "献立種別(昼食)を削除しました。",
                 "content": {
                     "application/json": {
                         "schema": {
                             "properties": {
-                                "id": {
-                                    "type": "string"
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "献立種別(昼食)を削除しました。"
+                                },
+                                "data": {
+                                    "type": "null",
+                                    "example": null
                                 }
                             },
                             "type": "object"
@@ -2182,11 +2422,19 @@
                 }
             },
             "RecipeIndexSuccess": {
-                "description": "正常に取得されました",
+                "description": "レシピを10件取得しました。",
                 "content": {
                     "application/json": {
                         "schema": {
                             "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "レシピを10件取得しました。"
+                                },
                                 "data": {
                                     "description": "料理データ一覧",
                                     "type": "array",
@@ -2197,7 +2445,7 @@
                                 "total": {
                                     "description": "料理総数",
                                     "type": "integer",
-                                    "example": 100
+                                    "example": 10
                                 }
                             },
                             "type": "object"
@@ -2206,43 +2454,91 @@
                 }
             },
             "RecipeStoreSuccess": {
-                "description": "正常に登録されました",
+                "description": "レシピ(カレーライス)を作成しました。",
                 "content": {
                     "application/json": {
                         "schema": {
-                            "$ref": "#/components/schemas/Recipe"
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "レシピ(カレーライス)を作成しました。"
+                                },
+                                "data": {
+                                    "$ref": "#/components/schemas/Recipe"
+                                }
+                            },
+                            "type": "object"
                         }
                     }
                 }
             },
             "RecipeShowSuccess": {
-                "description": "正常に取得されました",
+                "description": "レシピ(カレーライス)を取得しました。",
                 "content": {
                     "application/json": {
                         "schema": {
-                            "$ref": "#/components/schemas/Recipe"
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "レシピ(カレーライス)を取得しました。"
+                                },
+                                "data": {
+                                    "$ref": "#/components/schemas/Recipe"
+                                }
+                            },
+                            "type": "object"
                         }
                     }
                 }
             },
             "RecipeUpdateSuccess": {
-                "description": "正常に更新されました",
+                "description": "レシピ(カレーライス)を更新しました。",
                 "content": {
                     "application/json": {
                         "schema": {
-                            "$ref": "#/components/schemas/Recipe"
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "レシピ(カレーライス)を更新しました。"
+                                },
+                                "data": {
+                                    "$ref": "#/components/schemas/Recipe"
+                                }
+                            },
+                            "type": "object"
                         }
                     }
                 }
             },
             "RecipeDestroySuccess": {
-                "description": "正常に削除されました",
+                "description": "レシピ(カレーライス)を削除しました。",
                 "content": {
                     "application/json": {
                         "schema": {
                             "properties": {
-                                "id": {
-                                    "type": "string"
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "レシピ(カレーライス)を削除しました。"
+                                },
+                                "data": {
+                                    "type": "null",
+                                    "example": null
                                 }
                             },
                             "type": "object"
@@ -2251,36 +2547,68 @@
                 }
             },
             "RecipeCategoryStoreSuccess": {
-                "description": "正常に登録されました",
+                "description": "料理カテゴリー(和食)を作成しました。",
                 "content": {
                     "application/json": {
                         "schema": {
-                            "$ref": "#/components/schemas/RecipeCategory"
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "料理カテゴリー(和食)を作成しました。"
+                                },
+                                "data": {
+                                    "$ref": "#/components/schemas/RecipeCategory"
+                                }
+                            },
+                            "type": "object"
                         }
                     }
                 }
             },
             "RecipeCategoryBulkUpdateSuccess": {
-                "description": "正常に更新されました",
+                "description": "料理カテゴリーを3件更新しました。",
                 "content": {
                     "application/json": {
                         "schema": {
-                            "$ref": "#/components/schemas/RecipeCategory"
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "料理カテゴリーを3件更新しました。"
+                                },
+                                "data": {
+                                    "$ref": "#/components/schemas/RecipeCategory"
+                                }
+                            },
+                            "type": "object"
                         }
                     }
                 }
             },
             "RecipeCategoryBulkDestroySuccess": {
-                "description": "正常に削除されました",
+                "description": "料理カテゴリーを2件削除しました。",
                 "content": {
                     "application/json": {
                         "schema": {
                             "properties": {
-                                "ids": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "string"
-                                    }
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "料理カテゴリーを2件削除しました。"
+                                },
+                                "data": {
+                                    "type": "null",
+                                    "example": null
                                 }
                             },
                             "type": "object"
@@ -2289,11 +2617,19 @@
                 }
             },
             "ShoppingItemIndexSuccess": {
-                "description": "正常に取得されました",
+                "description": "買い物リストを5件取得しました。",
                 "content": {
                     "application/json": {
                         "schema": {
                             "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "買い物リストを5件取得しました。"
+                                },
                                 "data": {
                                     "type": "array",
                                     "items": {
@@ -2310,6 +2646,10 @@
                                         },
                                         "type": "object"
                                     }
+                                },
+                                "total": {
+                                    "type": "integer",
+                                    "example": 5
                                 }
                             },
                             "type": "object"
@@ -2318,46 +2658,91 @@
                 }
             },
             "ShoppingItemStoreSuccess": {
-                "description": "正常に登録されました",
+                "description": "買い物アイテム(りんご)を作成しました。",
                 "content": {
                     "application/json": {
                         "schema": {
-                            "$ref": "#/components/schemas/ShoppingItem"
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "買い物アイテム(りんご)を作成しました。"
+                                },
+                                "data": {
+                                    "$ref": "#/components/schemas/ShoppingItem"
+                                }
+                            },
+                            "type": "object"
                         }
                     }
                 }
             },
             "ShoppingItemShowSuccess": {
-                "description": "正常に取得されました",
+                "description": "買い物アイテム(りんご)を取得しました。",
                 "content": {
                     "application/json": {
                         "schema": {
-                            "$ref": "#/components/schemas/ShoppingItem"
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "買い物アイテム(りんご)を取得しました。"
+                                },
+                                "data": {
+                                    "$ref": "#/components/schemas/ShoppingItem"
+                                }
+                            },
+                            "type": "object"
                         }
                     }
                 }
             },
             "ShoppingItemBulkUpdateSuccess": {
-                "description": "正常に更新されました",
+                "description": "買い物アイテムを3件更新しました。",
                 "content": {
                     "application/json": {
                         "schema": {
-                            "$ref": "#/components/schemas/ShoppingItem"
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "買い物アイテムを3件更新しました。"
+                                },
+                                "data": {
+                                    "$ref": "#/components/schemas/ShoppingItem"
+                                }
+                            },
+                            "type": "object"
                         }
                     }
                 }
             },
             "ShoppingItemBulkDestroySuccess": {
-                "description": "正常に削除されました",
+                "description": "買い物アイテムを2件削除しました。",
                 "content": {
                     "application/json": {
                         "schema": {
                             "properties": {
-                                "ids": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "string"
-                                    }
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "買い物アイテムを2件削除しました。"
+                                },
+                                "data": {
+                                    "type": "null",
+                                    "example": null
                                 }
                             },
                             "type": "object"
@@ -2366,11 +2751,19 @@
                 }
             },
             "ShoppingCategoryIndexSuccess": {
-                "description": "正常に取得されました",
+                "description": "買い物カテゴリーを5件取得しました。",
                 "content": {
                     "application/json": {
                         "schema": {
                             "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "買い物カテゴリーを5件取得しました。"
+                                },
                                 "data": {
                                     "description": "買い物カテゴリ一覧",
                                     "type": "array",
@@ -2381,7 +2774,7 @@
                                 "total": {
                                     "description": "買い物カテゴリ総数",
                                     "type": "integer",
-                                    "example": 100
+                                    "example": 5
                                 }
                             },
                             "type": "object"
@@ -2390,36 +2783,68 @@
                 }
             },
             "ShoppingCategoryStoreSuccess": {
-                "description": "買い物カテゴリーを作成しました。",
+                "description": "買い物カテゴリー(食品)を作成しました。",
                 "content": {
                     "application/json": {
                         "schema": {
-                            "$ref": "#/components/schemas/ShoppingCategory"
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "買い物カテゴリー(食品)を作成しました。"
+                                },
+                                "data": {
+                                    "$ref": "#/components/schemas/ShoppingCategory"
+                                }
+                            },
+                            "type": "object"
                         }
                     }
                 }
             },
             "ShoppingCategoryBulkUpdateSuccess": {
-                "description": "正常に更新されました",
+                "description": "買い物カテゴリーを3件更新しました。",
                 "content": {
                     "application/json": {
                         "schema": {
-                            "$ref": "#/components/schemas/ShoppingCategory"
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "買い物カテゴリーを3件更新しました。"
+                                },
+                                "data": {
+                                    "$ref": "#/components/schemas/ShoppingCategory"
+                                }
+                            },
+                            "type": "object"
                         }
                     }
                 }
             },
             "ShoppingCategoryBulkDestroySuccess": {
-                "description": "正常に削除されました",
+                "description": "買い物カテゴリーを2件削除しました。",
                 "content": {
                     "application/json": {
                         "schema": {
                             "properties": {
-                                "ids": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "string"
-                                    }
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "買い物カテゴリーを2件削除しました。"
+                                },
+                                "data": {
+                                    "type": "null",
+                                    "example": null
                                 }
                             },
                             "type": "object"
@@ -2428,22 +2853,37 @@
                 }
             },
             "ShoppingTagIndexSuccess": {
-                "description": "正常に取得されました",
+                "description": "買い物タグを5件取得しました。",
                 "content": {
                     "application/json": {
                         "schema": {
                             "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "買い物タグを5件取得しました。"
+                                },
                                 "data": {
-                                    "description": "買い物タグ一覧",
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/ShoppingTag"
-                                    }
+                                    "properties": {
+                                        "tags": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ShoppingTag"
+                                            }
+                                        },
+                                        "total": {
+                                            "type": "integer",
+                                            "example": 5
+                                        }
+                                    },
+                                    "type": "object"
                                 },
                                 "total": {
-                                    "description": "買い物タグ総数",
                                     "type": "integer",
-                                    "example": 100
+                                    "example": 5
                                 }
                             },
                             "type": "object"
@@ -2452,11 +2892,19 @@
                 }
             },
             "UserIndexSuccess": {
-                "description": "正常に取得されました",
+                "description": "同じグループのユーザーを5件取得しました。",
                 "content": {
                     "application/json": {
                         "schema": {
                             "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "同じグループのユーザーを5件取得しました。"
+                                },
                                 "data": {
                                     "description": "ユーザ一覧",
                                     "type": "array",
@@ -2466,9 +2914,31 @@
                                                 "type": "string",
                                                 "example": "山田太郎"
                                             },
-                                            "avatar_seed": {
+                                            "language": {
+                                                "description": "ユーザーの言語設定",
                                                 "type": "string",
-                                                "example": "1234567890"
+                                                "example": "ja"
+                                            },
+                                            "avatar": {
+                                                "properties": {
+                                                    "seed": {
+                                                        "type": "string",
+                                                        "example": "1234567890"
+                                                    },
+                                                    "url": {
+                                                        "type": "string",
+                                                        "example": "https://example.com/avatar.jpg"
+                                                    },
+                                                    "width": {
+                                                        "type": "integer",
+                                                        "example": 300
+                                                    },
+                                                    "height": {
+                                                        "type": "integer",
+                                                        "example": 300
+                                                    }
+                                                },
+                                                "type": "object"
                                             }
                                         },
                                         "type": "object"
@@ -2477,7 +2947,7 @@
                                 "total": {
                                     "description": "ユーザ総数",
                                     "type": "integer",
-                                    "example": 100
+                                    "example": 5
                                 }
                             },
                             "type": "object"

@@ -9,7 +9,7 @@ namespace App\Swagger;
  *     @OA\JsonContent(
  *         type="object",
  *         @OA\Property(property="success", type="boolean", example=true),
- *         @OA\Property(property="message", type="string", example="画像をアップロードしました。"),
+ *         @OA\Property(property="message", type="string", example="5枚の画像をアップロードしました。"),
  *         @OA\Property(
  *             property="data",
  *             type="array",
@@ -29,7 +29,8 @@ namespace App\Swagger;
  *     @OA\JsonContent(
  *         type="object",
  *         @OA\Property(property="success", type="boolean", example=true),
- *         @OA\Property(property="message", type="string", example="○○件の画像を削除しました。")
+ *         @OA\Property(property="message", type="string", example="3件の画像を削除しました。"),
+ *         @OA\Property(property="data", type="null", example=null)
  *     )
  * )
  */

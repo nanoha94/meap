@@ -8,10 +8,11 @@ namespace App\Swagger;
  *     description="認証エラー",
  *     @OA\JsonContent(
  *         type="object",
+ *         @OA\Property(property="success", type="boolean", example=false),
  *         @OA\Property(
  *             property="message",
  *             type="string",
- *             example="Unauthenticated."
+ *             example="認証が必要です。"
  *         )
  *     )
  * )
@@ -21,10 +22,11 @@ namespace App\Swagger;
  *     description="リソースが見つかりませんでした",
  *     @OA\JsonContent(
  *         type="object",
+ *         @OA\Property(property="success", type="boolean", example=false),
  *         @OA\Property(
  *             property="message",
  *             type="string",
- *             example="Resource not found."
+ *             example="指定されたレコードが見つかりません。"
  *         )
  *     )
  * )
@@ -34,18 +36,19 @@ namespace App\Swagger;
  *     description="バリデーションエラー",
  *     @OA\JsonContent(
  *         type="object",
+ *         @OA\Property(property="success", type="boolean", example=false),
  *         @OA\Property(
  *             property="message",
  *             type="string",
- *             example="The given data was invalid."
+ *             example="入力内容に誤りがあります。"
  *         ),
  *         @OA\Property(
  *             property="errors",
  *             type="object",
  *             @OA\Property(
- *                 property="XXXXXX",
+ *                 property="name",
  *                 type="array",
- *                 @OA\Items(type="string", example="The XXXXXX field is required.")
+ *                 @OA\Items(type="string", example="名前は必須です。")
  *             )
  *         )
  *     )
@@ -56,10 +59,11 @@ namespace App\Swagger;
  *     description="予期せぬエラー",
  *     @OA\JsonContent(
  *         type="object",
+ *         @OA\Property(property="success", type="boolean", example=false),
  *         @OA\Property(
  *             property="message",
  *             type="string",
- *             example="Unexpected error."
+ *             example="エラーが発生しました。"
  *         )
  *     )
  * )

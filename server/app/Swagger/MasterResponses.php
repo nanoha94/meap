@@ -5,44 +5,50 @@ namespace App\Swagger;
 /**
  * @OA\Response(
  *     response="MasterSuccess",
- *     description="正常に取得されました",
+ *     description="マスターデータを取得しました。",
  *     @OA\JsonContent(
  *         type="object",
+ *         @OA\Property(property="success", type="boolean", example=true),
+ *         @OA\Property(property="message", type="string", example="マスターデータを取得しました。"),
  *         @OA\Property(
- *             property="recipeCategories",
- *             type="array",
- *             description="料理カテゴリ一覧",
- *             @OA\Items(ref="#/components/schemas/RecipeCategory")
- *         ),
- *         @OA\Property(
- *             property="ingredientCategories",
- *             type="array",
- *             description="食材カテゴリ一覧",
- *             @OA\Items(ref="#/components/schemas/IngredientCategory")
- *         ),
- *         @OA\Property(
- *             property="ingredientUnits",
- *             type="array",
- *             description="食材単位一覧",
- *             @OA\Items(ref="#/components/schemas/IngredientUnit")
- *         ),
- *         @OA\Property(
- *             property="courseTypes",
- *             type="array",
- *             description="コースタイプ一覧",
- *             @OA\Items(ref="#/components/schemas/CourseType")
- *         ),
- *         @OA\Property(
- *             property="shoppingCategories",
- *             type="array",
- *             description="買い物カテゴリ一覧",
- *             @OA\Items(ref="#/components/schemas/ShoppingCategory")
- *         ),
- *         @OA\Property(
- *             property="shoppingTags",
- *             type="array",
- *             description="買い物タグ一覧",
- *             @OA\Items(ref="#/components/schemas/ShoppingTag")
+ *             property="data",
+ *             type="object",
+ *             @OA\Property(
+ *                 property="recipeCategories",
+ *                 type="array",
+ *                 description="料理カテゴリ一覧",
+ *                 @OA\Items(ref="#/components/schemas/RecipeCategory")
+ *             ),
+ *             @OA\Property(
+ *                 property="ingredientCategories",
+ *                 type="array",
+ *                 description="食材カテゴリ一覧",
+ *                 @OA\Items(ref="#/components/schemas/IngredientCategory")
+ *             ),
+ *             @OA\Property(
+ *                 property="ingredientUnits",
+ *                 type="array",
+ *                 description="食材単位一覧",
+ *                 @OA\Items(ref="#/components/schemas/IngredientUnit")
+ *             ),
+ *             @OA\Property(
+ *                 property="courseTypes",
+ *                 type="array",
+ *                 description="コースタイプ一覧",
+ *                 @OA\Items(ref="#/components/schemas/CourseType")
+ *             ),
+ *             @OA\Property(
+ *                 property="shoppingCategories",
+ *                 type="array",
+ *                 description="買い物カテゴリ一覧",
+ *                 @OA\Items(ref="#/components/schemas/ShoppingCategory")
+ *             ),
+ *             @OA\Property(
+ *                 property="shoppingTags",
+ *                 type="array",
+ *                 description="買い物タグ一覧",
+ *                 @OA\Items(ref="#/components/schemas/ShoppingTag")
+ *             )
  *         )
  *     )
  * )

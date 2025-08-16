@@ -26,6 +26,7 @@ class GroupUsersController extends ApiController
         $users = $request->user()->group->users->map(function ($user) {
             return [
                 'name' => $user->name,
+                'language' => $user->language,
                 'avatar' => [
                     'seed' => $user->avatar_seed,
                     'url' => $user->avatar_url,
