@@ -24,6 +24,7 @@ namespace App\Swagger;
  * @OA\Schema(
  *     schema="RecipeThumbnail",
  *     nullable=true,
+ *     @OA\Property(property="id", type="string", description="画像ID", example="1"),
  *     @OA\Property(property="url", type="string", description="サムネイル画像URL", example="https://example.com/image.jpg"),
  *     @OA\Property(property="width", type="integer", description="サムネイル画像幅", example=300),
  *     @OA\Property(property="height", type="integer", description="サムネイル画像高さ", example=200),
@@ -41,6 +42,7 @@ namespace App\Swagger;
  * @OA\Schema(
  *     schema="RecipeStepImage",
  *     nullable=true,
+ *     @OA\Property(property="id", type="string", description="画像ID", example="1"),
  *     @OA\Property(property="url", type="string", description="画像URL", example="https://example.com/step1.jpg"),
  *     @OA\Property(property="width", type="integer", description="画像幅", example=300),
  *     @OA\Property(property="height", type="integer", description="画像高さ", example=200)

@@ -37,14 +37,7 @@ class ImageController extends ApiController
             $group = $user->group;
 
             // バリデーション
-            $validationRules = ['images.0' => 'required|file|' . implode('|', $this->imageService->getValidationRules())];
-
-            // 2枚目から20枚目までを任意フィールドとして追加
-            for ($i = 1; $i < 20; $i++) {
-                $validationRules["images.{$i}"] = 'nullable|file|' . implode('|', $this->imageService->getValidationRules());
-            }
-
-            $validationRules['directory'] = 'nullable|string|max:255';
+            $validationRules = $this->imageService->generateImageValidationRules(20, $this->imageService->getValidationRules());
 
             $request->validate($validationRules, [
                 'images.0.required' => __('validation_custom.image.images.required'),
@@ -54,11 +47,7 @@ class ImageController extends ApiController
             ]);
 
             // 画像ファイルを取得
-            $imageFiles = collect(range(0, 19))
-                ->map(fn($i) => $request->file("images.{$i}"))
-                ->filter(fn($file) => $file && $file->isValid())
-                ->values()
-                ->toArray();
+            $imageFiles = $this->imageService->getValidImageFiles($request, 20);
 
             // ディレクトリの設定
             $directory = $request->input('directory', 'general');
@@ -67,13 +56,7 @@ class ImageController extends ApiController
             // 画像をアップロード
             $uploadedImages = collect($imageFiles)
                 ->map(fn($file) => $this->imageService->uploadAndSaveImage($file, $uploadPath))
-                ->map(fn($image) => [
-                    'id' => $image->id,
-                    'src' => $image->src,
-                    'width' => $image->width,
-                    'height' => $image->height,
-                ])
-                ->toArray();
+                ->pipe(fn($images) => $this->imageService->formatBulkImageUploadResponse($images));
 
             return $this->successResponse($uploadedImages, __('api.image.uploaded', ['count' => count($uploadedImages)]));
         } catch (ValidationException $e) {

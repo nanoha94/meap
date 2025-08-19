@@ -8,6 +8,7 @@ use App\Models\Ingredient;
 use App\Models\Image;
 use App\Models\RecipeStep;
 use App\Services\ImageService;
+use App\Services\RecipeService;
 use App\Traits\AutoComplement;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -20,10 +21,12 @@ class RecipeController extends ApiController
     use AutoComplement;
 
     protected ImageService $imageService;
+    protected RecipeService $recipeService;
 
-    public function __construct(ImageService $imageService)
+    public function __construct(ImageService $imageService, RecipeService $recipeService)
     {
         $this->imageService = $imageService;
+        $this->recipeService = $recipeService;
     }
 
     /**
@@ -53,39 +56,7 @@ class RecipeController extends ApiController
             $recipes = $group->recipes()->select('id', 'name', 'url', 'memo')->with(['categories', 'ingredients', 'steps', 'thumbnails'])->get();
 
             $formattedData = $recipes->map(function ($recipe) {
-                return [
-                    'id' => $recipe->id,
-                    'name' => $recipe->name,
-                    'thumbnail' => $recipe->thumbnails->first() ? [
-                        'url' => $recipe->thumbnails->first()->src,
-                        'width' => $recipe->thumbnails->first()->width,
-                        'height' => $recipe->thumbnails->first()->height,
-                    ] : null,
-                    'url' => $recipe->url,
-                    'steps' => $recipe->steps->map(fn($item) => [
-                        'id' => $item->id,
-                        'instruction' => $item->instruction,
-                        'image' => $item->images->first() ? [
-                            'url' => $item->images->first()->src,
-                            'width' => $item->images->first()->width,
-                            'height' => $item->images->first()->height,
-                        ] : null,
-                        'order' => $item->pivot->order,
-                    ]),
-                    'memo' => $recipe->memo,
-                    'categories' => $recipe->categories->sortBy('order')->map(fn($item) => [
-                        'id' => $item->id,
-                        'name' => $item->name,
-                    ]),
-                    'ingredients' => $recipe->ingredients->map(fn($item) => [
-                        'id' => $item->id,
-                        'name' => $item->name,
-                        'quantity' => $item->pivot->quantity,
-                        'unitId' => $item->pivot->unit_id,
-                        'categoryId' => $item->pivot->category_id,
-                        'order' => $item->pivot->order
-                    ])
-                ];
+                return $this->recipeService->formatCompleteRecipeResponse($recipe);
             });
             return $this->indexResponse($formattedData, $formattedData->count(), __('api.recipe.list_retrieved', ['count' => $formattedData->count()]));
         } catch (Exception $e) {
@@ -139,7 +110,7 @@ class RecipeController extends ApiController
                 return $recipe;
             });
 
-            $response = $this->formatRecipeResponse($recipe);
+            $response = $this->recipeService->formatCompleteRecipeResponse($recipe);
 
             return $this->successResponse($response, __('api.recipe.created', ['name' => $request->name]));
         } catch (ValidationException $e) {
@@ -174,7 +145,7 @@ class RecipeController extends ApiController
                 return $this->notFoundResponse(__('api.general.not_found'));
             }
 
-            return $this->successResponse($this->formatRecipeResponse($recipe), __('api.recipe.details_retrieved', ['name' => $recipe->name]));
+            return $this->successResponse($this->recipeService->formatCompleteRecipeResponse($recipe), __('api.recipe.details_retrieved', ['name' => $recipe->name]));
         } catch (Exception $e) {
             $this->logError(__('operations.recipe.show'), $e, $request, [
                 'recipe_id' => $id
@@ -225,7 +196,7 @@ class RecipeController extends ApiController
 
             // 既存の$recipeを使用し、必要なリレーションをロード
             $recipe->load(['categories', 'ingredients', 'thumbnails', 'steps']);
-            $response = $this->formatRecipeResponse($recipe);
+            $response = $this->recipeService->formatCompleteRecipeResponse($recipe);
 
             return $this->updatedResponse($response, __('api.recipe.updated', ['name' => $request->name]));
         } catch (ValidationException $e) {
@@ -523,46 +494,5 @@ class RecipeController extends ApiController
         if (!empty($syncData)) {
             $recipe->steps()->sync($syncData);
         }
-    }
-
-    /**
-     * レシピレスポンスのフォーマット
-     */
-    private function formatRecipeResponse(Recipe $recipe): array
-    {
-        return [
-            'id' => $recipe->id,
-            'name' => $recipe->name,
-            'thumbnail' => $recipe->thumbnails->first() ? [
-                'url' => $recipe->thumbnails->first()->src,
-                'width' => $recipe->thumbnails->first()->width,
-                'height' => $recipe->thumbnails->first()->height,
-            ] : null,
-            'url' => $recipe->url,
-            'steps' => $recipe->steps->map(fn($item) => [
-                'id' => $item->id,
-                'instruction' => $item->instruction,
-                'image' => $item->images->first() ? [
-                    'url' => $item->images->first()->src,
-                    'width' => $item->images->first()->width,
-                    'height' => $item->images->first()->height,
-                ] : null,
-                'order' => $item->pivot->order,
-            ]),
-            'memo' => $recipe->memo,
-            'categories' => $recipe->categories->sortBy('order')->map(fn($item) => [
-                'id' => $item->id,
-                'name' => $item->name,
-            ]),
-
-            'ingredients' => $recipe->ingredients->map(fn($item) => [
-                'id' => $item->id,
-                'name' => $item->name,
-                'quantity' => $item->pivot->quantity,
-                'unitId' => $item->pivot->unit_id,
-                'categoryId' => $item->pivot->category_id,
-                'order' => $item->pivot->order
-            ]),
-        ];
     }
 }

@@ -3,12 +3,20 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\ApiController;
+use App\Services\UserService;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class GroupUsersController extends ApiController
 {
+    protected UserService $userService;
+
+    public function __construct(UserService $userService)
+    {
+        $this->userService = $userService;
+    }
+
     /**
      * @OA\Get(
      *     path="/users",
@@ -26,16 +34,7 @@ class GroupUsersController extends ApiController
         try {
             // 同じグループに属するユーザーデータを取得
             $users = $request->user()->group->users->map(function ($user) {
-                return [
-                    'name' => $user->name,
-                    'language' => $user->language,
-                    'avatar' => [
-                        'seed' => $user->avatar_seed,
-                        'url' => $user->avatar_url,
-                        'width' => $user->avatar_width,
-                        'height' => $user->avatar_height,
-                    ],
-                ];
+                return $this->userService->formatUserInfo($user);
             });
 
             return $this->indexResponse($users, $users->count(), __('api.users.list_retrieved', ['count' => $users->count()]));

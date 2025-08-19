@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Api\ApiController;
 use App\Models\ShoppingItem;
 use App\Models\ShoppingTag;
+use App\Services\ShoppingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Traits\AutoComplement;
@@ -15,6 +16,13 @@ use Illuminate\Validation\ValidationException;
 class ShoppingItemController extends ApiController
 {
     use AutoComplement;
+
+    protected ShoppingService $shoppingService;
+
+    public function __construct(ShoppingService $shoppingService)
+    {
+        $this->shoppingService = $shoppingService;
+    }
 
     /**
      * @OA\Get(
@@ -47,27 +55,9 @@ class ShoppingItemController extends ApiController
                     ->get();
 
                 $res[] = [
-                    'category' => [
-                        'id' => $category->id,
-                        'name' => $category->name,
-                        'isDefault' => (bool)$category->is_default,
-                        'order' => $category->order
-                    ],
+                    'category' => $this->shoppingService->formatShoppingCategory($category),
                     'items' => $items->map(function ($item) {
-                        return [
-                            'id' => $item->id,
-                            'name' => $item->name,
-                            'isPinned' => (bool)$item->is_pinned,
-                            'isChecked' => (bool)$item->is_checked,
-                            'categoryId' => $item->category_id,
-                            'tags' => $item->tags->map(function ($tag) {
-                                return [
-                                    'id' => $tag->id,
-                                    'name' => $tag->name
-                                ];
-                            }),
-                            'order' => $item->order
-                        ];
+                        return $this->shoppingService->formatShoppingItem($item);
                     })
                 ];
             }
@@ -124,22 +114,13 @@ class ShoppingItemController extends ApiController
 
             // タグの処理
             if (!empty($request->tags)) {
-                try {
-                    $tagIds = $this->findOrCreateIds($request->tags, $group, ShoppingTag::class);
-                    if (empty($tagIds)) {
-                        $this->logWarning(__('operations.shopping_item.tag_processing'), __('api.shopping.tag_creation_failed'), $request, [
-                            'tags' => $request->tags
-                        ]);
-                        // タグ作成に失敗した場合は、タグなしでアイテム作成を続行
-                    } else {
-                        $ret->tags()->attach(array_values($tagIds));
-                    }
-                } catch (Exception $e) {
-                    $this->logWarning(__('operations.shopping_item.tag_processing'), __('api.shopping.tag_processing_error'), $request, [
-                        'tags' => $request->tags,
-                        'error_message' => $e->getMessage()
+                $tagIds = $this->shoppingService->processTags($request->tags, $group, ShoppingTag::class);
+                if (empty($tagIds)) {
+                    $this->logWarning(__('operations.shopping_item.tag_processing'), __('api.shopping.tag_creation_failed'), $request, [
+                        'tags' => $request->tags
                     ]);
-                    // タグ処理でエラーが発生しても、アイテム作成は成功させる
+                } else {
+                    $ret->tags()->attach($tagIds);
                 }
             }
 
@@ -148,20 +129,7 @@ class ShoppingItemController extends ApiController
             // タグを含めて再取得
             $ret = $ret->fresh(['tags:id,name']);
 
-            $res = [
-                'id' => $ret->id,
-                'categoryId' => $ret->category_id,
-                'name' => $ret->name,
-                'isPinned' => $ret->is_pinned,
-                'isChecked' => $ret->is_checked,
-                'order' => $ret->order,
-                'tags' => $ret->tags->map(function ($tag) {
-                    return [
-                        'id' => $tag->id,
-                        'name' => $tag->name
-                    ];
-                }),
-            ];
+            $res = $this->shoppingService->formatCompleteShoppingItemResponse($ret);
             return $this->createdResponse($res, __('api.shopping.item_created', ['name' => $request->name]));
         } catch (ValidationException $e) {
             $this->logError(__('operations.shopping_item.store'), $e, $request);
@@ -211,23 +179,14 @@ class ShoppingItemController extends ApiController
 
                 // タグの更新
                 if (!empty($item['tags'])) {
-                    try {
-                        $tagIds = $this->findOrCreateIds($item['tags'], $group, ShoppingTag::class);
-                        if (empty($tagIds)) {
-                            $this->logWarning(__('operations.shopping_item.tag_processing'), __('api.shopping.tag_creation_failed'), $request, [
-                                'item_id' => $item['id'],
-                                'tags' => $item['tags']
-                            ]);
-                            // タグ作成に失敗した場合は、タグなしでアイテム更新を続行
-                        } else {
-                            $shoppingItem->tags()->sync(array_values($tagIds));
-                        }
-                    } catch (Exception $e) {
-                        $this->logError(__('operations.shopping_item.bulk_update'), $e, $request, [
+                    $tagIds = $this->shoppingService->processTags($item['tags'], $group, ShoppingTag::class);
+                    if (empty($tagIds)) {
+                        $this->logWarning(__('operations.shopping_item.tag_processing'), __('api.shopping.tag_creation_failed'), $request, [
                             'item_id' => $item['id'],
-                            'tags' => $item['tags']
+                            'tags' => $item->tags
                         ]);
-                        // タグ処理でエラーが発生しても、アイテム更新は成功させる
+                    } else {
+                        $shoppingItem->tags()->sync($tagIds);
                     }
                 }
 
@@ -239,20 +198,7 @@ class ShoppingItemController extends ApiController
             // 更新したアイテムのみを取得
             $ret = collect($updatedItems)
                 ->map(function ($item) {
-                    return [
-                        'id' => $item->id,
-                        'categoryId' => $item->category_id,
-                        'name' => $item->name,
-                        'isPinned' => $item->is_pinned,
-                        'isChecked' => $item->is_checked,
-                        'order' => $item->order,
-                        'tags' => $item->tags->map(function ($tag) {
-                            return [
-                                'id' => $tag->id,
-                                'name' => $tag->name
-                            ];
-                        })
-                    ];
+                    return $this->shoppingService->formatCompleteShoppingItemResponse($item);
                 });
 
             return $this->updatedResponse($ret, __('api.shopping.item_bulk_updated', ['count' => $ret->count()]));

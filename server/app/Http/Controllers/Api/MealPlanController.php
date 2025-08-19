@@ -5,12 +5,21 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Api\ApiController;
 use App\Models\CourseType;
 use App\Models\MealPlan;
+use App\Services\MealPlanResponseService;
+use App\Services\MealPlanService;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class MealPlanController extends ApiController
 {
+    protected MealPlanService $mealPlanService;
+
+    public function __construct(MealPlanService $mealPlanService)
+    {
+        $this->mealPlanService = $mealPlanService;
+    }
+
     /**
      * @OA\Get(
      *     path="/meal-plans",
@@ -41,44 +50,7 @@ class MealPlanController extends ApiController
                     return [
                         'date' => $date,
                         'mealPlans' => $dateMeals->map(function ($mealPlan) {
-                            return [
-                                'id' => $mealPlan->id,
-                                'date' => $mealPlan->date,
-                                'category' => [
-                                    "id" => $mealPlan->mealType->id,
-                                    "name" => $mealPlan->mealType->name,
-                                    "colorId" => $mealPlan->mealType->color_id,
-                                ],
-                                'menu' => $mealPlan->recipes->groupBy('pivot.course_type_id')->map(function ($recipes, $courseTypeId) {
-                                    $courseType = CourseType::find($courseTypeId);
-                                    return [
-                                        'courseType' => [
-                                            'id' => $courseType->id,
-                                            'name' => $courseType->name
-                                        ],
-                                        'recipes' => $recipes->map(fn($recipe) => [
-                                            'id' => $recipe->id,
-                                            'name' => $recipe->name,
-                                            'thumbnailUrl' => $recipe->thumbnail_url,
-                                            'url' => $recipe->url,
-                                            'recipe' => $recipe->recipe,
-                                            'memo' => $recipe->memo,
-                                            'categories' => $recipe->categories->map(fn($category) => [
-                                                'id' => $category->id,
-                                                'name' => $category->name,
-                                                'order' => $category->order
-                                            ]),
-                                            'ingredients' => $recipe->ingredients->map(fn($ingredient) => [
-                                                'id' => $ingredient->id,
-                                                'name' => $ingredient->name,
-                                                'quantity' => $ingredient->pivot->quantity,
-                                                'unitId' => $ingredient->pivot->unit_id,
-                                                'order' => $ingredient->pivot->order
-                                            ])
-                                        ])
-                                    ];
-                                })->values()
-                            ];
+                            return $this->responseService->formatCompleteMealPlanResponse($mealPlan);
                         })
                     ];
                 })->values()
@@ -133,44 +105,7 @@ class MealPlanController extends ApiController
                 }
             }
 
-            $res = [
-                'id' => $ret->id,
-                'date' => $ret->date,
-                'category' => [
-                    "id" => $ret->mealType->id,
-                    "name" => $ret->mealType->name,
-                    "colorId" => $ret->mealType->color_id,
-                ],
-                'menu' => $ret->recipes->groupBy('pivot.course_type_id')->map(function ($recipes, $courseTypeId) {
-                    $courseType = CourseType::find($courseTypeId);
-                    return [
-                        'courseType' => [
-                            "id" => $courseType->id,
-                            "name" => $courseType->name
-                        ],
-                        'recipes' => $recipes->map(fn($recipe) => [
-                            'id' => $recipe->id,
-                            'name' => $recipe->name,
-                            'thumbnailUrl' => $recipe->thumbnail_url,
-                            'url' => $recipe->url,
-                            'recipe' => $recipe->recipe,
-                            'memo' => $recipe->memo,
-                            'categories' => $recipe->categories->map(fn($category) => [
-                                'id' => $category->id,
-                                'name' => $category->name,
-                                'order' => $category->order
-                            ]),
-                            'ingredients' => $recipe->ingredients->map(fn($ingredient) => [
-                                'id' => $ingredient->id,
-                                'name' => $ingredient->name,
-                                'quantity' => $ingredient->pivot->quantity,
-                                'unitId' => $ingredient->pivot->unit_id,
-                                'order' => $ingredient->pivot->order
-                            ])
-                        ])
-                    ];
-                })->values(),
-            ];
+            $res = $this->responseService->formatCompleteMealPlanResponse($ret);
             return $this->createdResponse($res, __('api.meal_plan.created', ['date' => $res['date']]));
         } catch (Exception $e) {
             $this->logError(__('operations.meal_plan.store'), $e, $request);
@@ -201,44 +136,7 @@ class MealPlanController extends ApiController
                 return $this->notFoundResponse(__('api.meal_plan.not_found'));
             }
 
-            $res = [
-                'id' => $meal->id,
-                'date' => $meal->date,
-                'category' => [
-                    "id" => $meal->mealType->id,
-                    "name" => $meal->mealType->name,
-                    "colorId" => $meal->mealType->color_id,
-                ],
-                'menu' => $meal->recipes->groupBy('pivot.course_type_id')->map(function ($recipes, $courseTypeId) {
-                    $courseType = CourseType::find($courseTypeId);
-                    return [
-                        'courseType' => [
-                            'id' => $courseType->id,
-                            'name' => $courseType->name
-                        ],
-                        'recipes' => $recipes->map(fn($recipe) => [
-                            'id' => $recipe->id,
-                            'name' => $recipe->name,
-                            'thumbnailUrl' => $recipe->thumbnail_url,
-                            'url' => $recipe->url,
-                            'recipe' => $recipe->recipe,
-                            'memo' => $recipe->memo,
-                            'categories' => $recipe->categories->map(fn($category) => [
-                                'id' => $category->id,
-                                'name' => $category->name,
-                                'order' => $category->order
-                            ]),
-                            'ingredients' => $recipe->ingredients->map(fn($ingredient) => [
-                                'id' => $ingredient->id,
-                                'name' => $ingredient->name,
-                                'quantity' => $ingredient->pivot->quantity,
-                                'unitId' => $ingredient->pivot->unit_id,
-                                'order' => $ingredient->pivot->order
-                            ])
-                        ])
-                    ];
-                })->values()
-            ];
+            $res = $this->responseService->formatCompleteMealPlanResponse($meal);
 
             return $this->showResponse($res, __('api.meal_plan.retrieved', ['date' => $meal->date]));
         } catch (Exception $e) {
@@ -300,44 +198,7 @@ class MealPlanController extends ApiController
 
             $updatedItem = $group->mealPlans()->where('id', $id)->first()->select('id', 'date', 'meal_type_id')->with(['mealType', 'recipes.courseTypes', 'recipes.categories', 'recipes.ingredients'])->first();
 
-            $res = [
-                'id' => $updatedItem->id,
-                'date' => $updatedItem->date,
-                'category' => [
-                    "id" => $updatedItem->mealType->id,
-                    "name" => $updatedItem->mealType->name,
-                    "colorId" => $updatedItem->mealType->color_id,
-                ],
-                'menu' => $updatedItem->recipes->groupBy('pivot.course_type_id')->map(function ($recipes, $courseTypeId) {
-                    $courseType = CourseType::find($courseTypeId);
-                    return [
-                        'courseType' => [
-                            "id" => $courseType->id,
-                            "name" => $courseType->name
-                        ],
-                        'recipes' => $recipes->map(fn($recipe) => [
-                            'id' => $recipe->id,
-                            'name' => $recipe->name,
-                            'thumbnailUrl' => $recipe->thumbnail_url,
-                            'url' => $recipe->url,
-                            'recipe' => $recipe->recipe,
-                            'memo' => $recipe->memo,
-                            'categories' => $recipe->categories->map(fn($category) => [
-                                'id' => $category->id,
-                                'name' => $category->name,
-                                'order' => $category->order
-                            ]),
-                            'ingredients' => $recipe->ingredients->map(fn($ingredient) => [
-                                'id' => $ingredient->id,
-                                'name' => $ingredient->name,
-                                'quantity' => $ingredient->pivot->quantity,
-                                'unitId' => $ingredient->pivot->unit_id,
-                                'order' => $ingredient->pivot->order
-                            ])
-                        ])
-                    ];
-                })->values(),
-            ];
+            $res = $this->responseService->formatCompleteMealPlanResponse($updatedItem);
             return $this->updatedResponse($res, __('api.meal_plan.updated', ['date' => $updatedItem->date]));
         } catch (Exception $e) {
             $this->logError(__('operations.meal_plan.update'), $e, $request, [

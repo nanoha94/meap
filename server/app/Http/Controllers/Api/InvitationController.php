@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Api\ApiController;
 use App\Models\GroupUserMapping;
 use App\Models\InvitationToken;
+use App\Services\UserService;
 use Illuminate\Http\Request;
 use Exception;
 use Carbon\Carbon;
@@ -14,8 +15,15 @@ use Illuminate\Support\Facades\Log;
 
 class InvitationController extends ApiController
 {
+    protected UserService $userService;
+
+    public function __construct(UserService $userService)
+    {
+        $this->userService = $userService;
+    }
+
     /**
-     * @OA\Post(
+     * @OA\ Post(
      *     path="/invitations",
      *     summary="グループへの招待トークンを生成",
      *     tags={"Invitations"},
@@ -99,12 +107,7 @@ class InvitationController extends ApiController
                 'inviter' => [
                     'id' => $invitationToken->inviter->id,
                     'name' => $invitationToken->inviter->name,
-                    'avatar' => [
-                        'seed' => $invitationToken->inviter->avatar_seed,
-                        'url' => $invitationToken->inviter->avatar_url,
-                        'width' => $invitationToken->inviter->avatar_width,
-                        'height' => $invitationToken->inviter->avatar_height,
-                    ]
+                    'avatar' => $this->userService->formatUserAvatar($invitationToken->inviter)
                 ]
             ];
             return $this->showResponse($data, __('api.invitation.details_retrieved'));
