@@ -8,7 +8,6 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use App\Traits\ApiResponse;
 
-// 使っていないのでコメントアウト（TOIDO: 問題なければ後で消す）
 class EnsureEmailIsVerified
 {
     use ApiResponse;

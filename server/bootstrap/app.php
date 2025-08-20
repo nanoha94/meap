@@ -17,6 +17,10 @@ return Application::configure(basePath: dirname(__DIR__))
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             \App\Http\Middleware\SetLocale::class,
         ]);
+        // メール認証済みユーザーのみアクセス可能なミドルウェアを登録
+        $middleware->alias([
+            'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
+        ]);
         $middleware->web(prepend: [
             \App\Http\Middleware\SetLocale::class,
         ]);

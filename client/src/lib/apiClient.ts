@@ -76,6 +76,12 @@ export async function apiClient<T>(
             `API Client Error: ${response.status} ${response.statusText} on ${path}`,
             errorText,
         );
+
+        // 認証関連のエラーを統一
+        if (response.status === 401 || response.status === 409) {
+            throw new Error('AUTHENTICATION_REQUIRED');
+        }
+
         throw new Error(`Request failed with status ${response.status}`);
     }
 

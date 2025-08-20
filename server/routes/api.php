@@ -16,7 +16,8 @@ use App\Http\Controllers\Api\RecipeCategoryController;
 use App\Http\Controllers\Api\RecipeController;
 use App\Http\Controllers\Api\ImageController;
 
-Route::middleware(['auth:sanctum'])->group(function () {
+// メール認証済みユーザーのみアクセス可能
+Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // meal-plans
     Route::apiResource('/meal-plans', MealPlanController::class);
     Route::apiResource('/meal-types', MealTypeController::class)->only(['store', 'destroy']);

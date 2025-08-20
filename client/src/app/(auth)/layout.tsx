@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import ApplicationLogo from '@/components/ApplicationLogo';
 import { IGetUserResponse } from '@/types/api';
-import { redirect } from 'next/navigation';
 import { apiClient } from '@/lib/apiClient';
+import { handleAuthRedirect } from '@/utils/authHelpers';
 
 // 動的レンダリングを強制（クッキーを使用するため）
 export const dynamic = 'force-dynamic';
@@ -19,15 +19,11 @@ const AuthLayout = async ({ children }: Props) => {
     let user: IGetUserResponse | null = null;
 
     try {
-        user = await apiClient('/user');
+        user = await apiClient('/user'); // 認証状態に基づいてリダイレクト
+        handleAuthRedirect(user, true);
     } catch (error) {
         console.error('Failed to fetch user:', error);
         // ユーザー情報が取得できない場合はnullのまま
-    }
-
-    // ユーザーが既にログインしている場合は /plan にリダイレクト
-    if (user && !!user.email_verified_at) {
-        redirect('/plan');
     }
 
     return (
