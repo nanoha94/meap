@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rules;
+use App\Enums\HttpStatusCode;
 
 class RegisteredUserController extends Controller
 {
@@ -44,7 +45,7 @@ class RegisteredUserController extends Controller
         // ログイン状態をチェック
         if (Auth::check()) {
             $this->logError(__('operations.auth.registration'), new Exception(__('api.auth.already_logged_in')), $request);
-            return $this->errorResponse(__('api.auth.already_logged_in'), 409);
+            return $this->errorResponse(__('api.auth.already_logged_in'), HttpStatusCode::CONFLICT);
         }
 
         $request->validate([
@@ -70,16 +71,12 @@ class RegisteredUserController extends Controller
                 return $user;
             });
 
-            if ($user) {
-                event(new Registered($user));
-                Auth::login($user);
-                return $this->successResponse(null, __('api.auth.registration_success'));
-            }
-            $this->logError(__('operations.auth.registration'), new Exception(__('api.auth.registration_failed')), $request);
-            return $this->errorResponse(__('api.auth.registration_failed'), 500);
-        } catch (\Throwable $e) {
+            event(new Registered($user));
+            Auth::login($user);
+            return $this->successResponse(null, __('api.auth.registration_success'));
+        } catch (Exception $e) {
             $this->logError(__('operations.auth.registration'), $e, $request);
-            return $this->errorResponse(__('api.auth.registration_failed'), 500, $e->getMessage());
+            return $this->errorResponse(__('api.auth.registration_failed'), HttpStatusCode::INTERNAL_SERVER_ERROR);
         }
     }
 }

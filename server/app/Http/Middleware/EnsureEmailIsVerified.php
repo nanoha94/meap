@@ -7,6 +7,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use App\Traits\ApiResponse;
+use App\Enums\HttpStatusCode;
 
 class EnsureEmailIsVerified
 {
@@ -23,7 +24,9 @@ class EnsureEmailIsVerified
             ($request->user() instanceof MustVerifyEmail &&
                 ! $request->user()->hasVerifiedEmail())
         ) {
-            return $this->errorResponse('Your email address is not verified.', 409);
+            if (!$request->expectsJson()) {
+                return $this->errorResponse('Your email address is not verified.', HttpStatusCode::CONFLICT);
+            }
         }
 
         return $next($request);

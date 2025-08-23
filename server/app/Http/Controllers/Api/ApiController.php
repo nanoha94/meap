@@ -3,9 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
 
 /**
  * @OA\Info(
@@ -55,40 +53,5 @@ abstract class ApiController extends Controller
     protected function getUserGroup(Request $request)
     {
         return $request->user()->group;
-    }
-
-    /**
-     * バリデーションエラーをハンドリング
-     */
-    protected function handleValidationError(ValidationException $e): JsonResponse
-    {
-        return $this->validationErrorResponse($e);
-    }
-
-    /**
-     * データが見つからない場合のエラーレスポンス
-     */
-    protected function notFoundResponse(string $message = null): JsonResponse
-    {
-        $message = $message ?? __('api.general.not_found');
-        return $this->errorResponse($message, 404);
-    }
-
-    /**
-     * 権限エラーレスポンス
-     */
-    protected function forbiddenResponse(string $message = null): JsonResponse
-    {
-        $message = $message ?? __('api.general.forbidden');
-        return $this->errorResponse($message, 403);
-    }
-
-    /**
-     * 認証エラーレスポンス
-     */
-    protected function unauthorizedResponse(string $message = null): JsonResponse
-    {
-        $message = $message ?? __('api.general.unauthorized');
-        return $this->errorResponse($message, 401);
     }
 }

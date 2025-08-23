@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 use App\Traits\AutoComplement;
 use Exception;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
+use App\Enums\HttpStatusCode;
 
 class ShoppingItemController extends ApiController
 {
@@ -64,8 +64,12 @@ class ShoppingItemController extends ApiController
 
             return $this->indexResponse($res, $categories->count(), __('api.shopping.list_retrieved', ['count' => $categories->count()]));
         } catch (Exception $e) {
-            $this->logError(__('operations.shopping_item.index'), $e, $request);
-            return $this->handleException($e, $request, __('api.shopping.list_get_failed'));
+            return $this->handleException(
+                $e,
+                $request,
+                __('api.shopping.list_get_failed'),
+                'shopping_item.index',
+            );
         }
     }
 
@@ -109,7 +113,7 @@ class ShoppingItemController extends ApiController
             if (!$ret) {
                 DB::rollBack();
                 $this->logError(__('operations.shopping_item.store'), new Exception(__('api.shopping.creation_failed')), $request);
-                return $this->errorResponse(__('api.shopping.creation_failed'), 500);
+                return $this->errorResponse(__('api.shopping.creation_failed'), HttpStatusCode::INTERNAL_SERVER_ERROR);
             }
 
             // タグの処理
@@ -131,13 +135,14 @@ class ShoppingItemController extends ApiController
 
             $res = $this->shoppingService->formatCompleteShoppingItemResponse($ret);
             return $this->createdResponse($res, __('api.shopping.item_created', ['name' => $request->name]));
-        } catch (ValidationException $e) {
-            $this->logError(__('operations.shopping_item.store'), $e, $request);
-            return $this->validationErrorResponse($e);
         } catch (Exception $e) {
             DB::rollBack();
-            $this->logError(__('operations.shopping_item.store'), $e, $request);
-            return $this->handleException($e, $request, __('api.shopping.creation_failed'));
+            return $this->handleException(
+                $e,
+                $request,
+                __('api.shopping.creation_failed'),
+                'shopping_item.store'
+            );
         }
     }
 
@@ -204,8 +209,12 @@ class ShoppingItemController extends ApiController
             return $this->updatedResponse($ret, __('api.shopping.item_bulk_updated', ['count' => $ret->count()]));
         } catch (Exception $e) {
             DB::rollBack();
-            $this->logError(__('operations.shopping_item.bulk_update'), $e, $request);
-            return $this->handleException($e, $request, __('api.general.bulk_operation_failed'));
+            return $this->handleException(
+                $e,
+                $request,
+                __('api.general.bulk_operation_failed'),
+                'shopping_item.bulk_update'
+            );
         }
     }
 
@@ -233,7 +242,7 @@ class ShoppingItemController extends ApiController
             // 空の場合はエラー
             if (empty($ids)) {
                 $this->logError(__('operations.shopping_item.bulk_destroy'), new Exception(__('api.shopping.invalid_ids')), $request);
-                return $this->errorResponse(__('api.shopping.invalid_ids'), 400);
+                return $this->errorResponse(__('api.shopping.invalid_ids'), HttpStatusCode::BAD_REQUEST);
             }
 
             $deletedIds = [];
@@ -253,7 +262,7 @@ class ShoppingItemController extends ApiController
 
             // 見つからなかったアイテムがある場合は警告ログを出力
             if (!empty($notFoundIds)) {
-                $this->logWarning(__('operations.shopping_item.bulk_destroy'), __('api.shopping.some_items_not_found'), $request, [
+                $this->logError(__('operations.shopping_item.bulk_destroy'), new Exception(__('api.shopping.some_items_not_found')), $request, [
                     'not_found_ids' => $notFoundIds,
                     'deleted_ids' => $deletedIds
                 ]);
@@ -262,7 +271,7 @@ class ShoppingItemController extends ApiController
             // 削除されたアイテムがない場合はエラー
             if (empty($deletedIds)) {
                 $this->logError(__('operations.shopping_item.bulk_destroy'), new Exception(__('api.shopping.no_items_deleted')), $request);
-                return $this->errorResponse(__('api.shopping.no_items_deleted'), 400);
+                return $this->errorResponse(__('api.shopping.no_items_deleted'), HttpStatusCode::BAD_REQUEST);
             }
 
             return $this->deletedResponse(__('api.shopping.item_bulk_deleted', ['count' => count($deletedIds)]));

@@ -7,7 +7,7 @@ use App\Models\MealType;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
+use App\Enums\HttpStatusCode;
 
 class MealTypeController extends ApiController
 {
@@ -44,8 +44,12 @@ class MealTypeController extends ApiController
             ];
             return $this->createdResponse($res, __('api.meal_type.created', ['name' => $ret->name]));
         } catch (Exception $e) {
-            $this->logError(__('operations.meal_type.store'), $e, $request);
-            return $this->handleException($e, $request, __('api.meal_type.creation_failed'));
+            return $this->handleException(
+                $e,
+                $request,
+                __('api.meal_type.creation_failed'),
+                'meal_type.store',
+            );
         }
     }
 
@@ -92,8 +96,12 @@ class MealTypeController extends ApiController
 
             return $this->updatedResponse($ret, __('api.meal_type.updated', ['count' => $types->count()]));
         } catch (Exception $e) {
-            $this->logError(__('operations.meal_type.bulk_update'), $e, $request);
-            return $this->handleException($e, $request, __('api.meal_type.update_failed'));
+            return $this->handleException(
+                $e,
+                $request,
+                __('api.meal_type.update_failed'),
+                'meal_type.bulk_update',
+            );
         }
     }
 
@@ -127,7 +135,7 @@ class MealTypeController extends ApiController
                 $this->logError(__('operations.meal_type.destroy'), new Exception(__('api.meal_type.cannot_delete', ['name' => $type->name])), $request, [
                     'meal_type_id' => $id
                 ]);
-                return $this->errorResponse(__('api.meal_type.cannot_delete', ['name' => $type->name]), 403);
+                return $this->errorResponse(__('api.meal_type.cannot_delete', ['name' => $type->name]), HttpStatusCode::FORBIDDEN);
             }
 
             $deletedId = $type->id;
@@ -144,10 +152,12 @@ class MealTypeController extends ApiController
 
             return $this->deletedResponse(__('api.meal_type.deleted', ['name' => $type->name]));
         } catch (Exception $e) {
-            $this->logError(__('operations.meal_type.destroy'), $e, $request, [
-                'meal_type_id' => $id
-            ]);
-            return $this->handleException($e, $request, __('api.meal_type.deletion_failed'));
+            return $this->handleException(
+                $e,
+                $request,
+                __('api.meal_type.deletion_failed'),
+                'meal_type.destroy'
+            );
         }
     }
 }

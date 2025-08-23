@@ -14,7 +14,6 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
 
 class RecipeController extends ApiController
 {
@@ -60,8 +59,12 @@ class RecipeController extends ApiController
             });
             return $this->indexResponse($formattedData, $formattedData->count(), __('api.recipe.list_retrieved', ['count' => $formattedData->count()]));
         } catch (Exception $e) {
-            $this->logError(__('operations.recipe.index'), $e, $request, []);
-            return $this->handleException($e, $request, __('api.recipe.get_failed'));
+            return $this->handleException(
+                $e,
+                $request,
+                __('api.recipe.get_failed'),
+                'recipe.index',
+            );
         }
     }
 
@@ -106,19 +109,19 @@ class RecipeController extends ApiController
                 // 手順を紐づけ
                 $this->syncSteps($recipe, $request->steps);
 
-
                 return $recipe;
             });
 
             $response = $this->recipeService->formatCompleteRecipeResponse($recipe);
 
             return $this->successResponse($response, __('api.recipe.created', ['name' => $request->name]));
-        } catch (ValidationException $e) {
-            $this->logError(__('operations.recipe.store'), $e, $request);
-            return $this->validationErrorResponse($e);
         } catch (Exception $e) {
-            $this->logError(__('operations.recipe.store'), $e, $request);
-            return $this->handleException($e, $request, __('api.recipe.creation_failed'));
+            return $this->handleException(
+                $e,
+                $request,
+                __('api.recipe.creation_failed'),
+                'recipe.store'
+            );
         }
     }
 
@@ -147,10 +150,12 @@ class RecipeController extends ApiController
 
             return $this->successResponse($this->recipeService->formatCompleteRecipeResponse($recipe), __('api.recipe.details_retrieved', ['name' => $recipe->name]));
         } catch (Exception $e) {
-            $this->logError(__('operations.recipe.show'), $e, $request, [
-                'recipe_id' => $id
-            ]);
-            return $this->handleException($e, $request, __('api.recipe.get_failed'));
+            return $this->handleException(
+                $e,
+                $request,
+                __('api.recipe.get_failed'),
+                'recipe.show'
+            );
         }
     }
 
@@ -199,14 +204,13 @@ class RecipeController extends ApiController
             $response = $this->recipeService->formatCompleteRecipeResponse($recipe);
 
             return $this->updatedResponse($response, __('api.recipe.updated', ['name' => $request->name]));
-        } catch (ValidationException $e) {
-            $this->logError(__('operations.recipe.update'), $e, $request);
-            return $this->validationErrorResponse($e);
         } catch (Exception $e) {
-            $this->logError(__('operations.recipe.update'), $e, $request, [
-                'recipe_id' => $id,
-            ]);
-            return $this->handleException($e, $request, __('api.recipe.update_failed'));
+            return $this->handleException(
+                $e,
+                $request,
+                __('api.recipe.update_failed'),
+                'recipe.update'
+            );
         }
     }
 
@@ -250,10 +254,12 @@ class RecipeController extends ApiController
 
             return $this->deletedResponse(__('api.recipe.deleted', ['name' => $recipeName]));
         } catch (Exception $e) {
-            $this->logError(__('operations.recipe.destroy'), $e, $request, [
-                'recipe_id' => $id,
-            ]);
-            return $this->handleException($e, $request, __('api.recipe.deletion_failed'));
+            return $this->handleException(
+                $e,
+                $request,
+                __('api.recipe.deletion_failed'),
+                'recipe.destroy'
+            );
         }
     }
 

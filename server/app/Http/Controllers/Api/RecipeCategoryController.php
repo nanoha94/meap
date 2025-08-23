@@ -7,7 +7,7 @@ use App\Models\RecipeCategory;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
+use App\Enums\HttpStatusCode;
 
 class RecipeCategoryController extends ApiController
 {
@@ -41,12 +41,13 @@ class RecipeCategoryController extends ApiController
                 'order' => $ret->order,
             ];
             return $this->createdResponse($res, __('api.recipe.category_created', ['name' => $ret->name]));
-        } catch (ValidationException $e) {
-            $this->logError(__('operations.recipe_category.store'), $e, $request);
-            return $this->validationErrorResponse($e);
         } catch (Exception $e) {
-            $this->logError(__('operations.recipe_category.store'), $e, $request);
-            return $this->handleException($e, $request, __('api.recipe.category_creation_failed'));
+            return $this->handleException(
+                $e,
+                $request,
+                __('api.recipe.category_creation_failed'),
+                'recipe_category.store'
+            );
         }
     }
 
@@ -86,7 +87,7 @@ class RecipeCategoryController extends ApiController
                         'category_id' => $category['id'],
                         'category_name' => $category['name']
                     ]);
-                    return $this->errorResponse(__('api.recipe.category_update_failed'), 500);
+                    return $this->errorResponse(__('api.recipe.category_update_failed'), HttpStatusCode::INTERNAL_SERVER_ERROR);
                 }
             }
 
@@ -94,12 +95,13 @@ class RecipeCategoryController extends ApiController
             $categories = $group->recipeCategories()->where('group_id', $group->id)->select('id', 'name', 'order')->get();
 
             return $this->updatedResponse($categories, __('api.recipe.category_updated', ['count' => $categories->count()]));
-        } catch (ValidationException $e) {
-            $this->logError(__('operations.recipe_category.bulk_update'), $e, $request);
-            return $this->validationErrorResponse($e);
         } catch (Exception $e) {
-            $this->logError(__('operations.recipe_category.bulk_update'), $e, $request);
-            return $this->handleException($e, $request, __('api.recipe.category_bulk_update_failed'));
+            return $this->handleException(
+                $e,
+                $request,
+                __('api.recipe.category_bulk_update_failed'),
+                'recipe_category.bulk_update'
+            );
         }
     }
 
@@ -128,15 +130,26 @@ class RecipeCategoryController extends ApiController
             ]);
 
             $deletedIds = [];
+            $notFoundIds = [];
+
             foreach ($request->ids as $id) {
                 $category =  RecipeCategory::where('id', $id)->where('group_id', $group->id)->first();
 
                 if (!$category) {
-                    return $this->notFoundResponse(__('api.general.not_found'));
+                    $notFoundIds[] = $id;
+                    continue;
                 }
 
-                $deletedIds[] = [$category->id];
+                $deletedIds[] = $category->id;
                 $category->delete();
+            }
+
+            // 見つからなかったIDがある場合はエラーレスポンスを返す
+            if (!empty($notFoundIds)) {
+                $this->logError(__('operations.recipe_category.bulk_destroy'), new Exception(__('api.general.not_found')), $request, [
+                    'notFoundIds' => $notFoundIds
+                ]);
+                return $this->notFoundResponse(__('api.general.not_found'));
             }
 
             // 残りのカテゴリーのorderを整理
@@ -149,12 +162,13 @@ class RecipeCategoryController extends ApiController
             }
 
             return $this->deletedResponse(__('api.recipe.category_deleted', ['count' => count($deletedIds)]));
-        } catch (ValidationException $e) {
-            $this->logError(__('operations.recipe_category.bulk_destroy'), $e, $request);
-            return $this->validationErrorResponse($e);
         } catch (Exception $e) {
-            $this->logError(__('operations.recipe_category.bulk_destroy'), $e, $request);
-            return $this->handleException($e, $request, __('api.recipe.category_deletion_failed'));
+            return $this->handleException(
+                $e,
+                $request,
+                __('api.recipe.category_bulk_destroy_failed'),
+                'recipe_category.bulk_destroy'
+            );
         }
     }
 }

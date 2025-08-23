@@ -3,9 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\ApiController;
-use App\Models\CourseType;
 use App\Models\MealPlan;
-use App\Services\MealPlanResponseService;
 use App\Services\MealPlanService;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -50,7 +48,7 @@ class MealPlanController extends ApiController
                     return [
                         'date' => $date,
                         'mealPlans' => $dateMeals->map(function ($mealPlan) {
-                            return $this->responseService->formatCompleteMealPlanResponse($mealPlan);
+                            return $this->mealPlanService->formatCompleteMealPlanResponse($mealPlan);
                         })
                     ];
                 })->values()
@@ -58,8 +56,12 @@ class MealPlanController extends ApiController
 
             return $this->indexResponse($res, $meal_plans->count(), __('api.meal_plan.list_retrieved', ['count' => $meal_plans->count()]));
         } catch (Exception $e) {
-            $this->logError(__('operations.meal_plan.index'), $e, $request, []);
-            return $this->handleException($e, $request, __('api.meal_plan.get_failed'));
+            return $this->handleException(
+                $e,
+                $request,
+                __('api.meal_plan.get_failed'),
+                'meal_plan.index',
+            );
         }
     }
 
@@ -105,11 +107,16 @@ class MealPlanController extends ApiController
                 }
             }
 
-            $res = $this->responseService->formatCompleteMealPlanResponse($ret);
+            $res = $this->mealPlanService->formatCompleteMealPlanResponse($ret);
             return $this->createdResponse($res, __('api.meal_plan.created', ['date' => $res['date']]));
         } catch (Exception $e) {
-            $this->logError(__('operations.meal_plan.store'), $e, $request);
-            return $this->handleException($e, $request, __('api.meal_plan.creation_failed'));
+            return $this->handleException(
+                $e,
+                $request,
+                __('api.meal_plan.creation_failed'),
+                'meal_plan.store',
+
+            );
         }
     }
 
@@ -136,14 +143,16 @@ class MealPlanController extends ApiController
                 return $this->notFoundResponse(__('api.meal_plan.not_found'));
             }
 
-            $res = $this->responseService->formatCompleteMealPlanResponse($meal);
+            $res = $this->mealPlanService->formatCompleteMealPlanResponse($meal);
 
             return $this->showResponse($res, __('api.meal_plan.retrieved', ['date' => $meal->date]));
         } catch (Exception $e) {
-            $this->logError(__('operations.meal_plan.show'), $e, $request, [
-                'meal_plan_id' => $id
-            ]);
-            return $this->handleException($e, $request, __('api.meal_plan.get_failed'));
+            return $this->handleException(
+                $e,
+                $request,
+                __('api.meal_plan.get_failed'),
+                'meal_plan.show',
+            );
         }
     }
 
@@ -198,13 +207,16 @@ class MealPlanController extends ApiController
 
             $updatedItem = $group->mealPlans()->where('id', $id)->first()->select('id', 'date', 'meal_type_id')->with(['mealType', 'recipes.courseTypes', 'recipes.categories', 'recipes.ingredients'])->first();
 
-            $res = $this->responseService->formatCompleteMealPlanResponse($updatedItem);
+            $res = $this->mealPlanService->formatCompleteMealPlanResponse($updatedItem);
             return $this->updatedResponse($res, __('api.meal_plan.updated', ['date' => $updatedItem->date]));
         } catch (Exception $e) {
-            $this->logError(__('operations.meal_plan.update'), $e, $request, [
-                'meal_plan_id' => $id
-            ]);
-            return $this->handleException($e, $request, __('api.meal_plan.update_failed'));
+            return $this->handleException(
+                $e,
+                $request,
+                __('api.meal_plan.update_failed'),
+                'meal_plan.update',
+                ['meal_plan_id' => $id]
+            );
         }
     }
 
@@ -236,10 +248,12 @@ class MealPlanController extends ApiController
 
             return $this->deletedResponse(__('api.meal_plan.deleted', ['date' => $meal->date]));
         } catch (Exception $e) {
-            $this->logError(__('operations.meal_plan.destroy'), $e, $request, [
-                'meal_plan_id' => $id
-            ]);
-            return $this->handleException($e, $request, __('api.meal_plan.deletion_failed'));
+            return $this->handleException(
+                $e,
+                $request,
+                __('api.meal_plan.deletion_failed'),
+                'meal_plan.destroy',
+            );
         }
     }
 }

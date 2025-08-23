@@ -11,7 +11,7 @@ use Exception;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
+use App\Enums\HttpStatusCode;
 
 class InvitationController extends ApiController
 {
@@ -45,7 +45,7 @@ class InvitationController extends ApiController
             $invitationToken = InvitationToken::createWithExpiration(auth()->id(), $expiresAt);
             if (!$invitationToken) {
                 $this->logError(__('operations.invitation.store'), new Exception(__('api.invitation.token_generation_failed')), $request);
-                return $this->errorResponse(__('api.invitation.token_generation_failed'), 403);
+                return $this->errorResponse(__('api.invitation.token_generation_failed'), HttpStatusCode::FORBIDDEN);
             }
             $data = [
                 'token' => $invitationToken,
@@ -53,8 +53,12 @@ class InvitationController extends ApiController
             ];
             return $this->createdResponse($data, __('api.auth.invitation_token_created'));
         } catch (Exception $e) {
-            $this->logError(__('operations.invitation.store'), $e, $request, []);
-            return $this->handleException($e, $request, __('api.auth.invitation_token_creation_failed'));
+            return $this->handleException(
+                $e,
+                $request,
+                __('api.auth.invitation_token_creation_failed'),
+                'invitation.store'
+            );
         }
     }
 
@@ -98,7 +102,7 @@ class InvitationController extends ApiController
                 $this->logError(__('operations.invitation.show'), new Exception(__('api.invitation.invalid_token')), $request, [
                     'token' => $token
                 ]);
-                return $this->errorResponse(__('api.invitation.invalid_token'), 403);
+                return $this->errorResponse(__('api.invitation.invalid_token'), HttpStatusCode::FORBIDDEN);
             }
 
             $data = [
@@ -112,10 +116,12 @@ class InvitationController extends ApiController
             ];
             return $this->showResponse($data, __('api.invitation.details_retrieved'));
         } catch (Exception $e) {
-            $this->logError(__('operations.invitation.show'), $e, $request, [
-                'token' => $token
-            ]);
-            return $this->handleException($e, $request, __('api.invitation.get_failed'));
+            return $this->handleException(
+                $e,
+                $request,
+                __('api.invitation.get_failed'),
+                'invitation.show'
+            );
         }
     }
 
@@ -160,7 +166,7 @@ class InvitationController extends ApiController
                 $this->logError(__('operations.invitation.join'), new Exception(__('api.invitation.invalid_token')), $request, [
                     'token' => $token
                 ]);
-                return $this->errorResponse(__('api.invitation.invalid_token'), 403);
+                return $this->errorResponse(__('api.invitation.invalid_token'), HttpStatusCode::FORBIDDEN);
             }
 
             // ログインしているユーザーを取得
@@ -174,7 +180,7 @@ class InvitationController extends ApiController
                 $this->logError(__('operations.invitation.join'), new Exception(__('api.invitation.self_invitation_error')), $request, [
                     'token' => $token
                 ]);
-                return $this->errorResponse(__('api.invitation.self_invitation_error'), 403);
+                return $this->errorResponse(__('api.invitation.self_invitation_error'), HttpStatusCode::FORBIDDEN);
             }
 
             // 招待された人がすでに同じグループにいるかチェック
@@ -182,7 +188,7 @@ class InvitationController extends ApiController
                 $this->logError(__('operations.invitation.join'), new Exception(__('api.invitation.already_in_group')), $request, [
                     'token' => $token
                 ]);
-                return $this->errorResponse(__('api.invitation.already_in_group'), 403);
+                return $this->errorResponse(__('api.invitation.already_in_group'), HttpStatusCode::FORBIDDEN);
             }
 
             if (!$request->isDelete) {
@@ -191,14 +197,14 @@ class InvitationController extends ApiController
                     $this->logError(__('operations.invitation.join'), new Exception(__('api.invitation.already_in_another_group')), $request, [
                         'token' => $token
                     ]);
-                    return $this->errorResponse(__('api.invitation.already_in_another_group'), 409, null, 'already_in_group');
+                    return $this->errorResponse(__('api.invitation.already_in_another_group'), HttpStatusCode::CONFLICT, null, 'already_in_group');
                 }
                 // データがあるかチェック
                 if ($currentGroup->shoppingItems()->exists() || $currentGroup->shoppingCategories()->where('is_default', 0)->exists()) {
                     $this->logError(__('operations.invitation.join'), new Exception(__('api.invitation.has_existing_data')), $request, [
                         'token' => $token
                     ]);
-                    return $this->errorResponse(__('api.invitation.has_existing_data'), 409, null, 'has_existing_data');
+                    return $this->errorResponse(__('api.invitation.has_existing_data'), HttpStatusCode::CONFLICT, null, 'has_existing_data');
                 }
             }
 
@@ -228,11 +234,12 @@ class InvitationController extends ApiController
 
             return $this->successResponse(null, __('api.invitation.joined_successfully'));
         } catch (Exception $e) {
-            $this->logError(__('operations.invitation.join'), $e, $request, [
-                'token' => $token,
-                'is_delete' => $request->isDelete ?? false
-            ]);
-            return $this->handleException($e, $request, __('api.invitation.join_failed'));
+            return $this->handleException(
+                $e,
+                $request,
+                __('api.invitation.join_failed'),
+                'invitation.join'
+            );
         }
     }
 }

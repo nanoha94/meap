@@ -34,8 +34,12 @@ class ShoppingTagController extends ApiController
 
             return $this->indexResponse($res, $tags->count(), __('api.shopping_tag.list_retrieved', ['count' => $tags->count()]));
         } catch (Exception $e) {
-            $this->logError(__('operations.shopping_tag.index'), $e, $request);
-            return $this->handleException($e, $request, __('api.shopping_tag.get_failed'));
+            return $this->handleException(
+                $e,
+                $request,
+                __('api.shopping_tag.get_failed'),
+                'shopping_tag.index'
+            );
         }
     }
 }

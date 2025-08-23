@@ -2,6 +2,7 @@
 
 namespace App\Traits;
 
+use App\Enums\HttpStatusCode;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -48,35 +49,6 @@ trait ApiResponse
         return response()->json($response, $statusCode);
     }
 
-    /**
-     * エラーレスポンスを返す
-     */
-    protected function errorResponse(string $message, int $statusCode = 400, mixed $errors = null, string $errorType = ''): JsonResponse
-    {
-        $response = [
-            'success' => false,
-            'message' => $message,
-            'error_type' => $errorType,
-        ];
-
-        if ($errors !== null) {
-            $response['errors'] = $errors;
-        }
-
-        return response()->json($response, $statusCode);
-    }
-
-    /**
-     * バリデーションエラーレスポンスを返す
-     */
-    protected function validationErrorResponse(ValidationException $exception): JsonResponse
-    {
-        return $this->errorResponse(
-            __('api.general.validation_error'),
-            422,
-            $exception->errors()
-        );
-    }
 
     /**
      * データ作成成功レスポンスを返す
@@ -134,20 +106,67 @@ trait ApiResponse
     }
 
     /**
-     * 例外をキャッチしてエラーレスポンスを返す
+     * エラーレスポンスを返す
      */
-    protected function handleException(\Exception $e, Request $request, ?string $defaultMessage = null): JsonResponse
+    protected function errorResponse(string $message, HttpStatusCode $statusCode = HttpStatusCode::BAD_REQUEST, mixed $errors = null, ?string $errorType = null): JsonResponse
     {
-        $defaultMessage = $defaultMessage ?? __('api.general.error');
-        $message = $e->getMessage() ?: $defaultMessage;
-        $statusCode = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500;
+        $response = [
+            'success' => false,
+            'message' => $message,
+            'error_type' => $errorType,
+            'error_code' => $statusCode->value,
+            'error_description' => $statusCode->getDescription(),
+        ];
 
-        // エラーログを記録
-        $this->logError(__('operations.general.exception_handling'), $e, $request, [
-            'default_message' => $defaultMessage,
-            'status_code' => $statusCode
-        ]);
+        if ($errors !== null) {
+            $response['errors'] = $errors;
+        }
 
-        return $this->errorResponse($message, $statusCode);
+        return response()->json($response, $statusCode->value);
+    }
+
+    /**
+     * データが見つからない場合のエラーレスポンス
+     */
+    protected function notFoundResponse(?string $message = null): JsonResponse
+    {
+        $message = $message ?? __('api.general.not_found');
+        return $this->errorResponse($message, HttpStatusCode::NOT_FOUND);
+    }
+
+    /**
+     * 認証エラーレスポンス
+     */
+    protected function unauthorizedResponse(?string $message = null): JsonResponse
+    {
+        $errorMessage = $message ?? __('api.general.unauthorized');
+        return $this->errorResponse($errorMessage, HttpStatusCode::UNAUTHORIZED);
+    }
+
+    /**
+     * 権限エラーレスポンス
+     */
+    protected function forbiddenResponse(?string $message = null): JsonResponse
+    {
+        $errorMessage = $message ?? __('api.general.forbidden');
+        return $this->errorResponse($errorMessage, HttpStatusCode::FORBIDDEN);
+    }
+
+    /**
+     * サーバーエラーレスポンス
+     */
+    protected function serverErrorResponse(?string $message = null): JsonResponse
+    {
+        $errorMessage = $message ?? __('api.general.error');
+        return $this->errorResponse($errorMessage, HttpStatusCode::INTERNAL_SERVER_ERROR);
+    }
+
+    /**
+     * データベースエラーレスポンス
+     */
+    protected function databaseErrorResponse(?string $message = null): JsonResponse
+    {
+        $errorMessage = $message ?? __('api.general.database_error');
+        return $this->errorResponse($errorMessage, HttpStatusCode::INTERNAL_SERVER_ERROR);
     }
 }
