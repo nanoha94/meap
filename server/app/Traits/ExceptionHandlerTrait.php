@@ -89,7 +89,8 @@ trait ExceptionHandlerTrait
         ?string $operation,
         array $additionalContext
     ): JsonResponse {
-        $message = $e->getMessage() ?: $defaultMessage;
+        $message = $defaultMessage ?? $e->getMessage();
+
         $statusCode = method_exists($e, 'getStatusCode') ? HttpStatusCode::from($e->getStatusCode()) : HttpStatusCode::INTERNAL_SERVER_ERROR;
 
         // エラーログを記録
