@@ -57,12 +57,6 @@ return [
         'email_verification' => 'Email verification process',
         'registration' => 'User registration',
     ],
-    'general' => [
-        'exception_handling' => 'Exception handling',
-        'validation_error' => 'Validation error handling',
-        'not_found' => 'Resource not found',
-        'database_error' => 'Database error handling',
-    ],
     'users' => [
         'index' => 'User list retrieval',
     ],

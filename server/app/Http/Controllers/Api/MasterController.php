@@ -51,7 +51,7 @@ class MasterController extends ApiController
             return $this->successResponse($res, __('api.master.data_retrieved'));
         } catch (Exception $e) {
             $this->logError(__('operations.master.index'), $e, $request);
-            return $this->handleException($e, $request, __('api.master.get_failed'));
+            return $this->handleException($e, $request, __('api.master.get_failed'), 'master.index');
         }
     }
 }

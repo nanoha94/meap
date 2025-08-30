@@ -58,12 +58,6 @@ return [
         'email_verification' => 'メール確認処理',
         'registration' => 'ユーザー登録',
     ],
-    'general' => [
-        'exception_handling' => '例外処理',
-        'validation_error' => 'バリデーションエラー処理',
-        'not_found' => 'リソース未発見',
-        'database_error' => 'データベースエラー処理',
-    ],
     'users' => [
         'index' => 'ユーザー一覧取得',
     ],

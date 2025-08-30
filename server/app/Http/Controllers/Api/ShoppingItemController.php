@@ -277,7 +277,7 @@ class ShoppingItemController extends ApiController
             return $this->deletedResponse(__('api.shopping.item_bulk_deleted', ['count' => count($deletedIds)]));
         } catch (Exception $e) {
             $this->logError(__('operations.shopping_item.bulk_destroy'), $e, $request);
-            return $this->handleException($e, $request, __('api.shopping.deletion_failed'));
+            return $this->handleException($e, $request, __('api.shopping.deletion_failed'), 'shopping_item.bulk_destroy');
         }
     }
 }

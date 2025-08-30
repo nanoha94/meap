@@ -5,6 +5,8 @@ namespace App\Traits;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Exception;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\QueryException;
 
 trait LoggingTrait
 {
@@ -65,6 +67,8 @@ trait LoggingTrait
             'file' => $exception->getFile(),
             'line' => $exception->getLine(),
             'trace' => $exception->getTraceAsString(),
+            'status_code' => $this->getExceptionStatusCode($exception),
+            'model' => $this->getExceptionModel($exception),
         ], $additionalContext);
 
         $this->logMessage('error', $operation, 'エラーが発生しました', $request, $errorContext);
@@ -109,5 +113,34 @@ trait LoggingTrait
         $context['request_data'] = $requestData;
 
         return $context;
+    }
+
+    /**
+     * 例外のステータスコードを取得
+     */
+    private function getExceptionStatusCode(Exception $exception): int
+    {
+        if (method_exists($exception, 'getStatusCode')) {
+            try {
+                return $exception->getStatusCode();
+            } catch (\ValueError $e) {
+                // 無効なステータスコードの場合は500を返す
+                return 500;
+            }
+        }
+        return 500;
+    }
+
+    /**
+     * 例外に関連するモデルクラス名を取得
+     */
+    private function getExceptionModel(Exception $exception): ?string
+    {
+        // getModel()メソッドが存在する場合
+        if (method_exists($exception, 'getModel')) {
+            return $exception->getModel();
+        }
+
+        return null;
     }
 }
