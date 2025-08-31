@@ -30,12 +30,10 @@ class VerifyEmailController extends Controller
                 config('app.frontend_url') . '/plan?verified=1'
             );
         } catch (\Exception $e) {
-            $this->logError(__('operations.auth.email_verification'), $e, $request, [
-                'user_id' => $request->user()->id ?? 'unknown',
-                'route_params' => $request->route()->parameters()
-            ]);
+            $this->handleException($e, $request, __('operations.auth.email_verification'), 'verify_email.invoke');
 
             // エラーがあっても、フロントエンドにリダイレクト
+            // TODO: 要検討（フロントとも関係があるのであとでリファクタリング / docs/refactorings/VERIFY_EMAIL_CONTROLLER_REFACTORING_PLAN.md）
             return redirect(
                 config('app.frontend_url') . '/email/verify?error=' . urlencode($e->getMessage())
             );

@@ -10,9 +10,13 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
+use App\Traits\LoggingTrait;
+use App\Enums\HttpStatusCode;
 
 class PasswordResetLinkController extends Controller
 {
+    use LoggingTrait;
+
     /**
      * Handle an incoming password reset link request.
      *
@@ -46,8 +50,12 @@ class PasswordResetLinkController extends Controller
                 ]);
             }
 
-            $this->logError(__('operations.password.reset_link'), new Exception(__($status)), $request);
-            return $this->errorResponse(__($status), $statusCode);
+            try {
+                $this->logError(HttpStatusCode::INTERNAL_SERVER_ERROR, __('operations.password.reset_link'), new Exception(__($status)), $request);
+                return $this->errorResponse(__($status), HttpStatusCode::INTERNAL_SERVER_ERROR);
+            } catch (Exception $e) {
+                return  $this->handleException($e, $request, __('operations.password.reset_link'), 'password_reset_link.store');
+            }
         }
 
         return $this->successResponse(null, __($status));

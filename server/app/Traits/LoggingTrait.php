@@ -2,93 +2,120 @@
 
 namespace App\Traits;
 
+use App\Enums\HttpStatusCode;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Exception;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Database\QueryException;
 
 trait LoggingTrait
 {
     /**
-     * 統一されたログを記録（汎用メソッド）
-     *
-     * @param string $logLevel ログレベル（info, warning, debug, error）
+     * 統一された情報ログを記録
+     * 
+     * @param HttpStatusCode $statusCode ステータスコード
      * @param string $operation 実行中の操作
-     * @param string $message ログメッセージ
+     * @param string $message 情報メッセージ
      * @param Request $request リクエストインスタンス
      * @param array $additionalContext 追加のコンテキスト情報
      */
-    protected function logMessage(
+    public function logInfo(
+        HttpStatusCode $statusCode,
+        string $operation,
+        string $message,
+        Request $request,
+        array $additionalContext = [],
+        string $callerMethod = __METHOD__  // 呼び出し元のメソッド名を追加
+    ): void {
+        $this->logMessage('info', $operation, $message, $request, $statusCode, $additionalContext, $callerMethod);
+    }
+
+    /**
+     * 統一された警告ログを記録
+     * 
+     * @param HttpStatusCode $statusCode ステータスコード
+     * @param string $operation 実行中の操作
+     * @param string $message 警告メッセージ
+     * @param Request $request リクエストインスタンス
+     * @param array $additionalContext 追加のコンテキスト情報
+     */
+    public function logWarning(
+        HttpStatusCode $statusCode,
+        string $operation,
+        string $message,
+        Request $request,
+        array $additionalContext = [],
+        string $callerMethod = __METHOD__  // 呼び出し元のメソッド名を追加
+    ): void {
+        $this->logMessage('warning', $operation, $message, $request, $statusCode, $additionalContext, $callerMethod);
+    }
+
+    /**
+     * 統一されたエラーログを記録
+     *
+     * @param HttpStatusCode $statusCode ステータスコード
+     * @param string $operation 実行中の操作
+     * @param Exception $exception 発生した例外
+     * @param Request $request リクエストインスタンス
+     * @param array $additionalContext 追加のコンテキスト情報
+     */
+    public function logError(
+        HttpStatusCode $statusCode,
+        string $operation,
+        Exception $exception,
+        Request $request,
+        array $additionalContext = [],
+        string $callerMethod = __METHOD__  // 呼び出し元のメソッド名を追加
+    ): void {
+        $errorContext = array_merge([
+            'error_message' => $exception->getMessage(),
+            'file' => $exception->getFile(),
+            'line' => $exception->getLine(),
+            'trace' => $exception->getTraceAsString(),
+            'model' => $this->getExceptionModel($exception),
+        ], $additionalContext);
+
+        $this->logMessage('error', $operation, 'エラーが発生しました', $request, $statusCode, $errorContext, $callerMethod);
+    }
+
+    /**
+     * 統一されたログを記録（内部実装）
+     *
+     * @param string $logLevel ログレベル
+     * @param string $operation 実行中の操作
+     * @param string $message ログメッセージ
+     * @param Request $request リクエストインスタンス
+     * @param HttpStatusCode $httpStatusCode HTTPステータスコード
+     * @param array $additionalContext 追加のコンテキスト情報
+     */
+    private function logMessage(
         string $logLevel,
         string $operation,
         string $message,
         Request $request,
-        array $additionalContext = []
+        HttpStatusCode $statusCode,
+        array $additionalContext = [],
+        string $callerMethod
     ): void {
         $user = $request->user();
         $group = $user?->group;
 
         $context = array_merge([
-            'operation' => $operation,
             'controller' => class_basename($this),
-            'method' => debug_backtrace()[1]['function'] ?? 'unknown',
+            'method' => $callerMethod,
             'user_id' => $user?->id,
             'group_id' => $group?->id,
             'request_method' => $request->method(),
             'request_url' => $request->fullUrl(),
             'request_ip' => $request->ip(),
             'user_agent' => $request->userAgent(),
+            'status_code' => $statusCode->value,
+
         ], $additionalContext);
 
         // 機密情報を除外
         $context = $this->filterSensitiveData($context, $request);
 
         Log::$logLevel("操作「{$operation}」: {$message}", $context);
-    }
-
-    /**
-     * 統一されたエラーログを記録
-     *
-     * @param string $operation 実行中の操作
-     * @param Exception $exception 発生した例外
-     * @param Request $request リクエストインスタンス
-     * @param array $additionalContext 追加のコンテキスト情報
-     */
-    protected function logError(
-        string $operation,
-        Exception $exception,
-        Request $request,
-        array $additionalContext = []
-    ): void {
-        $errorContext = array_merge([
-            'error_message' => $exception->getMessage(),
-            'error_code' => $exception->getCode(),
-            'file' => $exception->getFile(),
-            'line' => $exception->getLine(),
-            'trace' => $exception->getTraceAsString(),
-            'status_code' => $this->getExceptionStatusCode($exception),
-            'model' => $this->getExceptionModel($exception),
-        ], $additionalContext);
-
-        $this->logMessage('error', $operation, 'エラーが発生しました', $request, $errorContext);
-    }
-
-    /**
-     * 統一された警告ログを記録
-     *
-     * @param string $operation 実行中の操作
-     * @param string $message 警告メッセージ
-     * @param Request $request リクエストインスタンス
-     * @param array $additionalContext 追加のコンテキスト情報
-     */
-    protected function logWarning(
-        string $operation,
-        string $message,
-        Request $request,
-        array $additionalContext = []
-    ): void {
-        $this->logMessage('warning', $operation, $message, $request, $additionalContext);
     }
 
     /**
@@ -100,13 +127,22 @@ trait LoggingTrait
      */
     private function filterSensitiveData(array $context, Request $request): array
     {
-        $sensitiveFields = ['password', 'password_confirmation', 'token', 'api_key', 'secret'];
+        // 実際のプロジェクトで使用されている機密フィールドのみを含める
+        $sensitiveFields = [
+            'password',           // ユーザーパスワード
+            'password_confirmation', // パスワード確認
+            'current_password',   // 現在のパスワード
+            'token',             // 認証トークン
+            'api_token',         // APIトークン
+            'api_key',           // APIキー
+            'secret'             // シークレットキー
+        ];
 
         // リクエストデータから機密情報を除外
         $requestData = $request->all();
         foreach ($sensitiveFields as $field) {
             if (isset($requestData[$field])) {
-                $requestData[$field] = '[FILTERED]';
+                $requestData[$field] = '*****';
             }
         }
 
@@ -118,7 +154,7 @@ trait LoggingTrait
     /**
      * 例外のステータスコードを取得
      */
-    private function getExceptionStatusCode(Exception $exception): int
+    private function getLoggingExceptionStatusCode(Exception $exception): int
     {
         if (method_exists($exception, 'getStatusCode')) {
             try {

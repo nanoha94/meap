@@ -1419,6 +1419,11 @@
             },
             "RecipeThumbnail": {
                 "properties": {
+                    "id": {
+                        "description": "画像ID",
+                        "type": "string",
+                        "example": "1"
+                    },
                     "url": {
                         "description": "サムネイル画像URL",
                         "type": "string",
@@ -1468,6 +1473,11 @@
             },
             "RecipeStepImage": {
                 "properties": {
+                    "id": {
+                        "description": "画像ID",
+                        "type": "string",
+                        "example": "1"
+                    },
                     "url": {
                         "description": "画像URL",
                         "type": "string",

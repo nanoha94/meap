@@ -28,7 +28,7 @@ trait ExceptionHandlerTrait
         // バリデーション例外
         if ($e instanceof ValidationException) {
             $message = $defaultMessage ?? __('api.general.validation_error');
-            $this->logError($operation, $e, $request, array_merge($additionalContext, [
+            $this->logError(HttpStatusCode::UNPROCESSABLE_ENTITY, $operation, $e, $request, array_merge($additionalContext, [
                 'validation_errors' => $e->errors(),
                 'message' => $message,
             ]));
@@ -38,7 +38,7 @@ trait ExceptionHandlerTrait
         // モデル未発見例外
         if ($e instanceof ModelNotFoundException) {
             $message = $defaultMessage ?? __('api.general.not_found');
-            $this->logError($operation, $e, $request, array_merge($additionalContext, [
+            $this->logError(HttpStatusCode::NOT_FOUND, $operation, $e, $request, array_merge($additionalContext, [
                 'search_conditions' => $e->getIds(),
                 'message' => $message,
             ]));
@@ -48,7 +48,7 @@ trait ExceptionHandlerTrait
         // クエリ例外
         if ($e instanceof QueryException) {
             $message = $defaultMessage ?? __('api.general.database_error');
-            $this->logError($operation, $e, $request, array_merge($additionalContext, [
+            $this->logError(HttpStatusCode::INTERNAL_SERVER_ERROR, $operation, $e, $request, array_merge($additionalContext, [
                 'message' => $message,
             ]));
             return $this->errorResponse($message, HttpStatusCode::INTERNAL_SERVER_ERROR);
@@ -71,26 +71,26 @@ trait ExceptionHandlerTrait
         $message = $defaultMessage ?? $e->getMessage();
         $statusCode = $this->getExceptionStatusCode($e);
 
-        $this->logError($operation, $e, $request, array_merge($additionalContext, [
+        $this->logError(HttpStatusCode::from($statusCode), $operation, $e, $request, array_merge($additionalContext, [
             'message' => $message,
         ]));
 
-        return $this->errorResponse($message, $statusCode);
+        return $this->errorResponse($message, HttpStatusCode::from($statusCode));
     }
 
     /**
      * 例外のステータスコードを取得
      */
-    private function getExceptionStatusCode(Exception $e): HttpStatusCode
+    private function getExceptionStatusCode(Exception $e): int
     {
         if (method_exists($e, 'getStatusCode')) {
             try {
-                return HttpStatusCode::from($e->getStatusCode());
+                return $e->getStatusCode();
             } catch (\ValueError $e) {
                 // 無効なステータスコードの場合は500を返す
-                return HttpStatusCode::INTERNAL_SERVER_ERROR;
+                return 500;
             }
         }
-        return HttpStatusCode::INTERNAL_SERVER_ERROR;
+        return 500;
     }
 }

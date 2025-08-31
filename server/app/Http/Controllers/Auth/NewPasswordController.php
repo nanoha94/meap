@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Traits\LoggingTrait;
+use App\Enums\HttpStatusCode;
 use Exception;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\JsonResponse;
@@ -15,6 +17,8 @@ use Illuminate\Validation\Rules;
 
 class NewPasswordController extends Controller
 {
+    use LoggingTrait;
+
     /**
      * Handle an incoming new password request.
      *
@@ -45,14 +49,14 @@ class NewPasswordController extends Controller
 
         if ($status != Password::PASSWORD_RESET) {
             $statusMessages = [
-                Password::INVALID_USER => 422,
-                Password::INVALID_TOKEN => 404,
+                Password::INVALID_USER => HttpStatusCode::UNPROCESSABLE_ENTITY,    // 422
+                Password::INVALID_TOKEN => HttpStatusCode::NOT_FOUND,             // 404
             ];
 
-            // それ以外は500として扱う
-            $statusCode = $statusMessages[$status] ?? 500;
+            // 適切なステータスコードを取得
+            $statusCode = $statusMessages[$status] ?? HttpStatusCode::INTERNAL_SERVER_ERROR;
 
-            $this->logError(__('operations.password.reset'), new Exception(__($status)), $request);
+            $this->logError($statusCode, __('operations.password.reset'), new Exception(__($status)), $request);
             return $this->errorResponse(__($status), $statusCode);
         }
 

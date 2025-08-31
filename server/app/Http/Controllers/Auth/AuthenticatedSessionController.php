@@ -19,7 +19,7 @@ class AuthenticatedSessionController extends Controller
      *     security={},
      *     @OA\RequestBody(ref="#/components/requestBodies/UserLoginRequest"),
      *     @OA\Response(
-     *         response=204, ref="#/components/responses/UserLoginSuccess"
+     *         response=200, ref="#/components/responses/UserLoginSuccess"
      *     ),
      *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
      *     @OA\Response(response=422, ref="#/components/responses/ValidationErrors"),
@@ -41,7 +41,7 @@ class AuthenticatedSessionController extends Controller
      *     tags={"Authentication"},
      *     security={"auth"},
      *     @OA\Response(
-     *         response=204, ref="#/components/responses/UserLogoutSuccess"
+     *         response=200, ref="#/components/responses/UserLogoutSuccess"
      *     ),
      *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
      * )

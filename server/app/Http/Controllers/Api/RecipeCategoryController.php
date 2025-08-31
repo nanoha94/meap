@@ -83,7 +83,7 @@ class RecipeCategoryController extends ApiController
                     'order' => $category['order']
                 ]);
                 if (!$ret) {
-                    $this->logError(__('operations.recipe_category.bulk_update'), new Exception(__('api.recipe.category_update_failed')), $request, [
+                    $this->logError(HttpStatusCode::INTERNAL_SERVER_ERROR, __('operations.recipe_category.bulk_update'), new Exception(__('api.recipe.category_update_failed')), $request, [
                         'category_id' => $category['id'],
                         'category_name' => $category['name']
                     ]);
@@ -146,7 +146,7 @@ class RecipeCategoryController extends ApiController
 
             // 見つからなかったIDがある場合はエラーレスポンスを返す
             if (!empty($notFoundIds)) {
-                $this->logError(__('operations.recipe_category.bulk_destroy'), new Exception(__('api.general.not_found')), $request, [
+                $this->logError(HttpStatusCode::NOT_FOUND, __('operations.recipe_category.bulk_destroy'), new Exception(__('api.general.not_found')), $request, [
                     'notFoundIds' => $notFoundIds
                 ]);
                 return $this->notFoundResponse(__('api.general.not_found'));

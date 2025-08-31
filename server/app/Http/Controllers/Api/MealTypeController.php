@@ -123,26 +123,20 @@ class MealTypeController extends ApiController
             $user = $request->user();
             $group = $user->group;
 
-            $type =  MealType::where('id', $id)->where('group_id', $group->id)->first();
+            $mealType =  MealType::where('id', $id)->where('group_id', $group->id)->first();
 
-            if (!$type) {
-                $this->logError(__('operations.meal_type.destroy'), new Exception(__('api.general.not_found')), $request, [
+            if (!$mealType) {
+                $this->logError(HttpStatusCode::NOT_FOUND, __('operations.meal_type.destroy'), new Exception(__('api.general.not_found')), $request, [
                     'meal_type_id' => $id
                 ]);
-                return $this->notFoundResponse(__('api.general.not_found'));
-            }
-            if ($type->is_default) {
-                $this->logError(__('operations.meal_type.destroy'), new Exception(__('api.meal_type.cannot_delete', ['name' => $type->name])), $request, [
-                    'meal_type_id' => $id
-                ]);
-                return $this->errorResponse(__('api.meal_type.cannot_delete', ['name' => $type->name]), HttpStatusCode::FORBIDDEN);
+                return $this->errorResponse(__('api.general.not_found'), HttpStatusCode::NOT_FOUND);
             }
 
-            $deletedId = $type->id;
-            $type->delete();
+            $deletedId = $mealType->id;
+            $mealType->delete();
 
             // 残りのカテゴリーのorderを整理
-            $remainingTypes = MealType::where('group_id', $type->group_id)
+            $remainingTypes = MealType::where('group_id', $mealType->group_id)
                 ->orderBy('order')
                 ->get();
 
@@ -150,7 +144,7 @@ class MealTypeController extends ApiController
                 $remainingType->update(['order' => $index]);
             }
 
-            return $this->deletedResponse(__('api.meal_type.deleted', ['name' => $type->name]));
+            return $this->deletedResponse(__('api.meal_type.deleted', ['name' => $mealType->name]));
         } catch (Exception $e) {
             return $this->handleException(
                 $e,

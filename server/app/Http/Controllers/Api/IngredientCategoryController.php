@@ -82,7 +82,7 @@ class IngredientCategoryController extends ApiController
                 'order' => $validated['order'],
             ]);
             if (!$category) {
-                $this->logError(__('operations.ingredient_category.store'), new Exception(__('api.ingredient.creation_failed')), $request);
+                $this->logError(HttpStatusCode::INTERNAL_SERVER_ERROR, __('operations.ingredient_category.store'), new Exception(__('api.ingredient.creation_failed')), $request);
                 return $this->errorResponse(__('api.ingredient.creation_failed'), HttpStatusCode::INTERNAL_SERVER_ERROR);
             }
 
@@ -130,6 +130,8 @@ class IngredientCategoryController extends ApiController
 
             $updatedCount = 0;
             $updatedIds = [];
+            $failedCount = 0;
+            $failedIds = [];
 
             // 更新処理を実行
             foreach ($validated['data'] as $category) {
@@ -138,16 +140,22 @@ class IngredientCategoryController extends ApiController
                     'order' => $category['order']
                 ]);
                 if (!$ret) {
-                    $this->logWarning(__('operations.ingredient_category.bulk_update'), __('api.ingredient.update_failed'), $request, [
-                        'category_id' => $category['id'],
-                        'category_name' => $category['name']
-                    ]);
-                    // 更新に失敗した場合は、そのカテゴリーをスキップして続行
+                    $failedCount++;
+                    $failedIds[] = $category['id'];
                     continue;
                 } else {
                     $updatedCount++;
                     $updatedIds[] = $category['id'];
                 }
+            }
+
+            if ($failedCount > 0) {
+                $this->logWarning(HttpStatusCode::OK, __('operations.ingredient_category.bulk_update'), __('api.ingredient.bulk_update_partial_success'), $request, [
+                    'total_count' => count($validated['data']),
+                    'success_count' => $updatedCount,
+                    'failed_count' => $failedCount,
+                    'failed_ids' => $failedIds,
+                ]);
             }
 
             // 更新されたデータを取得
@@ -200,34 +208,49 @@ class IngredientCategoryController extends ApiController
                 'ids.*' => 'string',
             ]);
 
-            // 削除対象のカテゴリを取得して検証
-            $categories = $group->ingredientCategories()
-                ->whereIn('id', $validated['ids'])
-                ->get();
+            $deletedCount = 0;
+            $deletedIds = [];
+            $failedCount = 0;
+            $failedIds = [];
 
-            // 見つからなかったIDを特定
-            $foundIds = $categories->pluck('id')->toArray();
-            $notFoundIds = array_diff($validated['ids'], $foundIds);
+            // 削除処理を実行
+            foreach ($validated['ids'] as $id) {
+                $category = $group->ingredientCategories()->where('id', $id)->first();
 
-            if (!empty($notFoundIds)) {
-                $this->logError(__('operations.ingredient_category.bulk_destroy'), new Exception(__('api.ingredient.not_found')), $request, [
-                    'notFoundIds' => $notFoundIds
-                ]);
-                return $this->errorResponse(__('api.ingredient.not_found'), HttpStatusCode::NOT_FOUND);
+                if (!$category) {
+                    $failedCount++;
+                    $failedIds[] = $id;
+                    continue;
+                }
+
+                if ($category->delete()) {
+                    $deletedCount++;
+                    $deletedIds[] = $id;
+                } else {
+                    $failedCount++;
+                    $failedIds[] = $id;
+                }
             }
 
-            $deletedCount = $categories->count();
-            $group->ingredientCategories()
-                ->whereIn('id', $validated['ids'])
-                ->delete();
+            // 部分成功のログ
+            if ($failedCount > 0) {
+                $this->logWarning(HttpStatusCode::OK, __('operations.ingredient_category.bulk_destroy'), __('api.ingredient.bulk_destroy_partial_success'), $request, [
+                    'total_count' => count($validated['ids']),
+                    'success_count' => $deletedCount,
+                    'failed_count' => $failedCount,
+                    'failed_ids' => $failedIds,
+                ]);
+            }
 
             // 残りのカテゴリーのorderを整理
-            $remainingCategories = IngredientCategory::where('group_id', $group->id)
-                ->orderBy('order')
-                ->get();
+            if ($deletedCount > 0) {
+                $remainingCategories = IngredientCategory::where('group_id', $group->id)
+                    ->orderBy('order')
+                    ->get();
 
-            foreach ($remainingCategories as $index => $remainingCategory) {
-                $remainingCategory->update(['order' => $index]);
+                foreach ($remainingCategories as $index => $remainingCategory) {
+                    $remainingCategory->update(['order' => $index]);
+                }
             }
 
             return $this->deletedResponse(__('api.ingredient.deleted', ['count' => $deletedCount]));

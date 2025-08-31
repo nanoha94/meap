@@ -44,8 +44,8 @@ class InvitationController extends ApiController
             // トークンをデータベースに保存
             $invitationToken = InvitationToken::createWithExpiration(auth()->id(), $expiresAt);
             if (!$invitationToken) {
-                $this->logError(__('operations.invitation.store'), new Exception(__('api.invitation.token_generation_failed')), $request);
-                return $this->errorResponse(__('api.invitation.token_generation_failed'), HttpStatusCode::FORBIDDEN);
+                $this->logError(HttpStatusCode::INTERNAL_SERVER_ERROR, __('operations.invitation.store'), new Exception(__('api.invitation.token_generation_failed')), $request);
+                return $this->errorResponse(__('api.invitation.token_generation_failed'), HttpStatusCode::INTERNAL_SERVER_ERROR);
             }
             $data = [
                 'token' => $invitationToken,
@@ -99,7 +99,7 @@ class InvitationController extends ApiController
             });
 
             if (!$invitationToken) {
-                $this->logError(__('operations.invitation.show'), new Exception(__('api.invitation.invalid_token')), $request, [
+                $this->logError(HttpStatusCode::FORBIDDEN, __('operations.invitation.show'), new Exception(__('api.invitation.invalid_token')), $request, [
                     'token' => $token
                 ]);
                 return $this->errorResponse(__('api.invitation.invalid_token'), HttpStatusCode::FORBIDDEN);
@@ -163,7 +163,7 @@ class InvitationController extends ApiController
             });
 
             if (!$invitationToken) {
-                $this->logError(__('operations.invitation.join'), new Exception(__('api.invitation.invalid_token')), $request, [
+                $this->logError(HttpStatusCode::FORBIDDEN, __('operations.invitation.join'), new Exception(__('api.invitation.invalid_token')), $request, [
                     'token' => $token
                 ]);
                 return $this->errorResponse(__('api.invitation.invalid_token'), HttpStatusCode::FORBIDDEN);
@@ -177,7 +177,7 @@ class InvitationController extends ApiController
             $inviter = $invitationToken->inviter;
 
             if ($invitationToken->inviter_id === $user->id) {
-                $this->logError(__('operations.invitation.join'), new Exception(__('api.invitation.self_invitation_error')), $request, [
+                $this->logError(HttpStatusCode::FORBIDDEN, __('operations.invitation.join'), new Exception(__('api.invitation.self_invitation_error')), $request, [
                     'token' => $token
                 ]);
                 return $this->errorResponse(__('api.invitation.self_invitation_error'), HttpStatusCode::FORBIDDEN);
@@ -185,7 +185,7 @@ class InvitationController extends ApiController
 
             // 招待された人がすでに同じグループにいるかチェック
             if ($currentGroup->id === $inviter->group->id) {
-                $this->logError(__('operations.invitation.join'), new Exception(__('api.invitation.already_in_group')), $request, [
+                $this->logError(HttpStatusCode::FORBIDDEN, __('operations.invitation.join'), new Exception(__('api.invitation.already_in_group')), $request, [
                     'token' => $token
                 ]);
                 return $this->errorResponse(__('api.invitation.already_in_group'), HttpStatusCode::FORBIDDEN);
@@ -194,14 +194,14 @@ class InvitationController extends ApiController
             if (!$request->isDelete) {
                 // 所属しているグループがあるかチェック
                 if ($currentGroup->group_size > 1) {
-                    $this->logError(__('operations.invitation.join'), new Exception(__('api.invitation.already_in_another_group')), $request, [
+                    $this->logError(HttpStatusCode::CONFLICT, __('operations.invitation.join'), new Exception(__('api.invitation.already_in_another_group')), $request, [
                         'token' => $token
                     ]);
                     return $this->errorResponse(__('api.invitation.already_in_another_group'), HttpStatusCode::CONFLICT, null, 'already_in_group');
                 }
                 // データがあるかチェック
                 if ($currentGroup->shoppingItems()->exists() || $currentGroup->shoppingCategories()->where('is_default', 0)->exists()) {
-                    $this->logError(__('operations.invitation.join'), new Exception(__('api.invitation.has_existing_data')), $request, [
+                    $this->logError(HttpStatusCode::CONFLICT, __('operations.invitation.join'), new Exception(__('api.invitation.has_existing_data')), $request, [
                         'token' => $token
                     ]);
                     return $this->errorResponse(__('api.invitation.has_existing_data'), HttpStatusCode::CONFLICT, null, 'has_existing_data');

@@ -19,11 +19,8 @@ trait ApiResponse
         $response = [
             'success' => true,
             'message' => $message,
+            'data' => $data,
         ];
-
-        if ($data !== null) {
-            $response['data'] = $data;
-        }
 
         return response()->json($response, $statusCode);
     }
@@ -36,11 +33,8 @@ trait ApiResponse
         $response = [
             'success' => true,
             'message' => $message,
+            'data' => $data,
         ];
-
-        if ($data !== null) {
-            $response['data'] = $data;
-        }
 
         if ($warning) {
             $response['warning'] = $warning;
