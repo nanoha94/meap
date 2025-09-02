@@ -24,7 +24,7 @@ trait LoggingTrait
         string $message,
         Request $request,
         array $additionalContext = [],
-        string $callerMethod = __METHOD__  // 呼び出し元のメソッド名を追加
+        string $callerMethod = __METHOD__
     ): void {
         $this->logMessage('info', $operation, $message, $request, $statusCode, $additionalContext, $callerMethod);
     }
@@ -44,7 +44,7 @@ trait LoggingTrait
         string $message,
         Request $request,
         array $additionalContext = [],
-        string $callerMethod = __METHOD__  // 呼び出し元のメソッド名を追加
+        string $callerMethod = __METHOD__
     ): void {
         $this->logMessage('warning', $operation, $message, $request, $statusCode, $additionalContext, $callerMethod);
     }
@@ -64,7 +64,7 @@ trait LoggingTrait
         Exception $exception,
         Request $request,
         array $additionalContext = [],
-        string $callerMethod = __METHOD__  // 呼び出し元のメソッド名を追加
+        string $callerMethod = __METHOD__
     ): void {
         $errorContext = array_merge([
             'error_message' => $exception->getMessage(),
@@ -161,10 +161,10 @@ trait LoggingTrait
                 return $exception->getStatusCode();
             } catch (\ValueError $e) {
                 // 無効なステータスコードの場合は500を返す
-                return 500;
+                return HttpStatusCode::INTERNAL_SERVER_ERROR->value;
             }
         }
-        return 500;
+        return HttpStatusCode::INTERNAL_SERVER_ERROR->value;
     }
 
     /**

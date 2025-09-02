@@ -68,7 +68,7 @@ class ExceptionHandlerTraitTest
     }
 }
 
-test('ValidationExceptionの処理をテスト', function () {
+test('3-1: ValidationExceptionの処理をテスト', function () {
     $handler = new ExceptionHandlerTraitTest();
     $request = Request::create('/api/users', 'POST');
 
@@ -99,7 +99,7 @@ test('ValidationExceptionの処理をテスト', function () {
     expect($responseData['message'])->toBe('バリデーションエラーが発生しました');
 });
 
-test('ModelNotFoundExceptionの処理をテスト', function () {
+test('3-2: ModelNotFoundExceptionの処理をテスト', function () {
     $handler = new ExceptionHandlerTraitTest();
     $request = Request::create('/api/users/1', 'GET');
 
@@ -127,7 +127,7 @@ test('ModelNotFoundExceptionの処理をテスト', function () {
     expect($responseData['message'])->toBe('ユーザーが見つかりません');
 });
 
-test('QueryExceptionの処理をテスト', function () {
+test('3-3: QueryExceptionの処理をテスト', function () {
     $handler = new ExceptionHandlerTraitTest();
     $request = Request::create('/api/users', 'GET');
 
@@ -158,7 +158,7 @@ test('QueryExceptionの処理をテスト', function () {
     expect($responseData['message'])->toBe('データベースエラーが発生しました');
 });
 
-test('汎用例外の処理をテスト', function () {
+test('3-4: 汎用例外の処理をテスト', function () {
     $handler = new ExceptionHandlerTraitTest();
     $request = Request::create('/api/process', 'POST');
 

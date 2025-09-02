@@ -34,7 +34,7 @@ class LoggingTraitTest
     }
 }
 
-test('LoggingTraitの基本動作をテスト', function () {
+test('1-1: LoggingTraitの基本動作をテスト', function () {
     $controller = new LoggingTraitTest();
     $request = Request::create('/test', 'GET');
 
@@ -63,7 +63,7 @@ test('LoggingTraitの基本動作をテスト', function () {
     $controller->testMethod($request);
 });
 
-test('エラーログの出力をテスト', function () {
+test('1-2: エラーログの出力をテスト', function () {
     $controller = new LoggingTraitTest();
     $request = Request::create('/test', 'POST');
 
@@ -94,7 +94,7 @@ test('エラーログの出力をテスト', function () {
     $controller->testErrorMethod($request);
 });
 
-test('警告ログの出力をテスト', function () {
+test('1-3: 警告ログの出力をテスト', function () {
     $controller = new LoggingTraitTest();
     $request = Request::create('/test', 'PUT');
 
@@ -122,7 +122,7 @@ test('警告ログの出力をテスト', function () {
     $controller->testWarningMethod($request);
 });
 
-test('機密情報のフィルタリングをテスト', function () {
+test('2-1: 機密情報のフィルタリングをテスト', function () {
     $controller = new LoggingTraitTest();
     $request = Request::create('/test', 'POST', ['password' => 'secret123']);
 
@@ -150,7 +150,7 @@ test('機密情報のフィルタリングをテスト', function () {
     $controller->testMethodWithSensitiveData($request);
 });
 
-test('リクエスト情報が正しく記録されることをテスト', function () {
+test('1-4: リクエスト情報が正しく記録されることをテスト', function () {
     $controller = new LoggingTraitTest();
     $request = Request::create('/test', 'DELETE', ['param' => 'value']);
 

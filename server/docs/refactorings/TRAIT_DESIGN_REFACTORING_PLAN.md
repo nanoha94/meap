@@ -164,7 +164,6 @@ class ExceptionHandlingService
 
 -   **LoggingTraitTest.php** - 基本動作テストの詳細仕様
 -   **ExceptionHandlerTraitTest.php** - 例外処理テストの詳細仕様
--   **LoggingIntegrationTest.php** - 統合テストの詳細仕様
 -   各テストケースの入力・出力・検証ポイント
 -   テスト実行方法とログ出力確認方法
 -   テスト設計のポイントとベストプラクティス
