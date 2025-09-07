@@ -155,6 +155,8 @@ return [
     'url' => ':attributeに正しい形式を指定してください。',
     'ulid' => ':attributeに有効なULIDを指定してください。',
     'uuid' => ':attributeに有効なUUIDを指定してください。',
+    'id_must_be_string' => 'IDは文字列でなければなりません。',
+    'specified_id_does_not_exist' => '指定されたIDは存在しません。',
 
     /*
     |--------------------------------------------------------------------------

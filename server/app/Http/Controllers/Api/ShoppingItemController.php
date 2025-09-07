@@ -112,7 +112,7 @@ class ShoppingItemController extends ApiController
             ]);
             if (!$ret) {
                 DB::rollBack();
-                $this->logError(HttpStatusCode::INTERNAL_SERVER_ERROR, __('operations.shopping_item.store'), new Exception(__('api.shopping.creation_failed')), $request);
+                $this->logError(HttpStatusCode::INTERNAL_SERVER_ERROR, __('operations.shopping_item.store'), new Exception(__('api.shopping.creation_failed')), $request, [], __METHOD__);
                 return $this->errorResponse(__('api.shopping.creation_failed'), HttpStatusCode::INTERNAL_SERVER_ERROR);
             }
 
@@ -122,7 +122,7 @@ class ShoppingItemController extends ApiController
                 if (empty($tagIds)) {
                     $this->logWarning(HttpStatusCode::OK, __('operations.shopping_item.tag_processing'), __('api.shopping.tag_creation_failed'), $request, [
                         'tags' => $request->tags
-                    ]);
+                    ],  __METHOD__);
                 } else {
                     $ret->tags()->attach($tagIds);
                 }
@@ -189,7 +189,7 @@ class ShoppingItemController extends ApiController
                         $this->logWarning(HttpStatusCode::OK, __('operations.shopping_item.tag_processing'), __('api.shopping.tag_creation_failed'), $request, [
                             'item_id' => $item['id'],
                             'tags' => $item->tags
-                        ]);
+                        ],  __METHOD__);
                     } else {
                         $shoppingItem->tags()->sync($tagIds);
                     }
@@ -241,7 +241,7 @@ class ShoppingItemController extends ApiController
 
             // 空の場合はエラー
             if (empty($ids)) {
-                $this->logError(HttpStatusCode::BAD_REQUEST, __('operations.shopping_item.bulk_destroy'), new Exception(__('api.shopping.invalid_ids')), $request);
+                $this->logError(HttpStatusCode::BAD_REQUEST, __('operations.shopping_item.bulk_destroy'), new Exception(__('api.shopping.invalid_ids')), $request, [], __METHOD__);
                 return $this->errorResponse(__('api.shopping.invalid_ids'), HttpStatusCode::BAD_REQUEST);
             }
 
@@ -265,12 +265,12 @@ class ShoppingItemController extends ApiController
                 $this->logError(HttpStatusCode::NOT_FOUND, __('operations.shopping_item.bulk_destroy'), new Exception(__('api.shopping.some_items_not_found')), $request, [
                     'not_found_ids' => $notFoundIds,
                     'deleted_ids' => $deletedIds
-                ]);
+                ],  __METHOD__);
             }
 
             // 削除されたアイテムがない場合はエラー
             if (empty($deletedIds)) {
-                $this->logError(HttpStatusCode::BAD_REQUEST, __('operations.shopping_item.bulk_destroy'), new Exception(__('api.shopping.no_items_deleted')), $request);
+                $this->logError(HttpStatusCode::BAD_REQUEST, __('operations.shopping_item.bulk_destroy'), new Exception(__('api.shopping.no_items_deleted')), $request, [], __METHOD__);
                 return $this->errorResponse(__('api.shopping.no_items_deleted'), HttpStatusCode::BAD_REQUEST);
             }
 

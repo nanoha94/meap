@@ -3,6 +3,7 @@
 namespace App\Traits;
 
 use App\Models\Group;
+use InvalidArgumentException;
 
 trait AutoComplement
 {
@@ -25,6 +26,10 @@ trait AutoComplement
         $ids = [];
         foreach ($items as $idx => $item) {
             if (isset($item['id'])) {
+                if (!is_string($item['id'])) {
+                    throw new InvalidArgumentException('ID must be a string.');
+                }
+
                 // 既存アイテムの場合、存在確認
                 $existingItem = $modelClass::where('id', $item['id'])
                     ->where('group_id', $group->id)
@@ -32,6 +37,8 @@ trait AutoComplement
 
                 if ($existingItem) {
                     $ids[$idx] = $existingItem->id;
+                } else {
+                    throw new InvalidArgumentException('Specified ID does not exist.');
                 }
             } else {
                 // 新規アイテムの場合、同じ名前のアイテムが存在するか確認

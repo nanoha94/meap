@@ -26,7 +26,7 @@ trait LoggingTrait
         array $additionalContext = [],
         string $callerMethod = __METHOD__
     ): void {
-        $this->logMessage('info', $operation, $message, $request, $statusCode, $additionalContext, $callerMethod);
+        $this->logMessage('info', $operation, $message, $request, $statusCode->value, $additionalContext, $callerMethod);
     }
 
     /**
@@ -46,7 +46,7 @@ trait LoggingTrait
         array $additionalContext = [],
         string $callerMethod = __METHOD__
     ): void {
-        $this->logMessage('warning', $operation, $message, $request, $statusCode, $additionalContext, $callerMethod);
+        $this->logMessage('warning', $operation, $message, $request, $statusCode->value, $additionalContext, $callerMethod);
     }
 
     /**
@@ -59,7 +59,7 @@ trait LoggingTrait
      * @param array $additionalContext 追加のコンテキスト情報
      */
     public function logError(
-        HttpStatusCode $statusCode,
+        HttpStatusCode | int $statusCode,
         string $operation,
         Exception $exception,
         Request $request,
@@ -74,6 +74,10 @@ trait LoggingTrait
             'model' => $this->getExceptionModel($exception),
         ], $additionalContext);
 
+        if ($statusCode instanceof HttpStatusCode) {
+            $statusCode = $statusCode->value;
+        }
+
         $this->logMessage('error', $operation, 'エラーが発生しました', $request, $statusCode, $errorContext, $callerMethod);
     }
 
@@ -84,7 +88,7 @@ trait LoggingTrait
      * @param string $operation 実行中の操作
      * @param string $message ログメッセージ
      * @param Request $request リクエストインスタンス
-     * @param HttpStatusCode $httpStatusCode HTTPステータスコード
+     * @param int $httpStatusCode HTTPステータスコード
      * @param array $additionalContext 追加のコンテキスト情報
      */
     private function logMessage(
@@ -92,15 +96,14 @@ trait LoggingTrait
         string $operation,
         string $message,
         Request $request,
-        HttpStatusCode $statusCode,
+        int $statusCode,
         array $additionalContext = [],
-        string $callerMethod
+        string $callerMethod,
     ): void {
         $user = $request->user();
         $group = $user?->group;
 
         $context = array_merge([
-            'controller' => class_basename($this),
             'method' => $callerMethod,
             'user_id' => $user?->id,
             'group_id' => $group?->id,
@@ -108,7 +111,7 @@ trait LoggingTrait
             'request_url' => $request->fullUrl(),
             'request_ip' => $request->ip(),
             'user_agent' => $request->userAgent(),
-            'status_code' => $statusCode->value,
+            'status_code' => $statusCode,
 
         ], $additionalContext);
 

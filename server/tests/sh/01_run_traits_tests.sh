@@ -3,18 +3,39 @@
 echo "=========================================="
 echo "📝 ログ関連テスト実行"
 echo "=========================================="
-echo "📖 詳細ドキュメント: tests/docs/02_TRAIT_TEST_SPECIFICATIONS.md"
+echo "📖 詳細ドキュメント: tests/docs/Traits/01_ApiResponse_TEST_SPECIFICATIONS.md"
+echo ""
+
+# ApiResponseTraitテスト実行
+echo "実行中: ApiResponseTest.php"
+./vendor/bin/sail test tests/Feature/Traits/ApiResponseTest.php --stop-on-failure
+
+echo ""
+echo "=========================================="
+echo "📖 詳細ドキュメント: tests/docs/Traits/02_LoggingTrait_TEST_SPECIFICATIONS.md"
 echo ""
 
 # LoggingTraitテスト実行
-echo "実行中: LoggingTraitTest.php"
-./vendor/bin/sail test tests/Feature/Logging/LoggingTraitTest.php --stop-on-failure
+echo "実行中: ExceptionHandlerTraitTest.php"
+./vendor/bin/sail test tests/Feature/Traits/LoggingTraitTest.php --stop-on-failure
 
+echo ""
+echo "=========================================="
+echo "📖 詳細ドキュメント: tests/docs/Traits/03_ExceptionHandlerTrait_TEST_SPECIFICATIONS.md"
 echo ""
 
 # ExceptionHandlerTraitテスト実行
 echo "実行中: ExceptionHandlerTraitTest.php"
-./vendor/bin/sail test tests/Feature/Logging/ExceptionHandlerTraitTest.php --stop-on-failure
+./vendor/bin/sail test tests/Feature/Traits/ExceptionHandlerTraitTest.php --stop-on-failure
+
+echo ""
+echo "=========================================="
+echo "📖 詳細ドキュメント: tests/docs/Traits/04_AutoComplement_TEST_SPECIFICATIONS.md"
+echo ""
+
+# AutoComplementTraitテスト実行
+echo "実行中: AutoComplementTraitTest.php"
+./vendor/bin/sail test tests/Feature/Traits/AutoComplementTraitTest.php --stop-on-failure
 
 echo ""
 echo "=========================================="

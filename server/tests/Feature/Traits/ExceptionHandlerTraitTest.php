@@ -9,67 +9,83 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Log;
 
-// テスト用のダミークラス
-class ExceptionHandlerTraitTest
-{
-    use ExceptionHandlerTrait;
 
-    public function testHandleValidationException(Request $request)
-    {
-        $exception = ValidationException::withMessages([
-            'email' => ['メールアドレスが無効です'],
-            'password' => ['パスワードは必須です']
-        ]);
+beforeEach(function () {
+    $this->dummy = new class {
+        use ExceptionHandlerTrait;
 
-        return $this->handleException(
-            $exception,
-            $request,
-            'バリデーションエラーが発生しました',
-            'ユーザー登録'
-        );
-    }
+        public function testHandleValidationException($request)
+        {
+            $exception = ValidationException::withMessages([
+                'email' => ['メールアドレスが無効です'],
+                'password' => ['パスワードは必須です']
+            ]);
 
-    public function testHandleModelNotFoundException(Request $request)
-    {
-        $exception = new ModelNotFoundException();
-        $exception->setModel('User', [1]);
+            return $this->handleException(
+                $exception,
+                $request,
+                'バリデーションエラーが発生しました',
+                'ユーザー登録'
+            );
+        }
 
-        return $this->handleException(
-            $exception,
-            $request,
-            'ユーザーが見つかりません',
-            'ユーザー検索'
-        );
-    }
+        public function testHandleModelNotFoundException($request)
+        {
+            $exception = new ModelNotFoundException();
+            $exception->setModel('User', [1]);
 
-    public function testHandleQueryException(Request $request)
-    {
-        // QueryExceptionの正しい引数: connectionName, sql, bindings, previous
-        $exception = new QueryException('mysql', 'SELECT * FROM users', [], new Exception('SQLSTATE[42S02]: Base table or view not found'));
+            return $this->handleException(
+                $exception,
+                $request,
+                'ユーザーが見つかりません',
+                'ユーザー検索'
+            );
+        }
 
-        return $this->handleException(
-            $exception,
-            $request,
-            'データベースエラーが発生しました',
-            'ユーザー取得'
-        );
-    }
+        public function testHandleQueryException($request)
+        {
+            $exception = new QueryException('mysql', 'SELECT * FROM users', [], new Exception('SQLSTATE[42S02]: Base table or view not found'));
 
-    public function testHandleGenericException(Request $request)
-    {
-        $exception = new Exception('予期しないエラーが発生しました');
+            return $this->handleException(
+                $exception,
+                $request,
+                'データベースエラーが発生しました',
+                'ユーザー取得'
+            );
+        }
 
-        return $this->handleException(
-            $exception,
-            $request,
-            'システムエラーが発生しました',
-            'データ処理'
-        );
-    }
-}
+        public function testHandleGenericException($request)
+        {
+            $exception = new Exception('予期しないエラーが発生しました');
 
-test('3-1: ValidationExceptionの処理をテスト', function () {
-    $handler = new ExceptionHandlerTraitTest();
+            return $this->handleException(
+                $exception,
+                $request,
+                'システムエラーが発生しました',
+                'データ処理'
+            );
+        }
+
+        public function testHandleCustomException($request)
+        {
+            $exception = new class extends Exception {
+                public function getStatusCode()
+                {
+                    return 418;
+                }
+            };
+
+            return $this->handleException(
+                $exception,
+                $request,
+                'カスタムエラーが発生しました',
+                'テスト操作'
+            );
+        }
+    };
+});
+
+test('1-3-1: ValidationExceptionの処理をテスト', function () {
     $request = Request::create('/api/users', 'POST');
 
     $request->setUserResolver(function () {
@@ -89,7 +105,7 @@ test('3-1: ValidationExceptionの処理をテスト', function () {
                 $context['status_code'] === HttpStatusCode::UNPROCESSABLE_ENTITY->value;
         });
 
-    $response = $handler->testHandleValidationException($request);
+    $response = $this->dummy->testHandleValidationException($request);
 
     // レスポンスの内容を確認
     expect($response)->toBeInstanceOf(JsonResponse::class);
@@ -99,8 +115,7 @@ test('3-1: ValidationExceptionの処理をテスト', function () {
     expect($responseData['message'])->toBe('バリデーションエラーが発生しました');
 });
 
-test('3-2: ModelNotFoundExceptionの処理をテスト', function () {
-    $handler = new ExceptionHandlerTraitTest();
+test('1-3-2: ModelNotFoundExceptionの処理をテスト', function () {
     $request = Request::create('/api/users/1', 'GET');
 
     $request->setUserResolver(function () {
@@ -117,7 +132,7 @@ test('3-2: ModelNotFoundExceptionの処理をテスト', function () {
                 $context['status_code'] === HttpStatusCode::NOT_FOUND->value;
         });
 
-    $response = $handler->testHandleModelNotFoundException($request);
+    $response = $this->dummy->testHandleModelNotFoundException($request);
 
     // レスポンスの内容を確認
     expect($response)->toBeInstanceOf(JsonResponse::class);
@@ -127,8 +142,7 @@ test('3-2: ModelNotFoundExceptionの処理をテスト', function () {
     expect($responseData['message'])->toBe('ユーザーが見つかりません');
 });
 
-test('3-3: QueryExceptionの処理をテスト', function () {
-    $handler = new ExceptionHandlerTraitTest();
+test('1-3-3: QueryExceptionの処理をテスト', function () {
     $request = Request::create('/api/users', 'GET');
 
     $request->setUserResolver(function () {
@@ -148,7 +162,7 @@ test('3-3: QueryExceptionの処理をテスト', function () {
                 $context['status_code'] === HttpStatusCode::INTERNAL_SERVER_ERROR->value;
         });
 
-    $response = $handler->testHandleQueryException($request);
+    $response = $this->dummy->testHandleQueryException($request);
 
     // レスポンスの内容を確認
     expect($response)->toBeInstanceOf(JsonResponse::class);
@@ -158,8 +172,7 @@ test('3-3: QueryExceptionの処理をテスト', function () {
     expect($responseData['message'])->toBe('データベースエラーが発生しました');
 });
 
-test('3-4: 汎用例外の処理をテスト', function () {
-    $handler = new ExceptionHandlerTraitTest();
+test('1-3-4: 汎用例外の処理をテスト', function () {
     $request = Request::create('/api/process', 'POST');
 
     $request->setUserResolver(function () {
@@ -175,7 +188,7 @@ test('3-4: 汎用例外の処理をテスト', function () {
                 $context['status_code'] === HttpStatusCode::INTERNAL_SERVER_ERROR->value;
         });
 
-    $response = $handler->testHandleGenericException($request);
+    $response = $this->dummy->testHandleGenericException($request);
 
     // レスポンスの内容を確認
     expect($response)->toBeInstanceOf(JsonResponse::class);
@@ -183,4 +196,30 @@ test('3-4: 汎用例外の処理をテスト', function () {
 
     $responseData = json_decode($response->getContent(), true);
     expect($responseData['message'])->toBe('システムエラーが発生しました');
+});
+
+test('1-3-5: カスタムステータスコードの処理をテスト', function () {
+    $request = Request::create('/api/test', 'GET');
+
+    $request->setUserResolver(function () {
+        return null;
+    });
+
+    // ログが正しく呼ばれることを確認
+    Log::shouldReceive('error')
+        ->once()
+        ->withArgs(function ($message, $context) {
+            return str_contains($message, '操作「テスト操作」: エラーが発生しました') &&
+                $context['message'] === 'カスタムエラーが発生しました' &&
+                $context['status_code'] === 418;
+        });
+
+    $response = $this->dummy->testHandleCustomException($request);
+
+    // レスポンスの内容を確認
+    expect($response)->toBeInstanceOf(JsonResponse::class);
+    expect($response->getStatusCode())->toBe(418);
+
+    $responseData = json_decode($response->getContent(), true);
+    expect($responseData['message'])->toBe('カスタムエラーが発生しました');
 });

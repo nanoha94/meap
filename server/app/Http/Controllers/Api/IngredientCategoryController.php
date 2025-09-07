@@ -82,7 +82,7 @@ class IngredientCategoryController extends ApiController
                 'order' => $validated['order'],
             ]);
             if (!$category) {
-                $this->logError(HttpStatusCode::INTERNAL_SERVER_ERROR, __('operations.ingredient_category.store'), new Exception(__('api.ingredient.creation_failed')), $request);
+                $this->logError(HttpStatusCode::INTERNAL_SERVER_ERROR, __('operations.ingredient_category.store'), new Exception(__('api.ingredient.creation_failed')), $request, [], __METHOD__);
                 return $this->errorResponse(__('api.ingredient.creation_failed'), HttpStatusCode::INTERNAL_SERVER_ERROR);
             }
 
@@ -155,7 +155,7 @@ class IngredientCategoryController extends ApiController
                     'success_count' => $updatedCount,
                     'failed_count' => $failedCount,
                     'failed_ids' => $failedIds,
-                ]);
+                ],  __METHOD__);
             }
 
             // 更新されたデータを取得
@@ -239,7 +239,7 @@ class IngredientCategoryController extends ApiController
                     'success_count' => $deletedCount,
                     'failed_count' => $failedCount,
                     'failed_ids' => $failedIds,
-                ]);
+                ],  __METHOD__);
             }
 
             // 残りのカテゴリーのorderを整理

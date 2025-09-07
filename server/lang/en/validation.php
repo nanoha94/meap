@@ -191,4 +191,7 @@ return [
 
     'attributes' => [],
 
+    'id_must_be_string' => 'The ID must be a string.',
+    'specified_id_does_not_exist' => 'The specified ID does not exist.',
+
 ];

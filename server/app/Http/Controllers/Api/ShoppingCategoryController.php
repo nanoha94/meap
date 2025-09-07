@@ -141,7 +141,7 @@ class ShoppingCategoryController extends ApiController
                     $this->logWarning(HttpStatusCode::OK, __('operations.shopping_category.bulk_update'), __('api.shopping.category_update_failed'), $request, [
                         'category_id' => $category['id'],
                         'category_name' => $category['name']
-                    ]);
+                    ],   __METHOD__);
                     // 更新に失敗した場合は、そのカテゴリーをスキップして続行
                     continue;
                 } else {
@@ -213,7 +213,7 @@ class ShoppingCategoryController extends ApiController
             if (!empty($notFoundIds)) {
                 $this->logError(HttpStatusCode::NOT_FOUND, __('operations.shopping_category.bulk_destroy'), new Exception(__('api.shopping.not_found')), $request, [
                     'notFoundIds' => $notFoundIds
-                ]);
+                ],   __METHOD__);
                 return $this->errorResponse(__('api.shopping.not_found'), HttpStatusCode::NOT_FOUND);
             }
 
@@ -222,7 +222,7 @@ class ShoppingCategoryController extends ApiController
             if ($defaultCategory) {
                 $this->logWarning(HttpStatusCode::BAD_REQUEST, __('operations.shopping_category.bulk_destroy'), __('api.shopping.default_category_deletion_error', ['name' => $defaultCategory->name]), $request, [
                     'default_category_name' => $defaultCategory->name
-                ]);
+                ], __METHOD__);
                 return $this->errorResponse(__('api.shopping.default_category_deletion_error', ['name' => $defaultCategory->name]), HttpStatusCode::BAD_REQUEST);
             }
 

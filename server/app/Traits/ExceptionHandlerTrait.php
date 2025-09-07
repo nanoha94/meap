@@ -71,11 +71,11 @@ trait ExceptionHandlerTrait
         $message = $defaultMessage ?? $e->getMessage();
         $statusCode = $this->getExceptionStatusCode($e);
 
-        $this->logError(HttpStatusCode::from($statusCode), $operation, $e, $request, array_merge($additionalContext, [
+        $this->logError(($statusCode), $operation, $e, $request, array_merge($additionalContext, [
             'message' => $message,
         ]));
 
-        return $this->errorResponse($message, HttpStatusCode::from($statusCode));
+        return $this->errorResponse($message, $statusCode);
     }
 
     /**

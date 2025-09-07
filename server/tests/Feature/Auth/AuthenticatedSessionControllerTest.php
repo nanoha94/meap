@@ -5,7 +5,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-test('1-1: 正しい認証情報でログインできる', function () {
+test('2-1-1: 正しい認証情報でログインできる', function () {
     $user = User::factory()->create();
 
     $response = $this->post('/login', [
@@ -22,7 +22,7 @@ test('1-1: 正しい認証情報でログインできる', function () {
     ]);
 });
 
-test('1-2: Remember Me機能でログインできる', function () {
+test('2-1-2: Remember Me機能でログインできる', function () {
     $user = User::factory()->create();
 
     $response = $this->post('/login', [
@@ -40,7 +40,7 @@ test('1-2: Remember Me機能でログインできる', function () {
     ]);
 });
 
-test('2-1: 存在しないメールアドレスではログインできない', function () {
+test('2-2-1: 存在しないメールアドレスではログインできない', function () {
     $user = User::factory()->create();
 
     $response = $this->post('/login', [
@@ -52,7 +52,7 @@ test('2-1: 存在しないメールアドレスではログインできない', 
     $response->assertStatus(302); // リダイレクト
 });
 
-test('2-1: 間違ったパスワードではログインできない', function () {
+test('2-2-2: 間違ったパスワードではログインできない', function () {
     $user = User::factory()->create();
 
     $response = $this->post('/login', [
@@ -64,14 +64,14 @@ test('2-1: 間違ったパスワードではログインできない', function 
     $response->assertStatus(302); // リダイレクト
 });
 
-test('2-1: 認証情報が不足している場合はログインできない', function () {
+test('2-2-3: 認証情報が不足している場合はログインできない', function () {
     $response = $this->post('/login', []);
 
     $this->assertGuest();
     $response->assertStatus(302); // リダイレクト
 });
 
-test('2-1: 無効なメール形式ではログインできない', function () {
+test('2-2-4: 無効なメール形式ではログインできない', function () {
     $response = $this->post('/login', [
         'email' => 'invalid-email',
         'password' => 'password',
@@ -81,7 +81,7 @@ test('2-1: 無効なメール形式ではログインできない', function () 
     $response->assertStatus(302); // リダイレクト
 });
 
-test('4-1: ログアウトが正常に動作する', function () {
+test('2-4-1: ログアウトが正常に動作する', function () {
     $user = User::factory()->create();
 
     $response = $this->actingAs($user)->post('/logout');
@@ -95,13 +95,13 @@ test('4-1: ログアウトが正常に動作する', function () {
     ]);
 });
 
-test('4-2: 未認証ユーザーはログアウトできない', function () {
+test('2-4-2: 未認証ユーザーはログアウトできない', function () {
     $response = $this->post('/logout');
 
     $response->assertStatus(302); // リダイレクト
 });
 
-test('3-2: ログイン試行回数の制限が適用される', function () {
+test('2-3-2: ログイン試行回数の制限が適用される', function () {
     $user = User::factory()->create();
 
     // 5回の失敗したログイン試行
@@ -121,7 +121,7 @@ test('3-2: ログイン試行回数の制限が適用される', function () {
     $response->assertStatus(302); // リダイレクト（レート制限メッセージ付き）
 });
 
-test('3-2: ログイン成功時にレート制限がクリアされる', function () {
+test('2-3-3: ログイン成功時にレート制限がクリアされる', function () {
     $user = User::factory()->create();
 
     // 2回の失敗したログイン試行
@@ -148,7 +148,7 @@ test('3-2: ログイン成功時にレート制限がクリアされる', functi
     ])->assertStatus(302); // リダイレクト（レート制限なし）
 });
 
-test('4-1: ログイン成功時にセッションが再生成される', function () {
+test('2-1-3: ログイン成功時にセッションが再生成される', function () {
     $user = User::factory()->create();
 
     $response = $this->post('/login', [
@@ -166,7 +166,7 @@ test('4-1: ログイン成功時にセッションが再生成される', functi
     );
 });
 
-test('4-1: ログアウト時にセッションが無効化される', function () {
+test('2-4-3: ログアウト時にセッションが無効化される', function () {
     $user = User::factory()->create();
 
     $response = $this->actingAs($user)->post('/logout');
