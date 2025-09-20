@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
 use App\Traits\LoggingTrait;
 use App\Enums\HttpStatusCode;
+use Illuminate\Database\QueryException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class PasswordResetLinkController extends Controller
 {
@@ -24,40 +26,59 @@ class PasswordResetLinkController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        $request->validate([
-            'email' => ['required', 'email'],
-        ]);
+        try {
+            $request->validate([
+                'email' => ['required', 'email'],
+            ], [
+                'email.required' => __('validation.email.required'),
+                'email.email' => __('validation.email.email'),
+            ]);
 
-        // We will send the password reset link to this user. Once we have attempted
-        // to send the link, we will examine the response then see the message we
-        // need to show to the user. Finally, we'll send out a proper response.
-        $status = Password::sendResetLink(
-            $request->only('email')
-        );
+            // We will send the password reset link to this user. Once we have attempted
+            // to send the link, we will examine the response then see the message we
+            // need to show to the user. Finally, we'll send out a proper response.
+            $status = Password::sendResetLink(
+                $request->only('email')
+            );
 
-        if ($status != Password::RESET_LINK_SENT) {
-            $statusMessages = [
-                Password::INVALID_USER => 422,
-                Password::RESET_THROTTLED => 429,
-                CustomPasswordBroker::RETRY_TOKEN => 500
-            ];
+            if ($status != Password::RESET_LINK_SENT) {
+                $statusMessages = [
+                    Password::INVALID_USER => 422,
+                    Password::RESET_THROTTLED => 429,
+                    CustomPasswordBroker::RETRY_TOKEN => 500
+                ];
 
-            $statusCode = $statusMessages[$status] ?? 500; // それ以外は500として扱う
+                if (!$statusMessages[$status]) {
+                    throw new Exception(__($status));
+                }
 
-            if ($statusCode === 422) {
-                throw ValidationException::withMessages([
-                    'email' => [__($status)],
-                ]);
+                $statusCode = $statusMessages[$status];
+
+                if ($statusCode === 422) {
+                    throw ValidationException::withMessages([
+                        'email' => [__($status)],
+                    ]);
+                }
+
+
+                throw new HttpException($statusCode, __($status));
             }
 
-            try {
-                $this->logError(HttpStatusCode::INTERNAL_SERVER_ERROR, __('operations.password.reset_link'), new Exception(__($status)), $request);
-                return $this->errorResponse(__($status), HttpStatusCode::INTERNAL_SERVER_ERROR);
-            } catch (Exception $e) {
-                return  $this->handleException($e, $request, __('operations.password.reset_link'), 'password_reset_link.store');
-            }
+            return $this->successResponse(null, __($status));
+        } catch (HttpException $e) {
+            return $this->handleException(
+                $e,
+                $request,
+                __($e->getMessage()),
+                __('operations.password.reset_link')
+            );
+        } catch (Exception $e) {
+            return $this->handleException(
+                $e,
+                $request,
+                __('api.general.server_error'),
+                __('operations.password.reset_link')
+            );
         }
-
-        return $this->successResponse(null, __($status));
     }
 }

@@ -3,9 +3,13 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use Exception;
 use Illuminate\Auth\Events\Verified;
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use App\Http\Requests\Auth\EmailVerificationRequest;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Database\QueryException;
+use Illuminate\Validation\ValidationException;
 
 class VerifyEmailController extends Controller
 {
@@ -15,28 +19,94 @@ class VerifyEmailController extends Controller
     public function __invoke(EmailVerificationRequest $request): RedirectResponse
     {
         try {
-
+            // 既に確認済みの場合は早期リターン
             if ($request->user()->hasVerifiedEmail()) {
-                return redirect(
-                    config('app.frontend_url') . '/plan?verified=1'
-                );
+                return $this->redirectToPlan();
             }
 
-            if ($request->user()->markEmailAsVerified()) {
-                event(new Verified($request->user()));
-            }
+            // メール確認処理を実行
+            $this->verifyEmailAndFireEvent($request->user());
 
-            return redirect(
-                config('app.frontend_url') . '/plan?verified=1'
-            );
-        } catch (\Exception $e) {
-            $this->handleException($e, $request, __('operations.auth.email_verification'), 'verify_email.invoke');
-
-            // エラーがあっても、フロントエンドにリダイレクト
-            // TODO: 要検討（フロントとも関係があるのであとでリファクタリング / docs/refactorings/VERIFY_EMAIL_CONTROLLER_REFACTORING_PLAN.md）
-            return redirect(
-                config('app.frontend_url') . '/email/verify?error=' . urlencode($e->getMessage())
-            );
+            // 成功時のリダイレクト
+            return $this->redirectToPlan(true);
+        } catch (HttpResponseException $e) {
+            // EmailVerificationRequestからのリダイレクトレスポンスをそのまま返す
+            throw $e;
+        } catch (Exception $e) {
+            // 予期しない例外のハンドリング
+            return $this->handleVerificationError($e, $request);
         }
+    }
+
+    /**
+     * メール確認処理とイベント発火
+     */
+    private function verifyEmailAndFireEvent($user): void
+    {
+        if (!$user->markEmailAsVerified()) {
+            throw new Exception(__('auth.email_verification_failed'));
+        }
+
+        event(new Verified($user));
+    }
+
+    /**
+     * プランページへのリダイレクト
+     */
+    private function redirectToPlan(bool $verified = false): RedirectResponse
+    {
+        $url = config('app.frontend_url') . '/plan';
+
+        if ($verified) {
+            $url .= '?verified=1';
+        }
+
+        return redirect($url);
+    }
+
+    /**
+     * 検証エラーのハンドリング
+     */
+    private function handleVerificationError(Exception $e, $request): RedirectResponse
+    {
+        $errorType = $this->determineErrorType($e);
+
+        // 詳細ログ出力（内部記録のみ）
+        $this->logError($this->getExceptionStatusCode($e), __('operations.auth.email_verification'), $e, $request, [
+            'operation' => 'verify_email.invoke',
+            'error_type' => $errorType,
+            'exception_message' => $e->getMessage(),
+            'exception_trace' => $e->getTraceAsString()
+        ]);
+
+        // エラータイプのみをフロントエンドに送信
+        return redirect(
+            config('app.frontend_url') . '/email/verify?error=' . $errorType
+        );
+    }
+
+    /**
+     * 例外の種類に応じてエラータイプを決定
+     * 
+     * @param Exception $e
+     * @return string
+     */
+    private function determineErrorType(Exception $e): string
+    {
+        if ($e instanceof QueryException) {
+            return 'database_error';
+        }
+
+        if ($e instanceof ValidationException) {
+            return 'validation_error';
+        }
+
+        // メール確認失敗の場合
+        if (str_contains($e->getMessage(), 'email_verification_failed')) {
+            return 'verification_failed';
+        }
+
+        // デフォルトのエラータイプ
+        return 'verification_failed';
     }
 }

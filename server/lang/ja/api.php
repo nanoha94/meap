@@ -1,6 +1,19 @@
 <?php
 
 return [
+    'general' => [
+        'not_found' => '指定されたレコードが見つかりません。',
+        'forbidden' => 'アクセスが拒否されました。',
+        'unauthorized' => '認証が必要です。',
+        'bulk_operation_failed' => '一括操作中にエラーが発生しました。',
+        'validation_error' => '入力内容に誤りがあります。',
+        'data_created' => 'データを作成しました。',
+        'data_updated' => 'データを更新しました。',
+        'data_deleted' => 'データを削除しました。',
+        'error' => 'エラーが発生しました。',
+        'database_error' => 'データベースエラーが発生しました。',
+        'server_error' => 'サーバー内部エラーが発生しました。',
+    ],
     'shopping' => [
         'category_created' => '買い物カテゴリー(:name)を作成しました。',
         'category_bulk_updated' => '買い物カテゴリーを:count件更新しました。',
@@ -90,18 +103,6 @@ return [
         'join_failed' => 'グループへの参加に失敗しました。',
         'token_generation_failed' => 'トークン生成に失敗しました',
         'max_attempts_reached' => '最大試行回数に達しました',
-    ],
-    'general' => [
-        'not_found' => '指定されたレコードが見つかりません。',
-        'forbidden' => 'アクセスが拒否されました。',
-        'unauthorized' => '認証が必要です。',
-        'bulk_operation_failed' => '一括操作中にエラーが発生しました。',
-        'validation_error' => '入力内容に誤りがあります。',
-        'data_created' => 'データを作成しました。',
-        'data_updated' => 'データを更新しました。',
-        'data_deleted' => 'データを削除しました。',
-        'error' => 'エラーが発生しました。',
-        'database_error' => 'データベースエラーが発生しました。',
     ],
     'users' => [
         'list_retrieved' => 'ユーザー一覧を取得しました。',

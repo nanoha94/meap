@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 trait ExceptionHandlerTrait
 {
@@ -32,7 +33,17 @@ trait ExceptionHandlerTrait
                 'validation_errors' => $e->errors(),
                 'message' => $message,
             ]));
-            return $this->errorResponse($message, HttpStatusCode::UNPROCESSABLE_ENTITY);
+            return $this->errorResponse($message, HttpStatusCode::UNPROCESSABLE_ENTITY, $e->errors());
+        }
+
+        // HttpException
+        if ($e instanceof HttpException) {
+            $message = $e->getMessage() ?? $defaultMessage;
+            $errorCode = $e->getStatusCode();
+            $this->logError($errorCode ?? HttpStatusCode::INTERNAL_SERVER_ERROR, $operation, $e, $request, array_merge($additionalContext, [
+                'message' => $message,
+            ]));
+            return $this->errorResponse($message,  $errorCode ?? HttpStatusCode::INTERNAL_SERVER_ERROR);
         }
 
         // モデル未発見例外
@@ -81,7 +92,7 @@ trait ExceptionHandlerTrait
     /**
      * 例外のステータスコードを取得
      */
-    private function getExceptionStatusCode(Exception $e): int
+    protected function getExceptionStatusCode(Exception $e): int
     {
         if (method_exists($e, 'getStatusCode')) {
             try {

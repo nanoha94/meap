@@ -11,4 +11,17 @@ return [
     'invitation_token_created' => '招待トークンを作成しました。',
     'invitation_token_creation_failed' => '招待トークンの作成に失敗しました。',
 
+    'email_verification_failed' => 'メールアドレス確認の処理に失敗しました。',
+    'unauthenticated' => 'メールアドレス確認にはログインが必要です。',
+    'invalid_verification_link' => 'メールアドレス確認リンクが無効です。新しい確認リンクを送信してください。',
+    'email_verification_notification' => [
+        'store_failed' => 'メールアドレス確認リンクの再送に失敗しました。',
+        'store_sent' => '登録時に入力されたメールアドレス宛にメールアドレス確認リンクを再送しました。',
+        'store_not_found' => '未登録のメールアドレスです。',
+    ],
+    'password' => [
+        'reset_link' => 'パスワードリセットリンクの送信',
+    ],
+
+
 ];

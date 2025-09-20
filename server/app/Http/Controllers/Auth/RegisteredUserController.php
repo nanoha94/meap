@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rules;
 use App\Enums\HttpStatusCode;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class RegisteredUserController extends Controller
 {
@@ -42,20 +43,21 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): Response|JsonResponse
     {
-        // ログイン状態をチェック
-        if (Auth::check()) {
-            $this->logError(HttpStatusCode::CONFLICT, __('operations.auth.registration'), new Exception(__('api.auth.already_logged_in')), $request);
-            return $this->errorResponse(__('api.auth.already_logged_in'), HttpStatusCode::CONFLICT);
-        }
-
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ]);
-
         try {
-            $user = DB::transaction(function () use ($request) {
+            // ログイン状態をチェック
+            if (Auth::check()) {
+                throw new HttpException(HttpStatusCode::CONFLICT->value, __('auth.already_logged_in'));
+            }
+
+            $request->validate([
+                'name' => ['required', 'string', 'max:255'],
+                'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
+                'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            ]);
+
+            DB::beginTransaction();
+
+            try {
                 // ユーザー作成時に、グループも作成して紐づけする
                 $user = User::create([
                     'name' => $request->name,
@@ -68,14 +70,17 @@ class RegisteredUserController extends Controller
 
                 GroupUserMapping::create(['user_id' => $user->id, 'group_id' => $group->id]);
 
-                return $user;
-            });
+                DB::commit();
+            } catch (Exception $e) {
+                DB::rollBack();
+                return $this->handleException($e, $request, __('auth.registration_failed'), __('operations.auth.registration'));
+            }
 
             event(new Registered($user));
             Auth::login($user);
-            return $this->successResponse(null, __('api.auth.registration_success'));
+            return $this->successResponse(null, __('auth.registration_success'));
         } catch (Exception $e) {
-            return $this->handleException($e, $request, __('operations.auth.registration'), 'registered_user.store');
+            return $this->handleException($e, $request, __('auth.registration_failed'), __('operations.auth.registration'));
         }
     }
 }

@@ -26,4 +26,11 @@ return [
     'invitation_token_created' => 'Invitation token created successfully.',
     'invitation_token_creation_failed' => 'Failed to create invitation token.',
 
+    'email_verification_failed' => 'Email verification process failed.',
+    'email_verification_notification' => [
+        'store' => 'Email verification link resent.',
+        'store_failed' => 'Failed to resend email verification link.',
+        'store_not_found' => 'Email address not registered.',
+    ],
+
 ];

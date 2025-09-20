@@ -1,6 +1,16 @@
 <?php
 
 return [
+    'email_verification_notification' => [
+        'store' => 'メールアドレス確認リンクの再送信',
+    ],
+    'password' => [
+        'reset' => 'パスワードリセット',
+        'reset_link' => 'パスワードリセットリンク送信',
+    ],
+    'register_user' => [
+        'store' => 'ユーザー登録',
+    ],
     'recipe' => [
         'index' => 'レシピ一覧取得',
         'store' => 'レシピ作成',

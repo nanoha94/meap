@@ -43,10 +43,10 @@
 '?error=verification_failed'
 ```
 
-#### 1.2 エラーコードベースの実装
+#### 1.2 エラータイプベースの実装
 
 ```php
-private function determineErrorCode(\Exception $e): string
+private function determineErrorType(\Exception $e): string
 {
     if ($e instanceof DatabaseException) {
         return 'database_error';
@@ -62,7 +62,7 @@ private function determineErrorCode(\Exception $e): string
 
 #### 2.1 ユーザーフレンドリーなエラーメッセージ
 
--   フロントエンド側でエラーコードに応じた適切なメッセージを表示
+-   フロントエンド側でエラータイプに応じた適切なメッセージを表示
 -   解決方法やサポート情報の提供
 
 #### 2.2 エラーページの設計
@@ -84,7 +84,7 @@ private const VERIFIED_PARAM = 'verified=1';
 
 ```php
 private function redirectToPlan(): RedirectResponse
-private function redirectToVerifyWithError(string $errorCode): RedirectResponse
+private function redirectToVerifyWithError(string $errorType): RedirectResponse
 ```
 
 #### 3.3 ログ記録の強化
@@ -92,7 +92,7 @@ private function redirectToVerifyWithError(string $errorCode): RedirectResponse
 ```php
 Log::error('Email verification failed', [
     'user_id' => $user->id,
-    'error_code' => $errorCode,
+    'error_type' => $errorType,
     'exception' => $e->getMessage(),
     'trace' => $e->getTraceAsString()
 ]);
@@ -103,12 +103,12 @@ Log::error('Email verification failed', [
 ### Step 1: セキュリティ修正
 
 1. 例外メッセージの外部露出を停止
-2. エラーコードベースの実装
+2. エラータイプベースの実装
 3. セキュリティテストの実行
 
 ### Step 2: フロントエンド連携
 
-1. エラーコードに応じたメッセージ定義
+1. エラータイプに応じたメッセージ定義
 2. エラーページの UI 改善
 3. ユーザビリティテスト
 
@@ -124,14 +124,14 @@ Log::error('Email verification failed', [
 ### セキュリティテスト
 
 -   [ ] 例外メッセージが外部に露出しないことを確認
--   [ ] エラーコードのみが URL パラメータとして渡されることを確認
+-   [ ] エラータイプのみが URL パラメータとして渡されることを確認
 -   [ ] 内部情報がログに適切に記録されることを確認
 
 ### 機能テスト
 
 -   [ ] 正常なメール認証フロー
 -   [ ] エラー時の適切なリダイレクト
--   [ ] エラーコードの正確性
+-   [ ] エラータイプの正確性
 
 ### ユーザビリティテスト
 
@@ -174,7 +174,7 @@ Log::error('Email verification failed', [
 ## 完了基準
 
 -   [ ] 例外メッセージの外部露出が完全に停止
--   [ ] エラーコードベースのエラーハンドリングが実装
+-   [ ] エラータイプベースのエラーハンドリングが実装
 -   [ ] ユーザーフレンドリーなエラーページが完成
 -   [ ] セキュリティテストが全て通過
 -   [ ] 単体テストのカバレッジが 90%以上

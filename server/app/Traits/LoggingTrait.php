@@ -67,18 +67,19 @@ trait LoggingTrait
         string $callerMethod = __METHOD__
     ): void {
         $errorContext = array_merge([
-            'error_message' => $exception->getMessage(),
             'file' => $exception->getFile(),
             'line' => $exception->getLine(),
-            'trace' => $exception->getTraceAsString(),
             'model' => $this->getExceptionModel($exception),
+            'error_message' => $exception->getMessage(),
+            'errors' => method_exists($exception, 'errors') ? $exception->errors() : null,
+            'trace' => $exception->getTraceAsString(),
         ], $additionalContext);
 
         if ($statusCode instanceof HttpStatusCode) {
             $statusCode = $statusCode->value;
         }
 
-        $this->logMessage('error', $operation, 'エラーが発生しました', $request, $statusCode, $errorContext, $callerMethod);
+        $this->logMessage('error', $operation, __('api.general.error'), $request, $statusCode, $errorContext, $callerMethod);
     }
 
     /**
