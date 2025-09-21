@@ -19,7 +19,7 @@ beforeEach(function () {
 });
 
 
-test('1-4-1: 既存アイテム ID 取得テスト', function () {
+test('1-2-1: 既存アイテム ID 取得テスト', function () {
     $group = Group::factory()->create();
     $modelClass = 'App\\Models\\Ingredient';
     $existingItem = $modelClass::factory()->create(['group_id' => $group->id]);
@@ -33,7 +33,7 @@ test('1-4-1: 既存アイテム ID 取得テスト', function () {
     $this->assertEquals([$existingItem->id], array_values($ids));
 });
 
-test('1-4-2: 新規アイテム作成テスト', function () {
+test('1-2-2: 新規アイテム作成テスト', function () {
     $group = Group::factory()->create();
     $modelClass = 'App\\Models\\Ingredient';
 
@@ -47,7 +47,7 @@ test('1-4-2: 新規アイテム作成テスト', function () {
     // Remove or adjust the assertDatabaseHas check
 });
 
-test('1-4-3: 既存アイテム名での新規作成テスト', function () {
+test('1-2-3: 既存アイテム名での新規作成テスト', function () {
     $group = Group::factory()->create();
     $modelClass = 'App\\Models\\Ingredient';
     $existingItem = $modelClass::factory()->create(['group_id' => $group->id, 'name' => 'ExistingIngredient']);
@@ -61,7 +61,7 @@ test('1-4-3: 既存アイテム名での新規作成テスト', function () {
     $this->assertEquals([$existingItem->id], array_values($ids));
 });
 
-test('1-4-4: 空のアイテムリストテスト', function () {
+test('1-2-4: 空のアイテムリストテスト', function () {
     $group = Group::factory()->create();
     $modelClass = 'App\\Models\\Ingredient';
 
@@ -72,26 +72,53 @@ test('1-4-4: 空のアイテムリストテスト', function () {
     $this->assertEmpty($ids);
 });
 
-test('1-4-5: 無効なデータ型テスト', function () {
+test('1-2-5: 無効なIDデータ型テスト', function () {
     $group = Group::factory()->create();
     $modelClass = 'App\\Models\\Ingredient';
 
     $items = [
-        ['id' => 'invalid']
+        ['id' => 123] // 数値型（文字列以外）
     ];
 
     $this->expectException(InvalidArgumentException::class);
+    $this->expectExceptionMessage('ID must be a string.');
     $this->dummy->testFindOrCreateIds($items, $group, $modelClass);
 });
 
-test('1-4-6: 不正なデータ入力テスト', function () {
+test('1-2-6: 存在しないIDテスト', function () {
     $group = Group::factory()->create();
     $modelClass = 'App\\Models\\Ingredient';
 
     $items = [
-        ['id' => 9999]
+        ['id' => 'non-existent-id']
     ];
 
     $this->expectException(InvalidArgumentException::class);
+    $this->expectExceptionMessage('Specified ID does not exist.');
     $this->dummy->testFindOrCreateIds($items, $group, $modelClass);
+});
+
+test('1-2-7: インデックス付き戻り値テスト', function () {
+    $group = Group::factory()->create();
+    $modelClass = 'App\\Models\\Ingredient';
+
+    $existingItem1 = $modelClass::factory()->create(['group_id' => $group->id, 'name' => 'Item1']);
+    $existingItem2 = $modelClass::factory()->create(['group_id' => $group->id, 'name' => 'Item2']);
+
+    $items = [
+        ['id' => $existingItem1->id],
+        ['name' => 'NewItem'],
+        ['id' => $existingItem2->id]
+    ];
+
+    $ids = $this->dummy->testFindOrCreateIds($items, $group, $modelClass);
+
+    // インデックスをキーとした連想配列が返されることを確認
+    $this->assertArrayHasKey(0, $ids);
+    $this->assertArrayHasKey(1, $ids);
+    $this->assertArrayHasKey(2, $ids);
+
+    $this->assertEquals($existingItem1->id, $ids[0]);
+    $this->assertEquals($existingItem2->id, $ids[2]);
+    $this->assertIsString($ids[1]); // 新規作成されたアイテムのID
 });

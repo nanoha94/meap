@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 
 uses(RefreshDatabase::class);
 
-test('3-1-1: 正常なパスワードリセット', function () {
+test('2-3-1: 正常なパスワードリセット', function () {
     $user = User::factory()->create();
     $token = Password::createToken($user);
 
@@ -24,7 +24,7 @@ test('3-1-1: 正常なパスワードリセット', function () {
 DB::shouldReceive('table->where->get->filter')
     ->andReturn(collect([])); // Return an empty collection for invalid token
 
-test('3-1-2: トークン未入力', function () {
+test('2-3-2: トークン未入力', function () {
     $response = $this->post('/password/reset', [
         'password' => 'NewPassword1!',
         'password_confirmation' => 'NewPassword1!',
@@ -35,7 +35,7 @@ test('3-1-2: トークン未入力', function () {
     $response->assertJson(['errors' => ['token' => ['トークンは必須です。']]]);
 });
 
-test('3-1-3: パスワード未入力', function () {
+test('2-3-3: パスワード未入力', function () {
     $user = User::factory()->create();
     $token = Password::createToken($user);
 
@@ -49,7 +49,7 @@ test('3-1-3: パスワード未入力', function () {
     $response->assertJson(['errors' => ['password' => ['パスワードは必須です。']]]);
 });
 
-test('3-1-4: パスワード確認未入力', function () {
+test('2-3-4: パスワード確認未入力', function () {
     $user = User::factory()->create();
     $token = Password::createToken($user);
 
@@ -63,7 +63,7 @@ test('3-1-4: パスワード確認未入力', function () {
     $response->assertJson(['errors' => ['password_confirmation' => ['確認用パスワードは必須です。']]]);
 });
 
-test('3-1-5: パスワード確認不一致', function () {
+test('2-3-5: パスワード確認不一致', function () {
     $user = User::factory()->create();
     $token = Password::createToken($user);
 
@@ -78,7 +78,7 @@ test('3-1-5: パスワード確認不一致', function () {
     $response->assertJson(['errors' => ['password' => ['パスワードが一致しません。']]]);
 });
 
-test('3-1-6: パスワードが短すぎる', function () {
+test('2-3-6: パスワードが短すぎる', function () {
     $user = User::factory()->create();
     $token = Password::createToken($user);
 
@@ -93,7 +93,7 @@ test('3-1-6: パスワードが短すぎる', function () {
     $response->assertJson(['errors' => ['password' => ['パスワードは、最低8文字以上で入力してください。']]]);
 });
 
-test('3-1-7: パスワードに英字が含まれない', function () {
+test('2-3-7: パスワードに英字が含まれない', function () {
     $user = User::factory()->create();
     $token = Password::createToken($user);
 
@@ -108,7 +108,7 @@ test('3-1-7: パスワードに英字が含まれない', function () {
     $response->assertJson(['errors' => ['password' => ['パスワードは、最低1文字以上の文字を含めてください。']]]);
 });
 
-test('3-1-8: パスワードに数字が含まれない', function () {
+test('2-3-8: パスワードに数字が含まれない', function () {
     $user = User::factory()->create();
     $token = Password::createToken($user);
 
@@ -123,7 +123,7 @@ test('3-1-8: パスワードに数字が含まれない', function () {
     $response->assertJson(['errors' => ['password' => ['パスワードは、最低1文字以上の数字を含めてください。']]]);
 });
 
-test('3-1-9: パスワードに記号が含まれない', function () {
+test('2-3-9: パスワードに記号が含まれない', function () {
     $user = User::factory()->create();
     $token = Password::createToken($user);
 
@@ -138,7 +138,7 @@ test('3-1-9: パスワードに記号が含まれない', function () {
     $response->assertJson(['errors' => ['password' => ['パスワードは、最低1文字以上の記号を含めてください。']]]);
 });
 
-test('3-1-10: 無効なトークン', function () {
+test('2-3-10: 無効なトークン', function () {
     $user = User::factory()->create();
 
     $response = $this->post('/password/reset', [
@@ -151,7 +151,7 @@ test('3-1-10: 無効なトークン', function () {
     $response->assertJson(['message' => '指定されたパスワードリセットトークンは無効です。']);
 });
 
-test('3-1-11: ユーザーが存在しない', function () {
+test('2-3-11: ユーザーが存在しない', function () {
     $user = User::factory()->create();
     $token = Password::createToken($user);
     $user->delete();

@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Lang;
 
 uses(RefreshDatabase::class);
 
-test('4-1-1: 正常なパスワードリセットリンク送信', function () {
+test('2-4-1: 正常なパスワードリセットリンク送信', function () {
     $user = User::factory()->create();
 
     $response = $this->postJson(route('password.request'), [
@@ -21,7 +21,7 @@ test('4-1-1: 正常なパスワードリセットリンク送信', function () {
     $response->assertJson(['message' => Lang::get(Password::RESET_LINK_SENT)]);
 });
 
-test('4-1-2: 存在しないユーザー', function () {
+test('2-4-2: 存在しないユーザー', function () {
     $response = $this->postJson(route('password.request'), [
         'email' => 'nonexistent@example.com',
     ]);
@@ -30,14 +30,14 @@ test('4-1-2: 存在しないユーザー', function () {
     $response->assertJson(['errors' => ['email' => [Lang::get(Password::INVALID_USER)]]]);
 });
 
-test('4-1-3: メールアドレス未入力', function () {
+test('2-4-3: メールアドレス未入力', function () {
     $response = $this->postJson(route('password.request'), []);
     $response->assertStatus(422);
     $response->assertJsonValidationErrors('email');
     $response->assertJson(['errors' => ['email' => ['メールアドレスは必須です。']]]);
 });
 
-test('4-1-4: 無効なメール形式', function () {
+test('2-4-4: 無効なメール形式', function () {
     $response = $this->postJson(route('password.request'), [
         'email' => 'invalid-email',
     ]);
@@ -46,7 +46,7 @@ test('4-1-4: 無効なメール形式', function () {
     $response->assertJson(['errors' => ['email' => ['メールアドレスには、有効なメールアドレスを指定してください。']]]);
 });
 
-test('4-1-5: リセットリンク送信のレート制限', function () {
+test('2-4-5: リセットリンク送信のレート制限', function () {
     $user = User::factory()->create();
 
     for ($i = 0; $i < 6; $i++) {
@@ -63,7 +63,7 @@ test('4-1-5: リセットリンク送信のレート制限', function () {
     $response->assertJson(['message' => 'パスワードリセットリンクの送信は、短時間に複数回リクエストすることはできません。']);
 });
 
-test('4-1-6: サーバーエラー', function () {
+test('2-4-6: サーバーエラー', function () {
     // サーバーエラーをシミュレーション
     Password::shouldReceive('sendResetLink')
         ->andThrow(new \Exception('Intentional Server Error'));
@@ -80,7 +80,7 @@ test('4-1-6: サーバーエラー', function () {
     \Mockery::close();
 });
 
-test('4-1-7: トークン生成失敗', function () {
+test('2-4-7: トークン生成失敗', function () {
     // Passwordファサードをモックしてトークン生成失敗をシミュレーション
     Password::shouldReceive('sendResetLink')
         ->andReturn(CustomPasswordBroker::RETRY_TOKEN);

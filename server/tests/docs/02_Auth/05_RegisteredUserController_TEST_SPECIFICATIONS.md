@@ -47,23 +47,3 @@
 cd server
 ./tests/sh/02_run_auth_tests.sh
 ```
-
-### 認証テストのみ実行
-
-```bash
-# 特定のテストファイルのみ実行
-./vendor/bin/sail artisan test tests/Feature/Auth/RegisteredUserControllerTest.php
-
-# 認証関連のテストのみ実行
-./vendor/bin/sail artisan test --filter="RegisteredUserControllerTest"
-
-# Authディレクトリ内の全テストを実行
-./vendor/bin/sail artisan test tests/Feature/Auth/
-```
-
-## 注意事項
-
--   テスト実行前に、必要なマスターデータ（Color テーブルなど）がシードされていることを確認してください
--   トランザクション処理のテストでは、データベースの状態を適切にリセットしてください
--   メール送信機能のテストでは、モックまたはテスト用のメール設定を使用してください
--   パスワード強度のテストでは、`Rules\Password::defaults()` の設定に合わせてテストケースを調整してください

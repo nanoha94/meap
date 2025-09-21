@@ -27,24 +27,5 @@ Auth 関連のコントローラーテストファイル群で実装されてい
 
 ```bash
 cd server
-./tests/sh/01_run_auth_tests.sh
-```
-
-### 認証テストのみ実行
-
-```bash
-# 特定のテストファイルのみ実行
-./vendor/bin/sail artisan test tests/Feature/Auth/AuthenticatedSessionControllerTest.php
-./vendor/bin/sail artisan test tests/Feature/Auth/VerifyEmailControllerTest.php
-./vendor/bin/sail artisan test tests/Feature/Auth/PasswordResetLinkControllerTest.php
-./vendor/bin/sail artisan test tests/Feature/Auth/RegisteredUserControllerTest.php
-
-# 認証関連のテストのみ実行
-./vendor/bin/sail artisan test --filter="AuthenticatedSessionControllerTest"
-./vendor/bin/sail artisan test --filter="VerifyEmailControllerTest"
-./vendor/bin/sail artisan test --filter="PasswordResetLinkControllerTest"
-./vendor/bin/sail artisan test --filter="RegisteredUserControllerTest"
-
-# Authディレクトリ内の全テストを実行
-./vendor/bin/sail artisan test tests/Feature/Auth/
+./tests/sh/02_run_auth_tests.sh
 ```

@@ -11,3 +11,12 @@
 | 2-2-1 | 既にメールアドレスが確認済みの場合 | 正常系 | ユーザーが既にメールアドレスを確認済み | フロントエンドのプランページにリダイレクトされる             | `EmailVerificationNotificationController.php`<br>store() メソッド (17-18 行目) | リダイレクトの確認                     |
 | 2-2-2 | メールアドレス確認通知の再送信     | 正常系 | ユーザーがメールアドレスを未確認       | メールアドレス確認リンクが再送され、成功メッセージが返される | `EmailVerificationNotificationController.php`<br>store() メソッド (21-23 行目) | メール送信の確認と成功メッセージの確認 |
 | 2-2-3 | メール送信失敗                     | 異常系 | メール送信が何らかの理由で失敗         | エラーメッセージが返される                                   | `EmailVerificationNotificationController.php`<br>store() メソッド              | メール送信エラーの確認                 |
+
+## テスト実行方法
+
+### Sail 環境での実行
+
+```bash
+cd server
+./tests/sh/02_run_auth_tests.sh
+```

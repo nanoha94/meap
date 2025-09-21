@@ -46,9 +46,9 @@ beforeEach(function () {
             return $this->showResponse($data, $message);
         }
 
-        public function testErrorResponse($message, $statusCode = HttpStatusCode::BAD_REQUEST, $errors = null)
+        public function testErrorResponse($message, $statusCode = HttpStatusCode::BAD_REQUEST, $errors = null, $errorType = null)
         {
-            return $this->errorResponse($message, $statusCode, $errors);
+            return $this->errorResponse($message, $statusCode, $errors, $errorType);
         }
 
         public function testNotFoundResponse($message)
@@ -240,7 +240,23 @@ test('1-1-11: エラー詳細付きエラーレスポンステスト', function 
     ], $response->getData(true));
 });
 
-test('1-1-12: データ未発見エラーレスポンステスト', function () {
+test('1-1-12: エラータイプ付きエラーレスポンステスト', function () {
+    $message = 'Error occurred';
+    $errorType = 'validation_error';
+    $response = $this->dummy->testErrorResponse($message, HttpStatusCode::BAD_REQUEST, null, $errorType);
+
+    $this->assertInstanceOf(JsonResponse::class, $response);
+    $this->assertEquals(400, $response->getStatusCode());
+    $this->assertEquals([
+        'success' => false,
+        'message' => $message,
+        'error_code' => 400,
+        'error_type' => $errorType,
+        'error_description' => '不正なリクエスト',
+    ], $response->getData(true));
+});
+
+test('1-1-13: データ未発見エラーレスポンステスト', function () {
     $message = 'Data not found';
     $response = $this->dummy->testNotFoundResponse($message);
 
@@ -255,7 +271,7 @@ test('1-1-12: データ未発見エラーレスポンステスト', function () 
     ], $response->getData(true));
 });
 
-test('1-1-13: 認証エラーレスポンステスト', function () {
+test('1-1-14: 認証エラーレスポンステスト', function () {
     $message = 'Unauthorized access';
     $response = $this->dummy->testUnauthorizedResponse($message);
 
@@ -270,7 +286,7 @@ test('1-1-13: 認証エラーレスポンステスト', function () {
     ], $response->getData(true));
 });
 
-test('1-1-14: 権限エラーレスポンステスト', function () {
+test('1-1-15: 権限エラーレスポンステスト', function () {
     $message = 'Forbidden access';
     $response = $this->dummy->testForbiddenResponse($message);
 
@@ -285,7 +301,7 @@ test('1-1-14: 権限エラーレスポンステスト', function () {
     ], $response->getData(true));
 });
 
-test('1-1-15: サーバーエラーレスポンステスト', function () {
+test('1-1-16: サーバーエラーレスポンステスト', function () {
     $message = 'Internal server error';
     $response = $this->dummy->testServerErrorResponse($message);
 
@@ -300,7 +316,7 @@ test('1-1-15: サーバーエラーレスポンステスト', function () {
     ], $response->getData(true));
 });
 
-test('1-1-16: データベースエラーレスポンステスト', function () {
+test('1-1-17: データベースエラーレスポンステスト', function () {
     $message = 'Database error';
     $response = $this->dummy->testDatabaseErrorResponse($message);
 

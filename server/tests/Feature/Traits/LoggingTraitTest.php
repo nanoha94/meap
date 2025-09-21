@@ -34,7 +34,7 @@ beforeEach(function () {
     };
 });
 
-test('1-2-1: 基本動作テスト', function () {
+test('1-4-1: 基本動作テスト', function () {
     $request = Request::create('/test', 'GET');
 
     // ユーザー情報をシミュレート
@@ -62,7 +62,7 @@ test('1-2-1: 基本動作テスト', function () {
     $this->dummy->testMethod($request);
 });
 
-test('1-2-2: リクエスト情報記録テスト', function () {
+test('1-4-2: リクエスト情報記録テスト', function () {
     $request = Request::create('/api/test?param=value', 'POST');
 
     $user = new stdClass();
@@ -88,7 +88,7 @@ test('1-2-2: リクエスト情報記録テスト', function () {
     $this->dummy->testMethod($request);
 });
 
-test('1-2-3: 警告ログ出力テスト', function () {
+test('1-4-3: 警告ログ出力テスト', function () {
     $request = Request::create('/test', 'PUT');
 
     $user = new stdClass();
@@ -114,7 +114,7 @@ test('1-2-3: 警告ログ出力テスト', function () {
     $this->dummy->testWarningMethod($request);
 });
 
-test('1-2-4: エラーログ出力テスト', function () {
+test('1-4-4: エラーログ出力テスト', function () {
     $request = Request::create('/test', 'POST');
 
     $user = new stdClass();
@@ -144,7 +144,7 @@ test('1-2-4: エラーログ出力テスト', function () {
     $this->dummy->testErrorMethod($request);
 });
 
-test('1-2-5: logMessage の動作テスト', function () {
+test('1-4-5: ログメッセージ統合テスト', function () {
     $request = Request::create('/test', 'GET');
 
     $user = new stdClass();
@@ -166,7 +166,7 @@ test('1-2-5: logMessage の動作テスト', function () {
     $this->dummy->logError(HttpStatusCode::INTERNAL_SERVER_ERROR, 'テスト操作', new Exception('テストエラー'), $request, []);
 });
 
-test('1-2-6: 機密情報フィルタリングテスト', function () {
+test('1-4-6: 機密情報フィルタリングテスト', function () {
     $request = Request::create('/test', 'POST', [
         'password' => 'password123',
         'password_confirmation' => 'password123',
