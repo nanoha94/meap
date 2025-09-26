@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\Api\CourseTypeController;
 use App\Http\Controllers\Api\GroupUsersController as ApiGroupUsersController;
 use App\Http\Controllers\Api\IngredientCategoryController;
 use Illuminate\Http\Request;
@@ -22,7 +21,6 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::apiResource('/meal-plans', MealPlanController::class);
     Route::apiResource('/meal-types', MealTypeController::class)->only(['store', 'destroy']);
     Route::put('/meal-types/bulk', [MealTypeController::class, 'bulkUpdate']);
-    Route::get('/course-types', [CourseTypeController::class, 'index']);
 
     // recipes
     Route::apiResource('/recipes', RecipeController::class);
