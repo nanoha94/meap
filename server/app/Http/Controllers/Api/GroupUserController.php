@@ -8,7 +8,7 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class GroupUsersController extends ApiController
+class GroupUserController extends ApiController
 {
     protected UserService $userService;
 

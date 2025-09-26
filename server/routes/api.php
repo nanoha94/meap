@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Api\GroupUsersController as ApiGroupUsersController;
+use App\Http\Controllers\Api\GroupUserController as ApiGroupUserController;
 use App\Http\Controllers\Api\IngredientCategoryController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -42,7 +42,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::post('/invitations/{token}/join', [InvitationController::class, 'join']);
 
     // users
-    Route::get('/users', [ApiGroupUsersController::class, 'index']);
+    Route::get('/users', [ApiGroupUserController::class, 'index']);
     Route::get('/user',  function (Request $request) {
         $user = $request->user();
         return [
