@@ -3,21 +3,17 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\RegisterUserRequest;
 use App\Models\Group;
 use App\Models\GroupUserMapping;
 use App\Models\User;
 use Exception;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Validation\Rules;
-use App\Enums\HttpStatusCode;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class RegisteredUserController extends Controller
 {
@@ -41,20 +37,10 @@ class RegisteredUserController extends Controller
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function store(Request $request): Response|JsonResponse
+    public function store(RegisterUserRequest $request): Response|JsonResponse
     {
         try {
-            // ログイン状態をチェック
-            if (Auth::check()) {
-                throw new HttpException(HttpStatusCode::CONFLICT->value, __('auth.already_logged_in'));
-            }
-
-            $request->validate([
-                'name' => ['required', 'string', 'max:255'],
-                'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
-                'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            ]);
-
+            // トランザクション開始
             DB::beginTransaction();
 
             try {
@@ -73,14 +59,14 @@ class RegisteredUserController extends Controller
                 DB::commit();
             } catch (Exception $e) {
                 DB::rollBack();
-                return $this->handleException($e, $request, __('auth.registration_failed'), __('operations.auth.registration'));
+                return $this->handleException($e, $request, __('auth.registration_failed'), __('operations.auth.register_user'));
             }
 
             event(new Registered($user));
             Auth::login($user);
             return $this->successResponse(null, __('auth.registration_success'));
         } catch (Exception $e) {
-            return $this->handleException($e, $request, __('auth.registration_failed'), __('operations.auth.registration'));
+            return $this->handleException($e, $request, __('auth.registration_failed'), __('operations.auth.register_user'));
         }
     }
 }

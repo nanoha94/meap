@@ -129,8 +129,7 @@ test('1-4-4: エラーログ出力テスト', function () {
     Log::shouldReceive('error')
         ->once()
         ->withArgs(function ($message, $context) {
-            return str_contains($message, '操作「テスト操作」: エラーが発生しました') &&
-                $context['error_message'] === 'テストエラー' &&
+            return str_contains($message, '操作「テスト操作」: サーバー内部エラーが発生しました') &&
                 str_contains($context['method'], 'testErrorMethod') &&
                 str_contains($context['file'], 'LoggingTraitTest.php') &&
                 is_int($context['line']) &&

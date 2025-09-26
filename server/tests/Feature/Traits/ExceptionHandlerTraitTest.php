@@ -112,8 +112,8 @@ test('1-3-1: ValidationExceptionの処理をテスト', function () {
     Log::shouldReceive('error')
         ->once()
         ->withArgs(function ($message, $context) {
-            return str_contains($message, '操作「ユーザー登録」: エラーが発生しました') &&
-                isset($context['validation_errors']) &&
+            return str_contains($message, '操作「ユーザー登録」: 入力内容に誤りがあります') &&
+                isset($context['errors']) &&
                 $context['message'] === 'バリデーションエラーが発生しました' &&
                 $context['status_code'] === HttpStatusCode::UNPROCESSABLE_ENTITY->value;
         });
@@ -139,7 +139,7 @@ test('1-3-2: HttpExceptionの処理をテスト', function () {
     Log::shouldReceive('error')
         ->once()
         ->withArgs(function ($message, $context) {
-            return str_contains($message, '操作「テスト操作」: エラーが発生しました') &&
+            return str_contains($message, '操作「テスト操作」: アクセスが拒否されました') &&
                 $context['message'] === 'HTTPエラーが発生しました' &&
                 $context['status_code'] === 403;
         });
@@ -165,7 +165,7 @@ test('1-3-3: ModelNotFoundExceptionの処理をテスト', function () {
     Log::shouldReceive('error')
         ->once()
         ->withArgs(function ($message, $context) {
-            return str_contains($message, '操作「ユーザー検索」: エラーが発生しました') &&
+            return str_contains($message, '操作「ユーザー検索」: リソースが見つかりません') &&
                 isset($context['search_conditions']) &&
                 $context['message'] === 'ユーザーが見つかりません' &&
                 $context['status_code'] === HttpStatusCode::NOT_FOUND->value;
@@ -196,7 +196,7 @@ test('1-3-4: QueryExceptionの処理をテスト', function () {
     Log::shouldReceive('error')
         ->once()
         ->withArgs(function ($message, $context) {
-            return str_contains($message, '操作「ユーザー取得」: エラーが発生しました') &&
+            return str_contains($message, '操作「ユーザー取得」: サーバー内部エラーが発生しました') &&
                 $context['message'] === 'データベースエラーが発生しました' &&
                 $context['status_code'] === HttpStatusCode::INTERNAL_SERVER_ERROR->value;
         });
@@ -222,7 +222,7 @@ test('1-3-5: 汎用例外の処理をテスト', function () {
     Log::shouldReceive('error')
         ->once()
         ->withArgs(function ($message, $context) {
-            return str_contains($message, '操作「データ処理」: エラーが発生しました') &&
+            return str_contains($message, '操作「データ処理」: サーバー内部エラーが発生しました') &&
                 $context['message'] === 'システムエラーが発生しました' &&
                 $context['status_code'] === HttpStatusCode::INTERNAL_SERVER_ERROR->value;
         });
@@ -248,7 +248,7 @@ test('1-3-6: カスタムステータスコードの処理をテスト', functio
     Log::shouldReceive('error')
         ->once()
         ->withArgs(function ($message, $context) {
-            return str_contains($message, '操作「テスト操作」: エラーが発生しました') &&
+            return str_contains($message, '操作「テスト操作」: エラーが発生しました。') &&
                 $context['message'] === 'カスタムエラーが発生しました' &&
                 $context['status_code'] === 418;
         });

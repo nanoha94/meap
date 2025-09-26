@@ -100,21 +100,18 @@ trait ApiResponse
     /**
      * エラーレスポンスを返す
      */
-    protected function errorResponse(string $message, HttpStatusCode | int $statusCode = HttpStatusCode::BAD_REQUEST, mixed $errors = null, ?string $errorType = null): JsonResponse
+    protected function errorResponse(string $message, HttpStatusCode | int $statusCode = HttpStatusCode::BAD_REQUEST, mixed $errors = [], ?string $errorType = ''): JsonResponse
     {
         $response = [
             'success' => false,
             'message' => $message,
             'error_type' => $errorType,
-            'error_code' => $statusCode,
-            'error_description' => is_object($statusCode) ? $statusCode->getDescription() : 'エラーが発生しました',
+            'error_code' => $statusCode instanceof HttpStatusCode ? $statusCode->value : $statusCode,
+            'error_description' => $statusCode instanceof HttpStatusCode ? $statusCode->getDescription() : 'エラーが発生しました',
+            'errors' => $errors,
         ];
 
-        if ($errors !== null) {
-            $response['errors'] = $errors;
-        }
-
-        return response()->json($response, is_object($statusCode) ? $statusCode->value : $statusCode);
+        return response()->json($response, $statusCode instanceof HttpStatusCode ? $statusCode->value : $statusCode);
     }
 
     /**

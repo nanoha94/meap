@@ -38,6 +38,7 @@ class ImageController extends ApiController
             // バリデーション
             $validationRules = $this->imageService->generateImageValidationRules(20, $this->imageService->getValidationRules());
 
+            // TODO: バリデーションチェックはフォームリクエストに移行する
             $request->validate($validationRules, [
                 'images.0.required' => __('validation_custom.image.images.required'),
                 'images.0.file' => __('validation_custom.image.images.file'),

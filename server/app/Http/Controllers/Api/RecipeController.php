@@ -268,6 +268,7 @@ class RecipeController extends ApiController
      */
     private function validateRecipeRequest(Request $request): void
     {
+        // TODO: バリデーションチェックはフォームリクエストに移行する
         $request->validate([
             'name' => 'required|string|max:255',
             'url' => 'nullable|string|max:2048',

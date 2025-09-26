@@ -32,20 +32,20 @@ enum HttpStatusCode: int
     public function getDescription(): string
     {
         return match ($this) {
-            self::BAD_REQUEST => '不正なリクエスト',
-            self::UNAUTHORIZED => '認証が必要です',
-            self::FORBIDDEN => 'アクセスが拒否されました',
-            self::NOT_FOUND => 'リソースが見つかりません',
-            self::METHOD_NOT_ALLOWED => '許可されていないメソッドです',
-            self::CONFLICT => 'リソースが競合しています',
-            self::UNPROCESSABLE_ENTITY => '入力内容に誤りがあります',
-            self::TOO_MANY_REQUESTS => 'リクエストが多すぎます',
-            self::INTERNAL_SERVER_ERROR => 'サーバー内部エラーが発生しました',
-            self::NOT_IMPLEMENTED => '実装されていない機能です',
-            self::BAD_GATEWAY => 'ゲートウェイエラーが発生しました',
-            self::SERVICE_UNAVAILABLE => 'サービスが利用できません',
-            self::GATEWAY_TIMEOUT => 'ゲートウェイがタイムアウトしました',
-            default => '不明なエラー'
+            self::BAD_REQUEST => __('http_status.bad_request'),
+            self::UNAUTHORIZED => __('http_status.unauthorized'),
+            self::FORBIDDEN => __('http_status.forbidden'),
+            self::NOT_FOUND => __('http_status.not_found'),
+            self::METHOD_NOT_ALLOWED => __('http_status.method_not_allowed'),
+            self::CONFLICT => __('http_status.conflict'),
+            self::UNPROCESSABLE_ENTITY => __('http_status.unprocessable_entity'),
+            self::TOO_MANY_REQUESTS => __('http_status.too_many_requests'),
+            self::INTERNAL_SERVER_ERROR => __('http_status.internal_server_error'),
+            self::NOT_IMPLEMENTED => __('http_status.not_implemented'),
+            self::BAD_GATEWAY => __('http_status.bad_gateway'),
+            self::SERVICE_UNAVAILABLE => __('http_status.service_unavailable'),
+            self::GATEWAY_TIMEOUT => __('http_status.gateway_timeout'),
+            default => __('http_status.unknown_error')
         };
     }
 

@@ -66,20 +66,38 @@ trait LoggingTrait
         array $additionalContext = [],
         string $callerMethod = __METHOD__
     ): void {
-        $errorContext = array_merge([
-            'file' => $exception->getFile(),
-            'line' => $exception->getLine(),
-            'model' => $this->getExceptionModel($exception),
-            'error_message' => $exception->getMessage(),
-            'errors' => method_exists($exception, 'errors') ? $exception->errors() : null,
-            'trace' => $exception->getTraceAsString(),
-        ], $additionalContext);
+        $errorContext = array_merge(
+            [
+                'file' => $exception->getFile(),
+                'line' => $exception->getLine(),
+                'model' => $this->getExceptionModel($exception),
+                'errors' => method_exists($exception, 'errors') ? $exception->errors() : [],
+            ],
+            $additionalContext,
+            ['trace' => $exception->getTraceAsString()]
+        );
+
 
         if ($statusCode instanceof HttpStatusCode) {
-            $statusCode = $statusCode->value;
+            $httpStatusCode = $statusCode;
+        }
+        // int型の場合はHttpStatusCodeにキャストを試行
+        else {
+            $httpStatusCode = HttpStatusCode::tryFrom($statusCode);
         }
 
-        $this->logMessage('error', $operation, __('api.general.error'), $request, $statusCode, $errorContext, $callerMethod);
+        if ($httpStatusCode !== null) {
+            $errorCode = $httpStatusCode->value;
+            $errorMessage = $httpStatusCode->getDescription() ?? __('api.general.error');
+        }
+        // 無効なステータスコードの場合はそのまま使用
+        else {
+            $errorCode = $statusCode;
+            $errorMessage = __('api.general.error');
+        }
+
+
+        $this->logMessage('error', $operation, $errorMessage, $request, $errorCode, $errorContext, $callerMethod);
     }
 
     /**
@@ -104,7 +122,7 @@ trait LoggingTrait
         $user = $request->user();
         $group = $user?->group;
 
-        $context = array_merge([
+        $context = [
             'method' => $callerMethod,
             'user_id' => $user?->id,
             'group_id' => $group?->id,
@@ -113,11 +131,11 @@ trait LoggingTrait
             'request_ip' => $request->ip(),
             'user_agent' => $request->userAgent(),
             'status_code' => $statusCode,
-
-        ], $additionalContext);
+        ];
 
         // 機密情報を除外
         $context = $this->filterSensitiveData($context, $request);
+        $context = array_merge($context, $additionalContext);
 
         Log::$logLevel("操作「{$operation}」: {$message}", $context);
     }

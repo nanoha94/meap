@@ -46,7 +46,7 @@ beforeEach(function () {
             return $this->showResponse($data, $message);
         }
 
-        public function testErrorResponse($message, $statusCode = HttpStatusCode::BAD_REQUEST, $errors = null, $errorType = null)
+        public function testErrorResponse($message, $statusCode = HttpStatusCode::BAD_REQUEST, $errors = [], ?string $errorType = '')
         {
             return $this->errorResponse($message, $statusCode, $errors, $errorType);
         }
@@ -220,6 +220,7 @@ test('1-1-10: エラーレスポンステスト', function () {
         'error_code' => 400,
         'error_type' => null,
         'error_description' => '不正なリクエスト',
+        'errors' => [],
     ], $response->getData(true));
 });
 
@@ -243,7 +244,7 @@ test('1-1-11: エラー詳細付きエラーレスポンステスト', function 
 test('1-1-12: エラータイプ付きエラーレスポンステスト', function () {
     $message = 'Error occurred';
     $errorType = 'validation_error';
-    $response = $this->dummy->testErrorResponse($message, HttpStatusCode::BAD_REQUEST, null, $errorType);
+    $response = $this->dummy->testErrorResponse($message, HttpStatusCode::BAD_REQUEST, [], $errorType);
 
     $this->assertInstanceOf(JsonResponse::class, $response);
     $this->assertEquals(400, $response->getStatusCode());
@@ -253,6 +254,7 @@ test('1-1-12: エラータイプ付きエラーレスポンステスト', functi
         'error_code' => 400,
         'error_type' => $errorType,
         'error_description' => '不正なリクエスト',
+        'errors' => [],
     ], $response->getData(true));
 });
 
@@ -266,8 +268,9 @@ test('1-1-13: データ未発見エラーレスポンステスト', function () 
         'success' => false,
         'message' => $message,
         'error_code' => 404,
-        'error_type' => null,
+        'error_type' => '',
         'error_description' => 'リソースが見つかりません',
+        'errors' => [],
     ], $response->getData(true));
 });
 
@@ -281,8 +284,9 @@ test('1-1-14: 認証エラーレスポンステスト', function () {
         'success' => false,
         'message' => $message,
         'error_code' => 401,
-        'error_type' => null,
+        'error_type' => '',
         'error_description' => '認証が必要です',
+        'errors' => [],
     ], $response->getData(true));
 });
 
@@ -296,8 +300,9 @@ test('1-1-15: 権限エラーレスポンステスト', function () {
         'success' => false,
         'message' => $message,
         'error_code' => 403,
-        'error_type' => null,
+        'error_type' => '',
         'error_description' => 'アクセスが拒否されました',
+        'errors' => [],
     ], $response->getData(true));
 });
 
@@ -311,8 +316,9 @@ test('1-1-16: サーバーエラーレスポンステスト', function () {
         'success' => false,
         'message' => $message,
         'error_code' => 500,
-        'error_type' => null,
+        'error_type' => '',
         'error_description' => 'サーバー内部エラーが発生しました',
+        'errors' => [],
     ], $response->getData(true));
 });
 
@@ -326,7 +332,8 @@ test('1-1-17: データベースエラーレスポンステスト', function () 
         'success' => false,
         'message' => $message,
         'error_code' => 500,
-        'error_type' => null,
+        'error_type' => '',
         'error_description' => 'サーバー内部エラーが発生しました',
+        'errors' => [],
     ], $response->getData(true));
 });

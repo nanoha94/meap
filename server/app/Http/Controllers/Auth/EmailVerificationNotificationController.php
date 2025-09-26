@@ -18,7 +18,7 @@ class EmailVerificationNotificationController extends Controller
     {
         if ($request->user() === null) {
             $message = __('auth.email_verification_notification.store_not_found');
-            $this->logError(HttpStatusCode::NOT_FOUND, __('operations.email_verification_notification.store'), new Exception($message), $request, [
+            $this->logError(HttpStatusCode::NOT_FOUND, __('operations.auth.email_verification_notification'), new Exception($message), $request, [
                 'email' => $request->user()->email
             ]);
             return $this->errorResponse($message, HttpStatusCode::NOT_FOUND);
@@ -35,7 +35,7 @@ class EmailVerificationNotificationController extends Controller
                 $e,
                 $request,
                 __('auth.email_verification_notification.store_failed'),
-                __('operations.email_verification_notification.store')
+                __('operations.auth.email_verification_notification')
             );
         }
 

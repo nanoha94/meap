@@ -6,7 +6,6 @@ use App\Custom\Auth\CustomPasswordBroker;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Facades\Lang;
 
 uses(RefreshDatabase::class);
 
@@ -18,7 +17,7 @@ test('2-4-1: 正常なパスワードリセットリンク送信', function () {
     ]);
 
     $response->assertStatus(200);
-    $response->assertJson(['message' => Lang::get(Password::RESET_LINK_SENT)]);
+    $response->assertJson(['message' => 'パスワードリセットリンクをメールで送信しました。']);
 });
 
 test('2-4-2: 存在しないユーザー', function () {
@@ -26,8 +25,7 @@ test('2-4-2: 存在しないユーザー', function () {
         'email' => 'nonexistent@example.com',
     ]);
     $response->assertStatus(422);
-    $response->assertJsonValidationErrors('email');
-    $response->assertJson(['errors' => ['email' => [Lang::get(Password::INVALID_USER)]]]);
+    $response->assertJson(['message' => '指定されたメールアドレスのユーザーが見つかりません。', 'errors' => []]);
 });
 
 test('2-4-3: メールアドレス未入力', function () {

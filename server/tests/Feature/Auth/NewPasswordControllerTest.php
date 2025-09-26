@@ -25,7 +25,7 @@ DB::shouldReceive('table->where->get->filter')
     ->andReturn(collect([])); // Return an empty collection for invalid token
 
 test('2-3-2: トークン未入力', function () {
-    $response = $this->post('/password/reset', [
+    $response = $this->postJson('/password/reset', [
         'password' => 'NewPassword1!',
         'password_confirmation' => 'NewPassword1!',
     ]);
@@ -39,7 +39,7 @@ test('2-3-3: パスワード未入力', function () {
     $user = User::factory()->create();
     $token = Password::createToken($user);
 
-    $response = $this->post('/password/reset', [
+    $response = $this->postJson('/password/reset', [
         'token' => $token,
         'password_confirmation' => 'NewPassword1!',
     ]);
@@ -53,7 +53,7 @@ test('2-3-4: パスワード確認未入力', function () {
     $user = User::factory()->create();
     $token = Password::createToken($user);
 
-    $response = $this->post('/password/reset', [
+    $response = $this->postJson('/password/reset', [
         'token' => $token,
         'password' => 'NewPassword1!',
     ]);
@@ -67,7 +67,7 @@ test('2-3-5: パスワード確認不一致', function () {
     $user = User::factory()->create();
     $token = Password::createToken($user);
 
-    $response = $this->post('/password/reset', [
+    $response = $this->postJson('/password/reset', [
         'token' => $token,
         'password' => 'new-password',
         'password_confirmation' => 'different-password',
@@ -82,7 +82,7 @@ test('2-3-6: パスワードが短すぎる', function () {
     $user = User::factory()->create();
     $token = Password::createToken($user);
 
-    $response = $this->post('/password/reset', [
+    $response = $this->postJson('/password/reset', [
         'token' => $token,
         'password' => 'short',
         'password_confirmation' => 'short',
@@ -97,7 +97,7 @@ test('2-3-7: パスワードに英字が含まれない', function () {
     $user = User::factory()->create();
     $token = Password::createToken($user);
 
-    $response = $this->post('/password/reset', [
+    $response = $this->postJson('/password/reset', [
         'token' => $token,
         'password' => '12345678!',
         'password_confirmation' => '12345678!',
@@ -112,7 +112,7 @@ test('2-3-8: パスワードに数字が含まれない', function () {
     $user = User::factory()->create();
     $token = Password::createToken($user);
 
-    $response = $this->post('/password/reset', [
+    $response = $this->postJson('/password/reset', [
         'token' => $token,
         'password' => 'Password!',
         'password_confirmation' => 'Password!',
@@ -127,7 +127,7 @@ test('2-3-9: パスワードに記号が含まれない', function () {
     $user = User::factory()->create();
     $token = Password::createToken($user);
 
-    $response = $this->post('/password/reset', [
+    $response = $this->postJson('/password/reset', [
         'token' => $token,
         'password' => 'Password1',
         'password_confirmation' => 'Password1',
@@ -141,7 +141,7 @@ test('2-3-9: パスワードに記号が含まれない', function () {
 test('2-3-10: 無効なトークン', function () {
     $user = User::factory()->create();
 
-    $response = $this->post('/password/reset', [
+    $response = $this->postJson('/password/reset', [
         'token' => 'invalid-token',
         'password' => 'new-password1',
         'password_confirmation' => 'new-password1',
@@ -155,7 +155,7 @@ test('2-3-11: ユーザーが存在しない', function () {
     $user = User::factory()->create();
     $token = Password::createToken($user);
     $user->delete();
-    $response = $this->post('/password/reset', [
+    $response = $this->postJson('/password/reset', [
         'token' => $token,
         'password' => 'new-password1',
         'password_confirmation' => 'new-password1',

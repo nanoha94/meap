@@ -73,7 +73,7 @@ class VerifyEmailController extends Controller
 
         // 詳細ログ出力（内部記録のみ）
         $this->logError($this->getExceptionStatusCode($e), __('operations.auth.email_verification'), $e, $request, [
-            'operation' => 'verify_email.invoke',
+            'operation' => __('operations.auth.email_verification'),
             'error_type' => $errorType,
             'exception_message' => $e->getMessage(),
             'exception_trace' => $e->getTraceAsString()

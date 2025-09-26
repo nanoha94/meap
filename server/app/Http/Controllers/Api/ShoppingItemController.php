@@ -92,6 +92,7 @@ class ShoppingItemController extends ApiController
             $group = $user->group;
 
             // 入力値のバリデーション
+            // TODO: バリデーションチェックはフォームリクエストに移行する
             $request->validate([
                 'name' => 'required|string|max:255',
                 'categoryId' => 'required|string|max:255',

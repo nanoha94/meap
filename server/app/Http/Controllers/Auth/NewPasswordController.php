@@ -3,17 +3,17 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\NewPasswordRequest;
 use App\Traits\LoggingTrait;
 use App\Enums\HttpStatusCode;
 use Exception;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rules;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class NewPasswordController extends Controller
 {
@@ -24,25 +24,9 @@ class NewPasswordController extends Controller
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function store(Request $request): JsonResponse
+    public function store(NewPasswordRequest $request): JsonResponse
     {
         try {
-            $request->validate([
-                'token' => ['required'],
-                'password' => [
-                    'required',
-                    'confirmed',
-                    Rules\Password::defaults()
-                ],
-                'password_confirmation' => ['required'],
-            ], [
-                'token.required' => __('validation_custom.token.required'),
-                'password.required' => __('validation.password.required'),
-                'password.confirmed' => __('validation.password.confirmed'),
-                'password.min' => __('validation.password.min'),
-                'password_confirmation.required' => __('validation.password_confirmation.required'),
-            ]);
-
             // Here we will attempt to reset the user's password. If it is successful we
             // will update the password on an actual user model and persist it to the
             // database. Otherwise we will parse the error and return the response.
@@ -67,8 +51,12 @@ class NewPasswordController extends Controller
                 // 適切なステータスコードを取得
                 $statusCode = $statusMessages[$status] ?? HttpStatusCode::INTERNAL_SERVER_ERROR;
 
-                $this->logError($statusCode, __('operations.password.reset'), new Exception(__($status)), $request, ['message' => __($status)], __METHOD__);
-                return $this->errorResponse(__($status), $statusCode);
+                return $this->handleException(
+                    new HttpException($statusCode->value, __($status)),
+                    $request,
+                    __($status),
+                    __('operations.auth.password_reset')
+                );
             }
 
             App::setLocale('en');
@@ -78,7 +66,7 @@ class NewPasswordController extends Controller
                 $e,
                 $request,
                 __('api.general.server_error'),
-                __('operations.password.reset')
+                __('operations.auth.password_reset')
             );
         }
     }

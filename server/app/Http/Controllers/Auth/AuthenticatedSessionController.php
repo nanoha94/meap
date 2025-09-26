@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 
 class AuthenticatedSessionController extends Controller
@@ -31,7 +30,7 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return $this->successResponse(null, __('api.auth.login_success'));
+        return $this->successResponse(null, __('auth.login.success'));
     }
 
     /**
@@ -54,8 +53,7 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerateToken();
 
-        // Cookieを明示的に削除
-        $response = $this->successResponse(null, __('api.auth.logout_success'));
+        $response = $this->successResponse(null, __('auth.logout.success'));
 
         // 複数のドメインとパスパターンで削除
         $domains = [config('session.domain'), null, '', '.' . parse_url(config('app.url'), PHP_URL_HOST)];

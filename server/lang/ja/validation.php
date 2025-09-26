@@ -43,6 +43,7 @@ return [
     'doesnt_start_with' => ':attributeは、:values以外の値で始まるように指定してください。',
     'email' => [
         'required' => ':attributeは必須です。',
+        'string' => ':attributeは文字列でなくてはなりません。',
         'email' => ':attributeには、有効なメールアドレスを指定してください。',
     ],
     'ends_with' => ':attributeには、:valuesのどれかで終わる値を指定してください。',
@@ -115,6 +116,7 @@ return [
     'numeric' => ':attributeには、数字を指定してください。',
     'password' => [
         'required' => ':attributeは必須です。',
+        'string' => ':attributeは文字列でなくてはなりません。',
         'confirmed' => ':attributeが一致しません。',
         'min' => ':attributeは、最低:min文字以上で入力してください。',
         'letters' => ':attributeは、最低1文字以上の文字を含めてください。',

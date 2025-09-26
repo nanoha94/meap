@@ -1,5 +1,6 @@
 <?php
 
+use App\Exceptions\Handler;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -29,29 +30,9 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        // 本番環境では詳細なエラー情報を隠す
-        if (app()->environment('production')) {
-            $exceptions->report(function (\Throwable $e) {
-                // 本番環境でのエラーログ記録
-                \Illuminate\Support\Facades\Log::error('Unhandled exception: ' . $e->getMessage(), [
-                    'file' => $e->getFile(),
-                    'line' => $e->getLine(),
-                    'trace' => $e->getTraceAsString()
-                ]);
-            });
-        }
-
-        // APIレスポンス用の例外ハンドラー
-        $exceptions->render(function (\Throwable $e, \Illuminate\Http\Request $request) {
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => app()->environment('production')
-                        ? 'サーバーエラーが発生しました'
-                        : $e->getMessage(),
-                    'error_code' => 500,
-                    'error_description' => 'サーバー内部エラーが発生しました'
-                ], 500);
-            }
+        // カスタム例外ハンドラーでレンダリング処理を上書き
+        $exceptions->render(function (Throwable $exception, \Illuminate\Http\Request $request) {
+            $handler = new Handler(app());
+            return $handler->render($request, $exception);
         });
     })->create();

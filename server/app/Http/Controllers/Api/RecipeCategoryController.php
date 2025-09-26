@@ -69,6 +69,7 @@ class RecipeCategoryController extends ApiController
             $user = $request->user();
             $group = $user->group;
 
+            // TODO: バリデーションチェックはフォームリクエストに移行する
             $request->validate([
                 'data' => 'required|array',
                 'data.*.id' => 'required|string',

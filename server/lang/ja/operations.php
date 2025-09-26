@@ -1,15 +1,13 @@
 <?php
 
 return [
-    'email_verification_notification' => [
-        'store' => 'メールアドレス確認リンクの再送信',
-    ],
-    'password' => [
-        'reset' => 'パスワードリセット',
-        'reset_link' => 'パスワードリセットリンク送信',
-    ],
-    'register_user' => [
-        'store' => 'ユーザー登録',
+    'auth' => [
+        'login' => 'ログイン',
+        'register_user' => 'ユーザー登録',
+        'email_verification_notification' => 'メールアドレス確認リンクの再送信',
+        'email_verification' => 'メール認証処理',
+        'password_reset' => 'パスワードリセット',
+        'password_reset_link' => 'パスワードリセットリンク送信',
     ],
     'recipe' => [
         'index' => 'レシピ一覧取得',
@@ -64,10 +62,6 @@ return [
         'bulk_update' => '料理カテゴリー一括更新',
         'bulk_destroy' => '料理カテゴリー一括削除',
     ],
-    'auth' => [
-        'email_verification' => 'メール確認処理',
-        'registration' => 'ユーザー登録',
-    ],
     'users' => [
         'index' => 'ユーザー一覧取得',
     ],
@@ -78,5 +72,10 @@ return [
 
     'shopping_tag' => [
         'index' => '買い物タグ一覧取得',
+    ],
+
+    'general' => [
+        'unknown' => '不明な操作',
+        'request' => 'リクエスト処理',
     ],
 ];
