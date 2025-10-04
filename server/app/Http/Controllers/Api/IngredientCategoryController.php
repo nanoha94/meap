@@ -8,6 +8,9 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Enums\HttpStatusCode;
+use App\Http\Requests\Api\IngredientCategoryBulkDestroyRequest;
+use App\Http\Requests\Api\IngredientCategoryBulkUpdateRequest;
+use App\Http\Requests\Api\IngredientCategoryStoreRequest;
 
 class IngredientCategoryController extends ApiController
 {
@@ -64,18 +67,13 @@ class IngredientCategoryController extends ApiController
      *     @OA\Response(response=422, ref="#/components/responses/ValidationErrors")
      * )
      */
-    public function store(Request $request): JsonResponse
+    public function store(IngredientCategoryStoreRequest $request): JsonResponse
     {
         try {
             $user = $request->user();
             $group = $user->group;
 
-            // 入力値のバリデーション
-            // TODO: バリデーションチェックはフォームリクエストに移行する
-            $validated = $request->validate([
-                'name' => 'required|string|max:255',
-                'order' => 'required|integer|min:0',
-            ]);
+            $validated = $request->validated();
 
             $category = IngredientCategory::create([
                 'group_id' => $group->id,
@@ -116,18 +114,13 @@ class IngredientCategoryController extends ApiController
      *     @OA\Response(response=422, ref="#/components/responses/ValidationErrors")
      * )
      */
-    public function bulkUpdate(Request $request): JsonResponse
+    public function bulkUpdate(IngredientCategoryBulkUpdateRequest $request): JsonResponse
     {
         try {
             $user = $request->user();
             $group = $user->group;
 
-            $validated = $request->validate([
-                'data' => 'required|array',
-                'data.*.id' => 'required|string|max:255',
-                'data.*.name' => 'required|string|max:255',
-                'data.*.order' => 'required|integer|min:0',
-            ]);
+            $validated = $request->validated();
 
             $updatedCount = 0;
             $updatedIds = [];
@@ -197,17 +190,14 @@ class IngredientCategoryController extends ApiController
      *     @OA\Response(response=422, ref="#/components/responses/ValidationErrors")
      * )
      */
-    public function bulkDestroy(Request $request): JsonResponse
+    public function bulkDestroy(IngredientCategoryBulkDestroyRequest $request): JsonResponse
     {
         try {
             $user = $request->user();
             $group = $user->group;
 
             // 入力値のバリデーション
-            $validated = $request->validate([
-                'ids' => 'required|array',
-                'ids.*' => 'string',
-            ]);
+            $validated = $request->validated();
 
             $deletedCount = 0;
             $deletedIds = [];

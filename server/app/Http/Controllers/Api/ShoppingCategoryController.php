@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Enums\HttpStatusCode;
 use App\Http\Controllers\Api\ApiController;
+use App\Http\Requests\Api\ShoppingCategoryBulkDestroyRequest;
+use App\Http\Requests\Api\ShoppingCategoryBulkUpdateRequest;
+use App\Http\Requests\Api\ShoppingCategoryStoreRequest;
 use App\Models\ShoppingCategory;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -61,18 +64,14 @@ class ShoppingCategoryController extends ApiController
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
-    public function store(Request $request): JsonResponse
+    public function store(ShoppingCategoryStoreRequest $request): JsonResponse
     {
         try {
             $user = $request->user();
             $group = $user->group;
 
-            // 入力値のバリデーション
-            // TODO: バリデーションチェックはフォームリクエストに移行する
-            $validated = $request->validate([
-                'name' => 'required|string|max:255',
-                'order' => 'required|integer|min:0',
-            ]);
+
+            $validated = $request->validate();
 
             $category = ShoppingCategory::create([
                 'group_id' => $group->id,
@@ -115,19 +114,14 @@ class ShoppingCategoryController extends ApiController
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
-    public function bulkUpdate(Request $request): JsonResponse
+    public function bulkUpdate(ShoppingCategoryBulkUpdateRequest $request): JsonResponse
     {
         try {
             $user = $request->user();
             $group = $user->group;
 
             // 入力値のバリデーション
-            $validated = $request->validate([
-                'data' => 'required|array',
-                'data.*.id' => 'required|string|max:255',
-                'data.*.name' => 'required|string|max:255',
-                'data.*.order' => 'required|integer|min:0',
-            ]);
+            $validated = $request->validate();
 
             $updatedCount = 0;
             $updatedIds = [];
@@ -190,17 +184,14 @@ class ShoppingCategoryController extends ApiController
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
-    public function bulkDestroy(Request $request): JsonResponse
+    public function bulkDestroy(ShoppingCategoryBulkDestroyRequest $request): JsonResponse
     {
         try {
             $user = $request->user();
             $group = $user->group;
 
             // 入力値のバリデーション
-            $validated = $request->validate([
-                'ids' => 'required|array',
-                'ids.*' => 'string',
-            ]);
+            $validated = $request->validate();
 
             // 削除対象のカテゴリを取得して検証
             $categories = ShoppingCategory::whereIn('id', $validated['ids'])

@@ -11,14 +11,14 @@ namespace App\Swagger;
  *         type="object",
  *         required={"date", "categoryId"},
  *         @OA\Property(property="date", type="string", format="date", description="日付", example="2023-10-05"),
- *         @OA\Property(property="categoryId", type="string", description="種別ID", example="1"),
+ *         @OA\Property(property="mealTypeId", type="string", description="種別ID", example="1"),
  *         @OA\Property(
  *             property="menu",
  *             type="array",
  *             description="献立メニュー",
  *             @OA\Items(
  *                 type="object",
- *                 @OA\Property(property="roleId", type="string", description="料理分類ID", example="1"),
+ *                 @OA\Property(property="courseTypeId", type="string", description="料理分類ID", example="1"),
  *                 @OA\Property(
  *                     property="recipeIds",
  *                     type="array",
@@ -37,7 +37,8 @@ namespace App\Swagger;
  *         type="object",
  *         required={"name", "colorId"},
  *         @OA\Property(property="name", type="string", description="カテゴリ名", example="朝食"),
- *         @OA\Property(property="colorId", type="string", description="色ID", example="1")
+ *         @OA\Property(property="colorId", type="string", description="色ID", example="1"),
+ *         @OA\Property(property="order", type="integer", description="ソート順", example=1)
  *     )
  * )
  * @OA\RequestBody(

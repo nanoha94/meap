@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\ApiController;
+use App\Http\Requests\Api\RecipeIndexRequest;
+use App\Http\Requests\Api\RecipeStoreRequest;
+use App\Http\Requests\Api\RecipeUpdateRequest;
 use App\Models\Recipe;
 use App\Models\Ingredient;
 use App\Models\Image;
@@ -41,7 +44,7 @@ class RecipeController extends ApiController
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
-    public function index(Request $request): JsonResponse
+    public function index(RecipeIndexRequest $request): JsonResponse
     {
         try {
             $user = $request->user();
@@ -80,14 +83,13 @@ class RecipeController extends ApiController
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
-    public function store(Request $request): JsonResponse
+    public function store(RecipeStoreRequest $request): JsonResponse
     {
         try {
             $user = $request->user();
             $group = $user->group;
 
-            // リクエストデータのバリデーション
-            $this->validateRecipeRequest($request);
+            $validated = $request->validated();
 
             $recipe = DB::transaction(function () use ($request, $group) {
                 $recipe = Recipe::create([
@@ -172,7 +174,7 @@ class RecipeController extends ApiController
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
-    public function update(Request $request, string $id): JsonResponse
+    public function update(RecipeUpdateRequest $request, string $id): JsonResponse
     {
         try {
             $user = $request->user();
@@ -183,8 +185,7 @@ class RecipeController extends ApiController
                 return $this->notFoundResponse(__('api.general.not_found'));
             }
 
-            // リクエストデータのバリデーション
-            $this->validateRecipeRequest($request);
+            $validated = $request->validated();
 
             DB::transaction(function () use ($request, $recipe) {
                 $recipe->update([
@@ -263,58 +264,7 @@ class RecipeController extends ApiController
         }
     }
 
-    /**
-     * レシピリクエストのバリデーション
-     */
-    private function validateRecipeRequest(Request $request): void
-    {
-        // TODO: バリデーションチェックはフォームリクエストに移行する
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'url' => 'nullable|string|max:2048',
-            'categoryIds' => 'nullable|array',
-            'categoryIds.*' => 'required|string',
-            'ingredients' => 'nullable|array',
-            'ingredients.*.name' => 'required|string',
-            'ingredients.*.unitId' => 'required|string',
-            'ingredients.*.categoryId' => 'required|string',
-            'ingredients.*.quantity' => 'nullable|numeric',
-            'ingredients.*.order' => 'nullable|integer',
-            'steps' => 'nullable|array',
-            'steps.*.id' => 'nullable|string',
-            'steps.*.instruction' => 'nullable|string',
-            'steps.*.order' => 'nullable|integer',
-            'memo' => 'nullable|string',
-        ], [
-            'name.required' => __('validation_custom.recipe.name.required'),
-            'name.string' => __('validation_custom.recipe.name.string'),
-            'name.max' => __('validation_custom.recipe.name.max'),
-            'url.string' => __('validation_custom.recipe.url.string'),
-            'url.max' => __('validation_custom.recipe.url.max'),
-            'steps.*.id.string' => __('validation_custom.recipe.steps.id.string'),
-            'steps.*.instruction.string' => __('validation_custom.recipe.steps.instruction.string'),
-            'steps.*.image.array' => __('validation_custom.recipe.steps.image.array'),
-            'steps.*.image.url.string' => __('validation_custom.recipe.steps.image.url.string'),
-            'steps.*.image.width.integer' => __('validation_custom.recipe.steps.image.width.integer'),
-            'steps.*.image.height.integer' => __('validation_custom.recipe.steps.image.height.integer'),
-            'steps.*.order.integer' => __('validation_custom.recipe.steps.order.integer'),
-            'memo.string' => __('validation_custom.recipe.memo.string'),
-        ]);
 
-        // 画像ファイルの検証（アップロードする場合のみ）
-        if ($request->hasFile('thumbnail')) {
-            $request->validate([
-                'thumbnail' => $this->imageService->getValidationRules()
-            ]);
-        }
-
-        // step_imagesのバリデーション
-        if ($request->hasFile('step_images')) {
-            $request->validate([
-                'step_images.*' => $this->imageService->getValidationRules()
-            ]);
-        }
-    }
 
     private function syncThumbnail(Recipe $recipe, $thumbnailId): void
     {

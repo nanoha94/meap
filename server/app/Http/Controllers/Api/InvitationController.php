@@ -85,6 +85,7 @@ class InvitationController extends ApiController
             $currentGroup = $user->group;
 
             // TODO: ここで有効期限切れか無効か、自分自身かなどチェックできたほうがいいかも要検討
+            // TODO: FormRequestでトークンチェックするか検討
             // 有効期限が切れていないトークンを取得し、ハッシュチェックを行う
             // $invitationToken = InvitationToken::where('expires_at', '>=', now())->get()->first(function ($record) use ($token) {
             //     return Hash::check($token, $record->token);

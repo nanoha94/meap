@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\ApiController;
+use App\Http\Requests\Api\ImageBulkUploadRequest;
+use App\Http\Requests\Api\ImageBulkDestroyRequest;
 use App\Services\ImageService;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -23,34 +25,25 @@ class ImageController extends ApiController
      *     summary="画像をアップロード（単一または複数対応）",
      *     tags={"Images"},
      *     security={{"sanctum":{}}},
-     *     @OA\RequestBody(ref="#/components/requestBodies/ImageUploadBulkRequest"),
+     *     @OA\RequestBody(ref="#/components/requestBodies/ImageBulkUploadRequest"),
      *     @OA\Response(response=200, ref="#/components/responses/ImageUploadBulkSuccess"),
      *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
      *     @OA\Response(response=422, ref="#/components/responses/ValidationErrors")
      * )
      */
-    public function uploadBulk(Request $request): JsonResponse
+    public function bulkUpload(ImageBulkUploadRequest $request): JsonResponse
     {
         try {
             $user = $request->user();
             $group = $user->group;
 
-            // バリデーション
-            $validationRules = $this->imageService->generateImageValidationRules(20, $this->imageService->getValidationRules());
-
-            // TODO: バリデーションチェックはフォームリクエストに移行する
-            $request->validate($validationRules, [
-                'images.0.required' => __('validation_custom.image.images.required'),
-                'images.0.file' => __('validation_custom.image.images.file'),
-                'images.*.file' => __('validation_custom.image.images.file'),
-                'directory.max' => __('validation_custom.image.directory.max')
-            ]);
+            $validated = $request->validated();
 
             // 画像ファイルを取得
             $imageFiles = $this->imageService->getValidImageFiles($request, 20);
 
             // ディレクトリの設定
-            $directory = $request->input('directory', 'general');
+            $directory = $validated['directory'] ?? 'general';
             $uploadPath = "$group->id/$directory";
 
             // 画像をアップロード
@@ -75,27 +68,20 @@ class ImageController extends ApiController
      *     summary="画像を一括削除",
      *     tags={"Images"},
      *     security={{"sanctum":{}}},
-     *     @OA\RequestBody(ref="#/components/requestBodies/ImageDeleteBulkRequest"),
+     *     @OA\RequestBody(ref="#/components/requestBodies/ImageBulkDestroyRequest"),
      *     @OA\Response(response=200, ref="#/components/responses/ImageDeleteBulkSuccess"),
      *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
      *     @OA\Response(response=422, ref="#/components/responses/ValidationErrors")
      * )
      */
-    public function deleteBulk(Request $request): JsonResponse
+    public function bulkDestroy(ImageBulkDestroyRequest $request): JsonResponse
     {
         try {
             $user = $request->user();
             $group = $user->group;
 
-            $request->validate([
-                'image_ids' => 'required|array',
-                'image_ids.*' => 'required|string|exists:images,id'
-            ], [
-                'image_ids.required' => '画像IDが必要です。',
-                'image_ids.*.exists' => '指定された画像IDが存在しません。'
-            ]);
-
-            $imageIds = $request->input('image_ids');
+            $validated = $request->validated();
+            $imageIds = $validated['ids'];
             $deletedCount = $this->imageService->deleteImages($imageIds);
 
             return $this->successResponse(null, __('api.image.bulk_deleted', ['count' => $deletedCount]));

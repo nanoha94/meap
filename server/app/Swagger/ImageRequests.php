@@ -4,7 +4,7 @@ namespace App\Swagger;
 
 /**
  * @OA\RequestBody(
- *     request="ImageUploadBulkRequest",
+ *     request="ImageBulkUploadRequest",
  *     required=true,
  *     @OA\MediaType(
  *         mediaType="multipart/form-data",
@@ -50,13 +50,13 @@ namespace App\Swagger;
  *     )
  * )
  * @OA\RequestBody(
- *     request="ImageDeleteBulkRequest",
+ *     request="ImageBulkDestroyRequest",
  *     required=true,
  *     @OA\MediaType(
  *         mediaType="application/json",
  *         @OA\Schema(
- *             required={"image_ids"},
- *             @OA\Property(property="image_ids", type="array", @OA\Items(type="string")),
+ *             required={"ids"},
+ *             @OA\Property(property="ids", type="array", @OA\Items(type="string")),
  *         )
  *     )
  * )

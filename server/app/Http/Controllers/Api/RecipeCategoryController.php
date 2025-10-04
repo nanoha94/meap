@@ -8,6 +8,9 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Enums\HttpStatusCode;
+use App\Http\Requests\Api\RecipeCategoryBulkDestroyRequest;
+use App\Http\Requests\Api\RecipeCategoryBulkUpdateRequest;
+use App\Http\Requests\Api\RecipeCategoryStoreRequest;
 
 class RecipeCategoryController extends ApiController
 {
@@ -23,7 +26,7 @@ class RecipeCategoryController extends ApiController
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
-    public function store(Request $request): JsonResponse
+    public function store(RecipeCategoryStoreRequest $request): JsonResponse
     {
         try {
             $user = $request->user();
@@ -63,19 +66,14 @@ class RecipeCategoryController extends ApiController
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
-    public function bulkUpdate(Request $request): JsonResponse
+    public function bulkUpdate(RecipeCategoryBulkUpdateRequest $request): JsonResponse
     {
         try {
             $user = $request->user();
             $group = $user->group;
 
-            // TODO: バリデーションチェックはフォームリクエストに移行する
-            $request->validate([
-                'data' => 'required|array',
-                'data.*.id' => 'required|string',
-                'data.*.name' => 'required|string',
-                'data.*.order' => 'required|integer',
-            ]);
+            // TODO: バリデーションチェック済みのデータを扱うべきか検討
+            $validated = $request->validate();
 
             // 料理カテゴリーの一括更新
             foreach ($request->data as $category) {
@@ -118,17 +116,15 @@ class RecipeCategoryController extends ApiController
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
-    public function bulkDestroy(Request $request): JsonResponse
+    public function bulkDestroy(RecipeCategoryBulkDestroyRequest $request): JsonResponse
     {
         try {
             $user = $request->user();
             $group = $user->group;
 
-            // 入力値のバリデーション
-            $request->validate([
-                'ids' => 'required|array',
-                'ids.*' => 'required|string|max:255',
-            ]);
+
+            // TODO: バリデーションチェック済みのデータを扱うべきか検討
+            $validated = $request->validate();
 
             $deletedIds = [];
             $notFoundIds = [];

@@ -52,6 +52,7 @@ namespace App\Swagger;
  *     schema="RecipeCategory",
  *     required={"id", "name"},
  *     @OA\Property(property="id", type="string", description="ID", example="1"),
+ *     @OA\Property(property="color", type="string", description="カテゴリ色", example="#FF0000"),
  *     @OA\Property(property="name", type="string", description="カテゴリ名", example="肉料理"),
  *     @OA\Property(property="order", type="integer", description="並び順", example=1)
  * )

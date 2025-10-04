@@ -7,6 +7,7 @@ namespace App\Swagger;
  *     schema="Ingredient",
  *     required={"id", "name", "quantity", "unitId"},
  *     @OA\Property(property="id", type="string", description="ID", example="1"),
+ *     @OA\Property(property="categoryId", type="string", description="カテゴリID", example="1"),
  *     @OA\Property(property="name", type="string", description="食材名", example="牛肉"),
  *     @OA\Property(property="quantity", type="double", description="量", example="1"),
  *     @OA\Property(property="unitId", type="string", description="単位", example="1"),

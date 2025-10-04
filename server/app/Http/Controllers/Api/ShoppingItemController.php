@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\ApiController;
+use App\Http\Requests\Api\ShoppingItemStoreRequest;
+use App\Http\Requests\Api\ShoppingItemBulkUpdateRequest;
+use App\Http\Requests\Api\ShoppingItemBulkDestroyRequest;
 use App\Models\ShoppingItem;
 use App\Models\ShoppingTag;
 use App\Services\ShoppingService;
@@ -85,31 +88,23 @@ class ShoppingItemController extends ApiController
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
-    public function store(Request $request): JsonResponse
+    public function store(ShoppingItemStoreRequest $request): JsonResponse
     {
         try {
             $user = $request->user();
             $group = $user->group;
 
-            // 入力値のバリデーション
-            // TODO: バリデーションチェックはフォームリクエストに移行する
-            $request->validate([
-                'name' => 'required|string|max:255',
-                'categoryId' => 'required|string|max:255',
-                'tags' => 'nullable|array',
-                'tags.*.id' => 'nullable|string|max:255',
-                'tags.*.name' => 'required|string|max:255',
-            ]);
+            $validated = $request->validated();
 
             DB::beginTransaction();
 
             $ret = ShoppingItem::create([
                 'group_id' => $group->id,
-                'category_id' => $request->categoryId,
-                'name' => $request->name,
+                'category_id' => $validated['categoryId'],
+                'name' => $validated['name'],
                 'is_pinned' => false,
                 'is_checked' => false,
-                'order' => $group->shoppingItems->where('category_id', $request->categoryId)->count()
+                'order' => $group->shoppingItems->where('category_id', $validated['categoryId'])->count()
             ]);
             if (!$ret) {
                 DB::rollBack();
@@ -118,11 +113,11 @@ class ShoppingItemController extends ApiController
             }
 
             // タグの処理
-            if (!empty($request->tags)) {
-                $tagIds = $this->shoppingService->processTags($request->tags, $group, ShoppingTag::class);
+            if (!empty($validated['tags'])) {
+                $tagIds = $this->shoppingService->processTags($validated['tags'], $group, ShoppingTag::class);
                 if (empty($tagIds)) {
                     $this->logWarning(HttpStatusCode::OK, __('operations.shopping_item.tag_processing'), __('api.shopping.tag_creation_failed'), $request, [
-                        'tags' => $request->tags
+                        'tags' => $validated['tags']
                     ],  __METHOD__);
                 } else {
                     $ret->tags()->attach($tagIds);
@@ -135,7 +130,7 @@ class ShoppingItemController extends ApiController
             $ret = $ret->fresh(['tags:id,name']);
 
             $res = $this->shoppingService->formatCompleteShoppingItemResponse($ret);
-            return $this->createdResponse($res, __('api.shopping.item_created', ['name' => $request->name]));
+            return $this->createdResponse($res, __('api.shopping.item_created', ['name' => $validated['name']]));
         } catch (Exception $e) {
             DB::rollBack();
             return $this->handleException(
@@ -159,37 +154,39 @@ class ShoppingItemController extends ApiController
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
-    public function bulkUpdate(Request $request): JsonResponse
+    public function bulkUpdate(ShoppingItemBulkUpdateRequest $request): JsonResponse
     {
         try {
             $user = $request->user();
             $group = $user->group;
 
+            $validated = $request->validated();
+
             DB::beginTransaction();
 
             $updatedItems = [];
-            foreach ($request->data as $item) {
-                $shoppingItem = ShoppingItem::where('id', $item['id'])->first();
+            foreach ($validated['data'] as $data) {
+                $shoppingItem = ShoppingItem::where('id', $data['id'])->first();
                 if (!$shoppingItem) {
                     continue;
                 }
 
                 // 基本情報の更新
                 $shoppingItem->update([
-                    'category_id' => $item['categoryId'],
-                    'name' => $item['name'],
-                    'is_pinned' => $item['isPinned'],
-                    'is_checked' => $item['isChecked'],
-                    'order' => $item['order']
+                    'category_id' => $data['categoryId'],
+                    'name' => $data['name'],
+                    'is_pinned' => $data['isPinned'] ?? false,
+                    'is_checked' => $data['isChecked'] ?? false,
+                    'order' => $data['order'] ?? 0
                 ]);
 
                 // タグの更新
-                if (!empty($item['tags'])) {
-                    $tagIds = $this->shoppingService->processTags($item['tags'], $group, ShoppingTag::class);
+                if (!empty($data['tags'])) {
+                    $tagIds = $this->shoppingService->processTags($data['tags'], $group, ShoppingTag::class);
                     if (empty($tagIds)) {
                         $this->logWarning(HttpStatusCode::OK, __('operations.shopping_item.tag_processing'), __('api.shopping.tag_creation_failed'), $request, [
-                            'item_id' => $item['id'],
-                            'tags' => $item->tags
+                            'item_id' => $data['id'],
+                            'tags' => $data['tags']
                         ],  __METHOD__);
                     } else {
                         $shoppingItem->tags()->sync($tagIds);
@@ -231,20 +228,14 @@ class ShoppingItemController extends ApiController
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
-    public function bulkDestroy(Request $request): JsonResponse
+    public function bulkDestroy(ShoppingItemBulkDestroyRequest $request): JsonResponse
     {
         try {
             $user = $request->user();
             $group = $user->group;
 
-            // IDの配列を取得（単一IDの場合も配列として扱う）
-            $ids = $request->ids;
-
-            // 空の場合はエラー
-            if (empty($ids)) {
-                $this->logError(HttpStatusCode::BAD_REQUEST, __('operations.shopping_item.bulk_destroy'), new Exception(__('api.shopping.invalid_ids')), $request, [], __METHOD__);
-                return $this->errorResponse(__('api.shopping.invalid_ids'), HttpStatusCode::BAD_REQUEST);
-            }
+            $validated = $request->validated();
+            $ids = $validated['ids'];
 
             $deletedIds = [];
             $notFoundIds = [];

@@ -11,38 +11,13 @@
         }
     ],
     "paths": {
-        "/course-types": {
-            "get": {
-                "tags": [
-                    "MealPlans"
-                ],
-                "summary": "コースタイプ一覧を取得",
-                "operationId": "4208262ef61d0d2e4ac50d96af5152c6",
-                "responses": {
-                    "200": {
-                        "$ref": "#/components/responses/CourseTypeIndexSuccess"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/NotFound"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
         "/users": {
             "get": {
                 "tags": [
                     "Users"
                 ],
                 "summary": "認証ユーザーと同じグループに属するユーザ一覧を取得",
-                "operationId": "fd00b482150aa0a44371e1df73ffc52c",
+                "operationId": "5574bcea7d2eb29f9c922bf5b844d10d",
                 "responses": {
                     "200": {
                         "$ref": "#/components/responses/UserIndexSuccess"
@@ -64,9 +39,9 @@
                     "Images"
                 ],
                 "summary": "画像をアップロード（単一または複数対応）",
-                "operationId": "d8a42b60da8552657f1d99ed27e9b8a8",
+                "operationId": "2190b812dc7d2b98a5bdd11d2ba8ff60",
                 "requestBody": {
-                    "$ref": "#/components/requestBodies/ImageUploadBulkRequest"
+                    "$ref": "#/components/requestBodies/ImageBulkUploadRequest"
                 },
                 "responses": {
                     "200": {
@@ -92,9 +67,9 @@
                     "Images"
                 ],
                 "summary": "画像を一括削除",
-                "operationId": "d0410b84c046764f13daceae60d8e5cb",
+                "operationId": "fa5655d50cd1f2c7f82184051accfafd",
                 "requestBody": {
-                    "$ref": "#/components/requestBodies/ImageDeleteBulkRequest"
+                    "$ref": "#/components/requestBodies/ImageBulkDestroyRequest"
                 },
                 "responses": {
                     "200": {
@@ -1158,6 +1133,11 @@
                         "type": "string",
                         "example": "1"
                     },
+                    "categoryId": {
+                        "description": "カテゴリID",
+                        "type": "string",
+                        "example": "1"
+                    },
                     "name": {
                         "description": "食材名",
                         "type": "string",
@@ -1284,7 +1264,7 @@
                         "type": "array",
                         "items": {
                             "properties": {
-                                "role": {
+                                "courseType": {
                                     "properties": {
                                         "id": {
                                             "description": "ID",
@@ -1507,6 +1487,11 @@
                         "description": "ID",
                         "type": "string",
                         "example": "1"
+                    },
+                    "color": {
+                        "description": "カテゴリ色",
+                        "type": "string",
+                        "example": "#FF0000"
                     },
                     "name": {
                         "description": "カテゴリ名",
@@ -3124,7 +3109,7 @@
                     }
                 }
             },
-            "ImageUploadBulkRequest": {
+            "ImageBulkUploadRequest": {
                 "required": true,
                 "content": {
                     "multipart/form-data": {
@@ -3169,16 +3154,16 @@
                     }
                 }
             },
-            "ImageDeleteBulkRequest": {
+            "ImageBulkDestroyRequest": {
                 "required": true,
                 "content": {
                     "application/json": {
                         "schema": {
                             "required": [
-                                "image_ids"
+                                "ids"
                             ],
                             "properties": {
-                                "image_ids": {
+                                "ids": {
                                     "type": "array",
                                     "items": {
                                         "type": "string"
@@ -3257,7 +3242,7 @@
                                     "format": "date",
                                     "example": "2023-10-05"
                                 },
-                                "categoryId": {
+                                "mealTypeId": {
                                     "description": "種別ID",
                                     "type": "string",
                                     "example": "1"
@@ -3267,7 +3252,7 @@
                                     "type": "array",
                                     "items": {
                                         "properties": {
-                                            "roleId": {
+                                            "courseTypeId": {
                                                 "description": "料理分類ID",
                                                 "type": "string",
                                                 "example": "1"
@@ -3311,6 +3296,11 @@
                                     "description": "色ID",
                                     "type": "string",
                                     "example": "1"
+                                },
+                                "order": {
+                                    "description": "ソート順",
+                                    "type": "integer",
+                                    "example": 1
                                 }
                             },
                             "type": "object"

@@ -92,7 +92,7 @@ return [
     'max' => [
         'numeric' => ':attributeには、:max以下の数字を指定してください。',
         'file' => ':attributeには、:max kb以下のファイルを指定してください。',
-        'string' => ':attributeは、:max文字以下で指定してください。',
+        'string' => ':attributeは、:max文字以内で指定してください。',
         'array' => ':attributeは:max個以下指定してください。',
     ],
     'max_digits' => ':attributeは、:max桁以下で指定してください。',
@@ -273,6 +273,66 @@ return [
         'updated_at' => '更新日',
         'username' => 'ユーザー名',
         'year' => '年',
+        'order' => '並び順',
+        'color' => '色',
+        'url' => 'URL',
+        'memo' => 'メモ',
+        'servings' => '人数',
+        'page' => 'ページ',
+        'per_page' => '1ページあたりの件数',
+        'id' => 'ID',
+        'menu' => 'メニュー',
+        'recipe_id' => 'レシピID',
+        'course_type_id' => 'コースタイプID',
+        'recipe' => [
+            'name' => 'レシピ名',
+            'step_id' => '手順ID',
+            'step' => '手順'
+        ],
+        'shopping' => [
+            'item' => [
+                'name' => 'アイテム名',
+                'category_id' => 'カテゴリID',
+                'tags' => 'タグ',
+                'tag_id' => 'タグID',
+                'tag_name' => 'タグ名'
+            ],
+            'category' => [
+                'name' => 'カテゴリ名',
+            ]
+        ],
+        'ingredient' => [
+            'name' => '材料名',
+            'unit_id' => '単位ID',
+            'category_id' => 'カテゴリID',
+            'quantity' => '数量',
+        ],
+        'ingredient_category' => [
+            'name' => '材料カテゴリ名',
+        ],
+        'ingredient_unit' => [
+            'name' => '単位名',
+        ],
+        'meal_plan' => [
+            'date' => '日付',
+            'meal_type_id' => '食事タイプID',
+            'recipe_id' => 'レシピID',
+            'servings' => '人数'
+        ],
+        'meal_type' => [
+            'name' => '献立種別',
+        ],
+        'recipe_category' => [
+            'name' => 'レシピカテゴリ名',
+        ],
+        'image' => [
+            'id' => '画像ID',
+            'files' => '画像ファイル',
+            'directory' => 'ディレクトリ名',
+            'url' => '画像URL',
+            'width' => '画像幅',
+            'height' => '画像高さ'
+        ],
     ],
 
 ];

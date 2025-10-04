@@ -33,7 +33,7 @@ class MealTypeController extends ApiController
                 'group_id' => $group->id,
                 'name' => $request->name,
                 'color_id' => $request->colorId,
-                'order' => $group->mealTypes->count(),
+                'order' => $request->order,
             ]);
 
             $res = [

@@ -15,7 +15,7 @@ namespace App\Swagger;
  *     ),
  *     @OA\Property(property="mealPlans", type="array", description="献立",
  *         @OA\Items(type="object",
- *             @OA\Property(property="role", type="object",
+ *             @OA\Property(property="courseType", type="object",
  *                 @OA\Property(property="id", type="string", description="ID", example="1"),
  *                 @OA\Property(property="name", type="string", description="分類名", example="主食")
  *             ),

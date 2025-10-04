@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\ApiController;
+use App\Http\Requests\Api\MealPlanStoreRequest;
 use App\Models\MealPlan;
 use App\Services\MealPlanService;
 use Exception;
@@ -78,7 +79,7 @@ class MealPlanController extends ApiController
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
-    public function store(Request $request): JsonResponse
+    public function store(MealPlanStoreRequest $request): JsonResponse
     {
         try {
             $user = $request->user();

@@ -92,21 +92,6 @@ class ImageService
         return collect($images)->map(fn($image) => $this->formatImage($image))->toArray();
     }
 
-    /**
-     * 画像アップロード用のバリデーションルールを生成
-     */
-    public function generateImageValidationRules($maxImages = 20, $validationRules = []): array
-    {
-        $rules = ['images.0' => 'required|file|' . implode('|', $validationRules)];
-
-        // 2枚目から指定枚数までを任意フィールドとして追加
-        for ($i = 1; $i < $maxImages; $i++) {
-            $rules["images.{$i}"] = 'nullable|file|' . implode('|', $validationRules);
-        }
-
-        $rules['directory'] = 'nullable|string|max:255';
-        return $rules;
-    }
 
     /**
      * 画像ファイルの配列を取得（無効なファイルを除外）
