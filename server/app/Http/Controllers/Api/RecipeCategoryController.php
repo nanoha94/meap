@@ -43,12 +43,12 @@ class RecipeCategoryController extends ApiController
                 'name' => $ret->name,
                 'order' => $ret->order,
             ];
-            return $this->createdResponse($res, __('api.recipe.category_created', ['name' => $ret->name]));
+            return $this->createdResponse($res, __('api.created', ['attribute' => __('api.attributes.recipe_category'), 'name' => $ret->name]));
         } catch (Exception $e) {
             return $this->handleException(
                 $e,
                 $request,
-                __('api.recipe.category_creation_failed'),
+                __('api.creation_failed', ['attribute' => __('api.attributes.recipe_category')]),
                 'recipe_category.store'
             );
         }
@@ -82,23 +82,23 @@ class RecipeCategoryController extends ApiController
                     'order' => $category['order']
                 ]);
                 if (!$ret) {
-                    $this->logError(HttpStatusCode::INTERNAL_SERVER_ERROR, __('operations.recipe_category.bulk_update'), new Exception(__('api.recipe.category_update_failed')), $request, [
+                    $this->logError(HttpStatusCode::INTERNAL_SERVER_ERROR, __('operations.recipe_category.bulk_update'), new Exception(__('api.bulk_update_failed', ['attribute' => __('api.attributes.recipe_category')])), $request, [
                         'category_id' => $category['id'],
                         'category_name' => $category['name']
                     ]);
-                    return $this->errorResponse(__('api.recipe.category_update_failed'), HttpStatusCode::INTERNAL_SERVER_ERROR);
+                    return $this->errorResponse(__('api.bulk_update_failed', ['attribute' => __('api.attributes.recipe_category')]), HttpStatusCode::INTERNAL_SERVER_ERROR);
                 }
             }
 
             // 更新後の料理カテゴリーを取得
             $categories = $group->recipeCategories()->where('group_id', $group->id)->select('id', 'name', 'order')->get();
 
-            return $this->updatedResponse($categories, __('api.recipe.category_updated', ['count' => $categories->count()]));
+            return $this->updatedResponse($categories, __('api.bulk_updated', ['attribute' => __('api.attributes.recipe_category'), 'count' => $categories->count()]));
         } catch (Exception $e) {
             return $this->handleException(
                 $e,
                 $request,
-                __('api.recipe.category_bulk_update_failed'),
+                __('api.bulk_update_failed', ['attribute' => __('api.attributes.recipe_category')]),
                 'recipe_category.bulk_update'
             );
         }
@@ -158,12 +158,12 @@ class RecipeCategoryController extends ApiController
                 $remainingCategory->update(['order' => $index]);
             }
 
-            return $this->deletedResponse(__('api.recipe.category_deleted', ['count' => count($deletedIds)]));
+            return $this->deletedResponse(__('api.bulk_deleted', ['attribute' => __('api.attributes.recipe_category'), 'count' => count($deletedIds)]));
         } catch (Exception $e) {
             return $this->handleException(
                 $e,
                 $request,
-                __('api.recipe.category_bulk_destroy_failed'),
+                __('api.deletion_failed', ['attribute' => __('api.attributes.recipe_category')]),
                 'recipe_category.bulk_destroy'
             );
         }

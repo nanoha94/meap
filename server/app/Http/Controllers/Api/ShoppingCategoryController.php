@@ -41,12 +41,12 @@ class ShoppingCategoryController extends ApiController
                 ];
             });
 
-            return $this->indexResponse($formattedData, $formattedData->count(), __('api.shopping.category_list_retrieved', ['count' => $formattedData->count()]));
+            return $this->indexResponse($formattedData, $formattedData->count(), __('api.list_retrieved', ['attribute' => __('api.attributes.shopping.category'), 'count' => $formattedData->count()]));
         } catch (Exception $e) {
             return $this->handleException(
                 $e,
                 $request,
-                __('api.shopping.category_get_failed'),
+                __('api.get_failed', ['attribute' => __('api.attributes.shopping.category')]),
                 'shopping_category.index',
             );
         }
@@ -80,8 +80,8 @@ class ShoppingCategoryController extends ApiController
                 'order' => $validated['order'],
             ]);
             if (!$category) {
-                $this->logError(HttpStatusCode::INTERNAL_SERVER_ERROR, __('operations.shopping_category.store'), new Exception(__('api.shopping.category_creation_failed')), $request);
-                return $this->errorResponse(__('api.shopping.category_creation_failed'), HttpStatusCode::INTERNAL_SERVER_ERROR);
+                $this->logError(HttpStatusCode::INTERNAL_SERVER_ERROR, __('operations.shopping_category.store'), new Exception(__('api.creation_failed', ['attribute' => __('api.attributes.shopping.category')])), $request);
+                return $this->errorResponse(__('api.creation_failed', ['attribute' => __('api.attributes.shopping.category')]), HttpStatusCode::INTERNAL_SERVER_ERROR);
             }
 
             $data = [
@@ -91,12 +91,12 @@ class ShoppingCategoryController extends ApiController
                 'order' => $category->order
             ];
 
-            return $this->createdResponse($data, __('api.shopping.category_created', ['name' => $validated['name']]));
+            return $this->createdResponse($data, __('api.created', ['attribute' => __('api.attributes.shopping.category') . '(' . $validated['name'] . ')']));
         } catch (Exception $e) {
             return $this->handleException(
                 $e,
                 $request,
-                __('api.shopping.category_creation_failed'),
+                __('api.creation_failed', ['attribute' => __('api.attributes.shopping.category')]),
                 'shopping_category.store'
             );
         }
@@ -133,7 +133,7 @@ class ShoppingCategoryController extends ApiController
                     'order' => $category['order']
                 ]);
                 if (!$ret) {
-                    $this->logWarning(HttpStatusCode::OK, __('operations.shopping_category.bulk_update'), __('api.shopping.category_update_failed'), $request, [
+                    $this->logWarning(HttpStatusCode::OK, __('operations.shopping_category.bulk_update'), __('api.update_failed', ['attribute' => __('api.attributes.shopping.category')]), $request, [
                         'category_id' => $category['id'],
                         'category_name' => $category['name']
                     ],   __METHOD__);
@@ -161,7 +161,7 @@ class ShoppingCategoryController extends ApiController
                 ];
             });
 
-            return $this->updatedResponse($formattedData, __('api.shopping.category_bulk_updated', ['count' => $updatedCount]));
+            return $this->updatedResponse($formattedData, __('api.bulk_updated', ['attribute' => __('api.attributes.shopping.category'), 'count' => $updatedCount]));
         } catch (Exception $e) {
             return $this->handleException(
                 $e,
@@ -203,19 +203,19 @@ class ShoppingCategoryController extends ApiController
             $notFoundIds = array_diff($validated['ids'], $foundIds);
 
             if (!empty($notFoundIds)) {
-                $this->logError(HttpStatusCode::NOT_FOUND, __('operations.shopping_category.bulk_destroy'), new Exception(__('api.shopping.not_found')), $request, [
+                $this->logError(HttpStatusCode::NOT_FOUND, __('operations.shopping_category.bulk_destroy'), new Exception(__('api.not_found', ['attribute' => __('api.attributes.shopping.category')])), $request, [
                     'notFoundIds' => $notFoundIds
                 ],   __METHOD__);
-                return $this->errorResponse(__('api.shopping.not_found'), HttpStatusCode::NOT_FOUND);
+                return $this->errorResponse(__('api.not_found', ['attribute' => __('api.attributes.shopping.category')]), HttpStatusCode::NOT_FOUND);
             }
 
             // デフォルトカテゴリのチェック
             $defaultCategory = $categories->where('is_default', true)->first();
             if ($defaultCategory) {
-                $this->logWarning(HttpStatusCode::BAD_REQUEST, __('operations.shopping_category.bulk_destroy'), __('api.shopping.default_category_deletion_error', ['name' => $defaultCategory->name]), $request, [
+                $this->logWarning(HttpStatusCode::BAD_REQUEST, __('operations.shopping_category.bulk_destroy'), __('api.cannot_delete', ['name' => $defaultCategory->name]), $request, [
                     'default_category_name' => $defaultCategory->name
                 ], __METHOD__);
-                return $this->errorResponse(__('api.shopping.default_category_deletion_error', ['name' => $defaultCategory->name]), HttpStatusCode::BAD_REQUEST);
+                return $this->errorResponse(__('api.cannot_delete', ['name' => $defaultCategory->name]), HttpStatusCode::BAD_REQUEST);
             }
 
             // 一括削除
@@ -233,12 +233,12 @@ class ShoppingCategoryController extends ApiController
                 $remainingCategory->update(['order' => $index]);
             }
 
-            return $this->deletedResponse(__('api.shopping.category_bulk_deleted', ['count' => count($deletedIds)]));
+            return $this->deletedResponse(__('api.bulk_deleted', ['attribute' => __('api.attributes.shopping.category'), 'count' => count($deletedIds)]));
         } catch (Exception $e) {
             return $this->handleException(
                 $e,
                 $request,
-                __('api.shopping.category_deletion_failed'),
+                __('api.deletion_failed', ['attribute' => __('api.attributes.shopping.category')]),
                 'shopping_category.bulk_destroy'
             );
         }

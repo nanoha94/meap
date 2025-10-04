@@ -92,7 +92,7 @@ class ImageBulkUploadRequest extends FormRequest
             $validationException,
             $this,
             $primaryMessage,
-            __('operations.auth.password_reset')
+            __('operations.image.bulk_upload')
         );
 
         // HttpResponseExceptionでレスポンスを投げる

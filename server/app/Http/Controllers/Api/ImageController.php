@@ -57,7 +57,7 @@ class ImageController extends ApiController
                 $e,
                 $request,
                 __('api.image.upload_failed'),
-                'image.upload_bulk'
+                'image.bulk_upload'
             );
         }
     }
@@ -90,7 +90,7 @@ class ImageController extends ApiController
                 $e,
                 $request,
                 __('api.image.bulk_deletion_failed'),
-                'image.delete_bulk'
+                'image.bulk_destroy'
             );
         }
     }

@@ -60,12 +60,12 @@ class RecipeController extends ApiController
             $formattedData = $recipes->map(function ($recipe) {
                 return $this->recipeService->formatCompleteRecipeResponse($recipe);
             });
-            return $this->indexResponse($formattedData, $formattedData->count(), __('api.recipe.list_retrieved', ['count' => $formattedData->count()]));
+            return $this->indexResponse($formattedData, $formattedData->count(), __('api.list_retrieved', ['attribute' => __('api.attributes.recipe'), 'count' => $formattedData->count()]));
         } catch (Exception $e) {
             return $this->handleException(
                 $e,
                 $request,
-                __('api.recipe.get_failed'),
+                __('api.get_failed', ['attribute' => __('api.attributes.recipe')]),
                 'recipe.index',
             );
         }
@@ -116,12 +116,12 @@ class RecipeController extends ApiController
 
             $response = $this->recipeService->formatCompleteRecipeResponse($recipe);
 
-            return $this->successResponse($response, __('api.recipe.created', ['name' => $request->name]));
+            return $this->successResponse($response, __('api.created', ['attribute' => __('api.attributes.recipe') . '(' . $request->name . ')']));
         } catch (Exception $e) {
             return $this->handleException(
                 $e,
                 $request,
-                __('api.recipe.creation_failed'),
+                __('api.creation_failed', ['attribute' => __('api.attributes.recipe')]),
                 'recipe.store'
             );
         }
@@ -150,12 +150,12 @@ class RecipeController extends ApiController
                 return $this->notFoundResponse(__('api.general.not_found'));
             }
 
-            return $this->successResponse($this->recipeService->formatCompleteRecipeResponse($recipe), __('api.recipe.details_retrieved', ['name' => $recipe->name]));
+            return $this->successResponse($this->recipeService->formatCompleteRecipeResponse($recipe), __('api.retrieved', ['attribute' => __('api.attributes.recipe'), 'name' => $recipe->name]));
         } catch (Exception $e) {
             return $this->handleException(
                 $e,
                 $request,
-                __('api.recipe.get_failed'),
+                __('api.get_failed', ['attribute' => __('api.attributes.recipe')]),
                 'recipe.show'
             );
         }
@@ -204,12 +204,12 @@ class RecipeController extends ApiController
             $recipe->load(['categories', 'ingredients', 'thumbnails', 'steps']);
             $response = $this->recipeService->formatCompleteRecipeResponse($recipe);
 
-            return $this->updatedResponse($response, __('api.recipe.updated', ['name' => $request->name]));
+            return $this->updatedResponse($response, __('api.updated', ['attribute' => __('api.attributes.recipe'), 'name' => $request->name]));
         } catch (Exception $e) {
             return $this->handleException(
                 $e,
                 $request,
-                __('api.recipe.update_failed'),
+                __('api.update_failed', ['attribute' => __('api.attributes.recipe')]),
                 'recipe.update'
             );
         }
@@ -253,12 +253,12 @@ class RecipeController extends ApiController
                 $recipe->delete();
             });
 
-            return $this->deletedResponse(__('api.recipe.deleted', ['name' => $recipeName]));
+            return $this->deletedResponse(__('api.deleted', ['attribute' => __('api.attributes.recipe'), 'name' => $recipeName]));
         } catch (Exception $e) {
             return $this->handleException(
                 $e,
                 $request,
-                __('api.recipe.deletion_failed'),
+                __('api.deletion_failed', ['attribute' => __('api.attributes.recipe')]),
                 'recipe.destroy'
             );
         }
@@ -276,7 +276,7 @@ class RecipeController extends ApiController
         $image = Image::find($thumbnailId);
         if (!$image) {
             // 例外をスローしてトランザクションをロールバック
-            throw new Exception(__('api.recipe.thumbnail_not_found', [
+            throw new Exception(__('api.thumbnail_not_found', [
                 'thumbnail_id' => $thumbnailId
             ]));
         }

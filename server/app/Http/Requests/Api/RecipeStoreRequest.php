@@ -102,7 +102,7 @@ class RecipeStoreRequest extends FormRequest
             $validationException,
             $this,
             $primaryMessage,
-            __('operations.auth.password_reset')
+            __('operations.recipe.store')
         );
 
         // HttpResponseExceptionでレスポンスを投げる

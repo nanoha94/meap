@@ -42,12 +42,12 @@ class MealTypeController extends ApiController
                 'colorId' => $ret->color_id,
                 'order' => $ret->order,
             ];
-            return $this->createdResponse($res, __('api.meal_type.created', ['name' => $ret->name]));
+            return $this->createdResponse($res, __('api.created', ['attribute' => __('api.attributes.meal_type'), 'name' => $ret->name]));
         } catch (Exception $e) {
             return $this->handleException(
                 $e,
                 $request,
-                __('api.meal_type.creation_failed'),
+                __('api.creation_failed', ['attribute' => __('api.attributes.meal_type')]),
                 'meal_type.store',
             );
         }
@@ -94,12 +94,12 @@ class MealTypeController extends ApiController
                 ];
             });
 
-            return $this->updatedResponse($ret, __('api.meal_type.updated', ['count' => $types->count()]));
+            return $this->updatedResponse($ret, __('api.bulk_updated', ['attribute' => __('api.attributes.meal_type'), 'count' => $types->count()]));
         } catch (Exception $e) {
             return $this->handleException(
                 $e,
                 $request,
-                __('api.meal_type.update_failed'),
+                __('api.update_failed', ['attribute' => __('api.attributes.meal_type')]),
                 'meal_type.bulk_update',
             );
         }
@@ -144,12 +144,12 @@ class MealTypeController extends ApiController
                 $remainingType->update(['order' => $index]);
             }
 
-            return $this->deletedResponse(__('api.meal_type.deleted', ['name' => $mealType->name]));
+            return $this->deletedResponse(__('api.deleted', ['attribute' => __('api.attributes.meal_type'), 'name' => $mealType->name]));
         } catch (Exception $e) {
             return $this->handleException(
                 $e,
                 $request,
-                __('api.meal_type.deletion_failed'),
+                __('api.deletion_failed', ['attribute' => __('api.attributes.meal_type')]),
                 'meal_type.destroy'
             );
         }

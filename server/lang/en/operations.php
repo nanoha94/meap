@@ -1,6 +1,14 @@
 <?php
 
 return [
+    'auth' => [
+        'login' => 'Login',
+        'register_user' => 'User registration',
+        'email_verification_notification' => 'Resend email verification link',
+        'email_verification' => 'Email verification process',
+        'password_reset' => 'Password reset',
+        'password_reset_link' => 'Send password reset link',
+    ],
     'recipe' => [
         'index' => 'Recipe list retrieval',
         'store' => 'Recipe creation',
@@ -21,8 +29,8 @@ return [
         'destroy' => 'Meal type deletion',
     ],
     'image' => [
-        'upload_bulk' => 'Bulk image upload',
-        'delete_bulk' => 'Bulk image deletion',
+        'bulk_upload' => 'Bulk image upload',
+        'bulk_destroy' => 'Bulk image deletion',
     ],
     'invitation' => [
         'store' => 'Invitation token creation',
@@ -49,13 +57,10 @@ return [
         'tag_processing' => 'Shopping item tag processing',
     ],
     'recipe_category' => [
+        'index' => 'Recipe category list retrieval',
         'store' => 'Recipe category creation',
         'bulk_update' => 'Recipe category bulk update',
         'bulk_destroy' => 'Recipe category bulk deletion',
-    ],
-    'auth' => [
-        'email_verification' => 'Email verification process',
-        'registration' => 'User registration',
     ],
     'users' => [
         'index' => 'User list retrieval',
@@ -67,5 +72,10 @@ return [
 
     'shopping_tag' => [
         'index' => 'Shopping tag list retrieval',
+    ],
+
+    'general' => [
+        'unknown' => 'Unknown operation',
+        'request' => 'Request processing',
     ],
 ];

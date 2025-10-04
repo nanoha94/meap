@@ -68,7 +68,7 @@ class RecipeCategoryBulkDestroyRequest extends FormRequest
             $validationException,
             $this,
             $primaryMessage,
-            __('operations.auth.password_reset')
+            __('operations.recipe_category.bulk_destroy')
         );
 
         // HttpResponseExceptionでレスポンスを投げる

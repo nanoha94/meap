@@ -72,7 +72,7 @@ class MealTypeStoreRequest extends FormRequest
             $validationException,
             $this,
             $primaryMessage,
-            __('operations.auth.password_reset')
+            __('operations.meal_type.store')
         );
 
         // HttpResponseExceptionでレスポンスを投げる

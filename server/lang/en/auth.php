@@ -32,5 +32,4 @@ return [
         'store_failed' => 'Failed to resend email verification link.',
         'store_not_found' => 'Email address not registered.',
     ],
-
 ];

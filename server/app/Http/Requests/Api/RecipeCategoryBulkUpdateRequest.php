@@ -64,7 +64,7 @@ class RecipeCategoryBulkUpdateRequest extends FormRequest
             $validationException,
             $this,
             $primaryMessage,
-            __('operations.auth.password_reset')
+            __('operations.recipe_category.bulk_update')
         );
 
         // HttpResponseExceptionでレスポンスを投げる

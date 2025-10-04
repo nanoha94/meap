@@ -55,12 +55,12 @@ class MealPlanController extends ApiController
                 })->values()
             ];
 
-            return $this->indexResponse($res, $meal_plans->count(), __('api.meal_plan.list_retrieved', ['count' => $meal_plans->count()]));
+            return $this->indexResponse($res, $meal_plans->count(), __('api.list_retrieved', ['attribute' => __('api.attributes.meal_plan'), 'count' => $meal_plans->count()]));
         } catch (Exception $e) {
             return $this->handleException(
                 $e,
                 $request,
-                __('api.meal_plan.get_failed'),
+                __('api.get_failed', ['attribute' => __('api.attributes.meal_plan')]),
                 'meal_plan.index',
             );
         }
@@ -109,12 +109,12 @@ class MealPlanController extends ApiController
             }
 
             $res = $this->mealPlanService->formatCompleteMealPlanResponse($ret);
-            return $this->createdResponse($res, __('api.meal_plan.created', ['date' => $res['date']]));
+            return $this->createdResponse($res, __('api.created', ['attribute' => __('api.attributes.meal_plan'), 'name' => $res['date']]));
         } catch (Exception $e) {
             return $this->handleException(
                 $e,
                 $request,
-                __('api.meal_plan.creation_failed'),
+                __('api.creation_failed', ['attribute' => __('api.attributes.meal_plan')]),
                 'meal_plan.store',
 
             );
@@ -141,17 +141,17 @@ class MealPlanController extends ApiController
 
             $meal = MealPlan::where('id', $id)->where('group_id', $group->id)->with(['mealType', 'recipes.courseTypes', 'recipes.categories', 'recipes.ingredients'])->first();
             if (!$meal) {
-                return $this->notFoundResponse(__('api.meal_plan.not_found'));
+                return $this->notFoundResponse(__('api.not_found', ['attribute' => __('api.attributes.meal_plan')]));
             }
 
             $res = $this->mealPlanService->formatCompleteMealPlanResponse($meal);
 
-            return $this->showResponse($res, __('api.meal_plan.retrieved', ['date' => $meal->date]));
+            return $this->showResponse($res, __('api.retrieved', ['attribute' => __('api.attributes.meal_plan'), 'name' => $meal->date]));
         } catch (Exception $e) {
             return $this->handleException(
                 $e,
                 $request,
-                __('api.meal_plan.get_failed'),
+                __('api.get_failed', ['attribute' => __('api.attributes.meal_plan')]),
                 'meal_plan.show',
             );
         }
@@ -178,7 +178,7 @@ class MealPlanController extends ApiController
 
             $meal =  MealPlan::where('id', $id)->where('group_id', $group->id)->first();
             if (!$meal) {
-                return $this->notFoundResponse(__('api.meal_plan.not_found'));
+                return $this->notFoundResponse(__('api.not_found', ['attribute' => __('api.attributes.meal_plan')]));
             }
 
             $meal->update([
@@ -209,12 +209,12 @@ class MealPlanController extends ApiController
             $updatedItem = $group->mealPlans()->where('id', $id)->first()->select('id', 'date', 'meal_type_id')->with(['mealType', 'recipes.courseTypes', 'recipes.categories', 'recipes.ingredients'])->first();
 
             $res = $this->mealPlanService->formatCompleteMealPlanResponse($updatedItem);
-            return $this->updatedResponse($res, __('api.meal_plan.updated', ['date' => $updatedItem->date]));
+            return $this->updatedResponse($res, __('api.updated', ['attribute' => __('api.attributes.meal_plan'), 'name' => $updatedItem->date]));
         } catch (Exception $e) {
             return $this->handleException(
                 $e,
                 $request,
-                __('api.meal_plan.update_failed'),
+                __('api.update_failed', ['attribute' => __('api.attributes.meal_plan')]),
                 'meal_plan.update',
                 ['meal_plan_id' => $id]
             );
@@ -242,17 +242,17 @@ class MealPlanController extends ApiController
             $meal =  MealPlan::where('id', $id)->where('group_id', $group->id)->first();
 
             if (!$meal) {
-                return $this->notFoundResponse(__('api.meal_plan.not_found'));
+                return $this->notFoundResponse(__('api.not_found', ['attribute' => __('api.attributes.meal_plan')]));
             }
 
             $meal->delete();
 
-            return $this->deletedResponse(__('api.meal_plan.deleted', ['date' => $meal->date]));
+            return $this->deletedResponse(__('api.deleted', ['attribute' => __('api.attributes.meal_plan'), 'name' => $meal->date]));
         } catch (Exception $e) {
             return $this->handleException(
                 $e,
                 $request,
-                __('api.meal_plan.deletion_failed'),
+                __('api.deletion_failed', ['attribute' => __('api.attributes.meal_plan')]),
                 'meal_plan.destroy',
             );
         }

@@ -70,7 +70,7 @@ class IngredientCategoryStoreRequest extends FormRequest
             $validationException,
             $this,
             $primaryMessage,
-            __('operations.auth.password_reset')
+            __('operations.ingredient_category.store')
         );
 
         // HttpResponseExceptionでレスポンスを投げる

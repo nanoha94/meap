@@ -29,8 +29,8 @@ return [
         'destroy' => '献立種別削除',
     ],
     'image' => [
-        'upload_bulk' => '画像一括アップロード',
-        'delete_bulk' => '画像一括削除',
+        'bulk_upload' => '画像一括アップロード',
+        'bulk_destroy' => '画像一括削除',
     ],
     'invitation' => [
         'store' => '招待トークン作成',

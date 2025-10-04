@@ -44,12 +44,12 @@ class IngredientCategoryController extends ApiController
                 ];
             });
 
-            return $this->indexResponse($formattedData, $formattedData->count(), __('api.ingredient.list_retrieved', ['count' => $formattedData->count()]));
+            return $this->indexResponse($formattedData, $formattedData->count(), __('api.list_retrieved', ['attribute' => __('api.attributes.ingredient_category'), 'count' => $formattedData->count()]));
         } catch (Exception $e) {
             return $this->handleException(
                 $e,
                 $request,
-                __('api.ingredient.get_failed'),
+                __('api.get_failed', ['attribute' => __('api.attributes.ingredient_category')]),
                 'ingredient_category.index'
             );
         }
@@ -81,8 +81,8 @@ class IngredientCategoryController extends ApiController
                 'order' => $validated['order'],
             ]);
             if (!$category) {
-                $this->logError(HttpStatusCode::INTERNAL_SERVER_ERROR, __('operations.ingredient_category.store'), new Exception(__('api.ingredient.creation_failed')), $request, [], __METHOD__);
-                return $this->errorResponse(__('api.ingredient.creation_failed'), HttpStatusCode::INTERNAL_SERVER_ERROR);
+                $this->logError(HttpStatusCode::INTERNAL_SERVER_ERROR, __('operations.ingredient_category.store'), new Exception(__('api.creation_failed', ['attribute' => __('api.attributes.ingredient_category')])), $request, [], __METHOD__);
+                return $this->errorResponse(__('api.creation_failed', ['attribute' => __('api.attributes.ingredient_category')]), HttpStatusCode::INTERNAL_SERVER_ERROR);
             }
 
             $data = [
@@ -91,12 +91,12 @@ class IngredientCategoryController extends ApiController
                 'order' => $category->order
             ];
 
-            return $this->createdResponse($data, __('api.ingredient.created', ['name' => $validated['name']]));
+            return $this->createdResponse($data, __('api.created', ['attribute' => __('api.attributes.ingredient_category'), 'name' => $validated['name']]));
         } catch (Exception $e) {
             return $this->handleException(
                 $e,
                 $request,
-                __('api.ingredient.creation_failed'),
+                __('api.creation_failed', ['attribute' => __('api.attributes.ingredient_category')]),
                 'ingredient_category.store'
             );
         }
@@ -144,7 +144,7 @@ class IngredientCategoryController extends ApiController
             }
 
             if ($failedCount > 0) {
-                $this->logWarning(HttpStatusCode::OK, __('operations.ingredient_category.bulk_update'), __('api.ingredient.bulk_update_partial_success'), $request, [
+                $this->logWarning(HttpStatusCode::OK, __('operations.ingredient_category.bulk_update'), __('api.bulk_update_failed', ['attribute' => __('api.attributes.ingredient_category')]), $request, [
                     'total_count' => count($validated['data']),
                     'success_count' => $updatedCount,
                     'failed_count' => $failedCount,
@@ -167,12 +167,12 @@ class IngredientCategoryController extends ApiController
                 ];
             });
 
-            return $this->updatedResponse($formattedData, __('api.ingredient.updated', ['count' => $updatedCount]));
+            return $this->updatedResponse($formattedData, __('api.bulk_updated', ['attribute' => __('api.attributes.ingredient_category'), 'count' => $updatedCount]));
         } catch (Exception $e) {
             return $this->handleException(
                 $e,
                 $request,
-                __('api.ingredient.bulk_update_failed'),
+                __('api.bulk_update_failed', ['attribute' => __('api.attributes.ingredient_category')]),
                 'ingredient_category.bulk_update'
             );
         }
@@ -225,7 +225,7 @@ class IngredientCategoryController extends ApiController
 
             // 部分成功のログ
             if ($failedCount > 0) {
-                $this->logWarning(HttpStatusCode::OK, __('operations.ingredient_category.bulk_destroy'), __('api.ingredient.bulk_destroy_partial_success'), $request, [
+                $this->logWarning(HttpStatusCode::OK, __('operations.ingredient_category.bulk_destroy'), __('api.deletion_failed', ['attribute' => __('api.attributes.ingredient_category')]), $request, [
                     'total_count' => count($validated['ids']),
                     'success_count' => $deletedCount,
                     'failed_count' => $failedCount,
@@ -244,12 +244,12 @@ class IngredientCategoryController extends ApiController
                 }
             }
 
-            return $this->deletedResponse(__('api.ingredient.deleted', ['count' => $deletedCount]));
+            return $this->deletedResponse(__('api.bulk_deleted', ['attribute' => __('api.attributes.ingredient_category'), 'count' => $deletedCount]));
         } catch (Exception $e) {
             return $this->handleException(
                 $e,
                 $request,
-                __('api.ingredient.deletion_failed'),
+                __('api.deletion_failed', ['attribute' => __('api.attributes.ingredient_category')]),
                 'ingredient_category.bulk_destroy'
             );
         }

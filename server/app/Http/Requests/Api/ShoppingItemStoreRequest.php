@@ -76,7 +76,7 @@ class ShoppingItemStoreRequest extends FormRequest
             $validationException,
             $this,
             $primaryMessage,
-            __('operations.auth.password_reset')
+            __('operations.shopping_item.store')
         );
 
         // HttpResponseExceptionでレスポンスを投げる

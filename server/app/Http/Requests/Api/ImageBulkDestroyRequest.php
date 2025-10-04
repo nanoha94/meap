@@ -69,7 +69,7 @@ class ImageBulkDestroyRequest extends FormRequest
             $validationException,
             $this,
             $primaryMessage,
-            __('operations.auth.password_reset')
+            __('operations.image.bulk_destroy')
         );
 
         // HttpResponseExceptionでレスポンスを投げる

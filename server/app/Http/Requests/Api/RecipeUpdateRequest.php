@@ -104,7 +104,7 @@ class RecipeUpdateRequest extends FormRequest
             $validationException,
             $this,
             $primaryMessage,
-            __('operations.auth.password_reset')
+            __('operations.recipe.update')
         );
 
         // HttpResponseExceptionでレスポンスを投げる

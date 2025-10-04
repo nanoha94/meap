@@ -68,7 +68,7 @@ class RecipeIndexRequest extends FormRequest
             $validationException,
             $this,
             $primaryMessage,
-            __('operations.auth.password_reset')
+            __('operations.recipe.index')
         );
 
         // HttpResponseExceptionでレスポンスを投げる

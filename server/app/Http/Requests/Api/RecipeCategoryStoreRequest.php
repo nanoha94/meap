@@ -26,7 +26,6 @@ class RecipeCategoryStoreRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
-            'color' => 'required|hex_color',
             'order' => 'required|integer|min:0',
         ];
     }
@@ -42,8 +41,6 @@ class RecipeCategoryStoreRequest extends FormRequest
             'name.required' => __('validation.required', ['attribute' => __('validation.attributes.recipe_category.name')]),
             'name.string' => __('validation.string', ['attribute' => __('validation.attributes.recipe_category.name')]),
             'name.max' => __('validation.max.string', ['attribute' => __('validation.attributes.recipe_category.name'), 'max' => 255]),
-            'color.required' => __('validation.required', ['attribute' => __('validation.attributes.recipe_category.color')]),
-            'color.hex_color' => __('validation.hex_color', ['attribute' => __('validation.attributes.recipe_category.color')]),
             'order.required' => __('validation.required', ['attribute' => __('validation.attributes.recipe_category.order')]),
             'order.integer' => __('validation.integer', ['attribute' => __('validation.attributes.recipe_category.order')]),
             'order.min' => __('validation.min.numeric', ['attribute' => __('validation.attributes.recipe_category.order'), 'min' => 0]),
@@ -72,7 +69,7 @@ class RecipeCategoryStoreRequest extends FormRequest
             $validationException,
             $this,
             $primaryMessage,
-            __('operations.auth.password_reset')
+            __('operations.recipe_category.store')
         );
 
         // HttpResponseExceptionでレスポンスを投げる

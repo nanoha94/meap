@@ -64,7 +64,7 @@ class ShoppingCategoryBulkUpdateRequest extends FormRequest
             $validationException,
             $this,
             $primaryMessage,
-            __('operations.auth.password_reset')
+            __('operations.shopping_category.bulk_update')
         );
 
         // HttpResponseExceptionでレスポンスを投げる

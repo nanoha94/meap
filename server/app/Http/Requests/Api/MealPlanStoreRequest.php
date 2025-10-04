@@ -81,7 +81,7 @@ class MealPlanStoreRequest extends FormRequest
             $validationException,
             $this,
             $primaryMessage,
-            __('operations.auth.password_reset')
+            __('operations.meal_plan.store')
         );
 
         // HttpResponseExceptionでレスポンスを投げる
