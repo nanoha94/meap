@@ -15,6 +15,7 @@ use App\Traits\AutoComplement;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use App\Enums\HttpStatusCode;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class ShoppingItemController extends ApiController
 {
@@ -108,8 +109,12 @@ class ShoppingItemController extends ApiController
             ]);
             if (!$ret) {
                 DB::rollBack();
-                $this->logError(HttpStatusCode::INTERNAL_SERVER_ERROR, __('operations.shopping_item.store'), new Exception(__('api.creation_failed', ['attribute' => __('api.attributes.shopping.item')])), $request, [], __METHOD__);
-                return $this->errorResponse(__('api.creation_failed', ['attribute' => __('api.attributes.shopping.item')]), HttpStatusCode::INTERNAL_SERVER_ERROR);
+                $this->handleException(
+                    new HttpException(HttpStatusCode::INTERNAL_SERVER_ERROR->value, __('api.creation_failed', ['attribute' => __('api.attributes.shopping.item')])),
+                    $request,
+                    __('api.creation_failed', ['attribute' => __('api.attributes.shopping.item')]),
+                    __('operations.shopping_item.store')
+                );
             }
 
             // タグの処理
@@ -254,7 +259,7 @@ class ShoppingItemController extends ApiController
 
             // 見つからなかったアイテムがある場合は警告ログを出力
             if (!empty($notFoundIds)) {
-                $this->logError(HttpStatusCode::NOT_FOUND, __('operations.shopping_item.bulk_destroy'), new Exception(__('api.some_items_not_found', ['attribute' => __('api.attributes.shopping.item')])), $request, [
+                $this->logWarning(HttpStatusCode::NOT_FOUND, __('operations.shopping_item.bulk_destroy'), new Exception(__('api.some_items_not_found', ['attribute' => __('api.attributes.shopping.item')])), $request, [
                     'not_found_ids' => $notFoundIds,
                     'deleted_ids' => $deletedIds
                 ],  __METHOD__);
@@ -262,8 +267,12 @@ class ShoppingItemController extends ApiController
 
             // 削除されたアイテムがない場合はエラー
             if (empty($deletedIds)) {
-                $this->logError(HttpStatusCode::BAD_REQUEST, __('operations.shopping_item.bulk_destroy'), new Exception(__('api.no_items_deleted', ['attribute' => __('api.attributes.shopping.item')])), $request, [], __METHOD__);
-                return $this->errorResponse(__('api.no_items_deleted', ['attribute' => __('api.attributes.shopping.item')]), HttpStatusCode::BAD_REQUEST);
+                $this->handleException(
+                    new HttpException(HttpStatusCode::BAD_REQUEST->value, __('api.no_items_deleted', ['attribute' => __('api.attributes.shopping.item')])),
+                    $request,
+                    __('api.no_items_deleted', ['attribute' => __('api.attributes.shopping.item')]),
+                    __('operations.shopping_item.bulk_destroy')
+                );
             }
 
             return $this->deletedResponse(__('api.bulk_deleted', ['attribute' => __('api.attributes.shopping.item'), 'count' => count($deletedIds)]));

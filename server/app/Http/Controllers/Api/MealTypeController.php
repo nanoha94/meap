@@ -8,6 +8,7 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Enums\HttpStatusCode;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class MealTypeController extends ApiController
 {
@@ -126,10 +127,13 @@ class MealTypeController extends ApiController
             $mealType =  MealType::where('id', $id)->where('group_id', $group->id)->first();
 
             if (!$mealType) {
-                $this->logError(HttpStatusCode::NOT_FOUND, __('operations.meal_type.destroy'), new Exception(__('api.general.not_found')), $request, [
-                    'meal_type_id' => $id
-                ]);
-                return $this->errorResponse(__('api.general.not_found'), HttpStatusCode::NOT_FOUND);
+                $this->handleException(
+                    new HttpException(HttpStatusCode::NOT_FOUND->value, __('api.general.not_found')),
+                    $request,
+                    __('api.general.not_found'),
+                    __('operations.meal_type.destroy'),
+                    ['meal_type_id' => $id]
+                );
             }
 
             $deletedId = $mealType->id;

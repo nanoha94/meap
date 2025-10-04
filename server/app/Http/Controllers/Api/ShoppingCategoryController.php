@@ -11,6 +11,7 @@ use App\Models\ShoppingCategory;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class ShoppingCategoryController extends ApiController
 {
@@ -80,8 +81,12 @@ class ShoppingCategoryController extends ApiController
                 'order' => $validated['order'],
             ]);
             if (!$category) {
-                $this->logError(HttpStatusCode::INTERNAL_SERVER_ERROR, __('operations.shopping_category.store'), new Exception(__('api.creation_failed', ['attribute' => __('api.attributes.shopping.category')])), $request);
-                return $this->errorResponse(__('api.creation_failed', ['attribute' => __('api.attributes.shopping.category')]), HttpStatusCode::INTERNAL_SERVER_ERROR);
+                $this->handleException(
+                    new HttpException(HttpStatusCode::INTERNAL_SERVER_ERROR->value, __('api.creation_failed', ['attribute' => __('api.attributes.shopping.category')])),
+                    $request,
+                    __('api.creation_failed', ['attribute' => __('api.attributes.shopping.category')]),
+                    __('operations.shopping_category.store')
+                );
             }
 
             $data = [
@@ -203,19 +208,25 @@ class ShoppingCategoryController extends ApiController
             $notFoundIds = array_diff($validated['ids'], $foundIds);
 
             if (!empty($notFoundIds)) {
-                $this->logError(HttpStatusCode::NOT_FOUND, __('operations.shopping_category.bulk_destroy'), new Exception(__('api.not_found', ['attribute' => __('api.attributes.shopping.category')])), $request, [
-                    'notFoundIds' => $notFoundIds
-                ],   __METHOD__);
-                return $this->errorResponse(__('api.not_found', ['attribute' => __('api.attributes.shopping.category')]), HttpStatusCode::NOT_FOUND);
+                $this->handleException(
+                    new HttpException(HttpStatusCode::NOT_FOUND->value, __('api.not_found', ['attribute' => __('api.attributes.shopping.category')])),
+                    $request,
+                    __('api.not_found', ['attribute' => __('api.attributes.shopping.category')]),
+                    __('operations.shopping_category.bulk_destroy'),
+                    ['notFoundIds' => $notFoundIds]
+                );
             }
 
             // デフォルトカテゴリのチェック
             $defaultCategory = $categories->where('is_default', true)->first();
             if ($defaultCategory) {
-                $this->logWarning(HttpStatusCode::BAD_REQUEST, __('operations.shopping_category.bulk_destroy'), __('api.cannot_delete', ['name' => $defaultCategory->name]), $request, [
-                    'default_category_name' => $defaultCategory->name
-                ], __METHOD__);
-                return $this->errorResponse(__('api.cannot_delete', ['name' => $defaultCategory->name]), HttpStatusCode::BAD_REQUEST);
+                $this->handleException(
+                    new HttpException(HttpStatusCode::BAD_REQUEST->value, __('api.cannot_delete', ['name' => $defaultCategory->name])),
+                    $request,
+                    __('api.cannot_delete', ['name' => $defaultCategory->name]),
+                    __('operations.shopping_category.bulk_destroy'),
+                    ['default_category_name' => $defaultCategory->name]
+                );
             }
 
             // 一括削除

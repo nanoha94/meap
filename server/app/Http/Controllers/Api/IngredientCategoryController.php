@@ -11,6 +11,7 @@ use App\Enums\HttpStatusCode;
 use App\Http\Requests\Api\IngredientCategoryBulkDestroyRequest;
 use App\Http\Requests\Api\IngredientCategoryBulkUpdateRequest;
 use App\Http\Requests\Api\IngredientCategoryStoreRequest;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class IngredientCategoryController extends ApiController
 {
@@ -81,8 +82,12 @@ class IngredientCategoryController extends ApiController
                 'order' => $validated['order'],
             ]);
             if (!$category) {
-                $this->logError(HttpStatusCode::INTERNAL_SERVER_ERROR, __('operations.ingredient_category.store'), new Exception(__('api.creation_failed', ['attribute' => __('api.attributes.ingredient_category')])), $request, [], __METHOD__);
-                return $this->errorResponse(__('api.creation_failed', ['attribute' => __('api.attributes.ingredient_category')]), HttpStatusCode::INTERNAL_SERVER_ERROR);
+                $this->handleException(
+                    new HttpException(HttpStatusCode::INTERNAL_SERVER_ERROR->value, __('api.creation_failed', ['attribute' => __('api.attributes.ingredient_category')])),
+                    $request,
+                    __('api.creation_failed', ['attribute' => __('api.attributes.ingredient_category')]),
+                    __('operations.ingredient_category.store')
+                );
             }
 
             $data = [

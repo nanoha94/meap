@@ -25,12 +25,14 @@ trait ExceptionHandlerTrait
         Request $request,
         string $defaultMessage,
         string $operation,
+        array $additionalContext = [],
     ): JsonResponse {
         // バリデーション例外
         if ($e instanceof ValidationException) {
             $message = $defaultMessage ?? __('api.general.validation_error');
             $this->logError(HttpStatusCode::UNPROCESSABLE_ENTITY, $operation, $e, $request,  [
                 'message' => $message,
+                ...$additionalContext,
             ]);
             return $this->errorResponse($message, HttpStatusCode::UNPROCESSABLE_ENTITY, $e->errors());
         }
@@ -41,6 +43,7 @@ trait ExceptionHandlerTrait
             $errorCode = $e->getStatusCode();
             $this->logError($errorCode ?? HttpStatusCode::INTERNAL_SERVER_ERROR, $operation, $e, $request,  [
                 'message' => $message,
+                ...$additionalContext,
             ]);
             return $this->errorResponse($message,  $errorCode ?? HttpStatusCode::INTERNAL_SERVER_ERROR);
         }
@@ -51,6 +54,7 @@ trait ExceptionHandlerTrait
             $this->logError(HttpStatusCode::NOT_FOUND, $operation, $e, $request,  [
                 'search_conditions' => $e->getIds(),
                 'message' => $message,
+                ...$additionalContext,
             ]);
             return $this->errorResponse($message, HttpStatusCode::NOT_FOUND);
         }
@@ -60,6 +64,7 @@ trait ExceptionHandlerTrait
             $message = $defaultMessage ?? __('api.general.database_error');
             $this->logError(HttpStatusCode::INTERNAL_SERVER_ERROR, $operation, $e, $request, [
                 'message' => $message,
+                ...$additionalContext,
             ]);
             return $this->errorResponse($message, HttpStatusCode::INTERNAL_SERVER_ERROR);
         }

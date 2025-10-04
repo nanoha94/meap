@@ -11,6 +11,7 @@ use App\Enums\HttpStatusCode;
 use App\Http\Requests\Api\RecipeCategoryBulkDestroyRequest;
 use App\Http\Requests\Api\RecipeCategoryBulkUpdateRequest;
 use App\Http\Requests\Api\RecipeCategoryStoreRequest;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class RecipeCategoryController extends ApiController
 {
@@ -82,11 +83,13 @@ class RecipeCategoryController extends ApiController
                     'order' => $category['order']
                 ]);
                 if (!$ret) {
-                    $this->logError(HttpStatusCode::INTERNAL_SERVER_ERROR, __('operations.recipe_category.bulk_update'), new Exception(__('api.bulk_update_failed', ['attribute' => __('api.attributes.recipe_category')])), $request, [
-                        'category_id' => $category['id'],
-                        'category_name' => $category['name']
-                    ]);
-                    return $this->errorResponse(__('api.bulk_update_failed', ['attribute' => __('api.attributes.recipe_category')]), HttpStatusCode::INTERNAL_SERVER_ERROR);
+                    $this->handleException(
+                        new HttpException(HttpStatusCode::INTERNAL_SERVER_ERROR->value, __('api.bulk_update_failed', ['attribute' => __('api.attributes.recipe_category')])),
+                        $request,
+                        __('api.bulk_update_failed', ['attribute' => __('api.attributes.recipe_category')]),
+                        __('operations.recipe_category.bulk_update'),
+                        ['category_id' => $category['id'], 'category_name' => $category['name']]
+                    );
                 }
             }
 
@@ -143,10 +146,13 @@ class RecipeCategoryController extends ApiController
 
             // 見つからなかったIDがある場合はエラーレスポンスを返す
             if (!empty($notFoundIds)) {
-                $this->logError(HttpStatusCode::NOT_FOUND, __('operations.recipe_category.bulk_destroy'), new Exception(__('api.general.not_found')), $request, [
-                    'notFoundIds' => $notFoundIds
-                ]);
-                return $this->notFoundResponse(__('api.general.not_found'));
+                $this->handleException(
+                    new HttpException(HttpStatusCode::NOT_FOUND->value, __('api.general.not_found')),
+                    $request,
+                    __('api.general.not_found'),
+                    __('operations.recipe_category.bulk_destroy'),
+                    ['notFoundIds' => $notFoundIds]
+                );
             }
 
             // 残りのカテゴリーのorderを整理
