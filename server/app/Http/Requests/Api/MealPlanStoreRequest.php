@@ -16,11 +16,11 @@ class MealPlanStoreRequest extends BaseApiRequest
     {
         return [
             'date' => 'date_format:Y-m-d|required',
-            'mealTypeId' => 'uuid|required',
+            'mealCategoryId' => 'uuid|required',
             'menu' => 'array|min:1|required',
             'menu.*.recipeIds' => 'array|min:1|required',
             'menu.*.recipeIds.*' => 'uuid|required',
-            'menu.*.courseTypeId' => 'uuid|required',
+            'menu.*.categoryId' => 'uuid|required',
         ];
     }
 
@@ -34,8 +34,8 @@ class MealPlanStoreRequest extends BaseApiRequest
         return [
             'date.date_format' => __('validation.date_format', ['attribute' => 'date', 'format' => 'Y-m-d']),
             'date.required' => __('validation.required', ['attribute' => 'date']),
-            'mealTypeId.uuid' => __('validation.uuid', ['attribute' => 'mealTypeId']),
-            'mealTypeId.required' => __('validation.required', ['attribute' => 'mealTypeId']),
+            'mealCategoryId.uuid' => __('validation.uuid', ['attribute' => 'mealCategoryId']),
+            'mealCategoryId.required' => __('validation.required', ['attribute' => 'mealCategoryId']),
             'menu.array' => __('validation.array', ['attribute' => 'menu']),
             'menu.min' => __('validation.min.array', ['attribute' => 'menu', 'min' => 1]),
             'menu.required' => __('validation.required', ['attribute' => 'menu']),
@@ -44,8 +44,8 @@ class MealPlanStoreRequest extends BaseApiRequest
             'menu.*.recipeIds.required' => __('validation.required', ['attribute' => 'menu.*.recipeIds']),
             'menu.*.recipeIds.*.uuid' => __('validation.uuid', ['attribute' => 'menu.*.recipeIds.*']),
             'menu.*.recipeIds.*.required' => __('validation.required', ['attribute' => 'menu.*.recipeIds.*']),
-            'menu.*.courseTypeId.uuid' => __('validation.uuid', ['attribute' => 'menu.*.courseTypeId']),
-            'menu.*.courseTypeId.required' => __('validation.required', ['attribute' => 'menu.*.courseTypeId']),
+            'menu.*.categoryId.uuid' => __('validation.uuid', ['attribute' => 'menu.*.categoryId']),
+            'menu.*.categoryId.required' => __('validation.required', ['attribute' => 'menu.*.categoryId']),
         ];
     }
 

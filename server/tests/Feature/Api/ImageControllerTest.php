@@ -2,7 +2,6 @@
 
 use App\Models\User;
 use App\Models\Group;
-use App\Models\GroupUserMapping;
 use App\Models\Image;
 use App\Models\Color;
 use App\Services\ImageService;
@@ -31,7 +30,7 @@ beforeEach(function () {
 
 // ==================== bulkUpload() テストケース ====================
 
-test('3-2-1: 【一括アップロード】 正常な画像アップロード（1 枚）', function () {
+test('3-1-1: 【一括アップロード】 正常な画像アップロード（1 枚）', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -39,7 +38,7 @@ test('3-2-1: 【一括アップロード】 正常な画像アップロード（
         'group_size' => 1
     ]);
 
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $group->id
     ]);
@@ -88,7 +87,7 @@ test('3-2-1: 【一括アップロード】 正常な画像アップロード（
     expect($image->src)->toContain("/storage/images/{$group->id}/general/");
 });
 
-test('3-2-2: 【一括アップロード】 複数画像の一括アップロード', function () {
+test('3-1-2: 【一括アップロード】 複数画像の一括アップロード', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -96,7 +95,7 @@ test('3-2-2: 【一括アップロード】 複数画像の一括アップロー
         'group_size' => 1
     ]);
 
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $group->id
     ]);
@@ -121,7 +120,7 @@ test('3-2-2: 【一括アップロード】 複数画像の一括アップロー
     $this->assertDatabaseCount('images', 3);
 });
 
-test('3-2-3: 【一括アップロード】 ディレクトリ指定アップロード', function () {
+test('3-1-3: 【一括アップロード】 ディレクトリ指定アップロード', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -129,7 +128,7 @@ test('3-2-3: 【一括アップロード】 ディレクトリ指定アップロ
         'group_size' => 1
     ]);
 
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $group->id
     ]);
@@ -154,7 +153,7 @@ test('3-2-3: 【一括アップロード】 ディレクトリ指定アップロ
     expect($image->src)->toContain("/storage/images/{$group->id}/recipes/");
 });
 
-test('3-2-4: 【一括アップロード】 デフォルトディレクトリアップロード', function () {
+test('3-1-4: 【一括アップロード】 デフォルトディレクトリアップロード', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -162,7 +161,7 @@ test('3-2-4: 【一括アップロード】 デフォルトディレクトリア
         'group_size' => 1
     ]);
 
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $group->id
     ]);
@@ -187,7 +186,7 @@ test('3-2-4: 【一括アップロード】 デフォルトディレクトリア
     expect($image->src)->toContain("/storage/images/{$group->id}/general/");
 });
 
-test('3-2-5: 【一括アップロード】 未認証ユーザー', function () {
+test('3-1-5: 【一括アップロード】 未認証ユーザー', function () {
     $file = UploadedFile::fake()->image('test.jpg', 100, 100);
 
     $response = $this->post('/images/upload-bulk', [
@@ -201,7 +200,7 @@ test('3-2-5: 【一括アップロード】 未認証ユーザー', function () 
     ]);
 });
 
-test('3-2-6: 【一括アップロード】 グループが存在しない', function () {
+test('3-1-6: 【一括アップロード】 グループが存在しない', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -220,7 +219,7 @@ test('3-2-6: 【一括アップロード】 グループが存在しない', fun
     ]);
 });
 
-test('3-2-7: 【一括アップロード】 データベース接続エラー', function () {
+test('3-1-7: 【一括アップロード】 データベース接続エラー', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -228,7 +227,7 @@ test('3-2-7: 【一括アップロード】 データベース接続エラー', 
         'group_size' => 1
     ]);
 
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $group->id
     ]);
@@ -249,7 +248,7 @@ test('3-2-7: 【一括アップロード】 データベース接続エラー', 
     ]);
 });
 
-test('3-2-8: 【一括アップロード】 ImageService 例外', function () {
+test('3-1-8: 【一括アップロード】 ImageService 例外', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -257,7 +256,7 @@ test('3-2-8: 【一括アップロード】 ImageService 例外', function () {
         'group_size' => 1
     ]);
 
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $group->id
     ]);
@@ -280,7 +279,7 @@ test('3-2-8: 【一括アップロード】 ImageService 例外', function () {
     ]);
 });
 
-test('3-2-9: 【一括アップロード】 ファイルアップロード失敗', function () {
+test('3-1-9: 【一括アップロード】 ファイルアップロード失敗', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -288,7 +287,7 @@ test('3-2-9: 【一括アップロード】 ファイルアップロード失敗
         'group_size' => 1
     ]);
 
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $group->id
     ]);
@@ -314,7 +313,7 @@ test('3-2-9: 【一括アップロード】 ファイルアップロード失敗
 
 // ==================== バリデーションテストケース ====================
 
-test('3-2-10: 【一括アップロード】 バリデーションエラー（ファイルサイズ制限）', function () {
+test('3-1-10: 【一括アップロード】 バリデーションエラー（ファイルサイズ制限）', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -322,7 +321,7 @@ test('3-2-10: 【一括アップロード】 バリデーションエラー（�
         'group_size' => 1
     ]);
 
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $group->id
     ]);
@@ -342,7 +341,7 @@ test('3-2-10: 【一括アップロード】 バリデーションエラー（�
     $this->assertContains('images.*には、10240 kb以下のファイルを指定してください。', $responseData['errors']['images.0']);
 });
 
-test('3-2-11: 【一括アップロード】 バリデーションエラー（最大ファイル数制限）', function () {
+test('3-1-11: 【一括アップロード】 バリデーションエラー（最大ファイル数制限）', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -350,7 +349,7 @@ test('3-2-11: 【一括アップロード】 バリデーションエラー（�
         'group_size' => 1
     ]);
 
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $group->id
     ]);
@@ -373,7 +372,7 @@ test('3-2-11: 【一括アップロード】 バリデーションエラー（�
     $this->assertContains('imagesは20個以下指定してください。', $responseData['errors']['images']);
 });
 
-test('3-2-12: 【一括アップロード】 バリデーションエラー（最小ファイル数制限）', function () {
+test('3-1-12: 【一括アップロード】 バリデーションエラー（最小ファイル数制限）', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -381,7 +380,7 @@ test('3-2-12: 【一括アップロード】 バリデーションエラー（�
         'group_size' => 1
     ]);
 
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $group->id
     ]);
@@ -398,7 +397,7 @@ test('3-2-12: 【一括アップロード】 バリデーションエラー（�
     $this->assertContains('imagesは必ず指定してください。', $responseData['errors']['images']);
 });
 
-test('3-2-13: 【一括アップロード】 バリデーションエラー（ファイル配列バリデーション）', function () {
+test('3-1-13: 【一括アップロード】 バリデーションエラー（ファイル配列バリデーション）', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -406,7 +405,7 @@ test('3-2-13: 【一括アップロード】 バリデーションエラー（�
         'group_size' => 1
     ]);
 
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $group->id
     ]);
@@ -423,7 +422,7 @@ test('3-2-13: 【一括アップロード】 バリデーションエラー（�
     $this->assertContains('imagesは配列でなくてはなりません。', $responseData['errors']['images']);
 });
 
-test('3-2-14: 【一括アップロード】 バリデーションエラー（ディレクトリ文字数制限）', function () {
+test('3-1-14: 【一括アップロード】 バリデーションエラー（ディレクトリ文字数制限）', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -431,7 +430,7 @@ test('3-2-14: 【一括アップロード】 バリデーションエラー（�
         'group_size' => 1
     ]);
 
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $group->id
     ]);
@@ -452,7 +451,7 @@ test('3-2-14: 【一括アップロード】 バリデーションエラー（�
     $this->assertContains('directoryは、255文字以内で指定してください。', $responseData['errors']['directory']);
 });
 
-test('3-2-15: 【一括アップロード】 バリデーションエラー（ディレクトリ形式バリデーション）', function () {
+test('3-1-15: 【一括アップロード】 バリデーションエラー（ディレクトリ形式バリデーション）', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -460,7 +459,7 @@ test('3-2-15: 【一括アップロード】 バリデーションエラー（�
         'group_size' => 1
     ]);
 
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $group->id
     ]);
@@ -482,7 +481,7 @@ test('3-2-15: 【一括アップロード】 バリデーションエラー（�
 
 // ==================== bulkDestroy() テストケース ====================
 
-test('3-2-16: 【一括削除】 正常な画像削除（1 枚）', function () {
+test('3-1-16: 【一括削除】 正常な画像削除（1 枚）', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -490,7 +489,7 @@ test('3-2-16: 【一括削除】 正常な画像削除（1 枚）', function () 
         'group_size' => 1
     ]);
 
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $group->id
     ]);
@@ -524,7 +523,7 @@ test('3-2-16: 【一括削除】 正常な画像削除（1 枚）', function () 
     ]);
 });
 
-test('3-2-17: 【一括削除】 複数画像の一括削除', function () {
+test('3-1-17: 【一括削除】 複数画像の一括削除', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -532,7 +531,7 @@ test('3-2-17: 【一括削除】 複数画像の一括削除', function () {
         'group_size' => 1
     ]);
 
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $group->id
     ]);
@@ -564,7 +563,7 @@ test('3-2-17: 【一括削除】 複数画像の一括削除', function () {
     }
 });
 
-test('3-2-18: 【一括削除】 削除成功メッセージの確認', function () {
+test('3-1-18: 【一括削除】 削除成功メッセージの確認', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -572,7 +571,7 @@ test('3-2-18: 【一括削除】 削除成功メッセージの確認', function
         'group_size' => 1
     ]);
 
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $group->id
     ]);
@@ -595,7 +594,7 @@ test('3-2-18: 【一括削除】 削除成功メッセージの確認', function
     expect($message)->toBe('画像を1件削除しました。');
 });
 
-test('3-2-19: 【一括削除】 未認証ユーザー', function () {
+test('3-1-19: 【一括削除】 未認証ユーザー', function () {
     $response = $this->delete('/images/bulk', [
         'ids' => [\Illuminate\Support\Str::uuid()]
     ]);
@@ -607,14 +606,14 @@ test('3-2-19: 【一括削除】 未認証ユーザー', function () {
     ]);
 });
 
-test('3-2-20: 【一括削除】 グループが存在しない', function () {
+test('3-1-20: 【一括削除】 グループが存在しない', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
     // グループに所属させない
 
     // デバッグ: ユーザーのグループを確認
-    $userGroup = $user->group;
+    $userGroup = $user->groups()->first();
     expect($userGroup)->toBeNull();
 
     // 任意の画像IDを使用（実際には検証前にエラーになるため）
@@ -629,7 +628,7 @@ test('3-2-20: 【一括削除】 グループが存在しない', function () {
     ]);
 });
 
-test('3-2-21: 【一括削除】 データベース接続エラー', function () {
+test('3-1-21: 【一括削除】 データベース接続エラー', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -637,7 +636,7 @@ test('3-2-21: 【一括削除】 データベース接続エラー', function ()
         'group_size' => 1
     ]);
 
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $group->id
     ]);
@@ -663,7 +662,7 @@ test('3-2-21: 【一括削除】 データベース接続エラー', function ()
     ]);
 });
 
-test('3-2-22: 【一括削除】 ImageService 例外', function () {
+test('3-1-22: 【一括削除】 ImageService 例外', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -671,7 +670,7 @@ test('3-2-22: 【一括削除】 ImageService 例外', function () {
         'group_size' => 1
     ]);
 
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $group->id
     ]);
@@ -699,7 +698,7 @@ test('3-2-22: 【一括削除】 ImageService 例外', function () {
     ]);
 });
 
-test('3-2-23: 【一括削除】 ファイル削除失敗', function () {
+test('3-1-23: 【一括削除】 ファイル削除失敗', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -707,7 +706,7 @@ test('3-2-23: 【一括削除】 ファイル削除失敗', function () {
         'group_size' => 1
     ]);
 
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $group->id
     ]);
@@ -740,7 +739,7 @@ test('3-2-23: 【一括削除】 ファイル削除失敗', function () {
 
 // ==================== 削除バリデーションテストケース ====================
 
-test('3-2-24: 【一括削除】 存在しない画像 ID の削除', function () {
+test('3-1-24: 【一括削除】 存在しない画像 ID の削除', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -748,7 +747,7 @@ test('3-2-24: 【一括削除】 存在しない画像 ID の削除', function (
         'group_size' => 1
     ]);
 
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $group->id
     ]);
@@ -771,7 +770,7 @@ test('3-2-24: 【一括削除】 存在しない画像 ID の削除', function (
     ]);
 });
 
-test('3-2-25: 【一括削除】 バリデーションエラー（削除 ID 配列バリデーション）', function () {
+test('3-1-25: 【一括削除】 バリデーションエラー（削除 ID 配列バリデーション）', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -779,7 +778,7 @@ test('3-2-25: 【一括削除】 バリデーションエラー（削除 ID 配�
         'group_size' => 1
     ]);
 
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $group->id
     ]);
@@ -796,7 +795,7 @@ test('3-2-25: 【一括削除】 バリデーションエラー（削除 ID 配�
     $this->assertContains('idsは配列でなくてはなりません。', $responseData['errors']['ids']);
 });
 
-test('3-2-26: 【一括削除】 バリデーションエラー（削除 ID 最小数制限）', function () {
+test('3-1-26: 【一括削除】 バリデーションエラー（削除 ID 最小数制限）', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -804,7 +803,7 @@ test('3-2-26: 【一括削除】 バリデーションエラー（削除 ID 最�
         'group_size' => 1
     ]);
 
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $group->id
     ]);
@@ -821,7 +820,7 @@ test('3-2-26: 【一括削除】 バリデーションエラー（削除 ID 最�
     $this->assertContains('idsは必ず指定してください。', $responseData['errors']['ids']);
 });
 
-test('3-2-27: 【一括削除】 バリデーションエラー（削除 ID UUID 形式バリデーション）', function () {
+test('3-1-27: 【一括削除】 バリデーションエラー（削除 ID UUID 形式バリデーション）', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -829,7 +828,7 @@ test('3-2-27: 【一括削除】 バリデーションエラー（削除 ID UUID
         'group_size' => 1
     ]);
 
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $group->id
     ]);

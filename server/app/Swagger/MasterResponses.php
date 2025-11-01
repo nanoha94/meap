@@ -32,10 +32,10 @@ namespace App\Swagger;
  *                 @OA\Items(ref="#/components/schemas/IngredientUnit")
  *             ),
  *             @OA\Property(
- *                 property="courseTypes",
+ *                 property="menuCategories",
  *                 type="array",
- *                 description="コース種別一覧",
- *                 @OA\Items(ref="#/components/schemas/CourseType")
+ *                 description="メニュー種別一覧",
+ *                 @OA\Items(ref="#/components/schemas/MenuCategory")
  *             ),
  *             @OA\Property(
  *                 property="shoppingCategories",

@@ -29,12 +29,12 @@ class ShoppingTagController extends ApiController
      */
     public function index(ShoppingTagIndexRequest $request): JsonResponse
     {
-            $operation = __('operations.shopping_tag.index');
-        $failedMessage = __('api.shopping_tag.get_failed');
+        $operation = __('operations.shopping_tag.index');
+        $failedMessage = __('api.get_failed', ['attribute' => __('api.attributes.shopping.tag')]);
 
         return $this->executeWithExceptionHandling(
             function () use ($request) {
-                $res = $this->shoppingTagService->index($request->user()->group);
+                $res = $this->shoppingTagService->index($this->getUserGroup($request));
                 $total = count($res);
                 $message = __('api.list_retrieved', ['attribute' => __('api.attributes.shopping.tag'), 'count' => $total]);
                 return $this->indexResponse($res, $total, $message);

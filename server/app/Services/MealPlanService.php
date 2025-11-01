@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\CourseType;
+use App\Models\MenuCategory;
 use App\Models\Group;
 use App\Models\MealPlan;
 use Illuminate\Database\Eloquent\Collection;
@@ -12,16 +12,16 @@ use Illuminate\Support\Facades\DB;
 
 class MealPlanService extends AbstractDomainService
 {
-    protected MealTypeService $mealTypeService;
+    protected MealCategoryService $mealCategoryService;
     protected RecipeService $recipeService;
-    protected CourseTypeService $courseTypeService;
+    protected MenuCategoryService $menuCategoryService;
     protected ImageService $imageService;
 
-    public function __construct(MealTypeService $mealTypeService, RecipeService $recipeService, CourseTypeService $courseTypeService, ImageService $imageService)
+    public function __construct(MealCategoryService $mealCategoryService, RecipeService $recipeService, MenuCategoryService $menuCategoryService, ImageService $imageService)
     {
-        $this->mealTypeService = $mealTypeService;
+        $this->mealCategoryService = $mealCategoryService;
         $this->recipeService = $recipeService;
-        $this->courseTypeService = $courseTypeService;
+        $this->menuCategoryService = $menuCategoryService;
         $this->imageService = $imageService;
     }
 
@@ -37,12 +37,12 @@ class MealPlanService extends AbstractDomainService
 
     protected function getSelectColumns(): array
     {
-        return ['id', 'date', 'meal_type_id'];
+        return ['id', 'date', 'meal_category_id'];
     }
 
     protected function getWithColumns(): array
     {
-        return ['mealType', 'recipes.courseTypes', 'recipes.categories', 'recipes.ingredients'];
+        return ['mealCategory', 'recipes.menuCategories', 'recipes.categories', 'recipes.ingredients'];
     }
 
     protected function getGroupBy(): string | null
@@ -63,9 +63,9 @@ class MealPlanService extends AbstractDomainService
                     'id' => $mealPlan->id,
                     'date' => $mealPlan->date,
                     'category' => [
-                        'id' => $mealPlan->mealType->id,
-                        'name' => $mealPlan->mealType->name,
-                        'colorId' => $mealPlan->mealType->color_id,
+                        'id' => $mealPlan->mealCategory->id,
+                        'name' => $mealPlan->mealCategory->name,
+                        'colorId' => $mealPlan->mealCategory->color_id,
                     ],
                     'menu' => $this->formatMenu($mealPlan->recipes)
                 ];
@@ -82,9 +82,9 @@ class MealPlanService extends AbstractDomainService
             'id' => $item->id,
             'date' => $item->date,
             'category' => [
-                'id' => $item->mealType->id,
-                'name' => $item->mealType->name,
-                'colorId' => $item->mealType->color_id,
+                'id' => $item->mealCategory->id,
+                'name' => $item->mealCategory->name,
+                'colorId' => $item->mealCategory->color_id,
             ],
             'menu' => $this->formatMenu($item->recipes)
         ];
@@ -99,9 +99,9 @@ class MealPlanService extends AbstractDomainService
             'id' => $item->id,
             'date' => $item->date,
             'category' => [
-                'id' => $item->mealType->id,
-                'name' => $item->mealType->name,
-                'colorId' => $item->mealType->color_id,
+                'id' => $item->mealCategory->id,
+                'name' => $item->mealCategory->name,
+                'colorId' => $item->mealCategory->color_id,
             ],
             'menu' => $this->formatMenu($item->recipes)
         ];
@@ -116,9 +116,9 @@ class MealPlanService extends AbstractDomainService
             'id' => $item->id,
             'date' => $item->date,
             'category' => [
-                'id' => $item->mealType->id,
-                'name' => $item->mealType->name,
-                'colorId' => $item->mealType->color_id,
+                'id' => $item->mealCategory->id,
+                'name' => $item->mealCategory->name,
+                'colorId' => $item->mealCategory->color_id,
             ],
             'menu' => $this->formatMenu($item->recipes)
         ];
@@ -127,13 +127,13 @@ class MealPlanService extends AbstractDomainService
     public function create(array $data, Group $group): array
     {
         return DB::transaction(function () use ($data, $group) {
-            // 献立種別の存在チェック
-            $mealType = $this->mealTypeService->findItemsByIds([$data['mealTypeId']], $group);
+            // 献立カテゴリの存在チェック
+            $mealCategory = $this->mealCategoryService->findItemsByIds([$data['mealCategoryId']], $group);
 
             // 献立を作成
             $mealPlan = MealPlan::create([
                 'group_id' => $group->id,
-                'meal_type_id' => $mealType->first()->id,
+                'meal_category_id' => $mealCategory->first()->id,
                 'date' => $data['date'],
             ]);
 
@@ -152,13 +152,13 @@ class MealPlanService extends AbstractDomainService
             //更新対象を取得
             $mealPlan = $this->findItemsByIds([$id], $group)->first();
 
-            // 献立種別の存在チェック
-            $mealType = $this->mealTypeService->findItemsByIds([$data['mealTypeId']], $group);
+            // 献立カテゴリの存在チェック
+            $mealCategory = $this->mealCategoryService->findItemsByIds([$data['mealCategoryId']], $group);
 
             // 献立を更新
             $mealPlan->update([
                 'group_id' => $group->id,
-                'meal_type_id' => $mealType->first()->id,
+                'meal_category_id' => $mealCategory->first()->id,
                 'date' => $data['date'],
             ]);
 
@@ -167,7 +167,7 @@ class MealPlanService extends AbstractDomainService
                 $this->syncRecipes($mealPlan, $data['menu'], $group);
             }
 
-            $item = $mealPlan->fresh(['mealType', 'recipes.courseTypes', 'recipes.categories', 'recipes.ingredients']);
+            $item = $mealPlan->fresh(['mealCategory', 'recipes.menuCategories', 'recipes.categories', 'recipes.ingredients']);
 
             return $this->formatUpdateResponse($item);
         });
@@ -178,12 +178,12 @@ class MealPlanService extends AbstractDomainService
      */
     private function formatMenu($recipes): array
     {
-        return $recipes->groupBy('pivot.course_type_id')->map(function ($recipes, $courseTypeId) {
-            $courseType = CourseType::find($courseTypeId);
+        return $recipes->groupBy('pivot.menu_category_id')->map(function ($recipes, $menuCategoryId) {
+            $menuCategory = MenuCategory::find($menuCategoryId);
             return [
-                'courseType' => [
-                    'id' => $courseType->id,
-                    'name' => $courseType->name
+                'category' => [
+                    'id' => $menuCategory->id,
+                    'name' => $menuCategory->name
                 ],
                 'recipes' => $recipes->map(fn($recipe) => $this->recipeService->formatIndexResponse($recipe))
             ];
@@ -195,15 +195,15 @@ class MealPlanService extends AbstractDomainService
         foreach ($menu as $item) {
             // レシピの存在チェック
             $recipes = $this->recipeService->findItemsByIds($item['recipeIds'], $group);
-            // コース種別の存在チェック
-            $courseTypes = $this->courseTypeService->findItemsByIds([$item['courseTypeId']], $group);
+            // メニューカテゴリの存在チェック
+            $menuCategories = $this->menuCategoryService->findItemsByIds([$item['categoryId']], $group);
 
             // 紐づけ更新
             $attachData = collect($item['recipeIds'])->unique()->map(function ($recipeId) use ($mealPlan, $item) {
                 return [
                     'meal_plan_id' => $mealPlan->id,
                     'recipe_id' => $recipeId,
-                    'course_type_id' => $item['courseTypeId']
+                    'menu_category_id' => $item['categoryId']
                 ];
             });
             $mealPlan->recipes()->sync($attachData);

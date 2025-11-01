@@ -2,7 +2,6 @@
 
 use App\Models\User;
 use App\Models\Group;
-use App\Models\GroupUserMapping;
 use App\Models\ShoppingTag;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -19,19 +18,19 @@ beforeEach(function () {
         'group_size' => 1
     ]);
 
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $this->user->id,
         'group_id' => $this->group->id
     ]);
 
     // ユーザーとグループの関係をリフレッシュ
     $this->user->refresh();
-    $this->user->load('group');
+    $this->user->load('groups');
 });
 
 // ===== index() メソッドのテストケース =====
 
-test('3-12-1: 正常な買い物タグ一覧取得', function () {
+test('3-11-1: 正常な買い物タグ一覧取得', function () {
     // テスト用のタグを作成
     ShoppingTag::create([
         'group_id' => $this->group->id,
@@ -70,7 +69,7 @@ test('3-12-1: 正常な買い物タグ一覧取得', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-12-2: タグデータの取得確認', function () {
+test('3-11-2: タグデータの取得確認', function () {
     // テスト用のタグを作成
     $tag1 = ShoppingTag::create([
         'group_id' => $this->group->id,
@@ -95,7 +94,7 @@ test('3-12-2: タグデータの取得確認', function () {
     expect($responseData[1]['name'])->toBe('お気に入り');
 });
 
-test('3-12-3: タグ総数の確認', function () {
+test('3-11-3: タグ総数の確認', function () {
     // テスト用のタグを作成
     ShoppingTag::create([
         'group_id' => $this->group->id,
@@ -119,7 +118,7 @@ test('3-12-3: タグ総数の確認', function () {
     expect($total)->toBe(3);
 });
 
-test('3-12-4: レスポンス構造確認', function () {
+test('3-11-4: レスポンス構造確認', function () {
     // テスト用のタグを作成
     ShoppingTag::create([
         'group_id' => $this->group->id,
@@ -149,7 +148,7 @@ test('3-12-4: レスポンス構造確認', function () {
     expect($responseData[0]['name'])->toBeString();
 });
 
-test('3-12-5: 空のタグリスト', function () {
+test('3-11-5: 空のタグリスト', function () {
     // タグを作成しない状態でテスト
     $response = $this->actingAs($this->user)->get('/shopping-tags');
 
@@ -170,7 +169,7 @@ test('3-12-5: 空のタグリスト', function () {
     ]);
 });
 
-test('3-12-6: レスポンス形式確認', function () {
+test('3-11-6: レスポンス形式確認', function () {
     // テスト用のタグを作成
     ShoppingTag::create([
         'group_id' => $this->group->id,
@@ -201,7 +200,7 @@ test('3-12-6: レスポンス形式確認', function () {
     expect($response->json('success'))->toBeTrue();
 });
 
-test('3-12-7: タグデータの並び順確認', function () {
+test('3-11-7: タグデータの並び順確認', function () {
     // 複数のタグを作成
     $tag1 = ShoppingTag::create([
         'group_id' => $this->group->id,
@@ -228,7 +227,7 @@ test('3-12-7: タグデータの並び順確認', function () {
     expect($responseData[2]['id'])->toBe($tag3->id);
 });
 
-test('3-12-8: 大量のタグデータ処理', function () {
+test('3-11-8: 大量のタグデータ処理', function () {
     // 大量のタグを作成（50個）
     for ($i = 1; $i <= 50; $i++) {
         ShoppingTag::create([
@@ -251,7 +250,7 @@ test('3-12-8: 大量のタグデータ処理', function () {
     expect($responseData[49]['name'])->toBe('タグ50');
 });
 
-test('3-12-9: 未認証ユーザー', function () {
+test('3-11-9: 未認証ユーザー', function () {
     $response = $this->get('/shopping-tags');
 
     $response->assertStatus(401);
@@ -270,7 +269,7 @@ test('3-12-9: 未認証ユーザー', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-12-10: グループが存在しない', function () {
+test('3-11-10: グループが存在しない', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -294,7 +293,7 @@ test('3-12-10: グループが存在しない', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-12-11: データベース接続エラー', function () {
+test('3-11-11: データベース接続エラー', function () {
     DB::shouldReceive('connection')->andThrow(new \Exception('Database connection failed'));
 
     $response = $this->actingAs($this->user)->get('/shopping-tags');

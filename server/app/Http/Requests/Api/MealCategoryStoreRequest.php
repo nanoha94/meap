@@ -4,7 +4,7 @@ namespace App\Http\Requests\Api;
 
 use App\Http\Requests\Api\BaseApiRequest;
 
-class MealTypeStoreRequest extends BaseApiRequest
+class MealCategoryStoreRequest extends BaseApiRequest
 {
 
     /**
@@ -48,6 +48,6 @@ class MealTypeStoreRequest extends BaseApiRequest
      */
     protected function getOperationKey(): string
     {
-        return __('operations.meal_type.store');
+        return __('operations.meal_category.store');
     }
 }

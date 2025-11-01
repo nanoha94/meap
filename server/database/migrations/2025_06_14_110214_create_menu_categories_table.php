@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('course_types', function (Blueprint $table) {
+        Schema::create('menu_categories', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('group_id')->constrained('groups', 'id')->cascadeOnDelete();
             $table->string('name');
@@ -25,10 +25,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('course_types', function (Blueprint $table) {
+        Schema::table('menu_categories', function (Blueprint $table) {
             $table->dropForeign(['group_id']);
         });
 
-        Schema::dropIfExists('course_types');
+        Schema::dropIfExists('menu_categories');
     }
 };

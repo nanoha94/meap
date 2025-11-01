@@ -3,6 +3,7 @@
 return [
     'auth' => [
         'login' => 'Login',
+        'register' => 'User registration',
         'register_user' => 'User registration',
         'email_verification_notification' => 'Resend email verification link',
         'email_verification' => 'Email verification process',
@@ -23,10 +24,11 @@ return [
         'update' => 'Meal plan update',
         'destroy' => 'Meal plan deletion',
     ],
-    'meal_type' => [
-        'store' => 'Meal type creation',
-        'bulk_update' => 'Meal type bulk update',
-        'destroy' => 'Meal type deletion',
+    'meal_category' => [
+        'index' => 'Meal category list retrieval',
+        'store' => 'Meal category creation',
+        'bulk_update' => 'Meal category bulk update',
+        'destroy' => 'Meal category deletion',
     ],
     'image' => [
         'bulk_upload' => 'Bulk image upload',

@@ -2,7 +2,6 @@
 
 use App\Models\User;
 use App\Models\Group;
-use App\Models\GroupUserMapping;
 use App\Models\Color;
 use App\Services\UserService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -23,7 +22,7 @@ beforeEach(function () {
     }
 });
 
-test('3-1-1: 【一覧取得】 正常なユーザー一覧取得', function () {
+test('3-12-1: 【一覧取得】 正常なユーザー一覧取得', function () {
     // ユーザーとグループを作成（メール認証済み）
     $user = User::factory()->create([
         'email_verified_at' => now()
@@ -35,7 +34,7 @@ test('3-1-1: 【一覧取得】 正常なユーザー一覧取得', function () 
     ]);
 
     // ユーザーをグループに所属させる
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $group->id
     ]);
@@ -84,7 +83,7 @@ test('3-1-1: 【一覧取得】 正常なユーザー一覧取得', function () 
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-1-2: 【一覧取得】 グループ内ユーザー情報の確認', function () {
+test('3-12-2: 【一覧取得】 グループ内ユーザー情報の確認', function () {
     // ユーザーとグループを作成（メール認証済み）
     $user1 = User::factory()->create([
         'name' => 'User 1',
@@ -101,11 +100,11 @@ test('3-1-2: 【一覧取得】 グループ内ユーザー情報の確認', fun
     ]);
 
     // 両ユーザーを同じグループに所属させる
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user1->id,
         'group_id' => $group->id
     ]);
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user2->id,
         'group_id' => $group->id
     ]);
@@ -131,7 +130,7 @@ test('3-1-2: 【一覧取得】 グループ内ユーザー情報の確認', fun
     ]);
 });
 
-test('3-1-3: 【一覧取得】 ユーザー情報フォーマット確認', function () {
+test('3-12-3: 【一覧取得】 ユーザー情報フォーマット確認', function () {
     $user = User::factory()->create([
         'name' => 'Test User',
         'language' => 'ja',
@@ -147,7 +146,7 @@ test('3-1-3: 【一覧取得】 ユーザー情報フォーマット確認', fun
         'group_size' => 1
     ]);
 
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $group->id
     ]);
@@ -193,7 +192,7 @@ test('3-1-3: 【一覧取得】 ユーザー情報フォーマット確認', fun
     ]);
 });
 
-test('3-1-4: 【一覧取得】 未認証ユーザー', function () {
+test('3-12-4: 【一覧取得】 未認証ユーザー', function () {
     $response = $this->get('/users');
 
     $response->assertStatus(401);
@@ -212,7 +211,7 @@ test('3-1-4: 【一覧取得】 未認証ユーザー', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-1-5: 【一覧取得】 グループが存在しない', function () {
+test('3-12-5: 【一覧取得】 グループが存在しない', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -236,7 +235,7 @@ test('3-1-5: 【一覧取得】 グループが存在しない', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-1-6: 【一覧取得】 データベース接続エラー', function () {
+test('3-12-6: 【一覧取得】 データベース接続エラー', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -246,7 +245,7 @@ test('3-1-6: 【一覧取得】 データベース接続エラー', function () 
         'group_size' => 1
     ]);
 
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $group->id
     ]);
@@ -275,7 +274,7 @@ test('3-1-6: 【一覧取得】 データベース接続エラー', function () 
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-1-7: 【一覧取得】 UserService 例外', function () {
+test('3-12-7: 【一覧取得】 UserService 例外', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -285,7 +284,7 @@ test('3-1-7: 【一覧取得】 UserService 例外', function () {
         'group_size' => 1
     ]);
 
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $group->id
     ]);
@@ -314,7 +313,7 @@ test('3-1-7: 【一覧取得】 UserService 例外', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-1-8: 【一覧取得】 グループに 1 人のみの場合', function () {
+test('3-12-8: 【一覧取得】 グループに 1 人のみの場合', function () {
     $user = User::factory()->create([
         'name' => 'Single User',
         'email_verified_at' => now()
@@ -325,7 +324,7 @@ test('3-1-8: 【一覧取得】 グループに 1 人のみの場合', function 
         'group_size' => 1
     ]);
 
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $group->id
     ]);

@@ -3,13 +3,13 @@
 namespace App\Services;
 
 use App\Models\Group;
-use App\Models\MealType;
+use App\Models\MealCategory;
 use App\Services\AbstractDomainService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class MealTypeService extends AbstractDomainService
+class MealCategoryService extends AbstractDomainService
 {
     protected function getUpdateFields(): array
     {
@@ -32,12 +32,12 @@ class MealTypeService extends AbstractDomainService
 
     protected function getResourceName(): string
     {
-        return __('api.attributes.meal_type');
+        return __('api.attributes.meal_category');
     }
 
     protected function getGroupRelation(Group $group): HasMany
     {
-        return $group->mealTypes();
+        return $group->mealCategories();
     }
 
     protected function getCreateFields(): array
@@ -52,7 +52,7 @@ class MealTypeService extends AbstractDomainService
     protected function formatIndexResponse(Model|Collection $item): array
     {
         // 型チェック
-        $this->typeCheck($item, MealType::class);
+        $this->typeCheck($item, MealCategory::class);
 
         return [
             'id' => $item->id,
@@ -65,7 +65,7 @@ class MealTypeService extends AbstractDomainService
     protected function formatStoreResponse(Model $item): array
     {
         // 型チェック
-        $this->typeCheck($item, MealType::class);
+        $this->typeCheck($item, MealCategory::class);
 
         return [
             'id' => $item->id,
@@ -78,7 +78,7 @@ class MealTypeService extends AbstractDomainService
     protected function formatUpdateResponse(Model $item): array
     {
         // 型チェック
-        $this->typeCheck($item, MealType::class);
+        $this->typeCheck($item, MealCategory::class);
 
         return [
             'id' => $item->id,

@@ -64,7 +64,7 @@ entity recipe_ingredient_mappings {
     * order : int / ソート順
 }
 
-entity courses {
+entity menu_categories {
     * id : string <<generated>>
     ---
     * name : string / 種別（主食、主菜、副菜、汁物、その他）
@@ -88,7 +88,7 @@ entity groups {
 entity meal_plan_recipe_mappings {
     * meal_plan_id : string <<FK>>
     * recipe_id : string <<FK>>
-    * course_id : string <<FK>>
+    * menu_category_id : string <<FK>>
 }
 
 entity meal_plans {
@@ -96,11 +96,11 @@ entity meal_plans {
     ---
     * date : date
     * group_id : string <<FK>>
-    * meal_type_id : string <<FK>>
+    * meal_category_id : string <<FK>>
 }
 
 
-entity meal_types {
+entity meal_categories {
     * id : string <<generated>>
     --
     * name : string
@@ -207,16 +207,16 @@ shopping_categories ||--o{ shopping_items
 shopping_items ||--o{ shopping_item_tag_mappings
 shopping_tags }o--|| shopping_item_tag_mappings
 
-groups ||--o{ meal_types
-meal_types |o--|| colors
+groups ||--o{ meal_categories
+meal_categories |o--|| colors
 
 meal_plans }o--|| groups
-meal_plans }o--|| meal_types
+meal_plans }o--|| meal_categories
 recipes }o--|| groups
-courses }o--|| groups
+menu_categories }o--|| groups
 recipes ||--o{ meal_plan_recipe_mappings
 meal_plans ||--o{ meal_plan_recipe_mappings
-meal_plan_recipe_mappings }o--|| courses
+meal_plan_recipe_mappings }o--|| menu_categories
 
 recipes ||--o{ recipe_step_mappings
 recipe_step_mappings }o--|| recipe_steps
@@ -244,8 +244,8 @@ note left of meal_plans
   献立情報を管理する。
 end note
 
-note left of meal_types
-  献立種別を管理する。（朝食、昼食、夕食など）
+note left of meal_categories
+  献立カテゴリを管理する。（朝食、昼食、夕食など）
 end note
 
 note right of recipes
@@ -256,7 +256,7 @@ note bottom of recipe_steps
   料理手順を管理する。
 end note
 
-note top of courses
+note top of menu_categories
   料理分類を管理する。（料理カテゴリとは別物）
 end note
 

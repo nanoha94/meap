@@ -123,7 +123,17 @@ trait LoggingTrait
         array $additionalContext = [],
     ): void {
         $user = $request?->user();
-        $group = $user?->group;
+        $group = null;
+
+        // $userがUserモデルのインスタンスで、groups()メソッドが存在する場合のみ取得
+        if ($user && method_exists($user, 'groups')) {
+            try {
+                $group = $user->groups()->first();
+            } catch (\Exception $e) {
+                // groups()の呼び出しに失敗した場合は無視
+                $group = null;
+            }
+        }
 
         $context = [
             'method' => $callerMethod,

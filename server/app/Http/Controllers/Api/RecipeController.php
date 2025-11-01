@@ -47,7 +47,7 @@ class RecipeController extends ApiController
         return $this->executeWithExceptionHandling(
             function () use ($request) {
                 $user = $request->user();
-                $group = $user->group;
+                $group = $user->groups()->first();
 
                 // ページネーションのパラメータを取得（デフォルト値も設定）
                 $perPage = $request->input('per_page', 15);
@@ -84,7 +84,7 @@ class RecipeController extends ApiController
 
         return $this->executeWithExceptionHandling(
             function () use ($request) {
-                $res = $this->recipeService->create($request->validated(), $request->user()->group);
+                $res = $this->recipeService->create($request->validated(), $this->getUserGroup($request));
                 $message = __('api.created', ['attribute' => __('api.attributes.recipe'), 'name' => $request->name]);
                 return $this->createdResponse($res, $message);
             },
@@ -113,7 +113,7 @@ class RecipeController extends ApiController
 
         return $this->executeWithExceptionHandling(
             function () use ($request, $id) {
-                $res = $this->recipeService->show($id, $request->user()->group);
+                $res = $this->recipeService->show($id, $this->getUserGroup($request));
                 $message = __('api.retrieved', ['attribute' => __('api.attributes.recipe'), 'name' => $res['name']]);
                 return $this->showResponse($res, $message);
             },
@@ -143,7 +143,11 @@ class RecipeController extends ApiController
 
         return $this->executeWithExceptionHandling(
             function () use ($request, $id) {
-                $res = $this->recipeService->update($id, $request->validated(), $request->user()->group);
+                $res = $this->recipeService->update(
+                    $id,
+                    $request->validated(),
+                    $this->getUserGroup($request)
+                );
                 $message = __('api.updated', ['attribute' => __('api.attributes.recipe'), 'name' => $res['name']]);
                 return $this->updatedResponse($res, $message);
             },
@@ -172,7 +176,7 @@ class RecipeController extends ApiController
 
         return $this->executeWithExceptionHandling(
             function () use ($request, $id) {
-                $deletedRecipe = $this->recipeService->delete($id, $request->user()->group);
+                $deletedRecipe = $this->recipeService->delete($id, $this->getUserGroup($request));
                 $message = __('api.deleted', ['attribute' => __('api.attributes.recipe'), 'name' => $deletedRecipe->name ?? '']);
                 return $this->deletedResponse($message);
             },

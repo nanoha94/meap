@@ -37,7 +37,7 @@ class ShoppingCategoryController extends ApiController
 
         return $this->executeWithExceptionHandling(
             function () use ($request) {
-                $res = $this->shoppingCategoryService->index($request->user()->group);
+                $res = $this->shoppingCategoryService->index($this->getUserGroup($request));
                 $total = count($res);
                 $message = __('api.list_retrieved', ['attribute' => __('api.attributes.shopping.category'), 'count' => $total]);
                 return $this->indexResponse($res, $total, $message);
@@ -69,7 +69,7 @@ class ShoppingCategoryController extends ApiController
             function () use ($request) {
                 $res = $this->shoppingCategoryService->create(
                     $request->validated(),
-                    $request->user()->group
+                    $this->getUserGroup($request)
                 );
                 $message = __('api.created', ['attribute' => __('api.attributes.shopping.category'), 'name' => $request->name]);
                 return $this->createdResponse($res, $message);
@@ -101,7 +101,7 @@ class ShoppingCategoryController extends ApiController
             function () use ($request) {
                 $res = $this->shoppingCategoryService->bulkUpdate(
                     $request->validated()['data'],
-                    $request->user()->group
+                    $this->getUserGroup($request)
                 );
                 $total = count($res);
                 $message = __('api.bulk_updated', ['attribute' => __('api.attributes.shopping.category'), 'count' => $total]);
@@ -136,7 +136,7 @@ class ShoppingCategoryController extends ApiController
 
                 $deletedCount = $this->shoppingCategoryService->bulkDelete(
                     $validated['ids'],
-                    $request->user()->group
+                    $this->getUserGroup($request)
                 );
                 $message = __('api.bulk_deleted', ['attribute' => __('api.attributes.shopping.category'), 'count' => $deletedCount]);
                 return $this->deletedResponse($message);

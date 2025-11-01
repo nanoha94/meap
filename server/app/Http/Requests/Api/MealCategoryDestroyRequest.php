@@ -4,7 +4,7 @@ namespace App\Http\Requests\Api;
 
 use App\Http\Requests\Api\BaseApiRequest;
 
-class GroupUserIndexRequest extends BaseApiRequest
+class MealCategoryDestroyRequest extends BaseApiRequest
 {
     /**
      * Get the operation key for error handling.
@@ -13,6 +13,6 @@ class GroupUserIndexRequest extends BaseApiRequest
      */
     protected function getOperationKey(): string
     {
-        return __('operations.user.index');
+        return __('operations.meal_category.destroy');
     }
 }

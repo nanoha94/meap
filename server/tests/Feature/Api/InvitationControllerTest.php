@@ -2,7 +2,6 @@
 
 use App\Models\User;
 use App\Models\Group;
-use App\Models\GroupUserMapping;
 use App\Models\InvitationToken;
 use App\Models\Color;
 use App\Services\InvitationTokenService;
@@ -29,14 +28,14 @@ beforeEach(function () {
 
 // ==================== store() トークン生成テストケース ====================
 
-test('3-4-1: 【トークン生成】 正常な招待トークン生成', function () {
+test('3-3-1: 【トークン生成】 正常な招待トークン生成', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
     $group = Group::create([
         'group_size' => 1
     ]);
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $group->id
     ]);
@@ -68,14 +67,14 @@ test('3-4-1: 【トークン生成】 正常な招待トークン生成', functi
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-4-2: 【トークン生成】 トークン有効期限設定確認', function () {
+test('3-3-2: 【トークン生成】 トークン有効期限設定確認', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
     $group = Group::create([
         'group_size' => 1
     ]);
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $group->id
     ]);
@@ -92,7 +91,7 @@ test('3-4-2: 【トークン生成】 トークン有効期限設定確認', fun
     expect($expiresAt->lessThanOrEqualTo($afterTime))->toBeTrue();
 });
 
-test('3-4-3: 【トークン生成】 未認証ユーザー', function () {
+test('3-3-3: 【トークン生成】 未認証ユーザー', function () {
     $response = $this->post('/invitations');
 
     $response->assertStatus(401);
@@ -111,7 +110,7 @@ test('3-4-3: 【トークン生成】 未認証ユーザー', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-4-4: 【トークン生成】 グループが存在しない', function () {
+test('3-3-4: 【トークン生成】 グループが存在しない', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -135,14 +134,14 @@ test('3-4-4: 【トークン生成】 グループが存在しない', function 
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-4-5: 【トークン生成】 データベース接続エラー', function () {
+test('3-3-5: 【トークン生成】 データベース接続エラー', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
     $group = Group::create([
         'group_size' => 1
     ]);
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $group->id
     ]);
@@ -168,14 +167,14 @@ test('3-4-5: 【トークン生成】 データベース接続エラー', functi
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-4-6: 【トークン生成】 トークン生成失敗', function () {
+test('3-3-6: 【トークン生成】 トークン生成失敗', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
     $group = Group::create([
         'group_size' => 1
     ]);
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $group->id
     ]);
@@ -200,14 +199,14 @@ test('3-4-6: 【トークン生成】 トークン生成失敗', function () {
     ]);
 });
 
-test('3-4-7: 【トークン生成】 トークン衝突時の再試行成功', function () {
+test('3-3-7: 【トークン生成】 トークン衝突時の再試行成功', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
     $group = Group::create([
         'group_size' => 1
     ]);
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $group->id
     ]);
@@ -235,14 +234,14 @@ test('3-4-7: 【トークン生成】 トークン衝突時の再試行成功', 
     expect($data['token'])->toBeString();
 });
 
-test('3-4-8: 【トークン生成】 最大試行回数超過による失敗', function () {
+test('3-3-8: 【トークン生成】 最大試行回数超過による失敗', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
     $group = Group::create([
         'group_size' => 1
     ]);
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $group->id
     ]);
@@ -266,7 +265,7 @@ test('3-4-8: 【トークン生成】 最大試行回数超過による失敗', 
 
 // ==================== show() トークン詳細取得テストケース ====================
 
-test('3-4-9: 【トークン詳細取得】 正常な招待トークン詳細取得', function () {
+test('3-3-9: 【トークン詳細取得】 正常な招待トークン詳細取得', function () {
     $inviter = User::factory()->create([
         'name' => 'Inviter User',
         'email_verified_at' => now()
@@ -274,7 +273,7 @@ test('3-4-9: 【トークン詳細取得】 正常な招待トークン詳細取
     $group = Group::create([
         'group_size' => 1
     ]);
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $inviter->id,
         'group_id' => $group->id
     ]);
@@ -290,7 +289,7 @@ test('3-4-9: 【トークン詳細取得】 正常な招待トークン詳細取
     $userGroup = Group::create([
         'group_size' => 1
     ]);
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $userGroup->id
     ]);
@@ -322,7 +321,7 @@ test('3-4-9: 【トークン詳細取得】 正常な招待トークン詳細取
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-4-10: 【トークン詳細取得】 招待者情報の取得確認', function () {
+test('3-3-10: 【トークン詳細取得】 招待者情報の取得確認', function () {
     $inviter = User::factory()->create([
         'name' => 'Test Inviter',
         'avatar_seed' => 'test-seed',
@@ -331,7 +330,7 @@ test('3-4-10: 【トークン詳細取得】 招待者情報の取得確認', fu
     $group = Group::create([
         'group_size' => 1
     ]);
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $inviter->id,
         'group_id' => $group->id
     ]);
@@ -346,7 +345,7 @@ test('3-4-10: 【トークン詳細取得】 招待者情報の取得確認', fu
     $userGroup = Group::create([
         'group_size' => 1
     ]);
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $userGroup->id
     ]);
@@ -362,14 +361,14 @@ test('3-4-10: 【トークン詳細取得】 招待者情報の取得確認', fu
     expect($data['inviter']['avatar'])->toHaveKey('seed');
 });
 
-test('3-4-11: 【トークン詳細取得】 トークン詳細レスポンス確認', function () {
+test('3-3-11: 【トークン詳細取得】 トークン詳細レスポンス確認', function () {
     $inviter = User::factory()->create([
         'email_verified_at' => now()
     ]);
     $group = Group::create([
         'group_size' => 1
     ]);
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $inviter->id,
         'group_id' => $group->id
     ]);
@@ -385,7 +384,7 @@ test('3-4-11: 【トークン詳細取得】 トークン詳細レスポンス�
     $userGroup = Group::create([
         'group_size' => 1
     ]);
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $userGroup->id
     ]);
@@ -401,7 +400,7 @@ test('3-4-11: 【トークン詳細取得】 トークン詳細レスポンス�
     expect($data['inviter'])->toHaveKeys(['id', 'name', 'avatar']);
 });
 
-test('3-4-12: 【トークン詳細取得】 未認証ユーザー', function () {
+test('3-3-12: 【トークン詳細取得】 未認証ユーザー', function () {
     $response = $this->get('/invitations/some-token');
 
     $response->assertStatus(401);
@@ -420,14 +419,14 @@ test('3-4-12: 【トークン詳細取得】 未認証ユーザー', function ()
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-4-13: 【トークン詳細取得】 無効なトークンでの詳細取得', function () {
+test('3-3-13: 【トークン詳細取得】 無効なトークンでの詳細取得', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
     $userGroup = Group::create([
         'group_size' => 1
     ]);
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $userGroup->id
     ]);
@@ -450,14 +449,14 @@ test('3-4-13: 【トークン詳細取得】 無効なトークンでの詳細�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-4-14: 【トークン詳細取得】 ハッシュチェック失敗', function () {
+test('3-3-14: 【トークン詳細取得】 ハッシュチェック失敗', function () {
     $inviter = User::factory()->create([
         'email_verified_at' => now()
     ]);
     $group = Group::create([
         'group_size' => 1
     ]);
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $inviter->id,
         'group_id' => $group->id
     ]);
@@ -475,7 +474,7 @@ test('3-4-14: 【トークン詳細取得】 ハッシュチェック失敗', fu
     $userGroup = Group::create([
         'group_size' => 1
     ]);
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $userGroup->id
     ]);
@@ -493,7 +492,7 @@ test('3-4-14: 【トークン詳細取得】 ハッシュチェック失敗', fu
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-4-15: 【トークン詳細取得】 データベース接続エラー', function () {
+test('3-3-15: 【トークン詳細取得】 データベース接続エラー', function () {
     // 先にテストデータを作成
     $user = User::factory()->create([
         'email_verified_at' => now()
@@ -501,7 +500,7 @@ test('3-4-15: 【トークン詳細取得】 データベース接続エラー',
     $userGroup = Group::create([
         'group_size' => 1
     ]);
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $userGroup->id
     ]);
@@ -512,7 +511,7 @@ test('3-4-15: 【トークン詳細取得】 データベース接続エラー',
     $group = Group::create([
         'group_size' => 1
     ]);
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $inviter->id,
         'group_id' => $group->id
     ]);
@@ -543,14 +542,14 @@ test('3-4-15: 【トークン詳細取得】 データベース接続エラー',
 
 // ==================== join() グループ参加テストケース ====================
 
-test('3-4-16: 【グループ参加】 正常なグループ参加', function () {
+test('3-3-16: 【グループ参加】 正常なグループ参加', function () {
     $inviter = User::factory()->create([
         'email_verified_at' => now()
     ]);
     $inviterGroup = Group::create([
         'group_size' => 1
     ]);
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $inviter->id,
         'group_id' => $inviterGroup->id
     ]);
@@ -561,7 +560,7 @@ test('3-4-16: 【グループ参加】 正常なグループ参加', function ()
     $joinUserGroup = Group::create([
         'group_size' => 1
     ]);
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $joinUser->id,
         'group_id' => $joinUserGroup->id
     ]);
@@ -596,14 +595,14 @@ test('3-4-16: 【グループ参加】 正常なグループ参加', function ()
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-4-17: 【グループ参加】 グループサイズ更新確認', function () {
+test('3-3-17: 【グループ参加】 グループサイズ更新確認', function () {
     $inviter = User::factory()->create([
         'email_verified_at' => now()
     ]);
     $inviterGroup = Group::create([
         'group_size' => 1
     ]);
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $inviter->id,
         'group_id' => $inviterGroup->id
     ]);
@@ -614,7 +613,7 @@ test('3-4-17: 【グループ参加】 グループサイズ更新確認', funct
     $joinUserGroup = Group::create([
         'group_size' => 1
     ]);
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $joinUser->id,
         'group_id' => $joinUserGroup->id
     ]);
@@ -637,14 +636,14 @@ test('3-4-17: 【グループ参加】 グループサイズ更新確認', funct
     expect(Group::find($joinUserGroup->id))->toBeNull();
 });
 
-test('3-4-18: 【グループ参加】 空グループの削除確認', function () {
+test('3-3-18: 【グループ参加】 空グループの削除確認', function () {
     $inviter = User::factory()->create([
         'email_verified_at' => now()
     ]);
     $inviterGroup = Group::create([
         'group_size' => 1
     ]);
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $inviter->id,
         'group_id' => $inviterGroup->id
     ]);
@@ -655,7 +654,7 @@ test('3-4-18: 【グループ参加】 空グループの削除確認', function
     $joinUserGroup = Group::create([
         'group_size' => 1
     ]);
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $joinUser->id,
         'group_id' => $joinUserGroup->id
     ]);
@@ -681,14 +680,14 @@ test('3-4-18: 【グループ参加】 空グループの削除確認', function
     expect(Group::find($oldGroupId))->toBeNull();
 });
 
-test('3-4-19: 【グループ参加】 元グループの保持確認', function () {
+test('3-3-19: 【グループ参加】 元グループの保持確認', function () {
     $inviter = User::factory()->create([
         'email_verified_at' => now()
     ]);
     $inviterGroup = Group::create([
         'group_size' => 1
     ]);
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $inviter->id,
         'group_id' => $inviterGroup->id
     ]);
@@ -703,11 +702,11 @@ test('3-4-19: 【グループ参加】 元グループの保持確認', function
     $joinUserGroup = Group::create([
         'group_size' => 2
     ]);
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $joinUser->id,
         'group_id' => $joinUserGroup->id
     ]);
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $otherUser->id,
         'group_id' => $joinUserGroup->id
     ]);
@@ -737,7 +736,7 @@ test('3-4-19: 【グループ参加】 元グループの保持確認', function
     expect($joinUserGroup->group_size)->toBe(1);
 });
 
-test('3-4-20: 【グループ参加】 未認証ユーザー', function () {
+test('3-3-20: 【グループ参加】 未認証ユーザー', function () {
     $response = $this->post('/invitations/some-token/join');
 
     $response->assertStatus(401);
@@ -756,14 +755,14 @@ test('3-4-20: 【グループ参加】 未認証ユーザー', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-4-21: 【グループ参加】 無効なトークンでの参加', function () {
+test('3-3-21: 【グループ参加】 無効なトークンでの参加', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
     $group = Group::create([
         'group_size' => 1
     ]);
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $group->id
     ]);
@@ -780,14 +779,14 @@ test('3-4-21: 【グループ参加】 無効なトークンでの参加', funct
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-4-22: 【グループ参加】 ハッシュチェック失敗', function () {
+test('3-3-22: 【グループ参加】 ハッシュチェック失敗', function () {
     $inviter = User::factory()->create([
         'email_verified_at' => now()
     ]);
     $inviterGroup = Group::create([
         'group_size' => 1
     ]);
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $inviter->id,
         'group_id' => $inviterGroup->id
     ]);
@@ -805,7 +804,7 @@ test('3-4-22: 【グループ参加】 ハッシュチェック失敗', function
     $group = Group::create([
         'group_size' => 1
     ]);
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $group->id
     ]);
@@ -823,14 +822,14 @@ test('3-4-22: 【グループ参加】 ハッシュチェック失敗', function
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-4-23: 【グループ参加】 有効期限切れトークンでの参加', function () {
+test('3-3-23: 【グループ参加】 有効期限切れトークンでの参加', function () {
     $inviter = User::factory()->create([
         'email_verified_at' => now()
     ]);
     $inviterGroup = Group::create([
         'group_size' => 1
     ]);
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $inviter->id,
         'group_id' => $inviterGroup->id
     ]);
@@ -850,7 +849,7 @@ test('3-4-23: 【グループ参加】 有効期限切れトークンでの参�
     $group = Group::create([
         'group_size' => 1
     ]);
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $group->id
     ]);
@@ -867,14 +866,14 @@ test('3-4-23: 【グループ参加】 有効期限切れトークンでの参�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-4-24: 【グループ参加】 自分自身のトークンでの参加', function () {
+test('3-3-24: 【グループ参加】 自分自身のトークンでの参加', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
     $group = Group::create([
         'group_size' => 1
     ]);
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $group->id
     ]);
@@ -895,14 +894,14 @@ test('3-4-24: 【グループ参加】 自分自身のトークンでの参加',
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-4-25: 【グループ参加】 既に同じグループにいる場合', function () {
+test('3-3-25: 【グループ参加】 既に同じグループにいる場合', function () {
     $inviter = User::factory()->create([
         'email_verified_at' => now()
     ]);
     $group = Group::create([
         'group_size' => 2
     ]);
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $inviter->id,
         'group_id' => $group->id
     ]);
@@ -910,7 +909,7 @@ test('3-4-25: 【グループ参加】 既に同じグループにいる場合',
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $group->id
     ]);
@@ -931,14 +930,14 @@ test('3-4-25: 【グループ参加】 既に同じグループにいる場合',
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-4-26: 【グループ参加】 他のグループに所属している場合', function () {
+test('3-3-26: 【グループ参加】 他のグループに所属している場合', function () {
     $inviter = User::factory()->create([
         'email_verified_at' => now()
     ]);
     $inviterGroup = Group::create([
         'group_size' => 1
     ]);
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $inviter->id,
         'group_id' => $inviterGroup->id
     ]);
@@ -953,11 +952,11 @@ test('3-4-26: 【グループ参加】 他のグループに所属している�
     $userGroup = Group::create([
         'group_size' => 2
     ]);
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $userGroup->id
     ]);
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $otherUser->id,
         'group_id' => $userGroup->id
     ]);
@@ -979,14 +978,14 @@ test('3-4-26: 【グループ参加】 他のグループに所属している�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-4-27: 【グループ参加】 既存データがある場合の参加', function () {
+test('3-3-27: 【グループ参加】 既存データがある場合の参加', function () {
     $inviter = User::factory()->create([
         'email_verified_at' => now()
     ]);
     $inviterGroup = Group::create([
         'group_size' => 1
     ]);
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $inviter->id,
         'group_id' => $inviterGroup->id
     ]);
@@ -997,7 +996,7 @@ test('3-4-27: 【グループ参加】 既存データがある場合の参加',
     $userGroup = Group::create([
         'group_size' => 1
     ]);
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $userGroup->id
     ]);
@@ -1038,14 +1037,14 @@ test('3-4-27: 【グループ参加】 既存データがある場合の参加',
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-4-28: 【グループ参加】 データベース接続エラー', function () {
+test('3-3-28: 【グループ参加】 データベース接続エラー', function () {
     $inviter = User::factory()->create([
         'email_verified_at' => now()
     ]);
     $inviterGroup = Group::create([
         'group_size' => 1
     ]);
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $inviter->id,
         'group_id' => $inviterGroup->id
     ]);
@@ -1056,7 +1055,7 @@ test('3-4-28: 【グループ参加】 データベース接続エラー', funct
     $userGroup = Group::create([
         'group_size' => 1
     ]);
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $userGroup->id
     ]);
@@ -1087,14 +1086,14 @@ test('3-4-28: 【グループ参加】 データベース接続エラー', funct
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-4-29: 【グループ参加】 GroupUserMapping 作成失敗', function () {
+test('3-3-29: 【グループ参加】 GroupUserMapping 作成失敗', function () {
     $inviter = User::factory()->create([
         'email_verified_at' => now()
     ]);
     $inviterGroup = Group::create([
         'group_size' => 1
     ]);
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $inviter->id,
         'group_id' => $inviterGroup->id
     ]);
@@ -1105,7 +1104,7 @@ test('3-4-29: 【グループ参加】 GroupUserMapping 作成失敗', function 
     $userGroup = Group::create([
         'group_size' => 1
     ]);
-    GroupUserMapping::create([
+    DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $userGroup->id
     ]);

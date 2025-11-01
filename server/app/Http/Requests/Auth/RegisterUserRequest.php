@@ -18,7 +18,7 @@ class RegisterUserRequest extends BaseAuthRequest
     {
         // ログイン状態をチェック
         if (Auth::check()) {
-            throw new HttpException(HttpStatusCode::CONFLICT->value, __('auth.already_logged_in'));
+            throw new HttpException(HttpStatusCode::CONFLICT->value, __('auth.general.already_logged_in'));
         }
 
         return true;

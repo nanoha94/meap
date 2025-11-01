@@ -1,6 +1,8 @@
 <?php
 
 use App\Enums\HttpStatusCode;
+use App\Models\User;
+use App\Models\Group;
 use App\Traits\LoggingTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -37,11 +39,18 @@ beforeEach(function () {
 test('1-4-1: 基本動作テスト', function () {
     $request = Request::create('/test', 'GET');
 
-    // ユーザー情報をシミュレート
-    $user = new stdClass();
+    // ユーザー情報をシミュレート（groups()メソッドを持つモック）
+    $group = new Group();
+    $group->id = 100;
+
+    $relationBuilder = \Mockery::mock();
+    $relationBuilder->shouldReceive('first')
+        ->andReturn($group);
+
+    $user = \Mockery::mock(User::class)->makePartial();
     $user->id = 1;
-    $user->group = new stdClass();
-    $user->group->id = 100;
+    $user->shouldReceive('groups')
+        ->andReturn($relationBuilder);
 
     $request->setUserResolver(function () use ($user) {
         return $user;
@@ -65,10 +74,17 @@ test('1-4-1: 基本動作テスト', function () {
 test('1-4-2: リクエスト情報記録テスト', function () {
     $request = Request::create('/api/test?param=value', 'POST');
 
-    $user = new stdClass();
+    $group = new Group();
+    $group->id = 400;
+
+    $relationBuilder = \Mockery::mock();
+    $relationBuilder->shouldReceive('first')
+        ->andReturn($group);
+
+    $user = \Mockery::mock(User::class)->makePartial();
     $user->id = 5;
-    $user->group = new stdClass();
-    $user->group->id = 400;
+    $user->shouldReceive('groups')
+        ->andReturn($relationBuilder);
 
     $request->setUserResolver(function () use ($user) {
         return $user;
@@ -90,15 +106,6 @@ test('1-4-2: リクエスト情報記録テスト', function () {
 
 test('1-4-3: 警告ログ出力テスト', function () {
     $request = Request::create('/test', 'PUT');
-
-    $user = new stdClass();
-    $user->id = 3;
-    $user->group = new stdClass();
-    $user->group->id = 200;
-
-    $request->setUserResolver(function () use ($user) {
-        return $user;
-    });
 
     // 警告ログが正しく呼ばれることを確認
     // logWarningはrequestを受け取らないため、リクエスト情報はnullになる
@@ -122,9 +129,15 @@ test('1-4-3: 警告ログ出力テスト', function () {
 test('1-4-4: エラーログ出力テスト', function () {
     $request = Request::create('/test', 'POST');
 
-    $user = new stdClass();
+    // グループがないユーザーをシミュレート
+    $relationBuilder = \Mockery::mock();
+    $relationBuilder->shouldReceive('first')
+        ->andReturn(null);
+
+    $user = \Mockery::mock(User::class)->makePartial();
     $user->id = 2;
-    $user->group = null;
+    $user->shouldReceive('groups')
+        ->andReturn($relationBuilder);
 
     $request->setUserResolver(function () use ($user) {
         return $user;
@@ -153,10 +166,17 @@ test('1-4-4: エラーログ出力テスト', function () {
 test('1-4-5: ログメッセージ統合テスト', function () {
     $request = Request::create('/test', 'GET');
 
-    $user = new stdClass();
+    $group = new Group();
+    $group->id = 600;
+
+    $relationBuilder = \Mockery::mock();
+    $relationBuilder->shouldReceive('first')
+        ->andReturn($group);
+
+    $user = \Mockery::mock(User::class)->makePartial();
     $user->id = 6;
-    $user->group = new stdClass();
-    $user->group->id = 600;
+    $user->shouldReceive('groups')
+        ->andReturn($relationBuilder);
 
     $request->setUserResolver(function () use ($user) {
         return $user;
@@ -183,10 +203,17 @@ test('1-4-6: 機密情報フィルタリングテスト', function () {
         'secret' => 'somesecret'
     ]);
 
-    $user = new stdClass();
+    $group = new Group();
+    $group->id = 700;
+
+    $relationBuilder = \Mockery::mock();
+    $relationBuilder->shouldReceive('first')
+        ->andReturn($group);
+
+    $user = \Mockery::mock(User::class)->makePartial();
     $user->id = 7;
-    $user->group = new stdClass();
-    $user->group->id = 700;
+    $user->shouldReceive('groups')
+        ->andReturn($relationBuilder);
 
     $request->setUserResolver(function () use ($user) {
         return $user;

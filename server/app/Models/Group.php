@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Exception;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -37,7 +36,7 @@ class Group extends Model
             $category->save();
 
             // デフォルトの料理分類を追加
-            $courseTypes = [
+            $menuCategories = [
                 ['name' => '主食', 'order' => 0],
                 ['name' => '主菜', 'order' => 1],
                 ['name' => '副菜', 'order' => 2],
@@ -45,15 +44,15 @@ class Group extends Model
                 ['name' => 'その他', 'order' => 4],
             ];
 
-            foreach ($courseTypes as $courseType) {
-                $courseTypeObj = new CourseType();
-                $courseTypeObj->group_id = $group->id;
-                $courseTypeObj->name = $courseType['name'];
-                $courseTypeObj->order = $courseType['order'];
-                $courseTypeObj->save();
+            foreach ($menuCategories as $menuCategory) {
+                $menuCategoryObj = new MenuCategory();
+                $menuCategoryObj->group_id = $group->id;
+                $menuCategoryObj->name = $menuCategory['name'];
+                $menuCategoryObj->order = $menuCategory['order'];
+                $menuCategoryObj->save();
             }
 
-            // デフォルトの献立種別を追加
+            // デフォルトの献立カテゴリを追加
             $yellow = Color::where('name', 'イエロー')->first();
             $red = Color::where('name', 'レッド')->first();
             $blue = Color::where('name', 'ブルー')->first();
@@ -64,12 +63,12 @@ class Group extends Model
             ];
 
             foreach ($categories as $category) {
-                $mealType = new MealType();
-                $mealType->group_id = $group->id;
-                $mealType->color_id = $category['color_id'];
-                $mealType->name = $category['name'];
-                $mealType->order = $category['order'];
-                $mealType->save();
+                $mealCategory = new MealCategory();
+                $mealCategory->group_id = $group->id;
+                $mealCategory->color_id = $category['color_id'];
+                $mealCategory->name = $category['name'];
+                $mealCategory->order = $category['order'];
+                $mealCategory->save();
             }
 
             // デフォルトの食材単位を追加
@@ -147,9 +146,9 @@ class Group extends Model
         return $this->belongsToMany(User::class, 'group_user_mappings', 'group_id', 'user_id');
     }
 
-    public function mealTypes()
+    public function mealCategories()
     {
-        return $this->hasMany(MealType::class);
+        return $this->hasMany(MealCategory::class);
     }
 
     public function mealPlans()
@@ -167,9 +166,9 @@ class Group extends Model
         return $this->hasMany(RecipeCategory::class);
     }
 
-    public function courseTypes()
+    public function menuCategories()
     {
-        return $this->hasMany(CourseType::class);
+        return $this->hasMany(MenuCategory::class);
     }
 
     public function ingredients()

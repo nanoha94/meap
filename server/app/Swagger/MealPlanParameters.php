@@ -15,7 +15,7 @@ namespace App\Swagger;
  *     )
  * )
  * @OA\Parameter(
- *     parameter="MealTypeIdParam",
+ *     parameter="MealCategoryIdParam",
  *     name="id",
  *     in="path",
  *     description="献立カテゴリID",

@@ -4,7 +4,7 @@ namespace App\Http\Requests\Api;
 
 use App\Http\Requests\Api\BaseApiRequest;
 
-class MealTypeBulkUpdateRequest extends BaseApiRequest
+class MealCategoryBulkUpdateRequest extends BaseApiRequest
 {
 
     /**
@@ -55,6 +55,6 @@ class MealTypeBulkUpdateRequest extends BaseApiRequest
      */
     protected function getOperationKey(): string
     {
-        return __('operations.meal_type.bulk_update');
+        return __('operations.meal_category.bulk_update');
     }
 }

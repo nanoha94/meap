@@ -17,10 +17,10 @@ class EmailVerificationNotificationController extends Controller
     public function store(Request $request): JsonResponse|RedirectResponse
     {
         $operation = __('operations.auth.email_verification_notification');
-        $failedMessage = __('auth.email_verification_notification.store_failed');
+        $failedMessage = __('auth.email_verification.store_failed');
 
         if ($request->user() === null) {
-            $message = __('auth.email_verification_notification.store_not_found');
+            $message = __('auth.email_verification.store_not_found');
             return $this->handleException(
                 new Exception($message),
                 $request,
@@ -36,7 +36,7 @@ class EmailVerificationNotificationController extends Controller
         return $this->executeWithExceptionHandling(
             function () use ($request) {
                 $request->user()->sendEmailVerificationNotification();
-                $message = __('auth.email_verification_notification.store_sent');
+                $message = __('auth.email_verification.store_sent');
                 return $this->successResponse(null, $message);
             },
             $request,

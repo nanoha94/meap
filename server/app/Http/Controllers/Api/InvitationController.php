@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\ApiController;
-use App\Models\GroupUserMapping;
 use App\Services\InvitationTokenService;
 use App\Services\UserService;
 use Carbon\Carbon;
@@ -49,7 +48,7 @@ class InvitationController extends ApiController
         $failedMessage = __('api.invitation.token_generation_failed');
 
         return $this->executeWithExceptionHandling(
-            function () use ($request) {
+            function () {
                 return DB::transaction(function () {
                     $expiresAt = Carbon::now()->addHour(); // 現在時刻から1時間後
                     // トークンをデータベースに保存
@@ -147,23 +146,20 @@ class InvitationController extends ApiController
                 return DB::transaction(function () use ($request) {
                     $invitationToken = $request->getInvitationToken();
                     $user = $request->user();
-                    $currentGroup = $user->group;
-                    $joinGroup = $invitationToken->inviter->group;
+                    $currentGroup = $user->groups()->first();
+                    $joinGroup = $invitationToken->inviter->groups()->first();
 
                     // 既存のグループユーザーマッピングを削除
-                    $user->groupUser()->delete();
+                    $currentGroup->users()->detach($user->id);
 
                     // 新しいグループユーザーマッピングを作成
-                    GroupUserMapping::create([
-                        'user_id' => $user->id,
-                        'group_id' => $joinGroup->id
-                    ]);
+                    $joinGroup->users()->attach($user->id);
 
                     // グループサイズを更新
                     $joinGroup->refreshGroupSize();
                     $currentGroup->refreshGroupSize();
 
-                    $message = __('api.invitation.joined_successfully');    
+                    $message = __('api.invitation.joined_successfully');
 
                     return $this->successResponse(null, $message);
                 });

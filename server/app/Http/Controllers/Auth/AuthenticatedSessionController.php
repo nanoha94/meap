@@ -27,13 +27,13 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request): JsonResponse
     {
         $operation = __('operations.auth.login');
-        $failedMessage = __('auth.login.failed');
+        $failedMessage = __('auth.failed', ['attribute' => __('auth.attributes.login')]);
 
         return $this->executeWithExceptionHandling(
             function () use ($request) {
                 $request->authenticate();
                 $request->session()->regenerate();
-                $message = __('auth.login.success');
+                $message = __('auth.success', ['attribute' => __('auth.attributes.login')]);
                 return $this->successResponse(null, $message);
             },
             $request,
@@ -62,7 +62,7 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerateToken();
 
-        $response = $this->successResponse(null, __('auth.logout.success'));
+        $response = $this->successResponse(null, __('auth.success', ['attribute' => __('auth.attributes.logout')]));
 
         // 複数のドメインとパスパターンで削除
         $domains = [config('session.domain'), null, '', '.' . parse_url(config('app.url'), PHP_URL_HOST)];

@@ -36,7 +36,7 @@ class ImageController extends ApiController
 
         return $this->executeWithExceptionHandling(
             function () use ($request) {
-                $group = $request->user()->group;
+                $group = $this->getUserGroup($request);
                 $validated = $request->validated();
 
                 // 画像ファイルを取得
@@ -81,7 +81,7 @@ class ImageController extends ApiController
 
         return $this->executeWithExceptionHandling(
             function () use ($request) {
-                $group = $request->user()->group;
+                $group = $this->getUserGroup($request);
                 $validated = $request->validated();
                 $imageIds = $validated['ids'];
                 $deletedCount = $this->imageService->deleteImages($imageIds, $group);

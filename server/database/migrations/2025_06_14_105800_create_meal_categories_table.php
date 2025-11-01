@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('meal_types', function (Blueprint $table) {
+        Schema::create('meal_categories', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('group_id')->constrained('groups', 'id')->cascadeOnDelete();
             $table->foreignUuid('color_id')->constrained('colors', 'id')->cascadeOnDelete();
@@ -26,11 +26,11 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('meal_types', function (Blueprint $table) {
+        Schema::table('meal_categories', function (Blueprint $table) {
             $table->dropForeign(['group_id']);
             $table->dropForeign(['color_id']);
         });
 
-        Schema::dropIfExists('meal_types');
+        Schema::dropIfExists('meal_categories');
     }
 };

@@ -185,7 +185,7 @@ class RecipeService extends AbstractDomainService
                 $this->syncSteps($item, $data['steps'], $group);
             }
 
-            $item = $item->fresh(['categories', 'ingredients', 'thumbnails', 'steps.images']);
+            $item = $item->fresh(['categories', 'ingredients', 'thumbnails', 'steps.images', 'group']);
 
             return $this->formatStoreResponse($item);
         });
@@ -237,7 +237,7 @@ class RecipeService extends AbstractDomainService
                 $this->syncSteps($currentItem, $data['steps'], $group);
             }
 
-            $item = $currentItem->fresh(['categories', 'ingredients', 'thumbnails', 'steps.images']);
+            $item = $currentItem->fresh(['categories', 'ingredients', 'thumbnails', 'steps.images', 'group']);
 
             return $this->formatUpdateResponse($item);
         });

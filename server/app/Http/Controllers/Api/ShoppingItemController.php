@@ -37,7 +37,7 @@ class ShoppingItemController extends ApiController
 
         return $this->executeWithExceptionHandling(
             function () use ($request) {
-                $res = $this->shoppingItemService->indexGroupedByCategory($request->user()->group);
+                $res = $this->shoppingItemService->indexGroupedByCategory($this->getUserGroup($request));
                 $total = collect($res)->sum(fn($categoryData) => count($categoryData['items']));
                 $message = __('api.list_retrieved', ['attribute' => __('api.attributes.shopping.item'), 'count' => $total]);
                 return $this->indexResponse($res, $total, $message);
@@ -69,7 +69,7 @@ class ShoppingItemController extends ApiController
             function () use ($request) {
                 $res = $this->shoppingItemService->create(
                     $request->validated(),
-                    $request->user()->group
+                    $this->getUserGroup($request)
                 );
 
                 $message = __('api.created', ['attribute' => __('api.attributes.shopping.item'), 'name' => $request->name]);
@@ -103,7 +103,7 @@ class ShoppingItemController extends ApiController
                 $validated = $request->validated();
                 $res = $this->shoppingItemService->bulkUpdate(
                     $validated['data'],
-                    $request->user()->group
+                    $this->getUserGroup($request)
                 );
                 $total = count($res);
                 $message = __('api.bulk_updated', ['attribute' => __('api.attributes.shopping.item'), 'count' => $total]);
@@ -137,7 +137,7 @@ class ShoppingItemController extends ApiController
                 $validated = $request->validated();
                 $deletedCount = $this->shoppingItemService->bulkDelete(
                     $validated['ids'],
-                    $request->user()->group
+                    $this->getUserGroup($request)
                 );
                 $message = __('api.bulk_deleted', ['attribute' => __('api.attributes.shopping.item'), 'count' => $deletedCount]);
                 return $this->deletedResponse($message);

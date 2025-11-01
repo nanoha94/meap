@@ -278,7 +278,7 @@ return [
         'id' => 'ID',
         'menu' => 'メニュー',
         'recipe_id' => 'レシピID',
-        'course_type_id' => 'コース種別ID',
+        'menu_category_id' => 'メニュー種別ID',
         'recipe' => [
             'name' => 'レシピ名',
             'step_id' => '手順ID',
@@ -310,12 +310,12 @@ return [
         ],
         'meal_plan' => [
             'date' => '日付',
-            'meal_type_id' => '献立種別ID',
+            'meal_category_id' => '献立カテゴリID',
             'recipe_id' => 'レシピID',
             'servings' => '人数'
         ],
-        'meal_type' => [
-            'name' => '献立種別',
+        'meal_category' => [
+            'name' => '献立カテゴリ',
         ],
         'recipe_category' => [
             'name' => 'レシピカテゴリ名',

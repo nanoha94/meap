@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Api\GroupUserController as ApiGroupUserController;
+use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\IngredientCategoryController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -10,7 +10,7 @@ use App\Http\Controllers\Api\ShoppingCategoryController;
 use App\Http\Controllers\Api\ShoppingItemController;
 use App\Http\Controllers\Api\MealPlanController;
 use App\Http\Controllers\Api\ShoppingTagController;
-use App\Http\Controllers\Api\MealTypeController;
+use App\Http\Controllers\Api\MealCategoryController;
 use App\Http\Controllers\Api\RecipeCategoryController;
 use App\Http\Controllers\Api\RecipeController;
 use App\Http\Controllers\Api\ImageController;
@@ -19,8 +19,8 @@ use App\Http\Controllers\Api\ImageController;
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // meal-plans
     Route::apiResource('/meal-plans', MealPlanController::class);
-    Route::apiResource('/meal-types', MealTypeController::class)->only(['index', 'store', 'destroy']);
-    Route::put('/meal-types/bulk', [MealTypeController::class, 'bulkUpdate']);
+    Route::apiResource('/meal-categories', MealCategoryController::class)->only(['index', 'store', 'destroy']);
+    Route::put('/meal-categories/bulk', [MealCategoryController::class, 'bulkUpdate']);
 
     // recipes
     Route::apiResource('/recipes', RecipeController::class);
@@ -43,7 +43,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::post('/invitations/{token}/join', [InvitationController::class, 'join']);
 
     // users
-    Route::get('/users', [ApiGroupUserController::class, 'index']);
+    Route::get('/users', [UserController::class, 'index']);
     Route::get('/user',  function (Request $request) {
         $user = $request->user();
         return [

@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RegisterUserRequest;
 use App\Models\Group;
-use App\Models\GroupUserMapping;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
@@ -39,7 +38,7 @@ class RegisteredUserController extends Controller
     public function store(RegisterUserRequest $request): Response|JsonResponse
     {
         $operation = __('operations.auth.register_user');
-        $failedMessage = __('auth.registration_failed');
+        $failedMessage = __('auth.failed', ['attribute' => __('auth.attributes.register')]);
 
         return $this->executeWithExceptionHandling(
             function () use ($request) {
@@ -57,7 +56,7 @@ class RegisteredUserController extends Controller
 
                     $group = Group::createGroup();
 
-                    GroupUserMapping::create(['user_id' => $user->id, 'group_id' => $group->id]);
+                    $group->users()->attach($user->id);
 
                     DB::commit();
                 } catch (\Exception $e) {
@@ -67,7 +66,7 @@ class RegisteredUserController extends Controller
 
                 event(new Registered($user));
                 Auth::login($user);
-                $message = __('auth.registration_success');
+                $message = __('auth.success', ['attribute' => __('auth.attributes.register')]);
                 return $this->successResponse(null, $message);
             },
             $request,

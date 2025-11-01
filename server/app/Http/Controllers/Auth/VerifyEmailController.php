@@ -45,7 +45,7 @@ class VerifyEmailController extends Controller
     private function verifyEmailAndFireEvent($user): void
     {
         if (!$user->markEmailAsVerified()) {
-            throw new Exception(__('auth.email_verification_failed'));
+            throw new Exception(__('auth.email_verification.failed'));
         }
 
         event(new Verified($user));

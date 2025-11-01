@@ -14,7 +14,7 @@ abstract class BaseApiRequest extends BaseRequest
     public function authorize(): bool
     {
         $user = $this->user();
-        $group = $user->group;
+        $group = $user->groups()->first();
 
         // ユーザーがグループに所属していない場合は422エラー（前提条件が満たされていない）
         if (!$group || $group->id === null) {

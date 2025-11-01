@@ -15,7 +15,7 @@ namespace App\Swagger;
  *     ),
  *     @OA\Property(property="menu", type="array", description="献立",
  *         @OA\Items(type="object",
- *             @OA\Property(property="courseType", type="object",
+ *             @OA\Property(property="category", type="object",
  *                 @OA\Property(property="id", type="string", description="ID", example="1"),
  *                 @OA\Property(property="name", type="string", description="分類名", example="主食")
  *             ),
@@ -27,7 +27,7 @@ namespace App\Swagger;
  * )
  * 
  * @OA\Schema(
- *     schema="MealType",
+ *     schema="MealCategory",
  *     required={"id", "name", "colorId"},
  *     @OA\Property(property="id", type="string", description="ID", example="1"),
  *     @OA\Property(property="name", type="string", description="カテゴリ名", example="朝食"),
@@ -36,10 +36,10 @@ namespace App\Swagger;
  * )
  * 
  * @OA\Schema(
- *     schema="CourseType",
+ *     schema="MenuCategory",
  *     required={"id", "name", "order"},
  *     @OA\Property(property="id", type="string", description="ID", example="1"),
- *     @OA\Property(property="name", type="string", description="コース種別名", example="朝食"),
+ *     @OA\Property(property="name", type="string", description="メニュー種別名", example="朝食"),
  *     @OA\Property(property="order", type="integer", description="ソート順", example=1)
  * )
  */

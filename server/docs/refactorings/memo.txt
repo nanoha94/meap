@@ -1,4 +1,0 @@
-MealTypeからMealCategoryに命名変更。
-GET meal-plansのレスポンスで、mealTypeに該当する部分が、category: []で返すことになっていて、混乱するので、MealCategoryに統一。
-
-groupuserをuserに命名整理

@@ -5,40 +5,40 @@ echo "🚀 API関連テスト実行"
 echo "=========================================="
 echo ""
 
-# GroupUserControllerテスト実行
-echo "=========================================="
-echo "📖 詳細ドキュメント: tests/docs/03_Api/01_GroupUsersController_TEST_SPECIFICATIONS.md"
-echo ""
-echo "実行中: GroupUserControllerTest.php"
-./vendor/bin/sail test tests/Feature/Api/GroupUserControllerTest.php --stop-on-failure
-
 echo ""
 echo "=========================================="
-echo "📖 詳細ドキュメント: tests/docs/03_Api/02_ImageController_TEST_SPECIFICATIONS.md"
+echo "📖 詳細ドキュメント: tests/docs/03_Api/01_ImageController_TEST_SPECIFICATIONS.md"
 echo ""
 echo "実行中: ImageControllerTest.php"
 ./vendor/bin/sail test tests/Feature/Api/ImageControllerTest.php --stop-on-failure
 
 echo ""
 echo "=========================================="
-echo "📖 詳細ドキュメント: tests/docs/03_Api/03_IngredientCategoryController_TEST_SPECIFICATIONS.md"
+echo "📖 詳細ドキュメント: tests/docs/03_Api/02_IngredientCategoryController_TEST_SPECIFICATIONS.md"
 echo ""
 echo "実行中: IngredientCategoryControllerTest.php"
 ./vendor/bin/sail test tests/Feature/Api/IngredientCategoryControllerTest.php --stop-on-failure
 
 echo ""
 echo "=========================================="
-echo "📖 詳細ドキュメント: tests/docs/03_Api/04_InvitationController_TEST_SPECIFICATIONS.md"
+echo "📖 詳細ドキュメント: tests/docs/03_Api/03_InvitationController_TEST_SPECIFICATIONS.md"
 echo ""
 echo "実行中: InvitationControllerTest.php"
 ./vendor/bin/sail test tests/Feature/Api/InvitationControllerTest.php --stop-on-failure
 
 echo ""
 echo "=========================================="
-echo "📖 詳細ドキュメント: tests/docs/03_Api/05_MasterController_TEST_SPECIFICATIONS.md"
+echo "📖 詳細ドキュメント: tests/docs/03_Api/04_MasterController_TEST_SPECIFICATIONS.md"
 echo ""
 echo "実行中: MasterControllerTest.php"
 ./vendor/bin/sail test tests/Feature/Api/MasterControllerTest.php --stop-on-failure
+
+echo ""
+echo "=========================================="
+echo "📖 詳細ドキュメント: tests/docs/03_Api/05_MealCategoryController_TEST_SPECIFICATIONS.md"
+echo ""
+echo "実行中: MealCategoryControllerTest.php"
+./vendor/bin/sail test tests/Feature/Api/MealCategoryControllerTest.php --stop-on-failure
 
 echo ""
 echo "=========================================="
@@ -49,45 +49,46 @@ echo "実行中: MealPlanControllerTest.php"
 
 echo ""
 echo "=========================================="
-echo "📖 詳細ドキュメント: tests/docs/03_Api/07_MealTypeController_TEST_SPECIFICATIONS.md"
-echo ""
-echo "実行中: MealTypeControllerTest.php"
-./vendor/bin/sail test tests/Feature/Api/MealTypeControllerTest.php --stop-on-failure
-
-echo ""
-echo "=========================================="
-echo "📖 詳細ドキュメント: tests/docs/03_Api/08_RecipeCategoryController_TEST_SPECIFICATIONS.md"
+echo "📖 詳細ドキュメント: tests/docs/03_Api/07_RecipeCategoryController_TEST_SPECIFICATIONS.md"
 echo ""
 echo "実行中: RecipeCategoryControllerTest.php"
 ./vendor/bin/sail test tests/Feature/Api/RecipeCategoryControllerTest.php --stop-on-failure
 
 echo ""
 echo "=========================================="
-echo "📖 詳細ドキュメント: tests/docs/03_Api/09_RecipeController_TEST_SPECIFICATIONS.md"
+echo "📖 詳細ドキュメント: tests/docs/03_Api/08_RecipeController_TEST_SPECIFICATIONS.md"
 echo ""
 echo "実行中: RecipeControllerTest.php"
 ./vendor/bin/sail test tests/Feature/Api/RecipeControllerTest.php --stop-on-failure
 
 echo ""
 echo "=========================================="
-echo "📖 詳細ドキュメント: tests/docs/03_Api/10_ShoppingCategoryController_TEST_SPECIFICATIONS.md"
+echo "📖 詳細ドキュメント: tests/docs/03_Api/09_ShoppingCategoryController_TEST_SPECIFICATIONS.md"
 echo ""
 echo "実行中: ShoppingCategoryControllerTest.php"
 ./vendor/bin/sail test tests/Feature/Api/ShoppingCategoryControllerTest.php --stop-on-failure
 
 echo ""
 echo "=========================================="
-echo "📖 詳細ドキュメント: tests/docs/03_Api/11_ShoppingItemController_TEST_SPECIFICATIONS.md"
+echo "📖 詳細ドキュメント: tests/docs/03_Api/10_ShoppingItemController_TEST_SPECIFICATIONS.md"
 echo ""
 echo "実行中: ShoppingItemControllerTest.php"
 ./vendor/bin/sail test tests/Feature/Api/ShoppingItemControllerTest.php --stop-on-failure
 
 echo ""
 echo "=========================================="
-echo "📖 詳細ドキュメント: tests/docs/03_Api/12_ShoppingTagController_TEST_SPECIFICATIONS.md"
+echo "📖 詳細ドキュメント: tests/docs/03_Api/11_ShoppingTagController_TEST_SPECIFICATIONS.md"
 echo ""
 echo "実行中: ShoppingTagControllerTest.php"
 ./vendor/bin/sail test tests/Feature/Api/ShoppingTagControllerTest.php --stop-on-failure
+
+# UserControllerテスト実行
+echo "=========================================="
+echo "📖 詳細ドキュメント: tests/docs/03_Api/12_UsersController_TEST_SPECIFICATIONS.md"
+echo ""
+echo "実行中: UserControllerTest.php"
+./vendor/bin/sail test tests/Feature/Api/UserControllerTest.php --stop-on-failure
+
 
 echo ""
 echo "=========================================="

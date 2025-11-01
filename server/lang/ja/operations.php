@@ -3,6 +3,7 @@
 return [
     'auth' => [
         'login' => 'ログイン',
+        'register' => 'ユーザー登録',
         'register_user' => 'ユーザー登録',
         'email_verification_notification' => 'メールアドレス確認リンクの再送信',
         'email_verification' => 'メール認証処理',
@@ -23,10 +24,11 @@ return [
         'update' => '献立更新',
         'destroy' => '献立削除',
     ],
-    'meal_type' => [
-        'store' => '献立種別作成',
-        'bulk_update' => '献立種別一括更新',
-        'destroy' => '献立種別削除',
+    'meal_category' => [
+        'index' => '献立カテゴリ一覧取得',
+        'store' => '献立カテゴリ作成',
+        'bulk_update' => '献立カテゴリ一括更新',
+        'destroy' => '献立カテゴリ削除',
     ],
     'image' => [
         'bulk_upload' => '画像一括アップロード',

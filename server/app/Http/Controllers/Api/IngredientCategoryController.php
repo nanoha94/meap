@@ -33,7 +33,7 @@ class IngredientCategoryController extends ApiController
         $failedMessage = __('api.get_failed', ['attribute' => __('api.attributes.ingredient_category')]);
         return $this->executeWithExceptionHandling(
             function () use ($request) {
-                $res = $this->ingredientCategoryService->index($request->user()->group);
+                $res = $this->ingredientCategoryService->index($this->getUserGroup($request));
                 $total = count($res);
                 $message = __('api.list_retrieved', ['attribute' => __('api.attributes.ingredient_category'), 'count' => $total]);
                 return $this->indexResponse($res, $total, $message);
@@ -65,7 +65,7 @@ class IngredientCategoryController extends ApiController
             function () use ($request) {
                 $res = $this->ingredientCategoryService->create(
                     $request->validated(),
-                    $request->user()->group
+                    $this->getUserGroup($request)
                 );
 
                 $message = __('api.created', ['attribute' => __('api.attributes.ingredient_category'), 'name' => $res['name']]);
@@ -98,7 +98,7 @@ class IngredientCategoryController extends ApiController
             function () use ($request) {
                 $updatedData = $this->ingredientCategoryService->bulkUpdate(
                     $request->validated()['data'],
-                    $request->user()->group
+                    $this->getUserGroup($request)
                 );
 
                 $total = count($updatedData);
@@ -132,7 +132,7 @@ class IngredientCategoryController extends ApiController
             function () use ($request) {
                 $deletedCount = $this->ingredientCategoryService->bulkDelete(
                     $request->validated()['ids'],
-                    $request->user()->group
+                    $this->getUserGroup($request)
                 );
                 $message = __('api.bulk_deleted', ['attribute' => __('api.attributes.ingredient_category'), 'count' => $deletedCount]);
 

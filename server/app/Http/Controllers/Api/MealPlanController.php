@@ -38,7 +38,7 @@ class MealPlanController extends ApiController
 
         return $this->executeWithExceptionHandling(
             function () use ($request) {
-                $res = $this->mealPlanService->index($request->user()->group);
+                $res = $this->mealPlanService->index($this->getUserGroup($request));
                 $total = count($res);
                 $message = __('api.list_retrieved', ['attribute' => __('api.attributes.meal_plan'), 'count' => $total]);
                 return $this->indexResponse($res, $total, $message);
@@ -69,7 +69,7 @@ class MealPlanController extends ApiController
 
         return $this->executeWithExceptionHandling(
             function () use ($request) {
-                $res = $this->mealPlanService->create($request->validated(), $request->user()->group);
+                $res = $this->mealPlanService->create($request->validated(), $this->getUserGroup($request));
                 $message = __('api.created', ['attribute' => __('api.attributes.meal_plan'), 'name' => $request->input('date')]);
                 return $this->createdResponse($res, $message);
             },
@@ -98,7 +98,7 @@ class MealPlanController extends ApiController
 
         return $this->executeWithExceptionHandling(
             function () use ($request, $id) {
-                $res = $this->mealPlanService->show($id, $request->user()->group);
+                $res = $this->mealPlanService->show($id, $this->getUserGroup($request));
                 $message = __('api.retrieved', ['attribute' => __('api.attributes.meal_plan'), 'name' => $res['date']]);
                 return $this->showResponse($res, $message);
             },
@@ -128,7 +128,7 @@ class MealPlanController extends ApiController
 
         return $this->executeWithExceptionHandling(
             function () use ($request, $id) {
-                $res = $this->mealPlanService->update($id, $request->validated(), $request->user()->group);
+                $res = $this->mealPlanService->update($id, $request->validated(), $this->getUserGroup($request));
                 $message = __('api.updated', ['attribute' => __('api.attributes.meal_plan'), 'name' => $request->input('date')]);
                 return $this->updatedResponse($res, $message);
             },
@@ -158,7 +158,7 @@ class MealPlanController extends ApiController
 
         return $this->executeWithExceptionHandling(
             function () use ($request, $id) {
-                $deletedMealPlan = $this->mealPlanService->delete($id, $request->user()->group);
+                $deletedMealPlan = $this->mealPlanService->delete($id, $this->getUserGroup($request));
                 $message = __('api.deleted', ['attribute' => __('api.attributes.meal_plan'), 'name' => $deletedMealPlan->date]);
                 return $this->deletedResponse($message);
             },

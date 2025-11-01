@@ -52,6 +52,6 @@ abstract class ApiController extends Controller
      */
     protected function getUserGroup(Request $request)
     {
-        return $request->user()->group;
+        return $request->user()->groups()->first();
     }
 }

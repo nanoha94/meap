@@ -52,8 +52,8 @@ class InvitationJoinRequest extends BaseApiRequest
         }
 
         // 4. すでに同じグループにいるかチェック → 409 Conflict
-        $currentGroup = $user->group;
-        if ($currentGroup->id === $this->invitationToken->inviter->group->id) {
+        $currentGroup = $user->groups()->first();
+        if ($currentGroup->id === $this->invitationToken->inviter->groups()->first()->id) {
             throw new HttpException(
                 HttpStatusCode::CONFLICT->value,
                 __('api.invitation.already_in_group')

@@ -4,10 +4,18 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\Api\MasterRequest;
+use App\Services\MasterService;
 use Illuminate\Http\JsonResponse;
 
 class MasterController extends ApiController
 {
+    private MasterService $masterService;
+
+    public function __construct(MasterService $masterService)
+    {
+        $this->masterService = $masterService;
+    }
+
     /**
      * @OA\Get(
      *     path="/master",
@@ -29,24 +37,8 @@ class MasterController extends ApiController
 
         return $this->executeWithExceptionHandling(
             function () use ($request) {
-                $user = $request->user();
-                $group = $user->group;
-
-                $recipeCategories = $group->recipeCategories()->select('id', 'name', 'order')->orderBy('order', 'asc')->get();
-                $ingredientCategories = $group->ingredientCategories()->select('id', 'name', 'order')->orderBy('order', 'asc')->get();
-                $ingredientUnits = $group->ingredientUnits()->select('id', 'name', 'position', 'requires_quantity', 'order')->orderBy('order', 'asc')->get();
-                $courseTypes = $group->courseTypes()->select('id', 'name', 'order')->get();
-                $shopping_categories = $group->shoppingCategories()->select('id', 'name', 'is_default', 'order')->orderBy('order', 'asc')->get();
-                $shopping_tags = $group->shoppingTags()->select('id', 'name')->get();
-                $res = [
-                    'recipeCategories' =>  $recipeCategories,
-                    'ingredientCategories' => $ingredientCategories,
-                    'ingredientUnits' => $ingredientUnits,
-                    'courseTypes' => $courseTypes,
-                    'shoppingCategories' => $shopping_categories,
-                    'shoppingTags' => $shopping_tags,
-                ];
-
+                $group = $this->getUserGroup($request);
+                $res = $this->masterService->index($group);
                 $message = __('api.retrieved', ['attribute' => __('api.attributes.master')]);
 
                 return $this->successResponse($res, $message);

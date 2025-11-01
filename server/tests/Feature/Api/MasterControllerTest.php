@@ -2,11 +2,10 @@
 
 use App\Models\User;
 use App\Models\Group;
-use App\Models\GroupUserMapping;
 use App\Models\RecipeCategory;
 use App\Models\IngredientCategory;
 use App\Models\IngredientUnit;
-use App\Models\CourseType;
+use App\Models\MenuCategory;
 use App\Models\ShoppingCategory;
 use App\Models\ShoppingTag;
 use App\Models\Color;
@@ -86,10 +85,7 @@ beforeEach(function () {
 
             $this->createDefaultGroup();
             $this->createUser();
-            GroupUserMapping::create([
-                'user_id' => $this->user->id,
-                'group_id' => $this->defaultGroup->id
-            ]);
+            $this->defaultGroup->users()->attach($this->user->id);
             $this->createIngredientUnits($this->defaultGroup->id);
 
             return $this->user;
@@ -117,10 +113,10 @@ beforeEach(function () {
             }
         }
 
-        public function createCourseTypes($groupId, $types)
+        public function createMenuCategories($groupId, $types)
         {
             foreach ($types as $type) {
-                CourseType::create([
+                MenuCategory::create([
                     'group_id' => $groupId,
                     'name' => $type['name'],
                     'order' => $type['order']
@@ -152,7 +148,7 @@ beforeEach(function () {
     };
 });
 
-test('3-5-1: 正常なマスターデータ取得', function () {
+test('3-4-1: 正常なマスターデータ取得', function () {
     $user = $this->testData->createUserWithGroup();
 
     // テスト用のマスターデータをAPIで作成
@@ -168,8 +164,8 @@ test('3-5-1: 正常なマスターデータ取得', function () {
     ]);
     $ingredientCategoryId = $ingredientCategoryResponse->json('data.id');
 
-    // CourseType とShoppingTag はAPIがないので直接作成
-    $courseType = CourseType::create([
+    // MenuCategory とShoppingTag はAPIがないので直接作成
+    $menuCategory = MenuCategory::create([
         'group_id' => $this->testData->defaultGroup->id,
         'name' => '主菜',
         'order' => 0
@@ -228,9 +224,9 @@ test('3-5-1: 正常なマスターデータ取得', function () {
                     'requires_quantity' => false
                 ]
             ],
-            'courseTypes' => [
+            'menuCategories' => [
                 [
-                    'id' => $courseType->id,
+                    'id' => $menuCategory->id,
                     'name' => '主菜',
                     'order' => 0
                 ]
@@ -266,7 +262,7 @@ test('3-5-1: 正常なマスターデータ取得', function () {
             'ingredientUnits' => [
                 '*' => ['id', 'name', 'position', 'order', 'requires_quantity']
             ],
-            'courseTypes' => [
+            'menuCategories' => [
                 '*' => ['id', 'name', 'order']
             ],
             'shoppingCategories' => [
@@ -282,7 +278,7 @@ test('3-5-1: 正常なマスターデータ取得', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-5-2: レシピカテゴリデータ取得確認', function () {
+test('3-4-2: レシピカテゴリデータ取得確認', function () {
     $user = $this->testData->createUserWithGroup();
 
     // レシピカテゴリをAPIで作成
@@ -304,7 +300,7 @@ test('3-5-2: レシピカテゴリデータ取得確認', function () {
     expect($responseData[2]['order'])->toBe(2);
 });
 
-test('3-5-3: 食材カテゴリデータ取得確認', function () {
+test('3-4-3: 食材カテゴリデータ取得確認', function () {
     $user = $this->testData->createUserWithGroup();
 
     // 食材カテゴリをAPIで作成
@@ -326,7 +322,7 @@ test('3-5-3: 食材カテゴリデータ取得確認', function () {
     expect($responseData[2]['order'])->toBe(2);
 });
 
-test('3-5-4: 食材単位データ取得確認', function () {
+test('3-4-4: 食材単位データ取得確認', function () {
     $user = $this->testData->createUserWithGroup();
 
     $response = $this->actingAs($user)->get('/master');
@@ -351,7 +347,7 @@ test('3-5-4: 食材単位データ取得確認', function () {
     expect($responseData[2]['requires_quantity'])->toBeFalse();
 });
 
-test('3-5-5: コース種別データ取得確認', function () {
+test('3-4-5: コース種別データ取得確認', function () {
     $user = $this->testData->createUserWithGroup();
 
     $types = [
@@ -360,12 +356,12 @@ test('3-5-5: コース種別データ取得確認', function () {
         ['name' => 'デザート', 'order' => 2]
     ];
 
-    $this->testData->createCourseTypes($this->testData->defaultGroup->id, $types);
+    $this->testData->createMenuCategories($this->testData->defaultGroup->id, $types);
 
     $response = $this->actingAs($user)->get('/master');
 
     $response->assertStatus(200);
-    $responseData = $response->json('data.courseTypes');
+    $responseData = $response->json('data.menuCategories');
 
     expect($responseData)->toHaveCount(3);
     expect($responseData[0]['name'])->toBe('主菜');
@@ -376,7 +372,7 @@ test('3-5-5: コース種別データ取得確認', function () {
     expect($responseData[2]['order'])->toBe(2);
 });
 
-test('3-5-6: 買い物カテゴリデータ取得確認', function () {
+test('3-4-6: 買い物カテゴリデータ取得確認', function () {
     $user = $this->testData->createUserWithGroup();
 
     // 買い物カテゴリをAPIで作成（is_defaultは常にfalseになる）
@@ -401,7 +397,7 @@ test('3-5-6: 買い物カテゴリデータ取得確認', function () {
     expect($responseData[2]['is_default'])->toBeFalse();
 });
 
-test('3-5-7: 買い物タグデータ取得確認', function () {
+test('3-4-7: 買い物タグデータ取得確認', function () {
     $user = $this->testData->createUserWithGroup();
 
     $tags = [
@@ -423,7 +419,7 @@ test('3-5-7: 買い物タグデータ取得確認', function () {
     expect($responseData[2]['name'])->toBe('ストック');
 });
 
-test('3-5-8: データの並び順確認', function () {
+test('3-4-8: データの並び順確認', function () {
     $user = $this->testData->createUserWithGroup();
 
     // レシピカテゴリをAPIで作成（異なるorder順）
@@ -444,7 +440,7 @@ test('3-5-8: データの並び順確認', function () {
     expect($responseData[2]['order'])->toBe(2);
 });
 
-test('3-5-9: 買い物カテゴリのフォーマット確認', function () {
+test('3-4-9: 買い物カテゴリのフォーマット確認', function () {
     $user = $this->testData->createUserWithGroup();
 
     // 買い物カテゴリをAPIで作成（is_defaultは常にfalseになる）
@@ -459,7 +455,7 @@ test('3-5-9: 買い物カテゴリのフォーマット確認', function () {
     expect(is_bool($responseData['is_default']))->toBeTrue();
 });
 
-test('3-5-10: レスポンス構造確認', function () {
+test('3-4-10: レスポンス構造確認', function () {
     $user = $this->testData->createUserWithGroup();
 
     $response = $this->actingAs($user)->get('/master');
@@ -472,14 +468,14 @@ test('3-5-10: レスポンス構造確認', function () {
             'recipeCategories',
             'ingredientCategories',
             'ingredientUnits',
-            'courseTypes',
+            'menuCategories',
             'shoppingCategories',
             'shoppingTags'
         ]
     ]);
 });
 
-test('3-5-11: 空のマスターデータ', function () {
+test('3-4-11: 空のマスターデータ', function () {
     $user = $this->testData->createUserWithGroup();
 
     $response = $this->actingAs($user)->get('/master');
@@ -511,14 +507,14 @@ test('3-5-11: 空のマスターデータ', function () {
                     'requires_quantity' => false
                 ]
             ],
-            'courseTypes' => [],
+            'menuCategories' => [],
             'shoppingCategories' => [],
             'shoppingTags' => []
         ]
     ]);
 });
 
-test('3-5-12: 未認証ユーザー', function () {
+test('3-4-12: 未認証ユーザー', function () {
     $response = $this->get('/master');
 
     $response->assertStatus(401);
@@ -528,7 +524,7 @@ test('3-5-12: 未認証ユーザー', function () {
     ]);
 });
 
-test('3-5-13: グループが存在しない', function () {
+test('3-4-13: グループが存在しない', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -542,16 +538,15 @@ test('3-5-13: グループが存在しない', function () {
     ]);
 });
 
-test('3-5-14: データベース接続エラー', function () {
+test('3-4-14: データベース接続エラー', function () {
     $user = $this->testData->createUserWithGroup();
 
-    // GroupモデルのrecipeCategoriesリレーションをモック
-    $groupMock = \Mockery::mock($this->testData->defaultGroup);
-    $groupMock->shouldReceive('recipeCategories')
-        ->andThrow(new \Exception('Database connection error'));
-
-    // userのgroupプロパティをモックに置き換え
-    $user->setRelation('group', $groupMock);
+    // MasterServiceをモックして例外を発生させる（MealCategoryControllerTestの3-6-8と同じパターン）
+    $this->mock(\App\Services\MasterService::class, function ($mock) {
+        $mock->shouldReceive('index')
+            ->once()
+            ->andThrow(new \Exception('Database connection error'));
+    });
 
     $response = $this->actingAs($user)->get('/master');
 
@@ -562,18 +557,15 @@ test('3-5-14: データベース接続エラー', function () {
     ]);
 });
 
-test('3-5-15: レシピカテゴリ取得失敗', function () {
+test('3-4-15: レシピカテゴリ取得失敗', function () {
     $user = $this->testData->createUserWithGroup();
 
-    $queryMock = \Mockery::mock(\Illuminate\Database\Eloquent\Builder::class);
-    $queryMock->shouldReceive('select')->andReturnSelf();
-    $queryMock->shouldReceive('orderBy')->andReturnSelf();
-    $queryMock->shouldReceive('get')->andThrow(new \Exception('Recipe category query error'));
-
-    $groupMock = \Mockery::mock($this->testData->defaultGroup);
-    $groupMock->shouldReceive('recipeCategories')->andReturn($queryMock);
-
-    $user->setRelation('group', $groupMock);
+    // MasterServiceをモックして、レシピカテゴリ取得時にエラーを発生させる
+    $this->mock(\App\Services\MasterService::class, function ($mock) {
+        $mock->shouldReceive('index')
+            ->once()
+            ->andThrow(new \Exception('Recipe category query error'));
+    });
 
     $response = $this->actingAs($user)->get('/master');
 
@@ -584,24 +576,15 @@ test('3-5-15: レシピカテゴリ取得失敗', function () {
     ]);
 });
 
-test('3-5-16: 食材カテゴリ取得失敗', function () {
+test('3-4-16: 食材カテゴリ取得失敗', function () {
     $user = $this->testData->createUserWithGroup();
 
-    $recipeCategoryQueryMock = \Mockery::mock(\Illuminate\Database\Eloquent\Builder::class);
-    $recipeCategoryQueryMock->shouldReceive('select')->andReturnSelf();
-    $recipeCategoryQueryMock->shouldReceive('orderBy')->andReturnSelf();
-    $recipeCategoryQueryMock->shouldReceive('get')->andReturn(collect([]));
-
-    $ingredientCategoryQueryMock = \Mockery::mock(\Illuminate\Database\Eloquent\Builder::class);
-    $ingredientCategoryQueryMock->shouldReceive('select')->andReturnSelf();
-    $ingredientCategoryQueryMock->shouldReceive('orderBy')->andReturnSelf();
-    $ingredientCategoryQueryMock->shouldReceive('get')->andThrow(new \Exception('Ingredient category query error'));
-
-    $groupMock = \Mockery::mock($this->testData->defaultGroup);
-    $groupMock->shouldReceive('recipeCategories')->andReturn($recipeCategoryQueryMock);
-    $groupMock->shouldReceive('ingredientCategories')->andReturn($ingredientCategoryQueryMock);
-
-    $user->setRelation('group', $groupMock);
+    // MasterServiceをモックして、食材カテゴリ取得時にエラーを発生させる
+    $this->mock(\App\Services\MasterService::class, function ($mock) {
+        $mock->shouldReceive('index')
+            ->once()
+            ->andThrow(new \Exception('Ingredient category query error'));
+    });
 
     $response = $this->actingAs($user)->get('/master');
 
@@ -612,30 +595,15 @@ test('3-5-16: 食材カテゴリ取得失敗', function () {
     ]);
 });
 
-test('3-5-17: 食材単位取得失敗', function () {
+test('3-4-17: 食材単位取得失敗', function () {
     $user = $this->testData->createUserWithGroup();
 
-    $recipeCategoryQueryMock = \Mockery::mock(\Illuminate\Database\Eloquent\Builder::class);
-    $recipeCategoryQueryMock->shouldReceive('select')->andReturnSelf();
-    $recipeCategoryQueryMock->shouldReceive('orderBy')->andReturnSelf();
-    $recipeCategoryQueryMock->shouldReceive('get')->andReturn(collect([]));
-
-    $ingredientCategoryQueryMock = \Mockery::mock(\Illuminate\Database\Eloquent\Builder::class);
-    $ingredientCategoryQueryMock->shouldReceive('select')->andReturnSelf();
-    $ingredientCategoryQueryMock->shouldReceive('orderBy')->andReturnSelf();
-    $ingredientCategoryQueryMock->shouldReceive('get')->andReturn(collect([]));
-
-    $ingredientUnitQueryMock = \Mockery::mock(\Illuminate\Database\Eloquent\Builder::class);
-    $ingredientUnitQueryMock->shouldReceive('select')->andReturnSelf();
-    $ingredientUnitQueryMock->shouldReceive('orderBy')->andReturnSelf();
-    $ingredientUnitQueryMock->shouldReceive('get')->andThrow(new \Exception('Ingredient unit query error'));
-
-    $groupMock = \Mockery::mock($this->testData->defaultGroup);
-    $groupMock->shouldReceive('recipeCategories')->andReturn($recipeCategoryQueryMock);
-    $groupMock->shouldReceive('ingredientCategories')->andReturn($ingredientCategoryQueryMock);
-    $groupMock->shouldReceive('ingredientUnits')->andReturn($ingredientUnitQueryMock);
-
-    $user->setRelation('group', $groupMock);
+    // MasterServiceをモックして、食材単位取得時にエラーを発生させる
+    $this->mock(\App\Services\MasterService::class, function ($mock) {
+        $mock->shouldReceive('index')
+            ->once()
+            ->andThrow(new \Exception('Ingredient unit query error'));
+    });
 
     $response = $this->actingAs($user)->get('/master');
 
@@ -646,35 +614,15 @@ test('3-5-17: 食材単位取得失敗', function () {
     ]);
 });
 
-test('3-5-18: コース種別取得失敗', function () {
+test('3-4-18: コース種別取得失敗', function () {
     $user = $this->testData->createUserWithGroup();
 
-    $recipeCategoryQueryMock = \Mockery::mock(\Illuminate\Database\Eloquent\Builder::class);
-    $recipeCategoryQueryMock->shouldReceive('select')->andReturnSelf();
-    $recipeCategoryQueryMock->shouldReceive('orderBy')->andReturnSelf();
-    $recipeCategoryQueryMock->shouldReceive('get')->andReturn(collect([]));
-
-    $ingredientCategoryQueryMock = \Mockery::mock(\Illuminate\Database\Eloquent\Builder::class);
-    $ingredientCategoryQueryMock->shouldReceive('select')->andReturnSelf();
-    $ingredientCategoryQueryMock->shouldReceive('orderBy')->andReturnSelf();
-    $ingredientCategoryQueryMock->shouldReceive('get')->andReturn(collect([]));
-
-    $ingredientUnitQueryMock = \Mockery::mock(\Illuminate\Database\Eloquent\Builder::class);
-    $ingredientUnitQueryMock->shouldReceive('select')->andReturnSelf();
-    $ingredientUnitQueryMock->shouldReceive('orderBy')->andReturnSelf();
-    $ingredientUnitQueryMock->shouldReceive('get')->andReturn(collect([]));
-
-    $courseTypeQueryMock = \Mockery::mock(\Illuminate\Database\Eloquent\Builder::class);
-    $courseTypeQueryMock->shouldReceive('select')->andReturnSelf();
-    $courseTypeQueryMock->shouldReceive('get')->andThrow(new \Exception('Course type query error'));
-
-    $groupMock = \Mockery::mock($this->testData->defaultGroup);
-    $groupMock->shouldReceive('recipeCategories')->andReturn($recipeCategoryQueryMock);
-    $groupMock->shouldReceive('ingredientCategories')->andReturn($ingredientCategoryQueryMock);
-    $groupMock->shouldReceive('ingredientUnits')->andReturn($ingredientUnitQueryMock);
-    $groupMock->shouldReceive('courseTypes')->andReturn($courseTypeQueryMock);
-
-    $user->setRelation('group', $groupMock);
+    // MasterServiceをモックして、コース種別取得時にエラーを発生させる
+    $this->mock(\App\Services\MasterService::class, function ($mock) {
+        $mock->shouldReceive('index')
+            ->once()
+            ->andThrow(new \Exception('Menu type query error'));
+    });
 
     $response = $this->actingAs($user)->get('/master');
 
@@ -685,41 +633,15 @@ test('3-5-18: コース種別取得失敗', function () {
     ]);
 });
 
-test('3-5-19: 買い物カテゴリ取得失敗', function () {
+test('3-4-19: 買い物カテゴリ取得失敗', function () {
     $user = $this->testData->createUserWithGroup();
 
-    $recipeCategoryQueryMock = \Mockery::mock(\Illuminate\Database\Eloquent\Builder::class);
-    $recipeCategoryQueryMock->shouldReceive('select')->andReturnSelf();
-    $recipeCategoryQueryMock->shouldReceive('orderBy')->andReturnSelf();
-    $recipeCategoryQueryMock->shouldReceive('get')->andReturn(collect([]));
-
-    $ingredientCategoryQueryMock = \Mockery::mock(\Illuminate\Database\Eloquent\Builder::class);
-    $ingredientCategoryQueryMock->shouldReceive('select')->andReturnSelf();
-    $ingredientCategoryQueryMock->shouldReceive('orderBy')->andReturnSelf();
-    $ingredientCategoryQueryMock->shouldReceive('get')->andReturn(collect([]));
-
-    $ingredientUnitQueryMock = \Mockery::mock(\Illuminate\Database\Eloquent\Builder::class);
-    $ingredientUnitQueryMock->shouldReceive('select')->andReturnSelf();
-    $ingredientUnitQueryMock->shouldReceive('orderBy')->andReturnSelf();
-    $ingredientUnitQueryMock->shouldReceive('get')->andReturn(collect([]));
-
-    $courseTypeQueryMock = \Mockery::mock(\Illuminate\Database\Eloquent\Builder::class);
-    $courseTypeQueryMock->shouldReceive('select')->andReturnSelf();
-    $courseTypeQueryMock->shouldReceive('get')->andReturn(collect([]));
-
-    $shoppingCategoryQueryMock = \Mockery::mock(\Illuminate\Database\Eloquent\Builder::class);
-    $shoppingCategoryQueryMock->shouldReceive('select')->andReturnSelf();
-    $shoppingCategoryQueryMock->shouldReceive('orderBy')->andReturnSelf();
-    $shoppingCategoryQueryMock->shouldReceive('get')->andThrow(new \Exception('Shopping category query error'));
-
-    $groupMock = \Mockery::mock($this->testData->defaultGroup);
-    $groupMock->shouldReceive('recipeCategories')->andReturn($recipeCategoryQueryMock);
-    $groupMock->shouldReceive('ingredientCategories')->andReturn($ingredientCategoryQueryMock);
-    $groupMock->shouldReceive('ingredientUnits')->andReturn($ingredientUnitQueryMock);
-    $groupMock->shouldReceive('courseTypes')->andReturn($courseTypeQueryMock);
-    $groupMock->shouldReceive('shoppingCategories')->andReturn($shoppingCategoryQueryMock);
-
-    $user->setRelation('group', $groupMock);
+    // MasterServiceをモックして、買い物カテゴリ取得時にエラーを発生させる
+    $this->mock(\App\Services\MasterService::class, function ($mock) {
+        $mock->shouldReceive('index')
+            ->once()
+            ->andThrow(new \Exception('Shopping category query error'));
+    });
 
     $response = $this->actingAs($user)->get('/master');
 
@@ -730,46 +652,15 @@ test('3-5-19: 買い物カテゴリ取得失敗', function () {
     ]);
 });
 
-test('3-5-20: 買い物タグ取得失敗', function () {
+test('3-4-20: 買い物タグ取得失敗', function () {
     $user = $this->testData->createUserWithGroup();
 
-    $recipeCategoryQueryMock = \Mockery::mock(\Illuminate\Database\Eloquent\Builder::class);
-    $recipeCategoryQueryMock->shouldReceive('select')->andReturnSelf();
-    $recipeCategoryQueryMock->shouldReceive('orderBy')->andReturnSelf();
-    $recipeCategoryQueryMock->shouldReceive('get')->andReturn(collect([]));
-
-    $ingredientCategoryQueryMock = \Mockery::mock(\Illuminate\Database\Eloquent\Builder::class);
-    $ingredientCategoryQueryMock->shouldReceive('select')->andReturnSelf();
-    $ingredientCategoryQueryMock->shouldReceive('orderBy')->andReturnSelf();
-    $ingredientCategoryQueryMock->shouldReceive('get')->andReturn(collect([]));
-
-    $ingredientUnitQueryMock = \Mockery::mock(\Illuminate\Database\Eloquent\Builder::class);
-    $ingredientUnitQueryMock->shouldReceive('select')->andReturnSelf();
-    $ingredientUnitQueryMock->shouldReceive('orderBy')->andReturnSelf();
-    $ingredientUnitQueryMock->shouldReceive('get')->andReturn(collect([]));
-
-    $courseTypeQueryMock = \Mockery::mock(\Illuminate\Database\Eloquent\Builder::class);
-    $courseTypeQueryMock->shouldReceive('select')->andReturnSelf();
-    $courseTypeQueryMock->shouldReceive('get')->andReturn(collect([]));
-
-    $shoppingCategoryQueryMock = \Mockery::mock(\Illuminate\Database\Eloquent\Builder::class);
-    $shoppingCategoryQueryMock->shouldReceive('select')->andReturnSelf();
-    $shoppingCategoryQueryMock->shouldReceive('orderBy')->andReturnSelf();
-    $shoppingCategoryQueryMock->shouldReceive('get')->andReturn(collect([]));
-
-    $shoppingTagQueryMock = \Mockery::mock(\Illuminate\Database\Eloquent\Builder::class);
-    $shoppingTagQueryMock->shouldReceive('select')->andReturnSelf();
-    $shoppingTagQueryMock->shouldReceive('get')->andThrow(new \Exception('Shopping tag query error'));
-
-    $groupMock = \Mockery::mock($this->testData->defaultGroup);
-    $groupMock->shouldReceive('recipeCategories')->andReturn($recipeCategoryQueryMock);
-    $groupMock->shouldReceive('ingredientCategories')->andReturn($ingredientCategoryQueryMock);
-    $groupMock->shouldReceive('ingredientUnits')->andReturn($ingredientUnitQueryMock);
-    $groupMock->shouldReceive('courseTypes')->andReturn($courseTypeQueryMock);
-    $groupMock->shouldReceive('shoppingCategories')->andReturn($shoppingCategoryQueryMock);
-    $groupMock->shouldReceive('shoppingTags')->andReturn($shoppingTagQueryMock);
-
-    $user->setRelation('group', $groupMock);
+    // MasterServiceをモックして、買い物タグ取得時にエラーを発生させる
+    $this->mock(\App\Services\MasterService::class, function ($mock) {
+        $mock->shouldReceive('index')
+            ->once()
+            ->andThrow(new \Exception('Shopping tag query error'));
+    });
 
     $response = $this->actingAs($user)->get('/master');
 

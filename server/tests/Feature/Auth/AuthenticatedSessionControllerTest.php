@@ -228,7 +228,7 @@ test('2-1-12: レート制限', function () {
 
     // メッセージの形式を確認（秒数は変動するため正規表現で確認）
     $responseData = $response->json();
-    expect($responseData['message'])->toMatch('/^ログイン試行回数が上限に達しました。\d+秒後に再度お試しください。$/');
+    expect($responseData['message'])->toMatch('/^試行回数が上限に達しました。\d+秒後に再度お試しください。$/');
 });
 
 test('2-1-13: レート制限クリア', function () {

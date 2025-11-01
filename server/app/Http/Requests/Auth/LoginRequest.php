@@ -109,9 +109,9 @@ class LoginRequest extends BaseAuthRequest
         $displaySeconds = min($throttleSeconds, $seconds);
 
         $response = $this->handleException(
-            new ThrottleRequestsException(__('auth.login.throttle', ['seconds' => $displaySeconds])),
+            new ThrottleRequestsException(__('auth.throttle', ['seconds' => $displaySeconds])),
             $this,
-            __('auth.login.throttle', ['seconds' => $displaySeconds]),
+            __('auth.throttle', ['seconds' => $displaySeconds]),
             __('operations.auth.login')
         );
 

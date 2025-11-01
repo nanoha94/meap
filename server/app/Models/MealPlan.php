@@ -14,7 +14,7 @@ class MealPlan extends Model
 
     protected $fillable = [
         'group_id',
-        'meal_type_id',
+        'meal_category_id',
         'date',
     ];
 
@@ -23,20 +23,20 @@ class MealPlan extends Model
         return $this->belongsTo(Group::class);
     }
 
-    public function mealType()
+    public function mealCategory()
     {
-        return $this->belongsTo(MealType::class);
+        return $this->belongsTo(MealCategory::class);
     }
 
     public function recipes()
     {
         return $this->belongsToMany(Recipe::class, 'meal_plan_recipe_mappings', 'meal_plan_id', 'recipe_id')
-            ->withPivot('course_type_id');
+            ->withPivot('menu_category_id');
     }
 
-    public function courseTypes()
+    public function menuCategories()
     {
-        return $this->belongsToMany(CourseType::class, 'meal_plan_recipe_mappings', 'meal_plan_id', 'course_type_id')
+        return $this->belongsToMany(MenuCategory::class, 'meal_plan_recipe_mappings', 'meal_plan_id', 'menu_category_id')
             ->withPivot('recipe_id');
     }
 }

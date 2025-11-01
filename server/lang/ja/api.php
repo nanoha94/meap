@@ -5,7 +5,6 @@ return [
         'not_found' => '指定されたレコードが見つかりませんでした。',
         'forbidden' => 'アクセスが拒否されました。',
         'unauthorized' => '認証が必要です。',
-        'bulk_operation_failed' => '一括操作中にエラーが発生しました。',
         'validation_error' => '入力内容に誤りがあります。',
         'data_created' => 'データを作成しました。',
         'data_updated' => 'データを更新しました。',
@@ -31,11 +30,7 @@ return [
     'get_failed' => ':attributeの取得に失敗しました。',
     'not_found' => '指定された:attributeが見つかりませんでした。',
     'cannot_delete' => ':nameは削除できません。',
-    'invalid_ids' => '無効なIDが指定されています。',
-    'some_items_not_found' => '一部の:attributeが見つかりませんでした。',
-    'no_items_deleted' => '削除できる:attributeがありませんでした。',
     'bulk_update_failed' => ':attributeの一括更新中にエラーが発生しました。',
-    'thumbnail_not_found' => 'サムネイル画像が見つかりませんでした。',
 
     'image' => [
         'bulk_uploaded' => '画像を:count件アップロードしました。',
@@ -43,7 +38,6 @@ return [
         'bulk_deleted' => '画像を:count件削除しました。',
         'bulk_deletion_failed' => '画像の一括削除に失敗しました。',
         'deletion_failed' => '画像の削除に失敗しました。',
-        'info_get_failed' => '既存画像情報の取得に失敗しました',
         'group_mismatch' => 'グループIDが一致しません。',
     ],
     'invitation' => [
@@ -59,15 +53,12 @@ return [
         'has_existing_data' => 'すでに登録済みのデータがあります。',
         'joined_successfully' => 'グループに参加しました。',
         'join_failed' => 'グループへの参加に失敗しました。',
-        'max_attempts_reached' => '最大試行回数に達しました。',
     ],
 
     'attributes' => [
         'user' => 'ユーザー',
-        'group' => 'グループ',
-        'tag' => 'タグ',
         'meal_plan' => '献立',
-        'meal_type' => '献立種別',
+        'meal_category' => '献立カテゴリ',
         'recipe' => '料理/レシピ',
         'recipe_category' => '料理カテゴリー',
         'ingredient' => '食材',

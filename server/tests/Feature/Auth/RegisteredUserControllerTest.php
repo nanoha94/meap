@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\User;
-use App\Models\GroupUserMapping;
 use App\Models\Color;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
@@ -75,7 +74,7 @@ test('2-5-2: グループとユーザーの関連付け確認', function () {
     ]);
 
     // ユーザーとグループが関連付けられていることを確認
-    $groupUserMapping = GroupUserMapping::where('user_id', $user->id)->first();
+    $groupUserMapping = DB::table('group_user_mappings')->where('user_id', $user->id)->first();
     $this->assertNotNull($groupUserMapping);
     $this->assertNotNull($groupUserMapping->group_id);
 
@@ -91,7 +90,7 @@ test('2-5-3: デフォルトデータの自動作成確認', function () {
     ]);
 
     $user = User::where('email', 'test@example.com')->first();
-    $groupUserMapping = GroupUserMapping::where('user_id', $user->id)->first();
+    $groupUserMapping = DB::table('group_user_mappings')->where('user_id', $user->id)->first();
     $groupId = $groupUserMapping->group_id;
 
     // デフォルトの買い物カテゴリが作成されていることを確認
@@ -102,13 +101,13 @@ test('2-5-3: デフォルトデータの自動作成確認', function () {
     ]);
 
     // デフォルトの料理分類が作成されていることを確認
-    $this->assertDatabaseHas('course_types', [
+    $this->assertDatabaseHas('menu_categories', [
         'group_id' => $groupId,
         'name' => '主食',
     ]);
 
-    // デフォルトの献立種別が作成されていることを確認
-    $this->assertDatabaseHas('meal_types', [
+    // デフォルトの献立カテゴリが作成されていることを確認
+    $this->assertDatabaseHas('meal_categories', [
         'group_id' => $groupId,
         'name' => '昼食',
     ]);
@@ -598,7 +597,4 @@ test('2-5-30: 成功メッセージの国際化確認', function () {
         'message' => 'ユーザー登録に成功しました。',
         'data' => null,
     ]);
-
-    // メッセージが翻訳されていることを確認
-    $this->assertNotEquals('api.auth.registration_success', 'ユーザー登録に成功しました。');
 });

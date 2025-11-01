@@ -35,12 +35,12 @@ class Recipe extends Model
     public function mealPlans()
     {
         return $this->belongsToMany(MealPlan::class, 'meal_plan_recipe_mappings', 'recipe_id', 'meal_plan_id')
-            ->withPivot('course_type_id');
+            ->withPivot('menu_category_id');
     }
 
-    public function courseTypes()
+    public function menuCategories()
     {
-        return $this->belongsToMany(CourseType::class, 'meal_plan_recipe_mappings', 'recipe_id', 'course_type_id')
+        return $this->belongsToMany(MenuCategory::class, 'meal_plan_recipe_mappings', 'recipe_id', 'menu_category_id')
             ->withPivot('meal_plan_id');
     }
 

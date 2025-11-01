@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\ApiController;
-use App\Http\Requests\Api\GroupUserIndexRequest;
+use App\Http\Requests\Api\UserIndexRequest;
 use App\Services\UserService;
 use Illuminate\Http\JsonResponse;
 
-class GroupUserController extends ApiController
+class UserController extends ApiController
 {
     protected UserService $userService;
 
@@ -28,14 +28,14 @@ class GroupUserController extends ApiController
      *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
      * )
      */
-    public function index(GroupUserIndexRequest $request): JsonResponse
+    public function index(UserIndexRequest $request): JsonResponse
     {
         $operation = __('operations.users.index');
         $failedMessage = __('api.get_failed', ['attribute' => __('api.attributes.user')]);
 
         return $this->executeWithExceptionHandling(
             function () use ($request) {
-                $res = $this->userService->index($request->user()->group);
+                $res = $this->userService->index($this->getUserGroup($request));
                 $total = count($res);
                 $message = __('api.list_retrieved', ['attribute' => __('api.attributes.user'), 'count' => $total]);
 

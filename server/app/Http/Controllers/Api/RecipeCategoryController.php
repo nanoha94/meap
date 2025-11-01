@@ -37,7 +37,7 @@ class RecipeCategoryController extends ApiController
 
         return $this->executeWithExceptionHandling(
             function () use ($request) {
-                $res = $this->recipeCategoryService->index($request->user()->group);
+                $res = $this->recipeCategoryService->index($this->getUserGroup($request));
                 $total = count($res);
                 $message = __('api.list_retrieved', ['attribute' => __('api.attributes.recipe_category'), 'count' => $total]);
                 return $this->indexResponse($res, $total, $message);
@@ -69,7 +69,7 @@ class RecipeCategoryController extends ApiController
             function () use ($request) {
                 $res = $this->recipeCategoryService->create(
                     $request->validated(),
-                    $request->user()->group
+                    $this->getUserGroup($request)
                 );
                 $message = __('api.created', ['attribute' => __('api.attributes.recipe_category'), 'name' => $request->name]);
                 return $this->createdResponse($res, $message);
@@ -101,10 +101,10 @@ class RecipeCategoryController extends ApiController
             function () use ($request) {
                 $res = $this->recipeCategoryService->bulkUpdate(
                     $request->validated()['data'],
-                    $request->user()->group
+                    $this->getUserGroup($request)
                 );
                 $total = count($res);
-                $message = __('api.bulk_updated', ['attribute' => __('api.attributes.recipe_category'), 'count' => $total]);        
+                $message = __('api.bulk_updated', ['attribute' => __('api.attributes.recipe_category'), 'count' => $total]);
                 return $this->updatedResponse($res, $message);
             },
             $request,
@@ -134,9 +134,9 @@ class RecipeCategoryController extends ApiController
             function () use ($request) {
                 $deletedCount = $this->recipeCategoryService->bulkDelete(
                     $request->validated()['ids'],
-                    $request->user()->group
+                    $this->getUserGroup($request)
                 );
-$message = __('api.bulk_deleted', ['attribute' => __('api.attributes.recipe_category'), 'count' => $deletedCount]);
+                $message = __('api.bulk_deleted', ['attribute' => __('api.attributes.recipe_category'), 'count' => $deletedCount]);
                 return $this->deletedResponse($message);
             },
             $request,

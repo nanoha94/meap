@@ -70,23 +70,23 @@ namespace App\Swagger;
  * )
  * 
  * @OA\Response(
- *     response="MealTypeIndexSuccess",
- *     description="献立種別一覧を取得しました。",
+ *     response="MealCategoryIndexSuccess",
+ *     description="献立カテゴリ一覧を取得しました。",
  *     @OA\JsonContent(
  *         type="object",
  *         @OA\Property(property="success", type="boolean", example=true),
- *         @OA\Property(property="message", type="string", example="献立種別一覧を取得しました。"),
- *         @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/MealType")),
+ *         @OA\Property(property="message", type="string", example="献立カテゴリ一覧を取得しました。"),
+ *         @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/MealCategory")),
  *         @OA\Property(property="total", type="integer", example=100)
  *     )
  * )
  * @OA\Response(
- *     response="MealTypeStoreSuccess",
- *     description="献立種別(朝食)を作成しました。",
+ *     response="MealCategoryStoreSuccess",
+ *     description="献立カテゴリ(朝食)を作成しました。",
  *     @OA\JsonContent(
  *         type="object",
  *         @OA\Property(property="success", type="boolean", example=true),
- *         @OA\Property(property="message", type="string", example="献立種別(朝食)を作成しました。"),
+ *         @OA\Property(property="message", type="string", example="献立カテゴリ(朝食)を作成しました。"),
  *         @OA\Property(
  *             property="data",
  *             type="object",
@@ -98,32 +98,32 @@ namespace App\Swagger;
  *     )
  * )
  * @OA\Response(
- *     response="MealTypeBulkUpdateSuccess",
- *     description="3件の献立種別を更新しました。",
+ *     response="MealCategoryBulkUpdateSuccess",
+ *     description="3件の献立カテゴリを更新しました。",
  *     @OA\JsonContent(
  *         type="object",
  *         @OA\Property(property="success", type="boolean", example=true),
- *         @OA\Property(property="message", type="string", example="3件の献立種別を更新しました。"),
+ *         @OA\Property(property="message", type="string", example="3件の献立カテゴリを更新しました。"),
  *         @OA\Property(
  *             property="data",
  *             type="array",
- *             @OA\Items(ref="#/components/schemas/MealType")
+ *             @OA\Items(ref="#/components/schemas/MealCategory")
  *         )
  *     )
  * )
  * @OA\Response(
- *     response="MealTypeDestroySuccess",
- *     description="献立種別(昼食)を削除しました。",
+ *     response="MealCategoryDestroySuccess",
+ *     description="献立カテゴリ(昼食)を削除しました。",
  *     @OA\JsonContent(
  *         type="object",
  *         @OA\Property(property="success", type="boolean", example=true),
- *         @OA\Property(property="message", type="string", example="献立種別(昼食)を削除しました。"),
+ *         @OA\Property(property="message", type="string", example="献立カテゴリ(昼食)を削除しました。"),
  *         @OA\Property(property="data", type="null", example=null)
  *     )
  * )
  * 
  *  * @OA\Response(
- *     response="CourseTypeIndexSuccess",
+ *     response="MenuCategoryIndexSuccess",
  *     description="正常に取得されました",
  *     @OA\JsonContent(
  *         type="object",
@@ -131,7 +131,7 @@ namespace App\Swagger;
  *             property="data",
  *             type="array",
  *             description="コース種別一覧",
- *             @OA\Items(ref="#/components/schemas/CourseType")
+ *             @OA\Items(ref="#/components/schemas/MenuCategory")
  *         ),
  *         @OA\Property(
  *             property="total",
