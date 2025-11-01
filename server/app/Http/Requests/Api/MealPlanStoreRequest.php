@@ -2,20 +2,10 @@
 
 namespace App\Http\Requests\Api;
 
-use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Validation\ValidationException;
+use App\Http\Requests\Api\BaseApiRequest;
 
-class MealPlanStoreRequest extends FormRequest
+class MealPlanStoreRequest extends BaseApiRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool
-    {
-        return true;
-    }
 
     /**
      * Get the validation rules that apply to the request.
@@ -25,12 +15,12 @@ class MealPlanStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'date' => 'required|date',
-            'mealTypeId' => 'required|uuid',
-            'menu' => 'required|array|min:1',
-            'menu.*.recipeIds' => 'required|array|min:1',
-            'menu.*.recipeIds.*' => 'required|uuid',
-            'menu.*.courseTypeId' => 'required|uuid',
+            'date' => 'date_format:Y-m-d|required',
+            'mealTypeId' => 'uuid|required',
+            'menu' => 'array|min:1|required',
+            'menu.*.recipeIds' => 'array|min:1|required',
+            'menu.*.recipeIds.*' => 'uuid|required',
+            'menu.*.courseTypeId' => 'uuid|required',
         ];
     }
 
@@ -42,49 +32,30 @@ class MealPlanStoreRequest extends FormRequest
     public function messages()
     {
         return [
-            'date.required' => __('validation.required', ['attribute' => __('validation.attributes.meal_plan.date')]),
-            'date.date' => __('validation.date', ['attribute' => __('validation.attributes.meal_plan.date')]),
-            'mealTypeId.required' => __('validation.required', ['attribute' => __('validation.attributes.meal_plan.meal_type_id')]),
-            'mealTypeId.uuid' => __('validation.uuid', ['attribute' => __('validation.attributes.meal_plan.meal_type_id')]),
-            'menu.required' => __('validation.required', ['attribute' => __('validation.attributes.menu')]),
-            'menu.array' => __('validation.array', ['attribute' => __('validation.attributes.menu')]),
-            'menu.min' => __('validation.min.array', ['attribute' => __('validation.attributes.menu'), 'min' => 1]),
-            'menu.*.recipeIds.required' => __('validation.required', ['attribute' => __('validation.attributes.recipe_id')]),
-            'menu.*.recipeIds.array' => __('validation.array', ['attribute' => __('validation.attributes.recipe_id')]),
-            'menu.*.recipeIds.min' => __('validation.min.array', ['attribute' => __('validation.attributes.recipe_id'), 'min' => 1]),
-            'menu.*.recipeIds.*.required' => __('validation.required', ['attribute' => __('validation.attributes.recipe_id')]),
-            'menu.*.recipeIds.*.uuid' => __('validation.uuid', ['attribute' => __('validation.attributes.recipe_id')]),
-            'menu.*.courseTypeId.required' => __('validation.required', ['attribute' => __('validation.attributes.course_type_id')]),
-            'menu.*.courseTypeId.uuid' => __('validation.uuid', ['attribute' => __('validation.attributes.course_type_id')]),
+            'date.date_format' => __('validation.date_format', ['attribute' => 'date', 'format' => 'Y-m-d']),
+            'date.required' => __('validation.required', ['attribute' => 'date']),
+            'mealTypeId.uuid' => __('validation.uuid', ['attribute' => 'mealTypeId']),
+            'mealTypeId.required' => __('validation.required', ['attribute' => 'mealTypeId']),
+            'menu.array' => __('validation.array', ['attribute' => 'menu']),
+            'menu.min' => __('validation.min.array', ['attribute' => 'menu', 'min' => 1]),
+            'menu.required' => __('validation.required', ['attribute' => 'menu']),
+            'menu.*.recipeIds.array' => __('validation.array', ['attribute' => 'menu.*.recipeIds']),
+            'menu.*.recipeIds.min' => __('validation.min.array', ['attribute' => 'menu.*.recipeIds', 'min' => 1]),
+            'menu.*.recipeIds.required' => __('validation.required', ['attribute' => 'menu.*.recipeIds']),
+            'menu.*.recipeIds.*.uuid' => __('validation.uuid', ['attribute' => 'menu.*.recipeIds.*']),
+            'menu.*.recipeIds.*.required' => __('validation.required', ['attribute' => 'menu.*.recipeIds.*']),
+            'menu.*.courseTypeId.uuid' => __('validation.uuid', ['attribute' => 'menu.*.courseTypeId']),
+            'menu.*.courseTypeId.required' => __('validation.required', ['attribute' => 'menu.*.courseTypeId']),
         ];
     }
 
     /**
-     * Handle a failed validation attempt.
+     * Get the operation key for error handling.
      *
-     * @param  Validator  $validator
-     * @return void
-     *
-     * @throws ValidationException
+     * @return string
      */
-    protected function failedValidation(Validator $validator)
+    protected function getOperationKey(): string
     {
-        // バリデーション失敗時のログ記録とレスポンス生成
-        $errorMessages = $validator->errors()->all();
-        $primaryMessage = !empty($errorMessages) ? $errorMessages[0] : __('api.general.validation_error');
-
-        // ValidationExceptionを作成
-        $validationException = ValidationException::withMessages($validator->errors()->toArray());
-
-        // ExceptionHandlerTraitを使用してレスポンスを生成
-        $response = $this->handleException(
-            $validationException,
-            $this,
-            $primaryMessage,
-            __('operations.meal_plan.store')
-        );
-
-        // HttpResponseExceptionでレスポンスを投げる
-        throw new HttpResponseException($response);
+        return __('operations.meal_plan.store');
     }
 }

@@ -65,6 +65,16 @@ namespace App\Swagger;
  *     )
  * )
  * @OA\Response(
+ *     response="RecipeCategoryIndexSuccess",
+ *     description="料理カテゴリ一覧を取得しました。",
+ *     @OA\JsonContent(
+ *         type="object",
+ *         @OA\Property(property="success", type="boolean", example=true),
+ *         @OA\Property(property="message", type="string", example="料理カテゴリ一覧を取得しました。"),
+ *         @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/RecipeCategory"))
+ *     )
+ * )
+ * @OA\Response(
  *     response="RecipeCategoryStoreSuccess",
  *     description="料理カテゴリー(和食)を作成しました。",
  *     @OA\JsonContent(

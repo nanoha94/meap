@@ -19,7 +19,7 @@ beforeEach(function () {
         {
             $exception = ValidationException::withMessages([
                 'email' => ['メールアドレスが無効です'],
-                'password' => ['パスワードは必須です']
+                'password' => ['パスワードは必ず指定してください。',]
             ]);
 
             return $this->handleException(
@@ -50,7 +50,7 @@ beforeEach(function () {
             return $this->handleException(
                 $exception,
                 $request,
-                'ユーザーが見つかりません',
+                'ユーザーが見つかりませんでした',
                 'ユーザー検索'
             );
         }
@@ -167,7 +167,7 @@ test('1-3-3: ModelNotFoundExceptionの処理をテスト', function () {
         ->withArgs(function ($message, $context) {
             return str_contains($message, '操作「ユーザー検索」: リソースが見つかりません') &&
                 isset($context['search_conditions']) &&
-                $context['message'] === 'ユーザーが見つかりません' &&
+                $context['message'] === 'ユーザーが見つかりませんでした' &&
                 $context['status_code'] === HttpStatusCode::NOT_FOUND->value;
         });
 
@@ -178,7 +178,7 @@ test('1-3-3: ModelNotFoundExceptionの処理をテスト', function () {
     expect($response->getStatusCode())->toBe(HttpStatusCode::NOT_FOUND->value);
 
     $responseData = json_decode($response->getContent(), true);
-    expect($responseData['message'])->toBe('ユーザーが見つかりません');
+    expect($responseData['message'])->toBe('ユーザーが見つかりませんでした');
 });
 
 test('1-3-4: QueryExceptionの処理をテスト', function () {

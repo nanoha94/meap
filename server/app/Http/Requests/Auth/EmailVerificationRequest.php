@@ -2,12 +2,12 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Http\Requests\Auth\BaseAuthRequest;
 use Illuminate\Auth\Events\Verified;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\Validator;
 
-class EmailVerificationRequest extends FormRequest
+class EmailVerificationRequest extends BaseAuthRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -75,5 +75,15 @@ class EmailVerificationRequest extends FormRequest
     public function withValidator(Validator $validator)
     {
         return $validator;
+    }
+
+    /**
+     * Get the operation key for error handling.
+     *
+     * @return string
+     */
+    protected function getOperationKey(): string
+    {
+        return __('operations.auth.email_verification');
     }
 }

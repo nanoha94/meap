@@ -59,6 +59,15 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * The model's default values for attributes.
+     *
+     * @var array
+     */
+    protected $attributes = [
+        'language' => 'ja',
+    ];
+
+    /**
      * Send a password reset notification to the user.
      *
      * @param  string  $token

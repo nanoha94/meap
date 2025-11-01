@@ -7,21 +7,27 @@ echo "📖 認証テスト仕様: tests/docs/01_AUTHENTICATION_TEST_SPECIFICATIO
 echo "📖 ログテスト仕様: tests/docs/02_TRAIT_TEST_SPECIFICATIONS.md"
 echo ""
 
+# Traitsテスト実行
+echo "=========================================="
+echo "[1] Traits関連テスト実行"
+echo "=========================================="
+./tests/sh/01_run_traits_tests.sh
+
+echo ""
+
 # 認証テスト実行
 echo "=========================================="
-echo "[1] 認証関連テスト実行"
+echo "[2] 認証関連テスト実行"
 echo "=========================================="
-./tests/sh/01_run_auth_tests.sh
+./tests/sh/02_run_auth_tests.sh
 
 echo ""
 
-# ログテスト実行
+# APIテスト実行
 echo "=========================================="
-echo "[2] ログ関連テスト実行"
+echo "[3] APIテスト実行"
 echo "=========================================="
-./tests/sh/02_run_logging_tests.sh
-
-echo ""
+./tests/sh/03_run_api_tests.sh
 
 # 結果サマリー
 echo "=========================================="

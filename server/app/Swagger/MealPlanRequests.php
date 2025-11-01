@@ -47,7 +47,7 @@ namespace App\Swagger;
  *     @OA\JsonContent(
  *         type="object",
  *         @OA\Property(
- *             property="categories",
+ *             property="data",
  *             type="array",
  *             @OA\Items(ref="#/components/schemas/MealType")
  *         )

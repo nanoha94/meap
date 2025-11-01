@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\NewPasswordRequest;
 use App\Traits\LoggingTrait;
 use App\Enums\HttpStatusCode;
-use Exception;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\App;
@@ -26,48 +25,52 @@ class NewPasswordController extends Controller
      */
     public function store(NewPasswordRequest $request): JsonResponse
     {
-        try {
-            // Here we will attempt to reset the user's password. If it is successful we
-            // will update the password on an actual user model and persist it to the
-            // database. Otherwise we will parse the error and return the response.
-            $status = Password::reset(
-                ['password' => $request->string('password'), 'password_confirmation' => $request->string('password_confirmation'), 'token' => $request->input('token')],
-                function ($user) use ($request) {
-                    $user->forceFill([
-                        'password' => Hash::make($request->string('password')),
-                        'remember_token' => Str::random(60),
-                    ])->save();
+        $operation = __('operations.auth.password_reset');
+        $failedMessage = __('api.general.server_error');
 
-                    event(new PasswordReset($user));
-                }
-            );
+        return $this->executeWithExceptionHandling(
+            function () use ($request, $operation) {
+                // Here we will attempt to reset the user's password. If it is successful we
+                // will update the password on an actual user model and persist it to the
+                // database. Otherwise we will parse the error and return the response.
+                $status = Password::reset(
+                    ['password' => $request->string('password'), 'password_confirmation' => $request->string('password_confirmation'), 'token' => $request->input('token')],
+                    function ($user) use ($request) {
+                        $user->forceFill([
+                            'password' => Hash::make($request->string('password')),
+                            'remember_token' => Str::random(60),
+                        ])->save();
 
-            if ($status != Password::PASSWORD_RESET) {
-                $statusMessages = [
-                    Password::INVALID_USER => HttpStatusCode::UNPROCESSABLE_ENTITY,    // 422
-                    Password::INVALID_TOKEN => HttpStatusCode::NOT_FOUND,             // 404
-                ];
-
-                // 適切なステータスコードを取得
-                $statusCode = $statusMessages[$status] ?? HttpStatusCode::INTERNAL_SERVER_ERROR;
-
-                return $this->handleException(
-                    new HttpException($statusCode->value, __($status)),
-                    $request,
-                    __($status),
-                    __('operations.auth.password_reset')
+                        event(new PasswordReset($user));
+                    }
                 );
-            }
 
-            App::setLocale('en');
-            return $this->successResponse(null, __($status));
-        } catch (Exception $e) {
-            return $this->handleException(
-                $e,
-                $request,
-                __('api.general.server_error'),
-                __('operations.auth.password_reset')
-            );
-        }
+                if ($status != Password::PASSWORD_RESET) {
+                    $statusMessages = [
+                        Password::INVALID_USER => HttpStatusCode::UNPROCESSABLE_ENTITY,    // 422
+                        Password::INVALID_TOKEN => HttpStatusCode::NOT_FOUND,             // 404
+                    ];
+
+                    if (!isset($statusMessages[$status])) {
+                        throw new \Exception(__($status));
+                    }
+
+                    $statusCode = $statusMessages[$status];
+
+                    return $this->handleException(
+                        new HttpException($statusCode->value, __($status)),
+                        $request,
+                        __($status),
+                        $operation
+                    );
+                }
+
+                App::setLocale('en');
+                return $this->successResponse(null, __($status));
+            },
+            $request,
+            $failedMessage,
+            $operation
+        );
     }
 }

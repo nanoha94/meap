@@ -2,19 +2,23 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Enums\HttpStatusCode;
 use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\Api\ShoppingCategoryBulkDestroyRequest;
 use App\Http\Requests\Api\ShoppingCategoryBulkUpdateRequest;
+use App\Http\Requests\Api\ShoppingCategoryIndexRequest;
 use App\Http\Requests\Api\ShoppingCategoryStoreRequest;
-use App\Models\ShoppingCategory;
-use Exception;
+use App\Services\ShoppingCategoryService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class ShoppingCategoryController extends ApiController
 {
+    private ShoppingCategoryService $shoppingCategoryService;
+
+    public function __construct(ShoppingCategoryService $shoppingCategoryService)
+    {
+        $this->shoppingCategoryService = $shoppingCategoryService;
+    }
+
     /**
      * @OA\Get(
      *     path="/shopping-categories",
@@ -26,31 +30,22 @@ class ShoppingCategoryController extends ApiController
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
-    public function index(Request $request): JsonResponse
+    public function index(ShoppingCategoryIndexRequest $request): JsonResponse
     {
-        try {
-            $user = $request->user();
-            $group = $user->group;
+        $operation = __('operations.shopping_category.index');
+        $failedMessage = __('api.get_failed', ['attribute' => __('api.attributes.shopping.category')]);
 
-            $categories = $group->shoppingCategories()->select('id', 'name', 'is_default', 'order')->orderBy('order', 'asc')->get();
-            $formattedData = $categories->map(function ($category) {
-                return [
-                    'id' => $category->id,
-                    'name' => $category->name,
-                    'isDefault' => (bool)$category->is_default,
-                    'order' => $category->order
-                ];
-            });
-
-            return $this->indexResponse($formattedData, $formattedData->count(), __('api.list_retrieved', ['attribute' => __('api.attributes.shopping.category'), 'count' => $formattedData->count()]));
-        } catch (Exception $e) {
-            return $this->handleException(
-                $e,
-                $request,
-                __('api.get_failed', ['attribute' => __('api.attributes.shopping.category')]),
-                'shopping_category.index',
-            );
-        }
+        return $this->executeWithExceptionHandling(
+            function () use ($request) {
+                $res = $this->shoppingCategoryService->index($request->user()->group);
+                $total = count($res);
+                $message = __('api.list_retrieved', ['attribute' => __('api.attributes.shopping.category'), 'count' => $total]);
+                return $this->indexResponse($res, $total, $message);
+            },
+            $request,
+            $failedMessage,
+            $operation
+        );
     }
 
     /**
@@ -67,44 +62,22 @@ class ShoppingCategoryController extends ApiController
      */
     public function store(ShoppingCategoryStoreRequest $request): JsonResponse
     {
-        try {
-            $user = $request->user();
-            $group = $user->group;
+        $operation = __('operations.shopping_category.store');
+        $failedMessage = __('api.creation_failed', ['attribute' => __('api.attributes.shopping.category')]);
 
-
-            $validated = $request->validate();
-
-            $category = ShoppingCategory::create([
-                'group_id' => $group->id,
-                'name' => $validated['name'],
-                'is_default' => false,
-                'order' => $validated['order'],
-            ]);
-            if (!$category) {
-                $this->handleException(
-                    new HttpException(HttpStatusCode::INTERNAL_SERVER_ERROR->value, __('api.creation_failed', ['attribute' => __('api.attributes.shopping.category')])),
-                    $request,
-                    __('api.creation_failed', ['attribute' => __('api.attributes.shopping.category')]),
-                    __('operations.shopping_category.store')
+        return $this->executeWithExceptionHandling(
+            function () use ($request) {
+                $res = $this->shoppingCategoryService->create(
+                    $request->validated(),
+                    $request->user()->group
                 );
-            }
-
-            $data = [
-                'id' => $category->id,
-                'name' => $category->name,
-                'isDefault' => (bool)$category->is_default,
-                'order' => $category->order
-            ];
-
-            return $this->createdResponse($data, __('api.created', ['attribute' => __('api.attributes.shopping.category') . '(' . $validated['name'] . ')']));
-        } catch (Exception $e) {
-            return $this->handleException(
-                $e,
-                $request,
-                __('api.creation_failed', ['attribute' => __('api.attributes.shopping.category')]),
-                'shopping_category.store'
-            );
-        }
+                $message = __('api.created', ['attribute' => __('api.attributes.shopping.category'), 'name' => $request->name]);
+                return $this->createdResponse($res, $message);
+            },
+            $request,
+            $failedMessage,
+            $operation
+        );
     }
 
     /**
@@ -121,60 +94,23 @@ class ShoppingCategoryController extends ApiController
      */
     public function bulkUpdate(ShoppingCategoryBulkUpdateRequest $request): JsonResponse
     {
-        try {
-            $user = $request->user();
-            $group = $user->group;
+        $operation = __('operations.shopping_category.bulk_update');
+        $failedMessage = __('api.bulk_update_failed', ['attribute' => __('api.attributes.shopping.category')]);
 
-            // 入力値のバリデーション
-            $validated = $request->validate();
-
-            $updatedCount = 0;
-            $updatedIds = [];
-
-            // 更新処理を実行
-            foreach ($validated['data'] as $category) {
-                $ret = ShoppingCategory::where('id', $category['id'])->where('group_id', $group->id)->update([
-                    'name' => $category['name'],
-                    'order' => $category['order']
-                ]);
-                if (!$ret) {
-                    $this->logWarning(HttpStatusCode::OK, __('operations.shopping_category.bulk_update'), __('api.update_failed', ['attribute' => __('api.attributes.shopping.category')]), $request, [
-                        'category_id' => $category['id'],
-                        'category_name' => $category['name']
-                    ],   __METHOD__);
-                    // 更新に失敗した場合は、そのカテゴリーをスキップして続行
-                    continue;
-                } else {
-                    $updatedCount++;
-                    $updatedIds[] = $category['id'];
-                }
-            }
-
-            // 更新されたデータを取得
-            $updatedCategories = $group->shoppingCategories()
-                ->whereIn('id', $updatedIds)
-                ->select('id', 'name', 'is_default', 'order')
-                ->orderBy('order', 'asc')
-                ->get();
-
-            $formattedData = $updatedCategories->map(function ($category) {
-                return [
-                    'id' => $category->id,
-                    'name' => $category->name,
-                    'isDefault' => (bool)$category->is_default,
-                    'order' => $category->order
-                ];
-            });
-
-            return $this->updatedResponse($formattedData, __('api.bulk_updated', ['attribute' => __('api.attributes.shopping.category'), 'count' => $updatedCount]));
-        } catch (Exception $e) {
-            return $this->handleException(
-                $e,
-                $request,
-                __('api.general.bulk_operation_failed'),
-                'shopping_category.bulk_update'
-            );
-        }
+        return $this->executeWithExceptionHandling(
+            function () use ($request) {
+                $res = $this->shoppingCategoryService->bulkUpdate(
+                    $request->validated()['data'],
+                    $request->user()->group
+                );
+                $total = count($res);
+                $message = __('api.bulk_updated', ['attribute' => __('api.attributes.shopping.category'), 'count' => $total]);
+                return $this->updatedResponse($res, $message);
+            },
+            $request,
+            $failedMessage,
+            $operation
+        );
     }
 
     /**
@@ -191,67 +127,23 @@ class ShoppingCategoryController extends ApiController
      */
     public function bulkDestroy(ShoppingCategoryBulkDestroyRequest $request): JsonResponse
     {
-        try {
-            $user = $request->user();
-            $group = $user->group;
+        $operation = __('operations.shopping_category.bulk_destroy');
+        $failedMessage = __('api.deletion_failed', ['attribute' => __('api.attributes.shopping.category')]);
 
-            // 入力値のバリデーション
-            $validated = $request->validate();
+        return $this->executeWithExceptionHandling(
+            function () use ($request) {
+                $validated = $request->validated();
 
-            // 削除対象のカテゴリを取得して検証
-            $categories = ShoppingCategory::whereIn('id', $validated['ids'])
-                ->where('group_id', $group->id)
-                ->get();
-
-            // 見つからなかったIDを特定
-            $foundIds = $categories->pluck('id')->toArray();
-            $notFoundIds = array_diff($validated['ids'], $foundIds);
-
-            if (!empty($notFoundIds)) {
-                $this->handleException(
-                    new HttpException(HttpStatusCode::NOT_FOUND->value, __('api.not_found', ['attribute' => __('api.attributes.shopping.category')])),
-                    $request,
-                    __('api.not_found', ['attribute' => __('api.attributes.shopping.category')]),
-                    __('operations.shopping_category.bulk_destroy'),
-                    ['notFoundIds' => $notFoundIds]
+                $deletedCount = $this->shoppingCategoryService->bulkDelete(
+                    $validated['ids'],
+                    $request->user()->group
                 );
-            }
-
-            // デフォルトカテゴリのチェック
-            $defaultCategory = $categories->where('is_default', true)->first();
-            if ($defaultCategory) {
-                $this->handleException(
-                    new HttpException(HttpStatusCode::BAD_REQUEST->value, __('api.cannot_delete', ['name' => $defaultCategory->name])),
-                    $request,
-                    __('api.cannot_delete', ['name' => $defaultCategory->name]),
-                    __('operations.shopping_category.bulk_destroy'),
-                    ['default_category_name' => $defaultCategory->name]
-                );
-            }
-
-            // 一括削除
-            $deletedIds = $categories->pluck('id')->toArray();
-            ShoppingCategory::whereIn('id', $validated['ids'])
-                ->where('group_id', $group->id)
-                ->delete();
-
-            // 残りのカテゴリーのorderを整理
-            $remainingCategories = ShoppingCategory::where('group_id', $group->id)
-                ->orderBy('order')
-                ->get();
-
-            foreach ($remainingCategories as $index => $remainingCategory) {
-                $remainingCategory->update(['order' => $index]);
-            }
-
-            return $this->deletedResponse(__('api.bulk_deleted', ['attribute' => __('api.attributes.shopping.category'), 'count' => count($deletedIds)]));
-        } catch (Exception $e) {
-            return $this->handleException(
-                $e,
-                $request,
-                __('api.deletion_failed', ['attribute' => __('api.attributes.shopping.category')]),
-                'shopping_category.bulk_destroy'
-            );
-        }
+                $message = __('api.bulk_deleted', ['attribute' => __('api.attributes.shopping.category'), 'count' => $deletedCount]);
+                return $this->deletedResponse($message);
+            },
+            $request,
+            $failedMessage,
+            $operation
+        );
     }
 }

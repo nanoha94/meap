@@ -2,20 +2,10 @@
 
 namespace App\Http\Requests\Api;
 
-use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Validation\ValidationException;
+use App\Http\Requests\Api\BaseApiRequest;
 
-class ShoppingItemStoreRequest extends FormRequest
+class ShoppingItemStoreRequest extends BaseApiRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool
-    {
-        return true;
-    }
 
     /**
      * Get the validation rules that apply to the request.
@@ -25,11 +15,11 @@ class ShoppingItemStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:255',
-            'categoryId' => 'required|uuid',
-            'tags' => 'nullable|array',
-            'tags.*.id' => 'nullable|uuid',
-            'tags.*.name' => 'required|string|max:255',
+            'name' => 'string|max:255|required',
+            'categoryId' => 'uuid|required',
+            'tags' => 'array|nullable',
+            'tags.*.id' => 'uuid|nullable',
+            'tags.*.name' => 'string|max:255|required',
         ];
     }
 
@@ -41,45 +31,26 @@ class ShoppingItemStoreRequest extends FormRequest
     public function messages()
     {
         return [
-            'name.required' => __('validation.required', ['attribute' => __('validation.attributes.shopping.item.name')]),
-            'name.string' => __('validation.string', ['attribute' => __('validation.attributes.shopping.item.name')]),
-            'name.max' => __('validation.max.string', ['attribute' => __('validation.attributes.shopping.item.name'), 'max' => 255]),
-            'categoryId.required' => __('validation.required', ['attribute' => __('validation.attributes.shopping.item.category_id')]),
-            'categoryId.uuid' => __('validation.uuid', ['attribute' => __('validation.attributes.shopping.item.category_id')]),
-            'tags.array' => __('validation.array', ['attribute' => __('validation.attributes.shopping.item.tags')]),
-            'tags.*.id.uuid' => __('validation.uuid', ['attribute' => __('validation.attributes.shopping.item.tag_id')]),
-            'tags.*.name.required' => __('validation.required', ['attribute' => __('validation.attributes.shopping.item.tag_name')]),
-            'tags.*.name.string' => __('validation.string', ['attribute' => __('validation.attributes.shopping.item.tag_name')]),
-            'tags.*.name.max' => __('validation.max.string', ['attribute' => __('validation.attributes.shopping.item.tag_name'), 'max' => 255]),
+            'name.string' => __('validation.string', ['attribute' => 'name']),
+            'name.max' => __('validation.max.string', ['attribute' => 'name', 'max' => 255]),
+            'name.required' => __('validation.required', ['attribute' => 'name']),
+            'categoryId.uuid' => __('validation.uuid', ['attribute' => 'categoryId']),
+            'categoryId.required' => __('validation.required', ['attribute' => 'categoryId']),
+            'tags.array' => __('validation.array', ['attribute' => 'tags']),
+            'tags.*.id.uuid' => __('validation.uuid', ['attribute' => 'tags.*.id']),
+            'tags.*.name.string' => __('validation.string', ['attribute' => 'tags.*.name']),
+            'tags.*.name.max' => __('validation.max.string', ['attribute' => 'tags.*.name', 'max' => 255]),
+            'tags.*.name.required' => __('validation.required', ['attribute' => 'tags.*.name']),
         ];
     }
 
     /**
-     * Handle a failed validation attempt.
+     * Get the operation key for error handling.
      *
-     * @param  Validator  $validator
-     * @return void
-     *
-     * @throws ValidationException
+     * @return string
      */
-    protected function failedValidation(Validator $validator)
+    protected function getOperationKey(): string
     {
-        // バリデーション失敗時のログ記録とレスポンス生成
-        $errorMessages = $validator->errors()->all();
-        $primaryMessage = !empty($errorMessages) ? $errorMessages[0] : __('api.general.validation_error');
-
-        // ValidationExceptionを作成
-        $validationException = ValidationException::withMessages($validator->errors()->toArray());
-
-        // ExceptionHandlerTraitを使用してレスポンスを生成
-        $response = $this->handleException(
-            $validationException,
-            $this,
-            $primaryMessage,
-            __('operations.shopping_item.store')
-        );
-
-        // HttpResponseExceptionでレスポンスを投げる
-        throw new HttpResponseException($response);
+        return __('operations.shopping_item.store');
     }
 }

@@ -2,20 +2,10 @@
 
 namespace App\Http\Requests\Api;
 
-use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Validation\ValidationException;
+use App\Http\Requests\Api\BaseApiRequest;
 
-class RecipeIndexRequest extends FormRequest
+class RecipeIndexRequest extends BaseApiRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool
-    {
-        return true;
-    }
 
     /**
      * Get the validation rules that apply to the request.
@@ -25,8 +15,8 @@ class RecipeIndexRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'page' => 'nullable|integer|min:1',
-            'per_page' => 'nullable|integer|min:1|max:100',
+            'page' => 'integer|min:1|nullable',
+            'per_page' => 'integer|min:1|max:100|nullable',
         ];
     }
 
@@ -38,40 +28,21 @@ class RecipeIndexRequest extends FormRequest
     public function messages()
     {
         return [
-            'page.integer' => __('validation.integer', ['attribute' => __('validation.attributes.page')]),
-            'page.min' => __('validation.min.numeric', ['attribute' => __('validation.attributes.page'), 'min' => 1]),
-            'per_page.integer' => __('validation.integer', ['attribute' => __('validation.attributes.per_page')]),
-            'per_page.min' => __('validation.min.numeric', ['attribute' => __('validation.attributes.per_page'), 'min' => 1]),
-            'per_page.max' => __('validation.max.numeric', ['attribute' => __('validation.attributes.per_page'), 'max' => 100]),
+            'page.integer' => __('validation.integer', ['attribute' => 'page']),
+            'page.min' => __('validation.min.numeric', ['attribute' => 'page', 'min' => 1]),
+            'per_page.integer' => __('validation.integer', ['attribute' => 'per_page']),
+            'per_page.min' => __('validation.min.numeric', ['attribute' => 'per_page', 'min' => 1]),
+            'per_page.max' => __('validation.max.numeric', ['attribute' => 'per_page', 'max' => 100]),
         ];
     }
 
     /**
-     * Handle a failed validation attempt.
+     * Get the operation key for error handling.
      *
-     * @param  Validator  $validator
-     * @return void
-     *
-     * @throws ValidationException
+     * @return string
      */
-    protected function failedValidation(Validator $validator)
+    protected function getOperationKey(): string
     {
-        // バリデーション失敗時のログ記録とレスポンス生成
-        $errorMessages = $validator->errors()->all();
-        $primaryMessage = !empty($errorMessages) ? $errorMessages[0] : __('api.general.validation_error');
-
-        // ValidationExceptionを作成
-        $validationException = ValidationException::withMessages($validator->errors()->toArray());
-
-        // ExceptionHandlerTraitを使用してレスポンスを生成
-        $response = $this->handleException(
-            $validationException,
-            $this,
-            $primaryMessage,
-            __('operations.recipe.index')
-        );
-
-        // HttpResponseExceptionでレスポンスを投げる
-        throw new HttpResponseException($response);
+        return __('operations.recipe.index');
     }
 }

@@ -6,9 +6,7 @@ use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\Api\ImageBulkUploadRequest;
 use App\Http\Requests\Api\ImageBulkDestroyRequest;
 use App\Services\ImageService;
-use Exception;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class ImageController extends ApiController
 {
@@ -33,33 +31,35 @@ class ImageController extends ApiController
      */
     public function bulkUpload(ImageBulkUploadRequest $request): JsonResponse
     {
-        try {
-            $user = $request->user();
-            $group = $user->group;
+        $operation = __('operations.image.bulk_upload');
+        $failedMessage = __('api.image.upload_failed');
 
-            $validated = $request->validated();
+        return $this->executeWithExceptionHandling(
+            function () use ($request) {
+                $group = $request->user()->group;
+                $validated = $request->validated();
 
-            // 画像ファイルを取得
-            $imageFiles = $this->imageService->getValidImageFiles($request, 20);
+                // 画像ファイルを取得
+                $imageFiles = $this->imageService->getValidImageFiles($request, 20);
 
-            // ディレクトリの設定
-            $directory = $validated['directory'] ?? 'general';
-            $uploadPath = "$group->id/$directory";
+                // ディレクトリの設定
+                $directory = $validated['directory'] ?? 'general';
+                $uploadPath = "$group->id/$directory";
 
-            // 画像をアップロード
-            $uploadedImages = collect($imageFiles)
-                ->map(fn($file) => $this->imageService->uploadAndSaveImage($file, $uploadPath))
-                ->pipe(fn($images) => $this->imageService->formatBulkImageUploadResponse($images));
+                // 画像をアップロード
+                $uploadedImages = collect($imageFiles)
+                    ->map(fn($file) => $this->imageService->uploadAndSaveImage($file, $uploadPath))
+                    ->pipe(fn($images) => $this->imageService->formatBulkImageUploadResponse($images));
 
-            return $this->successResponse($uploadedImages, __('api.image.uploaded', ['count' => count($uploadedImages)]));
-        } catch (Exception $e) {
-            return $this->handleException(
-                $e,
-                $request,
-                __('api.image.upload_failed'),
-                'image.bulk_upload'
-            );
-        }
+                $total = count($uploadedImages);
+                $message = __('api.image.bulk_uploaded', ['count' => $total]);
+
+                return $this->updatedResponse($uploadedImages, $message);
+            },
+            $request,
+            $failedMessage,
+            $operation
+        );
     }
 
     /**
@@ -76,22 +76,22 @@ class ImageController extends ApiController
      */
     public function bulkDestroy(ImageBulkDestroyRequest $request): JsonResponse
     {
-        try {
-            $user = $request->user();
-            $group = $user->group;
+        $operation = __('operations.image.bulk_destroy');
+        $failedMessage = __('api.image.bulk_deletion_failed');
 
-            $validated = $request->validated();
-            $imageIds = $validated['ids'];
-            $deletedCount = $this->imageService->deleteImages($imageIds);
+        return $this->executeWithExceptionHandling(
+            function () use ($request) {
+                $group = $request->user()->group;
+                $validated = $request->validated();
+                $imageIds = $validated['ids'];
+                $deletedCount = $this->imageService->deleteImages($imageIds, $group);
+                $message = __('api.image.bulk_deleted', ['count' => $deletedCount]);
 
-            return $this->successResponse(null, __('api.image.bulk_deleted', ['count' => $deletedCount]));
-        } catch (Exception $e) {
-            return $this->handleException(
-                $e,
-                $request,
-                __('api.image.bulk_deletion_failed'),
-                'image.bulk_destroy'
-            );
-        }
+                return $this->deletedResponse($message);
+            },
+            $request,
+            $failedMessage,
+            $operation
+        );
     }
 }

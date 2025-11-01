@@ -185,7 +185,8 @@ test('2-5-7: 名前未入力', function () {
 
     $response->assertStatus(422);
     $response->assertJsonValidationErrors('name');
-    $response->assertJson(['errors' => ['name' => ['名前は必ず指定してください。']]]);
+    $responseData = $response->json();
+    $this->assertContains('nameは必ず指定してください。', $responseData['errors']['name']);
     $this->assertGuest();
 });
 
@@ -198,7 +199,8 @@ test('2-5-8: メールアドレス未入力', function () {
 
     $response->assertStatus(422);
     $response->assertJsonValidationErrors('email');
-    $response->assertJson(['errors' => ['email' => ['メールアドレスは必須です。']]]);
+    $responseData = $response->json();
+    $this->assertContains('emailは必ず指定してください。', $responseData['errors']['email']);
     $this->assertGuest();
 });
 
@@ -211,7 +213,8 @@ test('2-5-9: パスワード未入力', function () {
 
     $response->assertStatus(422);
     $response->assertJsonValidationErrors('password');
-    $response->assertJson(['errors' => ['password' => ['パスワードは必須です。']]]);
+    $responseData = $response->json();
+    $this->assertContains('passwordは必ず指定してください。', $responseData['errors']['password']);
     $this->assertGuest();
 });
 
@@ -224,7 +227,8 @@ test('2-5-10: パスワード確認未入力', function () {
 
     $response->assertStatus(422);
     $response->assertJsonValidationErrors('password');
-    $response->assertJson(['errors' => ['password' => ['パスワードが一致しません。']]]);
+    $responseData = $response->json();
+    $this->assertContains('passwordが一致しません。', $responseData['errors']['password']);
     $this->assertGuest();
 });
 
@@ -238,7 +242,8 @@ test('2-5-11: パスワード確認不一致', function () {
 
     $response->assertStatus(422);
     $response->assertJsonValidationErrors('password');
-    $response->assertJson(['errors' => ['password' => ['パスワードが一致しません。']]]);
+    $responseData = $response->json();
+    $this->assertContains('passwordが一致しません。', $responseData['errors']['password']);
     $this->assertGuest();
 });
 
@@ -252,7 +257,8 @@ test('2-5-12: 無効なメール形式', function () {
 
     $response->assertStatus(422);
     $response->assertJsonValidationErrors('email');
-    $response->assertJson(['errors' => ['email' => ['メールアドレスには、有効なメールアドレスを指定してください。']]]);
+    $responseData = $response->json();
+    $this->assertContains('emailには、有効なメールアドレスを指定してください。', $responseData['errors']['email']);
     $this->assertGuest();
 });
 
@@ -266,7 +272,8 @@ test('2-5-13: メールアドレスが大文字', function () {
 
     $response->assertStatus(422);
     $response->assertJsonValidationErrors('email');
-    $response->assertJson(['errors' => ['email' => ['メールアドレスは、小文字のみで指定してください。']]]);
+    $responseData = $response->json();
+    $this->assertContains('emailは、小文字のみで指定してください。', $responseData['errors']['email']);
     $this->assertGuest();
 });
 
@@ -282,7 +289,8 @@ test('2-5-14: 名前が255文字超過', function () {
 
     $response->assertStatus(422);
     $response->assertJsonValidationErrors('name');
-    $response->assertJson(['errors' => ['name' => ['名前は、255文字以下で指定してください。']]]);
+    $responseData = $response->json();
+    $this->assertContains('nameは、255文字以内で指定してください。', $responseData['errors']['name']);
     $this->assertGuest();
 });
 
@@ -298,7 +306,8 @@ test('2-5-15: メールアドレスが255文字超過', function () {
 
     $response->assertStatus(422);
     $response->assertJsonValidationErrors('email');
-    $response->assertJson(['errors' => ['email' => ['メールアドレスは、255文字以下で指定してください。']]]);
+    $responseData = $response->json();
+    $this->assertContains('emailは、255文字以内で指定してください。', $responseData['errors']['email']);
     $this->assertGuest();
 });
 
@@ -312,7 +321,8 @@ test('2-5-16: パスワードが短すぎる', function () {
 
     $response->assertStatus(422);
     $response->assertJsonValidationErrors('password');
-    $response->assertJson(['errors' => ['password' => ['パスワードは、8文字以上で指定してください。']]]);
+    $responseData = $response->json();
+    $this->assertContains('passwordは、8文字以上で指定してください。', $responseData['errors']['password']);
     $this->assertGuest();
 });
 
@@ -326,7 +336,8 @@ test('2-5-17: パスワードに英字が含まれない', function () {
 
     $response->assertStatus(422);
     $response->assertJsonValidationErrors('password');
-    $response->assertJson(['errors' => ['password' => ['パスワードは、最低1文字以上の文字を含めてください。']]]);
+    $responseData = $response->json();
+    $this->assertContains('passwordは、1文字以上の文字を含めてください。', $responseData['errors']['password']);
     $this->assertGuest();
 });
 
@@ -340,7 +351,8 @@ test('2-5-18: パスワードに数字が含まれない', function () {
 
     $response->assertStatus(422);
     $response->assertJsonValidationErrors('password');
-    $response->assertJson(['errors' => ['password' => ['パスワードは、最低1文字以上の数字を含めてください。']]]);
+    $responseData = $response->json();
+    $this->assertContains('passwordは、1文字以上の数字を含めてください。', $responseData['errors']['password']);
     $this->assertGuest();
 });
 
@@ -354,7 +366,8 @@ test('2-5-19: パスワードに記号が含まれない', function () {
 
     $response->assertStatus(422);
     $response->assertJsonValidationErrors('password');
-    $response->assertJson(['errors' => ['password' => ['パスワードは、最低1文字以上の記号を含めてください。']]]);
+    $responseData = $response->json();
+    $this->assertContains('passwordは、1文字以上の記号を含めてください。', $responseData['errors']['password']);
     $this->assertGuest();
 });
 
@@ -371,7 +384,8 @@ test('2-5-20: 重複メールアドレス', function () {
 
     $response->assertStatus(422);
     $response->assertJsonValidationErrors('email');
-    $response->assertJson(['errors' => ['email' => ['メールアドレスの値は既に存在しています。']]]);
+    $responseData = $response->json();
+    $this->assertContains('emailの値は既に存在しています。', $responseData['errors']['email']);
     $this->assertGuest();
 });
 

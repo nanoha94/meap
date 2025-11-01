@@ -42,7 +42,6 @@ return [
     'doesnt_end_with' => ':attributeは、:values以外の値で終わるように指定してください。',
     'doesnt_start_with' => ':attributeは、:values以外の値で始まるように指定してください。',
     'email' => [
-        'required' => ':attributeは必須です。',
         'string' => ':attributeは文字列でなくてはなりません。',
         'email' => ':attributeには、有効なメールアドレスを指定してください。',
     ],
@@ -115,18 +114,12 @@ return [
     'not_regex' => ':attributeの形式が正しくありません。',
     'numeric' => ':attributeには、数字を指定してください。',
     'password' => [
-        'required' => ':attributeは必須です。',
-        'string' => ':attributeは文字列でなくてはなりません。',
         'confirmed' => ':attributeが一致しません。',
-        'min' => ':attributeは、最低:min文字以上で入力してください。',
-        'letters' => ':attributeは、最低1文字以上の文字を含めてください。',
-        'mixed' => ':attributeは、最低1文字以上の大文字と小文字をそれぞれ含めてください。',
-        'numbers' => ':attributeは、最低1文字以上の数字を含めてください。',
-        'symbols' => ':attributeは、最低1文字以上の記号を含めてください。',
+        'letters' => ':attributeは、1文字以上の文字を含めてください。',
+        'mixed' => ':attributeは、1文字以上の大文字と小文字をそれぞれ含めてください。',
+        'numbers' => ':attributeは、1文字以上の数字を含めてください。',
+        'symbols' => ':attributeは、1文字以上の記号を含めてください。',
         'uncompromised' => '指定の:attributeは、漏洩している恐れがあります。他の:attributeを指定してください。',
-    ],
-    'password_confirmation' => [
-        'required' => ':attributeは必須です。',
     ],
     'present' => ':attributeが存在していません。',
     'present_if' => ':attributeの値は:otherが:valueの際に必須です。',
@@ -168,6 +161,7 @@ return [
     'uuid' => ':attributeに有効なUUIDを指定してください。',
     'id_must_be_string' => 'IDは文字列でなければなりません。',
     'specified_id_does_not_exist' => '指定されたIDは存在しません。',
+    'required_when_unit_requires_quantity' => '選択した単位では:attributeの指定が必須です。',
 
     /*
     |--------------------------------------------------------------------------
@@ -270,6 +264,7 @@ return [
         'text' => 'テキスト',
         'time' => '時間',
         'title' => 'タイトル',
+        'token' => 'トークン',
         'updated_at' => '更新日',
         'username' => 'ユーザー名',
         'year' => '年',
@@ -283,7 +278,7 @@ return [
         'id' => 'ID',
         'menu' => 'メニュー',
         'recipe_id' => 'レシピID',
-        'course_type_id' => 'コースタイプID',
+        'course_type_id' => 'コース種別ID',
         'recipe' => [
             'name' => 'レシピ名',
             'step_id' => '手順ID',
@@ -315,7 +310,7 @@ return [
         ],
         'meal_plan' => [
             'date' => '日付',
-            'meal_type_id' => '食事タイプID',
+            'meal_type_id' => '献立種別ID',
             'recipe_id' => 'レシピID',
             'servings' => '人数'
         ],
@@ -333,6 +328,7 @@ return [
             'width' => '画像幅',
             'height' => '画像高さ'
         ],
+        'data' => 'データ',
     ],
 
 ];

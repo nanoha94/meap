@@ -32,7 +32,8 @@ test('2-3-2: トークン未入力', function () {
 
     $response->assertStatus(422);
     $response->assertJsonValidationErrors('token');
-    $response->assertJson(['errors' => ['token' => ['トークンは必須です。']]]);
+    $responseData = $response->json();
+    $this->assertContains('tokenは必ず指定してください。', $responseData['errors']['token']);
 });
 
 test('2-3-3: パスワード未入力', function () {
@@ -46,7 +47,8 @@ test('2-3-3: パスワード未入力', function () {
 
     $response->assertStatus(422);
     $response->assertJsonValidationErrors('password');
-    $response->assertJson(['errors' => ['password' => ['パスワードは必須です。']]]);
+    $responseData = $response->json();
+    $this->assertContains('passwordは必ず指定してください。', $responseData['errors']['password']);
 });
 
 test('2-3-4: パスワード確認未入力', function () {
@@ -60,7 +62,8 @@ test('2-3-4: パスワード確認未入力', function () {
 
     $response->assertStatus(422);
     $response->assertJsonValidationErrors('password_confirmation');
-    $response->assertJson(['errors' => ['password_confirmation' => ['確認用パスワードは必須です。']]]);
+    $responseData = $response->json();
+    $this->assertContains('password_confirmationは必ず指定してください。', $responseData['errors']['password_confirmation']);
 });
 
 test('2-3-5: パスワード確認不一致', function () {
@@ -75,7 +78,8 @@ test('2-3-5: パスワード確認不一致', function () {
 
     $response->assertStatus(422);
     $response->assertJsonValidationErrors('password');
-    $response->assertJson(['errors' => ['password' => ['パスワードが一致しません。']]]);
+    $responseData = $response->json();
+    $this->assertContains('passwordが一致しません。', $responseData['errors']['password']);
 });
 
 test('2-3-6: パスワードが短すぎる', function () {
@@ -90,7 +94,8 @@ test('2-3-6: パスワードが短すぎる', function () {
 
     $response->assertStatus(422);
     $response->assertJsonValidationErrors('password');
-    $response->assertJson(['errors' => ['password' => ['パスワードは、最低8文字以上で入力してください。']]]);
+    $responseData = $response->json();
+    $this->assertContains('passwordは、8文字以上で指定してください。', $responseData['errors']['password']);
 });
 
 test('2-3-7: パスワードに英字が含まれない', function () {
@@ -105,7 +110,8 @@ test('2-3-7: パスワードに英字が含まれない', function () {
 
     $response->assertStatus(422);
     $response->assertJsonValidationErrors('password');
-    $response->assertJson(['errors' => ['password' => ['パスワードは、最低1文字以上の文字を含めてください。']]]);
+    $responseData = $response->json();
+    $this->assertContains('passwordは、1文字以上の文字を含めてください。', $responseData['errors']['password']);
 });
 
 test('2-3-8: パスワードに数字が含まれない', function () {
@@ -120,7 +126,8 @@ test('2-3-8: パスワードに数字が含まれない', function () {
 
     $response->assertStatus(422);
     $response->assertJsonValidationErrors('password');
-    $response->assertJson(['errors' => ['password' => ['パスワードは、最低1文字以上の数字を含めてください。']]]);
+    $responseData = $response->json();
+    $this->assertContains('passwordは、1文字以上の数字を含めてください。', $responseData['errors']['password']);
 });
 
 test('2-3-9: パスワードに記号が含まれない', function () {
@@ -135,7 +142,8 @@ test('2-3-9: パスワードに記号が含まれない', function () {
 
     $response->assertStatus(422);
     $response->assertJsonValidationErrors('password');
-    $response->assertJson(['errors' => ['password' => ['パスワードは、最低1文字以上の記号を含めてください。']]]);
+    $responseData = $response->json();
+    $this->assertContains('passwordは、1文字以上の記号を含めてください。', $responseData['errors']['password']);
 });
 
 test('2-3-10: 無効なトークン', function () {
@@ -162,5 +170,5 @@ test('2-3-11: ユーザーが存在しない', function () {
     ]);
 
     $response->assertStatus(422);
-    $response->assertJson(['message' => '指定されたメールアドレスのユーザーが見つかりません。']);
+    $response->assertJson(['message' => '指定されたメールアドレスのユーザーが見つかりませんでした。']);
 });

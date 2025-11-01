@@ -3,14 +3,13 @@
 namespace App\Traits;
 
 use App\Enums\HttpStatusCode;
-use Error;
-use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Throwable;
 
 trait ExceptionHandlerTrait
 {
@@ -21,7 +20,7 @@ trait ExceptionHandlerTrait
      * 例外の種類に応じて適切なレスポンスを返す
      */
     protected function handleException(
-        Exception | Error $e,
+        Throwable $e,
         Request $request,
         string $defaultMessage,
         string $operation,
@@ -30,7 +29,7 @@ trait ExceptionHandlerTrait
         // バリデーション例外
         if ($e instanceof ValidationException) {
             $message = $defaultMessage ?? __('api.general.validation_error');
-            $this->logError(HttpStatusCode::UNPROCESSABLE_ENTITY, $operation, $e, $request,  [
+            $this->logError(HttpStatusCode::UNPROCESSABLE_ENTITY, $operation, $e, $request, [
                 'message' => $message,
                 ...$additionalContext,
             ]);
@@ -41,7 +40,7 @@ trait ExceptionHandlerTrait
         if ($e instanceof HttpException) {
             $message = $e->getMessage() ?? $defaultMessage;
             $errorCode = $e->getStatusCode();
-            $this->logError($errorCode ?? HttpStatusCode::INTERNAL_SERVER_ERROR, $operation, $e, $request,  [
+            $this->logError($errorCode ?? HttpStatusCode::INTERNAL_SERVER_ERROR, $operation, $e, $request, [
                 'message' => $message,
                 ...$additionalContext,
             ]);
@@ -51,7 +50,7 @@ trait ExceptionHandlerTrait
         // モデル未発見例外
         if ($e instanceof ModelNotFoundException) {
             $message = $defaultMessage ?? __('api.general.not_found');
-            $this->logError(HttpStatusCode::NOT_FOUND, $operation, $e, $request,  [
+            $this->logError(HttpStatusCode::NOT_FOUND, $operation, $e, $request, [
                 'search_conditions' => $e->getIds(),
                 'message' => $message,
                 ...$additionalContext,
@@ -70,23 +69,25 @@ trait ExceptionHandlerTrait
         }
 
         // その他の例外は基本処理
-        return $this->handleGenericException($e, $request, $defaultMessage, $operation);
+        return $this->handleGenericException($e, $request, $defaultMessage, $operation, $additionalContext);
     }
 
     /**
      * 汎用例外の処理
      */
     private function handleGenericException(
-        Exception | Error $e,
+        Throwable $e,
         Request $request,
         string $defaultMessage,
         string $operation,
+        array $additionalContext = []
     ): JsonResponse {
         $message = $defaultMessage ?? $e->getMessage();
         $statusCode = $this->getExceptionStatusCode($e);
 
-        $this->logError(($statusCode), $operation, $e, $request, [
+        $this->logError($statusCode, $operation, $e, $request, [
             'message' => $message,
+            ...$additionalContext,
         ]);
 
         return $this->errorResponse($message, $statusCode);
@@ -95,7 +96,7 @@ trait ExceptionHandlerTrait
     /**
      * 例外のステータスコードを取得
      */
-    protected function getExceptionStatusCode(Exception $e): int
+    protected function getExceptionStatusCode(Throwable $e): int
     {
         if (method_exists($e, 'getStatusCode')) {
             try {

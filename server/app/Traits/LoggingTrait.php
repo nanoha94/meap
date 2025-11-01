@@ -3,9 +3,12 @@
 namespace App\Traits;
 
 use App\Enums\HttpStatusCode;
+use Error;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Exception;
+use Illuminate\Validation\ValidationException;
+use Throwable;
 
 trait LoggingTrait
 {
@@ -19,14 +22,14 @@ trait LoggingTrait
      * @param array $additionalContext 追加のコンテキスト情報
      */
     public function logInfo(
+        string $callerMethod = __METHOD__,
         HttpStatusCode $statusCode,
         string $operation,
         string $message,
         Request $request,
         array $additionalContext = [],
-        string $callerMethod = __METHOD__
     ): void {
-        $this->logMessage('info', $operation, $message, $request, $statusCode->value, $additionalContext, $callerMethod);
+        $this->logMessage('info', $callerMethod, $operation, $message, $request, $statusCode->value, $additionalContext);
     }
 
     /**
@@ -39,14 +42,12 @@ trait LoggingTrait
      * @param array $additionalContext 追加のコンテキスト情報
      */
     public function logWarning(
-        HttpStatusCode $statusCode,
+        string $callerMethod = __METHOD__,
         string $operation,
         string $message,
-        Request $request,
         array $additionalContext = [],
-        string $callerMethod = __METHOD__
     ): void {
-        $this->logMessage('warning', $operation, $message, $request, $statusCode->value, $additionalContext, $callerMethod);
+        $this->logMessage('warning', $callerMethod, $operation, $message, null, null, $additionalContext);
     }
 
     /**
@@ -54,18 +55,18 @@ trait LoggingTrait
      *
      * @param HttpStatusCode $statusCode ステータスコード
      * @param string $operation 実行中の操作
-     * @param Exception $exception 発生した例外
+     * @param \Throwable $exception 発生した例外（ExceptionまたはError）
      * @param Request $request リクエストインスタンス
      * @param array $additionalContext 追加のコンテキスト情報
      */
     public function logError(
         HttpStatusCode | int $statusCode,
         string $operation,
-        Exception $exception,
+        Throwable $exception,
         Request $request,
         array $additionalContext = [],
-        string $callerMethod = __METHOD__
     ): void {
+
         $errorContext = array_merge(
             [
                 'file' => $exception->getFile(),
@@ -96,8 +97,10 @@ trait LoggingTrait
             $errorMessage = __('api.general.error');
         }
 
+        $callerMethod = $this->getCallerMethod($exception);
 
-        $this->logMessage('error', $operation, $errorMessage, $request, $errorCode, $errorContext, $callerMethod);
+
+        $this->logMessage('error', $callerMethod, $operation, $errorMessage, $request, $errorCode, $errorContext);
     }
 
     /**
@@ -112,29 +115,31 @@ trait LoggingTrait
      */
     private function logMessage(
         string $logLevel,
+        string $callerMethod = __METHOD__,
         string $operation,
         string $message,
-        Request $request,
-        int $statusCode,
+        Request | null $request = null,
+        int | null $statusCode = null,
         array $additionalContext = [],
-        string $callerMethod,
     ): void {
-        $user = $request->user();
+        $user = $request?->user();
         $group = $user?->group;
 
         $context = [
             'method' => $callerMethod,
             'user_id' => $user?->id,
             'group_id' => $group?->id,
-            'request_method' => $request->method(),
-            'request_url' => $request->fullUrl(),
-            'request_ip' => $request->ip(),
-            'user_agent' => $request->userAgent(),
+            'request_method' => $request?->method(),
+            'request_url' => $request?->fullUrl(),
+            'request_ip' => $request?->ip(),
+            'user_agent' => $request?->userAgent(),
             'status_code' => $statusCode,
         ];
 
         // 機密情報を除外
-        $context = $this->filterSensitiveData($context, $request);
+        if ($request) {
+            $context = $this->filterSensitiveData($context, $request);
+        }
         $context = array_merge($context, $additionalContext);
 
         Log::$logLevel("操作「{$operation}」: {$message}", $context);
@@ -176,7 +181,7 @@ trait LoggingTrait
     /**
      * 例外のステータスコードを取得
      */
-    private function getLoggingExceptionStatusCode(Exception $exception): int
+    private function getLoggingExceptionStatusCode(Throwable $exception): int
     {
         if (method_exists($exception, 'getStatusCode')) {
             try {
@@ -192,11 +197,138 @@ trait LoggingTrait
     /**
      * 例外に関連するモデルクラス名を取得
      */
-    private function getExceptionModel(Exception $exception): ?string
+    private function getExceptionModel(Throwable $exception): ?string
     {
         // getModel()メソッドが存在する場合
         if (method_exists($exception, 'getModel')) {
             return $exception->getModel();
+        }
+
+        return null;
+    }
+
+
+    /**
+     * 実際にエラーが発生したメソッドを特定
+     *
+     * @return string
+     */
+    private function getCallerMethod(Exception|Error $e): string
+    {
+        $trace = $e->getTrace();
+
+        // スキップするクラスとメソッド
+        $skipClasses = [
+            'App\Exceptions\Handler',
+            'App\Traits\LoggingTrait',
+            'App\Traits\ExceptionHandlerTrait',
+            'App\Traits\ApiResponse'
+        ];
+
+        $skipMethods = [
+            'render',
+            'logError',
+            'handleException',
+            'getCallerMethod',
+            'handleGenericException',
+            '_mockery_handleMethodCall',
+            '__call',
+            '__callStatic',
+            '{closure}',
+            '__callClosure'
+        ];
+
+        // モック関連のクラス名パターン
+        $mockPatterns = [
+            'Mockery_',
+            'Mock_',
+            'Mockery\\',
+            'Mock\\'
+        ];
+
+        // バリデーション例外の場合、FormRequestクラスを優先的に探す
+        if ($e instanceof ValidationException) {
+            foreach ($trace as $frame) {
+                if (isset($frame['class']) && isset($frame['function'])) {
+                    $class = $frame['class'];
+                    $function = $frame['function'];
+
+                    // モック関連のクラスをスキップ
+                    if ($this->isMockClass($class, $mockPatterns)) {
+                        continue;
+                    }
+
+                    if (str_contains($class, 'Request')) {
+                        $shortClassName = class_basename($class);
+                        return "{$shortClassName}::{$function}";
+                    }
+                }
+            }
+        }
+
+        // アプリケーションコードのメソッドを探す（簡素化）
+        foreach ($trace as $frame) {
+            if (isset($frame['class']) && isset($frame['function'])) {
+                $class = $frame['class'];
+                $function = $frame['function'];
+
+                // モック関連のクラスをスキップ
+                if ($this->isMockClass($class, $mockPatterns)) {
+                    continue;
+                }
+
+                // スキップするクラスでない場合
+                if (!in_array($class, $skipClasses) && !str_contains($class, 'Trait')) {
+                    // アプリケーションコードかチェック
+                    if (str_contains($class, 'App\\') && !in_array($function, $skipMethods)) {
+                        $shortClassName = class_basename($class);
+                        return "{$shortClassName}::{$function}";
+                    }
+                }
+            }
+        }
+
+        // フォールバック: ファイル名と行番号
+        if (isset($trace[0]['file']) && isset($trace[0]['line'])) {
+            $file = basename($trace[0]['file'], '.php');
+            $line = $trace[0]['line'];
+            return "{$file}::line_{$line}";
+        }
+
+        return 'unknown';
+    }
+
+    /**
+     * モッククラスかどうかを判定
+     *
+     * @param string $className クラス名
+     * @param array $mockPatterns モック関連のパターン
+     * @return bool
+     */
+    private function isMockClass(string $className, array $mockPatterns): bool
+    {
+        foreach ($mockPatterns as $pattern) {
+            if (str_contains($className, $pattern)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * バリデーション例外からFormRequestクラスを特定
+     *
+     * @param \Illuminate\Validation\ValidationException $exception
+     * @return string|null
+     */
+    private function getFormRequestClass(\Illuminate\Validation\ValidationException $exception): ?string
+    {
+        $trace = $exception->getTrace();
+
+        foreach ($trace as $frame) {
+            if (isset($frame['class']) && str_contains($frame['class'], 'Request')) {
+                return class_basename($frame['class']);
+            }
         }
 
         return null;

@@ -3,11 +3,18 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\ApiController;
-use Exception;
-use Illuminate\Http\Request;
+use App\Http\Requests\Api\ShoppingTagIndexRequest;
+use App\Services\ShoppingTagService;
+use Illuminate\Http\JsonResponse;
 
 class ShoppingTagController extends ApiController
 {
+    private ShoppingTagService $shoppingTagService;
+
+    public function __construct(ShoppingTagService $shoppingTagService)
+    {
+        $this->shoppingTagService = $shoppingTagService;
+    }
 
     /**
      * @OA\Get(
@@ -20,26 +27,21 @@ class ShoppingTagController extends ApiController
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
-    public function index(Request $request)
+    public function index(ShoppingTagIndexRequest $request): JsonResponse
     {
-        try {
-            $user = $request->user();
-            $group = $user->group;
+            $operation = __('operations.shopping_tag.index');
+        $failedMessage = __('api.shopping_tag.get_failed');
 
-            $tags = $group->shoppingTags()->select('id', 'name')->get();
-            $res = [
-                'tags' => $tags,
-                'total' => $tags->count()
-            ];
-
-            return $this->indexResponse($res, $tags->count(), __('api.shopping_tag.list_retrieved', ['count' => $tags->count()]));
-        } catch (Exception $e) {
-            return $this->handleException(
-                $e,
-                $request,
-                __('api.shopping_tag.get_failed'),
-                'shopping_tag.index'
-            );
-        }
+        return $this->executeWithExceptionHandling(
+            function () use ($request) {
+                $res = $this->shoppingTagService->index($request->user()->group);
+                $total = count($res);
+                $message = __('api.list_retrieved', ['attribute' => __('api.attributes.shopping.tag'), 'count' => $total]);
+                return $this->indexResponse($res, $total, $message);
+            },
+            $request,
+            $failedMessage,
+            $operation
+        );
     }
 }

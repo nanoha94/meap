@@ -25,9 +25,10 @@ trait AutoComplement
 
         $ids = [];
         foreach ($items as $idx => $item) {
+            // IDが指定されている場合
             if (isset($item['id'])) {
                 if (!is_string($item['id'])) {
-                    throw new InvalidArgumentException('ID must be a string.');
+                    throw new InvalidArgumentException(__('api.general.unexpected_type', ['expected' => 'string', 'actual' => gettype($item['id'])]));
                 }
 
                 // 既存アイテムの場合、存在確認
@@ -38,7 +39,7 @@ trait AutoComplement
                 if ($existingItem) {
                     $ids[$idx] = $existingItem->id;
                 } else {
-                    throw new InvalidArgumentException('Specified ID does not exist.');
+                    throw new InvalidArgumentException(__('api.not_found', ['attribute' => 'ID']));
                 }
             } else {
                 // 新規アイテムの場合、同じ名前のアイテムが存在するか確認

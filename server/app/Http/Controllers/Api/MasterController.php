@@ -3,9 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\ApiController;
-use Exception;
+use App\Http\Requests\Api\MasterRequest;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class MasterController extends ApiController
 {
@@ -20,37 +19,41 @@ class MasterController extends ApiController
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
-    public function __invoke(Request $request): JsonResponse
+    // TODO: モデルごとのAPIでGETリクエストを受けるように変更予定
+    // グループ内の別ユーザーが更新したデータを毎度取得できるようにするため
+    // 今の実装だと、一度に通信するデータ量が多いので、必要なときに必要なだけリクエストできるようにする
+    public function __invoke(MasterRequest $request): JsonResponse
     {
-        try {
-            $user = $request->user();
-            $group = $user->group;
+        $operation = __('operations.master.index');
+        $failedMessage = __('api.get_failed', ['attribute' => __('api.attributes.master')]);
 
-            $recipeCategories = $group->recipeCategories()->select('id', 'name', 'order')->orderBy('order', 'asc')->get();
-            $ingredientCategories = $group->ingredientCategories()->select('id', 'name', 'order')->orderBy('order', 'asc')->get();
-            $ingredientUnits = $group->ingredientUnits()->select('id', 'name', 'position', 'requires_quantity', 'order')->orderBy('order', 'asc')->get();
-            $courseTypes = $group->courseTypes()->select('id', 'name', 'order')->get();
-            $shopping_categories = $group->shoppingCategories()->select('id', 'name', 'is_default', 'order')->orderBy('order', 'asc')->get();
-            $shopping_tags = $group->shoppingTags()->select('id', 'name')->get();
-            $res = [
-                'recipeCategories' =>  $recipeCategories,
-                'ingredientCategories' => $ingredientCategories,
-                'ingredientUnits' => $ingredientUnits,
-                'courseTypes' => $courseTypes,
-                'shoppingCategories' => $shopping_categories->map(function ($category) {
-                    return [
-                        'id' => $category->id,
-                        'name' => $category->name,
-                        'isDefault' => (bool)$category->is_default,
-                        'order' => $category->order
-                    ];
-                }),
-                'shoppingTags' => $shopping_tags,
-            ];
+        return $this->executeWithExceptionHandling(
+            function () use ($request) {
+                $user = $request->user();
+                $group = $user->group;
 
-            return $this->successResponse($res, __('api.master.data_retrieved'));
-        } catch (Exception $e) {
-            return $this->handleException($e, $request, __('api.master.get_failed'), 'master.index');
-        }
+                $recipeCategories = $group->recipeCategories()->select('id', 'name', 'order')->orderBy('order', 'asc')->get();
+                $ingredientCategories = $group->ingredientCategories()->select('id', 'name', 'order')->orderBy('order', 'asc')->get();
+                $ingredientUnits = $group->ingredientUnits()->select('id', 'name', 'position', 'requires_quantity', 'order')->orderBy('order', 'asc')->get();
+                $courseTypes = $group->courseTypes()->select('id', 'name', 'order')->get();
+                $shopping_categories = $group->shoppingCategories()->select('id', 'name', 'is_default', 'order')->orderBy('order', 'asc')->get();
+                $shopping_tags = $group->shoppingTags()->select('id', 'name')->get();
+                $res = [
+                    'recipeCategories' =>  $recipeCategories,
+                    'ingredientCategories' => $ingredientCategories,
+                    'ingredientUnits' => $ingredientUnits,
+                    'courseTypes' => $courseTypes,
+                    'shoppingCategories' => $shopping_categories,
+                    'shoppingTags' => $shopping_tags,
+                ];
+
+                $message = __('api.retrieved', ['attribute' => __('api.attributes.master')]);
+
+                return $this->successResponse($res, $message);
+            },
+            $request,
+            $failedMessage,
+            $operation
+        );
     }
 }

@@ -2,20 +2,10 @@
 
 namespace App\Http\Requests\Api;
 
-use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Validation\ValidationException;
+use App\Http\Requests\Api\BaseApiRequest;
 
-class ShoppingItemBulkUpdateRequest extends FormRequest
+class ShoppingItemBulkUpdateRequest extends BaseApiRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool
-    {
-        return true;
-    }
 
     /**
      * Get the validation rules that apply to the request.
@@ -25,16 +15,16 @@ class ShoppingItemBulkUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'data' => 'required|array|min:1',
-            'data.*.id' => 'required|uuid',
-            'data.*.name' => 'required|string|max:255',
-            'data.*.categoryId' => 'required|uuid',
-            'data.*.isPinned' => 'nullable|boolean',
-            'data.*.isChecked' => 'nullable|boolean',
-            'data.*.order' => 'required|integer|min:0',
-            'data.*.tags' => 'nullable|array',
-            'data.*.tags.*.id' => 'nullable|uuid',
-            'data.*.tags.*.name' => 'required|string|max:255',
+            'data' => 'array|min:1|required',
+            'data.*.id' => 'uuid|required',
+            'data.*.name' => 'string|max:255|required',
+            'data.*.categoryId' => 'uuid|required',
+            'data.*.isPinned' => 'boolean|required',
+            'data.*.isChecked' => 'boolean|required',
+            'data.*.order' => 'integer|min:0|required',
+            'data.*.tags' => 'array|nullable',
+            'data.*.tags.*.id' => 'uuid|nullable',
+            'data.*.tags.*.name' => 'string|max:255|required',
         ];
     }
 
@@ -46,55 +36,38 @@ class ShoppingItemBulkUpdateRequest extends FormRequest
     public function messages()
     {
         return [
-            'data.required' => __('validation.required', ['attribute' => __('validation.attributes.shopping.item.data')]),
-            'data.array' => __('validation.array', ['attribute' => __('validation.attributes.shopping.item.data')]),
-            'data.min' => __('validation.min.array', ['attribute' => __('validation.attributes.shopping.item.data'), 'min' => 1]),
-            'data.*.id.required' => __('validation.required', ['attribute' => __('validation.attributes.id')]),
-            'data.*.id.uuid' => __('validation.uuid', ['attribute' => __('validation.attributes.id')]),
-            'data.*.name.required' => __('validation.required', ['attribute' => __('validation.attributes.shopping.item.name')]),
-            'data.*.name.string' => __('validation.string', ['attribute' => __('validation.attributes.shopping.item.name')]),
-            'data.*.name.max' => __('validation.max.string', ['attribute' => __('validation.attributes.shopping.item.name'), 'max' => 255]),
-            'data.*.categoryId.required' => __('validation.required', ['attribute' => __('validation.attributes.shopping.item.category_id')]),
-            'data.*.categoryId.uuid' => __('validation.uuid', ['attribute' => __('validation.attributes.shopping.item.category_id')]),
-            'data.*.isPinned.boolean' => __('validation.boolean', ['attribute' => __('validation.attributes.shopping.item.is_pinned')]),
-            'data.*.isChecked.boolean' => __('validation.boolean', ['attribute' => __('validation.attributes.shopping.item.is_checked')]),
-            'data.*.order.required' => __('validation.required', ['attribute' => __('validation.attributes.shopping.item.order')]),
-            'data.*.order.integer' => __('validation.integer', ['attribute' => __('validation.attributes.shopping.item.order')]),
-            'data.*.order.min' => __('validation.min.numeric', ['attribute' => __('validation.attributes.shopping.item.order'), 'min' => 0]),
-            'data.*.tags.array' => __('validation.array', ['attribute' => __('validation.attributes.shopping.item.tags')]),
-            'data.*.tags.*.id.uuid' => __('validation.uuid', ['attribute' => __('validation.attributes.shopping.item.tag_id')]),
-            'data.*.tags.*.name.required' => __('validation.required', ['attribute' => __('validation.attributes.shopping.item.tag_name')]),
-            'data.*.tags.*.name.string' => __('validation.string', ['attribute' => __('validation.attributes.shopping.item.tag_name')]),
-            'data.*.tags.*.name.max' => __('validation.max.string', ['attribute' => __('validation.attributes.shopping.item.tag_name'), 'max' => 255]),
+            'data.array' => __('validation.array', ['attribute' => 'data']),
+            'data.min' => __('validation.min.array', ['attribute' => 'data', 'min' => 1]),
+            'data.required' => __('validation.required', ['attribute' => 'data']),
+            'data.*.id.uuid' => __('validation.uuid', ['attribute' => 'data.*.id']),
+            'data.*.id.required' => __('validation.required', ['attribute' => 'data.*.id']),
+            'data.*.name.string' => __('validation.string', ['attribute' => 'data.*.name']),
+            'data.*.name.max' => __('validation.max.string', ['attribute' => 'data.*.name', 'max' => 255]),
+            'data.*.name.required' => __('validation.required', ['attribute' => 'data.*.name']),
+            'data.*.categoryId.uuid' => __('validation.uuid', ['attribute' => 'data.*.categoryId']),
+            'data.*.categoryId.required' => __('validation.required', ['attribute' => 'data.*.categoryId']),
+            'data.*.isPinned.boolean' => __('validation.boolean', ['attribute' => 'data.*.isPinned']),
+            'data.*.isPinned.required' => __('validation.required', ['attribute' => 'data.*.isPinned']),
+            'data.*.isChecked.boolean' => __('validation.boolean', ['attribute' => 'data.*.isChecked']),
+            'data.*.isChecked.required' => __('validation.required', ['attribute' => 'data.*.isChecked']),
+            'data.*.order.integer' => __('validation.integer', ['attribute' => 'data.*.order']),
+            'data.*.order.min' => __('validation.min.numeric', ['attribute' => 'data.*.order', 'min' => 0]),
+            'data.*.order.required' => __('validation.required', ['attribute' => 'data.*.order']),
+            'data.*.tags.array' => __('validation.array', ['attribute' => 'data.*.tags']),
+            'data.*.tags.*.id.uuid' => __('validation.uuid', ['attribute' => 'data.*.tags.*.id']),
+            'data.*.tags.*.name.string' => __('validation.string', ['attribute' => 'data.*.tags.*.name']),
+            'data.*.tags.*.name.max' => __('validation.max.string', ['attribute' => 'data.*.tags.*.name', 'max' => 255]),
+            'data.*.tags.*.name.required' => __('validation.required', ['attribute' => 'data.*.tags.*.name']),
         ];
     }
 
     /**
-     * Handle a failed validation attempt.
+     * Get the operation key for error handling.
      *
-     * @param  Validator  $validator
-     * @return void
-     *
-     * @throws ValidationException
+     * @return string
      */
-    protected function failedValidation(Validator $validator)
+    protected function getOperationKey(): string
     {
-        // バリデーション失敗時のログ記録とレスポンス生成
-        $errorMessages = $validator->errors()->all();
-        $primaryMessage = !empty($errorMessages) ? $errorMessages[0] : __('api.general.validation_error');
-
-        // ValidationExceptionを作成
-        $validationException = ValidationException::withMessages($validator->errors()->toArray());
-
-        // ExceptionHandlerTraitを使用してレスポンスを生成
-        $response = $this->handleException(
-            $validationException,
-            $this,
-            $primaryMessage,
-            __('operations.shopping_item.bulk_update')
-        );
-
-        // HttpResponseExceptionでレスポンスを投げる
-        throw new HttpResponseException($response);
+        return __('operations.shopping_item.bulk_update');
     }
 }

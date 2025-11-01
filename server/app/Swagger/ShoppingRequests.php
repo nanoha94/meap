@@ -21,7 +21,7 @@ namespace App\Swagger;
  *                 @OA\Property(property="id", type="string", description="買い物タグID", example="1", nullable=true),
  *                 @OA\Property(property="name", type="string", description="買い物タグ名", example="サラダ")
  *             )
- *         )
+ *         ),
  *     )
  * )
  * 
@@ -59,9 +59,10 @@ namespace App\Swagger;
  * 
  * @OA\RequestBody(
  *     request="ShoppingCategoryStoreRequest",
- *     description="※新規作成時はid不要",
  *     required=true,
- *     @OA\JsonContent(ref="#/components/schemas/ShoppingCategory")
+ *     @OA\JsonContent(type="object", 
+ *      @OA\Property(property="name", type="string", description="買い物カテゴリ名", example="食料品"), 
+ *      @OA\Property(property="order", type="integer", description="買い物カテゴリ順序", example="1"))
  * )
  * 
  * @OA\RequestBody(
@@ -73,7 +74,10 @@ namespace App\Swagger;
  *         @OA\Property(
  *             property="data",
  *             type="array",
- *             @OA\Items(ref="#/components/schemas/ShoppingCategory")
+ *             @OA\Items(type="object", 
+ *              @OA\Property(property="id", type="string", description="買い物カテゴリID", example="1"), 
+ *              @OA\Property(property="name", type="string", description="買い物カテゴリ名", example="食料品"), 
+ *              @OA\Property(property="order", type="integer", description="買い物カテゴリ順序", example="1"))
  *         )
  *     )
  * )

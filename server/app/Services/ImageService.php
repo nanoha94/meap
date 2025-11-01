@@ -2,13 +2,20 @@
 
 namespace App\Services;
 
+use App\Enums\HttpStatusCode;
+use App\Models\Group;
 use App\Models\Image;
+use App\Traits\LoggingTrait;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class ImageService
 {
+    use LoggingTrait;
     /**
      * 画像のバリデーションルールを取得
      */
@@ -37,45 +44,129 @@ class ImageService
         $width = $imageInfo[0] ?? null;
         $height = $imageInfo[1] ?? null;
 
+
         // データベースに保存
-        return Image::create([
-            'src' => Storage::disk('public')->url($fullPath),
-            'width' => $width,
-            'height' => $height,
-            'group_id' => $this->extractGroupIdFromPath($uploadPath),
-        ]);
+        return DB::transaction(function () use ($fullPath, $width, $height) {
+            return Image::create([
+                'src' => Storage::disk('public')->url($fullPath),
+                'width' => $width,
+                'height' => $height,
+            ]);
+        });
+    }
+
+
+    /**
+     * 指定されたIDの画像を取得し、グループスコープで検証
+     * 
+     * @param array $imageIds 取得する画像IDの配列
+     * @param \App\Models\Group $group ユーザーの所属グループ（検証用）
+     * @return \Illuminate\Support\Collection 検証済みの画像コレクション
+     * @throws HttpException 画像が見つからない、またはグループに属していない場合
+     */
+    public function findImagesByIds(array $imageIds, Group $group): Collection
+    {
+        if (empty($imageIds)) {
+            return collect();
+        }
+
+        $images = Image::whereIn('id', $imageIds)->get();
+        $groupIdPattern = "/images\\/{$group->id}\\//";
+
+        // すべての画像が存在し、かつグループに属していることを確認
+        $validImages = collect();
+        foreach ($imageIds as $imageId) {
+            $image = $images->firstWhere('id', $imageId);
+
+            if (!$image) {
+                throw new HttpException(
+                    HttpStatusCode::NOT_FOUND->value,
+                    __('api.not_found', ['attribute' => __('api.attributes.image')])
+                );
+            }
+
+            if (!preg_match($groupIdPattern, $image->src)) {
+                throw new HttpException(
+                    HttpStatusCode::NOT_FOUND->value,
+                    __('api.not_found', ['attribute' => __('api.attributes.image')])
+                );
+            }
+
+            $validImages->push($image);
+        }
+
+        return $validImages;
     }
 
     /**
      * 画像を一括削除
+     * 
+     * @param array $imageIds 削除する画像IDの配列
+     * @param \App\Models\Group $group ユーザーの所属グループ（安全性チェック用）
+     * @return int 削除された画像の数
      */
-    public function deleteImages(array $imageIds): int
+    public function deleteImages(array $imageIds, Group $group): int
     {
+        if (empty($imageIds)) {
+            return 0;
+        }
+
+        // 指定されたIDの画像を取得し、グループIDがパスに含まれているかチェック
         $images = Image::whereIn('id', $imageIds)->get();
-        $deletedCount = 0;
+        $groupIdPattern = "/images\\/{$group->id}\\//";
 
+        // 削除対象の画像を抽出（グループチェック）
+        $imagesToDelete = [];
         foreach ($images as $image) {
-            try {
-                // ファイルを削除
-                $this->deleteImageFile($image->src);
-
-                // データベースから削除
-                $image->delete();
-                $deletedCount++;
-            } catch (Exception $e) {
-                // ログ出力は呼び出し元で行う
+            if (!preg_match($groupIdPattern, $image->src)) {
+                $this->logWarning(__METHOD__,  __('operations.image.bulk_destroy'), __('api.image.group_mismatch'), [
+                    'image_id' => $image->id,
+                    'image_src' => $image->src,
+                    'expected_group_id' => $group->id
+                ]);
                 continue;
+            }
+            $imagesToDelete[] = $image;
+        }
+
+        if (empty($imagesToDelete)) {
+            return 0;
+        }
+
+        // トランザクション内でDB削除を実行
+        $deletedImages = DB::transaction(function () use ($imagesToDelete) {
+            $deleted = [];
+            foreach ($imagesToDelete as $image) {
+                // データベースから削除（image_mappingsも外部キー制約でカスケード削除される）
+                $image->delete();
+                $deleted[] = $image;
+            }
+            return $deleted;
+        });
+
+        // トランザクションコミット後、ファイルを削除
+        foreach ($deletedImages as $image) {
+            if (!$this->deleteImageFile($image->src)) {
+                $this->logWarning(__METHOD__,  __('operations.image.bulk_destroy'), __('api.image.deletion_failed'), [
+                    'image_id' => $image->id,
+                    'image_src' => $image->src
+                ]);
+                throw new HttpException(HttpStatusCode::INTERNAL_SERVER_ERROR->value, __('api.image.deletion_failed'));
             }
         }
 
-        return $deletedCount;
+        return count($deletedImages);
     }
 
     /**
      * 画像情報をフォーマット
      */
-    public function formatImage($image): array
+    public function formatImage($image): ?array
     {
+        if (!$image) {
+            return null;
+        }
+
         return [
             'id' => $image->id,
             'src' => $image->src,

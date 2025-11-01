@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('related_id');
             $table->string('image_type');
             $table->integer('order');
-            $table->primary(['image_id', 'related_id', 'related_model']);
+            $table->primary(['image_id', 'related_id', 'group_id']);
         });
     }
 

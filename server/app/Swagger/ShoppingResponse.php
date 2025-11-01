@@ -132,9 +132,8 @@ namespace App\Swagger;
  *         @OA\Property(property="message", type="string", example="買い物タグを5件取得しました。"),
  *         @OA\Property(
  *             property="data",
- *             type="object",
- *             @OA\Property(property="tags", type="array", @OA\Items(ref="#/components/schemas/ShoppingTag")),
- *             @OA\Property(property="total", type="integer", example=5)
+ *             type="array",
+ *             @OA\Items(ref="#/components/schemas/ShoppingTag")
  *         ),
  *         @OA\Property(property="total", type="integer", example=5)
  *     )

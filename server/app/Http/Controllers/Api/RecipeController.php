@@ -3,20 +3,15 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\ApiController;
+use App\Http\Requests\Api\RecipeDestroyRequest;
 use App\Http\Requests\Api\RecipeIndexRequest;
+use App\Http\Requests\Api\RecipeShowRequest;
 use App\Http\Requests\Api\RecipeStoreRequest;
 use App\Http\Requests\Api\RecipeUpdateRequest;
-use App\Models\Recipe;
-use App\Models\Ingredient;
-use App\Models\Image;
-use App\Models\RecipeStep;
 use App\Services\ImageService;
 use App\Services\RecipeService;
 use App\Traits\AutoComplement;
-use Exception;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class RecipeController extends ApiController
 {
@@ -46,29 +41,28 @@ class RecipeController extends ApiController
      */
     public function index(RecipeIndexRequest $request): JsonResponse
     {
-        try {
-            $user = $request->user();
-            $group = $user->group;
+        $operation = __('operations.recipe.index');
+        $failedMessage = __('api.get_failed', ['attribute' => __('api.attributes.recipe')]);
 
-            // ページネーションのパラメータを取得（デフォルト値も設定）
-            $perPage = $request->input('per_page', 15);
-            $page = $request->input('page', 1);
+        return $this->executeWithExceptionHandling(
+            function () use ($request) {
+                $user = $request->user();
+                $group = $user->group;
 
-            // TODO: 将来的に無限スクロール対応を検討（現在は全件取得）
-            $recipes = $group->recipes()->select('id', 'name', 'url', 'memo')->with(['categories', 'ingredients', 'steps', 'thumbnails'])->get();
+                // ページネーションのパラメータを取得（デフォルト値も設定）
+                $perPage = $request->input('per_page', 15);
+                $page = $request->input('page', 1);
 
-            $formattedData = $recipes->map(function ($recipe) {
-                return $this->recipeService->formatCompleteRecipeResponse($recipe);
-            });
-            return $this->indexResponse($formattedData, $formattedData->count(), __('api.list_retrieved', ['attribute' => __('api.attributes.recipe'), 'count' => $formattedData->count()]));
-        } catch (Exception $e) {
-            return $this->handleException(
-                $e,
-                $request,
-                __('api.get_failed', ['attribute' => __('api.attributes.recipe')]),
-                'recipe.index',
-            );
-        }
+                // TODO: 将来的に無限スクロール対応を検討（現在は全件取得）
+                $res = $this->recipeService->index($group);
+                $total = count($res);
+                $message = __('api.list_retrieved', ['attribute' => __('api.attributes.recipe'), 'count' => $total]);
+                return $this->indexResponse($res, $total, $message);
+            },
+            $request,
+            $failedMessage,
+            $operation
+        );
     }
 
     /**
@@ -85,46 +79,19 @@ class RecipeController extends ApiController
      */
     public function store(RecipeStoreRequest $request): JsonResponse
     {
-        try {
-            $user = $request->user();
-            $group = $user->group;
+        $operation = __('operations.recipe.store');
+        $failedMessage = __('api.creation_failed', ['attribute' => __('api.attributes.recipe')]);
 
-            $validated = $request->validated();
-
-            $recipe = DB::transaction(function () use ($request, $group) {
-                $recipe = Recipe::create([
-                    'group_id' => $group->id,
-                    'name' => $request->name,
-                    'url' => $request->url,
-                    'memo' => $request->memo,
-                ]);
-
-                // サムネイルを紐づけ
-                $this->syncThumbnail($recipe, $request->thumbnailId);
-
-                // カテゴリーを紐づけ
-                $this->syncCategories($recipe, $request->categoryIds);
-
-                // 食材を紐づけ
-                $this->syncIngredients($recipe, $request->ingredients);
-
-                // 手順を紐づけ
-                $this->syncSteps($recipe, $request->steps);
-
-                return $recipe;
-            });
-
-            $response = $this->recipeService->formatCompleteRecipeResponse($recipe);
-
-            return $this->successResponse($response, __('api.created', ['attribute' => __('api.attributes.recipe') . '(' . $request->name . ')']));
-        } catch (Exception $e) {
-            return $this->handleException(
-                $e,
-                $request,
-                __('api.creation_failed', ['attribute' => __('api.attributes.recipe')]),
-                'recipe.store'
-            );
-        }
+        return $this->executeWithExceptionHandling(
+            function () use ($request) {
+                $res = $this->recipeService->create($request->validated(), $request->user()->group);
+                $message = __('api.created', ['attribute' => __('api.attributes.recipe'), 'name' => $request->name]);
+                return $this->createdResponse($res, $message);
+            },
+            $request,
+            $failedMessage,
+            $operation
+        );
     }
 
     /**
@@ -139,26 +106,21 @@ class RecipeController extends ApiController
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
-    public function show(Request $request, string $id): JsonResponse
+    public function show(RecipeShowRequest $request, string $id): JsonResponse
     {
-        try {
-            $user = $request->user();
-            $group = $user->group;
+        $operation = __('operations.recipe.show');
+        $failedMessage = __('api.get_failed', ['attribute' => __('api.attributes.recipe')]);
 
-            $recipe = $group->recipes()->where('id', $id)->with(['categories', 'ingredients', 'steps'])->first();
-            if (!$recipe) {
-                return $this->notFoundResponse(__('api.general.not_found'));
-            }
-
-            return $this->successResponse($this->recipeService->formatCompleteRecipeResponse($recipe), __('api.retrieved', ['attribute' => __('api.attributes.recipe'), 'name' => $recipe->name]));
-        } catch (Exception $e) {
-            return $this->handleException(
-                $e,
-                $request,
-                __('api.get_failed', ['attribute' => __('api.attributes.recipe')]),
-                'recipe.show'
-            );
-        }
+        return $this->executeWithExceptionHandling(
+            function () use ($request, $id) {
+                $res = $this->recipeService->show($id, $request->user()->group);
+                $message = __('api.retrieved', ['attribute' => __('api.attributes.recipe'), 'name' => $res['name']]);
+                return $this->showResponse($res, $message);
+            },
+            $request,
+            $failedMessage,
+            $operation
+        );
     }
 
     /**
@@ -176,43 +138,19 @@ class RecipeController extends ApiController
      */
     public function update(RecipeUpdateRequest $request, string $id): JsonResponse
     {
-        try {
-            $user = $request->user();
-            $group = $user->group;
+        $operation = __('operations.recipe.update');
+        $failedMessage = __('api.update_failed', ['attribute' => __('api.attributes.recipe')]);
 
-            $recipe = $group->recipes()->where('id', $id)->with(['categories', 'ingredients', 'steps'])->first();
-            if (!$recipe) {
-                return $this->notFoundResponse(__('api.general.not_found'));
-            }
-
-            $validated = $request->validated();
-
-            DB::transaction(function () use ($request, $recipe) {
-                $recipe->update([
-                    'name' => $request->name,
-                    'url' => $request->url,
-                    'memo' => $request->memo,
-                ]);
-
-                $this->syncThumbnail($recipe, $request->thumbnailId);
-                $this->syncCategories($recipe, $request->categoryIds);
-                $this->syncIngredients($recipe, $request->ingredients);
-                $this->syncSteps($recipe, $request->steps);
-            });
-
-            // 既存の$recipeを使用し、必要なリレーションをロード
-            $recipe->load(['categories', 'ingredients', 'thumbnails', 'steps']);
-            $response = $this->recipeService->formatCompleteRecipeResponse($recipe);
-
-            return $this->updatedResponse($response, __('api.updated', ['attribute' => __('api.attributes.recipe'), 'name' => $request->name]));
-        } catch (Exception $e) {
-            return $this->handleException(
-                $e,
-                $request,
-                __('api.update_failed', ['attribute' => __('api.attributes.recipe')]),
-                'recipe.update'
-            );
-        }
+        return $this->executeWithExceptionHandling(
+            function () use ($request, $id) {
+                $res = $this->recipeService->update($id, $request->validated(), $request->user()->group);
+                $message = __('api.updated', ['attribute' => __('api.attributes.recipe'), 'name' => $res['name']]);
+                return $this->updatedResponse($res, $message);
+            },
+            $request,
+            $failedMessage,
+            $operation
+        );
     }
 
     /**
@@ -227,229 +165,20 @@ class RecipeController extends ApiController
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
-    public function destroy(Request $request, string $id): JsonResponse
+    public function destroy(RecipeDestroyRequest $request, string $id): JsonResponse
     {
-        try {
-            $user = $request->user();
-            $group = $user->group;
+        $operation = __('operations.recipe.destroy');
+        $failedMessage = __('api.deletion_failed', ['attribute' => __('api.attributes.recipe')]);
 
-            $recipe = $group->recipes()->where('id', $id)->first();
-
-            if (!$recipe) {
-                return $this->notFoundResponse(__('api.general.not_found'));
-            }
-
-            $recipeName = $recipe->name;
-
-            DB::transaction(function () use ($recipe) {
-                // 画像ファイルを削除
-                $existingThumbnail = $recipe->thumbnails()->first();
-                if ($existingThumbnail) {
-                    // 画像レコードを削除
-                    $this->imageService->deleteImages([$existingThumbnail->id]);
-                }
-
-                // レシピを削除
-                $recipe->delete();
-            });
-
-            return $this->deletedResponse(__('api.deleted', ['attribute' => __('api.attributes.recipe'), 'name' => $recipeName]));
-        } catch (Exception $e) {
-            return $this->handleException(
-                $e,
-                $request,
-                __('api.deletion_failed', ['attribute' => __('api.attributes.recipe')]),
-                'recipe.destroy'
-            );
-        }
-    }
-
-
-
-    private function syncThumbnail(Recipe $recipe, $thumbnailId): void
-    {
-        if (!$thumbnailId) {
-            return;
-        }
-
-        // サムネイル画像を紐づけ
-        $image = Image::find($thumbnailId);
-        if (!$image) {
-            // 例外をスローしてトランザクションをロールバック
-            throw new Exception(__('api.thumbnail_not_found', [
-                'thumbnail_id' => $thumbnailId
-            ]));
-        }
-
-        // レシピとサムネイルを紐づけ
-        $recipe->thumbnails()->attach($image->id, [
-            'group_id' => $recipe->group_id,
-            'related_model' => Recipe::class,
-            'image_type' => 'thumbnail',
-            'order' => 0
-        ]);
-    }
-
-    /**
-     * カテゴリーの同期処理
-     */
-    private function syncCategories(Recipe $recipe, $categoryIds): void
-    {
-        if (empty($categoryIds) || !is_array($categoryIds)) {
-            return;
-        }
-
-        $existingCategoryIds = $recipe->group->recipeCategories()
-            ->whereIn('id', $categoryIds)
-            ->pluck('id')
-            ->toArray();
-
-
-        $recipe->categories()->sync($existingCategoryIds);
-    }
-
-    /**
-     * 食材の同期処理
-     */
-    private function syncIngredients(Recipe $recipe, $ingredients): void
-    {
-        if (empty($ingredients) || !is_array($ingredients)) {
-            return;
-        }
-
-        $ingredientData = collect($ingredients)->map(fn($item) => [
-            'id' => $item['id'] ?? null,
-            'name' => $item['name'],
-        ])->toArray();
-
-        // 食材IDを取得
-        $ids = $this->findOrCreateIds($ingredientData, $recipe->group, Ingredient::class);
-
-        // インデックスを保持してマッピング
-        $data = [];
-        foreach ($ingredients as $idx => $item) {
-            if (isset($ids[$idx])) {
-                $data[$ids[$idx]] = [
-                    'quantity' => $item['quantity'] ?? null,
-                    'unit_id' => $item['unitId'],
-                    'category_id' => $item['categoryId'],
-                    'order' => $item['order'] ?? 0
-                ];
-            }
-        }
-
-        // 新規作成時も更新時もsyncを使用
-        $recipe->ingredients()->sync($data);
-    }
-
-    /**
-     * 手順の同期処理
-     */
-    private function syncSteps(Recipe $recipe, $steps): void
-    {
-        // 手順と画像を事前にロード
-        $recipe->load(['steps.images']);
-
-        // 画像IDをまとめて取得（$stepsがnullの場合は空配列）
-        $imageIds = $steps ? collect($steps)->pluck('imageId')->filter()->unique()->values()->toArray() : [];
-        $images = !empty($imageIds) ? Image::whereIn('id', $imageIds)->get()->keyBy('id') : collect();
-
-        $syncData = [];
-        $stepsToDelete = [];
-        $imagesToDelete = [];
-
-        // 既存の手順を処理
-        foreach ($recipe->steps as $step) {
-            $stepId = $step->id;
-
-            // $stepsから該当する手順を検索
-            $stepData = null;
-            if ($steps && is_array($steps)) {
-                foreach ($steps as $stepItem) {
-                    if (isset($stepItem['id']) && $stepItem['id'] === $stepId) {
-                        $stepData = $stepItem;
-                        break;
-                    }
-                }
-            }
-
-            if ($stepData) {
-                // 手順の内容が変更されているかチェック
-                if ($step->instruction !== $stepData['instruction']) {
-                    $step->update(['instruction' => $stepData['instruction']]);
-                }
-
-                // 画像の処理
-                $imageId = $stepData['imageId'] ?? null;
-                $currentImageId = $step->images->first()?->id;
-
-                if ($imageId !== $currentImageId) {
-                    // 既存画像を削除対象に追加
-                    if ($step->images->isNotEmpty()) {
-                        $imagesToDelete = array_merge($imagesToDelete, $step->images->pluck('id')->toArray());
-                    }
-
-                    // 新しい画像を関連付け
-                    if (!empty($imageId) && isset($images[$imageId]) && $images[$imageId]->group_id === $recipe->group_id) {
-                        $step->images()->attach($imageId, [
-                            'group_id' => $recipe->group_id,
-                            'related_model' => RecipeStep::class,
-                            'image_type' => 'image',
-                            'order' => 0
-                        ]);
-                    }
-                }
-
-                $syncData[$step->id] = ['order' => $stepData['order'] ?? 0];
-            } else {
-                // 削除対象に追加
-                $stepsToDelete[] = $step->id;
-                if ($step->images->isNotEmpty()) {
-                    $imagesToDelete = array_merge($imagesToDelete, $step->images->pluck('id')->toArray());
-                }
-            }
-        }
-
-        // 新規作成
-        if ($steps && is_array($steps)) {
-            foreach ($steps as $index => $stepData) {
-                // IDが存在しない場合は新規作成
-                if (!isset($stepData['id']) || empty($stepData['id'])) {
-                    $currentStep = RecipeStep::create([
-                        'recipe_id' => $recipe->id,
-                        'instruction' => $stepData['instruction'],
-                    ]);
-
-                    $imageId = $stepData['imageId'] ?? null;
-                    if (!empty($imageId) && isset($images[$imageId]) && $images[$imageId]->group_id === $recipe->group_id) {
-                        $currentStep->images()->attach($imageId, [
-                            'group_id' => $recipe->group_id,
-                            'related_model' => RecipeStep::class,
-                            'image_type' => 'image',
-                            'order' => 0
-                        ]);
-                    }
-
-                    $syncData[$currentStep->id] = [
-                        'order' => $stepData['order'] ?? ($index + 1)
-                    ];
-                }
-            }
-        }
-
-        // 一括削除
-        if (!empty($stepsToDelete)) {
-            RecipeStep::whereIn('id', $stepsToDelete)->delete();
-        }
-
-        // 一括画像削除
-        if (!empty($imagesToDelete)) {
-            $this->imageService->deleteImages(array_unique($imagesToDelete));
-        }
-
-        // 一括更新
-        if (!empty($syncData)) {
-            $recipe->steps()->sync($syncData);
-        }
+        return $this->executeWithExceptionHandling(
+            function () use ($request, $id) {
+                $deletedRecipe = $this->recipeService->delete($id, $request->user()->group);
+                $message = __('api.deleted', ['attribute' => __('api.attributes.recipe'), 'name' => $deletedRecipe->name ?? '']);
+                return $this->deletedResponse($message);
+            },
+            $request,
+            $failedMessage,
+            $operation
+        );
     }
 }

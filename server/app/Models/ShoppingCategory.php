@@ -21,6 +21,10 @@ class ShoppingCategory extends Model
         'order',
     ];
 
+    protected $casts = [
+        'is_default' => 'boolean',
+    ];
+
     public function group(): BelongsTo
     {
         return $this->belongsTo(Group::class);

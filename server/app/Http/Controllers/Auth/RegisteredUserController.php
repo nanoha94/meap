@@ -7,7 +7,6 @@ use App\Http\Requests\Auth\RegisterUserRequest;
 use App\Models\Group;
 use App\Models\GroupUserMapping;
 use App\Models\User;
-use Exception;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
@@ -39,34 +38,41 @@ class RegisteredUserController extends Controller
      */
     public function store(RegisterUserRequest $request): Response|JsonResponse
     {
-        try {
-            // トランザクション開始
-            DB::beginTransaction();
+        $operation = __('operations.auth.register_user');
+        $failedMessage = __('auth.registration_failed');
 
-            try {
-                // ユーザー作成時に、グループも作成して紐づけする
-                $user = User::create([
-                    'name' => $request->name,
-                    'email' => $request->email,
-                    'password' => Hash::make($request->string('password')),
-                    'avatar_seed' => User::generateUniqueCustomId(),
-                ]);
+        return $this->executeWithExceptionHandling(
+            function () use ($request) {
+                // トランザクション開始
+                DB::beginTransaction();
 
-                $group = Group::createGroup();
+                try {
+                    // ユーザー作成時に、グループも作成して紐づけする
+                    $user = User::create([
+                        'name' => $request->name,
+                        'email' => $request->email,
+                        'password' => Hash::make($request->string('password')),
+                        'avatar_seed' => User::generateUniqueCustomId(),
+                    ]);
 
-                GroupUserMapping::create(['user_id' => $user->id, 'group_id' => $group->id]);
+                    $group = Group::createGroup();
 
-                DB::commit();
-            } catch (Exception $e) {
-                DB::rollBack();
-                return $this->handleException($e, $request, __('auth.registration_failed'), __('operations.auth.register_user'));
-            }
+                    GroupUserMapping::create(['user_id' => $user->id, 'group_id' => $group->id]);
 
-            event(new Registered($user));
-            Auth::login($user);
-            return $this->successResponse(null, __('auth.registration_success'));
-        } catch (Exception $e) {
-            return $this->handleException($e, $request, __('auth.registration_failed'), __('operations.auth.register_user'));
-        }
+                    DB::commit();
+                } catch (\Exception $e) {
+                    DB::rollBack();
+                    throw $e; // 外側のexecuteWithExceptionHandlingで処理される
+                }
+
+                event(new Registered($user));
+                Auth::login($user);
+                $message = __('auth.registration_success');
+                return $this->successResponse(null, $message);
+            },
+            $request,
+            $failedMessage,
+            $operation
+        );
     }
 }

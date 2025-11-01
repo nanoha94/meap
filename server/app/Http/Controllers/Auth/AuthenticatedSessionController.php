@@ -26,11 +26,20 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): JsonResponse
     {
-        $request->authenticate();
+        $operation = __('operations.auth.login');
+        $failedMessage = __('auth.login.failed');
 
-        $request->session()->regenerate();
-
-        return $this->successResponse(null, __('auth.login.success'));
+        return $this->executeWithExceptionHandling(
+            function () use ($request) {
+                $request->authenticate();
+                $request->session()->regenerate();
+                $message = __('auth.login.success');
+                return $this->successResponse(null, $message);
+            },
+            $request,
+            $failedMessage,
+            $operation
+        );
     }
 
     /**

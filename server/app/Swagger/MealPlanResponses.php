@@ -12,17 +12,13 @@ namespace App\Swagger;
  *         @OA\Property(property="message", type="string", example="献立を5件取得しました。"),
  *         @OA\Property(
  *             property="data",
- *             type="object",
- *             @OA\Property(
- *                 property="mealPlans",
- *                 type="array", 
- *                 @OA\Items(type="object",
- *                     @OA\Property(property="date", type="string", format="date", description="日付", example="2023-10-05"),
- *                     @OA\Property(property="menu", type="array", description="献立メニュー",
- *                         @OA\Items(ref="#/components/schemas/MealPlan")
- *                     )
+ *             type="array", 
+ *             @OA\Items(type="object",
+ *                 @OA\Property(property="date", type="string", format="date", description="日付", example="2023-10-05"),
+ *                 @OA\Property(property="mealPlans", type="array", description="献立メニュー",
+ *                     @OA\Items(ref="#/components/schemas/MealPlan")
  *                 )
- *             )
+ *             ),
  *         ),
  *         @OA\Property(
  *             property="total",
@@ -74,6 +70,17 @@ namespace App\Swagger;
  * )
  * 
  * @OA\Response(
+ *     response="MealTypeIndexSuccess",
+ *     description="献立種別一覧を取得しました。",
+ *     @OA\JsonContent(
+ *         type="object",
+ *         @OA\Property(property="success", type="boolean", example=true),
+ *         @OA\Property(property="message", type="string", example="献立種別一覧を取得しました。"),
+ *         @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/MealType")),
+ *         @OA\Property(property="total", type="integer", example=100)
+ *     )
+ * )
+ * @OA\Response(
  *     response="MealTypeStoreSuccess",
  *     description="献立種別(朝食)を作成しました。",
  *     @OA\JsonContent(
@@ -123,13 +130,13 @@ namespace App\Swagger;
  *         @OA\Property(
  *             property="data",
  *             type="array",
- *             description="コースタイプ一覧",
+ *             description="コース種別一覧",
  *             @OA\Items(ref="#/components/schemas/CourseType")
  *         ),
  *         @OA\Property(
  *             property="total",
  *             type="integer",
- *             description="コースタイプ総数",
+ *             description="コース種別総数",
  *             example=100
  *         )
  *     )

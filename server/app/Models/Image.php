@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Image extends Model
 {
@@ -19,8 +18,9 @@ class Image extends Model
         'height',
     ];
 
-    public function group(): BelongsTo
+    public function groups()
     {
-        return $this->belongsTo(Group::class);
+        return $this->belongsToMany(Group::class, 'image_mappings', 'image_id', 'group_id')
+            ->withPivot('related_model', 'related_id', 'image_type', 'order');
     }
 }

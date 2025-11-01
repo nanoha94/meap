@@ -23,6 +23,11 @@ class ShoppingItem extends Model
         'order',
     ];
 
+    protected $casts = [
+        'is_pinned' => 'boolean',
+        'is_checked' => 'boolean',
+    ];
+
     public function group(): BelongsTo
     {
         return $this->belongsTo(Group::class);
@@ -30,7 +35,7 @@ class ShoppingItem extends Model
 
     public function category(): BelongsTo
     {
-        return $this->belongsTo(ShoppingCategory::class);
+        return $this->belongsTo(ShoppingCategory::class, 'category_id');
     }
 
     public function tags(): BelongsToMany

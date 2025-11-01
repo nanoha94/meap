@@ -3,19 +3,14 @@
 namespace App\Http\Requests\Auth;
 
 use App\Models\User;
-use App\Traits\ExceptionHandlerTrait;
-use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Requests\Auth\BaseAuthRequest;
 use Illuminate\Support\Facades\Auth;
 use App\Enums\HttpStatusCode;
-use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\Rules\Password;
-use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
-class RegisterUserRequest extends FormRequest
+class RegisterUserRequest extends BaseAuthRequest
 {
-    use ExceptionHandlerTrait;
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -51,46 +46,33 @@ class RegisterUserRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => __('validation.required', ['attribute' => __('validation.attributes.name')]),
-            'name.string' => __('validation.string', ['attribute' => __('validation.attributes.name')]),
-            'name.max' => __('validation.max', ['attribute' => __('validation.attributes.name')]),
-            'email.required' => __('validation.email.required'),
-            'email.string' => __('validation.string', ['attribute' => __('validation.attributes.email')]),
-            'email.lowercase' => __('validation.lowercase', ['attribute' => __('validation.attributes.email')]),
-            'email.email' => __('validation.email.email'),
-            'email.max' => __('validation.max', ['attribute' => __('validation.attributes.email')]),
-            'email.unique' => __('validation.unique', ['attribute' => __('validation.attributes.email')]),
-            'password.required' => __('validation.password.required'),
-            'password.confirmed' => __('validation.password.confirmed'),
+            'name.required' => __('validation.required', ['attribute' => 'name']),
+            'name.string' => __('validation.string', ['attribute' => 'name']),
+            'name.max' => __('validation.max', ['attribute' => 'name']),
+            'email.required' => __('validation.required', ['attribute' => 'email']),
+            'email.string' => __('validation.string', ['attribute' => 'email']),
+            'email.lowercase' => __('validation.lowercase', ['attribute' => 'email']),
+            'email.email' => __('validation.email', ['attribute' => 'email']),
+            'email.max' => __('validation.max', ['attribute' => 'email', 'string' => 255]),
+            'email.unique' => __('validation.unique', ['attribute' => 'email']),
+            'password.required' => __('validation.required', ['attribute' => 'password']),
+            'password.confirmed' => __('validation.password.confirmed', ['attribute' => 'password']),
+            'password.min' => __('validation.min', ['attribute' => 'password', 'string' => 8]),
+            'password.letters' => __('validation.password.letters', ['attribute' => 'password']),
+            'password.mixed' => __('validation.password.mixed', ['attribute' => 'password']),
+            'password.numbers' => __('validation.password.numbers', ['attribute' => 'password']),
+            'password.symbols' => __('validation.password.symbols', ['attribute' => 'password']),
+            'password.uncompromised' => __('validation.password.uncompromised', ['attribute' => 'password']),
         ];
     }
 
     /**
-     * Handle a failed validation attempt.
+     * Get the operation key for error handling.
      *
-     * @param  Validator  $validator
-     * @return void
-     *
-     * @throws ValidationException
+     * @return string
      */
-    protected function failedValidation(Validator $validator)
+    protected function getOperationKey(): string
     {
-        // バリデーション失敗時のログ記録とレスポンス生成
-        $errorMessages = $validator->errors()->all();
-        $primaryMessage = !empty($errorMessages) ? $errorMessages[0] : __('api.general.validation_error');
-
-        // ValidationExceptionを作成
-        $validationException = ValidationException::withMessages($validator->errors()->toArray());
-
-        // ExceptionHandlerTraitを使用してレスポンスを生成
-        $response = $this->handleException(
-            $validationException,
-            $this,
-            $primaryMessage,
-            __('operations.auth.register_user')
-        );
-
-        // HttpResponseExceptionでレスポンスを投げる
-        throw new HttpResponseException($response);
+        return __('operations.auth.register_user');
     }
 }

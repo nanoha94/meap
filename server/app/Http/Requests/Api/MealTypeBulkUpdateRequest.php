@@ -2,20 +2,10 @@
 
 namespace App\Http\Requests\Api;
 
-use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Validation\ValidationException;
+use App\Http\Requests\Api\BaseApiRequest;
 
-class MealTypeBulkUpdateRequest extends FormRequest
+class MealTypeBulkUpdateRequest extends BaseApiRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool
-    {
-        return true;
-    }
 
     /**
      * Get the validation rules that apply to the request.
@@ -25,7 +15,11 @@ class MealTypeBulkUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'data' => 'array|min:1|required',
+            'data.*.id' => 'uuid|required',
+            'data.*.name' => 'string|max:255|required',
+            'data.*.colorId' => 'uuid|exists:colors,id|required',
+            'data.*.order' => 'integer|min:0|required',
         ];
     }
 
@@ -36,35 +30,31 @@ class MealTypeBulkUpdateRequest extends FormRequest
      */
     public function messages()
     {
-        return [];
+        return [
+            'data.array' => __('validation.array', ['attribute' => 'data']),
+            'data.min' => __('validation.min.array', ['attribute' => 'data', 'min' => 1]),
+            'data.required' => __('validation.required', ['attribute' => 'data']),
+            'data.*.id.uuid' => __('validation.uuid', ['attribute' => 'data.*.id']),
+            'data.*.id.required' => __('validation.required', ['attribute' => 'data.*.id']),
+            'data.*.name.string' => __('validation.string', ['attribute' => 'data.*.name']),
+            'data.*.name.max' => __('validation.max.string', ['attribute' => 'data.*.name', 'max' => 255]),
+            'data.*.name.required' => __('validation.required', ['attribute' => 'data.*.name']),
+            'data.*.colorId.uuid' => __('validation.uuid', ['attribute' => 'data.*.colorId']),
+            'data.*.colorId.exists' => __('validation.exists', ['attribute' => 'data.*.colorId']),
+            'data.*.colorId.required' => __('validation.required', ['attribute' => 'data.*.colorId']),
+            'data.*.order.integer' => __('validation.integer', ['attribute' => 'data.*.order']),
+            'data.*.order.min' => __('validation.min.numeric', ['attribute' => 'data.*.order', 'min' => 0]),
+            'data.*.order.required' => __('validation.required', ['attribute' => 'data.*.order']),
+        ];
     }
 
     /**
-     * Handle a failed validation attempt.
+     * Get the operation key for error handling.
      *
-     * @param  Validator  $validator
-     * @return void
-     *
-     * @throws ValidationException
+     * @return string
      */
-    protected function failedValidation(Validator $validator)
+    protected function getOperationKey(): string
     {
-        // バリデーション失敗時のログ記録とレスポンス生成
-        $errorMessages = $validator->errors()->all();
-        $primaryMessage = !empty($errorMessages) ? $errorMessages[0] : __('api.general.validation_error');
-
-        // ValidationExceptionを作成
-        $validationException = ValidationException::withMessages($validator->errors()->toArray());
-
-        // ExceptionHandlerTraitを使用してレスポンスを生成
-        $response = $this->handleException(
-            $validationException,
-            $this,
-            $primaryMessage,
-            __('operations.meal_type.bulk_update')
-        );
-
-        // HttpResponseExceptionでレスポンスを投げる
-        throw new HttpResponseException($response);
+        return __('operations.meal_type.bulk_update');
     }
 }

@@ -3,10 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\ApiController;
+use App\Http\Requests\Api\GroupUserIndexRequest;
 use App\Services\UserService;
-use Exception;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class GroupUserController extends ApiController
 {
@@ -29,22 +28,22 @@ class GroupUserController extends ApiController
      *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
      * )
      */
-    public function index(Request $request): JsonResponse
+    public function index(GroupUserIndexRequest $request): JsonResponse
     {
-        try {
-            // 同じグループに属するユーザーデータを取得
-            $users = $request->user()->group->users->map(function ($user) {
-                return $this->userService->formatUserInfo($user);
-            });
+        $operation = __('operations.users.index');
+        $failedMessage = __('api.get_failed', ['attribute' => __('api.attributes.user')]);
 
-            return $this->indexResponse($users, $users->count(), __('api.users.list_retrieved', ['count' => $users->count()]));
-        } catch (Exception $e) {
-            return $this->handleException(
-                $e,
-                $request,
-                __('api.users.get_failed'),
-                'users.index'
-            );
-        }
+        return $this->executeWithExceptionHandling(
+            function () use ($request) {
+                $res = $this->userService->index($request->user()->group);
+                $total = count($res);
+                $message = __('api.list_retrieved', ['attribute' => __('api.attributes.user'), 'count' => $total]);
+
+                return $this->indexResponse($res, $total, $message);
+            },
+            $request,
+            $failedMessage,
+            $operation
+        );
     }
 }

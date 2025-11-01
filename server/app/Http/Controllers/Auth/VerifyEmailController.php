@@ -10,6 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Database\QueryException;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class VerifyEmailController extends Controller
 {
@@ -67,7 +68,7 @@ class VerifyEmailController extends Controller
     /**
      * 検証エラーのハンドリング
      */
-    private function handleVerificationError(Exception $e, $request): RedirectResponse
+    private function handleVerificationError(Throwable $e, $request): RedirectResponse
     {
         $errorType = $this->determineErrorType($e);
 
@@ -88,10 +89,10 @@ class VerifyEmailController extends Controller
     /**
      * 例外の種類に応じてエラータイプを決定
      * 
-     * @param Exception $e
+     * @param Throwable $e
      * @return string
      */
-    private function determineErrorType(Exception $e): string
+    private function determineErrorType(Throwable $e): string
     {
         if ($e instanceof QueryException) {
             return 'database_error';

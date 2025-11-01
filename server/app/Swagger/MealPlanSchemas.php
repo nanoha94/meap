@@ -13,7 +13,7 @@ namespace App\Swagger;
  *         @OA\Property(property="name", type="string", description="カテゴリ名", example="朝食"),
  *         @OA\Property(property="colorId", type="string", description="色ID", example="1")
  *     ),
- *     @OA\Property(property="mealPlans", type="array", description="献立",
+ *     @OA\Property(property="menu", type="array", description="献立",
  *         @OA\Items(type="object",
  *             @OA\Property(property="courseType", type="object",
  *                 @OA\Property(property="id", type="string", description="ID", example="1"),
@@ -39,7 +39,7 @@ namespace App\Swagger;
  *     schema="CourseType",
  *     required={"id", "name", "order"},
  *     @OA\Property(property="id", type="string", description="ID", example="1"),
- *     @OA\Property(property="name", type="string", description="コースタイプ名", example="朝食"),
+ *     @OA\Property(property="name", type="string", description="コース種別名", example="朝食"),
  *     @OA\Property(property="order", type="integer", description="ソート順", example=1)
  * )
  */

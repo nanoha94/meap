@@ -100,8 +100,9 @@ test('2-1-6: 認証情報不足', function () {
     $response->assertJsonValidationErrors(['email']);
     $response->assertJson([
         'success' => false,
-        'errors' => ['email' => ['メールアドレスは必須です。']],
     ]);
+    $responseData = $response->json();
+    $this->assertContains('emailは必ず指定してください。', $responseData['errors']['email']);
 });
 
 test('2-1-7: 無効なメール形式', function () {
@@ -115,8 +116,9 @@ test('2-1-7: 無効なメール形式', function () {
     $response->assertJsonValidationErrors(['email']);
     $response->assertJson([
         'success' => false,
-        'errors' => ['email' => ['メールアドレスには、有効なメールアドレスを指定してください。']],
     ]);
+    $responseData = $response->json();
+    $this->assertContains('emailには、有効なメールアドレスを指定してください。', $responseData['errors']['email']);
 });
 
 test('2-1-8: メールアドレス未入力', function () {
@@ -129,8 +131,9 @@ test('2-1-8: メールアドレス未入力', function () {
     $response->assertJsonValidationErrors(['email']);
     $response->assertJson([
         'success' => false,
-        'errors' => ['email' => ['メールアドレスは必須です。']],
     ]);
+    $responseData = $response->json();
+    $this->assertContains('emailは必ず指定してください。', $responseData['errors']['email']);
 
     // バリデーションエラーの構造を確認
     $response->assertJsonStructure([
@@ -196,9 +199,9 @@ test('2-1-11: カスタムバリデーションメッセージ', function () {
     ]);
 
     // エラーメッセージが存在することを確認
-    $errors = $response->json('errors');
-    expect($errors)->toHaveKey('email');
-    expect($errors)->toHaveKey('password');
+    $responseData = $response->json();
+    $this->assertContains('emailには、有効なメールアドレスを指定してください。', $responseData['errors']['email']);
+    $this->assertContains('passwordは必ず指定してください。', $responseData['errors']['password']);
 });
 
 test('2-1-12: レート制限', function () {

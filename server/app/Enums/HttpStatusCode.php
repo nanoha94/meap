@@ -16,6 +16,7 @@ enum HttpStatusCode: int
     case NOT_FOUND = 404;
     case METHOD_NOT_ALLOWED = 405;
     case CONFLICT = 409;
+    case GONE = 410;
     case UNPROCESSABLE_ENTITY = 422;
     case TOO_MANY_REQUESTS = 429;
 
@@ -38,6 +39,7 @@ enum HttpStatusCode: int
             self::NOT_FOUND => __('http_status.not_found'),
             self::METHOD_NOT_ALLOWED => __('http_status.method_not_allowed'),
             self::CONFLICT => __('http_status.conflict'),
+            self::GONE => __('http_status.gone'),
             self::UNPROCESSABLE_ENTITY => __('http_status.unprocessable_entity'),
             self::TOO_MANY_REQUESTS => __('http_status.too_many_requests'),
             self::INTERNAL_SERVER_ERROR => __('http_status.internal_server_error'),

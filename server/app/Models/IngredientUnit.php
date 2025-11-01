@@ -13,9 +13,14 @@ class IngredientUnit extends Model
     public $incrementing = false;
 
     protected $fillable = [
+        'group_id',
         'name',
         'position',
         'requires_quantity',
         'order'
+    ];
+
+    protected $casts = [
+        'requires_quantity' => 'boolean',
     ];
 }

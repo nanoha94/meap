@@ -25,14 +25,15 @@ test('2-4-2: 存在しないユーザー', function () {
         'email' => 'nonexistent@example.com',
     ]);
     $response->assertStatus(422);
-    $response->assertJson(['message' => '指定されたメールアドレスのユーザーが見つかりません。', 'errors' => []]);
+    $response->assertJson(['message' => '指定されたメールアドレスのユーザーが見つかりませんでした。', 'errors' => []]);
 });
 
 test('2-4-3: メールアドレス未入力', function () {
     $response = $this->postJson(route('password.request'), []);
     $response->assertStatus(422);
     $response->assertJsonValidationErrors('email');
-    $response->assertJson(['errors' => ['email' => ['メールアドレスは必須です。']]]);
+    $responseData = $response->json();
+    $this->assertContains('emailは必ず指定してください。', $responseData['errors']['email']);
 });
 
 test('2-4-4: 無効なメール形式', function () {
@@ -41,7 +42,8 @@ test('2-4-4: 無効なメール形式', function () {
     ]);
     $response->assertStatus(422);
     $response->assertJsonValidationErrors('email');
-    $response->assertJson(['errors' => ['email' => ['メールアドレスには、有効なメールアドレスを指定してください。']]]);
+    $responseData = $response->json();
+    $this->assertContains('emailには、有効なメールアドレスを指定してください。', $responseData['errors']['email']);
 });
 
 test('2-4-5: リセットリンク送信のレート制限', function () {

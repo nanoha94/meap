@@ -3,18 +3,19 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\ApiController;
-use App\Models\IngredientCategory;
-use Exception;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use App\Enums\HttpStatusCode;
+use App\Http\Requests\Api\IngredientCategoryIndexRequest;
 use App\Http\Requests\Api\IngredientCategoryBulkDestroyRequest;
 use App\Http\Requests\Api\IngredientCategoryBulkUpdateRequest;
 use App\Http\Requests\Api\IngredientCategoryStoreRequest;
-use Symfony\Component\HttpKernel\Exception\HttpException;
+use App\Services\IngredientCategoryService;
 
 class IngredientCategoryController extends ApiController
 {
+    public function __construct(
+        private IngredientCategoryService $ingredientCategoryService
+    ) {}
+
     /**
      * @OA\Get(
      *     path="/ingredient-categories",
@@ -26,34 +27,21 @@ class IngredientCategoryController extends ApiController
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
-    public function index(Request $request): JsonResponse
+    public function index(IngredientCategoryIndexRequest $request): JsonResponse
     {
-        try {
-            $user = $request->user();
-            $group = $user->group;
-
-            $categories = $group->ingredientCategories()
-                ->select('id', 'name', 'order')
-                ->orderBy('order', 'asc')
-                ->get();
-
-            $formattedData = $categories->map(function ($category) {
-                return [
-                    'id' => $category->id,
-                    'name' => $category->name,
-                    'order' => $category->order
-                ];
-            });
-
-            return $this->indexResponse($formattedData, $formattedData->count(), __('api.list_retrieved', ['attribute' => __('api.attributes.ingredient_category'), 'count' => $formattedData->count()]));
-        } catch (Exception $e) {
-            return $this->handleException(
-                $e,
-                $request,
-                __('api.get_failed', ['attribute' => __('api.attributes.ingredient_category')]),
-                'ingredient_category.index'
-            );
-        }
+        $operation = __('operations.ingredient_category.index');
+        $failedMessage = __('api.get_failed', ['attribute' => __('api.attributes.ingredient_category')]);
+        return $this->executeWithExceptionHandling(
+            function () use ($request) {
+                $res = $this->ingredientCategoryService->index($request->user()->group);
+                $total = count($res);
+                $message = __('api.list_retrieved', ['attribute' => __('api.attributes.ingredient_category'), 'count' => $total]);
+                return $this->indexResponse($res, $total, $message);
+            },
+            $request,
+            $failedMessage,
+            $operation
+        );
     }
 
     /**
@@ -70,41 +58,23 @@ class IngredientCategoryController extends ApiController
      */
     public function store(IngredientCategoryStoreRequest $request): JsonResponse
     {
-        try {
-            $user = $request->user();
-            $group = $user->group;
+        $operation = __('operations.ingredient_category.store');
+        $failedMessage = __('api.creation_failed', ['attribute' => __('api.attributes.ingredient_category')]);
 
-            $validated = $request->validated();
-
-            $category = IngredientCategory::create([
-                'group_id' => $group->id,
-                'name' => $validated['name'],
-                'order' => $validated['order'],
-            ]);
-            if (!$category) {
-                $this->handleException(
-                    new HttpException(HttpStatusCode::INTERNAL_SERVER_ERROR->value, __('api.creation_failed', ['attribute' => __('api.attributes.ingredient_category')])),
-                    $request,
-                    __('api.creation_failed', ['attribute' => __('api.attributes.ingredient_category')]),
-                    __('operations.ingredient_category.store')
+        return $this->executeWithExceptionHandling(
+            function () use ($request) {
+                $res = $this->ingredientCategoryService->create(
+                    $request->validated(),
+                    $request->user()->group
                 );
-            }
 
-            $data = [
-                'id' => $category->id,
-                'name' => $category->name,
-                'order' => $category->order
-            ];
-
-            return $this->createdResponse($data, __('api.created', ['attribute' => __('api.attributes.ingredient_category'), 'name' => $validated['name']]));
-        } catch (Exception $e) {
-            return $this->handleException(
-                $e,
-                $request,
-                __('api.creation_failed', ['attribute' => __('api.attributes.ingredient_category')]),
-                'ingredient_category.store'
-            );
-        }
+                $message = __('api.created', ['attribute' => __('api.attributes.ingredient_category'), 'name' => $res['name']]);
+                return $this->createdResponse($res, $message);
+            },
+            $request,
+            $failedMessage,
+            $operation
+        );
     }
 
     /**
@@ -121,66 +91,24 @@ class IngredientCategoryController extends ApiController
      */
     public function bulkUpdate(IngredientCategoryBulkUpdateRequest $request): JsonResponse
     {
-        try {
-            $user = $request->user();
-            $group = $user->group;
+        $operation = __('operations.ingredient_category.bulk_update');
+        $failedMessage = __('api.bulk_update_failed', ['attribute' => __('api.attributes.ingredient_category')]);
 
-            $validated = $request->validated();
+        return $this->executeWithExceptionHandling(
+            function () use ($request) {
+                $updatedData = $this->ingredientCategoryService->bulkUpdate(
+                    $request->validated()['data'],
+                    $request->user()->group
+                );
 
-            $updatedCount = 0;
-            $updatedIds = [];
-            $failedCount = 0;
-            $failedIds = [];
-
-            // 更新処理を実行
-            foreach ($validated['data'] as $category) {
-                $ret = IngredientCategory::where('id', $category['id'])->where('group_id', $group->id)->update([
-                    'name' => $category['name'],
-                    'order' => $category['order']
-                ]);
-                if (!$ret) {
-                    $failedCount++;
-                    $failedIds[] = $category['id'];
-                    continue;
-                } else {
-                    $updatedCount++;
-                    $updatedIds[] = $category['id'];
-                }
-            }
-
-            if ($failedCount > 0) {
-                $this->logWarning(HttpStatusCode::OK, __('operations.ingredient_category.bulk_update'), __('api.bulk_update_failed', ['attribute' => __('api.attributes.ingredient_category')]), $request, [
-                    'total_count' => count($validated['data']),
-                    'success_count' => $updatedCount,
-                    'failed_count' => $failedCount,
-                    'failed_ids' => $failedIds,
-                ],  __METHOD__);
-            }
-
-            // 更新されたデータを取得
-            $updatedCategories = $group->ingredientCategories()
-                ->whereIn('id', $updatedIds)
-                ->select('id', 'name', 'order')
-                ->orderBy('order', 'asc')
-                ->get();
-
-            $formattedData = $updatedCategories->map(function ($category) {
-                return [
-                    'id' => $category->id,
-                    'name' => $category->name,
-                    'order' => $category->order
-                ];
-            });
-
-            return $this->updatedResponse($formattedData, __('api.bulk_updated', ['attribute' => __('api.attributes.ingredient_category'), 'count' => $updatedCount]));
-        } catch (Exception $e) {
-            return $this->handleException(
-                $e,
-                $request,
-                __('api.bulk_update_failed', ['attribute' => __('api.attributes.ingredient_category')]),
-                'ingredient_category.bulk_update'
-            );
-        }
+                $total = count($updatedData);
+                $message = __('api.bulk_updated', ['attribute' => __('api.attributes.ingredient_category'), 'count' => $total]);
+                return $this->updatedResponse($updatedData, $message);
+            },
+            $request,
+            $failedMessage,
+            $operation
+        );
     }
 
     /**
@@ -197,66 +125,22 @@ class IngredientCategoryController extends ApiController
      */
     public function bulkDestroy(IngredientCategoryBulkDestroyRequest $request): JsonResponse
     {
-        try {
-            $user = $request->user();
-            $group = $user->group;
+        $operation = __('operations.ingredient_category.bulk_destroy');
+        $failedMessage = __('api.deletion_failed', ['attribute' => __('api.attributes.ingredient_category')]);
 
-            // 入力値のバリデーション
-            $validated = $request->validated();
+        return $this->executeWithExceptionHandling(
+            function () use ($request) {
+                $deletedCount = $this->ingredientCategoryService->bulkDelete(
+                    $request->validated()['ids'],
+                    $request->user()->group
+                );
+                $message = __('api.bulk_deleted', ['attribute' => __('api.attributes.ingredient_category'), 'count' => $deletedCount]);
 
-            $deletedCount = 0;
-            $deletedIds = [];
-            $failedCount = 0;
-            $failedIds = [];
-
-            // 削除処理を実行
-            foreach ($validated['ids'] as $id) {
-                $category = $group->ingredientCategories()->where('id', $id)->first();
-
-                if (!$category) {
-                    $failedCount++;
-                    $failedIds[] = $id;
-                    continue;
-                }
-
-                if ($category->delete()) {
-                    $deletedCount++;
-                    $deletedIds[] = $id;
-                } else {
-                    $failedCount++;
-                    $failedIds[] = $id;
-                }
-            }
-
-            // 部分成功のログ
-            if ($failedCount > 0) {
-                $this->logWarning(HttpStatusCode::OK, __('operations.ingredient_category.bulk_destroy'), __('api.deletion_failed', ['attribute' => __('api.attributes.ingredient_category')]), $request, [
-                    'total_count' => count($validated['ids']),
-                    'success_count' => $deletedCount,
-                    'failed_count' => $failedCount,
-                    'failed_ids' => $failedIds,
-                ],  __METHOD__);
-            }
-
-            // 残りのカテゴリーのorderを整理
-            if ($deletedCount > 0) {
-                $remainingCategories = IngredientCategory::where('group_id', $group->id)
-                    ->orderBy('order')
-                    ->get();
-
-                foreach ($remainingCategories as $index => $remainingCategory) {
-                    $remainingCategory->update(['order' => $index]);
-                }
-            }
-
-            return $this->deletedResponse(__('api.bulk_deleted', ['attribute' => __('api.attributes.ingredient_category'), 'count' => $deletedCount]));
-        } catch (Exception $e) {
-            return $this->handleException(
-                $e,
-                $request,
-                __('api.deletion_failed', ['attribute' => __('api.attributes.ingredient_category')]),
-                'ingredient_category.bulk_destroy'
-            );
-        }
+                return $this->deletedResponse($message);
+            },
+            $request,
+            $failedMessage,
+            $operation
+        );
     }
 }

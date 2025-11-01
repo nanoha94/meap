@@ -19,18 +19,18 @@ use App\Http\Controllers\Api\ImageController;
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // meal-plans
     Route::apiResource('/meal-plans', MealPlanController::class);
-    Route::apiResource('/meal-types', MealTypeController::class)->only(['store', 'destroy']);
+    Route::apiResource('/meal-types', MealTypeController::class)->only(['index', 'store', 'destroy']);
     Route::put('/meal-types/bulk', [MealTypeController::class, 'bulkUpdate']);
 
     // recipes
     Route::apiResource('/recipes', RecipeController::class);
-    Route::apiResource('/recipe-categories', RecipeCategoryController::class)->only(['store']);
+    Route::apiResource('/recipe-categories', RecipeCategoryController::class)->only(['index', 'store']);
     Route::put('/recipe-categories/bulk', [RecipeCategoryController::class, 'bulkUpdate']);
     Route::delete('/recipe-categories/bulk', [RecipeCategoryController::class, 'bulkDestroy']);
 
     // images
-    Route::post('/images/upload-bulk', [ImageController::class, 'uploadBulk']);
-    Route::delete('/images/bulk', [ImageController::class, 'deleteBulk']);
+    Route::post('/images/upload-bulk', [ImageController::class, 'bulkUpload']);
+    Route::delete('/images/bulk', [ImageController::class, 'bulkDestroy']);
 
     // ingredients
     Route::apiResource('/ingredient-categories', IngredientCategoryController::class)->only(['index', 'store']);
@@ -38,7 +38,8 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::delete('/ingredient-categories/bulk', [IngredientCategoryController::class, 'bulkDestroy']);
 
     // invitations
-    Route::resource('invitations', InvitationController::class)->only(['store', 'show']);
+    Route::post('invitations', [InvitationController::class, 'store']);
+    Route::get('invitations/{token}', [InvitationController::class, 'show']);
     Route::post('/invitations/{token}/join', [InvitationController::class, 'join']);
 
     // users

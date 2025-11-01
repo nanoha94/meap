@@ -3,12 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\ApiController;
+use App\Http\Requests\Api\MealPlanDestroyRequest;
+use App\Http\Requests\Api\MealPlanIndexRequest;
+use App\Http\Requests\Api\MealPlanShowRequest;
 use App\Http\Requests\Api\MealPlanStoreRequest;
-use App\Models\MealPlan;
+use App\Http\Requests\Api\MealPlanUpdateRequest;
 use App\Services\MealPlanService;
-use Exception;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class MealPlanController extends ApiController
 {
@@ -30,40 +31,22 @@ class MealPlanController extends ApiController
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
-    public function index(Request $request): JsonResponse
+    public function index(MealPlanIndexRequest $request): JsonResponse
     {
-        try {
-            $user = $request->user();
-            $group = $user->group;
+        $operation = __('operations.meal_plan.index');
+        $failedMessage = __('api.get_failed', ['attribute' => __('api.attributes.meal_plan')]);
 
-            // TODO: 月別に取得できるようにする
-            $meal_plans = $group->mealPlans()
-                ->select('id', 'date', 'meal_type_id')
-                ->with(['mealType', 'recipes.courseTypes', 'recipes.categories', 'recipes.ingredients'])
-                ->get()
-                ->groupBy('date')
-                ->values();
-
-            $res = [
-                'mealPlans' => $meal_plans->map(function ($dateMeals, $date) {
-                    return [
-                        'date' => $date,
-                        'mealPlans' => $dateMeals->map(function ($mealPlan) {
-                            return $this->mealPlanService->formatCompleteMealPlanResponse($mealPlan);
-                        })
-                    ];
-                })->values()
-            ];
-
-            return $this->indexResponse($res, $meal_plans->count(), __('api.list_retrieved', ['attribute' => __('api.attributes.meal_plan'), 'count' => $meal_plans->count()]));
-        } catch (Exception $e) {
-            return $this->handleException(
-                $e,
-                $request,
-                __('api.get_failed', ['attribute' => __('api.attributes.meal_plan')]),
-                'meal_plan.index',
-            );
-        }
+        return $this->executeWithExceptionHandling(
+            function () use ($request) {
+                $res = $this->mealPlanService->index($request->user()->group);
+                $total = count($res);
+                $message = __('api.list_retrieved', ['attribute' => __('api.attributes.meal_plan'), 'count' => $total]);
+                return $this->indexResponse($res, $total, $message);
+            },
+            $request,
+            $failedMessage,
+            $operation
+        );
     }
 
     /**
@@ -81,44 +64,19 @@ class MealPlanController extends ApiController
      */
     public function store(MealPlanStoreRequest $request): JsonResponse
     {
-        try {
-            $user = $request->user();
-            $group = $user->group;
+        $operation = __('operations.meal_plan.store');
+        $failedMessage = __('api.creation_failed', ['attribute' => __('api.attributes.meal_plan')]);
 
-            $ret = MealPlan::create([
-                'group_id' => $group->id,
-                'meal_type_id' => $request->mealTypeId,
-                'date' => $request->date,
-            ]);
-
-            // 料理を紐づけ
-            if (!empty($request->menu)) {
-                foreach ($request->menu as $item) {
-                    if (!isset($item['recipeIds'])) {
-                        continue;
-                    }
-                    $data = collect($item['recipeIds'])->unique()->map(function ($recipeId) use ($ret, $item) {
-                        return [
-                            'meal_plan_id' => $ret->id,
-                            'recipe_id' => $recipeId,
-                            'course_type_id' => $item['courseTypeId']
-                        ];
-                    })->toArray();
-                    $ret->recipes()->attach($data);
-                }
-            }
-
-            $res = $this->mealPlanService->formatCompleteMealPlanResponse($ret);
-            return $this->createdResponse($res, __('api.created', ['attribute' => __('api.attributes.meal_plan'), 'name' => $res['date']]));
-        } catch (Exception $e) {
-            return $this->handleException(
-                $e,
-                $request,
-                __('api.creation_failed', ['attribute' => __('api.attributes.meal_plan')]),
-                'meal_plan.store',
-
-            );
-        }
+        return $this->executeWithExceptionHandling(
+            function () use ($request) {
+                $res = $this->mealPlanService->create($request->validated(), $request->user()->group);
+                $message = __('api.created', ['attribute' => __('api.attributes.meal_plan'), 'name' => $request->input('date')]);
+                return $this->createdResponse($res, $message);
+            },
+            $request,
+            $failedMessage,
+            $operation
+        );
     }
 
     /**
@@ -133,28 +91,21 @@ class MealPlanController extends ApiController
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
-    public function show(Request $request, string $id): JsonResponse
+    public function show(MealPlanShowRequest $request, string $id): JsonResponse
     {
-        try {
-            $user = $request->user();
-            $group = $user->group;
+        $operation = __('operations.meal_plan.show');
+        $failedMessage = __('api.get_failed', ['attribute' => __('api.attributes.meal_plan')]);
 
-            $meal = MealPlan::where('id', $id)->where('group_id', $group->id)->with(['mealType', 'recipes.courseTypes', 'recipes.categories', 'recipes.ingredients'])->first();
-            if (!$meal) {
-                return $this->notFoundResponse(__('api.not_found', ['attribute' => __('api.attributes.meal_plan')]));
-            }
-
-            $res = $this->mealPlanService->formatCompleteMealPlanResponse($meal);
-
-            return $this->showResponse($res, __('api.retrieved', ['attribute' => __('api.attributes.meal_plan'), 'name' => $meal->date]));
-        } catch (Exception $e) {
-            return $this->handleException(
-                $e,
-                $request,
-                __('api.get_failed', ['attribute' => __('api.attributes.meal_plan')]),
-                'meal_plan.show',
-            );
-        }
+        return $this->executeWithExceptionHandling(
+            function () use ($request, $id) {
+                $res = $this->mealPlanService->show($id, $request->user()->group);
+                $message = __('api.retrieved', ['attribute' => __('api.attributes.meal_plan'), 'name' => $res['date']]);
+                return $this->showResponse($res, $message);
+            },
+            $request,
+            $failedMessage,
+            $operation
+        );
     }
 
     /**
@@ -170,55 +121,22 @@ class MealPlanController extends ApiController
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
-    public function update(Request $request, string $id): JsonResponse
+    public function update(MealPlanUpdateRequest $request, string $id): JsonResponse
     {
-        try {
-            $user = $request->user();
-            $group = $user->group;
+        $operation = __('operations.meal_plan.update');
+        $failedMessage = __('api.update_failed', ['attribute' => __('api.attributes.meal_plan')]);
 
-            $meal =  MealPlan::where('id', $id)->where('group_id', $group->id)->first();
-            if (!$meal) {
-                return $this->notFoundResponse(__('api.not_found', ['attribute' => __('api.attributes.meal_plan')]));
-            }
-
-            $meal->update([
-                'group_id' => $group->id,
-                'meal_type_id' => $request->mealTypeId,
-                'date' => $request->date,
-            ]);
-
-            // 料理更新
-            if (!empty($request->menu)) {
-                foreach ($request->menu as $item) {
-                    if (!isset($item['recipeIds'])) {
-                        continue;
-                    }
-                    $data = collect($item['recipeIds'])
-                        ->unique()
-                        ->map(function ($recipeId) use ($meal, $item) {
-                            return [
-                                'meal_plan_id' => $meal->id,
-                                'recipe_id' => $recipeId,
-                                'course_type_id' => $item['courseTypeId']
-                            ];
-                        })->toArray();
-                    $meal->recipes()->sync($data);
-                }
-            }
-
-            $updatedItem = $group->mealPlans()->where('id', $id)->first()->select('id', 'date', 'meal_type_id')->with(['mealType', 'recipes.courseTypes', 'recipes.categories', 'recipes.ingredients'])->first();
-
-            $res = $this->mealPlanService->formatCompleteMealPlanResponse($updatedItem);
-            return $this->updatedResponse($res, __('api.updated', ['attribute' => __('api.attributes.meal_plan'), 'name' => $updatedItem->date]));
-        } catch (Exception $e) {
-            return $this->handleException(
-                $e,
-                $request,
-                __('api.update_failed', ['attribute' => __('api.attributes.meal_plan')]),
-                'meal_plan.update',
-                ['meal_plan_id' => $id]
-            );
-        }
+        return $this->executeWithExceptionHandling(
+            function () use ($request, $id) {
+                $res = $this->mealPlanService->update($id, $request->validated(), $request->user()->group);
+                $message = __('api.updated', ['attribute' => __('api.attributes.meal_plan'), 'name' => $request->input('date')]);
+                return $this->updatedResponse($res, $message);
+            },
+            $request,
+            $failedMessage,
+            $operation,
+            ['meal_plan_id' => $id]
+        );
     }
 
     /**
@@ -233,28 +151,20 @@ class MealPlanController extends ApiController
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
-    public function destroy(Request $request, string $id): JsonResponse
+    public function destroy(MealPlanDestroyRequest $request, string $id): JsonResponse
     {
-        try {
-            $user = $request->user();
-            $group = $user->group;
+        $operation = __('operations.meal_plan.destroy');
+        $failedMessage = __('api.deletion_failed', ['attribute' => __('api.attributes.meal_plan')]);
 
-            $meal =  MealPlan::where('id', $id)->where('group_id', $group->id)->first();
-
-            if (!$meal) {
-                return $this->notFoundResponse(__('api.not_found', ['attribute' => __('api.attributes.meal_plan')]));
-            }
-
-            $meal->delete();
-
-            return $this->deletedResponse(__('api.deleted', ['attribute' => __('api.attributes.meal_plan'), 'name' => $meal->date]));
-        } catch (Exception $e) {
-            return $this->handleException(
-                $e,
-                $request,
-                __('api.deletion_failed', ['attribute' => __('api.attributes.meal_plan')]),
-                'meal_plan.destroy',
-            );
-        }
+        return $this->executeWithExceptionHandling(
+            function () use ($request, $id) {
+                $deletedMealPlan = $this->mealPlanService->delete($id, $request->user()->group);
+                $message = __('api.deleted', ['attribute' => __('api.attributes.meal_plan'), 'name' => $deletedMealPlan->date]);
+                return $this->deletedResponse($message);
+            },
+            $request,
+            $failedMessage,
+            $operation
+        );
     }
 }

@@ -44,10 +44,12 @@ class Handler extends ExceptionHandler
 
         $operation = $this->determineOperation($request) ?? __('operations.general.unknown');
         $defaultMessage = __('api.general.server_error') ?? $exception->getMessage();
+
         return $this->handleException($exception, $request, $defaultMessage, $operation);
 
         return parent::render($request, $exception);
     }
+
 
     /**
      * リクエストから操作名を推定

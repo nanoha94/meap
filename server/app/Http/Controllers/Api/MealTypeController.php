@@ -3,15 +3,51 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\ApiController;
-use App\Models\MealType;
-use Exception;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use App\Enums\HttpStatusCode;
-use Symfony\Component\HttpKernel\Exception\HttpException;
+use App\Http\Requests\Api\MealTypeBulkUpdateRequest;
+use App\Http\Requests\Api\MealTypeDestroyRequest;
+use App\Http\Requests\Api\MealTypeIndexRequest;
+use App\Http\Requests\Api\MealTypeStoreRequest;
+use App\Services\MealTypeService;
 
 class MealTypeController extends ApiController
 {
+    private MealTypeService $mealTypeService;
+
+    public function __construct(MealTypeService $mealTypeService)
+    {
+        $this->mealTypeService = $mealTypeService;
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/meal-types",
+     *     summary="献立種別一覧を取得",
+     *     tags={"MealPlans"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Response(response=200, ref="#/components/responses/MealTypeIndexSuccess"),
+     *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
+     *     @OA\Response(response=404, ref="#/components/responses/NotFound")
+     * )
+     */
+    public function index(MealTypeIndexRequest $request): JsonResponse
+    {
+        $operation = __('operations.meal_type.index');
+        $failedMessage = __('api.get_failed', ['attribute' => __('api.attributes.meal_type')]);
+
+        return $this->executeWithExceptionHandling(
+            function () use ($request) {
+                $res = $this->mealTypeService->index($request->user()->group);
+                $total = count($res );  
+                $message = __('api.list_retrieved', ['attribute' => __('api.attributes.meal_type'), 'count' => $total]);   
+                return $this->indexResponse($res, $total, $message);
+            },
+            $request,
+            $failedMessage,
+            $operation
+        );
+    }
+
     /**
      * @OA\Post(
      *     path="/meal-types",
@@ -24,34 +60,21 @@ class MealTypeController extends ApiController
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
-    public function store(Request $request): JsonResponse
+    public function store(MealTypeStoreRequest $request): JsonResponse
     {
-        try {
-            $user = $request->user();
-            $group = $user->group;
+        $operation = __('operations.meal_type.store');
+        $failedMessage = __('api.creation_failed', ['attribute' => __('api.attributes.meal_type')]);
 
-            $ret = MealType::create([
-                'group_id' => $group->id,
-                'name' => $request->name,
-                'color_id' => $request->colorId,
-                'order' => $request->order,
-            ]);
-
-            $res = [
-                'id' => $ret->id,
-                'name' => $ret->name,
-                'colorId' => $ret->color_id,
-                'order' => $ret->order,
-            ];
-            return $this->createdResponse($res, __('api.created', ['attribute' => __('api.attributes.meal_type'), 'name' => $ret->name]));
-        } catch (Exception $e) {
-            return $this->handleException(
-                $e,
-                $request,
-                __('api.creation_failed', ['attribute' => __('api.attributes.meal_type')]),
-                'meal_type.store',
-            );
-        }
+        return $this->executeWithExceptionHandling(
+            function () use ($request) {
+                $res = $this->mealTypeService->create($request->validated(), $request->user()->group);
+                $message = __('api.created', ['attribute' => __('api.attributes.meal_type'), 'name' => $res['name']]);
+                return $this->createdResponse($res, $message);
+            },
+            $request,
+            $failedMessage,
+            $operation
+        );
     }
 
     /**
@@ -66,44 +89,25 @@ class MealTypeController extends ApiController
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
-    public function bulkUpdate(Request $request): JsonResponse
+    public function bulkUpdate(MealTypeBulkUpdateRequest $request): JsonResponse
     {
-        try {
-            $user = $request->user();
-            $group = $user->group;
+        $operation = __('operations.meal_type.bulk_update');
+        $failedMessage = __('api.bulk_update_failed', ['attribute' => __('api.attributes.meal_type')]);
 
-            foreach ($request->categories as $category) {
-                $data = MealType::find($category['id']);
-                if (!$data) {
-                    continue;
-                }
-
-                $data->update([
-                    'name' => $category['name'],
-                    'color_id' => $category['colorId'],
-                    'order' => $data->order
-                ]);
-            }
-
-            $types = $group->mealTypes()->select('id', 'name', 'color_id', 'order')->get();
-            $ret = $types->map(function ($type) {
-                return [
-                    'id' => $type->id,
-                    'name' => $type->name,
-                    'colorId' => $type->color_id,
-                    'order' => $type->order
-                ];
-            });
-
-            return $this->updatedResponse($ret, __('api.bulk_updated', ['attribute' => __('api.attributes.meal_type'), 'count' => $types->count()]));
-        } catch (Exception $e) {
-            return $this->handleException(
-                $e,
-                $request,
-                __('api.update_failed', ['attribute' => __('api.attributes.meal_type')]),
-                'meal_type.bulk_update',
-            );
-        }
+        return $this->executeWithExceptionHandling(
+            function () use ($request) {
+                $updatedData = $this->mealTypeService->bulkUpdate(
+                    $request->validated()['data'],
+                    $request->user()->group
+                );
+                $total = count($updatedData);
+                $message = __('api.bulk_updated', ['attribute' => __('api.attributes.meal_type'), 'count' => $total]);
+                return $this->updatedResponse($updatedData, $message);
+            },
+            $request,
+            $failedMessage,
+            $operation
+        );
     }
 
     /**
@@ -118,44 +122,20 @@ class MealTypeController extends ApiController
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
-    public function destroy(Request $request, string $id): JsonResponse
+    public function destroy(MealTypeDestroyRequest $request, string $id): JsonResponse
     {
-        try {
-            $user = $request->user();
-            $group = $user->group;
+        $operation = __('operations.meal_type.destroy');
+        $failedMessage = __('api.deletion_failed', ['attribute' => __('api.attributes.meal_type')]);
 
-            $mealType =  MealType::where('id', $id)->where('group_id', $group->id)->first();
-
-            if (!$mealType) {
-                $this->handleException(
-                    new HttpException(HttpStatusCode::NOT_FOUND->value, __('api.general.not_found')),
-                    $request,
-                    __('api.general.not_found'),
-                    __('operations.meal_type.destroy'),
-                    ['meal_type_id' => $id]
-                );
-            }
-
-            $deletedId = $mealType->id;
-            $mealType->delete();
-
-            // 残りのカテゴリーのorderを整理
-            $remainingTypes = MealType::where('group_id', $mealType->group_id)
-                ->orderBy('order')
-                ->get();
-
-            foreach ($remainingTypes as $index => $remainingType) {
-                $remainingType->update(['order' => $index]);
-            }
-
-            return $this->deletedResponse(__('api.deleted', ['attribute' => __('api.attributes.meal_type'), 'name' => $mealType->name]));
-        } catch (Exception $e) {
-            return $this->handleException(
-                $e,
-                $request,
-                __('api.deletion_failed', ['attribute' => __('api.attributes.meal_type')]),
-                'meal_type.destroy'
-            );
-        }
+        return $this->executeWithExceptionHandling(
+            function () use ($request, $id) {
+                $deletedMealType = $this->mealTypeService->delete($id, $request->user()->group);
+                $message = __('api.deleted', ['attribute' => __('api.attributes.meal_type'), 'name' => $deletedMealType->name]);
+                return $this->deletedResponse($message);
+            },
+            $request,
+            $failedMessage,
+            $operation
+        );
     }
 }

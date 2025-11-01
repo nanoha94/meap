@@ -121,6 +121,19 @@ class Group extends Model
         });
     }
 
+    // グループに属するユーザー数を更新
+    public function refreshGroupSize(): void
+    {
+        $this->group_size = $this->users()->count();
+        $this->save();
+
+        if ($this->group_size === 0) {
+            DB::transaction(function () {
+                $this->delete();
+            });
+        }
+    }
+
     // グループに属するのユーザー数を取得
     public function getGroupSize(): int
     {
@@ -129,7 +142,9 @@ class Group extends Model
 
     public function users()
     {
-        return $this->hasManyThrough(User::class, GroupUserMapping::class, 'group_id', 'id', 'id', 'user_id');
+        // 1つのグループに複数のユーザーが属する（各ユーザーは1つのグループにのみ属する）
+        // 中間テーブルを使用するため、belongsToManyを使用
+        return $this->belongsToMany(User::class, 'group_user_mappings', 'group_id', 'user_id');
     }
 
     public function mealTypes()
@@ -185,5 +200,11 @@ class Group extends Model
     public function shoppingTags()
     {
         return $this->hasMany(ShoppingTag::class);
+    }
+
+    public function images()
+    {
+        return $this->belongsToMany(Image::class, 'image_mappings', 'group_id', 'image_id')
+            ->withPivot('related_model', 'related_id', 'image_type', 'order');
     }
 }

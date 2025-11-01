@@ -16,29 +16,32 @@ class EmailVerificationNotificationController extends Controller
      */
     public function store(Request $request): JsonResponse|RedirectResponse
     {
+        $operation = __('operations.auth.email_verification_notification');
+        $failedMessage = __('auth.email_verification_notification.store_failed');
+
         if ($request->user() === null) {
             $message = __('auth.email_verification_notification.store_not_found');
-            $this->logError(HttpStatusCode::NOT_FOUND, __('operations.auth.email_verification_notification'), new Exception($message), $request, [
-                'email' => $request->user()->email
-            ]);
-            return $this->errorResponse($message, HttpStatusCode::NOT_FOUND);
+            return $this->handleException(
+                new Exception($message),
+                $request,
+                $message,
+                $operation
+            );
         }
 
         if ($request->user()->hasVerifiedEmail()) {
             return redirect()->intended(config('app.frontend_url') . '/plan');
         }
 
-        try {
-            $request->user()->sendEmailVerificationNotification();
-        } catch (Exception $e) {
-            return $this->handleException(
-                $e,
-                $request,
-                __('auth.email_verification_notification.store_failed'),
-                __('operations.auth.email_verification_notification')
-            );
-        }
-
-        return $this->successResponse(null, __('auth.email_verification_notification.store_sent'));
+        return $this->executeWithExceptionHandling(
+            function () use ($request) {
+                $request->user()->sendEmailVerificationNotification();
+                $message = __('auth.email_verification_notification.store_sent');
+                return $this->successResponse(null, $message);
+            },
+            $request,
+            $failedMessage,
+            $operation
+        );
     }
 }

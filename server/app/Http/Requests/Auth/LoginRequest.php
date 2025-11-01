@@ -3,21 +3,17 @@
 namespace App\Http\Requests\Auth;
 
 use App\Enums\HttpStatusCode;
-use App\Traits\ExceptionHandlerTrait;
+use App\Http\Requests\Auth\BaseAuthRequest;
 use Illuminate\Auth\Events\Lockout;
-use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
-use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
-class LoginRequest extends FormRequest
+class LoginRequest extends BaseAuthRequest
 {
-    use  ExceptionHandlerTrait;
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -47,41 +43,22 @@ class LoginRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'email.required' => __('validation.email.required'),
-            'email.string' => __('validation.email.string'),
-            'email.email' => __('validation.email.email'),
-            'password.required' => __('validation.password.required'),
-            'password.string' => __('validation.password.string'),
+            'email.required' => __('validation.required', ['attribute' => 'email']),
+            'email.string' => __('validation.string', ['attribute' => 'email']),
+            'email.email' => __('validation.email', ['attribute' => 'email']),
+            'password.required' => __('validation.required', ['attribute' => 'password']),
+            'password.string' => __('validation.string', ['attribute' => 'password']),
         ];
     }
 
     /**
-     * Handle a failed validation attempt.
+     * Get the operation key for error handling.
      *
-     * @param  Validator  $validator
-     * @return void
-     *
-     * @throws ValidationException
+     * @return string
      */
-    protected function failedValidation(Validator $validator)
+    protected function getOperationKey(): string
     {
-        // バリデーション失敗時のログ記録とレスポンス生成
-        $errorMessages = $validator->errors()->all();
-        $primaryMessage = !empty($errorMessages) ? $errorMessages[0] : __('api.general.validation_error');
-
-        // ValidationExceptionを作成
-        $validationException = ValidationException::withMessages($validator->errors()->toArray());
-
-        // ExceptionHandlerTraitを使用してレスポンスを生成
-        $response = $this->handleException(
-            $validationException,
-            $this,
-            $primaryMessage,
-            __('operations.auth.login')
-        );
-
-        // HttpResponseExceptionでレスポンスを投げる
-        throw new HttpResponseException($response);
+        return __('operations.auth.login');
     }
 
     /**

@@ -17,6 +17,7 @@ namespace App\Swagger;
  *         @OA\Property(property="steps", type="array", description="手順", 
  *            @OA\Items(
  *                type="object",
+ *                @OA\Property(property="id", type="string", description="手順ID", example="1", nullable=true),
  *                @OA\Property(property="instruction", type="string", description="手順", example="ハンバーグを作る"),
  *                @OA\Property(property="imageId", type="string", description="画像ID", example="1"),
  *                @OA\Property(property="order", type="integer", description="並び順", example=1)

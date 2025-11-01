@@ -13,6 +13,9 @@ return [
         'error' => 'An error occurred.',
         'database_error' => 'A database error occurred.',
         'server_error' => 'Internal server error occurred.',
+        'not_belong_to_any_group' => 'User does not belong to any group.',
+        'unexpected_type' => 'Unexpected type passed. Expected: :expected, Actual: :actual',
+        'unexpected_collection_type' => 'Unexpected collection type passed. Expected: :expected, Actual: :actual',
     ],
     'created' => ':attribute(:name) created successfully.',
     'updated' => ':attribute(:name) updated successfully.',
@@ -64,7 +67,6 @@ return [
     'invitation' => [
         'name' => 'invitation token',
         'details_retrieved' => 'Invitation token details retrieved successfully.',
-        'invalid_token' => 'Invalid token.',
         'self_invitation_error' => 'Cannot invite yourself.',
         'already_in_group' => 'Already a member of the group.',
         'already_in_another_group' => 'Already belongs to another group.',

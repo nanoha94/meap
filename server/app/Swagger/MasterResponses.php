@@ -34,7 +34,7 @@ namespace App\Swagger;
  *             @OA\Property(
  *                 property="courseTypes",
  *                 type="array",
- *                 description="コースタイプ一覧",
+ *                 description="コース種別一覧",
  *                 @OA\Items(ref="#/components/schemas/CourseType")
  *             ),
  *             @OA\Property(

@@ -2,20 +2,10 @@
 
 namespace App\Http\Requests\Api;
 
-use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Validation\ValidationException;
+use App\Http\Requests\Api\BaseApiRequest;
 
-class ImageBulkDestroyRequest extends FormRequest
+class ImageBulkDestroyRequest extends BaseApiRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool
-    {
-        return true;
-    }
 
     /**
      * Get the validation rules that apply to the request.
@@ -25,8 +15,8 @@ class ImageBulkDestroyRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'ids' => 'required|array|min:1',
-            'ids.*' => 'required|uuid|exists:images,id',
+            'ids' => 'array|min:1|required',
+            'ids.*' => 'uuid|required',
         ];
     }
 
@@ -38,41 +28,21 @@ class ImageBulkDestroyRequest extends FormRequest
     public function messages()
     {
         return [
-            'ids.required' => __('validation.required', ['attribute' => __('validation.attributes.image.id')]),
-            'ids.array' => __('validation.array', ['attribute' => __('validation.attributes.image.id')]),
-            'ids.min' => __('validation.min.array', ['attribute' => __('validation.attributes.image.id'), 'min' => 1]),
-            'ids.*.required' => __('validation.required', ['attribute' => __('validation.attributes.image.id')]),
-            'ids.*.uuid' => __('validation.uuid', ['attribute' => __('validation.attributes.image.id')]),
-            'ids.*.exists' => __('validation.exists', ['attribute' => __('validation.attributes.image.id')]),
+            'ids.array' => __('validation.array', ['attribute' => 'ids']),
+            'ids.min' => __('validation.min.array', ['attribute' => 'ids', 'min' => 1]),
+            'ids.required' => __('validation.required', ['attribute' => 'ids']),
+            'ids.*.uuid' => __('validation.uuid', ['attribute' => 'ids.*']),
+            'ids.*.required' => __('validation.required', ['attribute' => 'ids.*']),
         ];
     }
 
     /**
-     * Handle a failed validation attempt.
+     * Get the operation key for error handling.
      *
-     * @param  Validator  $validator
-     * @return void
-     *
-     * @throws ValidationException
+     * @return string
      */
-    protected function failedValidation(Validator $validator)
+    protected function getOperationKey(): string
     {
-        // バリデーション失敗時のログ記録とレスポンス生成
-        $errorMessages = $validator->errors()->all();
-        $primaryMessage = !empty($errorMessages) ? $errorMessages[0] : __('api.general.validation_error');
-
-        // ValidationExceptionを作成
-        $validationException = ValidationException::withMessages($validator->errors()->toArray());
-
-        // ExceptionHandlerTraitを使用してレスポンスを生成
-        $response = $this->handleException(
-            $validationException,
-            $this,
-            $primaryMessage,
-            __('operations.image.bulk_destroy')
-        );
-
-        // HttpResponseExceptionでレスポンスを投げる
-        throw new HttpResponseException($response);
+        return __('operations.image.bulk_destroy');
     }
 }

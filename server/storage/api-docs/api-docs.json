@@ -466,6 +466,29 @@
             }
         },
         "/meal-types": {
+            "get": {
+                "tags": [
+                    "MealPlans"
+                ],
+                "summary": "献立種別一覧を取得",
+                "operationId": "c59f81cabcd1e0f3b2d3ee3b366e228a",
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/MealTypeIndexSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
             "post": {
                 "tags": [
                     "MealPlans"
@@ -552,6 +575,29 @@
             }
         },
         "/recipe-categories": {
+            "get": {
+                "tags": [
+                    "Recipes"
+                ],
+                "summary": "料理カテゴリ一覧を取得",
+                "operationId": "12abd42a6e214d701102a5ff7fcdaa33",
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/RecipeCategoryIndexSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
             "post": {
                 "tags": [
                     "Recipes"
@@ -1259,7 +1305,7 @@
                         },
                         "type": "object"
                     },
-                    "mealPlans": {
+                    "menu": {
                         "description": "献立",
                         "type": "array",
                         "items": {
@@ -1336,7 +1382,7 @@
                         "example": "1"
                     },
                     "name": {
-                        "description": "コースタイプ名",
+                        "description": "コース種別名",
                         "type": "string",
                         "example": "朝食"
                     },
@@ -1404,8 +1450,8 @@
                         "type": "string",
                         "example": "1"
                     },
-                    "url": {
-                        "description": "サムネイル画像URL",
+                    "src": {
+                        "description": "サムネイル画像パス",
                         "type": "string",
                         "example": "https://example.com/image.jpg"
                     },
@@ -1458,8 +1504,8 @@
                         "type": "string",
                         "example": "1"
                     },
-                    "url": {
-                        "description": "画像URL",
+                    "src": {
+                        "description": "画像パス",
                         "type": "string",
                         "example": "https://example.com/step1.jpg"
                     },
@@ -1487,11 +1533,6 @@
                         "description": "ID",
                         "type": "string",
                         "example": "1"
-                    },
-                    "color": {
-                        "description": "カテゴリ色",
-                        "type": "string",
-                        "example": "#FF0000"
                     },
                     "name": {
                         "description": "カテゴリ名",
@@ -2128,7 +2169,7 @@
                                             }
                                         },
                                         "courseTypes": {
-                                            "description": "コースタイプ一覧",
+                                            "description": "コース種別一覧",
                                             "type": "array",
                                             "items": {
                                                 "$ref": "#/components/schemas/CourseType"
@@ -2172,30 +2213,25 @@
                                     "example": "献立を5件取得しました。"
                                 },
                                 "data": {
-                                    "properties": {
-                                        "mealPlans": {
-                                            "type": "array",
-                                            "items": {
-                                                "properties": {
-                                                    "date": {
-                                                        "description": "日付",
-                                                        "type": "string",
-                                                        "format": "date",
-                                                        "example": "2023-10-05"
-                                                    },
-                                                    "menu": {
-                                                        "description": "献立メニュー",
-                                                        "type": "array",
-                                                        "items": {
-                                                            "$ref": "#/components/schemas/MealPlan"
-                                                        }
-                                                    }
-                                                },
-                                                "type": "object"
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "date": {
+                                                "description": "日付",
+                                                "type": "string",
+                                                "format": "date",
+                                                "example": "2023-10-05"
+                                            },
+                                            "mealPlans": {
+                                                "description": "献立メニュー",
+                                                "type": "array",
+                                                "items": {
+                                                    "$ref": "#/components/schemas/MealPlan"
+                                                }
                                             }
-                                        }
-                                    },
-                                    "type": "object"
+                                        },
+                                        "type": "object"
+                                    }
                                 },
                                 "total": {
                                     "description": "献立総数",
@@ -2301,6 +2337,36 @@
                     }
                 }
             },
+            "MealTypeIndexSuccess": {
+                "description": "献立種別一覧を取得しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "献立種別一覧を取得しました。"
+                                },
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/MealType"
+                                    }
+                                },
+                                "total": {
+                                    "type": "integer",
+                                    "example": 100
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
             "MealTypeStoreSuccess": {
                 "description": "献立種別(朝食)を作成しました。",
                 "content": {
@@ -2399,14 +2465,14 @@
                         "schema": {
                             "properties": {
                                 "data": {
-                                    "description": "コースタイプ一覧",
+                                    "description": "コース種別一覧",
                                     "type": "array",
                                     "items": {
                                         "$ref": "#/components/schemas/CourseType"
                                     }
                                 },
                                 "total": {
-                                    "description": "コースタイプ総数",
+                                    "description": "コース種別総数",
                                     "type": "integer",
                                     "example": 100
                                 }
@@ -2534,6 +2600,32 @@
                                 "data": {
                                     "type": "null",
                                     "example": null
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "RecipeCategoryIndexSuccess": {
+                "description": "料理カテゴリ一覧を取得しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "料理カテゴリ一覧を取得しました。"
+                                },
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/RecipeCategory"
+                                    }
                                 }
                             },
                             "type": "object"
@@ -2862,19 +2954,10 @@
                                     "example": "買い物タグを5件取得しました。"
                                 },
                                 "data": {
-                                    "properties": {
-                                        "tags": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/ShoppingTag"
-                                            }
-                                        },
-                                        "total": {
-                                            "type": "integer",
-                                            "example": 5
-                                        }
-                                    },
-                                    "type": "object"
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ShoppingTag"
+                                    }
                                 },
                                 "total": {
                                     "type": "integer",
@@ -3314,7 +3397,7 @@
                     "application/json": {
                         "schema": {
                             "properties": {
-                                "categories": {
+                                "data": {
                                     "type": "array",
                                     "items": {
                                         "$ref": "#/components/schemas/MealType"
@@ -3389,6 +3472,12 @@
                                     "type": "array",
                                     "items": {
                                         "properties": {
+                                            "id": {
+                                                "description": "手順ID",
+                                                "type": "string",
+                                                "example": "1",
+                                                "nullable": true
+                                            },
                                             "instruction": {
                                                 "description": "手順",
                                                 "type": "string",
@@ -3557,12 +3646,23 @@
                 }
             },
             "ShoppingCategoryStoreRequest": {
-                "description": "※新規作成時はid不要",
                 "required": true,
                 "content": {
                     "application/json": {
                         "schema": {
-                            "$ref": "#/components/schemas/ShoppingCategory"
+                            "properties": {
+                                "name": {
+                                    "description": "買い物カテゴリ名",
+                                    "type": "string",
+                                    "example": "食料品"
+                                },
+                                "order": {
+                                    "description": "買い物カテゴリ順序",
+                                    "type": "integer",
+                                    "example": "1"
+                                }
+                            },
+                            "type": "object"
                         }
                     }
                 }
@@ -3577,7 +3677,24 @@
                                 "data": {
                                     "type": "array",
                                     "items": {
-                                        "$ref": "#/components/schemas/ShoppingCategory"
+                                        "properties": {
+                                            "id": {
+                                                "description": "買い物カテゴリID",
+                                                "type": "string",
+                                                "example": "1"
+                                            },
+                                            "name": {
+                                                "description": "買い物カテゴリ名",
+                                                "type": "string",
+                                                "example": "食料品"
+                                            },
+                                            "order": {
+                                                "description": "買い物カテゴリ順序",
+                                                "type": "integer",
+                                                "example": "1"
+                                            }
+                                        },
+                                        "type": "object"
                                     }
                                 }
                             },

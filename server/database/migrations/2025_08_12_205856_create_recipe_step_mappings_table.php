@@ -15,6 +15,7 @@ return new class extends Migration
             $table->foreignUuid('recipe_id')->constrained('recipes', 'id')->cascadeOnDelete();
             $table->foreignUuid('step_id')->constrained('recipe_steps', 'id')->cascadeOnDelete();
             $table->integer('order');
+            $table->primary(['recipe_id', 'step_id']);
         });
     }
 

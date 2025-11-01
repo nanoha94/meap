@@ -2,20 +2,10 @@
 
 namespace App\Http\Requests\Api;
 
-use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Validation\ValidationException;
+use App\Http\Requests\Api\BaseApiRequest;
 
-class RecipeCategoryStoreRequest extends FormRequest
+class RecipeCategoryStoreRequest extends BaseApiRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool
-    {
-        return true;
-    }
 
     /**
      * Get the validation rules that apply to the request.
@@ -25,8 +15,8 @@ class RecipeCategoryStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:255',
-            'order' => 'required|integer|min:0',
+            'name' => 'string|max:255|required',
+            'order' => 'integer|min:0|required',
         ];
     }
 
@@ -38,41 +28,22 @@ class RecipeCategoryStoreRequest extends FormRequest
     public function messages()
     {
         return [
-            'name.required' => __('validation.required', ['attribute' => __('validation.attributes.recipe_category.name')]),
-            'name.string' => __('validation.string', ['attribute' => __('validation.attributes.recipe_category.name')]),
-            'name.max' => __('validation.max.string', ['attribute' => __('validation.attributes.recipe_category.name'), 'max' => 255]),
-            'order.required' => __('validation.required', ['attribute' => __('validation.attributes.recipe_category.order')]),
-            'order.integer' => __('validation.integer', ['attribute' => __('validation.attributes.recipe_category.order')]),
-            'order.min' => __('validation.min.numeric', ['attribute' => __('validation.attributes.recipe_category.order'), 'min' => 0]),
+            'name.string' => __('validation.string', ['attribute' => 'name']),
+            'name.max' => __('validation.max.string', ['attribute' => 'name', 'max' => 255]),
+            'name.required' => __('validation.required', ['attribute' => 'name']),
+            'order.integer' => __('validation.integer', ['attribute' => 'order']),
+            'order.min' => __('validation.min.numeric', ['attribute' => 'order', 'min' => 0]),
+            'order.required' => __('validation.required', ['attribute' => 'order']),
         ];
     }
 
     /**
-     * Handle a failed validation attempt.
+     * Get the operation key for error handling.
      *
-     * @param  Validator  $validator
-     * @return void
-     *
-     * @throws ValidationException
+     * @return string
      */
-    protected function failedValidation(Validator $validator)
+    protected function getOperationKey(): string
     {
-        // バリデーション失敗時のログ記録とレスポンス生成
-        $errorMessages = $validator->errors()->all();
-        $primaryMessage = !empty($errorMessages) ? $errorMessages[0] : __('api.general.validation_error');
-
-        // ValidationExceptionを作成
-        $validationException = ValidationException::withMessages($validator->errors()->toArray());
-
-        // ExceptionHandlerTraitを使用してレスポンスを生成
-        $response = $this->handleException(
-            $validationException,
-            $this,
-            $primaryMessage,
-            __('operations.recipe_category.store')
-        );
-
-        // HttpResponseExceptionでレスポンスを投げる
-        throw new HttpResponseException($response);
+        return __('operations.recipe_category.store');
     }
 }

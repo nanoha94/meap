@@ -81,7 +81,7 @@ test('1-2-5: 無効なIDデータ型テスト', function () {
     ];
 
     $this->expectException(InvalidArgumentException::class);
-    $this->expectExceptionMessage('ID must be a string.');
+    $this->expectExceptionMessage('予期しない型が渡されました。期待: string, 実際: integer');
     $this->dummy->testFindOrCreateIds($items, $group, $modelClass);
 });
 
@@ -94,7 +94,7 @@ test('1-2-6: 存在しないIDテスト', function () {
     ];
 
     $this->expectException(InvalidArgumentException::class);
-    $this->expectExceptionMessage('Specified ID does not exist.');
+    $this->expectExceptionMessage('指定されたIDが見つかりませんでした。');
     $this->dummy->testFindOrCreateIds($items, $group, $modelClass);
 });
 
