@@ -8,19 +8,24 @@ import {
     ShoppingList,
 } from '@/models/shopping/components';
 import { useShoppingStore } from '@/models/shopping/hooks';
-import { IGetShoppingItemsResponse } from '@/types/api';
+import {
+    IGetShoppingCategoriesResponse,
+    IGetShoppingItemsResponse,
+} from '@/types/api';
 import { ChevronRight } from 'lucide-react';
 import React from 'react';
 
 interface Props {
     fetchItems?: IGetShoppingItemsResponse['data'];
+    fetchCategories?: IGetShoppingCategoriesResponse['data'];
 }
 
-const ShoppingListPage: React.FC<Props> = ({ fetchItems }) => {
+const ShoppingListPage: React.FC<Props> = ({ fetchItems, fetchCategories }) => {
     const {
         items: storeItems,
         setServerItems,
         setItems: setStoreItems,
+        setCategories: setStoreCategories,
         isLoadingCategories,
         isLoadingItems,
     } = useShoppingStore();
@@ -36,12 +41,20 @@ const ShoppingListPage: React.FC<Props> = ({ fetchItems }) => {
         setIsOpenCategorySettingDialog(false);
     };
 
+    // アイテムをストアにセット
     React.useEffect(() => {
         if (fetchItems) {
             setStoreItems(fetchItems);
             setServerItems(fetchItems);
         }
     }, [fetchItems]);
+
+    // カテゴリーをストアにセット（初回のみ）
+    React.useEffect(() => {
+        if (fetchCategories) {
+            setStoreCategories(fetchCategories);
+        }
+    }, []);
 
     React.useEffect(() => {
         setIsLoading(isLoadingCategories || isLoadingItems);

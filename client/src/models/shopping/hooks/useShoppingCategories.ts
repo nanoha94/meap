@@ -5,7 +5,7 @@ import { IPostShoppingCategoryRequest, IShoppingCategory } from '@/types/api';
 import axios from '@/lib/axios';
 import { TIMEOUT_MS } from '@/constants';
 import { useRouter } from 'next/navigation';
-import { TMP_ID_PREFIX } from '../constants';
+import { TMP_ID_PREFIX } from '@/constants/tmpIdPrefix';
 
 export const useShoppingCategories = () => {
     const router = useRouter();

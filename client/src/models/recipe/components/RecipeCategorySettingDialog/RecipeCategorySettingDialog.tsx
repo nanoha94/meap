@@ -1,17 +1,21 @@
 import { Dialog } from '@/components/common';
 import { useRecipeStore } from '../../hooks/recipeStores';
 import EditForm from './EditForm';
+import { RECIPE_SETTING_DIALOG_CONFIGS } from '../../constants';
+import { DIALOG_NAME } from '@/constants';
 
 const RecipeCategorySettingDialog = () => {
+    const dialogName = DIALOG_NAME.RECIPE_CATEGORY_SETTING;
     const { dialogs, closeDialog } = useRecipeStore();
-    const { isOpen } = dialogs.categorySetting;
+    const { isOpen } = dialogs[dialogName];
+    const dialogConfig = RECIPE_SETTING_DIALOG_CONFIGS[dialogName];
 
     return (
         <Dialog
-            title="料理カテゴリ―設定"
+            title={dialogConfig.title}
             isOpen={isOpen}
-            onClose={() => closeDialog('categorySetting')}>
-            <EditForm onClose={() => closeDialog('categorySetting')} />
+            onClose={() => closeDialog(dialogName)}>
+            <EditForm onClose={() => closeDialog(dialogName)} />
         </Dialog>
     );
 };

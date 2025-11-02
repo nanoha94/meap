@@ -1,7 +1,4 @@
-import {
-    RECIPE_SETTING_DIALOG_EDIT_MODE,
-    RECIPE_SETTING_DIALOG_NAME,
-} from './constants';
+import { DIALOG_NAME } from '@/constants';
 
 export type RecipeSettingDialogConfig = {
     title: string;
@@ -9,13 +6,5 @@ export type RecipeSettingDialogConfig = {
 };
 
 export type RecipeSettingDialogConfigs = {
-    [RECIPE_SETTING_DIALOG_NAME.CATEGORY]: RecipeSettingDialogConfig;
-    [RECIPE_SETTING_DIALOG_NAME.INGREDIENT]: {
-        [RECIPE_SETTING_DIALOG_EDIT_MODE.CREATE]: RecipeSettingDialogConfig;
-        [RECIPE_SETTING_DIALOG_EDIT_MODE.UPDATE]: RecipeSettingDialogConfig;
-    };
-    [RECIPE_SETTING_DIALOG_NAME.SEASONING]: {
-        [RECIPE_SETTING_DIALOG_EDIT_MODE.CREATE]: RecipeSettingDialogConfig;
-        [RECIPE_SETTING_DIALOG_EDIT_MODE.UPDATE]: RecipeSettingDialogConfig;
-    };
+    [DIALOG_NAME.RECIPE_CATEGORY_SETTING]: RecipeSettingDialogConfig;
 };

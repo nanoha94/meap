@@ -12,7 +12,6 @@ class MasterService
         $ingredientCategories = $group->ingredientCategories()->select('id', 'name', 'order')->orderBy('order', 'asc')->get();
         $ingredientUnits = $group->ingredientUnits()->select('id', 'name', 'position', 'requires_quantity', 'order')->orderBy('order', 'asc')->get();
         $menuCategories = $group->menuCategories()->select('id', 'name', 'order')->get();
-        $shopping_categories = $group->shoppingCategories()->select('id', 'name', 'is_default', 'order')->orderBy('order', 'asc')->get();
         $shopping_tags = $group->shoppingTags()->select('id', 'name')->get();
 
         return [
@@ -20,7 +19,6 @@ class MasterService
             'ingredientCategories' => $ingredientCategories,
             'ingredientUnits' => $ingredientUnits,
             'menuCategories' => $menuCategories,
-            'shoppingCategories' => $shopping_categories,
             'shoppingTags' => $shopping_tags,
         ];
     }

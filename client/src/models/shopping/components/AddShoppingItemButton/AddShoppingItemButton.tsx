@@ -1,9 +1,8 @@
-import { colors } from '@/constants';
+import { colors, DIALOG_EDIT_MODE, DIALOG_NAME } from '@/constants';
 import { CalendarDays, LucideProps, Minus, Pencil, Plus } from 'lucide-react';
 import React from 'react';
 import itemOpenStyles from '@/styles/itemOpen.module.css';
 import { useShoppingStore } from '../../hooks';
-import { SHOPPING_ITEM_EDIT_MODE } from '../../constants';
 
 interface ActionButton {
     label: string;
@@ -27,9 +26,9 @@ const AddShoppingItemButton = () => {
             label: 'テキストから追加',
             icon: <Pencil />,
             onClick: () =>
-                openDialog('itemSetting', {
+                openDialog(DIALOG_NAME.SHOPPING_ITEM_ADD_EDIT, {
                     item: undefined,
-                    editMode: SHOPPING_ITEM_EDIT_MODE.CREATE,
+                    editMode: DIALOG_EDIT_MODE.CREATE,
                 }),
         },
     ];

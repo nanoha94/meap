@@ -1,12 +1,13 @@
 import { ICourseType } from './course';
-import { IIngredientUnit, IRecipeCategory, ISeasoningUnit } from './recipe';
-import { IShoppingCategory, IShoppingTag } from './shopping';
+import { IIngredientUnit } from './ingredient';
+import { IRecipeCategory } from './recipe';
+import { IShoppingTag } from './shopping';
 
 export interface IGetMasterResponse {
-    recipeCategories: IRecipeCategory[];
-    ingredientUnits: IIngredientUnit[];
-    seasoningUnits: ISeasoningUnit[];
-    courseTypes: ICourseType[];
-    shoppingCategories: IShoppingCategory[];
-    shoppingTags: IShoppingTag[];
+    data: {
+        recipeCategories: IRecipeCategory[];
+        ingredientUnits: IIngredientUnit[];
+        courseTypes: ICourseType[];
+        shoppingTags: IShoppingTag[];
+    };
 }

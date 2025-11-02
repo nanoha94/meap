@@ -4,10 +4,10 @@ import { DndSortableList } from '@/components/dnd';
 import { CirclePlus } from 'lucide-react';
 import React from 'react';
 import { IShoppingCategory } from '@/types/api';
-import { useFieldArray, useForm } from 'react-hook-form';
-import EditItem from './EditItem';
+import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { useShoppingCategories } from '../../hooks';
-import { TMP_ID_PREFIX } from '../../constants';
+import { TMP_ID_PREFIX } from '@/constants/tmpIdPrefix';
+import GrippableEditItem from '@/components/common/GrippableEditItem';
 
 interface FormData {
     categories: IShoppingCategory[];
@@ -112,12 +112,24 @@ const ShoppingCategorySettingForm: React.FC<Props> = ({ onClose }) => {
                             move(oldIndex, newIndex);
                         }}
                         renderItem={(item, index) => (
-                            <EditItem
-                                index={index}
-                                control={control}
-                                onDelete={() => remove(index)}
-                                isDefault={item.isDefault}
-                            />
+                            <GrippableEditItem
+                                hasDeleteButton={true}
+                                isDisabledDeleteButton={item.isDefault}
+                                onDelete={() => remove(index)}>
+                                <Controller
+                                    control={control}
+                                    name={`categories.${index}.name`}
+                                    render={({ field }) => (
+                                        <input
+                                            {...field}
+                                            data-item-id={`${TMP_ID_PREFIX.SHOPPING_CATEGORY}${index}`}
+                                            type="text"
+                                            placeholder="カテゴリー名を入力"
+                                            className="py-2 px-4 flex-1 outline-none bg-white rounded-lg border border-gray-main"
+                                        />
+                                    )}
+                                />
+                            </GrippableEditItem>
                         )}
                     />
                 </div>

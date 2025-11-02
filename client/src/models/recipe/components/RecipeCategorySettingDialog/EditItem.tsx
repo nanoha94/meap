@@ -1,8 +1,8 @@
 import { colors } from '@/constants/colors';
 import { GripVertical, Trash } from 'lucide-react';
 import { Control, Controller } from 'react-hook-form';
-import { TMP_ID_PREFIX } from '../../constants';
 import { IRecipeCategory } from '@/types/api/recipe';
+import { TMP_ID_PREFIX } from '@/constants/tmpIdPrefix';
 
 interface FormData {
     categories: IRecipeCategory[];

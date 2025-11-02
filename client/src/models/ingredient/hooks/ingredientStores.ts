@@ -1,11 +1,16 @@
-import { IGetRecipesResponse, IRecipeCategory } from '@/types/api/recipe';
 import { create } from 'zustand';
 import { IGetMasterResponse } from '@/types/api/master';
-import { DIALOG_NAME } from '@/constants';
+import { IIngredient } from '@/types/api/ingredient';
+import { DIALOG_EDIT_MODE, DIALOG_NAME } from '@/constants';
 
-type DialogPayload = {
-    [DIALOG_NAME.RECIPE_CATEGORY_SETTING]: {
-        onAction: (value: IRecipeCategory) => void;
+export type DialogPayload = {
+    [DIALOG_NAME.INGREDIENT_ADD_EDIT]: {
+        item: IIngredient | undefined;
+        editMode: (typeof DIALOG_EDIT_MODE)[keyof typeof DIALOG_EDIT_MODE];
+        onAction: (value: IIngredient) => void;
+    };
+    [DIALOG_NAME.INGREDIENT_CATEGORY_SETTING]: {
+        onAction: () => void;
     };
 };
 
@@ -16,13 +21,16 @@ type DialogsState = {
     };
 };
 
-type LoadingState = {
-    recipe: boolean;
-    recipeCategory: boolean;
-};
-
 const initialDialogsState: DialogsState = {
-    [DIALOG_NAME.RECIPE_CATEGORY_SETTING]: {
+    [DIALOG_NAME.INGREDIENT_ADD_EDIT]: {
+        isOpen: false,
+        payload: {
+            item: undefined,
+            editMode: DIALOG_EDIT_MODE.CREATE,
+            onAction: () => {},
+        },
+    },
+    [DIALOG_NAME.INGREDIENT_CATEGORY_SETTING]: {
         isOpen: false,
         payload: {
             onAction: () => {},
@@ -30,30 +38,14 @@ const initialDialogsState: DialogsState = {
     },
 };
 
-interface RecipeState {
-    // ローカル状態
-    recipes: IGetRecipesResponse['data'];
-
-    // ローディング状態
-    isLoadings: LoadingState;
-
+interface IngredientState {
     // マスターデータ
-    categories: IGetMasterResponse['data']['recipeCategories'];
     ingredientUnits: IGetMasterResponse['data']['ingredientUnits'];
 
     // ダイアログの状態
     dialogs: DialogsState;
 
-    // レシピ一覧のアクション
-    setRecipes: (recipes: IGetRecipesResponse['data']) => void;
-
-    // ローディング状態のアクション
-    setIsLoadings: (name: keyof LoadingState, isLoading: boolean) => void;
-
     // マスターデータのアクション
-    setCategories: (
-        categories: IGetMasterResponse['data']['recipeCategories'],
-    ) => void;
     setIngredientUnits: (
         ingredientUnits: IGetMasterResponse['data']['ingredientUnits'],
     ) => void;
@@ -66,33 +58,12 @@ interface RecipeState {
     closeDialog: (dialogName: keyof DialogPayload) => void;
 }
 
-export const useRecipeStore = create<RecipeState>(set => ({
+export const useIngredientStore = create<IngredientState>(set => ({
     // 初期状態
-    recipes: [],
-    isLoadings: {
-        recipeCategory: false,
-        recipe: false,
-    },
-    categories: [],
     ingredientUnits: [],
     dialogs: initialDialogsState,
 
-    // レシピ一覧のアクション
-    setRecipes: recipes => {
-        set({ recipes });
-    },
-
-    // ローディング状態のアクション
-    setIsLoadings: (name: keyof LoadingState, isLoading: boolean) => {
-        set(state => ({
-            isLoadings: { ...state.isLoadings, [name]: isLoading },
-        }));
-    },
-
     // マスターデータのアクション
-    setCategories: categories => {
-        set({ categories });
-    },
     setIngredientUnits: ingredientUnits => {
         set({ ingredientUnits });
     },

@@ -1,22 +1,18 @@
 'use client';
+import React from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import IngredientEditFields from './IngredientEditFields';
-import {
-    IIngredient,
-    IPostRecipeRequest,
-    IRecipe,
-    ISeasoning,
-} from '@/types/api/recipe';
+import { IPostRecipeRequest, IRecipe } from '@/types/api/recipe';
 import { Button } from '@/components/common';
-import { defaultPostData, TMP_ID_PREFIX } from '../../constants';
-import SeasoningEditFields from './SeasoningEditFields';
-import React from 'react';
+import { defaultPostData } from '../../constants';
 import CategoryEditFields from './CategoryEditFields';
 import { VerticalRowField } from '@/components/react-hook-form';
 import ThumbnailEditField from './ThumbnailEditField';
-import { useRecipes } from '../../hooks/useRecipe';
 import { MAX_IMAGE_SIZE } from '@/constants';
 import { useRouter } from 'next/navigation';
+import { IIngredient } from '@/types/api/ingredient';
+import { TMP_ID_PREFIX } from '@/constants/tmpIdPrefix';
+import { useRecipes } from '../../hooks';
 
 type FormData = IPostRecipeRequest;
 
@@ -54,10 +50,7 @@ const RecipeEditForm = ({ recipe = null }: Props) => {
         return false;
     }, [values]);
 
-    const formatItems = (
-        items: IIngredient[] | ISeasoning[],
-        prefix: string,
-    ) => {
+    const formatItems = (items: IIngredient[], prefix: string) => {
         return items
             .filter(v => v.name && v.name.length > 0)
             .map(v =>
@@ -66,6 +59,7 @@ const RecipeEditForm = ({ recipe = null }: Props) => {
                           name: v.name,
                           quantity: v.quantity,
                           unitId: v.unitId,
+                          categoryId: v.categoryId,
                       }
                     : v,
             );
@@ -82,11 +76,7 @@ const RecipeEditForm = ({ recipe = null }: Props) => {
             ...data,
             ingredients: formatItems(
                 data.ingredients as IIngredient[],
-                TMP_ID_PREFIX.RECIPE_INGREDIENT,
-            ),
-            seasonings: formatItems(
-                data.seasonings as ISeasoning[],
-                TMP_ID_PREFIX.RECIPE_SEASONING,
+                TMP_ID_PREFIX.INGREDIENT,
             ),
         };
 
@@ -105,7 +95,6 @@ const RecipeEditForm = ({ recipe = null }: Props) => {
         formData.append('memo', sendData.memo ?? '');
         formData.append('categoryIds', JSON.stringify(sendData.categoryIds));
         formData.append('ingredients', JSON.stringify(sendData.ingredients));
-        formData.append('seasonings', JSON.stringify(sendData.seasonings));
 
         if (editMode === 'create') {
             storeRecipe(formData);
@@ -143,10 +132,9 @@ const RecipeEditForm = ({ recipe = null }: Props) => {
                     </VerticalRowField>
                     {/* カテゴリー */}
                     <CategoryEditFields control={methods.control} />
+                    {/* TODO:分量目安 */}
                     {/* 食材 */}
                     <IngredientEditFields control={methods.control} />
-                    {/* 調味料 */}
-                    <SeasoningEditFields control={methods.control} />
                 </div>
                 <div className="flex-1 flex flex-col gap-y-5">
                     {/* レシピURL */}

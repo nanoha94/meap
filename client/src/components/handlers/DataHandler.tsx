@@ -14,20 +14,18 @@ interface Props {
 const DataHandler = ({ user, masterData }: Props) => {
     const { setLoginUser } = useAccountStore();
     const { setCategories: SetShoppingCategories } = useShoppingStore();
-    const {
-        setCategories: SetRecipeCategories,
-        setIngredientUnits,
-        setSeasoningUnits,
-    } = useRecipeStore();
+    const { setCategories: SetRecipeCategories, setIngredientUnits } =
+        useRecipeStore();
+
+    console.log(masterData);
 
     React.useEffect(() => {
         if (user) {
             setLoginUser(user);
         }
-        SetShoppingCategories(masterData.shoppingCategories);
-        SetRecipeCategories(masterData.recipeCategories);
-        setIngredientUnits(masterData.ingredientUnits);
-        setSeasoningUnits(masterData.seasoningUnits);
+        SetShoppingCategories(masterData.data.shoppingCategories);
+        SetRecipeCategories(masterData.data.recipeCategories);
+        setIngredientUnits(masterData.data.ingredientUnits);
     }, [user, masterData]);
 
     return <></>;

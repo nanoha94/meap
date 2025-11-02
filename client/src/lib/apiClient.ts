@@ -69,6 +69,7 @@ export async function apiClient<T>(
         });
     }
 
+    // APIリクエスト
     const response = await fetch(`${baseUrl}${path}`, fetchOptions);
     if (!response.ok) {
         const errorText = await response.text();

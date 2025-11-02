@@ -2,31 +2,29 @@
 import { TextButton } from '@/components/common';
 import { DndSortableList } from '@/components/dnd';
 import EditDialogButton from '../EditDialogButton/EditDialogButton';
-import {
-    defaultIngredient,
-    RECIPE_SETTING_DIALOG_EDIT_MODE,
-    RECIPE_SETTING_DIALOG_NAME,
-    TMP_ID_PREFIX,
-} from '../../constants';
-import { useRecipeStore } from '../../hooks/recipeStores';
 import { Control, useFieldArray, useWatch } from 'react-hook-form';
-import { IIngredient, IPostRecipeRequest } from '@/types/api/recipe';
-import { CirclePlus } from 'lucide-react';
+import { IPostRecipeRequest } from '@/types/api/recipe';
+import { ChevronRight, CirclePlus } from 'lucide-react';
 import React from 'react';
+import { IIngredient } from '@/types/api/ingredient';
+import { defaultIngredient } from '@/models/ingredient/constants';
+import { TMP_ID_PREFIX } from '@/constants/tmpIdPrefix';
+import { DIALOG_EDIT_MODE, DIALOG_NAME } from '@/constants';
+import { useIngredientStore } from '@/models/ingredient/hooks';
 
 interface Props {
     control: Control<IPostRecipeRequest>;
 }
 
 const IngredientEditFields = ({ control }: Props) => {
-    const { ingredientUnits, openDialog } = useRecipeStore();
+    const { ingredientUnits, openDialog } = useIngredientStore();
     const { fields, append, remove, update, move } =
         useFieldArray<IPostRecipeRequest>({
             control,
             name: 'ingredients',
         });
     const ingredients = useWatch({ control, name: 'ingredients' });
-    const prefix: string = TMP_ID_PREFIX.RECIPE_INGREDIENT;
+    const prefix: string = TMP_ID_PREFIX.INGREDIENT;
 
     /**
      * 空の食材を追加
@@ -47,9 +45,9 @@ const IngredientEditFields = ({ control }: Props) => {
         }
 
         // 食材の編集ダイアログを開く
-        openDialog(RECIPE_SETTING_DIALOG_NAME.INGREDIENT, {
+        openDialog(DIALOG_NAME.INGREDIENT_ADD_EDIT, {
             item: undefined,
-            editMode: RECIPE_SETTING_DIALOG_EDIT_MODE.CREATE,
+            editMode: DIALOG_EDIT_MODE.CREATE,
             onAction: (value: IIngredient) => update(lastIndex, value),
         });
     };
@@ -83,42 +81,54 @@ const IngredientEditFields = ({ control }: Props) => {
     };
 
     return (
-        <div className="flex flex-col gap-y-2">
-            <div className="text-base">食材</div>
-            <DndSortableList
-                items={fields}
-                prefix={TMP_ID_PREFIX.RECIPE_INGREDIENT}
-                onDragEnd={(oldIndex, newIndex) => {
-                    move(oldIndex, newIndex);
-                }}
-                renderItem={(item, index) => {
-                    return (
-                        <EditDialogButton
-                            key={item.id}
-                            dialogName={RECIPE_SETTING_DIALOG_NAME.INGREDIENT}
-                            editMode={RECIPE_SETTING_DIALOG_EDIT_MODE.UPDATE}
-                            isDisabled={
-                                index === 0 &&
-                                fields?.length === 1 &&
-                                fields[0].name === ''
-                            }
-                            name={`ingredients.${index}`}
-                            placeholder="食材を設定"
-                            control={control}
-                            onDelete={() => {
-                                removeItem(index);
-                            }}
-                            formatValue={formatValue}
-                        />
-                    );
-                }}
-            />
+        <div className="flex flex-col gap-y-5">
+            <div className="flex flex-col gap-y-2">
+                <div className="text-base">食材</div>
+                <DndSortableList
+                    items={fields}
+                    prefix={TMP_ID_PREFIX.INGREDIENT}
+                    onDragEnd={(oldIndex, newIndex) => {
+                        move(oldIndex, newIndex);
+                    }}
+                    renderItem={(item, index) => {
+                        return (
+                            <EditDialogButton
+                                key={item.id}
+                                dialogName={DIALOG_NAME.INGREDIENT_ADD_EDIT}
+                                editMode={DIALOG_EDIT_MODE.UPDATE}
+                                isDisabled={
+                                    index === 0 &&
+                                    fields?.length === 1 &&
+                                    fields[0].name === ''
+                                }
+                                name={`ingredients.${index}`}
+                                placeholder="食材を設定"
+                                control={control}
+                                onDelete={() => {
+                                    removeItem(index);
+                                }}
+                                formatValue={formatValue}
+                            />
+                        );
+                    }}
+                />
+                <TextButton
+                    type="button"
+                    onClick={addEmptyIngredient}
+                    className="!border-none !bg-transparent hover:!bg-gray-light">
+                    <CirclePlus size={20} />
+                    追加
+                </TextButton>
+            </div>
             <TextButton
-                type="button"
-                onClick={addEmptyIngredient}
-                className="!border-none !bg-transparent hover:!bg-gray-light">
-                <CirclePlus size={20} />
-                追加
+                colorVariant="secondary"
+                onClick={() =>
+                    openDialog(DIALOG_NAME.INGREDIENT_CATEGORY_SETTING, {
+                        onAction: () => {},
+                    })
+                }>
+                材料カテゴリーの追加・編集
+                <ChevronRight size={20} />
             </TextButton>
         </div>
     );

@@ -1,34 +1,32 @@
 'use client';
 import React from 'react';
-import { Button, TextButton } from '@/components/common';
-import { DndSortableList } from '@/components/dnd';
-import { CirclePlus } from 'lucide-react';
 import { useFieldArray, useForm } from 'react-hook-form';
+import { Button, TextButton } from '@/components/common';
+import { CirclePlus } from 'lucide-react';
+import { DndSortableList } from '@/components/dnd';
 import EditItem from './EditItem';
-import { defaultRecipeCategory } from '../../constants';
-import { useRecipeCategories } from '../../hooks/useRecipeCategories';
-import { IRecipeCategory } from '@/types/api/recipe';
 import { TMP_ID_PREFIX } from '@/constants/tmpIdPrefix';
-
-interface FormData {
-    categories: IRecipeCategory[];
-}
+import { defaultIngredientCategory } from '@/models/ingredient/constants';
+import { IIngredientCategory } from '@/types/api/ingredient';
 
 interface Props {
     onClose: () => void;
 }
 
-const EditForm: React.FC<Props> = ({ onClose }) => {
-    const { storeData, bulkUpdateRecipeCategories } = useRecipeCategories();
-    const prefix = TMP_ID_PREFIX.RECIPE_CATEGORY;
+interface FormData {
+    categories: IIngredientCategory[];
+}
 
-    const { control, handleSubmit, watch, reset } = useForm<FormData>({
+const EditForm: React.FC<Props> = ({ onClose }) => {
+    const prefix = TMP_ID_PREFIX.INGREDIENT_CATEGORY;
+
+    const { control, handleSubmit, watch } = useForm<FormData>({
         defaultValues: {
-            categories: [defaultRecipeCategory],
+            categories: [defaultIngredientCategory],
         },
     });
 
-    const { fields, append, remove, update, move } = useFieldArray<FormData>({
+    const { fields, append, remove, move } = useFieldArray<FormData>({
         control,
         name: 'categories',
     });
@@ -59,7 +57,7 @@ const EditForm: React.FC<Props> = ({ onClose }) => {
         }
 
         const newItem = {
-            ...defaultRecipeCategory,
+            ...defaultIngredientCategory,
             id: `${prefix}${Date.now()}`,
         };
 
@@ -68,50 +66,12 @@ const EditForm: React.FC<Props> = ({ onClose }) => {
     };
 
     /**
-     * カテゴリーを削除
-     * @param index 削除するカテゴリーのインデックス
-     */
-    const removeCategory = (index: number) => {
-        // 最初の食材を削除した場合は、デフォルトの食材を設定（入力項目が0個にならないようにするため）
-        if (index === 0) {
-            update(0, defaultRecipeCategory);
-        } else {
-            remove(index);
-        }
-    };
-
-    /**
      * フォームの送信
      */
     const onSubmit = (data: FormData) => {
-        try {
-            // 空のアイテムを除いてデータ更新
-            const filteredItems = data.categories.filter(
-                v =>
-                    (v.id?.startsWith(prefix) &&
-                        v.name &&
-                        v.name?.length > 0) ||
-                    !v.id?.startsWith(prefix),
-            );
-            bulkUpdateRecipeCategories(
-                filteredItems.map((v, idx) => ({
-                    ...v,
-                    order: idx,
-                })),
-            );
-            onClose();
-        } catch {
-            // エラーの場合はダイアログを閉じない
-            // エラーハンドリングはbulkUpdateRecipeCategoriesで行う
-        }
+        console.log(data);
+        onClose();
     };
-
-    // 初期化処理
-    React.useEffect(() => {
-        if (storeData?.categories?.length > 0) {
-            reset({ categories: storeData.categories });
-        }
-    }, []);
 
     return (
         <form
@@ -126,15 +86,11 @@ const EditForm: React.FC<Props> = ({ onClose }) => {
                             move(oldIndex, newIndex);
                         }}
                         renderItem={(item, index) => (
+                            // TODO: GrippableEditItemを使用するように修正
                             <EditItem
                                 index={index}
                                 control={control}
-                                isDisabled={
-                                    index === 0 &&
-                                    fields?.length === 1 &&
-                                    fields[0].name === ''
-                                }
-                                onDelete={() => removeCategory(index)}
+                                onDelete={() => remove(index)}
                             />
                         )}
                     />

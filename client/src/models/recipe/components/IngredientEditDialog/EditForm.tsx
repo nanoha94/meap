@@ -1,13 +1,12 @@
 'use client';
-
+import React from 'react';
 import { Button } from '@/components/common';
 import { HorizontalRowField } from '@/components/react-hook-form';
 import { useForm } from 'react-hook-form';
 import { useRecipeStore } from '../../hooks/recipeStores';
-import { IIngredient } from '@/types/api/recipe';
 import StyledSelect from '@/components/common/StyledSelect';
-import React from 'react';
-import { defaultIngredient } from '../../constants';
+import { defaultIngredient } from '@/models/ingredient/constants';
+import { IIngredient } from '@/types/api/ingredient';
 
 interface Props {
     editingItem: IIngredient | undefined;

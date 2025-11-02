@@ -1,21 +1,20 @@
 import { colors } from '@/constants/colors';
-import { IShoppingCategory } from '@/types/api';
+import { TMP_ID_PREFIX } from '@/constants/tmpIdPrefix';
+import { IIngredientCategory } from '@/types/api/ingredient';
 import { GripVertical, Trash } from 'lucide-react';
 import { Control, Controller } from 'react-hook-form';
-import { TMP_ID_PREFIX } from '../../constants';
 
 interface FormData {
-    categories: IShoppingCategory[];
+    categories: IIngredientCategory[];
 }
 
 interface Props {
     index: number;
     control: Control<FormData>;
     onDelete: () => void;
-    isDefault: boolean;
 }
 
-const EditItem: React.FC<Props> = ({ index, control, onDelete, isDefault }) => {
+const EditItem: React.FC<Props> = ({ index, control, onDelete }) => {
     return (
         <div className="flex items-center gap-x-2">
             <GripVertical color={colors.gray.main} />
@@ -35,8 +34,7 @@ const EditItem: React.FC<Props> = ({ index, control, onDelete, isDefault }) => {
             <button
                 type="button"
                 onClick={onDelete}
-                className="p-1 w-fit h-fit rounded-full hover:bg-gray-light transition-colors disabled:opacity-0 disabled:cursor-default"
-                disabled={isDefault}>
+                className="p-1 w-fit h-fit rounded-full hover:bg-gray-light transition-colors disabled:opacity-0">
                 <Trash color={colors.primary.main} size={28} />
             </button>
         </div>

@@ -8,7 +8,7 @@ import {
 import axios from '@/lib/axios';
 import { TIMEOUT_MS } from '@/constants';
 import React from 'react';
-import { TMP_ID_PREFIX } from '../constants';
+import { TMP_ID_PREFIX } from '@/constants/tmpIdPrefix';
 
 export const useRecipeCategories = () => {
     const {

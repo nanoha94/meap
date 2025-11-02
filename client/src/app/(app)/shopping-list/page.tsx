@@ -1,6 +1,9 @@
 import ShoppingListPage from '@/pages/shopping/ShoppingListPage';
 import { Suspense } from 'react';
-import { IGetShoppingItemsResponse } from '@/types/api';
+import {
+    IGetShoppingCategoriesResponse,
+    IGetShoppingItemsResponse,
+} from '@/types/api';
 import Loading from '../loading';
 import { apiClient } from '@/lib/apiClient';
 import { SnackbarHandler } from '@/components/handlers';
@@ -10,14 +13,21 @@ import HeaderButton from '@/models/shopping/components/HeaderButton/HeaderButton
 
 async function ShoppingListsWithData() {
     let items: IGetShoppingItemsResponse = { data: [] };
+    let categories: IGetShoppingCategoriesResponse = { data: [], total: 0 };
     let errorMessage: string = '';
     try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
-        items = await apiClient('/shopping-items', {
-            signal: controller.signal,
-        });
+        // 2つのリクエストを並列実行
+        [items, categories] = await Promise.all([
+            apiClient<IGetShoppingItemsResponse>('/shopping-items', {
+                signal: controller.signal,
+            }),
+            apiClient<IGetShoppingCategoriesResponse>('/shopping-categories', {
+                signal: controller.signal,
+            }),
+        ]);
 
         clearTimeout(timeoutId);
     } catch (error) {
@@ -39,7 +49,10 @@ async function ShoppingListsWithData() {
             <Header title="買い物リスト">
                 <HeaderButton />
             </Header>
-            <ShoppingListPage fetchItems={items?.data} />
+            <ShoppingListPage
+                fetchItems={items?.data}
+                fetchCategories={categories?.data}
+            />
         </>
     );
 }

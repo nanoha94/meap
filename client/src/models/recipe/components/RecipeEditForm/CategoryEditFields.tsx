@@ -5,8 +5,7 @@ import { IPostRecipeRequest } from '@/types/api/recipe';
 import { Check, ChevronRight } from 'lucide-react';
 import React from 'react';
 import { useRecipeStore } from '../../hooks/recipeStores';
-import { colors } from '@/constants';
-import { RECIPE_SETTING_DIALOG_NAME } from '../../constants';
+import { colors, DIALOG_NAME } from '@/constants';
 
 interface Props {
     control: Control<IPostRecipeRequest>;
@@ -42,7 +41,7 @@ const CategoryEditFields = ({ control }: Props) => {
             <div className="flex flex-col gap-y-3">
                 <div className="flex flex-col gap-y-2">
                     <div className="text-base">カテゴリー</div>
-                    {categories.length > 0 ? (
+                    {categories && categories.length > 0 ? (
                         <Controller
                             control={control}
                             name="categoryIds"
@@ -126,7 +125,7 @@ const CategoryEditFields = ({ control }: Props) => {
                 <TextButton
                     colorVariant="secondary"
                     onClick={() =>
-                        openDialog(RECIPE_SETTING_DIALOG_NAME.CATEGORY, {
+                        openDialog(DIALOG_NAME.RECIPE_CATEGORY_SETTING, {
                             onAction: () => {},
                         })
                     }>

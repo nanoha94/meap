@@ -4,16 +4,17 @@ import EditForm from './EditForm';
 import React from 'react';
 import { useShoppingStore } from '../../hooks';
 import { SHOPPING_ITEM_SETTING_DIALOG_CONFIGS } from '../../constants';
+import { DIALOG_NAME } from '@/constants';
 
 const ShoppingItemSettingDialog: React.FC = () => {
     const { dialogs, closeDialog } = useShoppingStore();
     const {
         isOpen,
         payload: { editMode },
-    } = dialogs.itemSetting;
+    } = dialogs[DIALOG_NAME.SHOPPING_ITEM_ADD_EDIT];
 
     const handleClose = () => {
-        closeDialog('itemSetting');
+        closeDialog(DIALOG_NAME.SHOPPING_ITEM_ADD_EDIT);
     };
 
     return (

@@ -19,7 +19,7 @@ const RecipeDetailPage = ({ recipe }: Props) => {
                     <div className="relative w-full h-auto aspect-video bg-gray-light rounded-lg overflow-hidden transition-opcity">
                         {recipe?.thumbnail && (
                             <Image
-                                src={recipe?.thumbnail.url}
+                                src={recipe?.thumbnail.src}
                                 alt="thumbnail"
                                 width={recipe?.thumbnail.width}
                                 height={recipe?.thumbnail.height}
@@ -56,25 +56,10 @@ const RecipeDetailPage = ({ recipe }: Props) => {
                             </ul>
                         </div>
                     )}
-                    {/* 調味料 */}
-                    {recipe?.seasonings && recipe?.seasonings.length > 0 && (
-                        <div className="flex flex-col gap-y-1">
-                            <div>調味料</div>
-                            <ul>
-                                {recipe?.seasonings.map(v => (
-                                    <li
-                                        key={v.id}
-                                        className="relative pl-3 before:content-[''] before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:inline-block before:w-1 before:h-1 before:bg-black before:rounded-full">
-                                        {v.name}
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
                 </div>
                 <div className="flex-1 flex flex-col gap-y-5">
                     {/* レシピ */}
-                    {recipe?.url ||
+                    {/* {recipe?.url ||
                         (recipe?.instructions && (
                             <div className="flex flex-col gap-y-1">
                                 <div>レシピ</div>
@@ -87,7 +72,7 @@ const RecipeDetailPage = ({ recipe }: Props) => {
                                 </a>
                                 <div>{recipe?.instructions}</div>
                             </div>
-                        ))}
+                        ))} */}
 
                     {/* メモ */}
                     {recipe?.memo && (

@@ -15,7 +15,7 @@ interface Props {
 
 const AppLayout = async ({ children }: Props) => {
     let user: IGetUserResponse;
-    let masterData: IGetMasterResponse = defaultMasterData;
+    let masterData: IGetMasterResponse = { data: defaultMasterData };
 
     try {
         user = await apiClient('/user');

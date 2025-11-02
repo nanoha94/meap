@@ -4,8 +4,7 @@ import { CalendarDays, CirclePlus, Pencil } from 'lucide-react';
 import itemOpenStyles from '@/styles/itemOpen.module.css';
 import React from 'react';
 import { LucideIconWrapper } from '@/components/common';
-import { colors } from '@/constants';
-import { SHOPPING_ITEM_EDIT_MODE } from '../../constants';
+import { colors, DIALOG_EDIT_MODE, DIALOG_NAME } from '@/constants';
 import { useShoppingStore } from '../../hooks';
 
 const HeaderButton = () => {
@@ -24,9 +23,9 @@ const HeaderButton = () => {
             label: 'テキストで追加',
             icon: <Pencil />,
             onClick: () =>
-                openDialog('itemSetting', {
+                openDialog(DIALOG_NAME.SHOPPING_ITEM_ADD_EDIT, {
                     item: undefined,
-                    editMode: SHOPPING_ITEM_EDIT_MODE.CREATE,
+                    editMode: DIALOG_EDIT_MODE.CREATE,
                 }),
         },
     ];

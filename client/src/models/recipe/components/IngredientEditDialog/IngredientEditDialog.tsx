@@ -1,42 +1,35 @@
 import { Dialog } from '@/components/common';
-import {
-    RECIPE_SETTING_DIALOG_CONFIGS,
-    RECIPE_SETTING_DIALOG_NAME,
-} from '../../constants';
 import React from 'react';
 import EditForm from './EditForm';
-import { useRecipeStore } from '../../hooks/recipeStores';
-import { IIngredient } from '@/types/api/recipe';
+import { DIALOG_NAME } from '@/constants';
+import { IIngredient } from '@/types/api/ingredient';
+import { useIngredientStore } from '@/models/ingredient/hooks';
+import { INGREDIENT_SETTING_DIALOG_CONFIGS } from '@/models/ingredient/constants';
 
 const IngredientEditDialog = () => {
-    const { dialogs, closeDialog } = useRecipeStore();
+    const dialogName = DIALOG_NAME.INGREDIENT_ADD_EDIT;
+    const { dialogs, closeDialog } = useIngredientStore();
     const {
         isOpen,
         payload: { item: editingItem, editMode, onAction },
-    } = dialogs.ingredientSetting;
+    } = dialogs[dialogName];
+    const dialogConfig =
+        INGREDIENT_SETTING_DIALOG_CONFIGS[dialogName][editMode];
 
     const handleSetValue = (value: IIngredient) => {
         onAction(value);
-        closeDialog('ingredientSetting');
+        closeDialog(dialogName);
     };
 
     return (
         <Dialog
-            title={
-                RECIPE_SETTING_DIALOG_CONFIGS[
-                    RECIPE_SETTING_DIALOG_NAME.INGREDIENT
-                ][editMode].title
-            }
+            title={dialogConfig.title}
             isOpen={isOpen}
-            onClose={() => closeDialog('ingredientSetting')}>
+            onClose={() => closeDialog(dialogName)}>
             <EditForm
                 editingItem={editingItem}
-                actionButtonText={
-                    RECIPE_SETTING_DIALOG_CONFIGS[
-                        RECIPE_SETTING_DIALOG_NAME.INGREDIENT
-                    ][editMode].actionButtonText
-                }
-                onClose={() => closeDialog('ingredientSetting')}
+                actionButtonText={dialogConfig.actionButtonText}
+                onClose={() => closeDialog(dialogName)}
                 onAction={handleSetValue}
             />
         </Dialog>

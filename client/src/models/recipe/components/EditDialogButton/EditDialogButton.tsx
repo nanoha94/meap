@@ -1,25 +1,24 @@
 'use client';
-
+import React from 'react';
 import { colors } from '@/constants/colors';
 import { GripVertical, Pencil, Trash } from 'lucide-react';
 import { Control, Controller, FieldValues, Path } from 'react-hook-form';
-import React from 'react';
-import { useRecipeStore } from '../../hooks/recipeStores';
+import { IIngredient } from '@/types/api/ingredient';
+import { DIALOG_EDIT_MODE } from '@/constants';
 import {
-    RECIPE_SETTING_DIALOG_EDIT_MODE,
-    RECIPE_SETTING_DIALOG_NAME,
-} from '../../constants';
-import { IIngredient, ISeasoning } from '@/types/api/recipe';
+    DialogPayload,
+    useIngredientStore,
+} from '@/models/ingredient/hooks/ingredientStores';
 
 interface Props<T extends FieldValues> {
-    dialogName: (typeof RECIPE_SETTING_DIALOG_NAME)[keyof typeof RECIPE_SETTING_DIALOG_NAME];
-    editMode: (typeof RECIPE_SETTING_DIALOG_EDIT_MODE)[keyof typeof RECIPE_SETTING_DIALOG_EDIT_MODE];
+    dialogName: keyof DialogPayload;
+    editMode: (typeof DIALOG_EDIT_MODE)[keyof typeof DIALOG_EDIT_MODE];
     isDisabled?: boolean;
     name: Path<T>;
     placeholder: string;
     control: Control<T>;
     onDelete: () => void;
-    formatValue?: (value: IIngredient | ISeasoning) => string;
+    formatValue?: (value: IIngredient) => string;
 }
 
 function EditDialogButton<T extends FieldValues>({
@@ -32,7 +31,7 @@ function EditDialogButton<T extends FieldValues>({
     onDelete,
     formatValue,
 }: Props<T>) {
-    const { openDialog } = useRecipeStore();
+    const { openDialog } = useIngredientStore();
 
     const handleOpenDialog = (
         value: IIngredient,

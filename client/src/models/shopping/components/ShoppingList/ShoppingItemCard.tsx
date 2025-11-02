@@ -9,12 +9,13 @@ import {
     useShoppingItems,
     useShoppingStore,
 } from '../../hooks';
-import {
-    SHOPPING_ITEM_EDIT_MODE,
-    SHOPPING_ALERT_DIALOG_CONFIGS,
-} from '../../constants';
+import { SHOPPING_ALERT_DIALOG_CONFIGS } from '../../constants';
 import { AlertDialogData } from '@/types/dialog';
-import { ALERT_DIALOG_STATE_DEFAULT } from '@/constants/dialog';
+import {
+    ALERT_DIALOG_STATE_DEFAULT,
+    DIALOG_EDIT_MODE,
+    DIALOG_NAME,
+} from '@/constants/dialog';
 
 interface Props {
     item: IShoppingItem;
@@ -58,9 +59,9 @@ const ShoppingItemCard = ({ item }: Props) => {
             label: '編集する',
             icon: <Pencil />,
             onClick: () => {
-                openDialog('itemSetting', {
+                openDialog(DIALOG_NAME.SHOPPING_ITEM_ADD_EDIT, {
                     item,
-                    editMode: SHOPPING_ITEM_EDIT_MODE.UPDATE,
+                    editMode: DIALOG_EDIT_MODE.UPDATE,
                 });
             },
         },

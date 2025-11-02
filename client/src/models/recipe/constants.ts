@@ -1,70 +1,22 @@
-import {
-    IIngredient,
-    IPostRecipeRequest,
-    IRecipeCategory,
-    ISeasoning,
-} from '@/types/api/recipe';
+import { IPostRecipeRequest, IRecipeCategory } from '@/types/api/recipe';
 import { RecipeSettingDialogConfigs } from './types';
+import { defaultIngredient } from '../ingredient/constants';
+import { TMP_ID_PREFIX } from '@/constants/tmpIdPrefix';
+import { DIALOG_NAME } from '@/constants';
 
-export enum TMP_ID_PREFIX {
-    RECIPE_CATEGORY = 'meap-recipe-category-',
-    RECIPE_INGREDIENT = 'meap-recipe-ingredient-',
-    RECIPE_SEASONING = 'meap-recipe-seasoning-',
-}
-
-export const RECIPE_SETTING_DIALOG_NAME = {
-    CATEGORY: 'categorySetting',
-    INGREDIENT: 'ingredientSetting',
-    SEASONING: 'seasoningSetting',
-} as const;
-
-export const RECIPE_SETTING_DIALOG_EDIT_MODE = {
-    CREATE: 'create',
-    UPDATE: 'update',
-} as const;
-
+/* ダイアログ設定 */
 export const RECIPE_SETTING_DIALOG_CONFIGS: RecipeSettingDialogConfigs = {
-    [RECIPE_SETTING_DIALOG_NAME.CATEGORY]: {
-        title: 'カテゴリを設定',
+    [DIALOG_NAME.RECIPE_CATEGORY_SETTING]: {
+        title: '料理カテゴリーを設定',
         actionButtonText: '設定',
-    },
-    [RECIPE_SETTING_DIALOG_NAME.INGREDIENT]: {
-        [RECIPE_SETTING_DIALOG_EDIT_MODE.CREATE]: {
-            title: '食材を追加',
-            actionButtonText: '追加',
-        },
-        [RECIPE_SETTING_DIALOG_EDIT_MODE.UPDATE]: {
-            title: '食材を編集',
-            actionButtonText: '保存',
-        },
-    },
-    [RECIPE_SETTING_DIALOG_NAME.SEASONING]: {
-        [RECIPE_SETTING_DIALOG_EDIT_MODE.CREATE]: {
-            title: '調味料を追加',
-            actionButtonText: '追加',
-        },
-        [RECIPE_SETTING_DIALOG_EDIT_MODE.UPDATE]: {
-            title: '調味料を編集',
-            actionButtonText: '保存',
-        },
     },
 };
 
+/** デフォルト設定 */
 export const defaultRecipeCategory: IRecipeCategory = {
     id: `${TMP_ID_PREFIX.RECIPE_CATEGORY}-0`,
     name: '',
-};
-export const defaultIngredient: IIngredient = {
-    id: `${TMP_ID_PREFIX.RECIPE_INGREDIENT}-0`,
-    name: '',
-    quantity: null,
-    unitId: '',
-};
-export const defaultSeasoning: ISeasoning = {
-    id: `${TMP_ID_PREFIX.RECIPE_SEASONING}-0`,
-    name: '',
-    quantity: null,
-    unitId: '',
+    order: 0,
 };
 export const defaultPostData: IPostRecipeRequest = {
     name: '',
@@ -72,7 +24,6 @@ export const defaultPostData: IPostRecipeRequest = {
     instructions: '',
     memo: '',
     categoryIds: [],
-    seasonings: [defaultSeasoning],
     ingredients: [defaultIngredient],
     thumbnail: new File([], ''),
 };
