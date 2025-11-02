@@ -53,7 +53,7 @@ const SideNavigation = ({ user, className }: Props) => {
                 )}
                 <button
                     onClick={logout}
-                    className="py-3 px-4 flex-1 flex items-center gap-x-2 text-base  transition-colors hover:bg-gray-light ">
+                    className="py-3 px-4 flex-1 flex items-center gap-x-2 transition-colors hover:bg-gray-light ">
                     <LogOut strokeWidth={1.5} className="w-5 h-5" />
                     ログアウト
                 </button>
@@ -65,7 +65,7 @@ const SideNavigation = ({ user, className }: Props) => {
                         href={v.link}
                         className={`py-3 px-4 flex-1 transition-colors hover:bg-gray-light ${pathname === v.link ? 'pointer-events-none' : ''} `}>
                         <div
-                            className={`flex items-center gap-x-2 text-base  whitespace-nowrap ${pathname === v.link ? 'text-primary-main' : 'text-black'} `}>
+                            className={`flex items-center gap-x-2 whitespace-nowrap ${pathname === v.link ? 'text-primary-main' : 'text-black'} `}>
                             <NavigationIcon
                                 iconType={v.iconType}
                                 isCurrentPage={pathname === v.link}

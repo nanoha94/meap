@@ -1,3 +1,4 @@
+"use client";
 import { colors } from '@/constants';
 import { GripVertical, Trash } from 'lucide-react';
 

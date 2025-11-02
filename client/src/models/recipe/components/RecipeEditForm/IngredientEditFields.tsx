@@ -83,7 +83,7 @@ const IngredientEditFields = ({ control }: Props) => {
     return (
         <div className="flex flex-col gap-y-5">
             <div className="flex flex-col gap-y-2">
-                <div className="text-base">食材</div>
+                <div>食材</div>
                 <DndSortableList
                     items={fields}
                     prefix={TMP_ID_PREFIX.INGREDIENT}

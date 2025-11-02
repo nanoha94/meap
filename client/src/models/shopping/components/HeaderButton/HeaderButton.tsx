@@ -66,7 +66,7 @@ const HeaderButton = () => {
             </HeaderTextButton>
             <div
                 ref={containerRef}
-                className={`z-10 absolute top-10 right-0 py-1 flex flex-col items-start text-base bg-white rounded border border-gray-main shadow-lg  ${
+                className={`z-10 absolute top-10 right-0 py-1 flex flex-col items-start bg-white rounded border border-gray-main shadow-lg  ${
                     isOpen ? itemOpenStyles.open : itemOpenStyles.close
                 }`}>
                 {actionButtons.map((v, idx) => (

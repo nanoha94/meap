@@ -24,7 +24,7 @@ const StyledSelect = ({
                     onChange(e);
                 }}
                 id={name}
-                className={`py-2 px-4 w-full text-base border rounded-lg border-gray-main appearance-none outline-none cursor-pointer
+                className={`py-2 px-4 w-full border rounded-lg border-gray-main appearance-none outline-none cursor-pointer
                     ${value === '' ? 'text-gray-placeholder' : 'text-black'}
                 `}>
                 {isShowPlaceholder && (

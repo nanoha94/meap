@@ -99,7 +99,7 @@ const PasswordReset = () => {
                                         }));
                                         setApiErrors({ password: [] });
                                     }}
-                                    className={`py-2 px-4 text-base border rounded-lg ${isErrorVisible.password && (!!errors.password?.message || (!!apiErrors.password && apiErrors.password?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
+                                    className={`py-2 px-4 border rounded-lg ${isErrorVisible.password && (!!errors.password?.message || (!!apiErrors.password && apiErrors.password?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
                                 />
                             )}
                         </VerticalRowField>
@@ -145,7 +145,7 @@ const PasswordReset = () => {
                                             password_confirmation: [],
                                         });
                                     }}
-                                    className={`py-2 px-4 text-base border rounded-lg ${isErrorVisible.passwordConfirmation && (!!errors.passwordConfirmation?.message || (!!apiErrors.password_confirmation && apiErrors.password_confirmation?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
+                                    className={`py-2 px-4 border rounded-lg ${isErrorVisible.passwordConfirmation && (!!errors.passwordConfirmation?.message || (!!apiErrors.password_confirmation && apiErrors.password_confirmation?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
                                 />
                             )}
                         </VerticalRowField>

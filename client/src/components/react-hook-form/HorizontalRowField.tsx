@@ -20,7 +20,7 @@ const HorizontalRowField = <T extends FieldValues>({
 }: Props<T>) => {
     return (
         <div className="grid grid-cols-[80px_1fr] items-center">
-            <label className="text-base after:content-['：']" htmlFor={name}>
+            <label className="after:content-['：']" htmlFor={name}>
                 {label}
             </label>
             <Controller

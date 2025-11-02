@@ -6,7 +6,7 @@ import { IGetRecipesResponse } from '@/types/api/recipe';
 import React from 'react';
 
 interface Props {
-    fetchRecipes: IGetRecipesResponse['data'];
+    fetchRecipes: IGetRecipesResponse;
 }
 
 const RecipeListPage = ({ fetchRecipes }: Props) => {
@@ -19,13 +19,19 @@ const RecipeListPage = ({ fetchRecipes }: Props) => {
 
     React.useEffect(() => {
         if (fetchRecipes) {
-            setStoreRecipes(fetchRecipes);
+            setStoreRecipes(fetchRecipes['data']);
         }
     }, [fetchRecipes]);
     return (
         <>
             {isLoading && <LoadingAnimation />}
-            <RecipeList />
+            <div className="p-5 pb-[60px] md:px-10">
+                {fetchRecipes['total'] > 0 ? (
+                    <RecipeList />
+                ) : (
+                    <p>まだ料理/レシピが登録されていません。</p>
+                )}
+            </div>
         </>
     );
 };

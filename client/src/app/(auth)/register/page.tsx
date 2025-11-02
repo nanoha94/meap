@@ -74,13 +74,13 @@ const Page = () => {
                     {/* TODO: リンク設定 */}
                     <Link
                         href="#"
-                        className="text-base text-primary-main underline transition-opacity hover:text-opacity-70">
+                        className="text-primary-main underline transition-opacity hover:text-opacity-70">
                         利用規約
                     </Link>
                     と{/* TODO: リンク設定 */}
                     <Link
                         href="#"
-                        className="text-base text-primary-main underline transition-opacity hover:text-opacity-70">
+                        className="text-primary-main underline transition-opacity hover:text-opacity-70">
                         プライバシーポリシー
                     </Link>
                     に同意の上、ご登録ください
@@ -117,7 +117,7 @@ const Page = () => {
                                         }));
                                         setApiErrors({ name: [] });
                                     }}
-                                    className={`py-2 px-4 text-base border rounded-lg ${isErrorVisible.name && (!!errors.name?.message || (!!apiErrors.name && apiErrors.name?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
+                                    className={`py-2 px-4 border rounded-lg ${isErrorVisible.name && (!!errors.name?.message || (!!apiErrors.name && apiErrors.name?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
                                 />
                             )}
                         </VerticalRowField>
@@ -155,7 +155,7 @@ const Page = () => {
                                         }));
                                         setApiErrors({ email: [] });
                                     }}
-                                    className={`py-2 px-4 text-base border rounded-lg ${isErrorVisible.email && (!!errors.email?.message || (!!apiErrors.email && apiErrors.email?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
+                                    className={`py-2 px-4 border rounded-lg ${isErrorVisible.email && (!!errors.email?.message || (!!apiErrors.email && apiErrors.email?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
                                 />
                             )}
                         </VerticalRowField>
@@ -185,7 +185,7 @@ const Page = () => {
                                         }));
                                         setApiErrors({ password: [] });
                                     }}
-                                    className={`py-2 px-4 text-base border rounded-lg ${isErrorVisible.password && (!!errors.password?.message || (!!apiErrors.password && apiErrors.password?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
+                                    className={`py-2 px-4 border rounded-lg ${isErrorVisible.password && (!!errors.password?.message || (!!apiErrors.password && apiErrors.password?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
                                 />
                             )}
                         </VerticalRowField>
@@ -219,7 +219,7 @@ const Page = () => {
                                             passwordConfirmation: [],
                                         });
                                     }}
-                                    className={`py-2 px-4 text-base border rounded-lg ${isErrorVisible.passwordConfirmation && (!!errors.passwordConfirmation?.message || (!!apiErrors.passwordConfirmation && apiErrors.passwordConfirmation?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
+                                    className={`py-2 px-4 border rounded-lg ${isErrorVisible.passwordConfirmation && (!!errors.passwordConfirmation?.message || (!!apiErrors.passwordConfirmation && apiErrors.passwordConfirmation?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
                                 />
                             )}
                         </VerticalRowField>
@@ -240,7 +240,7 @@ const Page = () => {
                 <div className="flex flex-col items-center gap-y-4">
                     <Link
                         href="/login"
-                        className="text-base font-bold text-primary-main underline transition-opacity hover:text-opacity-70">
+                        className="font-bold text-primary-main underline transition-opacity hover:text-opacity-70">
                         ログインはこちら
                     </Link>
                 </div>

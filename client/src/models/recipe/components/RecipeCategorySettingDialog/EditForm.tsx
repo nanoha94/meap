@@ -3,12 +3,12 @@ import React from 'react';
 import { Button, TextButton } from '@/components/common';
 import { DndSortableList } from '@/components/dnd';
 import { CirclePlus } from 'lucide-react';
-import { useFieldArray, useForm } from 'react-hook-form';
-import EditItem from './EditItem';
+import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { defaultRecipeCategory } from '../../constants';
 import { useRecipeCategories } from '../../hooks/useRecipeCategories';
 import { IRecipeCategory } from '@/types/api/recipe';
 import { TMP_ID_PREFIX } from '@/constants/tmpIdPrefix';
+import GrippableEditItem from '@/components/common/GrippableEditItem';
 
 interface FormData {
     categories: IRecipeCategory[];
@@ -28,7 +28,7 @@ const EditForm: React.FC<Props> = ({ onClose }) => {
         },
     });
 
-    const { fields, append, remove, update, move } = useFieldArray<FormData>({
+    const { fields, append, remove, move } = useFieldArray<FormData>({
         control,
         name: 'categories',
     });
@@ -65,19 +65,6 @@ const EditForm: React.FC<Props> = ({ onClose }) => {
 
         // 末尾に追加
         append(newItem);
-    };
-
-    /**
-     * カテゴリーを削除
-     * @param index 削除するカテゴリーのインデックス
-     */
-    const removeCategory = (index: number) => {
-        // 最初の食材を削除した場合は、デフォルトの食材を設定（入力項目が0個にならないようにするため）
-        if (index === 0) {
-            update(0, defaultRecipeCategory);
-        } else {
-            remove(index);
-        }
     };
 
     /**
@@ -126,16 +113,39 @@ const EditForm: React.FC<Props> = ({ onClose }) => {
                             move(oldIndex, newIndex);
                         }}
                         renderItem={(item, index) => (
-                            <EditItem
-                                index={index}
-                                control={control}
-                                isDisabled={
+                            // <EditItem
+                            //     index={index}
+                            //     control={control}
+                            //     isDisabled={
+                            //         index === 0 &&
+                            //         fields?.length === 1 &&
+                            //         fields[0].name === ''
+                            //     }
+                            //     onDelete={() => removeCategory(index)}
+                            // />
+                            <GrippableEditItem
+                                hasDeleteButton={true}
+                                isDisabledDeleteButton={
                                     index === 0 &&
-                                    fields?.length === 1 &&
-                                    fields[0].name === ''
+                                    watchedCategories?.length === 1 &&
+                                    watchedCategories[0].name === ''
                                 }
-                                onDelete={() => removeCategory(index)}
-                            />
+                                onDelete={() => remove(index)}>
+                                <Controller
+                                    control={control}
+                                    name={`categories.${index}.name`}
+                                    render={({ field }) => (
+                                        <input
+                                            {...field}
+                                            data-item-id={`${prefix}${index}`}
+                                            type="text"
+                                            placeholder="カテゴリー名を入力"
+                                            autoFocus
+                                            className="py-2 px-4 flex-1 outline-none bg-white rounded-lg border border-gray-main"
+                                        />
+                                    )}
+                                />
+                            </GrippableEditItem>
                         )}
                     />
                 </div>

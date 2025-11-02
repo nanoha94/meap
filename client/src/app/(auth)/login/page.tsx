@@ -116,7 +116,7 @@ const LoginForm = () => {
                                         }));
                                         setApiErrors({ email: [] });
                                     }}
-                                    className={`py-2 px-4 text-base border rounded-lg ${isErrorVisible.email && (!!errors.email?.message || (!!apiErrors.email && apiErrors.email?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
+                                    className={`py-2 px-4 border rounded-lg ${isErrorVisible.email && (!!errors.email?.message || (!!apiErrors.email && apiErrors.email?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
                                 />
                             )}
                         </VerticalRowField>
@@ -147,7 +147,7 @@ const LoginForm = () => {
                                         }));
                                         setApiErrors({ password: [] });
                                     }}
-                                    className={`py-2 px-4 text-base border rounded-lg ${isErrorVisible.password && (!!errors.password?.message || (!!apiErrors.password && apiErrors.password?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
+                                    className={`py-2 px-4 border rounded-lg ${isErrorVisible.password && (!!errors.password?.message || (!!apiErrors.password && apiErrors.password?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
                                 />
                             )}
                         </VerticalRowField>
@@ -168,7 +168,7 @@ const LoginForm = () => {
                             />
                             <label
                                 htmlFor="isKeepLogin"
-                                className="cursor-pointer text-base">
+                                className="cursor-pointer">
                                 ログイン状態を保持する
                             </label>
                         </div>
@@ -192,12 +192,12 @@ const LoginForm = () => {
                 <div className="flex flex-col items-center gap-y-4">
                     <Link
                         href="/register"
-                        className="text-base font-bold text-primary-main underline transition-opacity hover:text-opacity-70">
+                        className="font-bold text-primary-main underline transition-opacity hover:text-opacity-70">
                         アカウント登録はこちら
                     </Link>
                     <Link
                         href="/password/reset/request"
-                        className="text-base font-bold text-primary-main underline transition-opacity hover:text-opacity-70">
+                        className="font-bold text-primary-main underline transition-opacity hover:text-opacity-70">
                         パスワードをお忘れの方はこちら
                     </Link>
                 </div>

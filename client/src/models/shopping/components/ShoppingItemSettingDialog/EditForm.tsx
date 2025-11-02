@@ -92,7 +92,7 @@ const EditForm: React.FC<Props> = ({ onClose }) => {
                             onChange={e => {
                                 onChange(e);
                             }}
-                            className="py-2 px-4 text-base border rounded-lg outline-none border-gray-main"
+                            className="py-2 px-4 border rounded-lg outline-none border-gray-main"
                         />
                     )}
                 </VerticalRowField>

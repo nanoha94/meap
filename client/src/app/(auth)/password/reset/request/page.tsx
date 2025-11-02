@@ -96,7 +96,7 @@ const Page = () => {
                                     setApiErrors({ email: [] });
                                 }}
                                 autoFocus
-                                className={`py-2 px-4 text-base border rounded-lg ${isErrorVisible.email && (!!errors.email?.message || (!!apiErrors.email && apiErrors.email?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
+                                className={`py-2 px-4 border rounded-lg ${isErrorVisible.email && (!!errors.email?.message || (!!apiErrors.email && apiErrors.email?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
                             />
                         )}
                     </VerticalRowField>
@@ -115,12 +115,12 @@ const Page = () => {
                 <div className="flex flex-col items-center gap-y-4">
                     <Link
                         href="/register"
-                        className="text-base font-bold text-primary-main underline transition-opacity hover:text-opacity-70">
+                        className="font-bold text-primary-main underline transition-opacity hover:text-opacity-70">
                         アカウント登録はこちら
                     </Link>
                     <Link
                         href="/login"
-                        className="text-base font-bold text-primary-main underline transition-opacity hover:text-opacity-70">
+                        className="font-bold text-primary-main underline transition-opacity hover:text-opacity-70">
                         ログインはこちら
                     </Link>
                 </div>

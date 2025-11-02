@@ -126,7 +126,7 @@ const RecipeEditForm = ({ recipe = null }: Props) => {
                                 value={(value as string) ?? ''}
                                 placeholder="料理名を入力"
                                 onChange={e => onChange(e)}
-                                className="py-2 px-4 text-base border rounded-lg "
+                                className="py-2 px-4 border rounded-lg "
                             />
                         )}
                     </VerticalRowField>
@@ -148,7 +148,7 @@ const RecipeEditForm = ({ recipe = null }: Props) => {
                                 value={(value as string) ?? ''}
                                 placeholder="レシピURLを入力"
                                 onChange={e => onChange(e)}
-                                className="py-2 px-4 text-base border rounded-lg "
+                                className="py-2 px-4 border rounded-lg "
                             />
                         )}
                     </VerticalRowField>
@@ -163,7 +163,7 @@ const RecipeEditForm = ({ recipe = null }: Props) => {
                                 rows={5}
                                 placeholder="レシピを入力"
                                 onChange={e => onChange(e)}
-                                className="py-2 px-4 text-base border rounded-lg"
+                                className="py-2 px-4 border rounded-lg"
                             />
                         )}
                     </VerticalRowField>
@@ -178,7 +178,7 @@ const RecipeEditForm = ({ recipe = null }: Props) => {
                                 rows={5}
                                 placeholder="メモを入力"
                                 onChange={e => onChange(e)}
-                                className="py-2 px-4 text-base border rounded-lg"
+                                className="py-2 px-4 border rounded-lg"
                             />
                         )}
                     </VerticalRowField>

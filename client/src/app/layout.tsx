@@ -7,7 +7,7 @@ const RootLayout = ({ children }) => {
     return (
         <html lang="en" className={notoSansJp.variable}>
             <SnackbarsProvider>
-                <body className="text-black">
+                <body className="text-base text-black">
                     {children}
                     <Snackbars />
                 </body>

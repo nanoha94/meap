@@ -7,7 +7,7 @@ const RecipeList = () => {
     const { recipes } = useRecipeStore();
 
     return (
-        <div className="p-5 pb-[60px] grid grid-cols-[repeat(auto-fill,_minmax(150px,_1fr))] gap-3 md:px-10">
+        <div className="grid grid-cols-[repeat(auto-fill,_minmax(150px,_1fr))] gap-3 ">
             {recipes.map(v => (
                 <Link
                     href={`/recipe/${v.id}`}
@@ -15,9 +15,9 @@ const RecipeList = () => {
                     className="relative w-full text-left flex flex-col bg-white rounded transition-transform duration-500 cursor-pointer hover:-translate-y-2"
                     style={{ boxShadow: '1px 1px 5px rgba(0, 0, 0, 15%)' }}>
                     <div className="w-full h-auto aspect-video object-cover bg-gray-background">
-                        {v.thumbnail && v.thumbnail.url && (
+                        {v.thumbnail && v.thumbnail.src && (
                             <Image
-                                src={v.thumbnail.url}
+                                src={v.thumbnail.src}
                                 alt={v.name}
                                 width={v.thumbnail.width}
                                 height={v.thumbnail.height}
@@ -26,7 +26,7 @@ const RecipeList = () => {
                         )}
                     </div>
                     <div className="p-2 flex flex-col gap-y-1">
-                        <div className="text-base text-black">{v.name}</div>
+                        <div>{v.name}</div>
                         <div className="text-xs text-black">
                             {v.categories
                                 .map(category => category.name)

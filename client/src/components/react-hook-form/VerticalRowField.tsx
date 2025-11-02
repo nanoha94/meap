@@ -35,7 +35,7 @@ const VerticalRowField = <T extends FieldValues>({
 }: Props<T>) => (
     <div className="flex flex-col gap-y-2">
         <div className="flex flex-col gap-y-1">
-            <label className="text-base">
+            <label>
                 {label}
                 {required && <span className="text-alert-main">（必須）</span>}
             </label>

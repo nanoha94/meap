@@ -52,7 +52,7 @@ const RecipePageWithData = async () => {
                 {errorMessage && (
                     <SnackbarHandler type="error" message={errorMessage} />
                 )}
-                <RecipeListPage fetchRecipes={recipes['data']} />
+                <RecipeListPage fetchRecipes={recipes} />
             </main>
         </>
     );

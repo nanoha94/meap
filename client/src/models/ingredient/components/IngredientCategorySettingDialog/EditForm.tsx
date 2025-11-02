@@ -1,13 +1,13 @@
 'use client';
 import React from 'react';
-import { useFieldArray, useForm } from 'react-hook-form';
+import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { Button, TextButton } from '@/components/common';
 import { CirclePlus } from 'lucide-react';
 import { DndSortableList } from '@/components/dnd';
-import EditItem from './EditItem';
 import { TMP_ID_PREFIX } from '@/constants/tmpIdPrefix';
 import { defaultIngredientCategory } from '@/models/ingredient/constants';
 import { IIngredientCategory } from '@/types/api/ingredient';
+import GrippableEditItem from '@/components/common/GrippableEditItem';
 
 interface Props {
     onClose: () => void;
@@ -86,12 +86,29 @@ const EditForm: React.FC<Props> = ({ onClose }) => {
                             move(oldIndex, newIndex);
                         }}
                         renderItem={(item, index) => (
-                            // TODO: GrippableEditItemを使用するように修正
-                            <EditItem
-                                index={index}
-                                control={control}
-                                onDelete={() => remove(index)}
-                            />
+                            // TODO: 買い物カテゴリ―のように、デフォルトカテゴリ―を用意する（バックエンドも要修正）
+                            <GrippableEditItem
+                                hasDeleteButton={true}
+                                isDisabledDeleteButton={
+                                    index === 0 &&
+                                    watchedCategories?.length === 1 &&
+                                    watchedCategories[0].name === ''
+                                }
+                                onDelete={() => remove(index)}>
+                                <Controller
+                                    control={control}
+                                    name={`categories.${index}.name`}
+                                    render={({ field }) => (
+                                        <input
+                                            {...field}
+                                            data-item-id={`${TMP_ID_PREFIX.INGREDIENT_CATEGORY}${index}`}
+                                            type="text"
+                                            placeholder="カテゴリー名を入力"
+                                            className="py-2 px-4 flex-1 outline-none bg-white rounded-lg border border-gray-main"
+                                        />
+                                    )}
+                                />
+                            </GrippableEditItem>
                         )}
                     />
                 </div>

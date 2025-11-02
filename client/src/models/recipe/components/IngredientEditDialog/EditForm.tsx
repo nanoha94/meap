@@ -70,7 +70,7 @@ const EditForm = ({
                                 value={value as string}
                                 placeholder="食材名を入力"
                                 onChange={e => onChange(e.target.value)}
-                                className="py-2 px-4 text-base border rounded-lg outline-none border-gray-main"
+                                className="py-2 px-4 border rounded-lg outline-none border-gray-main"
                             />
                         )}
                     </HorizontalRowField>
@@ -99,7 +99,7 @@ const EditForm = ({
                                     }
                                     // それ以外（小数や不正値）は何もしない
                                 }}
-                                className="py-2 px-4 text-base border rounded-lg outline-none border-gray-main"
+                                className="py-2 px-4 border rounded-lg outline-none border-gray-main"
                                 inputMode="numeric"
                                 pattern="\d*"
                             />

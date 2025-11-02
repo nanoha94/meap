@@ -96,9 +96,7 @@ const CategoryItemList: React.FC<Props> = ({ category, items }) => {
                                 ),
                         )
                     ) : (
-                        <div className="text-base">
-                            登録されているアイテムはありません
-                        </div>
+                        <div>登録されているアイテムはありません</div>
                     )}
                     <div ref={setNodeRef} />
                 </div>

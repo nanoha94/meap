@@ -40,7 +40,7 @@ const CategoryEditFields = ({ control }: Props) => {
         <>
             <div className="flex flex-col gap-y-3">
                 <div className="flex flex-col gap-y-2">
-                    <div className="text-base">カテゴリー</div>
+                    <div>カテゴリー</div>
                     {categories && categories.length > 0 ? (
                         <Controller
                             control={control}
@@ -85,7 +85,7 @@ const CategoryEditFields = ({ control }: Props) => {
                                                     />
                                                     <label
                                                         htmlFor={`checkbox-${category.id}`}
-                                                        className={`py-1 px-2 w-fit h-full flex items-center gap-x-2 whitespace-nowrap cursor-pointer text-base border rounded ${wrapperColorClass(isChecked)} transition-opacity hover:opacity-70`}>
+                                                        className={`py-1 px-2 w-fit h-full flex items-center gap-x-2 whitespace-nowrap cursor-pointer border rounded ${wrapperColorClass(isChecked)} transition-opacity hover:opacity-70`}>
                                                         <div
                                                             className={`relative w-4 h-4 rounded border-[1.5px] transition-colors ${boxColorClass(
                                                                 isChecked,

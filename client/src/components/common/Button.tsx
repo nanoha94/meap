@@ -37,7 +37,7 @@ const Button = ({
     return (
         <button
             type={type}
-            className={`${className} appearance-none p-3 w-full text-base font-bold rounded-lg transition-colors ${disabled ? 'opacity-50 bg-gray-light text-gray-main hover:bg-gray-light hover:text-gray-main border-none cursor-not-allowed' : colorClass[variant][colorVariant]}`}
+            className={`${className} appearance-none p-3 w-full font-bold rounded-lg transition-colors ${disabled ? 'opacity-50 bg-gray-light text-gray-main hover:bg-gray-light hover:text-gray-main border-none cursor-not-allowed' : colorClass[variant][colorVariant]}`}
             disabled={disabled}
             {...props}
         />
