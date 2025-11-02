@@ -59,6 +59,7 @@ return [
         'user' => 'User',
         'meal_plan' => 'Meal plan',
         'meal_category' => 'Meal category',
+        'menu_category' => 'Menu category',
         'recipe' => 'Recipe',
         'recipe_category' => 'Recipe category',
         'ingredient' => 'Ingredient',
