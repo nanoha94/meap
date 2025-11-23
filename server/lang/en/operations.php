@@ -41,13 +41,13 @@ return [
     ],
     'ingredient_category' => [
         'index' => 'Ingredient category list retrieval',
-        'store' => 'Ingredient category creation',
+        'bulk_store' => 'Ingredient category bulk creation',
         'bulk_update' => 'Ingredient category bulk update',
         'bulk_destroy' => 'Ingredient category bulk deletion',
     ],
     'shopping_category' => [
         'index' => 'Shopping category list retrieval',
-        'store' => 'Shopping category creation',
+        'bulk_store' => 'Shopping category bulk creation',
         'bulk_update' => 'Shopping category bulk update',
         'bulk_destroy' => 'Shopping category bulk deletion',
     ],

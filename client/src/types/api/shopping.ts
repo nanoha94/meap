@@ -1,38 +1,54 @@
-export interface IGetShoppingItemsResponse {
-    data: {
-        category: IShoppingCategory;
-        items: IShoppingItem[];
-    }[];
+import { IBaseApiIndexResponse, ICategoryWithItems } from './common';
+
+//--------------------------------
+// レスポンス型
+//--------------------------------
+// 買い物アイテム一覧取得
+export type IGetShoppingItemIndexResponse = IBaseApiIndexResponse<IShopping[]>;
+
+// 買い物カテゴリー一覧取得
+export type IGetShoppingCategoryIndexResponse = IBaseApiIndexResponse<
+    IShoppingCategory[]
+>;
+
+//--------------------------------
+// リクエストデータ型
+//--------------------------------
+// 買い物アイテム更新
+export interface IPutShoppingItemRequestData {
+    id: string;
+    name: string;
+    isPinned: boolean;
+    isChecked: boolean;
+    categoryId: string;
+    tags: { id?: string; name: string }[];
+    order: number;
 }
 
-export interface IGetShoppingCategoriesResponse {
-    data: IShoppingCategory[];
-    total: number;
-}
-
-export interface IPutShoppingItemRequest {
-    data: {
-        id: string;
-        name: string;
-        isPinned: boolean;
-        isChecked: boolean;
-        categoryId: string;
-        tags: { id?: string; name: string }[];
-        order: number;
-    }[];
-}
-
-export interface IPostShoppingItemRequest {
+// 買い物アイテム作成
+export interface IPostShoppingItemRequestData {
     name: string;
     categoryId: string;
     tags: { id?: string; name: string }[];
 }
 
-export interface IPostShoppingCategoryRequest {
+// 買い物カテゴリー作成
+export interface IPostShoppingCategoryRequestData {
     name: string;
     order: number;
 }
 
+// 買い物カテゴリー更新
+export interface IPutShoppingCategoryRequestData {
+    id: string;
+    name: string;
+    order: number;
+}
+
+//--------------------------------
+// データ型
+//--------------------------------
+// 買い物アイテム
 export interface IShoppingItem {
     id: string;
     name: string;
@@ -43,6 +59,10 @@ export interface IShoppingItem {
     order: number;
 }
 
+// 買い物カテゴリ―とアイテムのグループ
+export type IShopping = ICategoryWithItems<IShoppingCategory, IShoppingItem>;
+
+// 買い物カテゴリー
 export interface IShoppingCategory {
     id: string;
     name: string;
@@ -50,6 +70,7 @@ export interface IShoppingCategory {
     order: number;
 }
 
+// 買い物タグ
 export interface IShoppingTag {
     id: string;
     name: string;

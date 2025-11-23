@@ -17,7 +17,12 @@ class IngredientCategory extends Model
     protected $fillable = [
         'group_id',
         'name',
+        'is_default',
         'order'
+    ];
+
+    protected $casts = [
+        'is_default' => 'boolean',
     ];
 
 

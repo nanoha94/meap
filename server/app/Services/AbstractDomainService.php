@@ -169,6 +169,39 @@ abstract class AbstractDomainService
         });
     }
 
+    /**
+     * アイテムを一括作成
+     *
+     * @param array $data 作成データの配列
+     * @param Group $group グループモデル
+     * @return array 作成されたアイテムのレスポンスデータ
+     */
+    public function bulkCreate(array $data, Group $group): array
+    {
+        return DB::transaction(function () use ($data, $group) {
+            $result = [];
+            foreach ($data as $item) {
+                $createData = [];
+                foreach ($this->getCreateFields() as $field => $dataKey) {
+                    $createData[$field] = $item[$dataKey];
+                }
+                $createdItem = $this->getGroupRelation($group)->create($createData);
+
+                $result[] = $this->formatStoreResponse($createdItem);
+            }
+
+            return $result;
+        });
+    }
+
+    /**
+     * アイテムを取得
+     *
+     * @param string $id アイテムID
+     * @param Group $group グループモデル
+     * @return array アイテムのレスポンスデータ
+     * @throws HttpException アイテムが見つからない場合
+     */
     public function show(string $id, Group $group): array
     {
         return DB::transaction(function () use ($id, $group) {

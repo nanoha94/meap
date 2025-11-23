@@ -50,7 +50,7 @@ class RecipeService extends AbstractDomainService
 
     protected function getWithColumns(): array
     {
-        return ['categories', 'ingredients', 'steps.images', 'thumbnails', 'group'];
+        return ['categories', 'ingredients', 'ingredientCategories', 'ingredientUnits', 'steps.images', 'thumbnails', 'group'];
     }
 
     protected function getCreateFields(): array
@@ -82,7 +82,7 @@ class RecipeService extends AbstractDomainService
             'steps' => $this->formatRecipeSteps($item->steps->sortBy('pivot.order')),
             'memo' => $item->memo,
             'categories' => $this->formatRecipeCategories($item->categories),
-            'ingredients' => $this->formatRecipeIngredients($item->ingredients, $item->group),
+            'ingredients' => $this->formatRecipeIngredients($item, $item->group),
         ];
     }
 
@@ -104,7 +104,7 @@ class RecipeService extends AbstractDomainService
             'steps' => $this->formatRecipeSteps($item->steps->sortBy('pivot.order')),
             'memo' => $item->memo,
             'categories' => $this->formatRecipeCategories($item->categories),
-            'ingredients' => $this->formatRecipeIngredients($item->ingredients, $item->group),
+            'ingredients' => $this->formatRecipeIngredients($item, $item->group),
         ];
     }
 
@@ -126,7 +126,7 @@ class RecipeService extends AbstractDomainService
             'steps' => $this->formatRecipeSteps($item->steps->sortBy('pivot.order')),
             'memo' => $item->memo,
             'categories' => $this->formatRecipeCategories($item->categories),
-            'ingredients' => $this->formatRecipeIngredients($item->ingredients, $item->group),
+            'ingredients' => $this->formatRecipeIngredients($item, $item->group),
         ];
     }
 
@@ -148,7 +148,7 @@ class RecipeService extends AbstractDomainService
             'steps' => $this->formatRecipeSteps($item->steps->sortBy('pivot.order')),
             'memo' => $item->memo,
             'categories' => $this->formatRecipeCategories($item->categories),
-            'ingredients' => $this->formatRecipeIngredients($item->ingredients, $item->group),
+            'ingredients' => $this->formatRecipeIngredients($item, $item->group),
         ];
     }
 
@@ -304,47 +304,58 @@ class RecipeService extends AbstractDomainService
     /**
      * レシピの食材情報をフォーマット
      */
-    private function formatRecipeIngredients(Collection $ingredients, Group $group): array
+    private function formatRecipeIngredients(Recipe $recipe, Group $group): array
     {
-        // 型チェック
-        $this->typeCheck($ingredients, Collection::class);
-        $this->typeCheckCollection($ingredients, Ingredient::class);
+        // グループの全カテゴリを取得（order順でソート）
+        $categories = $group->ingredientCategories()
+            ->select('id', 'name', 'order')
+            ->orderBy('order')
+            ->get()
+            ->keyBy('id');
 
-        if ($ingredients->isEmpty()) {
-            return [];
+        // 必要なunit_idを収集
+        $unitIds = $recipe->ingredientUnits->pluck('id')->toArray();
+        $units = collect();
+        if (!empty($unitIds)) {
+            // findItemsByIdsを使って存在チェック＆グループスコープ検証
+            $units = $this->ingredientUnitService->findItemsByIds($unitIds, $group)->keyBy('id');
         }
 
-        // 必要なunit_idとcategory_idを収集
-        $unitIds = $ingredients->pluck('pivot.unit_id')->filter()->unique()->toArray();
-        $categoryIds = $ingredients->pluck('pivot.category_id')->filter()->unique()->toArray();
+        // すべてのingredientsを取得し、カテゴリーのorderとingredientのorderでソート
+        $result = $recipe->ingredients
+            ->map(function ($item) use ($units, $categories) {
+                $unit = $units->get($item->pivot->unit_id);
+                $category = $categories->get($item->pivot->category_id);
+                return [
+                    'id' => $item->id,
+                    'name' => $item->name,
+                    'quantity' => $item->pivot->quantity,
+                    'unit' => [
+                        'id' => $item->pivot->unit_id,
+                        'name' => $unit->name,
+                        'position' => $unit->position,
+                        'requiresQuantity' => $unit->requires_quantity,
+                        'order' => $unit->order
+                    ],
+                    'categoryId' => $item->pivot->category_id,
+                    'order' => $item->pivot->order,
+                    // カテゴリーのorderを一時的に追加
+                    '_categoryOrder' => $category ? $category->order : PHP_INT_MAX,
+                ];
+            })
+            ->sortBy([
+                ['_categoryOrder', 'asc'],
+                ['order', 'asc'],
+            ])
+            ->map(function ($item) {
+                // ソート用の一時キーを削除
+                unset($item['_categoryOrder']);
+                return $item;
+            })
+            ->values()
+            ->toArray();
 
-        // findItemsByIdsを使って存在チェック＆一括取得
-        $units = $this->ingredientUnitService->findItemsByIds($unitIds, $group)->keyBy('id');
-        $categories = $this->ingredientCategoryService->findItemsByIds($categoryIds, $group)->keyBy('id');
-
-        return $ingredients->map(function ($item) use ($units, $categories) {
-            $unit = $units->get($item->pivot->unit_id);
-            $category = $categories->get($item->pivot->category_id);
-
-            return [
-                'id' => $item->id,
-                'name' => $item->name,
-                'quantity' => $item->pivot->quantity,
-                'unit' => [
-                    'id' => $item->pivot->unit_id,
-                    'name' => $unit->name,
-                    'position' => $unit->position,
-                    'requiresQuantity' => $unit->requires_quantity,
-                    'order' => $unit->order
-                ],
-                'category' => [
-                    'id' => $item->pivot->category_id,
-                    'name' => $category->name,
-                    'order' => $category->order
-                ],
-                'order' => $item->pivot->order
-            ];
-        })->toArray();
+        return $result;
     }
 
     /**

@@ -22,6 +22,17 @@ abstract class BaseRequest extends FormRequest
      */
     protected function failedValidation(Validator $validator)
     {
+        // リクエストデータが空で、JSONリクエストの場合、JSONの構文エラーの可能性を示す
+        if ($this->isJson() && empty($this->all()) && !empty($this->getContent())) {
+            json_decode($this->getContent());
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                // JSONの構文エラーがある場合、エラーメッセージに追加情報を付与
+                $jsonError = json_last_error_msg();
+                // 既存のエラーにJSONの構文エラー情報を追加
+                $validator->errors()->add('_json_syntax', "JSONの構文エラーが検出されました: {$jsonError}。リクエストボディの形式（特に配列のカンマなど）を確認してください。");
+            }
+        }
+
         // バリデーション失敗時のログ記録とレスポンス生成
         // errors()->first()で最初のエラーメッセージを文字列として取得
         $primaryMessage = $validator->errors()->first() ?? __('api.general.validation_error');

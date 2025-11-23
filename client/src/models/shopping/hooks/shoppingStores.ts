@@ -1,9 +1,5 @@
 import { create } from 'zustand';
-import {
-    IGetShoppingItemsResponse,
-    IShoppingCategory,
-    IShoppingItem,
-} from '@/types/api';
+import { IShopping, IShoppingCategory, IShoppingItem } from '@/types/api';
 import { DIALOG_EDIT_MODE, DIALOG_NAME } from '@/constants';
 
 type DialogPayload = {
@@ -22,10 +18,10 @@ type DialogsState = {
 
 interface ShoppingState {
     // サーバー状態
-    serverItems: IGetShoppingItemsResponse['data'];
+    serverItems: IShopping[];
 
     // ローカル状態
-    items: IGetShoppingItemsResponse['data'];
+    items: IShopping[];
     categories: IShoppingCategory[];
 
     // ローディング状態
@@ -36,10 +32,10 @@ interface ShoppingState {
     dialogs: DialogsState;
 
     // サーバー状態のアクション
-    setServerItems: (items: IGetShoppingItemsResponse['data']) => void;
+    setServerItems: (items: IShopping[]) => void;
 
     // アイテムのアクション
-    setItems: (items: IGetShoppingItemsResponse['data']) => void;
+    setItems: (items: IShopping[]) => void;
 
     // カテゴリーのアクション
     setCategories: (categories: IShoppingCategory[]) => void;

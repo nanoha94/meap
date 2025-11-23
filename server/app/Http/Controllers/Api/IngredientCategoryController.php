@@ -7,7 +7,7 @@ use Illuminate\Http\JsonResponse;
 use App\Http\Requests\Api\IngredientCategoryIndexRequest;
 use App\Http\Requests\Api\IngredientCategoryBulkDestroyRequest;
 use App\Http\Requests\Api\IngredientCategoryBulkUpdateRequest;
-use App\Http\Requests\Api\IngredientCategoryStoreRequest;
+use App\Http\Requests\Api\IngredientCategoryBulkStoreRequest;
 use App\Services\IngredientCategoryService;
 
 class IngredientCategoryController extends ApiController
@@ -46,29 +46,29 @@ class IngredientCategoryController extends ApiController
 
     /**
      * @OA\Post(
-     *     path="/ingredient-categories",
-     *     summary="食材カテゴリを作成",
+     *     path="/ingredient-categories/bulk",
+     *     summary="食材カテゴリを一括作成",
      *     tags={"Ingredients"},
      *     security={{"sanctum":{}}},
-     *     @OA\RequestBody(ref="#/components/requestBodies/IngredientCategoryStoreRequest"),
-     *     @OA\Response(response=201, ref="#/components/responses/IngredientCategoryStoreSuccess"),
+     *     @OA\RequestBody(ref="#/components/requestBodies/IngredientCategoryBulkStoreRequest"),
+     *     @OA\Response(response=200, ref="#/components/responses/IngredientCategoryBulkStoreSuccess"),
      *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
      *     @OA\Response(response=422, ref="#/components/responses/ValidationErrors")
      * )
      */
-    public function store(IngredientCategoryStoreRequest $request): JsonResponse
+    public function bulkStore(IngredientCategoryBulkStoreRequest $request): JsonResponse
     {
-        $operation = __('operations.ingredient_category.store');
-        $failedMessage = __('api.creation_failed', ['attribute' => __('api.attributes.ingredient_category')]);
+        $operation = __('operations.ingredient_category.bulk_store');
+        $failedMessage = __('api.bulk_creation_failed', ['attribute' => __('api.attributes.ingredient_category')]);
 
         return $this->executeWithExceptionHandling(
             function () use ($request) {
-                $res = $this->ingredientCategoryService->create(
-                    $request->validated(),
+                $res = $this->ingredientCategoryService->bulkCreate(
+                    $request->validated()['data'],
                     $this->getUserGroup($request)
                 );
 
-                $message = __('api.created', ['attribute' => __('api.attributes.ingredient_category'), 'name' => $res['name']]);
+                $message = __('api.bulk_created', ['attribute' => __('api.attributes.ingredient_category'), 'count' => count($res)]);
                 return $this->createdResponse($res, $message);
             },
             $request,

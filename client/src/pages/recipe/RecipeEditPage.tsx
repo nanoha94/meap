@@ -1,29 +1,60 @@
 'use client';
 import React from 'react';
 import { LoadingAnimation } from '@/components/common';
-import IngredientCategorySettingDialog from '@/models/ingredient/components/IngredientCategorySettingDialog/IngredientCategorySettingDialog';
-import { IngredientEditDialog } from '@/models/recipe/components';
-import RecipeCategorySettingDialog from '@/models/recipe/components/RecipeCategorySettingDialog/RecipeCategorySettingDialog';
-import RecipeEditForm from '@/models/recipe/components/RecipeEditForm/RecipeEditForm';
-import { useRecipeStore } from '@/models/recipe/hooks/recipeStores';
 import { IRecipe } from '@/types/api/recipe';
+import { IIngredientCategory } from '@/types/api/ingredient';
+import { useIngredientStore } from '@/models/ingredient/hooks';
+import { useRecipeStore } from '@/models/recipe/hooks';
+import {
+    IngredientCategorySettingDialog,
+    IngredientEditDialog,
+} from '@/models/ingredient/components';
+import {
+    RecipeCategorySettingDialog,
+    RecipeEditForm,
+} from '@/models/recipe/components';
 
 interface Props {
-    recipe?: IRecipe | null;
+    fetchRecipe?: IRecipe;
+    fetchIngredientCategories?: IIngredientCategory[];
 }
 
-const RecipeEditPage = ({ recipe = null }: Props) => {
-    const { isLoadings } = useRecipeStore();
+const RecipeEditPage = ({ fetchRecipe, fetchIngredientCategories }: Props) => {
+    const {
+        categories: ingredientCategories,
+        setCategories: setStoreCategories,
+        isLoadings: isLoadingCategories,
+    } = useIngredientStore();
+    const { isLoadings: isLoadingRecipe } = useRecipeStore();
     const [isLoading, setIsLoading] = React.useState(false);
 
+    /**
+     * ローディング状態を更新
+     * @returns void
+     */
     React.useEffect(() => {
-        setIsLoading(isLoadings.recipe || isLoadings.recipeCategory);
-    }, [isLoadings]);
+        setIsLoading(
+            isLoadingRecipe.recipe ||
+                isLoadingRecipe.recipeCategory ||
+                isLoadingCategories.ingredientCategory,
+        );
+    }, [isLoadingRecipe, isLoadingCategories]);
+
+    /**
+     * 食材カテゴリーをストアにセット
+     * @param fetchCategories 食材カテゴリー
+     * @returns void
+     */
+    React.useEffect(() => {
+        if (fetchIngredientCategories && ingredientCategories.length <= 0) {
+            setStoreCategories(fetchIngredientCategories);
+        }
+    }, [fetchIngredientCategories]);
 
     return (
         <>
             {isLoading && <LoadingAnimation />}
-            <RecipeEditForm recipe={recipe} />
+            <RecipeEditForm fetchRecipe={fetchRecipe} />
 
             {/* 食材編集ダイアログ */}
             <IngredientEditDialog />

@@ -14,6 +14,7 @@ const Sortable: React.FC<Props> = ({ id, children }) => {
     const style = {
         transform: CSS.Transform.toString(transform),
         transition,
+        touchAction: 'none',
     };
 
     return (

@@ -1,12 +1,13 @@
 import { MAX_IMAGE_SIZE } from '@/constants';
-import { IPostRecipeRequest, IRecipe } from '@/types/api/recipe';
+import { TMP_ID_PREFIX } from '@/constants/tmpIdPrefix';
+import { IRecipe } from '@/types/api/recipe';
 import { ImagePlus, Trash } from 'lucide-react';
 import Image from 'next/image';
 import React from 'react';
 import { Control, Controller, useFormContext } from 'react-hook-form';
 
 interface Props {
-    control: Control<IPostRecipeRequest>;
+    control: Control<IRecipe>;
     thumbnail?: IRecipe['thumbnail'];
 }
 
@@ -19,10 +20,10 @@ type Thumbnail = {
 
 const ThumbnailEditField = ({ control, thumbnail }: Props) => {
     const fileInputRef = React.useRef<HTMLInputElement>(null);
-    const { setValue } = useFormContext<IPostRecipeRequest>();
+    const { setValue } = useFormContext<IRecipe>();
     const [thumbnailState, setThumbnailState] = React.useState<Thumbnail>({
         file: null,
-        url: thumbnail?.url ?? '',
+        url: thumbnail?.src ?? '',
         width: thumbnail?.width ?? 0,
         height: thumbnail?.height ?? 0,
     });
@@ -35,6 +36,7 @@ const ThumbnailEditField = ({ control, thumbnail }: Props) => {
         const file = e.target.files?.[0];
 
         // 画像サイズが大きすぎる場合はエラーを表示して画像を削除
+        // TODO: 画像アップロードとレシピ作成リクエストでAPIを分ける
         if (file && file.size > MAX_IMAGE_SIZE) {
             setIsError(true);
         }
@@ -54,8 +56,14 @@ const ThumbnailEditField = ({ control, thumbnail }: Props) => {
                 });
             };
             img.src = objectUrl;
+
+            setValue('thumbnail', {
+                id: TMP_ID_PREFIX.IMAGE,
+                src: objectUrl,
+                width: img.width,
+                height: img.height,
+            });
         }
-        setValue('thumbnail', file ?? null);
     };
 
     const handleDeleteThumbnail = () => {

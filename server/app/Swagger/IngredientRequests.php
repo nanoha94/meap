@@ -4,10 +4,20 @@ namespace App\Swagger;
 
 /**
  * @OA\RequestBody(
- *     request="IngredientCategoryStoreRequest",
- *     description="※新規作成時はid不要",
+ *     request="IngredientCategoryBulkStoreRequest",
+ *     description="一括作成する食材カテゴリデータ",
  *     required=true,
- *     @OA\JsonContent(ref="#/components/schemas/IngredientCategory")
+ *     @OA\JsonContent(
+ *         type="object",
+ *         @OA\Property(
+ *             property="data",
+ *             type="array",
+ *             @OA\Items(type="object",
+ *                 @OA\Property(property="name", type="string", description="食材カテゴリ名", example="野菜"),
+ *                 @OA\Property(property="order", type="integer", description="食材カテゴリ順序", example="1")
+ *             )
+ *         )
+ *     )
  * )
  * 
  * @OA\RequestBody(
@@ -19,7 +29,11 @@ namespace App\Swagger;
  *         @OA\Property(
  *             property="data",
  *             type="array",
- *             @OA\Items(ref="#/components/schemas/IngredientCategory")
+ *             @OA\Items(type="object",
+ *                 @OA\Property(property="id", type="string", description="食材カテゴリID", example="1"),
+ *                 @OA\Property(property="name", type="string", description="食材カテゴリ名", example="野菜"),
+ *                 @OA\Property(property="order", type="integer", description="食材カテゴリ順序", example="1")
+ *             )
  *         )
  *     )
  * )

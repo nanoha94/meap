@@ -4,11 +4,7 @@ import { ActionMenu, AlertDialog } from '@/components/common';
 import { colors } from '@/constants/colors';
 import { Check, GripVertical, Pencil, Pin, PinOff, Trash } from 'lucide-react';
 import { IShoppingItem } from '@/types/api';
-import {
-    useShoppingHandlers,
-    useShoppingItems,
-    useShoppingStore,
-} from '../../hooks';
+import { useShoppingItems, useShoppingStore } from '../../hooks';
 import { SHOPPING_ALERT_DIALOG_CONFIGS } from '../../constants';
 import { AlertDialogData } from '@/types/dialog';
 import {
@@ -16,6 +12,7 @@ import {
     DIALOG_EDIT_MODE,
     DIALOG_NAME,
 } from '@/constants/dialog';
+import { getCategoryIdFromItemId, updateItemsInCategories } from '@/utils/dnd';
 
 interface Props {
     item: IShoppingItem;
@@ -23,7 +20,7 @@ interface Props {
 
 const ShoppingItemCard = ({ item }: Props) => {
     const { id, name, isPinned = false, isChecked = false } = item;
-    const { handleUpdateItem } = useShoppingHandlers();
+    const { items: storeItems, setItems: setStoreItems } = useShoppingStore();
     const { deleteShoppingItems } = useShoppingItems();
     const { openDialog } = useShoppingStore();
     const [deleteCheckDialog, setDeleteCheckDialog] =
@@ -54,6 +51,29 @@ const ShoppingItemCard = ({ item }: Props) => {
         });
     };
 
+    /**
+     * アイテムのプロパティを切り替えてストアにセットする
+     * @param item アイテム
+     * @param propertyName プロパティ名
+     */
+    const handleToggleItemProperty = React.useCallback(
+        (item: IShoppingItem, propertyName: 'isPinned' | 'isChecked') => {
+            const categoryId = getCategoryIdFromItemId(storeItems, item.id);
+            if (categoryId) {
+                // カテゴリーが見つかった場合のみ更新
+                const updatedItems = updateItemsInCategories(storeItems, [
+                    {
+                        ...item,
+                        [propertyName]: !item[propertyName],
+                    },
+                ]);
+                // ストアにセット
+                setStoreItems(updatedItems);
+            }
+        },
+        [storeItems],
+    );
+
     const actionButtons = [
         {
             label: '編集する',
@@ -73,11 +93,7 @@ const ShoppingItemCard = ({ item }: Props) => {
         {
             label: isPinned ? '固定解除する' : '固定する',
             icon: isPinned ? <PinOff /> : <Pin />,
-            onClick: () =>
-                handleUpdateItem({
-                    ...item,
-                    isPinned: !isPinned,
-                }),
+            onClick: () => handleToggleItemProperty(item, 'isPinned'),
         },
     ];
 
@@ -97,10 +113,7 @@ const ShoppingItemCard = ({ item }: Props) => {
                             id={`checkbox-${id}`}
                             checked={isChecked}
                             onChange={() => {
-                                handleUpdateItem({
-                                    ...item,
-                                    isChecked: !isChecked,
-                                });
+                                handleToggleItemProperty(item, 'isChecked');
                             }}
                             className="hidden"
                         />

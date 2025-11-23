@@ -1,27 +1,52 @@
-export type IGetIngredientCategoryResponse = {
-    data: IIngredientCategory[];
-    total: number;
-};
+import { IBaseApiIndexResponse } from './common';
 
-export interface IIngredientCategory {
+//--------------------------------
+// レスポンス型
+//--------------------------------
+// 食材カテゴリー一覧取得
+export type IGetIngredientCategoryIndexResponse = IBaseApiIndexResponse<
+    IIngredientCategory[]
+>;
+
+//--------------------------------
+// リクエストデータ型
+//--------------------------------
+// 食材カテゴリー作成
+export interface IPostIngredientCategoryRequestData {
+    name: string;
+    order: number;
+}
+
+// 食材カテゴリー更新
+export interface IPutIngredientCategoryRequestData {
     id: string;
     name: string;
     order: number;
+}
+
+//--------------------------------
+// データ型
+//--------------------------------
+export interface IIngredientCategory {
+    id: string;
+    name: string;
+    isDefault?: boolean;
+    order: number;
+}
+
+export interface IIngredientItem {
+    id: string; // 新規作成時はidなしも許容
+    name: string;
+    quantity: number | null;
+    unit: IIngredientUnit | null;
+    categoryId: string;
+    order?: number;
 }
 
 export interface IIngredientUnit {
     id: string;
     name: string;
-    position: 'prefix' | 'suffix';
+    position?: 'prefix' | 'suffix';
     requiresQuantity: boolean;
     order: number;
-}
-
-export interface IIngredient {
-    id?: string; // 新規作成時はidなしも許容
-    name: string;
-    quantity: number | null;
-    unitId: string;
-    categoryId: string;
-    order?: number;
 }

@@ -12,6 +12,14 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
+/**
+ * @var User $user
+ * @var Group $group
+ * @var RecipeCategory $recipeCategory
+ * @var IngredientCategory $ingredientCategory
+ * @var IngredientUnit $ingredientUnit
+ * @var Image $image
+ */
 beforeEach(function () {
     // テスト用のユーザーとグループを作成
     $this->user = User::factory()->create([
@@ -183,11 +191,7 @@ test('3-8-4: 【一覧取得】 レスポンス形式確認', function () {
                             'requiresQuantity',
                             'order'
                         ],
-                        'category' => [
-                            'id',
-                            'name',
-                            'order'
-                        ],
+                        'categoryId',
                         'order'
                     ]
                 ]
@@ -506,12 +510,8 @@ test('3-8-17: 【新規作成】 requires_quantity=true の食材単位で数量
                         'requiresQuantity' => true,
                         'order' => 1,
                     ],
-                    'category' => [
-                        'id' => $this->ingredientCategory->id,
-                        'name' => 'テスト食材カテゴリ',
-                        'order' => 0,
-                    ],
-                    'quantity' => 2.5
+                    'quantity' => 2.5,
+                    'categoryId' => $this->ingredientCategory->id
                 ]
             ]
         ]
@@ -555,12 +555,8 @@ test('3-8-18: 【新規作成】 requires_quantity=false の食材単位で数�
                         'requiresQuantity' => false,
                         'order' => 1,
                     ],
-                    'category' => [
-                        'id' => $this->ingredientCategory->id,
-                        'name' => 'テスト食材カテゴリ',
-                        'order' => 0,
-                    ],
-                    'quantity' => 2.5
+                    'quantity' => 2.5,
+                    'categoryId' => $this->ingredientCategory->id
                 ]
             ]
         ]
@@ -604,12 +600,8 @@ test('3-8-19: 【新規作成】 requires_quantity=false の食材単位で数�
                         'requiresQuantity' => false,
                         'order' => 1,
                     ],
-                    'category' => [
-                        'id' => $this->ingredientCategory->id,
-                        'name' => 'テスト食材カテゴリ',
-                        'order' => 0,
-                    ],
-                    'quantity' => null
+                    'quantity' => null,
+                    'categoryId' => $this->ingredientCategory->id
                 ]
             ]
         ]
@@ -2488,12 +2480,8 @@ test('3-8-85: 【更新】 requires_quantity=true の食材単位で数量指定
                         'requiresQuantity' => true,
                         'order' => 1,
                     ],
-                    'category' => [
-                        'id' => $this->ingredientCategory->id,
-                        'name' => 'テスト食材カテゴリ',
-                        'order' => 0,
-                    ],
-                    'quantity' => 2.5
+                    'quantity' => 2.5,
+                    'categoryId' => $this->ingredientCategory->id
                 ]
             ]
         ]
@@ -2541,12 +2529,8 @@ test('3-8-86: 【更新】 requires_quantity=false の食材単位で数量指�
                         'requiresQuantity' => false,
                         'order' => 1,
                     ],
-                    'category' => [
-                        'id' => $this->ingredientCategory->id,
-                        'name' => 'テスト食材カテゴリ',
-                        'order' => 0,
-                    ],
-                    'quantity' => 2.5
+                    'quantity' => 2.5,
+                    'categoryId' => $this->ingredientCategory->id
                 ]
             ]
         ]
@@ -2594,12 +2578,8 @@ test('3-8-87: 【更新】 requires_quantity=false の食材単位で数量省�
                         'requiresQuantity' => false,
                         'order' => 1,
                     ],
-                    'category' => [
-                        'id' => $this->ingredientCategory->id,
-                        'name' => 'テスト食材カテゴリ',
-                        'order' => 0,
-                    ],
-                    'quantity' => null
+                    'quantity' => null,
+                    'categoryId' => $this->ingredientCategory->id
                 ]
             ]
         ]

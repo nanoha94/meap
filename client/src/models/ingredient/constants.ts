@@ -1,42 +1,36 @@
-import { IIngredientCategory } from '@/types/api/ingredient';
-import { IngredientSettingDialogConfigs } from './types';
+import {
+    IIngredientItem,
+    IPutIngredientCategoryRequestData,
+} from '@/types/api/ingredient';
 import { TMP_ID_PREFIX } from '@/constants/tmpIdPrefix';
-import { DIALOG_EDIT_MODE, DIALOG_NAME } from '@/constants';
 
-/* ダイアログ設定 */
-export const INGREDIENT_SETTING_DIALOG_CONFIGS: IngredientSettingDialogConfigs =
-    {
-        [DIALOG_NAME.INGREDIENT_ADD_EDIT]: {
-            [DIALOG_EDIT_MODE.CREATE]: {
-                title: '食材を追加',
-                actionButtonText: '追加',
-            },
-            [DIALOG_EDIT_MODE.UPDATE]: {
-                title: '食材を編集',
-                actionButtonText: '保存',
-            },
-        },
-        [DIALOG_NAME.INGREDIENT_CATEGORY_SETTING]: {
-            title: '材料カテゴリーを設定',
-            actionButtonText: '設定',
-        },
-    };
-
-/**
- * 食材のデフォルト設定
- */
-export const defaultIngredient = {
-    name: '',
-    quantity: null,
-    unitId: '',
-    categoryId: '',
+// ローディング状態キー
+export const LOADING_STATE_KEYS = {
+    INGREDIENT: 'ingredient',
+    INGREDIENT_CATEGORY: 'ingredientCategory',
 };
 
-/**
- * 食材のデフォルト設定
- */
-export const defaultIngredientCategory: IIngredientCategory = {
-    id: `${TMP_ID_PREFIX.INGREDIENT_CATEGORY}-0`,
+// ------------------------------------------------------------
+// デフォルト設定
+// ------------------------------------------------------------
+// 食材カテゴリ―
+export const defaultIngredientCategory: IPutIngredientCategoryRequestData = {
+    id: `${TMP_ID_PREFIX.INGREDIENT_CATEGORY}${Date.now()}`,
     name: '',
+    order: 0,
+};
+
+// 食材アイテム
+export const defaultIngredientItem: IIngredientItem = {
+    id: `${TMP_ID_PREFIX.INGREDIENT_ITEM}${Date.now()}`,
+    name: '',
+    quantity: null,
+    unit: {
+        id: '',
+        name: '',
+        requiresQuantity: true,
+        order: 0,
+    },
+    categoryId: '',
     order: 0,
 };

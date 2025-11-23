@@ -1148,7 +1148,7 @@ test('3-6-30: 【新規作成】 バリデーションエラー（categoryId 存
     $response->assertStatus(404);
     $response->assertJson([
         'success' => false,
-        'message' => '指定されたapi.attributes.menu_categoryが見つかりませんでした。'
+        'message' => '指定されたメニューカテゴリーが見つかりませんでした。'
     ]);
 });
 
@@ -2149,7 +2149,7 @@ test('3-6-61: 【更新】 バリデーションエラー（categoryId 存在チ
     $response->assertStatus(404);
     $response->assertJson([
         'success' => false,
-        'message' => '指定されたapi.attributes.menu_categoryが見つかりませんでした。'
+        'message' => '指定されたメニューカテゴリーが見つかりませんでした。'
     ]);
 });
 

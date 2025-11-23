@@ -22,6 +22,7 @@ return [
     'deleted' => ':attribute(:name) deleted successfully.',
     'retrieved' => ':attribute retrieved successfully.',
     'list_retrieved' => 'Retrieved :count :attribute.',
+    'bulk_created' => 'Created :count :attribute.',
     'bulk_updated' => 'Updated :count :attribute.',
     'bulk_deleted' => 'Deleted :count :attribute.',
     'creation_failed' => 'Failed to create :attribute.',
@@ -31,6 +32,7 @@ return [
     'not_found' => 'The specified :attribute was not found.',
     'cannot_delete' => ':name cannot be deleted.',
     'bulk_update_failed' => 'Error occurred during :attribute bulk update.',
+    'bulk_creation_failed' => 'Error occurred during :attribute bulk creation.',
 
     'image' => [
         'bulk_uploaded' => ':count image(s) uploaded successfully.',

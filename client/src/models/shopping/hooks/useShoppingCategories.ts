@@ -1,62 +1,63 @@
+import React from 'react';
 import { useSnackbars } from '@/contexts';
 import { useShoppingStore } from './shoppingStores';
-import React from 'react';
-import { IPostShoppingCategoryRequest, IShoppingCategory } from '@/types/api';
+import {
+    IPostShoppingCategoryRequestData,
+    IPutShoppingCategoryRequestData,
+    IShoppingCategory,
+} from '@/types/api';
 import axios from '@/lib/axios';
 import { TIMEOUT_MS } from '@/constants';
 import { useRouter } from 'next/navigation';
 import { TMP_ID_PREFIX } from '@/constants/tmpIdPrefix';
+import { useApiErrorHandler } from '@/hooks/api/useApiErrorHandler';
 
 export const useShoppingCategories = () => {
     const router = useRouter();
     const { addSnackbar } = useSnackbars();
+    const { handleApiError } = useApiErrorHandler();
     const {
         categories: storeCategories,
         isLoadingCategories: isLoading,
         setIsLoadingCategories: setIsLoading,
     } = useShoppingStore();
 
-    const bulkUpdateShoppingCategories = React.useCallback(
-        async (categories: IShoppingCategory[]) => {
-            // 更新データがない場合は処理を終了
-            if (
-                JSON.stringify(categories) === JSON.stringify(storeCategories)
-            ) {
-                return;
-            }
-
-            let hasError = false;
-            setIsLoading(true);
-
-            // 削除するカテゴリーを取得
+    /**
+     * 買い物カテゴリーを一括削除用リクエストを生成
+     * @param categories 更新する買い物カテゴリー
+     * @returns 削除用リクエスト
+     */
+    const generateDeleteRequest = React.useCallback(
+        (categories: IShoppingCategory[]) => {
+            // 削除するカテゴリーIDを取得
             const deleteCategoryIds = storeCategories
                 .filter(v => !categories.some(c => c.id === v.id))
                 .map(v => v.id);
 
             // 削除リクエスト
             if (deleteCategoryIds.length > 0) {
-                try {
-                    await axios.delete(`/shopping-categories/bulk`, {
-                        data: { ids: deleteCategoryIds },
-                        timeout: TIMEOUT_MS,
-                    });
-                } catch (error) {
-                    if (error.code === 'ECONNABORTED') {
-                        addSnackbar(
-                            'error',
-                            'リクエストがタイムアウトしました',
-                        );
-                    } else {
-                        hasError = true;
-                        console.error(error.response?.data.message);
-                        addSnackbar('error', error.response?.data.message);
-                    }
-                }
+                return axios.delete(`/shopping-categories/bulk`, {
+                    data: { ids: deleteCategoryIds },
+                    timeout: TIMEOUT_MS,
+                });
             }
+            return null;
+        },
+        [storeCategories],
+    );
 
-            const updateCategories: IShoppingCategory[] = [];
+    /**
+     * 買い物カテゴリーを一括作成・更新用リクエストを生成
+     * @param categories 更新する買い物カテゴリー
+     * @returns 作成・更新用リクエスト
+     */
+    const generateCreateUpdateRequest = React.useCallback(
+        (categories: IShoppingCategory[]) => {
+            // 更新するものを配列にセット
+            const updateCategories: IPutShoppingCategoryRequestData[] = [];
+            // 作成するものを配列にセット
+            const createCategories: IPostShoppingCategoryRequestData[] = [];
 
-            // 更新用配列を生成
             for (let i = 0; i < categories.length; i++) {
                 // 既存のカテゴリーかどうかを判断
                 const isStored = !categories[i].id?.startsWith(
@@ -74,7 +75,7 @@ export const useShoppingCategories = () => {
                         )
                     ) {
                         updateCategories.push(
-                            categories[i] as IShoppingCategory,
+                            categories[i] as IPutShoppingCategoryRequestData,
                         );
                     }
                 }
@@ -83,62 +84,97 @@ export const useShoppingCategories = () => {
                     if (!categories[i]) {
                         continue;
                     }
-                    try {
-                        await axios.post(
-                            `/shopping-categories`,
-                            categories[i] as IPostShoppingCategoryRequest,
-                            {
-                                timeout: TIMEOUT_MS,
-                            },
-                        );
-                    } catch (error) {
-                        if (error.code === 'ECONNABORTED') {
-                            addSnackbar(
-                                'error',
-                                'リクエストがタイムアウトしました',
-                            );
-                        } else {
-                            hasError = true;
-                            console.error(error.response?.data.message);
-                            addSnackbar('error', error.response?.data.message);
-                        }
-                    }
+                    createCategories.push(
+                        categories[i] as IPostShoppingCategoryRequestData,
+                    );
                 }
             }
+
+            let updateRequest: Promise<unknown> | null = null;
+            let createRequest: Promise<unknown> | null = null;
 
             // 更新リクエスト
             if (updateCategories.length > 0) {
-                try {
-                    const res = await axios.put(`/shopping-categories/bulk`, {
-                        data: updateCategories,
-                        timeout: TIMEOUT_MS,
-                    });
-                    if (res.status === 200) {
-                        router.refresh();
-                    }
-                } catch (error) {
-                    if (error.code === 'ECONNABORTED') {
-                        addSnackbar(
-                            'error',
-                            'リクエストがタイムアウトしました',
-                        );
-                    } else {
-                        hasError = true;
-                        console.error(error.response?.data.message);
-                        addSnackbar('error', error.response?.data.message);
-                    }
-                }
+                updateRequest = axios.put(`/shopping-categories/bulk`, {
+                    data: updateCategories,
+                    timeout: TIMEOUT_MS,
+                });
+            }
+            // 作成リクエスト
+            if (createCategories.length > 0) {
+                createRequest = axios.post(`/shopping-categories/bulk`, {
+                    data: createCategories,
+                    timeout: TIMEOUT_MS,
+                });
+            }
+            return { updateRequest, createRequest };
+        },
+        [storeCategories],
+    );
+
+    /**
+     * 買い物カテゴリーを一括更新
+     * @param categories 更新する買い物カテゴリー
+     * @returns 更新結果
+     */
+    const bulkUpdateShoppingCategories = React.useCallback(
+        async (categories: IShoppingCategory[]) => {
+            // 更新データがない場合は処理を終了
+            if (
+                JSON.stringify(categories) === JSON.stringify(storeCategories)
+            ) {
+                return;
             }
 
-            // すべての処理がエラーなく完了した場合
-            if (!hasError) {
+            // ローディング状態をセット
+            setIsLoading(true);
+
+            // 並列実行するリクエストを準備
+            const requests: Promise<unknown>[] = [];
+
+            // 削除リクエスト
+            const deleteRequest = generateDeleteRequest(categories);
+            if (deleteRequest) {
+                requests.push(deleteRequest);
+            }
+
+            // 更新・作成リクエスト
+            const { updateRequest, createRequest } =
+                generateCreateUpdateRequest(categories);
+            if (updateRequest) {
+                requests.push(updateRequest);
+            }
+            if (createRequest) {
+                requests.push(createRequest);
+            }
+
+            // すべてのリクエストを並列実行
+            try {
+                const results = await Promise.allSettled(requests);
+
+                // エラーが発生したリクエストをチェック
+                const errors = results.filter(
+                    result => result.status === 'rejected',
+                ) as PromiseRejectedResult[];
+
+                if (errors.length > 0) {
+                    // エラーを処理
+                    errors.forEach(error => {
+                        handleApiError(error.reason);
+                    });
+                    return;
+                }
+
+                // すべての処理がエラーなく完了した場合
                 router.refresh();
                 addSnackbar('success', '買い物カテゴリーを更新しました');
+            } catch (error) {
+                handleApiError(error);
+            } finally {
+                setIsLoading(false);
             }
-
-            setIsLoading(false);
         },
-        [storeCategories, isLoading],
+        [storeCategories],
     );
 
     return {

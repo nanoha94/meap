@@ -90,32 +90,6 @@
                         "sanctum": []
                     }
                 ]
-            },
-            "post": {
-                "tags": [
-                    "Ingredients"
-                ],
-                "summary": "食材カテゴリを作成",
-                "operationId": "f9033c30ee41553f18b1c01d183fc022",
-                "requestBody": {
-                    "$ref": "#/components/requestBodies/IngredientCategoryStoreRequest"
-                },
-                "responses": {
-                    "201": {
-                        "$ref": "#/components/responses/IngredientCategoryStoreSuccess"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationErrors"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
             }
         },
         "/ingredient-categories/bulk": {
@@ -131,6 +105,32 @@
                 "responses": {
                     "200": {
                         "$ref": "#/components/responses/IngredientCategoryBulkUpdateSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationErrors"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Ingredients"
+                ],
+                "summary": "食材カテゴリを一括作成",
+                "operationId": "3f1d0d5f7983990ea2ff6faf00e08ef0",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/IngredientCategoryBulkStoreRequest"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/IngredientCategoryBulkStoreSuccess"
                     },
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
@@ -828,32 +828,6 @@
                         "sanctum": []
                     }
                 ]
-            },
-            "post": {
-                "tags": [
-                    "Shopping"
-                ],
-                "summary": "買い物カテゴリを作成",
-                "operationId": "a322a4bcfae2138a2f3e08926cf70453",
-                "requestBody": {
-                    "$ref": "#/components/requestBodies/ShoppingCategoryStoreRequest"
-                },
-                "responses": {
-                    "200": {
-                        "$ref": "#/components/responses/ShoppingCategoryStoreSuccess"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/NotFound"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
             }
         },
         "/shopping-categories/bulk": {
@@ -869,6 +843,32 @@
                 "responses": {
                     "200": {
                         "$ref": "#/components/responses/ShoppingCategoryBulkUpdateSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Shopping"
+                ],
+                "summary": "買い物カテゴリを一括作成",
+                "operationId": "d9923dd8d7add26b07bf55eef9ecc56e",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/ShoppingCategoryBulkStoreRequest"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/ShoppingCategoryBulkStoreSuccess"
                     },
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
@@ -1169,18 +1169,11 @@
             "Ingredient": {
                 "required": [
                     "id",
-                    "name",
-                    "quantity",
-                    "unitId"
+                    "name"
                 ],
                 "properties": {
                     "id": {
                         "description": "ID",
-                        "type": "string",
-                        "example": "1"
-                    },
-                    "categoryId": {
-                        "description": "カテゴリID",
                         "type": "string",
                         "example": "1"
                     },
@@ -1192,11 +1185,14 @@
                     "quantity": {
                         "description": "量",
                         "type": "number",
-                        "format": "double",
-                        "example": "1"
+                        "example": 1.5,
+                        "nullable": true
                     },
-                    "unitId": {
-                        "description": "単位",
+                    "unit": {
+                        "$ref": "#/components/schemas/IngredientUnit"
+                    },
+                    "categoryId": {
+                        "description": "カテゴリID",
                         "type": "string",
                         "example": "1"
                     },
@@ -1223,6 +1219,11 @@
                         "description": "カテゴリ名",
                         "type": "string",
                         "example": "食材"
+                    },
+                    "isDefault": {
+                        "description": "デフォルトカテゴリかどうか",
+                        "type": "boolean",
+                        "example": false
                     },
                     "order": {
                         "description": "順番",
@@ -1310,7 +1311,7 @@
                         "type": "array",
                         "items": {
                             "properties": {
-                                "menuCategory": {
+                                "category": {
                                     "properties": {
                                         "id": {
                                             "description": "ID",
@@ -1414,7 +1415,7 @@
                         }
                     },
                     "ingredients": {
-                        "description": "食材",
+                        "description": "食材（カテゴリーのorder順でソートされた1次元配列）",
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/Ingredient"
@@ -1553,7 +1554,7 @@
                     "name",
                     "isPinned",
                     "isChecked",
-                    "categoryId",
+                    "category",
                     "order"
                 ],
                 "properties": {
@@ -1577,10 +1578,8 @@
                         "type": "boolean",
                         "example": false
                     },
-                    "categoryId": {
-                        "description": "カテゴリID",
-                        "type": "string",
-                        "example": "1"
+                    "category": {
+                        "$ref": "#/components/schemas/ShoppingCategory"
                     },
                     "tags": {
                         "description": "買い物タグ配列",
@@ -1935,8 +1934,8 @@
                     }
                 }
             },
-            "IngredientCategoryStoreSuccess": {
-                "description": "食材カテゴリー(野菜)を作成しました。",
+            "IngredientCategoryBulkStoreSuccess": {
+                "description": "3件の食材カテゴリーを一括作成しました。",
                 "content": {
                     "application/json": {
                         "schema": {
@@ -1947,10 +1946,14 @@
                                 },
                                 "message": {
                                     "type": "string",
-                                    "example": "食材カテゴリー(野菜)を作成しました。"
+                                    "example": "3件の食材カテゴリーを一括作成しました。"
                                 },
                                 "data": {
-                                    "$ref": "#/components/schemas/IngredientCategory"
+                                    "description": "作成された食材カテゴリ一覧",
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/IngredientCategory"
+                                    }
                                 }
                             },
                             "type": "object"
@@ -2173,13 +2176,6 @@
                                             "type": "array",
                                             "items": {
                                                 "$ref": "#/components/schemas/MenuCategory"
-                                            }
-                                        },
-                                        "shoppingCategories": {
-                                            "description": "買い物カテゴリ一覧",
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/ShoppingCategory"
                                             }
                                         },
                                         "shoppingTags": {
@@ -2805,7 +2801,11 @@
                                     "example": "買い物アイテムを3件更新しました。"
                                 },
                                 "data": {
-                                    "$ref": "#/components/schemas/ShoppingItem"
+                                    "description": "更新された買い物アイテム一覧",
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ShoppingItem"
+                                    }
                                 }
                             },
                             "type": "object"
@@ -2892,6 +2892,33 @@
                     }
                 }
             },
+            "ShoppingCategoryBulkStoreSuccess": {
+                "description": "買い物カテゴリーを3件作成しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "買い物カテゴリーを3件作成しました。"
+                                },
+                                "data": {
+                                    "description": "作成された買い物カテゴリ一覧",
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ShoppingCategory"
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
             "ShoppingCategoryBulkUpdateSuccess": {
                 "description": "買い物カテゴリーを3件更新しました。",
                 "content": {
@@ -2907,7 +2934,11 @@
                                     "example": "買い物カテゴリーを3件更新しました。"
                                 },
                                 "data": {
-                                    "$ref": "#/components/schemas/ShoppingCategory"
+                                    "description": "更新された買い物カテゴリ一覧",
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ShoppingCategory"
+                                    }
                                 }
                             },
                             "type": "object"
@@ -3258,13 +3289,33 @@
                     }
                 }
             },
-            "IngredientCategoryStoreRequest": {
-                "description": "※新規作成時はid不要",
+            "IngredientCategoryBulkStoreRequest": {
+                "description": "一括作成する食材カテゴリデータ",
                 "required": true,
                 "content": {
                     "application/json": {
                         "schema": {
-                            "$ref": "#/components/schemas/IngredientCategory"
+                            "properties": {
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "name": {
+                                                "description": "食材カテゴリ名",
+                                                "type": "string",
+                                                "example": "野菜"
+                                            },
+                                            "order": {
+                                                "description": "食材カテゴリ順序",
+                                                "type": "integer",
+                                                "example": "1"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            },
+                            "type": "object"
                         }
                     }
                 }
@@ -3279,7 +3330,24 @@
                                 "data": {
                                     "type": "array",
                                     "items": {
-                                        "$ref": "#/components/schemas/IngredientCategory"
+                                        "properties": {
+                                            "id": {
+                                                "description": "食材カテゴリID",
+                                                "type": "string",
+                                                "example": "1"
+                                            },
+                                            "name": {
+                                                "description": "食材カテゴリ名",
+                                                "type": "string",
+                                                "example": "野菜"
+                                            },
+                                            "order": {
+                                                "description": "食材カテゴリ順序",
+                                                "type": "integer",
+                                                "example": "1"
+                                            }
+                                        },
+                                        "type": "object"
                                     }
                                 }
                             },
@@ -3454,7 +3522,42 @@
                                     "description": "食材",
                                     "type": "array",
                                     "items": {
-                                        "$ref": "#/components/schemas/Ingredient"
+                                        "properties": {
+                                            "id": {
+                                                "description": "ID（更新時）",
+                                                "type": "string",
+                                                "example": "1",
+                                                "nullable": true
+                                            },
+                                            "name": {
+                                                "description": "食材名",
+                                                "type": "string",
+                                                "example": "牛肉"
+                                            },
+                                            "quantity": {
+                                                "description": "量",
+                                                "type": "number",
+                                                "example": 1.5,
+                                                "nullable": true
+                                            },
+                                            "unitId": {
+                                                "description": "単位ID",
+                                                "type": "string",
+                                                "example": "1"
+                                            },
+                                            "categoryId": {
+                                                "description": "カテゴリID",
+                                                "type": "string",
+                                                "example": "1"
+                                            },
+                                            "order": {
+                                                "description": "並び順",
+                                                "type": "integer",
+                                                "example": 1,
+                                                "nullable": true
+                                            }
+                                        },
+                                        "type": "object"
                                     }
                                 },
                                 "thumbnailId": {
@@ -3660,6 +3763,37 @@
                                     "description": "買い物カテゴリ順序",
                                     "type": "integer",
                                     "example": "1"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "ShoppingCategoryBulkStoreRequest": {
+                "description": "一括登録する買い物カテゴリデータ",
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "name": {
+                                                "description": "買い物カテゴリ名",
+                                                "type": "string",
+                                                "example": "スーパー"
+                                            },
+                                            "order": {
+                                                "description": "買い物カテゴリ順序",
+                                                "type": "integer",
+                                                "example": "1"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
                                 }
                             },
                             "type": "object"

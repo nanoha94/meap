@@ -1,6 +1,5 @@
-import { IPostRecipeRequest, IRecipeCategory } from '@/types/api/recipe';
+import { IRecipe2, IRecipeCategory } from '@/types/api/recipe';
 import { RecipeSettingDialogConfigs } from './types';
-import { defaultIngredient } from '../ingredient/constants';
 import { TMP_ID_PREFIX } from '@/constants/tmpIdPrefix';
 import { DIALOG_NAME } from '@/constants';
 
@@ -18,12 +17,14 @@ export const defaultRecipeCategory: IRecipeCategory = {
     name: '',
     order: 0,
 };
-export const defaultPostData: IPostRecipeRequest = {
+
+export const defaultPostData: IRecipe2 = {
+    id: '',
     name: '',
     url: '',
-    instructions: '',
     memo: '',
-    categoryIds: [],
-    ingredients: [defaultIngredient],
-    thumbnail: new File([], ''),
+    thumbnail: null,
+    categories: [],
+    ingredients: [],
+    steps: [],
 };

@@ -8,21 +8,17 @@ import {
     ShoppingList,
 } from '@/models/shopping/components';
 import { useShoppingStore } from '@/models/shopping/hooks';
-import {
-    IGetShoppingCategoriesResponse,
-    IGetShoppingItemsResponse,
-} from '@/types/api';
+import { IShopping, IShoppingCategory } from '@/types/api';
 import { ChevronRight } from 'lucide-react';
 import React from 'react';
 
 interface Props {
-    fetchItems?: IGetShoppingItemsResponse['data'];
-    fetchCategories?: IGetShoppingCategoriesResponse['data'];
+    fetchItems?: IShopping[];
+    fetchCategories?: IShoppingCategory[];
 }
 
 const ShoppingListPage: React.FC<Props> = ({ fetchItems, fetchCategories }) => {
     const {
-        items: storeItems,
         setServerItems,
         setItems: setStoreItems,
         setCategories: setStoreCategories,
@@ -49,12 +45,12 @@ const ShoppingListPage: React.FC<Props> = ({ fetchItems, fetchCategories }) => {
         }
     }, [fetchItems]);
 
-    // カテゴリーをストアにセット（初回のみ）
+    // カテゴリーをストアにセット
     React.useEffect(() => {
         if (fetchCategories) {
             setStoreCategories(fetchCategories);
         }
-    }, []);
+    }, [fetchCategories]);
 
     React.useEffect(() => {
         setIsLoading(isLoadingCategories || isLoadingItems);
@@ -64,10 +60,10 @@ const ShoppingListPage: React.FC<Props> = ({ fetchItems, fetchCategories }) => {
         <>
             {isLoading && <LoadingAnimation />}
             {/* メインコンテンツ */}
-            <main className="p-5 pb-[60px] md:px-10">
+            <div className="p-5 pb-[60px] md:px-10">
                 <div className="pb-12 flex flex-col gap-y-7">
                     {/* 買い物リスト */}
-                    <ShoppingList items={storeItems} />
+                    <ShoppingList />
                     <TextButton
                         colorVariant="secondary"
                         onClick={handleOpenCategorySettingDialog}>
@@ -76,7 +72,7 @@ const ShoppingListPage: React.FC<Props> = ({ fetchItems, fetchCategories }) => {
                     </TextButton>
                 </div>
                 <AddShoppingItemButton />
-            </main>
+            </div>
             {/* アイテム追加・編集ダイアログ */}
             <ShoppingItemSettingDialog />
             {/* カテゴリー設定ダイアログ */}

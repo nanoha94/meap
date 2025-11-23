@@ -1,18 +1,49 @@
 'use client';
 import { TextButton } from '@/components/common';
-import { Control, Controller } from 'react-hook-form';
-import { IPostRecipeRequest } from '@/types/api/recipe';
+import { Control, Controller, useFormContext } from 'react-hook-form';
+import { IRecipe, IRecipeCategory } from '@/types/api/recipe';
 import { Check, ChevronRight } from 'lucide-react';
 import React from 'react';
 import { useRecipeStore } from '../../hooks/recipeStores';
 import { colors, DIALOG_NAME } from '@/constants';
 
 interface Props {
-    control: Control<IPostRecipeRequest>;
+    control: Control<IRecipe>;
 }
 
 const CategoryEditFields = ({ control }: Props) => {
     const { categories, openDialog } = useRecipeStore();
+    const { setValue } = useFormContext<IRecipe>();
+
+    /**
+     * カテゴリーのチェック状態を変更
+     * @param checkedCategory チェックされたカテゴリー
+     * @param currentCheckedCategories 現在チェックされているカテゴリー
+     */
+    const handleChange = (
+        checkedCategory: IRecipeCategory,
+        currentCheckedCategories: IRecipeCategory[] = [],
+    ) => {
+        const isChecked = currentCheckedCategories.find(
+            cat => cat.id === checkedCategory.id,
+        );
+
+        // チェックされている場合は削除
+        if (isChecked) {
+            setValue(
+                'categories',
+                currentCheckedCategories.filter(
+                    cat => cat.id !== checkedCategory.id,
+                ),
+            );
+        } else {
+            // チェックされていない場合は追加
+            setValue('categories', [
+                ...currentCheckedCategories,
+                checkedCategory,
+            ]);
+        }
+    };
 
     /**
      * カテゴリーのラベルの背景色を返す
@@ -44,73 +75,54 @@ const CategoryEditFields = ({ control }: Props) => {
                     {categories && categories.length > 0 ? (
                         <Controller
                             control={control}
-                            name="categoryIds"
-                            render={({ field: { onChange, value } }) => {
-                                const handleChange = (checkedValue: string) => {
-                                    if (value?.includes(checkedValue)) {
-                                        onChange(
-                                            value?.filter(
-                                                v => v !== checkedValue,
-                                            ),
+                            name="categories"
+                            render={({ field: { value } }) => (
+                                <div className="flex flex-wrap gap-y-2 gap-x-3">
+                                    {categories.map(category => {
+                                        const isChecked = value?.some(
+                                            v => v.id === category.id,
                                         );
-                                    } else {
-                                        onChange([
-                                            ...(value || []),
-                                            checkedValue,
-                                        ]);
-                                    }
-                                };
-
-                                return (
-                                    <div className="flex flex-wrap gap-y-2 gap-x-3">
-                                        {categories.map(category => {
-                                            const isChecked = value?.find(
-                                                v => v === category.id,
-                                            )
-                                                ? true
-                                                : false;
-                                            return (
-                                                <div key={category.id}>
-                                                    <input
-                                                        key={category.id}
-                                                        type="checkbox"
-                                                        id={`checkbox-${category.id}`}
-                                                        checked={isChecked}
-                                                        onChange={() =>
-                                                            handleChange(
-                                                                category.id,
-                                                            )
-                                                        }
-                                                        className="hidden"
-                                                    />
-                                                    <label
-                                                        htmlFor={`checkbox-${category.id}`}
-                                                        className={`py-1 px-2 w-fit h-full flex items-center gap-x-2 whitespace-nowrap cursor-pointer border rounded ${wrapperColorClass(isChecked)} transition-opacity hover:opacity-70`}>
-                                                        <div
-                                                            className={`relative w-4 h-4 rounded border-[1.5px] transition-colors ${boxColorClass(
-                                                                isChecked,
-                                                            )}`}>
-                                                            {isChecked && (
-                                                                <Check
-                                                                    strokeWidth={
-                                                                        3.5
-                                                                    }
-                                                                    color={
-                                                                        colors.white
-                                                                    }
-                                                                    size={16}
-                                                                    className="absolute top-1/2 -translate-y-1/2 left-0"
-                                                                />
-                                                            )}
-                                                        </div>
-                                                        {category.name}
-                                                    </label>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                );
-                            }}
+                                        return (
+                                            <div key={category.id}>
+                                                <input
+                                                    type="checkbox"
+                                                    id={`checkbox-${category.id}`}
+                                                    checked={isChecked}
+                                                    onChange={() =>
+                                                        handleChange(
+                                                            category,
+                                                            value,
+                                                        )
+                                                    }
+                                                    className="hidden"
+                                                />
+                                                <label
+                                                    htmlFor={`checkbox-${category.id}`}
+                                                    className={`py-1 px-2 w-fit h-full flex items-center gap-x-2 whitespace-nowrap cursor-pointer border rounded ${wrapperColorClass(isChecked)} transition-opacity hover:opacity-70`}>
+                                                    <div
+                                                        className={`relative w-4 h-4 rounded border-[1.5px] transition-colors ${boxColorClass(
+                                                            isChecked,
+                                                        )}`}>
+                                                        {isChecked && (
+                                                            <Check
+                                                                strokeWidth={
+                                                                    3.5
+                                                                }
+                                                                color={
+                                                                    colors.white
+                                                                }
+                                                                size={16}
+                                                                className="absolute top-1/2 -translate-y-1/2 left-0"
+                                                            />
+                                                        )}
+                                                    </div>
+                                                    {category.name}
+                                                </label>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         />
                     ) : (
                         <div className="py-2 px-4 flex flex-col gap-y-2 bg-gray-light rounded">

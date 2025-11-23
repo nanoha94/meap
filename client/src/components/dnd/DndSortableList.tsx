@@ -1,5 +1,5 @@
 'use client';
-import { DRAG_ACTIVATION_DISTANCE } from '@/models/shopping/constants';
+import { DRAG_ACTIVATION_DISTANCE } from '@/constants';
 import {
     DndContext,
     DragEndEvent,

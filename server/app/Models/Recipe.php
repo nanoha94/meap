@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Collection;
 
 class Recipe extends Model
 {
@@ -30,6 +31,16 @@ class Recipe extends Model
     {
         return $this->belongsToMany(Ingredient::class, 'recipe_ingredient_mappings', 'recipe_id', 'ingredient_id')
             ->withPivot('quantity', 'unit_id', 'category_id', 'order');
+    }
+
+    public function ingredientCategories()
+    {
+        return $this->belongsToMany(IngredientCategory::class, 'recipe_ingredient_mappings', 'recipe_id', 'category_id');
+    }
+
+    public function ingredientUnits()
+    {
+        return $this->belongsToMany(IngredientUnit::class, 'recipe_ingredient_mappings', 'recipe_id', 'unit_id');
     }
 
     public function mealPlans()

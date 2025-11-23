@@ -171,13 +171,6 @@ test('3-4-1: 正常なマスターデータ取得', function () {
         'order' => 0
     ]);
 
-    // 買い物カテゴリをAPIで作成（is_defaultは常にfalseになる）
-    $shoppingCategoryResponse = $this->actingAs($user)->post('/shopping-categories', [
-        'name' => '食材',
-        'order' => 0
-    ]);
-    $shoppingCategoryId = $shoppingCategoryResponse->json('data.id');
-
     $shoppingTag = ShoppingTag::create([
         'group_id' => $this->testData->defaultGroup->id,
         'name' => '必須'
@@ -206,22 +199,25 @@ test('3-4-1: 正常なマスターデータ取得', function () {
             ],
             'ingredientUnits' => [
                 [
+                    'id' => $this->testData->defaultGroup->ingredientUnits()->where('name', 'グラム')->first()->id,
                     'name' => 'グラム',
                     'position' => 'suffix',
                     'order' => 0,
-                    'requires_quantity' => true
+                    'requiresQuantity' => true
                 ],
                 [
+                    'id' => $this->testData->defaultGroup->ingredientUnits()->where('name', '個')->first()->id,
                     'name' => '個',
                     'position' => 'suffix',
                     'order' => 1,
-                    'requires_quantity' => true
+                    'requiresQuantity' => true
                 ],
                 [
+                    'id' => $this->testData->defaultGroup->ingredientUnits()->where('name', '少々')->first()->id,
                     'name' => '少々',
                     'position' => 'prefix',
                     'order' => 2,
-                    'requires_quantity' => false
+                    'requiresQuantity' => false
                 ]
             ],
             'menuCategories' => [
@@ -229,14 +225,6 @@ test('3-4-1: 正常なマスターデータ取得', function () {
                     'id' => $menuCategory->id,
                     'name' => '主菜',
                     'order' => 0
-                ]
-            ],
-            'shoppingCategories' => [
-                [
-                    'id' => $shoppingCategoryId,
-                    'name' => '食材',
-                    'order' => 0,
-                    'is_default' => false // APIで作成時はfalseになる
                 ]
             ],
             'shoppingTags' => [
@@ -260,13 +248,10 @@ test('3-4-1: 正常なマスターデータ取得', function () {
                 '*' => ['id', 'name', 'order']
             ],
             'ingredientUnits' => [
-                '*' => ['id', 'name', 'position', 'order', 'requires_quantity']
+                '*' => ['id', 'name', 'position', 'order', 'requiresQuantity']
             ],
             'menuCategories' => [
                 '*' => ['id', 'name', 'order']
-            ],
-            'shoppingCategories' => [
-                '*' => ['id', 'name', 'order', 'is_default']
             ],
             'shoppingTags' => [
                 '*' => ['id', 'name']
@@ -334,17 +319,17 @@ test('3-4-4: 食材単位データ取得確認', function () {
     expect($responseData[0]['name'])->toBe('グラム');
     expect($responseData[0]['position'])->toBe('suffix');
     expect($responseData[0]['order'])->toBe(0);
-    expect($responseData[0]['requires_quantity'])->toBeTrue();
+    expect($responseData[0]['requiresQuantity'])->toBeTrue();
 
     expect($responseData[1]['name'])->toBe('個');
     expect($responseData[1]['position'])->toBe('suffix');
     expect($responseData[1]['order'])->toBe(1);
-    expect($responseData[1]['requires_quantity'])->toBeTrue();
+    expect($responseData[1]['requiresQuantity'])->toBeTrue();
 
     expect($responseData[2]['name'])->toBe('少々');
     expect($responseData[2]['position'])->toBe('prefix');
     expect($responseData[2]['order'])->toBe(2);
-    expect($responseData[2]['requires_quantity'])->toBeFalse();
+    expect($responseData[2]['requiresQuantity'])->toBeFalse();
 });
 
 test('3-4-5: コース種別データ取得確認', function () {
@@ -372,32 +357,7 @@ test('3-4-5: コース種別データ取得確認', function () {
     expect($responseData[2]['order'])->toBe(2);
 });
 
-test('3-4-6: 買い物カテゴリデータ取得確認', function () {
-    $user = $this->testData->createUserWithGroup();
-
-    // 買い物カテゴリをAPIで作成（is_defaultは常にfalseになる）
-    $this->actingAs($user)->post('/shopping-categories', ['name' => '食材', 'order' => 0]);
-    $this->actingAs($user)->post('/shopping-categories', ['name' => '日用品', 'order' => 1]);
-    $this->actingAs($user)->post('/shopping-categories', ['name' => '調味料', 'order' => 2]);
-
-    $response = $this->actingAs($user)->get('/master');
-
-    $response->assertStatus(200);
-    $responseData = $response->json('data.shoppingCategories');
-
-    expect($responseData)->toHaveCount(3);
-    expect($responseData[0]['name'])->toBe('食材');
-    expect($responseData[0]['order'])->toBe(0);
-    expect($responseData[0]['is_default'])->toBeFalse(); // APIで作成時は常にfalse
-    expect($responseData[1]['name'])->toBe('日用品');
-    expect($responseData[1]['order'])->toBe(1);
-    expect($responseData[1]['is_default'])->toBeFalse();
-    expect($responseData[2]['name'])->toBe('調味料');
-    expect($responseData[2]['order'])->toBe(2);
-    expect($responseData[2]['is_default'])->toBeFalse();
-});
-
-test('3-4-7: 買い物タグデータ取得確認', function () {
+test('3-4-6: 買い物タグデータ取得確認', function () {
     $user = $this->testData->createUserWithGroup();
 
     $tags = [
@@ -419,7 +379,7 @@ test('3-4-7: 買い物タグデータ取得確認', function () {
     expect($responseData[2]['name'])->toBe('ストック');
 });
 
-test('3-4-8: データの並び順確認', function () {
+test('3-4-7: データの並び順確認', function () {
     $user = $this->testData->createUserWithGroup();
 
     // レシピカテゴリをAPIで作成（異なるorder順）
@@ -440,22 +400,7 @@ test('3-4-8: データの並び順確認', function () {
     expect($responseData[2]['order'])->toBe(2);
 });
 
-test('3-4-9: 買い物カテゴリのフォーマット確認', function () {
-    $user = $this->testData->createUserWithGroup();
-
-    // 買い物カテゴリをAPIで作成（is_defaultは常にfalseになる）
-    $this->actingAs($user)->post('/shopping-categories', ['name' => '食材', 'order' => 0]);
-
-    $response = $this->actingAs($user)->get('/master');
-
-    $response->assertStatus(200);
-    $responseData = $response->json('data.shoppingCategories.0');
-
-    expect($responseData['is_default'])->toBe(false); // APIで作成時は常にfalse
-    expect(is_bool($responseData['is_default']))->toBeTrue();
-});
-
-test('3-4-10: レスポンス構造確認', function () {
+test('3-4-8: レスポンス構造確認', function () {
     $user = $this->testData->createUserWithGroup();
 
     $response = $this->actingAs($user)->get('/master');
@@ -469,13 +414,12 @@ test('3-4-10: レスポンス構造確認', function () {
             'ingredientCategories',
             'ingredientUnits',
             'menuCategories',
-            'shoppingCategories',
             'shoppingTags'
         ]
     ]);
 });
 
-test('3-4-11: 空のマスターデータ', function () {
+test('3-4-9: 空のマスターデータ', function () {
     $user = $this->testData->createUserWithGroup();
 
     $response = $this->actingAs($user)->get('/master');
@@ -489,32 +433,34 @@ test('3-4-11: 空のマスターデータ', function () {
             'ingredientCategories' => [],
             'ingredientUnits' => [
                 [
+                    'id' => $this->testData->defaultGroup->ingredientUnits()->where('name', 'グラム')->first()->id,
                     'name' => 'グラム',
                     'position' => 'suffix',
                     'order' => 0,
-                    'requires_quantity' => true
+                    'requiresQuantity' => true
                 ],
                 [
+                    'id' => $this->testData->defaultGroup->ingredientUnits()->where('name', '個')->first()->id,
                     'name' => '個',
                     'position' => 'suffix',
                     'order' => 1,
-                    'requires_quantity' => true
+                    'requiresQuantity' => true
                 ],
                 [
+                    'id' => $this->testData->defaultGroup->ingredientUnits()->where('name', '少々')->first()->id,
                     'name' => '少々',
                     'position' => 'prefix',
                     'order' => 2,
-                    'requires_quantity' => false
+                    'requiresQuantity' => false
                 ]
             ],
             'menuCategories' => [],
-            'shoppingCategories' => [],
             'shoppingTags' => []
         ]
     ]);
 });
 
-test('3-4-12: 未認証ユーザー', function () {
+test('3-4-10: 未認証ユーザー', function () {
     $response = $this->get('/master');
 
     $response->assertStatus(401);
@@ -524,7 +470,7 @@ test('3-4-12: 未認証ユーザー', function () {
     ]);
 });
 
-test('3-4-13: グループが存在しない', function () {
+test('3-4-11: グループが存在しない', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -538,7 +484,7 @@ test('3-4-13: グループが存在しない', function () {
     ]);
 });
 
-test('3-4-14: データベース接続エラー', function () {
+test('3-4-12: データベース接続エラー', function () {
     $user = $this->testData->createUserWithGroup();
 
     // MasterServiceをモックして例外を発生させる（MealCategoryControllerTestの3-6-8と同じパターン）
@@ -557,7 +503,7 @@ test('3-4-14: データベース接続エラー', function () {
     ]);
 });
 
-test('3-4-15: レシピカテゴリ取得失敗', function () {
+test('3-4-13: レシピカテゴリ取得失敗', function () {
     $user = $this->testData->createUserWithGroup();
 
     // MasterServiceをモックして、レシピカテゴリ取得時にエラーを発生させる
@@ -576,7 +522,7 @@ test('3-4-15: レシピカテゴリ取得失敗', function () {
     ]);
 });
 
-test('3-4-16: 食材カテゴリ取得失敗', function () {
+test('3-4-14: 食材カテゴリ取得失敗', function () {
     $user = $this->testData->createUserWithGroup();
 
     // MasterServiceをモックして、食材カテゴリ取得時にエラーを発生させる
@@ -595,7 +541,7 @@ test('3-4-16: 食材カテゴリ取得失敗', function () {
     ]);
 });
 
-test('3-4-17: 食材単位取得失敗', function () {
+test('3-4-15: 食材単位取得失敗', function () {
     $user = $this->testData->createUserWithGroup();
 
     // MasterServiceをモックして、食材単位取得時にエラーを発生させる
@@ -614,7 +560,7 @@ test('3-4-17: 食材単位取得失敗', function () {
     ]);
 });
 
-test('3-4-18: コース種別取得失敗', function () {
+test('3-4-16: コース種別取得失敗', function () {
     $user = $this->testData->createUserWithGroup();
 
     // MasterServiceをモックして、コース種別取得時にエラーを発生させる
@@ -633,26 +579,7 @@ test('3-4-18: コース種別取得失敗', function () {
     ]);
 });
 
-test('3-4-19: 買い物カテゴリ取得失敗', function () {
-    $user = $this->testData->createUserWithGroup();
-
-    // MasterServiceをモックして、買い物カテゴリ取得時にエラーを発生させる
-    $this->mock(\App\Services\MasterService::class, function ($mock) {
-        $mock->shouldReceive('index')
-            ->once()
-            ->andThrow(new \Exception('Shopping category query error'));
-    });
-
-    $response = $this->actingAs($user)->get('/master');
-
-    $response->assertStatus(500);
-    $response->assertJson([
-        'success' => false,
-        'message' => 'マスターデータの取得に失敗しました。'
-    ]);
-});
-
-test('3-4-20: 買い物タグ取得失敗', function () {
+test('3-4-17: 買い物タグ取得失敗', function () {
     $user = $this->testData->createUserWithGroup();
 
     // MasterServiceをモックして、買い物タグ取得時にエラーを発生させる

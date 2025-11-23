@@ -112,7 +112,12 @@ class ShoppingItemService extends AbstractDomainService
             'name' => $item->name,
             'isPinned' => $item->is_pinned,
             'isChecked' => $item->is_checked,
-            'categoryId' => $item->category_id,
+            'category' => [
+                'id' => $item->category_id,
+                'name' => $item->category->name,
+                'isDefault' => $item->category->is_default,
+                'order' => $item->category->order
+            ],
             'tags' => $item->tags->map(fn($tag) => [
                 'id' => $tag->id,
                 'name' => $tag->name
@@ -131,7 +136,12 @@ class ShoppingItemService extends AbstractDomainService
             'name' => $item->name,
             'isPinned' => $item->is_pinned,
             'isChecked' => $item->is_checked,
-            'categoryId' => $item->category_id,
+            'category' => [
+                'id' => $item->category_id,
+                'name' => $item->category->name,
+                'isDefault' => $item->category->is_default,
+                'order' => $item->category->order
+            ],
             'tags' => $item->tags->map(fn($tag) => [
                 'id' => $tag->id,
                 'name' => $tag->name
@@ -199,8 +209,8 @@ class ShoppingItemService extends AbstractDomainService
                 }
             }
 
-            // 4. タグを含めて再取得
-            $item = $item->fresh(['tags:id,name']);
+            // 4. タグとカテゴリを含めて再取得
+            $item = $item->fresh(['tags:id,name', 'category:id,name,is_default,order']);
 
             return $this->formatStoreResponse($item);
         });
@@ -245,8 +255,8 @@ class ShoppingItemService extends AbstractDomainService
                     $item->tags()->sync($tagIds);
                 }
 
-                // タグを含めて再取得
-                $item = $item->fresh(['tags:id,name']);
+                // タグとカテゴリを含めて再取得
+                $item = $item->fresh(['tags:id,name', 'category:id,name,is_default,order']);
                 $updatedItems[] = $this->formatUpdateResponse($item);
             }
 

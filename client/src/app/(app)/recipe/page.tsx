@@ -3,14 +3,14 @@ import { SnackbarHandler } from '@/components/handlers';
 import { TIMEOUT_MS } from '@/constants';
 import { apiClient } from '@/lib/apiClient';
 import RecipeListPage from '@/pages/recipe/RecipeListPage';
-import { IGetRecipesResponse } from '@/types/api/recipe';
+import { IGetRecipeIndexResponse } from '@/types/api/recipe';
 import { Suspense } from 'react';
 import Loading from '../loading';
 import { CirclePlus } from 'lucide-react';
 import { HeaderLinkTextButton } from '@/components/common/HeaderTextButtons';
 
 const RecipePageWithData = async () => {
-    let recipes: IGetRecipesResponse = { data: [], total: 0 };
+    let recipes: IGetRecipeIndexResponse | null = null;
     let errorMessage: string = '';
 
     try {
@@ -52,7 +52,10 @@ const RecipePageWithData = async () => {
                 {errorMessage && (
                     <SnackbarHandler type="error" message={errorMessage} />
                 )}
-                <RecipeListPage fetchRecipes={recipes} />
+                <RecipeListPage
+                    fetchRecipes={recipes?.data ?? []}
+                    total={recipes?.total ?? 0}
+                />
             </main>
         </>
     );

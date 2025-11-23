@@ -57,7 +57,12 @@ namespace App\Swagger;
  *         type="object",
  *         @OA\Property(property="success", type="boolean", example=true),
  *         @OA\Property(property="message", type="string", example="買い物アイテムを3件更新しました。"),
- *         @OA\Property(property="data", ref="#/components/schemas/ShoppingItem")
+ *         @OA\Property(
+ *             property="data",
+ *             type="array",
+ *             description="更新された買い物アイテム一覧",
+ *             @OA\Items(ref="#/components/schemas/ShoppingItem")
+ *         )
  *     )
  * )
  * @OA\Response(
@@ -103,13 +108,33 @@ namespace App\Swagger;
  *     )
  * )
  * @OA\Response(
+ *     response="ShoppingCategoryBulkStoreSuccess",
+ *     description="買い物カテゴリーを3件作成しました。",
+ *     @OA\JsonContent(
+ *         type="object",
+ *         @OA\Property(property="success", type="boolean", example=true),
+ *         @OA\Property(property="message", type="string", example="買い物カテゴリーを3件作成しました。"),
+ *         @OA\Property(
+ *             property="data",
+ *             type="array",
+ *             description="作成された買い物カテゴリ一覧",
+ *             @OA\Items(ref="#/components/schemas/ShoppingCategory")
+ *         )
+ *     )
+ * )
+ * @OA\Response(
  *     response="ShoppingCategoryBulkUpdateSuccess",
  *     description="買い物カテゴリーを3件更新しました。",
  *     @OA\JsonContent(
  *         type="object",
  *         @OA\Property(property="success", type="boolean", example=true),
  *         @OA\Property(property="message", type="string", example="買い物カテゴリーを3件更新しました。"),
- *         @OA\Property(property="data", ref="#/components/schemas/ShoppingCategory")
+ *         @OA\Property(
+ *             property="data",
+ *             type="array",
+ *             description="更新された買い物カテゴリ一覧",
+ *             @OA\Items(ref="#/components/schemas/ShoppingCategory")
+ *         )
  *     )
  * )
  * @OA\Response(

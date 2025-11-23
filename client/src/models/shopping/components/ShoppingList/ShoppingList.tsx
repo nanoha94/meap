@@ -1,7 +1,6 @@
 'use client';
 import React from 'react';
 import {
-    closestCenter,
     DndContext,
     DragOverEvent,
     DragOverlay,
@@ -9,28 +8,17 @@ import {
     useSensors,
     useSensor,
     MouseSensor,
+    rectIntersection,
 } from '@dnd-kit/core';
-import {
-    SortableContext,
-    verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
 import CategoryItemList from './CategoryItemList';
 import ShoppingItemCard from './ShoppingItemCard';
-import { IGetShoppingItemsResponse } from '@/types/api';
 import { useDebounce } from '@/hooks/useDebounce';
-import {
-    useShoppingStore,
-    useShoppingHandlers,
-    useShoppingItems,
-} from '../../hooks';
-import { DRAG_ACTIVATION_DISTANCE, DEBOUNCE_DELAY } from '../../constants';
+import { useShoppingStore, useShoppingItems } from '../../hooks';
+import { DRAG_ACTIVATION_DISTANCE } from '@/constants';
+import { DEBOUNCE_DELAY } from '../../constants';
+import { processDndMove } from '@/utils/dnd';
 
-interface Props {
-    items: IGetShoppingItemsResponse['data'];
-}
-
-const ShoppingList: React.FC<Props> = ({ items }) => {
-    const { handleMoveItem } = useShoppingHandlers();
+const ShoppingList = () => {
     const {
         setItems: setStoreItems,
         items: storeItems,
@@ -74,9 +62,14 @@ const ShoppingList: React.FC<Props> = ({ items }) => {
         (event: DragOverEvent) => {
             const { active, over } = event;
             if (!over) return;
-            handleMoveItem(active.id as string, over.id as string);
+            const updatedItems = processDndMove(
+                storeItems,
+                active.id as string,
+                over.id as string,
+            );
+            setStoreItems(updatedItems);
         },
-        [handleMoveItem],
+        [storeItems],
     );
 
     /**
@@ -95,20 +88,13 @@ const ShoppingList: React.FC<Props> = ({ items }) => {
     );
 
     /**
-     * ストアにアイテムを設定
-     */
-    React.useEffect(() => {
-        setStoreItems(items);
-    }, [items]);
-
-    /**
      * デバウンス処理
      */
     React.useEffect(() => {
         // debouncedItems が undefined の場合（初期化前）は何もしない
         if (debouncedItems) {
             const currentItemsStr = JSON.stringify(debouncedItems);
-            // flatServerItemsではなく、直接serverItemsからフラット化して比較
+            // serverItemsからフラット化して比較
             const serverItemsFlat = serverItems?.flatMap(v => v.items) || [];
             const serverItemsStr = JSON.stringify(serverItemsFlat);
 
@@ -181,20 +167,16 @@ const ShoppingList: React.FC<Props> = ({ items }) => {
             {storeItems?.length > 0 && (
                 <DndContext
                     sensors={sensors}
-                    collisionDetection={closestCenter}
+                    collisionDetection={rectIntersection}
                     onDragStart={handleDragStart}
                     onDragEnd={handleDragEnd}
                     onDragOver={handleDragOver}>
                     {storeItems.map(v => (
-                        <SortableContext
-                            key={v.category.id}
+                        <CategoryItemList
+                            key={v.category.id} // key は直接 CategoryItemList に渡す
+                            category={v.category}
                             items={v.items}
-                            strategy={verticalListSortingStrategy}>
-                            <CategoryItemList
-                                category={v.category}
-                                items={v.items}
-                            />
-                        </SortableContext>
+                        />
                     ))}
                     <DragOverlay>
                         {activeItem && <ShoppingItemCard item={activeItem} />}

@@ -2,7 +2,10 @@ import React from 'react';
 import { useShoppingStore } from './shoppingStores';
 import { useSnackbars } from '@/contexts';
 import axios from '@/lib/axios';
-import { IPostShoppingItemRequest, IPutShoppingItemRequest } from '@/types/api';
+import {
+    IPostShoppingItemRequestData,
+    IPutShoppingItemRequestData,
+} from '@/types/api';
 import { TIMEOUT_MS } from '@/constants';
 
 export const useShoppingItems = () => {
@@ -52,7 +55,7 @@ export const useShoppingItems = () => {
      * @param item 作成するアイテム
      * @returns 作成結果
      */
-    const storeShoppingItem = async (item: IPostShoppingItemRequest) => {
+    const storeShoppingItem = async (item: IPostShoppingItemRequestData) => {
         if (isLoading) {
             return;
         }
@@ -88,7 +91,7 @@ export const useShoppingItems = () => {
      * @returns 更新結果
      */
     const updateShoppingItems = React.useCallback(
-        async (items: IPutShoppingItemRequest['data']) => {
+        async (items: IPutShoppingItemRequestData[]) => {
             const serverItemsFlat =
                 serverItems?.flatMap(category => category.items) || [];
 

@@ -41,13 +41,13 @@ return [
     ],
     'ingredient_category' => [
         'index' => '食材カテゴリー一覧取得',
-        'store' => '食材カテゴリー作成',
+        'bulk_store' => '食材カテゴリー一括作成',
         'bulk_update' => '食材カテゴリー一括更新',
         'bulk_destroy' => '食材カテゴリー一括削除',
     ],
     'shopping_category' => [
         'index' => '買い物カテゴリー一覧取得',
-        'store' => '買い物カテゴリー作成',
+        'bulk_store' => '買い物カテゴリー一括作成',
         'bulk_update' => '買い物カテゴリー一括更新',
         'bulk_destroy' => '買い物カテゴリー一括削除',
     ],

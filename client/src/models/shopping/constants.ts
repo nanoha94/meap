@@ -3,7 +3,6 @@ import { ShoppingItemSettingDialogConfig } from './types';
 import { AlertDialogConfig } from '@/types/dialog';
 
 export const DEBOUNCE_DELAY = 5000;
-export const DRAG_ACTIVATION_DISTANCE = 5;
 
 export const SHOPPING_ITEM_SETTING_DIALOG_CONFIGS: Record<
     string,

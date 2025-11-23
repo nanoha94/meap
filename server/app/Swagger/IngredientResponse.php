@@ -26,13 +26,18 @@ namespace App\Swagger;
  *     )
  * )
  * @OA\Response(
- *     response="IngredientCategoryStoreSuccess",
- *     description="食材カテゴリー(野菜)を作成しました。",
+ *     response="IngredientCategoryBulkStoreSuccess",
+ *     description="3件の食材カテゴリーを一括作成しました。",
  *     @OA\JsonContent(
  *         type="object",
  *         @OA\Property(property="success", type="boolean", example=true),
- *         @OA\Property(property="message", type="string", example="食材カテゴリー(野菜)を作成しました。"),
- *         @OA\Property(property="data", ref="#/components/schemas/IngredientCategory")
+ *         @OA\Property(property="message", type="string", example="3件の食材カテゴリーを一括作成しました。"),
+ *         @OA\Property(
+ *             property="data",
+ *             type="array",
+ *             description="作成された食材カテゴリ一覧",
+ *             @OA\Items(ref="#/components/schemas/IngredientCategory")
+ *         )
  *     )
  * )
  * @OA\Response(

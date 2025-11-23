@@ -22,6 +22,7 @@ return [
     'deleted' => ':attribute(:name)を削除しました。',
     'retrieved' => ':attributeを取得しました。',
     'list_retrieved' => ':attributeを:count件取得しました。',
+    'bulk_created' => ':attributeを:count件作成しました。',
     'bulk_updated' => ':attributeを:count件更新しました。',
     'bulk_deleted' => ':attributeを:count件削除しました。',
     'creation_failed' => ':attributeの作成に失敗しました。',
@@ -31,7 +32,7 @@ return [
     'not_found' => '指定された:attributeが見つかりませんでした。',
     'cannot_delete' => ':nameは削除できません。',
     'bulk_update_failed' => ':attributeの一括更新中にエラーが発生しました。',
-
+    'bulk_creation_failed' => ':attributeの一括作成中にエラーが発生しました。',
     'image' => [
         'bulk_uploaded' => '画像を:count件アップロードしました。',
         'upload_failed' => '画像のアップロードと保存に失敗しました。',
@@ -59,7 +60,7 @@ return [
         'user' => 'ユーザー',
         'meal_plan' => '献立',
         'meal_category' => '献立カテゴリ',
-        'menu_category' => 'メニューカテゴリ',
+        'menu_category' => 'メニューカテゴリー',
         'recipe' => '料理/レシピ',
         'recipe_category' => '料理カテゴリー',
         'ingredient' => '食材',

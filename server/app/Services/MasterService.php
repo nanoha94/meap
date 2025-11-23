@@ -10,7 +10,15 @@ class MasterService
     {
         $recipeCategories = $group->recipeCategories()->select('id', 'name', 'order')->orderBy('order', 'asc')->get();
         $ingredientCategories = $group->ingredientCategories()->select('id', 'name', 'order')->orderBy('order', 'asc')->get();
-        $ingredientUnits = $group->ingredientUnits()->select('id', 'name', 'position', 'requires_quantity', 'order')->orderBy('order', 'asc')->get();
+        $ingredientUnits = $group->ingredientUnits()->select('id', 'name', 'position', 'requires_quantity', 'order')->orderBy('order', 'asc')->get()->map(function ($unit) {
+            return [
+                'id' => $unit->id,
+                'name' => $unit->name,
+                'position' => $unit->position,
+                'requiresQuantity' => $unit->requires_quantity,
+                'order' => $unit->order,
+            ];
+        });
         $menuCategories = $group->menuCategories()->select('id', 'name', 'order')->get();
         $shopping_tags = $group->shoppingTags()->select('id', 'name')->get();
 

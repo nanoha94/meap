@@ -3,18 +3,19 @@ import React from 'react';
 import { Button } from '@/components/common';
 import { HorizontalRowField } from '@/components/react-hook-form';
 import { useForm } from 'react-hook-form';
-import { useRecipeStore } from '../../hooks/recipeStores';
 import StyledSelect from '@/components/common/StyledSelect';
-import { defaultIngredient } from '@/models/ingredient/constants';
-import { IIngredient } from '@/types/api/ingredient';
+import { defaultIngredientItem } from '@/models/ingredient/constants';
+import { IIngredientItem } from '@/types/api/ingredient';
+import { useIngredientStore } from '@/models/ingredient/hooks';
+import { TMP_ID_PREFIX } from '@/constants/tmpIdPrefix';
 
 interface Props {
-    editingItem: IIngredient | undefined;
+    editingItem: IIngredientItem | undefined;
     actionButtonText: string;
     onClose: () => void;
-    onAction: (value: IIngredient) => void;
+    onAction: (value: IIngredientItem) => void;
 }
-type FormData = IIngredient;
+type FormData = IIngredientItem;
 
 const EditForm = ({
     editingItem,
@@ -22,33 +23,75 @@ const EditForm = ({
     onClose,
     onAction,
 }: Props) => {
-    const { ingredientUnits } = useRecipeStore();
-    const { control, handleSubmit, reset, watch } = useForm<FormData>({
-        defaultValues: defaultIngredient,
-    });
+    const prefix: string = TMP_ID_PREFIX.INGREDIENT_ITEM;
+    const { units } = useIngredientStore();
+    const { control, handleSubmit, reset, watch, setValue } = useForm<FormData>(
+        {
+            defaultValues: {
+                ...defaultIngredientItem,
+                id: `${prefix}${Date.now()}`,
+            },
+        },
+    );
     const nameInputRef = React.useRef<HTMLInputElement>(null);
 
     const watchedName = watch('name');
-    const watchedUnitId = watch('unitId');
+    const watchedQuantity = watch('quantity');
+    const watchedUnitId = watch('unit.id');
+    const watchedUnit = watch('unit');
 
+    /**
+     * 数量の入力可/不可
+     */
+    const isDisabledQuantity: boolean = React.useMemo(() => {
+        return !(watchedUnit?.requiresQuantity ?? false);
+    }, [watchedUnit]);
+
+    /**
+     * 送信ボタンの無効化判定
+     */
     const isDisabledSendButton = React.useMemo(() => {
-        return watchedName === '' || watchedUnitId === '';
-    }, [watchedName, watchedUnitId]);
+        // 食材名が空の場合、単位が選択されていない場合は送信ボタンを無効化
+        // 数量が必要の場合は数量が入力されていない場合は送信ボタンを無効化
+        return (
+            watchedName === '' ||
+            watchedUnitId === '' ||
+            (!isDisabledQuantity && !watchedQuantity)
+        );
+    }, [watchedName, watchedUnitId, watchedQuantity, isDisabledQuantity]);
 
+    /**
+     * フォーカスを当てる
+     */
     React.useEffect(() => {
         nameInputRef.current?.focus();
     }, []);
 
+    /**
+     * 編集対象の食材を設定
+     */
     React.useEffect(() => {
         if (editingItem) {
             reset(editingItem);
         }
     }, [editingItem]);
 
+    // 単位の監視
+    React.useEffect(() => {
+        const unit = units.find(v => v.id === watchedUnitId);
+        if (unit) {
+            setValue('unit', unit);
+            if (!unit.requiresQuantity) {
+                setValue('quantity', null);
+            }
+        }
+    }, [watchedUnitId]);
+
     /**
      * フォームの送信
      */
     const onSubmit = (data: FormData) => {
+        console.log(data);
         onAction(data);
     };
 
@@ -56,19 +99,19 @@ const EditForm = ({
         <form
             onSubmit={handleSubmit(onSubmit)}
             className="w-full flex flex-col gap-y-10">
-            <div className="mx-auto max-w-[440px] flex flex-col gap-y-5">
+            <div className="mx-auto max-w-[440px] w-full flex flex-col gap-y-5">
                 <div className="w-full flex flex-col gap-y-2">
                     <HorizontalRowField
                         control={control}
                         name="name"
-                        label="食材名">
+                        label="材料名">
                         {({ value, onChange, id }) => (
                             <input
                                 ref={nameInputRef}
                                 type="text"
                                 id={id}
                                 value={value as string}
-                                placeholder="食材名を入力"
+                                placeholder="材料名を入力"
                                 onChange={e => onChange(e.target.value)}
                                 className="py-2 px-4 border rounded-lg outline-none border-gray-main"
                             />
@@ -89,6 +132,7 @@ const EditForm = ({
                                 }
                                 placeholder="数量を入力"
                                 min={0}
+                                disabled={isDisabledQuantity}
                                 onChange={e => {
                                     const val = e.target.value;
                                     // 空欄ならnull、整数なら数値、小数や不正値は無視
@@ -107,21 +151,18 @@ const EditForm = ({
                     </HorizontalRowField>
                     <HorizontalRowField
                         control={control}
-                        name="unitId"
+                        name="unit.id"
                         label="単位">
                         {({ value, onChange, id }) => (
                             <StyledSelect
                                 value={value as string}
                                 name={id}
                                 onChange={e => onChange(e.target.value)}
-                                options={ingredientUnits}
+                                options={units}
                             />
                         )}
                     </HorizontalRowField>
                 </div>
-                <p className="text-sm text-black">
-                    ※「少々」などの数量で表せない場合は、食材名と単位のみ入力してください。
-                </p>
             </div>
             <div className="mx-auto max-w-[320px] w-full flex gap-x-6">
                 <Button

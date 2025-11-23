@@ -1,4 +1,4 @@
-import { IGetRecipesResponse, IRecipeCategory } from '@/types/api/recipe';
+import { IRecipe, IRecipeCategory } from '@/types/api/recipe';
 import { create } from 'zustand';
 import { IGetMasterResponse } from '@/types/api/master';
 import { DIALOG_NAME } from '@/constants';
@@ -32,20 +32,19 @@ const initialDialogsState: DialogsState = {
 
 interface RecipeState {
     // ローカル状態
-    recipes: IGetRecipesResponse['data'];
+    recipes: IRecipe[];
 
     // ローディング状態
     isLoadings: LoadingState;
 
     // マスターデータ
-    categories: IGetMasterResponse['data']['recipeCategories'];
-    ingredientUnits: IGetMasterResponse['data']['ingredientUnits'];
+    categories: IRecipeCategory[];
 
     // ダイアログの状態
     dialogs: DialogsState;
 
     // レシピ一覧のアクション
-    setRecipes: (recipes: IGetRecipesResponse['data']) => void;
+    setRecipes: (recipes: IRecipe[]) => void;
 
     // ローディング状態のアクション
     setIsLoadings: (name: keyof LoadingState, isLoading: boolean) => void;
@@ -53,9 +52,6 @@ interface RecipeState {
     // マスターデータのアクション
     setCategories: (
         categories: IGetMasterResponse['data']['recipeCategories'],
-    ) => void;
-    setIngredientUnits: (
-        ingredientUnits: IGetMasterResponse['data']['ingredientUnits'],
     ) => void;
 
     // ダイアログのアクション
@@ -74,7 +70,6 @@ export const useRecipeStore = create<RecipeState>(set => ({
         recipe: false,
     },
     categories: [],
-    ingredientUnits: [],
     dialogs: initialDialogsState,
 
     // レシピ一覧のアクション
@@ -92,9 +87,6 @@ export const useRecipeStore = create<RecipeState>(set => ({
     // マスターデータのアクション
     setCategories: categories => {
         set({ categories });
-    },
-    setIngredientUnits: ingredientUnits => {
-        set({ ingredientUnits });
     },
 
     // ダイアログのアクション

@@ -66,6 +66,23 @@ namespace App\Swagger;
  * )
  * 
  * @OA\RequestBody(
+ *     request="ShoppingCategoryBulkStoreRequest",
+ *     description="一括登録する買い物カテゴリデータ",
+ *     required=true,
+ *     @OA\JsonContent(
+ *         type="object",
+ *         @OA\Property(
+ *             property="data",
+ *             type="array",
+ *             @OA\Items(type="object",
+ *                 @OA\Property(property="name", type="string", description="買い物カテゴリ名", example="スーパー"),
+ *                 @OA\Property(property="order", type="integer", description="買い物カテゴリ順序", example="1")
+ *             )
+ *         )
+ *     )
+ * )
+ * 
+ * @OA\RequestBody(
  *     request="ShoppingCategoryBulkUpdateRequest",
  *     description="一括更新する買い物カテゴリデータ",
  *     required=true,
@@ -74,9 +91,9 @@ namespace App\Swagger;
  *         @OA\Property(
  *             property="data",
  *             type="array",
- *             @OA\Items(type="object", 
- *              @OA\Property(property="id", type="string", description="買い物カテゴリID", example="1"), 
- *              @OA\Property(property="name", type="string", description="買い物カテゴリ名", example="食料品"), 
+ *             @OA\Items(type="object",
+ *              @OA\Property(property="id", type="string", description="買い物カテゴリID", example="1"),
+ *              @OA\Property(property="name", type="string", description="買い物カテゴリ名", example="食料品"),
  *              @OA\Property(property="order", type="integer", description="買い物カテゴリ順序", example="1"))
  *         )
  *     )

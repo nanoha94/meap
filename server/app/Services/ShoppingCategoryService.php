@@ -9,8 +9,6 @@ use App\Services\AbstractDomainService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use InvalidArgumentException;
-use LogicException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class ShoppingCategoryService extends AbstractDomainService
@@ -101,13 +99,16 @@ class ShoppingCategoryService extends AbstractDomainService
     }
 
     /**
-     * カテゴリを作成（is_defaultは常にfalse）
+     * カテゴリを一括作成（is_defaultは常にfalse）
      */
-    public function create(array $data, Group $group): array
+    public function bulkCreate(array $data, Group $group): array
     {
-        // is_defaultを固定値として追加
-        $data['is_default'] = false;
+        // 各アイテムにis_defaultを固定値として追加
+        $data = array_map(function ($item) {
+            $item['is_default'] = false;
+            return $item;
+        }, $data);
 
-        return parent::create($data, $group);
+        return parent::bulkCreate($data, $group);
     }
 }

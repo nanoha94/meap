@@ -1,122 +1,117 @@
 'use client';
 import React from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
-import IngredientEditFields from './IngredientEditFields';
-import { IPostRecipeRequest, IRecipe } from '@/types/api/recipe';
+import { IRecipe } from '@/types/api/recipe';
 import { Button } from '@/components/common';
-import { defaultPostData } from '../../constants';
 import CategoryEditFields from './CategoryEditFields';
 import { VerticalRowField } from '@/components/react-hook-form';
 import ThumbnailEditField from './ThumbnailEditField';
-import { MAX_IMAGE_SIZE } from '@/constants';
 import { useRouter } from 'next/navigation';
-import { IIngredient } from '@/types/api/ingredient';
-import { TMP_ID_PREFIX } from '@/constants/tmpIdPrefix';
-import { useRecipes } from '../../hooks';
+import { defaultPostData } from '../../constants';
+import { IngredientEditFields } from './IngredientEditFields';
 
-type FormData = IPostRecipeRequest;
+type FormData = IRecipe;
 
 interface Props {
-    recipe?: IRecipe | null;
+    fetchRecipe?: IRecipe;
 }
 
 type EditMode = 'create' | 'update';
 
-const RecipeEditForm = ({ recipe = null }: Props) => {
+const RecipeEditForm = ({ fetchRecipe }: Props) => {
     const router = useRouter();
-    const { storeRecipe, updateRecipe } = useRecipes();
+    // const { storeRecipe, updateRecipe } = useRecipes();
     const methods = useForm<FormData>({
-        defaultValues: {
-            ...defaultPostData,
-            ...recipe,
-            categoryIds: recipe?.categories.map(v => v.id),
-            thumbnail: new File([], ''),
-        },
+        defaultValues: { ...defaultPostData, ...fetchRecipe },
     });
-    const values = methods.watch();
-    const editMode: EditMode = recipe ? 'update' : 'create';
+
+    const { control, handleSubmit, watch } = methods;
+    // const values = watch();
+    const watchedName = watch('name');
+    const editMode: EditMode = fetchRecipe ? 'update' : 'create';
 
     /**
      * 送信ボタンの無効化判定
      * 料理名が空の場合、サムネイル画像が5MBを超える場合は送信ボタンを無効化
      */
     const isDisabledSendButton: boolean = React.useMemo(() => {
-        if (values.name.length === 0) {
+        if (watchedName?.length === 0) {
             return true;
         }
-        if (values.thumbnail && values.thumbnail.size > MAX_IMAGE_SIZE) {
-            return true;
-        }
+        // if (values.thumbnail && values.thumbnail.size > MAX_IMAGE_SIZE) {
+        //     return true;
+        // }
         return false;
-    }, [values]);
+    }, [watchedName]);
 
-    const formatItems = (items: IIngredient[], prefix: string) => {
-        return items
-            .filter(v => v.name && v.name.length > 0)
-            .map(v =>
-                v.id?.startsWith(prefix)
-                    ? {
-                          name: v.name,
-                          quantity: v.quantity,
-                          unitId: v.unitId,
-                          categoryId: v.categoryId,
-                      }
-                    : v,
-            );
-    };
+    // const formatItems = (items: IIngredient[], prefix: string) => {
+    //     return items
+    //         .filter(v => v.name && v.name.length > 0)
+    //         .map(v =>
+    //             v.id?.startsWith(prefix)
+    //                 ? {
+    //                       name: v.name,
+    //                       quantity: v.quantity,
+    //                       unitId: v.unitId,
+    //                       categoryId: v.categoryId,
+    //                   }
+    //                 : v,
+    //         );
+    // };
 
     /**
      * フォームの送信処理
      * @param data フォームのデータ
      */
     const onSubmit = (data: FormData) => {
-        const formData = new FormData();
-        const sendData = {
-            id: recipe?.id ?? '',
-            ...data,
-            ingredients: formatItems(
-                data.ingredients as IIngredient[],
-                TMP_ID_PREFIX.INGREDIENT,
-            ),
-        };
+        console.log(data);
+        // const formData = new FormData();
+        // const sendData = {
+        //     id: recipe?.id ?? '',
+        //     ...data,
+        //     ingredients: formatItems(
+        //         data.ingredients as IIngredient[],
+        //         TMP_ID_PREFIX.INGREDIENT,
+        //     ),
+        // };
 
-        // サムネイル画像
-        if (sendData.thumbnail && sendData.thumbnail instanceof File) {
-            formData.append('thumbnail', sendData.thumbnail);
-        } else {
-            formData.append('thumbnailDelete', 'true');
-        }
+        // // サムネイル画像
+        // if (sendData.thumbnail && sendData.thumbnail instanceof File) {
+        //     formData.append('thumbnail', sendData.thumbnail);
+        // } else {
+        //     formData.append('thumbnailDelete', 'true');
+        // }
 
-        // 他のフィールド
-        formData.append('id', sendData.id);
-        formData.append('name', sendData.name);
-        formData.append('url', sendData.url ?? '');
-        formData.append('instructions', sendData.instructions ?? '');
-        formData.append('memo', sendData.memo ?? '');
-        formData.append('categoryIds', JSON.stringify(sendData.categoryIds));
-        formData.append('ingredients', JSON.stringify(sendData.ingredients));
+        // // 他のフィールド
+        // formData.append('id', sendData.id);
+        // formData.append('name', sendData.name);
+        // formData.append('url', sendData.url ?? '');
+        // formData.append('instructions', sendData.instructions ?? '');
+        // formData.append('memo', sendData.memo ?? '');
+        // formData.append('categoryIds', JSON.stringify(sendData.categoryIds));
+        // formData.append('ingredients', JSON.stringify(sendData.ingredients));
 
-        if (editMode === 'create') {
-            storeRecipe(formData);
-        } else {
-            updateRecipe(formData);
-        }
+        // if (editMode === 'create') {
+        //     storeRecipe(formData);
+        // } else {
+        //     updateRecipe(formData);
+        // }
     };
 
     return (
         <FormProvider {...methods}>
             <form
-                onSubmit={methods.handleSubmit(onSubmit)}
+                onSubmit={handleSubmit(onSubmit)}
                 className="p-5 pb-[60px] grid grid-cols-[repeat(auto-fill,_minmax(350px,_1fr))] gap-x-10 gap-y-5 md:px-10">
                 <div className="flex-1 flex flex-col gap-y-5">
                     {/* サムネイル画像 */}
                     <ThumbnailEditField
-                        control={methods.control}
-                        thumbnail={recipe?.thumbnail}
+                        control={control}
+                        thumbnail={fetchRecipe?.thumbnail}
                     />
                     {/* 料理名 */}
                     <VerticalRowField
-                        control={methods.control}
+                        control={control}
                         name="name"
                         label="料理名"
                         required={true}>
@@ -131,15 +126,15 @@ const RecipeEditForm = ({ recipe = null }: Props) => {
                         )}
                     </VerticalRowField>
                     {/* カテゴリー */}
-                    <CategoryEditFields control={methods.control} />
+                    <CategoryEditFields control={control} />
                     {/* TODO:分量目安 */}
                     {/* 食材 */}
-                    <IngredientEditFields control={methods.control} />
+                    <IngredientEditFields control={control} />
                 </div>
                 <div className="flex-1 flex flex-col gap-y-5">
                     {/* レシピURL */}
                     <VerticalRowField
-                        control={methods.control}
+                        control={control}
                         name="url"
                         label="レシピURL">
                         {({ value, onChange }) => (
@@ -154,8 +149,8 @@ const RecipeEditForm = ({ recipe = null }: Props) => {
                     </VerticalRowField>
                     {/* レシピ（テキスト入力） */}
                     <VerticalRowField
-                        control={methods.control}
-                        name="instructions"
+                        control={control}
+                        name="steps"
                         label="レシピ（テキスト入力）">
                         {({ value, onChange }) => (
                             <textarea
@@ -169,7 +164,7 @@ const RecipeEditForm = ({ recipe = null }: Props) => {
                     </VerticalRowField>
                     {/* メモ */}
                     <VerticalRowField
-                        control={methods.control}
+                        control={control}
                         name="memo"
                         label="メモ">
                         {({ value, onChange }) => (
@@ -188,7 +183,7 @@ const RecipeEditForm = ({ recipe = null }: Props) => {
                             colorVariant="gray"
                             variant="outlined"
                             onClick={() => {
-                                router.push(`/recipe/${recipe?.id}`);
+                                router.push(`/recipe/${fetchRecipe?.id}`);
                             }}>
                             戻る
                         </Button>

@@ -35,6 +35,14 @@ class Group extends Model
             $category->order = 0;
             $category->save();
 
+            // デフォルトの食材カテゴリを追加
+            $ingredientCategory = new IngredientCategory();
+            $ingredientCategory->name = "食材";
+            $ingredientCategory->group_id = $group->id;
+            $ingredientCategory->is_default = true;
+            $ingredientCategory->order = 0;
+            $ingredientCategory->save();
+
             // デフォルトの料理分類を追加
             $menuCategories = [
                 ['name' => '主食', 'order' => 0],

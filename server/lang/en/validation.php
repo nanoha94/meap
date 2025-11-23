@@ -49,7 +49,10 @@ return [
     'distinct' => 'The :attribute field has a duplicate value.',
     'doesnt_end_with' => 'The :attribute field must not end with one of the following: :values.',
     'doesnt_start_with' => 'The :attribute field must not start with one of the following: :values.',
-    'email' => 'The :attribute field must be a valid email address.',
+    'email' => [
+        'string' => 'The :attribute field must be a string.',
+        'email' => 'The :attribute field must be a valid email address.',
+    ],
     'ends_with' => 'The :attribute field must end with one of the following: :values.',
     'enum' => 'The selected :attribute is invalid.',
     'exists' => 'The selected :attribute is invalid.',
@@ -72,6 +75,7 @@ return [
     'image' => 'The :attribute field must be an image.',
     'in' => 'The selected :attribute is invalid.',
     'in_array' => 'The :attribute field must exist in :other.',
+    'in_array_keys' => 'The :attribute field must contain at least one of the following values: :values.',
     'integer' => 'The :attribute field must be an integer.',
     'ip' => 'The :attribute field must be a valid IP address.',
     'ipv4' => 'The :attribute field must be a valid IPv4 address.',
@@ -131,6 +135,8 @@ return [
     'present_with_all' => 'The :attribute field must be present when :values are present.',
     'prohibited' => 'The :attribute field is prohibited.',
     'prohibited_if' => 'The :attribute field is prohibited when :other is :value.',
+    'prohibited_if_accepted' => 'The :attribute field is prohibited when :other is accepted.',
+    'prohibited_if_declined' => 'The :attribute field is prohibited when :other is declined.',
     'prohibited_unless' => 'The :attribute field is prohibited unless :other is in :values.',
     'prohibits' => 'The :attribute field prohibits :other from being present.',
     'regex' => 'The :attribute field format is invalid.',
@@ -177,6 +183,9 @@ return [
         'attribute-name' => [
             'rule-name' => 'custom-message',
         ],
+        'terms' => [
+            'required' => 'Agreement to the terms is required for registration.',
+        ],
     ],
 
     /*
@@ -190,7 +199,69 @@ return [
     |
     */
 
-    'attributes' => [],
+    'attributes' => [
+        'order' => 'order',
+        'color' => 'color',
+        'url' => 'URL',
+        'memo' => 'memo',
+        'servings' => 'servings',
+        'page' => 'page',
+        'per_page' => 'items per page',
+        'id' => 'ID',
+        'menu' => 'menu',
+        'recipe_id' => 'recipe ID',
+        'menu_category_id' => 'menu category ID',
+        'recipe' => [
+            'name' => 'recipe name',
+            'step_id' => 'step ID',
+            'step' => 'step'
+        ],
+        'shopping' => [
+            'item' => [
+                'name' => 'item name',
+                'category_id' => 'category ID',
+                'tags' => 'tags',
+                'tag_id' => 'tag ID',
+                'tag_name' => 'tag name'
+            ],
+            'category' => [
+                'name' => 'category name',
+            ]
+        ],
+        'ingredient' => [
+            'name' => 'ingredient name',
+            'unit_id' => 'unit ID',
+            'category_id' => 'category ID',
+            'quantity' => 'quantity',
+        ],
+        'ingredient_category' => [
+            'name' => 'ingredient category name',
+        ],
+        'ingredient_unit' => [
+            'name' => 'unit name',
+        ],
+        'meal_plan' => [
+            'date' => 'date',
+            'meal_category_id' => 'meal category ID',
+            'recipe_id' => 'recipe ID',
+            'servings' => 'servings'
+        ],
+        'meal_category' => [
+            'name' => 'meal category',
+        ],
+        'recipe_category' => [
+            'name' => 'recipe category name',
+        ],
+        'image' => [
+            'id' => 'image ID',
+            'files' => 'image files',
+            'directory' => 'directory name',
+            'url' => 'image URL',
+            'width' => 'image width',
+            'height' => 'image height'
+        ],
+        'data' => 'data',
+    ],
 
     'id_must_be_string' => 'The ID must be a string.',
     'specified_id_does_not_exist' => 'The specified ID does not exist.',

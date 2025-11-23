@@ -1,13 +1,17 @@
 import { create } from 'zustand';
-import { IGetMasterResponse } from '@/types/api/master';
-import { IIngredient } from '@/types/api/ingredient';
+import {
+    IIngredientCategory,
+    IIngredientItem,
+    IIngredientUnit,
+} from '@/types/api/ingredient';
 import { DIALOG_EDIT_MODE, DIALOG_NAME } from '@/constants';
+import { LOADING_STATE_KEYS } from '../constants';
 
 export type DialogPayload = {
     [DIALOG_NAME.INGREDIENT_ADD_EDIT]: {
-        item: IIngredient | undefined;
+        item: IIngredientItem | undefined;
         editMode: (typeof DIALOG_EDIT_MODE)[keyof typeof DIALOG_EDIT_MODE];
-        onAction: (value: IIngredient) => void;
+        onAction: (value: IIngredientItem) => void;
     };
     [DIALOG_NAME.INGREDIENT_CATEGORY_SETTING]: {
         onAction: () => void;
@@ -19,6 +23,11 @@ type DialogsState = {
         isOpen: boolean;
         payload: DialogPayload[K];
     };
+};
+
+type LoadingState = {
+    [LOADING_STATE_KEYS.INGREDIENT]: boolean;
+    [LOADING_STATE_KEYS.INGREDIENT_CATEGORY]: boolean;
 };
 
 const initialDialogsState: DialogsState = {
@@ -39,16 +48,26 @@ const initialDialogsState: DialogsState = {
 };
 
 interface IngredientState {
-    // マスターデータ
-    ingredientUnits: IGetMasterResponse['data']['ingredientUnits'];
+    // 単位（マスターデータ）
+    units: IIngredientUnit[];
+
+    // カテゴリー
+    categories: IIngredientCategory[];
+
+    // ローディング状態
+    isLoadings: LoadingState;
 
     // ダイアログの状態
     dialogs: DialogsState;
 
     // マスターデータのアクション
-    setIngredientUnits: (
-        ingredientUnits: IGetMasterResponse['data']['ingredientUnits'],
-    ) => void;
+    setUnits: (units: IIngredientUnit[]) => void;
+
+    // カテゴリーのアクション
+    setCategories: (categories: IIngredientCategory[]) => void;
+
+    // ローディング状態のアクション
+    setIsLoadings: (name: keyof LoadingState, isLoading: boolean) => void;
 
     // ダイアログのアクション
     openDialog: <K extends keyof DialogPayload>(
@@ -60,12 +79,29 @@ interface IngredientState {
 
 export const useIngredientStore = create<IngredientState>(set => ({
     // 初期状態
-    ingredientUnits: [],
+    units: [],
+    categories: [],
+    isLoadings: {
+        [LOADING_STATE_KEYS.INGREDIENT]: false,
+        [LOADING_STATE_KEYS.INGREDIENT_CATEGORY]: false,
+    },
     dialogs: initialDialogsState,
 
     // マスターデータのアクション
-    setIngredientUnits: ingredientUnits => {
-        set({ ingredientUnits });
+    setUnits: units => {
+        set({ units });
+    },
+
+    // カテゴリーのアクション
+    setCategories: (categories: IIngredientCategory[]) => {
+        set({ categories });
+    },
+
+    // ローディング状態のアクション
+    setIsLoadings: (name: keyof LoadingState, isLoading: boolean) => {
+        set(state => ({
+            isLoadings: { ...state.isLoadings, [name]: isLoading },
+        }));
     },
 
     // ダイアログのアクション

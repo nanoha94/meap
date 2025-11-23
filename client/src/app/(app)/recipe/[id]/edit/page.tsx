@@ -4,7 +4,8 @@ import { SnackbarHandler } from '@/components/handlers';
 import { TIMEOUT_MS } from '@/constants';
 import { apiClient } from '@/lib/apiClient';
 import RecipeEditPage from '@/pages/recipe/RecipeEditPage';
-import { IGetRecipeResponse } from '@/types/api/recipe';
+import { IGetIngredientCategoryIndexResponse } from '@/types/api/ingredient';
+import { IGetRecipeShowResponse } from '@/types/api/recipe';
 import { Suspense } from 'react';
 
 interface Props {
@@ -15,16 +16,27 @@ interface PageWithDataProps {
     id: string;
 }
 const PageWithData = async ({ id }: PageWithDataProps) => {
-    let recipe: IGetRecipeResponse = {} as IGetRecipeResponse;
+    let recipe: IGetRecipeShowResponse | null = null;
+    let ingredientCategories: IGetIngredientCategoryIndexResponse | null = null;
     let errorMessage: string = '';
 
     try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
-        recipe = await apiClient(`/recipes/${id}`, {
-            signal: controller.signal,
-        });
+        // 2つのリクエストを並列実行
+        [recipe, ingredientCategories] = await Promise.all([
+            apiClient<IGetRecipeShowResponse>(`/recipes/${id}`, {
+                signal: controller.signal,
+            }),
+            apiClient<IGetIngredientCategoryIndexResponse>(
+                '/ingredient-categories',
+                {
+                    signal: controller.signal,
+                },
+            ),
+        ]);
+
         clearTimeout(timeoutId);
     } catch (error) {
         console.error(error);
@@ -49,7 +61,10 @@ const PageWithData = async ({ id }: PageWithDataProps) => {
                 {errorMessage && (
                     <SnackbarHandler type="error" message={errorMessage} />
                 )}
-                <RecipeEditPage recipe={recipe} />
+                <RecipeEditPage
+                    fetchRecipe={recipe?.data}
+                    fetchIngredientCategories={ingredientCategories?.data}
+                />
             </main>
         </>
     );

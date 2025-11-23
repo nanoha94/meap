@@ -8,6 +8,7 @@ interface Props {
     children: React.ReactNode;
 }
 
+// TODO: ダイアログ設定を使えば、onCloseやisOpenを渡さなくても実現できるのでは？
 const Dialog = ({ title, onClose, isOpen, children }: Props) => {
     if (!isOpen) return <></>;
 

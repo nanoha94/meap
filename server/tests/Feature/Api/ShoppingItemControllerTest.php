@@ -303,7 +303,12 @@ test('3-10-9: 【新規作成】 正常な買い物アイテム作成', function
             'isPinned',
             'isChecked',
             'order',
-            'categoryId',
+            'category' => [
+                'id',
+                'name',
+                'isDefault',
+                'order'
+            ],
             'tags'
         ]
     ]);

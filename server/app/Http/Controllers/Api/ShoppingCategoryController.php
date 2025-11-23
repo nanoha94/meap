@@ -6,7 +6,7 @@ use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\Api\ShoppingCategoryBulkDestroyRequest;
 use App\Http\Requests\Api\ShoppingCategoryBulkUpdateRequest;
 use App\Http\Requests\Api\ShoppingCategoryIndexRequest;
-use App\Http\Requests\Api\ShoppingCategoryStoreRequest;
+use App\Http\Requests\Api\ShoppingCategoryBulkStoreRequest;
 use App\Services\ShoppingCategoryService;
 use Illuminate\Http\JsonResponse;
 
@@ -50,28 +50,28 @@ class ShoppingCategoryController extends ApiController
 
     /**
      * @OA\Post(
-     *     path="/shopping-categories",
-     *     summary="買い物カテゴリを作成",
+     *     path="/shopping-categories/bulk",
+     *     summary="買い物カテゴリを一括作成",
      *     tags={"Shopping"},
      *     security={{"sanctum":{}}},
-     *     @OA\RequestBody(ref="#/components/requestBodies/ShoppingCategoryStoreRequest"),
-     *     @OA\Response(response=200, ref="#/components/responses/ShoppingCategoryStoreSuccess"),
+     *     @OA\RequestBody(ref="#/components/requestBodies/ShoppingCategoryBulkStoreRequest"),
+     *     @OA\Response(response=200, ref="#/components/responses/ShoppingCategoryBulkStoreSuccess"),
      *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
-    public function store(ShoppingCategoryStoreRequest $request): JsonResponse
+    public function bulkStore(ShoppingCategoryBulkStoreRequest $request): JsonResponse
     {
-        $operation = __('operations.shopping_category.store');
-        $failedMessage = __('api.creation_failed', ['attribute' => __('api.attributes.shopping.category')]);
+        $operation = __('operations.shopping_category.bulk_store');
+        $failedMessage = __('api.bulk_creation_failed', ['attribute' => __('api.attributes.shopping.category')]);
 
         return $this->executeWithExceptionHandling(
             function () use ($request) {
-                $res = $this->shoppingCategoryService->create(
-                    $request->validated(),
+                $res = $this->shoppingCategoryService->bulkCreate(
+                    $request->validated()['data'],
                     $this->getUserGroup($request)
                 );
-                $message = __('api.created', ['attribute' => __('api.attributes.shopping.category'), 'name' => $request->name]);
+                $message = __('api.bulk_created', ['attribute' => __('api.attributes.shopping.category'), 'count' => count($res)]);
                 return $this->createdResponse($res, $message);
             },
             $request,

@@ -1,8 +1,8 @@
 import ShoppingListPage from '@/pages/shopping/ShoppingListPage';
 import { Suspense } from 'react';
 import {
-    IGetShoppingCategoriesResponse,
-    IGetShoppingItemsResponse,
+    IGetShoppingCategoryIndexResponse,
+    IGetShoppingItemIndexResponse,
 } from '@/types/api';
 import Loading from '../loading';
 import { apiClient } from '@/lib/apiClient';
@@ -12,8 +12,8 @@ import { Header } from '@/components/common';
 import HeaderButton from '@/models/shopping/components/HeaderButton/HeaderButton';
 
 async function ShoppingListsWithData() {
-    let items: IGetShoppingItemsResponse = { data: [] };
-    let categories: IGetShoppingCategoriesResponse = { data: [], total: 0 };
+    let items: IGetShoppingItemIndexResponse | null = null;
+    let categories: IGetShoppingCategoryIndexResponse | null = null;
     let errorMessage: string = '';
     try {
         const controller = new AbortController();
@@ -21,12 +21,15 @@ async function ShoppingListsWithData() {
 
         // 2つのリクエストを並列実行
         [items, categories] = await Promise.all([
-            apiClient<IGetShoppingItemsResponse>('/shopping-items', {
+            apiClient<IGetShoppingItemIndexResponse>('/shopping-items', {
                 signal: controller.signal,
             }),
-            apiClient<IGetShoppingCategoriesResponse>('/shopping-categories', {
-                signal: controller.signal,
-            }),
+            apiClient<IGetShoppingCategoryIndexResponse>(
+                '/shopping-categories',
+                {
+                    signal: controller.signal,
+                },
+            ),
         ]);
 
         clearTimeout(timeoutId);
@@ -49,10 +52,12 @@ async function ShoppingListsWithData() {
             <Header title="買い物リスト">
                 <HeaderButton />
             </Header>
-            <ShoppingListPage
-                fetchItems={items?.data}
-                fetchCategories={categories?.data}
-            />
+            <main>
+                <ShoppingListPage
+                    fetchItems={items?.data ?? []}
+                    fetchCategories={categories?.data ?? []}
+                />
+            </main>
         </>
     );
 }

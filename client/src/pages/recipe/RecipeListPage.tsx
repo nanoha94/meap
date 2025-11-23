@@ -2,14 +2,15 @@
 import { LoadingAnimation } from '@/components/common';
 import { RecipeList } from '@/models/recipe/components';
 import { useRecipeStore } from '@/models/recipe/hooks/recipeStores';
-import { IGetRecipesResponse } from '@/types/api/recipe';
+import { IRecipe } from '@/types/api/recipe';
 import React from 'react';
 
 interface Props {
-    fetchRecipes: IGetRecipesResponse;
+    fetchRecipes: IRecipe[];
+    total: number;
 }
 
-const RecipeListPage = ({ fetchRecipes }: Props) => {
+const RecipeListPage = ({ fetchRecipes = [], total = 0 }: Props) => {
     const { setRecipes: setStoreRecipes, isLoadings } = useRecipeStore();
     const [isLoading, setIsLoading] = React.useState(false);
 
@@ -19,14 +20,14 @@ const RecipeListPage = ({ fetchRecipes }: Props) => {
 
     React.useEffect(() => {
         if (fetchRecipes) {
-            setStoreRecipes(fetchRecipes['data']);
+            setStoreRecipes(fetchRecipes);
         }
     }, [fetchRecipes]);
     return (
         <>
             {isLoading && <LoadingAnimation />}
             <div className="p-5 pb-[60px] md:px-10">
-                {fetchRecipes['total'] > 0 ? (
+                {total > 0 ? (
                     <RecipeList />
                 ) : (
                     <p>まだ料理/レシピが登録されていません。</p>

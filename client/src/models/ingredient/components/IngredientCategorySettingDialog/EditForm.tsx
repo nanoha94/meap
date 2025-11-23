@@ -8,6 +8,7 @@ import { TMP_ID_PREFIX } from '@/constants/tmpIdPrefix';
 import { defaultIngredientCategory } from '@/models/ingredient/constants';
 import { IIngredientCategory } from '@/types/api/ingredient';
 import GrippableEditItem from '@/components/common/GrippableEditItem';
+import { useIngredientCatgories } from '../../hooks/useIngredientCatgories';
 
 interface Props {
     onClose: () => void;
@@ -18,11 +19,13 @@ interface FormData {
 }
 
 const EditForm: React.FC<Props> = ({ onClose }) => {
+    const { storeData, bulkUpdateIngredientCategories } =
+        useIngredientCatgories();
     const prefix = TMP_ID_PREFIX.INGREDIENT_CATEGORY;
 
-    const { control, handleSubmit, watch } = useForm<FormData>({
+    const { control, handleSubmit, watch, reset } = useForm<FormData>({
         defaultValues: {
-            categories: [defaultIngredientCategory],
+            categories: [],
         },
     });
 
@@ -69,9 +72,32 @@ const EditForm: React.FC<Props> = ({ onClose }) => {
      * フォームの送信
      */
     const onSubmit = (data: FormData) => {
-        console.log(data);
-        onClose();
+        try {
+            // 空のアイテムを除いてデータ更新
+            const filteredItems = data.categories.filter(
+                v =>
+                    (v.id?.startsWith(prefix) && v.name.length > 0) ||
+                    !v.id?.startsWith(prefix),
+            );
+            bulkUpdateIngredientCategories(
+                filteredItems.map((v, idx) => ({
+                    ...v,
+                    order: idx,
+                })),
+            );
+            onClose();
+        } catch {
+            // エラーの場合はダイアログを閉じない
+            // エラーハンドリングはbulkUpdateIngredientCategoriesで行う
+        }
     };
+
+    // 初期化処理
+    React.useEffect(() => {
+        if (storeData?.categories?.length > 0) {
+            reset({ categories: storeData.categories });
+        }
+    }, []);
 
     return (
         <form
@@ -86,14 +112,9 @@ const EditForm: React.FC<Props> = ({ onClose }) => {
                             move(oldIndex, newIndex);
                         }}
                         renderItem={(item, index) => (
-                            // TODO: 買い物カテゴリ―のように、デフォルトカテゴリ―を用意する（バックエンドも要修正）
                             <GrippableEditItem
                                 hasDeleteButton={true}
-                                isDisabledDeleteButton={
-                                    index === 0 &&
-                                    watchedCategories?.length === 1 &&
-                                    watchedCategories[0].name === ''
-                                }
+                                isDisabledDeleteButton={item.isDefault}
                                 onDelete={() => remove(index)}>
                                 <Controller
                                     control={control}

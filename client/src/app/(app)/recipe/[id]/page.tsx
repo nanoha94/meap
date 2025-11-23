@@ -7,9 +7,10 @@ import { HeaderRecipeDeleteButton } from '@/models/recipe/components';
 import { Pencil } from 'lucide-react';
 import { HeaderLinkTextButton } from '@/components/common/HeaderTextButtons';
 import { apiClient } from '@/lib/apiClient';
-import { IGetRecipeResponse } from '@/types/api/recipe';
+import { IGetRecipeShowResponse } from '@/types/api/recipe';
 import RecipeDetailPage from '@/pages/recipe/RecipeDetailPage';
 import { notFound } from 'next/navigation';
+import { IGetIngredientCategoryIndexResponse } from '@/types/api/ingredient';
 
 interface Props {
     params: Promise<{ id: string }>;
@@ -19,16 +20,27 @@ interface PageWithDataProps {
     id: string;
 }
 const PageWithData = async ({ id }: PageWithDataProps) => {
-    let recipe: IGetRecipeResponse = {} as IGetRecipeResponse;
+    let recipe: IGetRecipeShowResponse | null = null;
+    let ingredientCategories: IGetIngredientCategoryIndexResponse | null = null;
     let errorMessage: string = '';
 
     try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
-        recipe = await apiClient(`/recipes/${id}`, {
-            signal: controller.signal,
-        });
+        // 2つのリクエストを並列実行
+        [recipe, ingredientCategories] = await Promise.all([
+            apiClient<IGetRecipeShowResponse>(`/recipes/${id}`, {
+                signal: controller.signal,
+            }),
+            apiClient<IGetIngredientCategoryIndexResponse>(
+                '/ingredient-categories',
+                {
+                    signal: controller.signal,
+                },
+            ),
+        ]);
+
         clearTimeout(timeoutId);
     } catch (error) {
         console.error(error);
@@ -51,7 +63,7 @@ const PageWithData = async ({ id }: PageWithDataProps) => {
         <>
             <Header title="料理/レシピ">
                 <div className="flex items-center gap-x-4">
-                    <HeaderRecipeDeleteButton id={id} name={recipe.name} />
+                    <HeaderRecipeDeleteButton id={id} name={recipe.data.name} />
                     <HeaderLinkTextButton
                         href={`/recipe/${id}/edit`}
                         colorVariant="secondary">
@@ -64,7 +76,10 @@ const PageWithData = async ({ id }: PageWithDataProps) => {
                 {errorMessage && (
                     <SnackbarHandler type="error" message={errorMessage} />
                 )}
-                <RecipeDetailPage recipe={recipe} />
+                <RecipeDetailPage
+                    fetchRecipe={recipe?.data}
+                    fetchIngredientCategories={ingredientCategories?.data}
+                />
             </main>
         </>
     );
