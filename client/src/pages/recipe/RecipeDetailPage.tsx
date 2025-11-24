@@ -16,9 +16,6 @@ const RecipeDetailPage = ({
 }: Props) => {
     const { isLoadings } = useRecipeStore();
 
-    console.log('### fetchRecipe ###', fetchRecipe);
-    console.log('### fetchIngredientCategories ###', fetchIngredientCategories);
-
     return (
         <>
             {isLoadings.recipe && <LoadingAnimation />}

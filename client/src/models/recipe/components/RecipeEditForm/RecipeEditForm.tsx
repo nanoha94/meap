@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
-import { IRecipe } from '@/types/api/recipe';
+import { IPostPutRecipeRequest, IRecipe } from '@/types/api/recipe';
 import { Button } from '@/components/common';
 import CategoryEditFields from './CategoryEditFields';
 import { VerticalRowField } from '@/components/react-hook-form';
@@ -9,6 +9,9 @@ import ThumbnailEditField from './ThumbnailEditField';
 import { useRouter } from 'next/navigation';
 import { defaultPostData } from '../../constants';
 import { IngredientEditFields } from './IngredientEditFields';
+import { IIngredientItem } from '@/types/api/ingredient';
+import { TMP_ID_PREFIX } from '@/constants/tmpIdPrefix';
+import { useRecipes } from '../../hooks';
 
 type FormData = IRecipe;
 
@@ -20,7 +23,7 @@ type EditMode = 'create' | 'update';
 
 const RecipeEditForm = ({ fetchRecipe }: Props) => {
     const router = useRouter();
-    // const { storeRecipe, updateRecipe } = useRecipes();
+    const { storeRecipe, updateRecipe } = useRecipes();
     const methods = useForm<FormData>({
         defaultValues: { ...defaultPostData, ...fetchRecipe },
     });
@@ -44,36 +47,49 @@ const RecipeEditForm = ({ fetchRecipe }: Props) => {
         return false;
     }, [watchedName]);
 
-    // const formatItems = (items: IIngredient[], prefix: string) => {
-    //     return items
-    //         .filter(v => v.name && v.name.length > 0)
-    //         .map(v =>
-    //             v.id?.startsWith(prefix)
-    //                 ? {
-    //                       name: v.name,
-    //                       quantity: v.quantity,
-    //                       unitId: v.unitId,
-    //                       categoryId: v.categoryId,
-    //                   }
-    //                 : v,
-    //         );
-    // };
+    /**
+     * 食材をフォーマット
+     * @param items 食材
+     * @param prefix 食材IDのプレフィックス
+     * @returns フォーマットされた食材
+     */
+    const formatIngredientItems = React.useCallback(
+        (
+            items: IIngredientItem[],
+            prefix: string,
+        ): IPostPutRecipeRequest['ingredients'] => {
+            return items
+                .filter(v => v.name && v.name.length > 0)
+                .map((v, idx) =>
+                    v.id?.startsWith(prefix)
+                        ? {
+                              name: v.name,
+                              quantity: v.quantity,
+                              unitId: v.unit?.id ?? '',
+                              categoryId: v.categoryId,
+                              order: idx,
+                          }
+                        : { ...v, unitId: v.unit?.id ?? '', order: idx },
+                );
+        },
+        [],
+    );
 
     /**
      * フォームの送信処理
      * @param data フォームのデータ
      */
     const onSubmit = (data: FormData) => {
-        console.log(data);
-        // const formData = new FormData();
-        // const sendData = {
-        //     id: recipe?.id ?? '',
-        //     ...data,
-        //     ingredients: formatItems(
-        //         data.ingredients as IIngredient[],
-        //         TMP_ID_PREFIX.INGREDIENT,
-        //     ),
-        // };
+        console.log({ data });
+        const sendData: IPostPutRecipeRequest = {
+            ...data,
+            categoryIds: data.categories.map(v => v.id),
+            ingredients: formatIngredientItems(
+                data.ingredients as IIngredientItem[],
+                TMP_ID_PREFIX.INGREDIENT_ITEM,
+            ),
+        };
+        console.log({ sendData });
 
         // // サムネイル画像
         // if (sendData.thumbnail && sendData.thumbnail instanceof File) {
@@ -82,20 +98,11 @@ const RecipeEditForm = ({ fetchRecipe }: Props) => {
         //     formData.append('thumbnailDelete', 'true');
         // }
 
-        // // 他のフィールド
-        // formData.append('id', sendData.id);
-        // formData.append('name', sendData.name);
-        // formData.append('url', sendData.url ?? '');
-        // formData.append('instructions', sendData.instructions ?? '');
-        // formData.append('memo', sendData.memo ?? '');
-        // formData.append('categoryIds', JSON.stringify(sendData.categoryIds));
-        // formData.append('ingredients', JSON.stringify(sendData.ingredients));
-
-        // if (editMode === 'create') {
-        //     storeRecipe(formData);
-        // } else {
-        //     updateRecipe(formData);
-        // }
+        if (editMode === 'create') {
+            storeRecipe(sendData);
+        } else {
+            updateRecipe(sendData);
+        }
     };
 
     return (

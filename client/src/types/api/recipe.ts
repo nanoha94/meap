@@ -23,8 +23,9 @@ export type IPutRecipeResponse = IBaseApiResponse<IRecipe>;
 export type IDeleteRecipeResponse = IBaseApiDeleteResponse;
 
 // リクエスト型
-// レシピ作成
-export interface IPostRecipeRequest {
+// レシピ作成/更新
+export interface IPostPutRecipeRequest {
+    id?: string;
     name: string;
     url?: string;
     memo?: string;
@@ -33,7 +34,7 @@ export interface IPostRecipeRequest {
     ingredients?: {
         id?: string;
         name: string;
-        quantity?: number | null;
+        quantity: number | null;
         unitId: string;
         categoryId: string;
         order?: number;
@@ -45,9 +46,6 @@ export interface IPostRecipeRequest {
         order: number;
     }[];
 }
-
-// レシピ更新
-export type IPutRecipeRequest = IPostRecipeRequest & { id: string };
 
 // レシピカテゴリー作成
 export interface IPostRecipeCategoryRequest {
