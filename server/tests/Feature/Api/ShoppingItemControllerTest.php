@@ -66,23 +66,13 @@ test('3-10-1: 【一覧取得】 正常な買い物アイテム一覧取得', fu
         'message',
         'data' => [
             '*' => [
-                'category' => [
-                    'id',
-                    'name',
-                    'isDefault',
-                    'order'
-                ],
-                'items' => [
-                    '*' => [
-                        'id',
-                        'name',
-                        'isPinned',
-                        'isChecked',
-                        'order',
-                        'categoryId',
-                        'tags'
-                    ]
-                ]
+                'id',
+                'name',
+                'isPinned',
+                'isChecked',
+                'categoryId',
+                'tags',
+                'order'
             ]
         ],
         'total'
@@ -94,11 +84,14 @@ test('3-10-1: 【一覧取得】 正常な買い物アイテム一覧取得', fu
 
 test('3-10-2: 【一覧取得】 カテゴリ別アイテム取得確認', function () {
     // 別のカテゴリをAPIで作成
-    $category2Response = $this->actingAs($this->user)->post('/shopping-categories', [
-        'name' => 'カテゴリ2',
-        'order' => 1
+    $category2Response = $this->actingAs($this->user)->post('/shopping-categories/bulk', [
+        'data' => [
+            ['name' => 'カテゴリ2', 'order' => 1]
+        ]
     ]);
-    $category2Id = $category2Response->json('data.id');
+    $category2Response->assertStatus(201);
+    $category2Id = $category2Response->json('data.0.id');
+    expect($category2Id)->not->toBeNull();
 
     // カテゴリ1のアイテムをAPIで作成
     $this->actingAs($this->user)->post('/shopping-items', [
@@ -117,15 +110,17 @@ test('3-10-2: 【一覧取得】 カテゴリ別アイテム取得確認', funct
     $response->assertStatus(200);
     $responseData = $response->json('data');
 
-    // カテゴリ別にグループ化されていることを確認
+    // 1次元配列であることを確認
     expect($responseData)->toBeArray();
     expect(count($responseData))->toBeGreaterThanOrEqual(2);
 
-    // 各要素がcategoryとitemsを持つことを確認
-    expect($responseData[0])->toHaveKey('category');
-    expect($responseData[0])->toHaveKey('items');
-    expect($responseData[1])->toHaveKey('category');
-    expect($responseData[1])->toHaveKey('items');
+    // 各要素がShoppingItemの構造を持つことを確認
+    expect($responseData[0])->toHaveKey('id');
+    expect($responseData[0])->toHaveKey('name');
+    expect($responseData[0])->toHaveKey('categoryId');
+    expect($responseData[1])->toHaveKey('id');
+    expect($responseData[1])->toHaveKey('name');
+    expect($responseData[1])->toHaveKey('categoryId');
 });
 
 test('3-10-3: 【一覧取得】 アイテムの並び順確認', function () {
@@ -148,9 +143,9 @@ test('3-10-3: 【一覧取得】 アイテムの並び順確認', function () {
     $response->assertStatus(200);
     $responseData = $response->json('data');
 
-    // カテゴリごとにグループ化されているため、最初のカテゴリのアイテムを確認
-    $firstCategory = $responseData[0];
-    $items = $firstCategory['items'];
+    // 同じカテゴリのアイテムをフィルタして並び順を確認
+    $items = array_filter($responseData, fn($item) => $item['categoryId'] === $this->categoryId);
+    $items = array_values($items);
     expect($items[0]['name'])->toBe('アイテム1');
     expect($items[1]['name'])->toBe('アイテム2');
     expect($items[2]['name'])->toBe('アイテム3');
@@ -171,8 +166,13 @@ test('3-10-4: 【一覧取得】 レスポンス形式確認', function () {
         'message',
         'data' => [
             '*' => [
-                'category',
-                'items'
+                'id',
+                'name',
+                'isPinned',
+                'isChecked',
+                'categoryId',
+                'tags',
+                'order'
             ]
         ],
         'total'
@@ -227,7 +227,7 @@ test('3-10-6: 【一覧取得】 グループが存在しない', function () {
 
 test('3-10-7: 【一覧取得】 データベース接続エラー', function () {
     $this->mock(\App\Services\ShoppingItemService::class, function ($mock) {
-        $mock->shouldReceive('indexGroupedByCategory')
+        $mock->shouldReceive('index')
             ->once()
             ->andThrow(new \Exception('Database connection failed'));
     });
@@ -249,7 +249,7 @@ test('3-10-7: 【一覧取得】 データベース接続エラー', function ()
 
 test('3-10-8: 【一覧取得】 ShoppingService 例外', function () {
     $this->mock(\App\Services\ShoppingItemService::class, function ($mock) {
-        $mock->shouldReceive('indexGroupedByCategory')
+        $mock->shouldReceive('index')
             ->once()
             ->andThrow(new \Exception('Service exception'));
     });
@@ -302,14 +302,9 @@ test('3-10-9: 【新規作成】 正常な買い物アイテム作成', function
             'name',
             'isPinned',
             'isChecked',
-            'order',
-            'category' => [
-                'id',
-                'name',
-                'isDefault',
-                'order'
-            ],
-            'tags'
+            'categoryId',
+            'tags',
+            'order'
         ]
     ]);
 
@@ -1188,11 +1183,14 @@ test('3-10-38: 【一括更新】 他グループのアイテム更新', functio
     ]);
 
     // 他グループのカテゴリとアイテムをAPIで作成
-    $otherCategoryResponse = $this->actingAs($otherUser)->post('/shopping-categories', [
-        'name' => '他のグループのカテゴリ',
-        'order' => 0
+    $otherCategoryResponse = $this->actingAs($otherUser)->post('/shopping-categories/bulk', [
+        'data' => [
+            ['name' => '他のグループのカテゴリ', 'order' => 0]
+        ]
     ]);
-    $otherCategoryId = $otherCategoryResponse->json('data.id');
+    $otherCategoryResponse->assertStatus(201);
+    $otherCategoryId = $otherCategoryResponse->json('data.0.id');
+    expect($otherCategoryId)->not->toBeNull();
 
     $otherItemResponse = $this->actingAs($otherUser)->post('/shopping-items', [
         'name' => '他のグループのアイテム',
@@ -2203,11 +2201,14 @@ test('3-10-65: 【一括削除】 他グループのアイテム削除', functio
     ]);
 
     // 他グループのカテゴリとアイテムをAPIで作成
-    $otherCategoryResponse = $this->actingAs($otherUser)->post('/shopping-categories', [
-        'name' => '他のグループのカテゴリ',
-        'order' => 0
+    $otherCategoryResponse = $this->actingAs($otherUser)->post('/shopping-categories/bulk', [
+        'data' => [
+            ['name' => '他のグループのカテゴリ', 'order' => 0]
+        ]
     ]);
-    $otherCategoryId = $otherCategoryResponse->json('data.id');
+    $otherCategoryResponse->assertStatus(201);
+    $otherCategoryId = $otherCategoryResponse->json('data.0.id');
+    expect($otherCategoryId)->not->toBeNull();
 
     $otherItemResponse = $this->actingAs($otherUser)->post('/shopping-items', [
         'name' => '他のグループのアイテム',

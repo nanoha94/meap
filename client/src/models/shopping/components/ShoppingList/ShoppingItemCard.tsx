@@ -12,7 +12,6 @@ import {
     DIALOG_EDIT_MODE,
     DIALOG_NAME,
 } from '@/constants/dialog';
-import { getCategoryIdFromItemId, updateItemsInCategories } from '@/utils/dnd';
 
 interface Props {
     item: IShoppingItem;
@@ -58,19 +57,16 @@ const ShoppingItemCard = ({ item }: Props) => {
      */
     const handleToggleItemProperty = React.useCallback(
         (item: IShoppingItem, propertyName: 'isPinned' | 'isChecked') => {
-            const categoryId = getCategoryIdFromItemId(storeItems, item.id);
-            if (categoryId) {
-                // カテゴリーが見つかった場合のみ更新
-                const updatedItems = updateItemsInCategories(storeItems, [
-                    {
-                        ...item,
-                        [propertyName]: !item[propertyName],
-                    },
-                ]);
-                // ストアにセット
-                setStoreItems(updatedItems);
-            }
+            // ストアにセット
+            setStoreItems(
+                storeItems.map(v =>
+                    v.id === item.id
+                        ? { ...v, [propertyName]: !v[propertyName] }
+                        : v,
+                ),
+            );
         },
+
         [storeItems],
     );
 

@@ -13,19 +13,8 @@ namespace App\Swagger;
  *         @OA\Property(
  *             property="data",
  *             type="array",
- *             @OA\Items(
- *                 type="object",
- *                 @OA\Property(
- *                     property="category",
- *                     ref="#/components/schemas/ShoppingCategory",
- *                     description="カテゴリ情報"
- *                 ),
- *                 @OA\Property(
- *                     property="items",
- *                     type="array",
- *                     @OA\Items(ref="#/components/schemas/ShoppingItem")
- *                 )
- *             )
+ *             description="買い物アイテム一覧（カテゴリーのorder順でソートされた1次元配列）",
+ *             @OA\Items(ref="#/components/schemas/ShoppingItem")
  *         ),
  *         @OA\Property(property="total", type="integer", example=5)
  *     )

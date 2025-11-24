@@ -43,18 +43,18 @@ const IngredientItemList = ({
     const openEditDialog = React.useCallback(() => {
         let lastIndex = items.length ?? 0;
         let item = items[lastIndex];
-        const emptyItem = items.filter(item => item.name === '');
+        const emptyItems = items.filter(item => item.name === '');
 
         // 空の食材がある場合は、その食材のインデックスを取得
-        if (emptyItem && emptyItem.length > 0) {
-            lastIndex =
-                items.findIndex(item => item.id === emptyItem[0].id) ?? 0;
+        if (emptyItems && emptyItems.length > 0) {
+            lastIndex = items.indexOf(emptyItems[0]) ?? 0;
             item = items[lastIndex];
         }
         // 空の食材がない場合は、新しい入力項目を追加
         else {
             const newItems = addEmptyItem();
-            lastIndex = newItems.length - 1;
+            lastIndex =
+                newItems.filter(v => v.categoryId === category.id).length - 1;
             item = newItems[lastIndex];
         }
 
@@ -63,8 +63,9 @@ const IngredientItemList = ({
             openDialog(DIALOG_NAME.INGREDIENT_ADD_EDIT, {
                 item: item,
                 editMode: DIALOG_EDIT_MODE.CREATE,
-                onAction: (value: IIngredientItem) =>
-                    updateItem(lastIndex, value),
+                onAction: (value: IIngredientItem) => {
+                    updateItem(lastIndex, value);
+                },
             });
         }
     }, [items]);
@@ -79,27 +80,24 @@ const IngredientItemList = ({
                 <div
                     ref={setDroppableNodeRef}
                     className="flex flex-col gap-y-2">
-                    {items.map((field, index) => {
-                        const itemId = (field as IIngredientItem).id;
-                        return (
-                            <Sortable key={itemId} id={itemId}>
-                                <IngredientEditDialogButton
-                                    key={field.id}
-                                    item={field}
-                                    isDisabled={
-                                        index === 0 &&
-                                        items.length === 1 &&
-                                        field.name === ''
-                                    }
-                                    placeholder={`${category.name}を設定`}
-                                    onDelete={() => removeItem(index)}
-                                    onChange={(item: IIngredientItem) =>
-                                        updateItem(index, item)
-                                    }
-                                />
-                            </Sortable>
-                        );
-                    })}
+                    {items.map((field, index) => (
+                        <Sortable key={field.id} id={field.id}>
+                            <IngredientEditDialogButton
+                                key={field.id}
+                                item={field}
+                                isDisabled={
+                                    index === 0 &&
+                                    items.length === 1 &&
+                                    field.name === ''
+                                }
+                                placeholder={`${category.name}を設定`}
+                                onDelete={() => removeItem(index)}
+                                onChange={(item: IIngredientItem) =>
+                                    updateItem(index, item)
+                                }
+                            />
+                        </Sortable>
+                    ))}
                 </div>
             </SortableContext>
             <TextButton

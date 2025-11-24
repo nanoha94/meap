@@ -1,399 +1,127 @@
-import { ICategoryWithItems } from '@/types/api/common';
-import { IDndMoveReturnData, IDragOverTargetReturnData } from '@/types/dnd';
-import { arrayMove } from '@dnd-kit/sortable';
-
 /**
- * アイテムIDからカテゴリーIDを取得
- * @param currentData アイテムを持つ現在のカテゴリーのリスト
- * @param itemId アイテムID
- * @returns カテゴリーID
- */
-export const getCategoryIdFromItemId = <
-    C extends { id: string },
-    I extends { id: string },
->(
-    currentDatasets: ICategoryWithItems<C, I>[],
-    itemId: string,
-) => {
-    return currentDatasets.find(v => v.items.some(item => item.id === itemId))
-        ?.category.id;
-};
-
-/**
- * アイテムIDからカテゴリーインデックスとアイテムインデックスを取得
- * @param currentDatasets アイテムを持つ現在のカテゴリーのリスト
- * @param itemId アイテムID
- * @returns カテゴリーインデックスとアイテムインデックス、見つからない場合はnull
- */
-export const getItemIndexes = <
-    C extends { id: string },
-    I extends { id: string },
->(
-    currentDatasets: ICategoryWithItems<C, I>[],
-    itemId: string,
-): { categoryIndex: number; itemIndex: number } | null => {
-    // カテゴリーIDを取得
-    const categoryId = getCategoryIdFromItemId(currentDatasets, itemId);
-    if (!categoryId) return null;
-
-    // カテゴリーインデックスを取得
-    const categoryIndex = currentDatasets.findIndex(
-        dataset => dataset.category.id === categoryId,
-    );
-    if (categoryIndex === -1) return null;
-
-    // アイテムインデックスを取得
-    const itemIndex = currentDatasets[categoryIndex].items.findIndex(
-        item => item.id === itemId,
-    );
-    if (itemIndex === -1) return null;
-
-    return { categoryIndex, itemIndex };
-};
-
-/**
- * 複数のアイテムをカテゴリー内で一括更新
- * @param currentCategories アイテムを持つ現在のカテゴリーのリスト
- * @param itemsToUpdate 更新対象のアイテムの配列
- * @returns 更新後のアイテムを持つカテゴリーの配列
- */
-export const updateItemsInCategories = <
-    C extends { id: string },
-    I extends { id: string },
->(
-    currentDatasets: ICategoryWithItems<C, I>[],
-    itemsToUpdate: I[],
-): ICategoryWithItems<C, I>[] => {
-    const updatedItemsMap = new Map(itemsToUpdate.map(item => [item.id, item]));
-
-    const updatedCategories = currentDatasets.map(v => ({
-        ...v,
-        items: v.items.map(item =>
-            updatedItemsMap.has(item.id)
-                ? { ...item, ...updatedItemsMap.get(item.id) }
-                : item,
-        ),
-    }));
-    return updatedCategories;
-};
-
-/**
- * ドラッグ&ドロップ移動のロジックを処理する総合ヘルパー関数
- * @param currentDatasets アイテムを持つ現在のカテゴリーのリスト
+ * ドラッグ中のアイテムのインデックスを取得
  * @param activeId ドラッグ中のアイテムID
- * @param overId ドロップ先の要素ID (アイテムIDまたはカテゴリーID)
- * @returns 更新後のアイテムを持つカテゴリーの配列、または処理が失敗した場合は元の配列
+ * @returns { activeIndex: number; activeItem: T | undefined } ドラッグ中のアイテムのインデックスとアイテム
  */
-export const processDndMove = <
-    C extends { id: string },
-    I extends { id: string; categoryId: string },
->(
-    currentDatasets: ICategoryWithItems<C, I>[],
+export const getDragActiveItem = <TItem extends { id: string }>(
+    currentItems: TItem[],
     activeId: string,
+): { activeIndex: number; activeItem: TItem | undefined } => {
+    // ドラッグ中のアイテムとドロップ先のアイテムを取得
+    const activeItem = currentItems.find(item => item.id === activeId);
+    // ドラッグ中のアイテムが見つからない場合、処理を終了
+    if (!activeItem) return { activeIndex: -1, activeItem: undefined };
+
+    // ドラッグ中のアイテムのインデックスを取得
+    const activeIndex = currentItems.indexOf(activeItem);
+
+    return { activeIndex, activeItem };
+};
+
+/**
+ * ドロップ先のアイテムのインデックスとカテゴリーIDを取得
+ * @param overId ドロップ先のID
+ * @returns { overIndex: number; overCategoryId: string } ドロップ先のアイテムのインデックスとカテゴリーID
+ */
+export const getDragOverItem = <
+    TItem extends { id: string; categoryId: string },
+    TCategory extends { id: string },
+>(
+    currentItems: TItem[],
+    categories: TCategory[],
     overId: string,
-): ICategoryWithItems<C, I>[] => {
-    if (activeId === overId) return currentDatasets;
+): { overIndex: number; overCategoryId: string } => {
+    // ドロップ先がアイテムかカテゴリーかを判断
+    const isOverItem: boolean = currentItems.some(v => v.id === overId);
 
-    const moveData = getDndMoveData(currentDatasets, activeId, overId);
-
-    if (!moveData) {
-        console.error('processDndMove: DND移動データが見つかりませんでした。');
-        return currentDatasets;
-    }
-
-    const { activeDataset, overDataset, activeItem, isOverItem } = moveData;
-
-    // インデックス計算ロジックをヘルパー関数に抽出
-    const { activeIndex, overIndex } = getDndItemIndexes(
-        activeDataset,
-        overDataset,
-        activeId,
-        overId,
-        isOverItem,
-    );
-
-    // overIndex の妥当性チェック
-    if (isOverItem && overIndex === -1) {
-        console.error(
-            'processDndMove: ドロップ先のアイテムが見つかりませんでした。\n (overId はアイテムIDとして指定されたが、overCategory 内に存在しません)',
-            {
-                overId,
-                overCategoryId: overDataset.category.id,
-                overDataset,
-                overIndex,
-            },
+    // ドロップ先がアイテムの場合
+    if (isOverItem) {
+        // ドロップ先のアイテムを取得
+        const overItem: TItem | undefined = currentItems.find(
+            item => item.id === overId,
         );
-        return currentDatasets;
+        // ドロップ先のアイテムが見つからない場合、処理を終了
+        if (!overItem) return { overIndex: -1, overCategoryId: '' };
+        // ドロップ先のカテゴリーIDを取得
+        const overCategoryId: string = overItem.categoryId;
+        // ドロップ先のアイテムのインデックスを取得
+        const overIndex: number = currentItems.indexOf(overItem);
+        return { overIndex, overCategoryId };
     }
-
-    let updatedItems = [...currentDatasets];
-
-    // 別カテゴリーでの入れ替え
-    if (activeDataset.category.id !== overDataset.category.id) {
-        updatedItems = moveItemBetweenCategories(
-            updatedItems,
-            activeId,
-            activeDataset.category.id,
-            activeItem,
-            overDataset.category.id,
-            overIndex,
-        );
-    }
-    // 同カテゴリーでの入れ替え
+    // ドロップ先がカテゴリーの場合
     else {
-        updatedItems = moveItemInSameCategory(
-            updatedItems,
-            activeDataset.category.id,
-            activeIndex,
-            overIndex,
+        // カテゴリーごとのアイテム数を取得
+        const itemCountsInCategory = categories.map(v => ({
+            id: v.id,
+            count: currentItems.filter(item => item.categoryId === v.id).length,
+        }));
+        // ドロップ先のカテゴリーを取得
+        const overCategory: TCategory | undefined = categories.find(
+            v => v.id === overId,
         );
-    }
-
-    return updatedItems;
-};
-
-/**
- * アイテムをカテゴリーから削除
- * @param currentCategories アイテムを持つ現在のカテゴリーのリスト
- * @param categoryId 削除対象カテゴリーID
- * @param itemId 削除対象アイテムID
- * @returns 更新後のアイテムを持つカテゴリーの配列
- */
-const removeItemFromCategory = <
-    C extends { id: string },
-    I extends { id: string },
->(
-    currentDatasets: ICategoryWithItems<C, I>[],
-    categoryId: string,
-    itemId: string,
-): ICategoryWithItems<C, I>[] => {
-    return currentDatasets.map(v => {
-        if (v.category.id === categoryId) {
-            return {
-                ...v,
-                items: v.items.filter(item => item.id !== itemId),
-            };
-        }
-        return v;
-    });
-};
-
-/**
- * アイテムをカテゴリーに追加
- * @param currentCategories アイテムを持つ現在のカテゴリーのリスト
- * @param categoryId 追加対象カテゴリーID
- * @param item 追加アイテム
- * @param index 追加位置インデックス
- * @returns 更新後のアイテムを持つカテゴリーの配列
- */
-const insertItemIntoCategory = <
-    C extends { id: string },
-    I extends { id: string; categoryId: string },
->(
-    currentDatasets: ICategoryWithItems<C, I>[],
-    categoryId: string,
-    item: I,
-    index: number,
-): ICategoryWithItems<C, I>[] => {
-    return currentDatasets.map(v => {
-        if (v.category.id === categoryId) {
-            const newItems = [...v.items];
-            newItems.splice(index, 0, { ...item, categoryId: categoryId });
-            return {
-                ...v,
-                items: newItems,
-            };
-        }
-        return v;
-    });
-};
-
-/**
- * ドラッグオーバーしているターゲットの情報を取得
- * @param currentData アイテムを持つ現在のカテゴリーのリスト
- * @param overId オーバーしている要素のID
- * @returns ドラッグオーバーターゲット情報
- */
-const getDragOverTargetInfo = <
-    C extends { id: string },
-    I extends { id: string },
->(
-    currentDatasets: ICategoryWithItems<C, I>[],
-    overId: string,
-): IDragOverTargetReturnData => {
-    const overCategoryId = getCategoryIdFromItemId(currentDatasets, overId);
-    const overCategoryInfo = currentDatasets?.find(
-        v => v.category.id === overId,
-    )?.category;
-
-    const isOverItem = !!overCategoryId;
-    const isOverCategory = !!overCategoryInfo;
-
-    return {
-        isOverItem,
-        overCategoryId: isOverCategory
-            ? overId
-            : isOverItem
-              ? overCategoryId
-              : null,
-    };
-};
-
-/**
- * カテゴリー間でアイテムを移動
- * @param currentData アイテムを持つ現在のカテゴリーのリスト
- * @param activeId 移動対象アイテムID
- * @param activeCategoryId 移動対象アイテムのカテゴリーID
- * @param activeItem 移動対象アイテム
- * @param overCategoryId 移動先カテゴリーID
- * @param overIndex 移動先インデックス
- * @returns 更新後のアイテムを持つカテゴリーの配列
- */
-const moveItemBetweenCategories = <
-    C extends { id: string },
-    I extends { id: string; categoryId: string },
->(
-    currentDatasets: ICategoryWithItems<C, I>[],
-    activeId: string,
-    activeCategoryId: string,
-    activeItem: I,
-    overCategoryId: string,
-    overIndex: number,
-): ICategoryWithItems<C, I>[] => {
-    // 元のカテゴリーからアイテムを削除
-    let updatedCategories = removeItemFromCategory(
-        currentDatasets,
-        activeCategoryId,
-        activeId,
-    );
-
-    // 新しいカテゴリーにアイテムを挿入
-    updatedCategories = insertItemIntoCategory(
-        updatedCategories,
-        overCategoryId,
-        activeItem,
-        overIndex,
-    );
-
-    return updatedCategories;
-};
-
-/**
- * ドラッグ&ドロップ移動に必要な情報を取得する
- * @param currentData アイテムを持つ現在のカテゴリーのリスト
- * @param activeId ドラッグ中のアイテムID
- * @param overId ドロップ先の要素ID (アイテムIDまたはカテゴリーID)
- * @returns 移動に必要な情報
- */
-const getDndMoveData = <
-    C extends { id: string },
-    I extends { id: string; categoryId: string },
->(
-    currentDatasets: ICategoryWithItems<C, I>[],
-    activeId: string,
-    overId: string,
-): IDndMoveReturnData<C, I> | null => {
-    const activeCategoryId = getCategoryIdFromItemId(currentDatasets, activeId);
-    const { isOverItem, overCategoryId } = getDragOverTargetInfo(
-        currentDatasets,
-        overId,
-    );
-
-    if (!activeCategoryId || !overCategoryId) {
-        console.error(
-            'getDndMoveData: activeCategoryId または overCategoryId が見つかりませんでした。',
-            { activeId, overId, activeCategoryId, overCategoryId },
-        );
-        return null;
-    }
-
-    const activeDataset = currentDatasets.find(
-        v => v.category.id === activeCategoryId,
-    );
-    const overDataset = currentDatasets.find(
-        v => v.category.id === overCategoryId,
-    );
-
-    if (!activeDataset || !overDataset) {
-        console.error(
-            'getDndMoveData: activeCategory または overCategory が見つかりませんでした。',
-            { activeId, overId, activeCategoryId, overCategoryId },
-        );
-        return null;
-    }
-
-    const activeItem = activeDataset.items.find(v => v.id === activeId);
-    if (!activeItem) {
-        console.error(
-            'getDndMoveData: activeItem が activeCategory に見つかりませんでした。',
-            {
-                activeId,
-                activeCategoryId,
+        // ドロップ先のカテゴリーが見つからない場合、処理を終了
+        if (!overCategory) return { overIndex: -1, overCategoryId: '' };
+        // ドロップ先のカテゴリーIDを取得
+        const overCategoryId: string = overCategory.id;
+        // ドロップ先のカテゴリーのアイテム数を取得
+        const overIndex: number = itemCountsInCategory.reduce(
+            (acc, current) => {
+                // 該当カテゴリーIDが見つかったら、それまでの累積値を返す
+                if (current.id === overCategoryId) {
+                    return acc;
+                }
+                // 該当カテゴリーIDが見つかるまで、countを累積
+                return acc + current.count;
             },
+            0,
         );
-        return null;
+        return { overIndex, overCategoryId };
     }
-
-    return {
-        activeDataset,
-        overDataset,
-        activeItem,
-        isOverItem,
-    };
 };
 
 /**
- * DND移動におけるアイテムのインデックス情報を取得
- * @param activeCategory ドラッグ中のアイテムが属するカテゴリーオブジェクト
- * @param overCategory ドロップ先のカテゴリーオブジェクト
- * @param activeId ドラッグ中のアイテムID
- * @param overId ドロップ先の要素ID (アイテムIDまたはカテゴリーID)
- * @param isOverItem `overId` がアイテムのIDであるか
- * @returns { activeIndex: number, overIndex: number } アイテムのインデックス情報
+ * IDでアイテムを取得
+ * @param items アイテムの配列
+ * @param itemId アイテムID
+ * @returns 見つかったアイテム、見つからない場合はundefined
  */
-const getDndItemIndexes = <
-    C extends { id: string },
-    I extends { id: string; categoryId: string },
->(
-    activeDataset: ICategoryWithItems<C, I>,
-    overDataset: ICategoryWithItems<C, I>,
-    activeId: string,
-    overId: string,
-    isOverItem: boolean,
-): { activeIndex: number; overIndex: number } => {
-    const activeIndex = activeDataset.items.findIndex(v => v.id === activeId);
-
-    const overIndex = isOverItem
-        ? overDataset.items.findIndex(v => v.id === overId)
-        : overDataset.items.length;
-
-    return { activeIndex, overIndex };
+export const getItemById = <TItem extends { id: string }>(
+    items: TItem[],
+    itemId: string | null,
+): TItem | undefined => {
+    if (!itemId) return undefined;
+    return items.find(item => item.id === itemId);
 };
 
 /**
- * 同一カテゴリー内でアイテムを並び替える
- * @param currentData アイテムを持つ現在のカテゴリーのリスト
- * @param categoryId 並び替えを行うカテゴリーID
- * @param activeIndex ドラッグ中のアイテムのインデックス
- * @param overIndex ドロップ先のインデックス
- * @returns 更新後のアイテムを持つカテゴリーの配列
+ * アイテムIDからカテゴリーを取得
+ * @param items アイテムの配列
+ * @param itemId アイテムID
+ * @param categories カテゴリーの配列
+ * @returns 見つかったカテゴリー、見つからない場合はundefined
  */
-const moveItemInSameCategory = <
-    C extends { id: string },
-    I extends { id: string },
+export const getCategoryByItemId = <
+    TItem extends { id: string; categoryId: string },
+    TCategory extends { id: string },
 >(
-    currentDatasets: ICategoryWithItems<C, I>[],
+    items: TItem[],
+    itemId: string | null,
+    categories: TCategory[],
+): TCategory | undefined => {
+    const item = getItemById(items, itemId);
+    if (!item) return undefined;
+    return categories.find(category => category.id === item.categoryId);
+};
+
+/**
+ * カテゴリーに属するアイテムを取得
+ * @param array アイテムの配列
+ * @param categoryId カテゴリーID
+ * @returns カテゴリーに属するアイテムの配列
+ */
+export const getItemsInCategory = <TItem extends { categoryId: string }>(
+    array: TItem[],
     categoryId: string,
-    activeIndex: number,
-    overIndex: number,
-): ICategoryWithItems<C, I>[] => {
-    return currentDatasets.map(v => {
-        if (v.category.id === categoryId) {
-            return {
-                ...v,
-                items: arrayMove(v.items, activeIndex, overIndex),
-            };
-        }
-        return v;
-    });
+): TItem[] => {
+    return array.filter(item => item.categoryId === categoryId);
 };

@@ -30,16 +30,3 @@ export interface IBaseApiIndexResponse<T> extends IBaseApiResponse<T> {
  * 削除系APIレスポンス構造（dataがnull）
  */
 export type IBaseApiDeleteResponse = IBaseApiResponse<null>;
-
-/**
- * アイテムを持つカテゴリーの汎用インターフェース
- * @template C - カテゴリーの型（idプロパティを持つ）
- * @template I - アイテムの型（idプロパティを持つ）
- */
-export interface ICategoryWithItems<
-    C extends { id: string },
-    I extends { id: string },
-> {
-    category: C;
-    items: I[];
-}

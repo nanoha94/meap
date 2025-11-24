@@ -1,102 +1,99 @@
 'use client';
 import React from 'react';
-import {
-    DndContext,
-    DragOverEvent,
-    DragOverlay,
-    DragStartEvent,
-    useSensors,
-    useSensor,
-    MouseSensor,
-    rectIntersection,
-} from '@dnd-kit/core';
+import { DndContext, DragOverlay, rectIntersection } from '@dnd-kit/core';
 import CategoryItemList from './CategoryItemList';
 import ShoppingItemCard from './ShoppingItemCard';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useShoppingStore, useShoppingItems } from '../../hooks';
-import { DRAG_ACTIVATION_DISTANCE } from '@/constants';
+
 import { DEBOUNCE_DELAY } from '../../constants';
-import { processDndMove } from '@/utils/dnd';
+import { IShoppingItem } from '@/types/api';
+import { arrayMove } from '@dnd-kit/sortable';
+import { getItemsInCategory } from '@/utils/dnd';
+import { useItemAndCategoryDnd } from '@/hooks/useItemAndCategoryDnd';
 
 const ShoppingList = () => {
     const {
         setItems: setStoreItems,
         items: storeItems,
         serverItems,
+        categories,
         isLoadingItems,
     } = useShoppingStore();
     const { updateShoppingItems } = useShoppingItems();
-    const [activeId, setActiveId] = React.useState<string | null>(null);
+    const [tmpItems, setTmpItems] = React.useState<IShoppingItem[]>([]);
 
     // 最後に送信したアイテムを記録して重複実行を防ぐ
     const lastSentItemsRef = React.useRef<string>('');
 
-    // アイテムのフラット化
-    const flatItems = React.useMemo(() => {
-        return storeItems?.flatMap(v => v.items) || [];
-    }, [storeItems]);
-
     // デバウンス処理
-    const debouncedItems = useDebounce(flatItems, DEBOUNCE_DELAY);
-
-    // ドラッグ&ドロップ設定
-    const sensors = useSensors(
-        useSensor(MouseSensor, {
-            activationConstraint: {
-                distance: DRAG_ACTIVATION_DISTANCE,
-            },
-        }),
-    );
-
-    /**
-     * ドラッグ開始
-     */
-    const handleDragStart = React.useCallback((event: DragStartEvent) => {
-        setActiveId(event.active.id as string);
-    }, []);
+    const debouncedItems = useDebounce(storeItems, DEBOUNCE_DELAY);
 
     /**
      * ドラッグオーバー
      */
-    const handleDragOver = React.useCallback(
-        (event: DragOverEvent) => {
-            const { active, over } = event;
-            if (!over) return;
-            const updatedItems = processDndMove(
-                storeItems,
-                active.id as string,
-                over.id as string,
-            );
-            setStoreItems(updatedItems);
+    const customHandleDragOver = React.useCallback(
+        (
+            activeId: string,
+            activeItem: IShoppingItem,
+            overCategoryId: string,
+        ) => {
+            // 別カテゴリーへの移動の場合
+            if (activeItem.categoryId !== overCategoryId) {
+                // tmpItemsを更新
+                setTmpItems(
+                    tmpItems.map(v =>
+                        v.id === activeId
+                            ? {
+                                  ...activeItem,
+                                  categoryId: overCategoryId,
+                              }
+                            : v,
+                    ),
+                );
+            }
         },
-        [storeItems],
+        [tmpItems, categories],
     );
 
     /**
      * ドラッグ終了
      */
-    const handleDragEnd = React.useCallback(() => {
-        setActiveId(null);
-    }, []);
-
-    /**
-     * アクティブなアイテム
-     */
-    const activeItem = React.useMemo(
-        () => flatItems.find(item => item.id === activeId),
-        [activeId, flatItems],
+    const customHandleDragEnd = React.useCallback(
+        (activeIndex: number | undefined, overIndex: number | undefined) => {
+            // 並び替えたtmpItemsを更新
+            const array =
+                activeIndex !== undefined && overIndex !== undefined
+                    ? arrayMove(tmpItems, activeIndex, overIndex)
+                    : tmpItems;
+            setStoreItems(array);
+        },
+        [tmpItems],
     );
+
+    const {
+        activeId,
+        sensors,
+        activeItem,
+        handleDragStart,
+        handleDragOver,
+        handleDragEnd,
+    } = useItemAndCategoryDnd({
+        currentItems: tmpItems,
+        categories,
+        onDragOver: customHandleDragOver,
+        onDragEnd: customHandleDragEnd,
+    });
 
     /**
      * デバウンス処理
      */
     React.useEffect(() => {
         // debouncedItems が undefined の場合（初期化前）は何もしない
-        if (debouncedItems) {
+        if (debouncedItems && !activeId) {
             const currentItemsStr = JSON.stringify(debouncedItems);
             // serverItemsからフラット化して比較
-            const serverItemsFlat = serverItems?.flatMap(v => v.items) || [];
-            const serverItemsStr = JSON.stringify(serverItemsFlat);
+            const serverItemsStr = JSON.stringify(serverItems);
 
             // アイテムの比較と更新処理を直接実行
             if (
@@ -113,24 +110,19 @@ const ShoppingList = () => {
                 updateShoppingItems(updateItems);
             }
         }
-    }, [debouncedItems]);
+    }, [debouncedItems, activeId]);
 
     /**
      * アンマウント・ページアンロード時の保存処理
      */
     React.useEffect(() => {
         const handleBeforeUnload = () => {
-            const currentFlatItems = storeItems?.flatMap(v => v.items) || [];
-            const currentFlatServerItems =
-                serverItems?.flatMap(v => v.items) || [];
-
             if (
-                currentFlatItems.length > 0 &&
+                storeItems.length > 0 &&
                 !isLoadingItems &&
-                JSON.stringify(currentFlatItems) !==
-                    JSON.stringify(currentFlatServerItems)
+                JSON.stringify(storeItems) !== JSON.stringify(serverItems)
             ) {
-                const updateItems = currentFlatItems.map((item, idx) => ({
+                const updateItems = storeItems.map((item, idx) => ({
                     ...item,
                     order: idx,
                 }));
@@ -143,17 +135,12 @@ const ShoppingList = () => {
         return () => {
             window.removeEventListener('beforeunload', handleBeforeUnload);
             // アンマウント時の保存処理
-            const currentFlatItems = storeItems?.flatMap(v => v.items) || [];
-            const currentFlatServerItems =
-                serverItems?.flatMap(v => v.items) || [];
-
             if (
-                currentFlatItems.length > 0 &&
+                storeItems.length > 0 &&
                 !isLoadingItems &&
-                JSON.stringify(currentFlatItems) !==
-                    JSON.stringify(currentFlatServerItems)
+                JSON.stringify(storeItems) !== JSON.stringify(serverItems)
             ) {
-                const updateItems = currentFlatItems.map((item, idx) => ({
+                const updateItems = storeItems.map((item, idx) => ({
                     ...item,
                     order: idx,
                 }));
@@ -162,22 +149,36 @@ const ShoppingList = () => {
         };
     }, []); // 依存配列を空にして、マウント時に一度だけ実行
 
+    /**
+     * ドラッグ中でない場合、tmpItemsをfieldsの内容で更新
+     * @returns void
+     */
+    React.useEffect(() => {
+        if (!activeId) {
+            setTmpItems(storeItems);
+        }
+    }, [storeItems, activeId]);
+
     return (
         <div className="flex flex-col gap-y-7">
-            {storeItems?.length > 0 && (
+            {tmpItems?.length > 0 && (
                 <DndContext
                     sensors={sensors}
                     collisionDetection={rectIntersection}
                     onDragStart={handleDragStart}
                     onDragEnd={handleDragEnd}
                     onDragOver={handleDragOver}>
-                    {storeItems.map(v => (
-                        <CategoryItemList
-                            key={v.category.id} // key は直接 CategoryItemList に渡す
-                            category={v.category}
-                            items={v.items}
-                        />
-                    ))}
+                    {categories.map(category => {
+                        const items = getItemsInCategory(tmpItems, category.id);
+                        const itemsKey = items.map(item => item.id).join(',');
+                        return (
+                            <CategoryItemList
+                                key={`${category.id}-${itemsKey}`}
+                                category={category}
+                                items={items}
+                            />
+                        );
+                    })}
                     <DragOverlay>
                         {activeItem && <ShoppingItemCard item={activeItem} />}
                     </DragOverlay>

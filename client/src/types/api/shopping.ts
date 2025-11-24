@@ -1,10 +1,12 @@
-import { IBaseApiIndexResponse, ICategoryWithItems } from './common';
+import { IBaseApiIndexResponse } from './common';
 
 //--------------------------------
 // レスポンス型
 //--------------------------------
 // 買い物アイテム一覧取得
-export type IGetShoppingItemIndexResponse = IBaseApiIndexResponse<IShopping[]>;
+export type IGetShoppingItemIndexResponse = IBaseApiIndexResponse<
+    IShoppingItem[]
+>;
 
 // 買い物カテゴリー一覧取得
 export type IGetShoppingCategoryIndexResponse = IBaseApiIndexResponse<
@@ -58,9 +60,6 @@ export interface IShoppingItem {
     tags: { id: string; name: string }[];
     order: number;
 }
-
-// 買い物カテゴリ―とアイテムのグループ
-export type IShopping = ICategoryWithItems<IShoppingCategory, IShoppingItem>;
 
 // 買い物カテゴリー
 export interface IShoppingCategory {

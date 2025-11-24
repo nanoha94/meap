@@ -1,10 +1,14 @@
 'use client';
-import { DRAG_ACTIVATION_DISTANCE } from '@/constants';
+import {
+    DRAG_ACTIVATION_DISTANCE,
+    TOUCH_ACTIVATION_DELAY,
+    TOUCH_ACTIVATION_TOLERANCE,
+} from '@/constants';
 import {
     DndContext,
     DragEndEvent,
-    KeyboardSensor,
     MouseSensor,
+    TouchSensor,
     useSensor,
     useSensors,
 } from '@dnd-kit/core';
@@ -37,11 +41,18 @@ const DndSortableList = <T extends { id: string }>({
      */
     const sensors = useSensors(
         useSensor(MouseSensor, {
+            // マウス操作の誤クリックを防ぐため、一定距離移動するまでドラッグを開始しない
             activationConstraint: {
                 distance: DRAG_ACTIVATION_DISTANCE,
             },
         }),
-        useSensor(KeyboardSensor),
+        useSensor(TouchSensor, {
+            // タッチ操作の誤操作を防ぐため、250msの遅延と5pxの許容範囲を設定
+            activationConstraint: {
+                delay: TOUCH_ACTIVATION_DELAY,
+                tolerance: TOUCH_ACTIVATION_TOLERANCE,
+            },
+        }),
     );
 
     /**

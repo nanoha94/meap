@@ -6,30 +6,16 @@ import { IRecipe } from '@/types/api/recipe';
 import { ChevronRight } from 'lucide-react';
 import { DIALOG_NAME } from '@/constants';
 import { useIngredientStore } from '@/models/ingredient/hooks';
-import {
-    closestCenter,
-    DndContext,
-    DragOverEvent,
-    DragOverlay,
-    DragStartEvent,
-    DragEndEvent,
-    MouseSensor,
-    TouchSensor,
-    useSensor,
-    useSensors,
-} from '@dnd-kit/core';
+import { closestCenter, DndContext, DragOverlay } from '@dnd-kit/core';
 import IngredientItemList from './IngredientItemList';
 import { defaultIngredientItem } from '@/models/ingredient/constants';
 import { createDefaultData } from '@/utils';
 import { TMP_ID_PREFIX } from '@/constants/tmpIdPrefix';
 import { IIngredientItem } from '@/types/api/ingredient';
-import {
-    DRAG_ACTIVATION_DISTANCE,
-    TOUCH_ACTIVATION_DELAY,
-    TOUCH_ACTIVATION_TOLERANCE,
-} from '@/constants';
 import IngredientEditDialogButton from './IngredientEditDialogButton/IngredientEditDialogButton';
 import { arrayMove } from '@dnd-kit/sortable';
+import { getItemsInCategory } from '@/utils/dnd';
+import { useItemAndCategoryDnd } from '@/hooks/useItemAndCategoryDnd';
 
 interface Props {
     control: Control<IRecipe>;
@@ -37,7 +23,6 @@ interface Props {
 
 const IngredientEditFields = ({ control }: Props) => {
     const { categories, openDialog } = useIngredientStore();
-    const [activeId, setActiveId] = React.useState<string | null>(null);
     const [tmpItems, setTmpItems] = React.useState<IIngredientItem[]>([]);
     const dndContextId = React.useId();
     const { getValues, watch } = useFormContext<IRecipe>();
@@ -47,50 +32,77 @@ const IngredientEditFields = ({ control }: Props) => {
     });
     const watchFields = watch('ingredients');
 
-    // ドラッグ&ドロップ設定
-    const sensors = useSensors(
-        useSensor(MouseSensor, {
-            // マウス操作の誤クリックを防ぐため、一定距離移動するまでドラッグを開始しない
-            activationConstraint: {
-                distance: DRAG_ACTIVATION_DISTANCE,
-            },
-        }),
-        useSensor(TouchSensor, {
-            // タッチ操作の誤操作を防ぐため、250msの遅延と5pxの許容範囲を設定
-            activationConstraint: {
-                delay: TOUCH_ACTIVATION_DELAY,
-                tolerance: TOUCH_ACTIVATION_TOLERANCE,
-            },
-        }),
+    /**
+     * ドラッグオーバー
+     */
+    const customHandleDragOver = React.useCallback(
+        (
+            activeId: string,
+            activeItem: IIngredientItem,
+            overCategoryId: string,
+        ) => {
+            // 別カテゴリーへの移動の場合
+            if (activeItem.categoryId !== overCategoryId) {
+                // 移動元のカテゴリーに属するアイテムを取得
+                const itemsInCategory = getItemsInCategory(
+                    tmpItems,
+                    activeItem.categoryId,
+                );
+
+                // 移動元のカテゴリーにアイテムがなくなった場合、空の食材を追加
+                const updatedItems =
+                    itemsInCategory.length <= 1
+                        ? createItemsWithEmpty(activeItem.categoryId, tmpItems)
+                        : tmpItems;
+
+                // tmpItemsを更新
+                setTmpItems(
+                    updatedItems.map(v =>
+                        v.id === activeId
+                            ? {
+                                  ...activeItem,
+                                  categoryId: overCategoryId,
+                              }
+                            : v,
+                    ),
+                );
+            }
+        },
+        [tmpItems, categories],
     );
 
     /**
-     * アクティブなアイテム
+     * ドラッグ終了
      */
-    const activeItem = React.useMemo(
-        () => tmpItems.find(item => item.id === activeId),
-        [activeId, tmpItems],
+    const customHandleDragEnd = React.useCallback(
+        (activeIndex: number | undefined, overIndex: number | undefined) => {
+            // 並び替えたtmpItemsを更新
+            const array =
+                activeIndex !== undefined && overIndex !== undefined
+                    ? arrayMove(tmpItems, activeIndex, overIndex)
+                    : tmpItems;
+            replace(array);
+        },
+        [tmpItems],
     );
 
-    /**
-     * アクティブなカテゴリー
-     */
-    const activeCategory = React.useMemo(() => {
-        if (!activeItem) return null;
-        return categories.find(
-            category => category.id === activeItem.categoryId,
-        );
-    }, [activeItem, categories]);
+    const {
+        activeId,
+        sensors,
+        activeItem,
+        activeCategory,
+        handleDragStart,
+        handleDragOver,
+        handleDragEnd,
+    } = useItemAndCategoryDnd({
+        currentItems: tmpItems,
+        categories,
+        onDragOver: customHandleDragOver,
+        onDragEnd: customHandleDragEnd,
+    });
 
     /**
-     * ドラッグ開始
-     */
-    const handleDragStart = React.useCallback((event: DragStartEvent) => {
-        setActiveId(event.active.id as string);
-    }, []);
-
-    /**
-     * 空の食材を含むアイテムリストを生成
+     * 空の材料を含むアイテムリストを生成
      */
     const createItemsWithEmpty = React.useCallback(
         (categoryId: string, currentItems?: IIngredientItem[]) => {
@@ -107,8 +119,9 @@ const IngredientEditFields = ({ control }: Props) => {
             // カテゴリーに属する食材を整理し、空の食材を追加
             const newItems = categories
                 .map(category => {
-                    const itemsInCategory = itemsToUse.filter(
-                        item => item.categoryId === category.id,
+                    const itemsInCategory = getItemsInCategory(
+                        itemsToUse,
+                        category.id,
                     );
                     return category.id === categoryId
                         ? [...itemsInCategory, emptyItem]
@@ -120,6 +133,9 @@ const IngredientEditFields = ({ control }: Props) => {
         [categories, tmpItems],
     );
 
+    /**
+     * 空の食材を追加
+     */
     const addEmptyItem = React.useCallback(
         (categoryId: string) => {
             const items = createItemsWithEmpty(categoryId, tmpItems);
@@ -157,87 +173,6 @@ const IngredientEditFields = ({ control }: Props) => {
     );
 
     /**
-     * ドラッグオーバー
-     */
-    const handleDragOver = React.useCallback(
-        (event: DragOverEvent) => {
-            const { active, over } = event;
-            if (!over || active.id === over.id) return;
-
-            // ドラッグ中のアイテムとドロップ先のアイテムを取得
-            const activeItem = tmpItems.find(item => item.id === active.id);
-            const overItem = tmpItems.find(item => item.id === over.id);
-
-            if (!activeItem || !overItem) return;
-
-            // ドロップ先のカテゴリーIDを取得
-            const targetCategoryId = overItem.categoryId;
-            // ドラッグ中のアイテムのインデックスを取得
-            const activeIndex = tmpItems.findIndex(
-                item => item.id === active.id,
-            );
-            // ドロップ先のアイテムのインデックスを取得
-            const overIndex = tmpItems.findIndex(item => item.id === over.id);
-
-            // ドラッグ中のアイテムのインデックスまたはドロップ先のアイテムのインデックスが見つからない場合、処理を終了
-            if (activeIndex === -1 || overIndex === -1) return;
-
-            // 別カテゴリーへの移動の場合
-            if (activeItem.categoryId !== targetCategoryId) {
-                // 移動元のカテゴリーに属するアイテムを取得
-                const itemsInCategory = tmpItems.filter(
-                    item => item.categoryId === activeItem.categoryId,
-                );
-
-                // 移動元のカテゴリーにアイテムがなくなった場合、空の食材を追加
-                const updatedItems =
-                    itemsInCategory.length <= 1
-                        ? createItemsWithEmpty(activeItem.categoryId, tmpItems)
-                        : tmpItems;
-
-                // tmpItemsを更新
-                setTmpItems(
-                    updatedItems.map(v =>
-                        v.id === active.id
-                            ? {
-                                  ...activeItem,
-                                  categoryId: targetCategoryId,
-                              }
-                            : v,
-                    ),
-                );
-            }
-        },
-        [tmpItems],
-    );
-
-    /**
-     * ドラッグ終了
-     */
-    const handleDragEnd = React.useCallback(
-        (event: DragEndEvent) => {
-            const { active, over } = event;
-
-            if (active && over && active.id !== over.id) {
-                const activeIndex = tmpItems.findIndex(
-                    item => item.id === active.id,
-                );
-                const overIndex = tmpItems.some(v => v.id === over.id)
-                    ? tmpItems.findIndex(item => item.id === over.id)
-                    : tmpItems.findIndex(v => v.categoryId === over.id);
-
-                if (activeIndex !== -1 && overIndex !== -1) {
-                    replace(arrayMove(tmpItems, activeIndex, overIndex));
-                }
-            } else {
-                replace(tmpItems);
-            }
-            setActiveId(null);
-        },
-        [tmpItems],
-    );
-
-    /**
      * tmpItemsをfieldsの内容で更新
      */
     React.useEffect(() => {
@@ -247,8 +182,9 @@ const IngredientEditFields = ({ control }: Props) => {
             // 各カテゴリーに属する食材を整理し、必要に応じて空の食材を追加
             const filledItems: IIngredientItem[] = categories
                 .map(category => {
-                    const itemsInCategory = ingredients.filter(
-                        item => item.categoryId === category.id,
+                    const itemsInCategory = getItemsInCategory(
+                        ingredients,
+                        category.id,
                     );
                     // カテゴリーに属する食材が存在する場合、それらをそのまま使用
                     if (itemsInCategory.length > 0) {
@@ -279,7 +215,6 @@ const IngredientEditFields = ({ control }: Props) => {
     React.useEffect(() => {
         if (!activeId) {
             setTmpItems(watchFields);
-            console.log({ watchFields });
         }
     }, [watchFields, activeId]);
 
@@ -292,18 +227,17 @@ const IngredientEditFields = ({ control }: Props) => {
                         sensors={sensors}
                         collisionDetection={closestCenter}
                         onDragStart={handleDragStart}
-                        onDragEnd={handleDragEnd}
-                        onDragOver={handleDragOver}>
+                        onDragOver={handleDragOver}
+                        onDragEnd={handleDragEnd}>
                         {categories.map(category => {
-                            const items = tmpItems.filter(
-                                item => item.categoryId === category.id,
+                            const items = getItemsInCategory(
+                                tmpItems,
+                                category.id,
                             );
                             const itemsKey = items
                                 .map(item => item.id)
                                 .join(',');
-                            const offsetIndex = watchFields.findIndex(
-                                item => item.categoryId === category.id,
-                            );
+                            const offsetIndex = tmpItems.indexOf(items[0]);
                             return (
                                 <IngredientItemList
                                     key={`${category.id}-${itemsKey}`}

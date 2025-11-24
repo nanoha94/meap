@@ -8,12 +8,12 @@ import {
     ShoppingList,
 } from '@/models/shopping/components';
 import { useShoppingStore } from '@/models/shopping/hooks';
-import { IShopping, IShoppingCategory } from '@/types/api';
+import { IShoppingCategory, IShoppingItem } from '@/types/api';
 import { ChevronRight } from 'lucide-react';
 import React from 'react';
 
 interface Props {
-    fetchItems?: IShopping[];
+    fetchItems?: IShoppingItem[];
     fetchCategories?: IShoppingCategory[];
 }
 

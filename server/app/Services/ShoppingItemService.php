@@ -27,6 +27,11 @@ class ShoppingItemService extends AbstractDomainService
         return ['id', 'name', 'is_pinned', 'is_checked', 'category_id', 'order'];
     }
 
+    protected function getWithColumns(): array
+    {
+        return ['category:id,name,is_default,order', 'tags:id,name'];
+    }
+
     protected function getResourceName(): string
     {
         return __('api.attributes.shopping.item');
@@ -35,11 +40,6 @@ class ShoppingItemService extends AbstractDomainService
     protected function getOrderBy(): string | null
     {
         return 'order';
-    }
-
-    protected function getGroupBy(): string | null
-    {
-        return 'category_id';
     }
 
     protected function getGroupRelation(Group $group): HasMany
@@ -57,49 +57,47 @@ class ShoppingItemService extends AbstractDomainService
         return ['category_id' => 'categoryId', 'name' => 'name', 'is_pinned' => 'isPinned', 'is_checked' => 'isChecked', 'order' => 'order'];
     }
 
-    protected function formatIndexResponse(Model|Collection $items): array
+    public function index(Group $group): array
     {
-        $this->typeCheck($items, Collection::class);
-        $this->typeCheckCollection($items, ShoppingItem::class);
+        return DB::transaction(function () use ($group) {
+            $query = $this->getGroupRelation($group)
+                ->select($this->getSelectColumns());
 
-        return [
-            'category' => [
-                'id' => $items->first()->category_id,
-                'name' => $items->first()->category->name,
-                'isDefault' => $items->first()->category->is_default,
-                'order' => $items->first()->category->order
-            ],
-            'items' => $items->map(fn($item) => [
-                'id' => $item->id,
-                'name' => $item->name,
-                'isPinned' => $item->is_pinned,
-                'isChecked' => $item->is_checked,
-                'categoryId' => $item->category_id,
-                'tags' => $item->tags->map(fn($tag) => ['id' => $tag->id, 'name' => $tag->name]),
-                'order' => $item->order
-            ])
-        ];
-    }
+            if ($this->getWithColumns()) {
+                $query->with($this->getWithColumns());
+            }
 
-    private function formatCategoryWithItems($category, $items): array
-    {
-        return [
-            'category' => [
-                'id' => $category->id,
-                'name' => $category->name,
-                'isDefault' => $category->is_default,
-                'order' => $category->order
-            ],
-            'items' => $items->map(fn($item) => [
-                'id' => $item->id,
-                'name' => $item->name,
-                'isPinned' => $item->is_pinned,
-                'isChecked' => $item->is_checked,
-                'categoryId' => $item->category_id,
-                'tags' => $item->tags->map(fn($tag) => ['id' => $tag->id, 'name' => $tag->name]),
-                'order' => $item->order
-            ])
-        ];
+            if ($this->getOrderBy()) {
+                $query->orderBy($this->getOrderBy());
+            }
+
+            $items = $query->get();
+
+            // 各アイテムにカテゴリーのorderを一時的に追加してソート
+            $formattedItems = $items->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'name' => $item->name,
+                    'isPinned' => $item->is_pinned,
+                    'isChecked' => $item->is_checked,
+                    'categoryId' => $item->category_id,
+                    'tags' => $item->tags->map(fn($tag) => ['id' => $tag->id, 'name' => $tag->name]),
+                    'order' => $item->order,
+                    // カテゴリーのorderを一時的に追加
+                    '_categoryOrder' => $item->category->order,
+                ];
+            })
+                ->sortBy([['_categoryOrder', 'asc'], ['order', 'asc']])
+                ->map(function ($item) {
+                    // ソート用の一時キーを削除
+                    unset($item['_categoryOrder']);
+                    return $item;
+                })
+                ->values()
+                ->toArray();
+
+            return $formattedItems;
+        });
     }
 
     protected function formatStoreResponse(Model $item): array
@@ -112,12 +110,7 @@ class ShoppingItemService extends AbstractDomainService
             'name' => $item->name,
             'isPinned' => $item->is_pinned,
             'isChecked' => $item->is_checked,
-            'category' => [
-                'id' => $item->category_id,
-                'name' => $item->category->name,
-                'isDefault' => $item->category->is_default,
-                'order' => $item->category->order
-            ],
+            'categoryId' => $item->category_id,
             'tags' => $item->tags->map(fn($tag) => [
                 'id' => $tag->id,
                 'name' => $tag->name
@@ -136,44 +129,13 @@ class ShoppingItemService extends AbstractDomainService
             'name' => $item->name,
             'isPinned' => $item->is_pinned,
             'isChecked' => $item->is_checked,
-            'category' => [
-                'id' => $item->category_id,
-                'name' => $item->category->name,
-                'isDefault' => $item->category->is_default,
-                'order' => $item->category->order
-            ],
+            'categoryId' => $item->category_id,
             'tags' => $item->tags->map(fn($tag) => [
                 'id' => $tag->id,
                 'name' => $tag->name
             ]),
             'order' => $item->order
         ];
-    }
-
-    /**
-     * カテゴリごとにグループ化した買い物アイテム一覧を取得
-     *
-     * @param Group $group グループモデル
-     * @return array カテゴリごとにグループ化されたアイテムの配列
-     */
-    public function indexGroupedByCategory(Group $group): array
-    {
-        $categories = $group->shoppingCategories()
-            ->select('id', 'name', 'is_default', 'order')
-            ->orderBy('order')
-            ->get();
-
-        $response = [];
-        foreach ($categories as $category) {
-            $items = $category->shoppingItems()
-                ->select($this->getSelectColumns())
-                ->with('tags:id,name')
-                ->orderBy($this->getOrderBy())
-                ->get();
-
-            $response[] = $this->formatCategoryWithItems($category, $items);
-        }
-        return $response;
     }
 
     /**

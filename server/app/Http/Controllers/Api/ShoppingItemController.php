@@ -37,8 +37,8 @@ class ShoppingItemController extends ApiController
 
         return $this->executeWithExceptionHandling(
             function () use ($request) {
-                $res = $this->shoppingItemService->indexGroupedByCategory($this->getUserGroup($request));
-                $total = collect($res)->sum(fn($categoryData) => count($categoryData['items']));
+                $res = $this->shoppingItemService->index($this->getUserGroup($request));
+                $total = count($res);
                 $message = __('api.list_retrieved', ['attribute' => __('api.attributes.shopping.item'), 'count' => $total]);
                 return $this->indexResponse($res, $total, $message);
             },

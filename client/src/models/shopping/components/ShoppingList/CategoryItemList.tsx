@@ -1,9 +1,6 @@
 import React from 'react';
 import { Trash, X } from 'lucide-react';
-import {
-    SortableContext,
-    verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
+import { rectSortingStrategy, SortableContext } from '@dnd-kit/sortable';
 import { useDroppable } from '@dnd-kit/core';
 import Sortable from '@/components/dnd/Sortable';
 import ShoppingItemCard from './ShoppingItemCard';
@@ -13,7 +10,6 @@ import { SHOPPING_ALERT_DIALOG_CONFIGS } from '../../constants';
 import { AlertDialogData } from '@/types/dialog';
 import { ALERT_DIALOG_STATE_DEFAULT } from '@/constants/dialog';
 import { IShoppingCategory, IShoppingItem } from '@/types/api';
-import { updateItemsInCategories } from '@/utils/dnd';
 
 interface Props {
     category: IShoppingCategory;
@@ -68,16 +64,12 @@ const CategoryItemList: React.FC<Props> = ({ category, items }) => {
      */
     const handleAllClearChecked = React.useCallback(
         (items: IShoppingItem[]) => {
-            const updatedItemsResult = updateItemsInCategories(
-                storeItems,
-                items
-                    .filter(v => v.isChecked)
-                    .map(v => ({
-                        ...v,
-                        isChecked: false,
-                    })),
+            const itemsMap = new Map(items.map(v => [v.id, v]));
+            setStoreItems(
+                storeItems.map(v =>
+                    itemsMap.has(v.id) ? { ...v, isChecked: false } : v,
+                ),
             );
-            setStoreItems(updatedItemsResult);
         },
         [storeItems],
     );
@@ -109,7 +101,7 @@ const CategoryItemList: React.FC<Props> = ({ category, items }) => {
                 <SortableContext
                     items={items.map(item => item.id)}
                     id={category.id}
-                    strategy={verticalListSortingStrategy}>
+                    strategy={rectSortingStrategy}>
                     <div
                         ref={setDroppableNodeRef}
                         className="grid grid-cols-[repeat(auto-fill,_minmax(320px,_1fr))] gap-4">
