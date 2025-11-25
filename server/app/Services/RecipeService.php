@@ -212,9 +212,9 @@ class RecipeService extends AbstractDomainService
                 $this->imageService->findImagesByIds([$newThumbnailId], $group);
             }
 
-            // サムネイルが変更された場合、古いサムネイルを削除
+            // サムネイルが変更された場合、古いサムネイルの紐づけを解除
             if ($prevThumbnail && $prevThumbnail->id !== $newThumbnailId) {
-                $this->imageService->deleteImages([$prevThumbnail->id], $group);
+                $this->imageService->deleteImages([$prevThumbnail->id], $currentItem->id, $group);
             }
 
             // 新しいサムネイルを紐づけ
@@ -249,16 +249,22 @@ class RecipeService extends AbstractDomainService
             $item = $this->findItemsByIds([$id], $group)->first();
             $itemName = $item->name;
 
-            // サムネイル画像を削除
+            // サムネイル画像の紐づけを解除
             $thumbnailIds = $item->thumbnails->pluck('id')->toArray();
             if (!empty($thumbnailIds)) {
-                $this->imageService->deleteImages($thumbnailIds, $group);
+                foreach ($thumbnailIds as $thumbnailId) {
+                    $this->imageService->deleteImages([$thumbnailId], $item->id, $group);
+                }
             }
 
-            // ステップ画像を削除
-            $stepImageIds = $item->steps->flatMap(fn($step) => $step->images->pluck('id'))->toArray();
-            if (!empty($stepImageIds)) {
-                $this->imageService->deleteImages($stepImageIds, $group);
+            // ステップ画像の紐づけを解除（このレシピのステップとの紐づけのみ）
+            foreach ($item->steps as $step) {
+                $stepImageIds = $step->images->pluck('id')->toArray();
+                if (!empty($stepImageIds)) {
+                    foreach ($stepImageIds as $stepImageId) {
+                        $this->imageService->deleteImages([$stepImageId], $step->id, $group);
+                    }
+                }
             }
 
             // レシピを削除（関連データもカスケード削除）
@@ -525,9 +531,9 @@ class RecipeService extends AbstractDomainService
             }
         }
 
-        // 画像を削除
+        // 画像の紐づけを解除
         if (!empty($imagesToDelete)) {
-            $this->imageService->deleteImages(array_unique($imagesToDelete), $group);
+            $this->imageService->deleteImages(array_unique($imagesToDelete), $recipe->id, $group);
         }
 
         // 中間テーブルのorderを同期

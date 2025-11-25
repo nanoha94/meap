@@ -114,6 +114,18 @@ const RecipeDetailPage = ({
                 </div>
                 <div className="flex-1 flex flex-col gap-y-5">
                     {/* レシピ */}
+                    {fetchRecipe?.url && (
+                        <div className="flex flex-col gap-y-1">
+                            <div className="text-xl font-bold">レシピ</div>
+                            <a
+                                href={fetchRecipe?.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-primary-main underline transition-colors hover:text-accent-main">
+                                {fetchRecipe?.url}
+                            </a>
+                        </div>
+                    )}
                     {/* {recipe?.url ||
                         (recipe?.instructions && (
                             <div className="flex flex-col gap-y-1">

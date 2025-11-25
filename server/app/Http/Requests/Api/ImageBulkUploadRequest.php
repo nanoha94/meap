@@ -6,6 +6,20 @@ use App\Http\Requests\Api\BaseApiRequest;
 
 class ImageBulkUploadRequest extends BaseApiRequest
 {
+    /**
+     * Prepare the data for validation.
+     *
+     * @return void
+     */
+    protected function prepareForValidation(): void
+    {
+        // images配列からnull要素を除外
+        if ($this->has('images') && is_array($this->images)) {
+            $this->merge([
+                'images' => array_filter($this->images, fn($image) => $image !== null),
+            ]);
+        }
+    }
 
     /**
      * Get the validation rules that apply to the request.
@@ -17,7 +31,6 @@ class ImageBulkUploadRequest extends BaseApiRequest
         $rules = [
             'images' => 'array|min:1|max:20|required',
             'images.*' => 'file|image|mimes:jpeg,png,jpg,gif,webp|max:10240|required',
-            'directory' => 'string|max:255|nullable',
         ];
 
         return $rules;
@@ -40,8 +53,6 @@ class ImageBulkUploadRequest extends BaseApiRequest
             'images.*.mimes' => __('validation.mimes', ['attribute' => 'images.*', 'values' => 'png,jpeg,jpg,gif,webp']),
             'images.*.max' => __('validation.max.file', ['attribute' => 'images.*', 'max' => 10240]),
             'images.*.required' => __('validation.required', ['attribute' => 'images.*']),
-            'directory.string' => __('validation.string', ['attribute' => 'directory']),
-            'directory.max' => __('validation.max.string', ['attribute' => 'directory', 'max' => 255]),
         ];
     }
 

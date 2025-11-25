@@ -41,6 +41,7 @@ return [
         'bulk_deletion_failed' => 'Bulk image deletion failed.',
         'deletion_failed' => 'Image deletion failed.',
         'group_mismatch' => 'Group ID does not match.',
+        'still_in_use' => 'Image cannot be deleted because it is still in use by other models.',
     ],
     'invitation' => [
         'token_generated' => 'Invitation token generated successfully.',

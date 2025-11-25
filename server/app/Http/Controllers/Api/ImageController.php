@@ -42,9 +42,8 @@ class ImageController extends ApiController
                 // 画像ファイルを取得
                 $imageFiles = $this->imageService->getValidImageFiles($request, 20);
 
-                // ディレクトリの設定
-                $directory = $validated['directory'] ?? 'general';
-                $uploadPath = "$group->id/$directory";
+                // グループID配下に直接保存
+                $uploadPath = (string)$group->id;
 
                 // 画像をアップロード
                 $uploadedImages = collect($imageFiles)
@@ -54,7 +53,7 @@ class ImageController extends ApiController
                 $total = count($uploadedImages);
                 $message = __('api.image.bulk_uploaded', ['count' => $total]);
 
-                return $this->updatedResponse($uploadedImages, $message);
+                return $this->indexResponse($uploadedImages, $total, $message);
             },
             $request,
             $failedMessage,
@@ -84,7 +83,8 @@ class ImageController extends ApiController
                 $group = $this->getUserGroup($request);
                 $validated = $request->validated();
                 $imageIds = $validated['ids'];
-                $deletedCount = $this->imageService->deleteImages($imageIds, $group);
+                $relatedId = $validated['related_id'];
+                $deletedCount = $this->imageService->deleteImages($imageIds, $relatedId, $group);
                 $message = __('api.image.bulk_deleted', ['count' => $deletedCount]);
 
                 return $this->deletedResponse($message);

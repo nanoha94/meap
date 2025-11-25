@@ -20,7 +20,8 @@ namespace App\Swagger;
  *                 @OA\Property(property="width", type="integer", example=800),
  *                 @OA\Property(property="height", type="integer", example=600),
  *             )
- *         )
+ *         ),
+ *         @OA\Property(property="total", type="integer", example=5, description="アップロードされた画像数")
  *     )
  * )
  * @OA\Response(

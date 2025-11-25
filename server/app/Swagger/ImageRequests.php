@@ -39,12 +39,6 @@ namespace App\Swagger;
  *                 type="string",
  *                 format="binary",
  *                 description="5枚目の画像ファイル（オプション）"
- *             ),
- *             @OA\Property(
- *                 property="directory",
- *                 type="string",
- *                 description="アップロード先ディレクトリ",
- *                 example="recipes/steps"
  *             )
  *         )
  *     )
@@ -57,6 +51,7 @@ namespace App\Swagger;
  *         @OA\Schema(
  *             required={"ids"},
  *             @OA\Property(property="ids", type="array", @OA\Items(type="string")),
+ *             @OA\Property(property="related_id", type="string", format="uuid", description="画像が紐づいているエンティティのID"),
  *         )
  *     )
  * )

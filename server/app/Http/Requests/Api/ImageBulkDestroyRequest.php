@@ -17,6 +17,7 @@ class ImageBulkDestroyRequest extends BaseApiRequest
         return [
             'ids' => 'array|min:1|required',
             'ids.*' => 'uuid|required',
+            'related_id' => 'uuid|required',
         ];
     }
 
@@ -33,6 +34,8 @@ class ImageBulkDestroyRequest extends BaseApiRequest
             'ids.required' => __('validation.required', ['attribute' => 'ids']),
             'ids.*.uuid' => __('validation.uuid', ['attribute' => 'ids.*']),
             'ids.*.required' => __('validation.required', ['attribute' => 'ids.*']),
+            'related_id.uuid' => __('validation.uuid', ['attribute' => 'related_id']),
+            'related_id.required' => __('validation.required', ['attribute' => 'related_id']),
         ];
     }
 

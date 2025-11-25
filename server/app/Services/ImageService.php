@@ -101,11 +101,15 @@ class ImageService
     /**
      * 画像を一括削除
      * 
+     * 指定されたrelatedIdとの紐づけを解除します。
+     * 紐づけ解除後、他の紐づけが残っていない場合は画像レコードと物理ファイルも削除します。
+     * 
      * @param array $imageIds 削除する画像IDの配列
+     * @param string $relatedId 紐づけを解除するエンティティのID（必須）
      * @param \App\Models\Group $group ユーザーの所属グループ（安全性チェック用）
-     * @return int 削除された画像の数
+     * @return int 削除された画像の数（紐づけ解除のみの場合はカウントしない）
      */
-    public function deleteImages(array $imageIds, Group $group): int
+    public function deleteImages(array $imageIds, string $relatedId, Group $group): int
     {
         if (empty($imageIds)) {
             return 0;
@@ -116,7 +120,7 @@ class ImageService
         $groupIdPattern = "/images\\/{$group->id}\\//";
 
         // 削除対象の画像を抽出（グループチェック）
-        $imagesToDelete = [];
+        $imagesToProcess = [];
         foreach ($images as $image) {
             if (!preg_match($groupIdPattern, $image->src)) {
                 $this->logWarning(__METHOD__,  __('operations.image.bulk_destroy'), __('api.image.group_mismatch'), [
@@ -126,18 +130,37 @@ class ImageService
                 ]);
                 continue;
             }
-            $imagesToDelete[] = $image;
+            $imagesToProcess[] = $image;
         }
 
-        if (empty($imagesToDelete)) {
+        if (empty($imagesToProcess)) {
             return 0;
         }
 
         // トランザクション内でDB削除を実行
-        $deletedImages = DB::transaction(function () use ($imagesToDelete) {
+        $deletedImages = DB::transaction(function () use ($imagesToProcess, $relatedId, $group,) {
             $deleted = [];
-            foreach ($imagesToDelete as $image) {
-                // データベースから削除（image_mappingsも外部キー制約でカスケード削除される）
+            foreach ($imagesToProcess as $image) {
+                // 指定された紐づけを解除（主キー: image_id, related_id, group_id）
+                $deletedMappingCount = DB::table('image_mappings')
+                    ->where('image_id', $image->id)
+                    ->where('group_id', $group->id)
+                    ->where('related_id', $relatedId)
+                    ->delete();
+
+                // 紐づけ解除後、他の紐づけが残っているかチェック
+                $remainingMappingCount = DB::table('image_mappings')
+                    ->where('image_id', $image->id)
+                    ->where('group_id', $group->id)
+                    ->count();
+
+                if ($remainingMappingCount > 0) {
+                    // 他の紐づけが残っている場合は画像レコードを削除しない
+                    continue;
+                }
+
+                // 他の紐づけが残っていない場合は、画像レコードを削除
+                // （image_mappingsは存在しないため、カスケード削除は発生しない）
                 $image->delete();
                 $deleted[] = $image;
             }

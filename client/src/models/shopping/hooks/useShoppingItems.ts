@@ -92,13 +92,10 @@ export const useShoppingItems = () => {
      */
     const updateShoppingItems = React.useCallback(
         async (items: IPutShoppingItemRequestData[]) => {
-            const serverItemsFlat =
-                serverItems?.flatMap(category => category.items) || [];
-
             if (
                 isLoading ||
                 items.length === 0 ||
-                JSON.stringify(items) === JSON.stringify(serverItemsFlat)
+                JSON.stringify(items) === JSON.stringify(serverItems)
             ) {
                 return;
             }

@@ -12,6 +12,7 @@ import { IngredientEditFields } from './IngredientEditFields';
 import { IIngredientItem } from '@/types/api/ingredient';
 import { TMP_ID_PREFIX } from '@/constants/tmpIdPrefix';
 import { useRecipes } from '../../hooks';
+import { useRecipeEditForm } from '../../hooks/useRecipeEditForm';
 
 type FormData = IRecipe;
 
@@ -24,13 +25,20 @@ type EditMode = 'create' | 'update';
 const RecipeEditForm = ({ fetchRecipe }: Props) => {
     const router = useRouter();
     const { storeRecipe, updateRecipe } = useRecipes();
+    const {
+        thumbnailState,
+        errorMessage: thumbnailErrorMessage,
+        onChangeThumbnail,
+        onDeleteThumbnail,
+        formatIngredientItems,
+    } = useRecipeEditForm(fetchRecipe);
     const methods = useForm<FormData>({
         defaultValues: { ...defaultPostData, ...fetchRecipe },
     });
 
     const { control, handleSubmit, watch } = methods;
-    // const values = watch();
     const watchedName = watch('name');
+    const watchedThumbnail = watch('thumbnail');
     const editMode: EditMode = fetchRecipe ? 'update' : 'create';
 
     /**
@@ -38,42 +46,14 @@ const RecipeEditForm = ({ fetchRecipe }: Props) => {
      * 料理名が空の場合、サムネイル画像が5MBを超える場合は送信ボタンを無効化
      */
     const isDisabledSendButton: boolean = React.useMemo(() => {
-        if (watchedName?.length === 0) {
+        if (watchedName?.length <= 0) {
             return true;
         }
-        // if (values.thumbnail && values.thumbnail.size > MAX_IMAGE_SIZE) {
-        //     return true;
-        // }
+        if (thumbnailErrorMessage && thumbnailErrorMessage.length > 0) {
+            return true;
+        }
         return false;
-    }, [watchedName]);
-
-    /**
-     * 食材をフォーマット
-     * @param items 食材
-     * @param prefix 食材IDのプレフィックス
-     * @returns フォーマットされた食材
-     */
-    const formatIngredientItems = React.useCallback(
-        (
-            items: IIngredientItem[],
-            prefix: string,
-        ): IPostPutRecipeRequest['ingredients'] => {
-            return items
-                .filter(v => v.name && v.name.length > 0)
-                .map((v, idx) =>
-                    v.id?.startsWith(prefix)
-                        ? {
-                              name: v.name,
-                              quantity: v.quantity,
-                              unitId: v.unit?.id ?? '',
-                              categoryId: v.categoryId,
-                              order: idx,
-                          }
-                        : { ...v, unitId: v.unit?.id ?? '', order: idx },
-                );
-        },
-        [],
-    );
+    }, [watchedName, watchedThumbnail]);
 
     /**
      * フォームの送信処理
@@ -89,19 +69,13 @@ const RecipeEditForm = ({ fetchRecipe }: Props) => {
                 TMP_ID_PREFIX.INGREDIENT_ITEM,
             ),
         };
+
         console.log({ sendData });
 
-        // // サムネイル画像
-        // if (sendData.thumbnail && sendData.thumbnail instanceof File) {
-        //     formData.append('thumbnail', sendData.thumbnail);
-        // } else {
-        //     formData.append('thumbnailDelete', 'true');
-        // }
-
         if (editMode === 'create') {
-            storeRecipe(sendData);
+            storeRecipe(sendData, thumbnailState.file);
         } else {
-            updateRecipe(sendData);
+            updateRecipe(sendData, thumbnailState.file);
         }
     };
 
@@ -114,7 +88,10 @@ const RecipeEditForm = ({ fetchRecipe }: Props) => {
                     {/* サムネイル画像 */}
                     <ThumbnailEditField
                         control={control}
-                        thumbnail={fetchRecipe?.thumbnail}
+                        errorMessage={thumbnailErrorMessage}
+                        thumbnail={thumbnailState}
+                        onChangeThumbnail={onChangeThumbnail}
+                        onDelete={onDeleteThumbnail}
                     />
                     {/* 料理名 */}
                     <VerticalRowField

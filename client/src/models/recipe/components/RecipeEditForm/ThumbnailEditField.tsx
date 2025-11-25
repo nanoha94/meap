@@ -1,102 +1,38 @@
-import { MAX_IMAGE_SIZE } from '@/constants';
-import { TMP_ID_PREFIX } from '@/constants/tmpIdPrefix';
 import { IRecipe } from '@/types/api/recipe';
 import { ImagePlus, Trash } from 'lucide-react';
 import Image from 'next/image';
 import React from 'react';
-import { Control, Controller, useFormContext } from 'react-hook-form';
+import { Control, Controller } from 'react-hook-form';
+import { Thumbnail } from '../../types';
 
 interface Props {
     control: Control<IRecipe>;
-    thumbnail?: IRecipe['thumbnail'];
+    errorMessage: string | null;
+    thumbnail: Thumbnail;
+    onChangeThumbnail: (file: File | null) => void;
+    onDelete: () => void;
 }
 
-type Thumbnail = {
-    file: File | null;
-    url: string;
-    width: number;
-    height: number;
-};
-
-const ThumbnailEditField = ({ control, thumbnail }: Props) => {
+const ThumbnailEditField = ({
+    control,
+    errorMessage,
+    thumbnail,
+    onChangeThumbnail,
+    onDelete,
+}: Props) => {
     const fileInputRef = React.useRef<HTMLInputElement>(null);
-    const { setValue } = useFormContext<IRecipe>();
-    const [thumbnailState, setThumbnailState] = React.useState<Thumbnail>({
-        file: null,
-        url: thumbnail?.src ?? '',
-        width: thumbnail?.width ?? 0,
-        height: thumbnail?.height ?? 0,
-    });
-    const [isError, setIsError] = React.useState(false);
 
-    const handleChangeThumbnail = (e: React.ChangeEvent<HTMLInputElement>) => {
-        // エラーを解除
-        setIsError(false);
-
-        const file = e.target.files?.[0];
-
-        // 画像サイズが大きすぎる場合はエラーを表示して画像を削除
-        // TODO: 画像アップロードとレシピ作成リクエストでAPIを分ける
-        if (file && file.size > MAX_IMAGE_SIZE) {
-            setIsError(true);
-        }
-        if (file) {
-            const objectUrl = URL.createObjectURL(file);
-            const img = new window.Image();
-            img.onload = () => {
-                // 古いobjectURLを解放
-                if (thumbnailState.file && thumbnailState.url) {
-                    URL.revokeObjectURL(thumbnailState.url);
-                }
-                setThumbnailState({
-                    file,
-                    url: objectUrl,
-                    width: img.width,
-                    height: img.height,
-                });
-            };
-            img.src = objectUrl;
-
-            setValue('thumbnail', {
-                id: TMP_ID_PREFIX.IMAGE,
-                src: objectUrl,
-                width: img.width,
-                height: img.height,
-            });
-        }
-    };
-
-    const handleDeleteThumbnail = () => {
-        // エラーを解除
-        setIsError(false);
-
-        // 古いobjectURLを解放
-        if (thumbnailState.file && thumbnailState.url) {
-            URL.revokeObjectURL(thumbnailState.url);
-        }
-        setThumbnailState({
-            file: null,
-            url: '',
-            width: 0,
-            height: 0,
-        });
-        if (fileInputRef.current) {
-            fileInputRef.current.value = '';
-        }
-        setValue('thumbnail', null);
-    };
     return (
         <div className="flex flex-col gap-y-1">
             <div className="relative w-full h-auto aspect-video bg-gray-light rounded-lg overflow-hidden transition-opcity">
                 {/* サムネイルが設定されている場合 */}
-                {!!thumbnailState.file ||
-                !!(thumbnailState.url && thumbnailState.url.length > 0) ? (
+                {!errorMessage && thumbnail.src && thumbnail.src.length > 0 ? (
                     <>
                         <Image
-                            src={thumbnailState.url}
+                            src={thumbnail.src}
                             alt="thumbnail"
-                            width={thumbnailState.width}
-                            height={thumbnailState.height}
+                            width={thumbnail.width}
+                            height={thumbnail.height}
                             className="absolute top-0 left-0 w-full h-full object-cover"
                         />
                         <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center gap-x-6">
@@ -112,7 +48,8 @@ const ThumbnailEditField = ({ control, thumbnail }: Props) => {
                             </div>
                             <div className="relative group">
                                 <button
-                                    onClick={handleDeleteThumbnail}
+                                    type="button"
+                                    onClick={onDelete}
                                     className="p-4 cursor-pointer text-white rounded-full bg-gray-main/80 transition-opacity hover:opacity-70">
                                     <Trash size={32} />
                                 </button>
@@ -142,7 +79,7 @@ const ThumbnailEditField = ({ control, thumbnail }: Props) => {
                             accept="image/*"
                             hidden
                             onChange={e => {
-                                handleChangeThumbnail(e);
+                                onChangeThumbnail(e.target.files?.[0] ?? null);
                                 field.onChange(e.target.files?.[0] ?? null);
                             }}
                             name={field.name}
@@ -152,11 +89,8 @@ const ThumbnailEditField = ({ control, thumbnail }: Props) => {
                     )}
                 />
             </div>
-            {isError && (
-                <p className="text-alert-main text-sm">
-                    画像サイズが大きすぎます（最大
-                    {MAX_IMAGE_SIZE / 1024 / 1024}MB）
-                </p>
+            {errorMessage && (
+                <p className="text-alert-main text-sm">{errorMessage}</p>
             )}
         </div>
     );

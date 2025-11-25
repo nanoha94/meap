@@ -1873,6 +1873,11 @@
                                         },
                                         "type": "object"
                                     }
+                                },
+                                "total": {
+                                    "description": "アップロードされた画像数",
+                                    "type": "integer",
+                                    "example": 5
                                 }
                             },
                             "type": "object"
@@ -3248,11 +3253,6 @@
                                     "description": "5枚目の画像ファイル（オプション）",
                                     "type": "string",
                                     "format": "binary"
-                                },
-                                "directory": {
-                                    "description": "アップロード先ディレクトリ",
-                                    "type": "string",
-                                    "example": "recipes/steps"
                                 }
                             },
                             "type": "object"
@@ -3274,6 +3274,11 @@
                                     "items": {
                                         "type": "string"
                                     }
+                                },
+                                "related_id": {
+                                    "description": "画像が紐づいているエンティティのID",
+                                    "type": "string",
+                                    "format": "uuid"
                                 }
                             },
                             "type": "object"
