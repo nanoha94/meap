@@ -263,6 +263,7 @@ const IngredientEditFields = ({ control }: Props) => {
                                     item={activeItem}
                                     isDisabled={true}
                                     placeholder={`${activeCategory?.name}を設定`}
+                                    onDelete={() => {}}
                                 />
                             )}
                         </DragOverlay>

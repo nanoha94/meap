@@ -67,6 +67,16 @@ const EditForm: React.FC<Props> = ({ onClose }) => {
         append(newItem);
     };
 
+    const removeCategory = React.useCallback(
+        (index: number) => {
+            if (fields.length <= 1) {
+                addEmptyCategory();
+            }
+            remove(index);
+        },
+        [fields],
+    );
+
     /**
      * フォームの送信
      */
@@ -113,16 +123,6 @@ const EditForm: React.FC<Props> = ({ onClose }) => {
                             move(oldIndex, newIndex);
                         }}
                         renderItem={(item, index) => (
-                            // <EditItem
-                            //     index={index}
-                            //     control={control}
-                            //     isDisabled={
-                            //         index === 0 &&
-                            //         fields?.length === 1 &&
-                            //         fields[0].name === ''
-                            //     }
-                            //     onDelete={() => removeCategory(index)}
-                            // />
                             <GrippableEditItem
                                 hasDeleteButton={true}
                                 isDisabledDeleteButton={
@@ -130,7 +130,7 @@ const EditForm: React.FC<Props> = ({ onClose }) => {
                                     watchedCategories?.length === 1 &&
                                     watchedCategories[0].name === ''
                                 }
-                                onDelete={() => remove(index)}>
+                                onDelete={() => removeCategory(index)}>
                                 <Controller
                                     control={control}
                                     name={`categories.${index}.name`}

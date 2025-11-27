@@ -1,16 +1,17 @@
 'use client';
 import React from 'react';
 import { colors } from '@/constants/colors';
-import { GripVertical, Pencil, Trash } from 'lucide-react';
+import { Pencil } from 'lucide-react';
 import { IIngredientItem } from '@/types/api/ingredient';
 import { DIALOG_EDIT_MODE, DIALOG_NAME } from '@/constants';
 import { useIngredientStore } from '@/models/ingredient/hooks/ingredientStores';
+import GrippableEditItem from '@/components/common/GrippableEditItem';
 
 interface Props {
     item: IIngredientItem;
     isDisabled?: boolean;
     placeholder: string;
-    onDelete?: () => void;
+    onDelete: () => void;
     onChange?: (item: IIngredientItem) => void;
 }
 
@@ -53,8 +54,10 @@ function IngredientEditDialogButton({
 
     return (
         <>
-            <div className="flex items-center gap-x-2">
-                <GripVertical color={colors.gray.main} />
+            <GrippableEditItem
+                hasDeleteButton={true}
+                isDisabledDeleteButton={isDisabled}
+                onDelete={onDelete}>
                 <div
                     className="relative w-full cursor-pointer rounded-lg transition-colors group hover:bg-gray-light"
                     onClick={() => {
@@ -82,14 +85,7 @@ function IngredientEditDialogButton({
                         />
                     </button>
                 </div>
-                <button
-                    type="button"
-                    onClick={onDelete}
-                    disabled={isDisabled}
-                    className="p-1 w-fit h-fit rounded-full hover:bg-gray-light transition-colors disabled:opacity-0 disabled:cursor-default">
-                    <Trash color={colors.primary.main} size={28} />
-                </button>
-            </div>
+            </GrippableEditItem>
         </>
     );
 }
