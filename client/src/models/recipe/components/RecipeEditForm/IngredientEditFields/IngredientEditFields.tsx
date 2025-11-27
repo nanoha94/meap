@@ -12,7 +12,7 @@ import { defaultIngredientItem } from '@/models/ingredient/constants';
 import { createDefaultData } from '@/utils';
 import { TMP_ID_PREFIX } from '@/constants/tmpIdPrefix';
 import { IIngredientItem } from '@/types/api/ingredient';
-import IngredientEditDialogButton from './IngredientEditDialogButton/IngredientEditDialogButton';
+import IngredientEditDialogButton from './IngredientEditDialogButton';
 import { arrayMove } from '@dnd-kit/sortable';
 import { getItemsInCategory } from '@/utils/dnd';
 import { useItemAndCategoryDnd } from '@/hooks/useItemAndCategoryDnd';
@@ -177,8 +177,7 @@ const IngredientEditFields = ({ control }: Props) => {
      */
     React.useEffect(() => {
         const ingredients = getValues('ingredients');
-
-        if (ingredients.length > 0 && categories.length > 0) {
+        if (categories.length > 0) {
             // 各カテゴリーに属する食材を整理し、必要に応じて空の食材を追加
             const filledItems: IIngredientItem[] = categories
                 .map(category => {

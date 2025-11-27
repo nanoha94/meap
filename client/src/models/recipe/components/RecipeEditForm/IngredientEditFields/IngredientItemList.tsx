@@ -11,7 +11,7 @@ import {
     SortableContext,
     verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import IngredientEditDialogButton from './IngredientEditDialogButton/IngredientEditDialogButton';
+import IngredientEditDialogButton from './IngredientEditDialogButton';
 
 import { useDroppable } from '@dnd-kit/core';
 
