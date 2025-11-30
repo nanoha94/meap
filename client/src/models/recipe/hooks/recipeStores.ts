@@ -1,6 +1,5 @@
-import { IRecipe, IRecipeCategory } from '@/types/api/recipe';
+import { IRecipe, IRecipeCategory, IGetMasterResponse } from '@/types/api';
 import { create } from 'zustand';
-import { IGetMasterResponse } from '@/types/api/master';
 import { DIALOG_NAME } from '@/constants';
 
 type DialogPayload = {

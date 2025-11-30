@@ -1,4 +1,4 @@
-import { DIALOG_EDIT_MODE } from '@/constants';
+import { EDIT_MODE } from '@/constants';
 import { ShoppingItemSettingDialogConfig } from './types';
 import { AlertDialogConfig } from '@/types/dialog';
 
@@ -8,11 +8,11 @@ export const SHOPPING_ITEM_SETTING_DIALOG_CONFIGS: Record<
     string,
     ShoppingItemSettingDialogConfig
 > = {
-    [DIALOG_EDIT_MODE.CREATE]: {
+    [EDIT_MODE.CREATE]: {
         title: '買い物アイテムを追加',
         buttonText: '追加',
     },
-    [DIALOG_EDIT_MODE.UPDATE]: {
+    [EDIT_MODE.UPDATE]: {
         title: '買い物アイテムを編集',
         buttonText: '保存',
     },

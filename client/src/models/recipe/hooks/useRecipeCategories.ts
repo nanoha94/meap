@@ -1,14 +1,10 @@
 import { useSnackbars } from '@/contexts';
 import { useRouter } from 'next/navigation';
 import { useRecipeStore } from './recipeStores';
-import {
-    IPostRecipeCategoryRequest,
-    IRecipeCategory,
-} from '@/types/api/recipe';
+import { IPostRecipeCategoryRequest, IRecipeCategory } from '@/types/api';
 import axios from '@/lib/axios';
-import { TIMEOUT_MS } from '@/constants';
+import { TIMEOUT_MS, TMP_ID_PREFIX } from '@/constants';
 import React from 'react';
-import { TMP_ID_PREFIX } from '@/constants/tmpIdPrefix';
 
 export const useRecipeCategories = () => {
     const {

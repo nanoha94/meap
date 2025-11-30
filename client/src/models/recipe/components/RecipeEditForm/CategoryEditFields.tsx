@@ -1,19 +1,20 @@
 'use client';
 import { TextButton } from '@/components/common';
 import { Control, Controller, useFormContext } from 'react-hook-form';
-import { IRecipe, IRecipeCategory } from '@/types/api/recipe';
+import { IRecipeCategory } from '@/types/api';
 import { Check, ChevronRight } from 'lucide-react';
 import React from 'react';
 import { useRecipeStore } from '../../hooks/recipeStores';
 import { colors, DIALOG_NAME } from '@/constants';
+import { RecipeEditFormData } from '../../types';
 
 interface Props {
-    control: Control<IRecipe>;
+    control: Control<RecipeEditFormData>;
 }
 
 const CategoryEditFields = ({ control }: Props) => {
     const { categories, openDialog } = useRecipeStore();
-    const { setValue } = useFormContext<IRecipe>();
+    const { setValue } = useFormContext<RecipeEditFormData>();
 
     /**
      * カテゴリーのチェック状態を変更

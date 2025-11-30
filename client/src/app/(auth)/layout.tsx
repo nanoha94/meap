@@ -2,7 +2,7 @@ import Link from 'next/link';
 import ApplicationLogo from '@/components/ApplicationLogo';
 import { IGetUserResponse } from '@/types/api';
 import { apiClient } from '@/lib/apiClient';
-import { handleAuthRedirect } from '@/utils/authHelpers';
+import { handleAuthRedirect } from '@/utils';
 
 // 動的レンダリングを強制（クッキーを使用するため）
 export const dynamic = 'force-dynamic';

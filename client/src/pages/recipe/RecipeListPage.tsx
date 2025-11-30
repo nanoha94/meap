@@ -2,7 +2,7 @@
 import { LoadingAnimation } from '@/components/common';
 import { RecipeList } from '@/models/recipe/components';
 import { useRecipeStore } from '@/models/recipe/hooks/recipeStores';
-import { IRecipe } from '@/types/api/recipe';
+import { IRecipe } from '@/types/api';
 import React from 'react';
 
 interface Props {

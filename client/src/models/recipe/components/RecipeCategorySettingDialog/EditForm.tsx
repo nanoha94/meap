@@ -6,8 +6,8 @@ import { CirclePlus } from 'lucide-react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { defaultRecipeCategory } from '../../constants';
 import { useRecipeCategories } from '../../hooks/useRecipeCategories';
-import { IRecipeCategory } from '@/types/api/recipe';
-import { TMP_ID_PREFIX } from '@/constants/tmpIdPrefix';
+import { IRecipeCategory } from '@/types/api';
+import { TMP_ID_PREFIX } from '@/constants';
 import GrippableEditItem from '@/components/common/GrippableEditItem';
 
 interface FormData {

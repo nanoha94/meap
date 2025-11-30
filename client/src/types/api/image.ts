@@ -5,8 +5,12 @@ import { IBaseApiIndexResponse } from './common';
 export type IUploadRecipeResponse = IBaseApiIndexResponse<IImage>;
 
 export interface IImage {
-    id: string;
+    id?: string;
     src: string;
     width: number;
     height: number;
+}
+
+export interface IImageWithFile extends IImage {
+    file: File | null;
 }

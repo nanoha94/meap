@@ -1,8 +1,7 @@
 import React from 'react';
-import { IRecipe } from '@/types/api/recipe';
+import { IIngredientCategory, IIngredientItem } from '@/types/api';
 import { Control } from 'react-hook-form';
-import { DIALOG_EDIT_MODE, DIALOG_NAME } from '@/constants';
-import { IIngredientCategory, IIngredientItem } from '@/types/api/ingredient';
+import { EDIT_MODE, DIALOG_NAME } from '@/constants';
 import Sortable from '@/components/dnd/Sortable';
 import { TextButton } from '@/components/common';
 import { CirclePlus } from 'lucide-react';
@@ -12,11 +11,11 @@ import {
     verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import IngredientEditDialogButton from './IngredientEditDialogButton';
-
 import { useDroppable } from '@dnd-kit/core';
+import { RecipeEditFormData } from '@/models/recipe/types';
 
 interface Props {
-    control: Control<IRecipe>;
+    control: Control<RecipeEditFormData>;
     category: IIngredientCategory;
     items: IIngredientItem[];
     offsetIndex: number;
@@ -62,7 +61,7 @@ const IngredientItemList = ({
         if (item) {
             openDialog(DIALOG_NAME.INGREDIENT_ADD_EDIT, {
                 item: item,
-                editMode: DIALOG_EDIT_MODE.CREATE,
+                editMode: EDIT_MODE.CREATE,
                 onAction: (value: IIngredientItem) => {
                     updateItem(lastIndex, value);
                 },

@@ -3,14 +3,14 @@ import {
     IIngredientCategory,
     IIngredientItem,
     IIngredientUnit,
-} from '@/types/api/ingredient';
-import { DIALOG_EDIT_MODE, DIALOG_NAME } from '@/constants';
+} from '@/types/api';
+import { EDIT_MODE, DIALOG_NAME } from '@/constants';
 import { LOADING_STATE_KEYS } from '../constants';
 
 export type DialogPayload = {
     [DIALOG_NAME.INGREDIENT_ADD_EDIT]: {
         item: IIngredientItem | undefined;
-        editMode: (typeof DIALOG_EDIT_MODE)[keyof typeof DIALOG_EDIT_MODE];
+        editMode: (typeof EDIT_MODE)[keyof typeof EDIT_MODE];
         onAction: (value: IIngredientItem) => void;
     };
     [DIALOG_NAME.INGREDIENT_CATEGORY_SETTING]: {
@@ -35,7 +35,7 @@ const initialDialogsState: DialogsState = {
         isOpen: false,
         payload: {
             item: undefined,
-            editMode: DIALOG_EDIT_MODE.CREATE,
+            editMode: EDIT_MODE.CREATE,
             onAction: () => {},
         },
     },

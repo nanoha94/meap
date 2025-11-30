@@ -25,9 +25,3 @@ export const DIALOG_NAME = {
     // 買い物アイテム追加/編集
     SHOPPING_ITEM_ADD_EDIT: 'shoppingItemAddEdit',
 } as const;
-
-/* ダイアログ編集モード */
-export const DIALOG_EDIT_MODE = {
-    CREATE: 'create',
-    UPDATE: 'update',
-} as const;

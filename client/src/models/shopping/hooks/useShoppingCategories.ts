@@ -7,9 +7,8 @@ import {
     IShoppingCategory,
 } from '@/types/api';
 import axios from '@/lib/axios';
-import { TIMEOUT_MS } from '@/constants';
+import { TIMEOUT_MS, TMP_ID_PREFIX } from '@/constants';
 import { useRouter } from 'next/navigation';
-import { TMP_ID_PREFIX } from '@/constants/tmpIdPrefix';
 import { useApiErrorHandler } from '@/hooks/api/useApiErrorHandler';
 
 export const useShoppingCategories = () => {

@@ -1,11 +1,11 @@
 import { create } from 'zustand';
 import { IShoppingCategory, IShoppingItem } from '@/types/api';
-import { DIALOG_EDIT_MODE, DIALOG_NAME } from '@/constants';
+import { EDIT_MODE, DIALOG_NAME } from '@/constants';
 
 type DialogPayload = {
     [DIALOG_NAME.SHOPPING_ITEM_ADD_EDIT]: {
         item: IShoppingItem | undefined;
-        editMode: (typeof DIALOG_EDIT_MODE)[keyof typeof DIALOG_EDIT_MODE];
+        editMode: (typeof EDIT_MODE)[keyof typeof EDIT_MODE];
     };
 };
 
@@ -55,7 +55,7 @@ interface ShoppingState {
 const initialDialogsState: DialogsState = {
     [DIALOG_NAME.SHOPPING_ITEM_ADD_EDIT]: {
         isOpen: false,
-        payload: { item: undefined, editMode: DIALOG_EDIT_MODE.CREATE },
+        payload: { item: undefined, editMode: EDIT_MODE.CREATE },
     },
 };
 

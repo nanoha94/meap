@@ -9,7 +9,7 @@ import { useShoppingStore, useShoppingItems } from '../../hooks';
 import { DEBOUNCE_DELAY } from '../../constants';
 import { IShoppingItem } from '@/types/api';
 import { arrayMove } from '@dnd-kit/sortable';
-import { getItemsInCategory } from '@/utils/dnd';
+import { getItemsInCategory } from '@/utils';
 import { useItemAndCategoryDnd } from '@/hooks/useItemAndCategoryDnd';
 
 const ShoppingList = () => {

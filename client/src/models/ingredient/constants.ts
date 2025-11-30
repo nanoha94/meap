@@ -1,8 +1,8 @@
 import {
     IIngredientItem,
     IPutIngredientCategoryRequestData,
-} from '@/types/api/ingredient';
-import { TMP_ID_PREFIX } from '@/constants/tmpIdPrefix';
+} from '@/types/api';
+import { TMP_ID_PREFIX } from '@/constants';
 
 // ローディング状態キー
 export const LOADING_STATE_KEYS = {

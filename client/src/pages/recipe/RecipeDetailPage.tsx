@@ -1,8 +1,7 @@
 'use client';
 import { LoadingAnimation } from '@/components/common';
 import { useRecipeStore } from '@/models/recipe/hooks/recipeStores';
-import { IIngredientCategory } from '@/types/api/ingredient';
-import { IRecipe } from '@/types/api/recipe';
+import { IIngredientCategory, IRecipe } from '@/types/api';
 import Image from 'next/image';
 
 interface Props {

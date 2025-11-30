@@ -1,10 +1,9 @@
 import { FooterNavigation, SideNavigation } from '@/components/common';
-import { IGetUserResponse } from '@/types/api';
+import { IGetUserResponse, IGetMasterResponse } from '@/types/api';
 import { apiClient } from '@/lib/apiClient';
 import { DataHandler, RedirectHandler } from '@/components/handlers';
 import { cookies } from 'next/headers';
-import { IGetMasterResponse } from '@/types/api/master';
-import { handleAuthRedirect } from '@/utils/authHelpers';
+import { handleAuthRedirect } from '@/utils';
 import { defaultMasterData } from '@/models/master';
 
 export const dynamic = 'force-dynamic';

@@ -1,8 +1,8 @@
 import { Dialog } from '@/components/common';
 import React from 'react';
 import EditForm from './EditForm';
-import { DIALOG_EDIT_MODE, DIALOG_NAME } from '@/constants';
-import { IIngredientItem } from '@/types/api/ingredient';
+import { EDIT_MODE, DIALOG_NAME } from '@/constants';
+import { IIngredientItem } from '@/types/api';
 import { useIngredientStore } from '@/models/ingredient/hooks';
 
 const IngredientEditDialog = () => {
@@ -29,11 +29,10 @@ const IngredientEditDialog = () => {
 
     // タイトルとボタンテキストを直接定義
     const title =
-        editMode === DIALOG_EDIT_MODE.CREATE
+        editMode === EDIT_MODE.CREATE
             ? `${category?.name ?? '材料'}を追加`
             : `${category?.name ?? '材料'}を編集`;
-    const actionButtonText =
-        editMode === DIALOG_EDIT_MODE.CREATE ? '追加' : '保存';
+    const actionButtonText = editMode === EDIT_MODE.CREATE ? '追加' : '保存';
 
     return (
         <Dialog

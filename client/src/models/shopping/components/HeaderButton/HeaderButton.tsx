@@ -4,7 +4,7 @@ import { CalendarDays, CirclePlus, Pencil } from 'lucide-react';
 import itemOpenStyles from '@/styles/itemOpen.module.css';
 import React from 'react';
 import { LucideIconWrapper } from '@/components/common';
-import { colors, DIALOG_EDIT_MODE, DIALOG_NAME } from '@/constants';
+import { colors, EDIT_MODE, DIALOG_NAME } from '@/constants';
 import { useShoppingStore } from '../../hooks';
 
 const HeaderButton = () => {
@@ -25,7 +25,7 @@ const HeaderButton = () => {
             onClick: () =>
                 openDialog(DIALOG_NAME.SHOPPING_ITEM_ADD_EDIT, {
                     item: undefined,
-                    editMode: DIALOG_EDIT_MODE.CREATE,
+                    editMode: EDIT_MODE.CREATE,
                 }),
         },
     ];

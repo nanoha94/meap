@@ -1,7 +1,7 @@
 import { TIMEOUT_MS } from '@/constants';
 import { useSnackbars } from '@/contexts';
 import axios from '@/lib/axios';
-import { IUploadRecipeResponse } from '@/types/api/image';
+import { IUploadRecipeResponse } from '@/types/api';
 import React from 'react';
 
 export const useImageApi = () => {

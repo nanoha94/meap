@@ -7,11 +7,8 @@ import { IShoppingItem } from '@/types/api';
 import { useShoppingItems, useShoppingStore } from '../../hooks';
 import { SHOPPING_ALERT_DIALOG_CONFIGS } from '../../constants';
 import { AlertDialogData } from '@/types/dialog';
-import {
-    ALERT_DIALOG_STATE_DEFAULT,
-    DIALOG_EDIT_MODE,
-    DIALOG_NAME,
-} from '@/constants/dialog';
+import { ALERT_DIALOG_STATE_DEFAULT, DIALOG_NAME } from '@/constants/dialog';
+import { EDIT_MODE } from '@/constants';
 
 interface Props {
     item: IShoppingItem;
@@ -77,7 +74,7 @@ const ShoppingItemCard = ({ item }: Props) => {
             onClick: () => {
                 openDialog(DIALOG_NAME.SHOPPING_ITEM_ADD_EDIT, {
                     item,
-                    editMode: DIALOG_EDIT_MODE.UPDATE,
+                    editMode: EDIT_MODE.UPDATE,
                 });
             },
         },

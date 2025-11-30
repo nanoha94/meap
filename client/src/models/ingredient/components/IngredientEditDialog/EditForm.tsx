@@ -5,9 +5,9 @@ import { HorizontalRowField } from '@/components/react-hook-form';
 import { useForm } from 'react-hook-form';
 import StyledSelect from '@/components/common/StyledSelect';
 import { defaultIngredientItem } from '@/models/ingredient/constants';
-import { IIngredientItem } from '@/types/api/ingredient';
+import { IIngredientItem } from '@/types/api';
 import { useIngredientStore } from '@/models/ingredient/hooks';
-import { TMP_ID_PREFIX } from '@/constants/tmpIdPrefix';
+import { TMP_ID_PREFIX } from '@/constants';
 
 interface Props {
     editingItem: IIngredientItem | undefined;

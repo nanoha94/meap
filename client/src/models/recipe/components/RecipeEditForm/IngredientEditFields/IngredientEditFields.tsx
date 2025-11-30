@@ -2,31 +2,34 @@
 import React from 'react';
 import { TextButton } from '@/components/common';
 import { Control, useFieldArray, useFormContext } from 'react-hook-form';
-import { IRecipe } from '@/types/api/recipe';
 import { ChevronRight } from 'lucide-react';
-import { DIALOG_NAME } from '@/constants';
+import { DIALOG_NAME, TMP_ID_PREFIX } from '@/constants';
 import { useIngredientStore } from '@/models/ingredient/hooks';
 import { closestCenter, DndContext, DragOverlay } from '@dnd-kit/core';
 import IngredientItemList from './IngredientItemList';
 import { defaultIngredientItem } from '@/models/ingredient/constants';
 import { createDefaultData } from '@/utils';
-import { TMP_ID_PREFIX } from '@/constants/tmpIdPrefix';
-import { IIngredientItem } from '@/types/api/ingredient';
+import { IIngredientItem } from '@/types/api';
 import IngredientEditDialogButton from './IngredientEditDialogButton';
 import { arrayMove } from '@dnd-kit/sortable';
-import { getItemsInCategory } from '@/utils/dnd';
+import { getItemsInCategory } from '@/utils';
 import { useItemAndCategoryDnd } from '@/hooks/useItemAndCategoryDnd';
+import { RecipeEditFormData } from '@/models/recipe/types';
 
 interface Props {
-    control: Control<IRecipe>;
+    control: Control<RecipeEditFormData>;
 }
 
 const IngredientEditFields = ({ control }: Props) => {
+    const prefix = TMP_ID_PREFIX.INGREDIENT_ITEM;
     const { categories, openDialog } = useIngredientStore();
     const [tmpItems, setTmpItems] = React.useState<IIngredientItem[]>([]);
     const dndContextId = React.useId();
-    const { getValues, watch } = useFormContext<IRecipe>();
-    const { replace, update, remove } = useFieldArray<IRecipe, 'ingredients'>({
+    const { getValues, watch } = useFormContext<RecipeEditFormData>();
+    const { replace, update, remove } = useFieldArray<
+        RecipeEditFormData,
+        'ingredients'
+    >({
         control,
         name: 'ingredients',
     });
@@ -109,10 +112,7 @@ const IngredientEditFields = ({ control }: Props) => {
             const itemsToUse = currentItems || tmpItems;
             // 空の食材を作成
             const emptyItem = {
-                ...createDefaultData(
-                    defaultIngredientItem,
-                    TMP_ID_PREFIX.INGREDIENT_ITEM,
-                ),
+                ...createDefaultData(defaultIngredientItem, prefix),
                 categoryId: categoryId,
             };
 
@@ -144,6 +144,7 @@ const IngredientEditFields = ({ control }: Props) => {
         },
         [tmpItems],
     );
+
     /**
      * 食材を更新
      */
@@ -163,11 +164,14 @@ const IngredientEditFields = ({ control }: Props) => {
 
             // カテゴリーに属する食材が1つの場合、空の食材を追加
             if (tmpItems.filter(v => v.categoryId === categoryId).length <= 1) {
-                addEmptyItem(categoryId);
+                update(index, {
+                    ...defaultIngredientItem,
+                    categoryId: categoryId,
+                });
+            } else {
+                // 食材を削除
+                remove(index);
             }
-
-            // 食材を削除
-            remove(index);
         },
         [tmpItems],
     );
@@ -194,7 +198,7 @@ const IngredientEditFields = ({ control }: Props) => {
                             {
                                 ...createDefaultData(
                                     defaultIngredientItem,
-                                    TMP_ID_PREFIX.INGREDIENT_ITEM,
+                                    prefix,
                                 ),
                                 categoryId: category.id,
                             },

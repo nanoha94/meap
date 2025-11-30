@@ -7,10 +7,12 @@ import { HeaderRecipeDeleteButton } from '@/models/recipe/components';
 import { Pencil } from 'lucide-react';
 import { HeaderLinkTextButton } from '@/components/common/HeaderTextButtons';
 import { apiClient } from '@/lib/apiClient';
-import { IGetRecipeShowResponse } from '@/types/api/recipe';
+import {
+    IGetRecipeShowResponse,
+    IGetIngredientCategoryIndexResponse,
+} from '@/types/api';
 import RecipeDetailPage from '@/pages/recipe/RecipeDetailPage';
 import { notFound } from 'next/navigation';
-import { IGetIngredientCategoryIndexResponse } from '@/types/api/ingredient';
 
 interface Props {
     params: Promise<{ id: string }>;

@@ -1,8 +1,7 @@
 'use client';
 import React from 'react';
 import { LoadingAnimation } from '@/components/common';
-import { IRecipe } from '@/types/api/recipe';
-import { IIngredientCategory } from '@/types/api/ingredient';
+import { IRecipe, IIngredientCategory } from '@/types/api';
 import { useIngredientStore } from '@/models/ingredient/hooks';
 import { useRecipeStore } from '@/models/recipe/hooks';
 import {

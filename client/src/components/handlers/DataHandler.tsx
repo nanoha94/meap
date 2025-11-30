@@ -2,8 +2,7 @@
 import { useIngredientStore } from '@/models/ingredient/hooks';
 import { useRecipeStore } from '@/models/recipe/hooks/recipeStores';
 import { useAccountStore } from '@/models/settings/hooks';
-import { IGetUserResponse } from '@/types/api';
-import { IGetMasterResponse } from '@/types/api/master';
+import { IGetUserResponse, IGetMasterResponse } from '@/types/api';
 import React from 'react';
 
 interface Props {

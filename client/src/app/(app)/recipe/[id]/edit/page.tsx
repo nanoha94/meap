@@ -4,8 +4,10 @@ import { SnackbarHandler } from '@/components/handlers';
 import { TIMEOUT_MS } from '@/constants';
 import { apiClient } from '@/lib/apiClient';
 import RecipeEditPage from '@/pages/recipe/RecipeEditPage';
-import { IGetIngredientCategoryIndexResponse } from '@/types/api/ingredient';
-import { IGetRecipeShowResponse } from '@/types/api/recipe';
+import {
+    IGetIngredientCategoryIndexResponse,
+    IGetRecipeShowResponse,
+} from '@/types/api';
 import { Suspense } from 'react';
 
 interface Props {

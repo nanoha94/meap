@@ -2,8 +2,8 @@
 import React from 'react';
 import { colors } from '@/constants/colors';
 import { Pencil } from 'lucide-react';
-import { IIngredientItem } from '@/types/api/ingredient';
-import { DIALOG_EDIT_MODE, DIALOG_NAME } from '@/constants';
+import { IIngredientItem } from '@/types/api';
+import { EDIT_MODE, DIALOG_NAME } from '@/constants';
 import { useIngredientStore } from '@/models/ingredient/hooks/ingredientStores';
 import GrippableEditItem from '@/components/common/GrippableEditItem';
 
@@ -44,10 +44,7 @@ function IngredientEditDialogButton({
     const handleOpenDialog = () => {
         openDialog(DIALOG_NAME.INGREDIENT_ADD_EDIT, {
             item,
-            editMode:
-                item.name === ''
-                    ? DIALOG_EDIT_MODE.CREATE
-                    : DIALOG_EDIT_MODE.UPDATE,
+            editMode: item.name === '' ? EDIT_MODE.CREATE : EDIT_MODE.UPDATE,
             onAction: (value: IIngredientItem) => onChange?.(value),
         });
     };

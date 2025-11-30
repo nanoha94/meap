@@ -2,7 +2,7 @@
 import HeaderTextButton from '@/components/common/HeaderTextButtons/HeaderTextButton';
 import { Trash } from 'lucide-react';
 import React from 'react';
-import { useRecipes } from '../../hooks/useRecipes';
+import { useRecipeApi } from '../../hooks/useRecipeApi';
 import { AlertDialog } from '@/components/common';
 import { AlertDialogData } from '@/types/dialog';
 import { ALERT_DIALOG_STATE_DEFAULT } from '@/constants';
@@ -13,7 +13,7 @@ interface Props {
 }
 
 const HeaderRecipeDeleteButton = ({ id, name }: Props) => {
-    const { deleteRecipe } = useRecipes();
+    const { deleteRecipe } = useRecipeApi();
     const [deleteCheckDialog, setDeleteCheckDialog] =
         React.useState<AlertDialogData>(ALERT_DIALOG_STATE_DEFAULT);
 

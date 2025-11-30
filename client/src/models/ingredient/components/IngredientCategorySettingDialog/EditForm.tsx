@@ -4,9 +4,9 @@ import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { Button, TextButton } from '@/components/common';
 import { CirclePlus } from 'lucide-react';
 import { DndSortableList } from '@/components/dnd';
-import { TMP_ID_PREFIX } from '@/constants/tmpIdPrefix';
+import { TMP_ID_PREFIX } from '@/constants';
 import { defaultIngredientCategory } from '@/models/ingredient/constants';
-import { IIngredientCategory } from '@/types/api/ingredient';
+import { IIngredientCategory } from '@/types/api';
 import GrippableEditItem from '@/components/common/GrippableEditItem';
 import { useIngredientCatgories } from '../../hooks/useIngredientCatgories';
 

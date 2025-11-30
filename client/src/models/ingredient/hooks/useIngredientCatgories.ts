@@ -2,15 +2,14 @@ import {
     IIngredientCategory,
     IPostIngredientCategoryRequestData,
     IPutIngredientCategoryRequestData,
-} from '@/types/api/ingredient';
+} from '@/types/api';
 import React from 'react';
 import { useIngredientStore } from './ingredientStores';
 import { useSnackbars } from '@/contexts';
 import { useApiErrorHandler } from '@/hooks/api/useApiErrorHandler';
 import { LOADING_STATE_KEYS } from '../constants';
 import axios from '@/lib/axios';
-import { TIMEOUT_MS } from '@/constants';
-import { TMP_ID_PREFIX } from '@/constants/tmpIdPrefix';
+import { TIMEOUT_MS, TMP_ID_PREFIX } from '@/constants';
 import { useRouter } from 'next/navigation';
 
 export const useIngredientCatgories = () => {

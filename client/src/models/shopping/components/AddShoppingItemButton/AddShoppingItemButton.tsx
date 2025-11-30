@@ -1,4 +1,4 @@
-import { colors, DIALOG_EDIT_MODE, DIALOG_NAME } from '@/constants';
+import { colors, EDIT_MODE, DIALOG_NAME } from '@/constants';
 import { CalendarDays, LucideProps, Minus, Pencil, Plus } from 'lucide-react';
 import React from 'react';
 import itemOpenStyles from '@/styles/itemOpen.module.css';
@@ -28,7 +28,7 @@ const AddShoppingItemButton = () => {
             onClick: () =>
                 openDialog(DIALOG_NAME.SHOPPING_ITEM_ADD_EDIT, {
                     item: undefined,
-                    editMode: DIALOG_EDIT_MODE.CREATE,
+                    editMode: EDIT_MODE.CREATE,
                 }),
         },
     ];

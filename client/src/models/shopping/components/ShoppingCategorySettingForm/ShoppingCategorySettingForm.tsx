@@ -6,7 +6,7 @@ import React from 'react';
 import { IShoppingCategory } from '@/types/api';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { useShoppingCategories } from '../../hooks';
-import { TMP_ID_PREFIX } from '@/constants/tmpIdPrefix';
+import { TMP_ID_PREFIX } from '@/constants';
 import GrippableEditItem from '@/components/common/GrippableEditItem';
 
 interface FormData {
@@ -108,9 +108,9 @@ const ShoppingCategorySettingForm: React.FC<Props> = ({ onClose }) => {
                     <DndSortableList
                         items={fields}
                         prefix={prefix}
-                        onDragEnd={(oldIndex, newIndex) => {
-                            move(oldIndex, newIndex);
-                        }}
+                        onDragEnd={(oldIndex, newIndex) =>
+                            move(oldIndex, newIndex)
+                        }
                         renderItem={(item, index) => (
                             <GrippableEditItem
                                 hasDeleteButton={true}

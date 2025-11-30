@@ -18,7 +18,7 @@ import {
     getDragOverItem,
     getCategoryByItemId,
     getItemById,
-} from '@/utils/dnd';
+} from '@/utils';
 
 interface IItemAndCategoryDndOptions<
     TItem extends { id: string; categoryId: string },

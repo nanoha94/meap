@@ -64,7 +64,7 @@ export interface IRecipeCategory {
 export interface IRecipeStep {
     id?: string;
     instruction: string;
-    image?: IImage | null;
+    image: IImage | null;
     order: number;
 }
 

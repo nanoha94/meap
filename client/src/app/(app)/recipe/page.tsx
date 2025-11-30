@@ -3,7 +3,7 @@ import { SnackbarHandler } from '@/components/handlers';
 import { TIMEOUT_MS } from '@/constants';
 import { apiClient } from '@/lib/apiClient';
 import RecipeListPage from '@/pages/recipe/RecipeListPage';
-import { IGetRecipeIndexResponse } from '@/types/api/recipe';
+import { IGetRecipeIndexResponse } from '@/types/api';
 import { Suspense } from 'react';
 import Loading from '../loading';
 import { CirclePlus } from 'lucide-react';

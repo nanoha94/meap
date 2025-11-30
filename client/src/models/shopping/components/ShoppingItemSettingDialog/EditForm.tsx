@@ -10,7 +10,7 @@ import {
 import { SHOPPING_ITEM_SETTING_DIALOG_CONFIGS } from '../../constants';
 import StyledSelect from '@/components/common/StyledSelect';
 import { VerticalRowField } from '@/components/react-hook-form';
-import { DIALOG_EDIT_MODE, DIALOG_NAME } from '@/constants';
+import { EDIT_MODE, DIALOG_NAME } from '@/constants';
 
 interface Props {
     onClose: () => void;
@@ -62,7 +62,7 @@ const EditForm: React.FC<Props> = ({ onClose }) => {
      * @param data フォームのデータ
      */
     const onSubmit = (data: FormData) => {
-        if (editMode === DIALOG_EDIT_MODE.CREATE) {
+        if (editMode === EDIT_MODE.CREATE) {
             storeShoppingItem(data);
         } else if (editingItem) {
             updateShoppingItems([
