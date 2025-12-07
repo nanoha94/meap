@@ -16,13 +16,6 @@ return new class extends Migration
             $table->integer('group_size');
             $table->timestamps();
         });
-
-        Schema::create('group_user', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->foreignUuid('user_id')->constrained('users', 'id')->cascadeOnDelete();
-            $table->foreignUuid('group_id')->constrained('groups', 'id')->cascadeOnDelete();
-            $table->timestamps();
-        });
     }
 
     /**
@@ -30,13 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // group_userテーブルの外部キー制約を削除
-        Schema::table('group_user', function (Blueprint $table) {
-            $table->dropForeign(['user_id']);
-            $table->dropForeign(['group_id']);
-        });
-
         Schema::dropIfExists('groups');
-        Schema::dropIfExists('group_user');
     }
 };

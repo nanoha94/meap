@@ -1,11 +1,11 @@
 'use client';
-
-import Button from '@/components/Button';
-import { useAuth } from '@/hooks';
+import { useAuth } from '@/hooks/api';
 import React from 'react';
-import { FormItem } from '@/components';
-import { Controller, SubmitHandler, useForm } from 'react-hook-form';
+import { Button } from '@/components/common';
+import { SubmitHandler, useForm } from 'react-hook-form';
 import Link from 'next/link';
+import LoadingAnimation from '@/components/common/LoadingAnimation';
+import { VerticalRowField } from '@/components/react-hook-form';
 
 interface FormInputs {
     email: string;
@@ -14,10 +14,7 @@ interface FormInputs {
 type visibleErrorFields = 'email';
 
 const Page = () => {
-    const { passwordResetRequest } = useAuth({
-        middleware: 'guest',
-        redirectIfAuthenticated: '/plan',
-    });
+    const { isLoading, passwordResetRequest } = useAuth();
 
     const {
         handleSubmit,
@@ -49,6 +46,7 @@ const Page = () => {
 
     return (
         <>
+            {isLoading && <LoadingAnimation />}
             <div className="flex flex-col gap-y-10">
                 <div className="relative w-full text-center">
                     <span className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-px bg-gray-main" />
@@ -65,45 +63,44 @@ const Page = () => {
                     onSubmit={handleSubmit(onSubmit)}
                     className="flex flex-col gap-y-10">
                     {/* Email Address */}
-                    <FormItem
+                    <VerticalRowField
+                        control={control}
+                        name="email"
                         label="メールアドレス"
                         errorMessage={
                             isErrorVisible.email
-                                ? [
+                                ? ([
                                       errors.email?.message,
                                       ...(apiErrors?.email || []),
-                                  ]
+                                  ].filter(Boolean) as string[])
                                 : []
-                        }>
-                        <Controller
-                            control={control}
-                            name="email"
-                            rules={{
-                                required: '必須項目です',
-                                pattern: {
-                                    value: /^[a-zA-Z0-9_+-]+(.[a-zA-Z0-9_+-]+)*@([a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.)+[a-zA-Z]{2,}$/,
-                                    message:
-                                        'メールアドレスの形式で入力してください',
-                                },
-                            }}
-                            render={({ field: { onChange, value } }) => (
-                                <input
-                                    type="email"
-                                    value={value}
-                                    onChange={e => {
-                                        onChange(e);
-                                        setIsErrorVisible(prev => ({
-                                            ...prev,
-                                            email: false,
-                                        }));
-                                        setApiErrors({ email: [] });
-                                    }}
-                                    autoFocus
-                                    className={`py-2 px-4 text-base border rounded-lg ${isErrorVisible.email && (!!errors.email?.message || (!!apiErrors.email && apiErrors.email?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
-                                />
-                            )}
-                        />
-                    </FormItem>
+                        }
+                        rules={{
+                            required: '必須項目です',
+                            pattern: {
+                                value: /^[a-zA-Z0-9_+-]+(.[a-zA-Z0-9_+-]+)*@([a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.)+[a-zA-Z]{2,}$/,
+                                message:
+                                    'メールアドレスの形式で入力してください',
+                            },
+                        }}>
+                        {({ value, onChange }) => (
+                            <input
+                                type="email"
+                                value={value as string}
+                                onChange={e => {
+                                    onChange(e);
+                                    setIsErrorVisible(prev => ({
+                                        ...prev,
+                                        email: false,
+                                    }));
+                                    setApiErrors({ email: [] });
+                                }}
+                                autoFocus
+                                className={`py-2 px-4 border rounded-lg ${isErrorVisible.email && (!!errors.email?.message || (!!apiErrors.email && apiErrors.email?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
+                            />
+                        )}
+                    </VerticalRowField>
+
                     <div className="flex flex-col gap-y-4">
                         <Button
                             type="submit"
@@ -118,12 +115,12 @@ const Page = () => {
                 <div className="flex flex-col items-center gap-y-4">
                     <Link
                         href="/register"
-                        className="text-base font-bold text-primary-main underline transition-opacity hover:text-opacity-70">
+                        className="font-bold text-primary-main underline transition-opacity hover:text-opacity-70">
                         アカウント登録はこちら
                     </Link>
                     <Link
                         href="/login"
-                        className="text-base font-bold text-primary-main underline transition-opacity hover:text-opacity-70">
+                        className="font-bold text-primary-main underline transition-opacity hover:text-opacity-70">
                         ログインはこちら
                     </Link>
                 </div>

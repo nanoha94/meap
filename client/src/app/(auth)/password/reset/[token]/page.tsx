@@ -1,20 +1,20 @@
 'use client';
-
-import Button from '@/components/Button';
-import { useAuth } from '@/hooks';
+import { useAuth } from '@/hooks/api';
 import React from 'react';
-import { Controller, SubmitHandler, useForm } from 'react-hook-form';
-import { FormItem } from '@/components';
+import { SubmitHandler, useForm } from 'react-hook-form';
+import { Button } from '@/components/common';
+import LoadingAnimation from '@/components/common/LoadingAnimation';
+import { VerticalRowField } from '@/components/react-hook-form';
 
 interface FormInputs {
     password: string;
-    password_confirmation: string;
+    passwordConfirmation: string;
 }
 
-type visibleErrorFields = 'password' | 'password_confirmation';
+type visibleErrorFields = 'password' | 'passwordConfirmation';
 
 const PasswordReset = () => {
-    const { resetPassword } = useAuth({ middleware: 'guest' });
+    const { isLoading, resetPassword } = useAuth();
 
     const {
         handleSubmit,
@@ -24,7 +24,7 @@ const PasswordReset = () => {
     } = useForm<FormInputs>({
         defaultValues: {
             password: '',
-            password_confirmation: '',
+            passwordConfirmation: '',
         },
     });
 
@@ -38,13 +38,13 @@ const PasswordReset = () => {
         Record<visibleErrorFields, boolean>
     >({
         password: false,
-        password_confirmation: false,
+        passwordConfirmation: false,
     });
 
     const onSubmit: SubmitHandler<FormInputs> = (data: FormInputs) => {
         resetPassword({
             password: data.password,
-            password_confirmation: data.password_confirmation,
+            password_confirmation: data.passwordConfirmation,
             setErrors: setApiErrors,
             setStatus: setApiStatus,
         });
@@ -52,6 +52,7 @@ const PasswordReset = () => {
 
     return (
         <>
+            {isLoading && <LoadingAnimation />}
             <div className="flex flex-col gap-y-10">
                 <div className="relative w-full text-center">
                     <span className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-px bg-gray-main" />
@@ -66,92 +67,88 @@ const PasswordReset = () => {
                     onSubmit={handleSubmit(onSubmit)}
                     className="flex flex-col gap-y-10">
                     <div className="flex flex-col gap-y-4">
-                        {/* Password */}
-                        <FormItem
+                        {/* パスワード */}
+                        <VerticalRowField
+                            control={control}
+                            name="password"
                             label="パスワード"
                             errorMessage={
                                 isErrorVisible.password
-                                    ? [
+                                    ? ([
                                           errors.password?.message,
                                           ...(apiErrors?.password || []),
-                                      ]
+                                      ].filter(Boolean) as string[])
                                     : []
-                            }>
-                            <Controller
-                                control={control}
-                                name="password"
-                                rules={{
-                                    required: '必須項目です',
-                                    minLength: {
-                                        value: 8,
-                                        message: '8文字以上で入力してください',
-                                    },
-                                }}
-                                render={({ field: { onChange, value } }) => (
-                                    <input
-                                        type="password"
-                                        value={value}
-                                        onChange={e => {
-                                            onChange(e);
-                                            setIsErrorVisible(prev => ({
-                                                ...prev,
-                                                password: false,
-                                            }));
-                                            setApiErrors({ password: [] });
-                                        }}
-                                        className={`py-2 px-4 text-base border rounded-lg ${isErrorVisible.password && (!!errors.password?.message || (!!apiErrors.password && apiErrors.password?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
-                                    />
-                                )}
-                            />
-                        </FormItem>
+                            }
+                            rules={{
+                                required: '必須項目です',
+                                minLength: {
+                                    value: 8,
+                                    message: '8文字以上で入力してください',
+                                },
+                            }}>
+                            {({ value, onChange }) => (
+                                <input
+                                    type="password"
+                                    value={value as string}
+                                    onChange={e => {
+                                        onChange(e);
+                                        setIsErrorVisible(prev => ({
+                                            ...prev,
+                                            password: false,
+                                        }));
+                                        setApiErrors({ password: [] });
+                                    }}
+                                    className={`py-2 px-4 border rounded-lg ${isErrorVisible.password && (!!errors.password?.message || (!!apiErrors.password && apiErrors.password?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
+                                />
+                            )}
+                        </VerticalRowField>
 
-                        {/* Confirm Password */}
-                        <FormItem
+                        {/* パスワード（確認用） */}
+                        <VerticalRowField
+                            control={control}
+                            name="passwordConfirmation"
                             label="パスワード（確認用）"
                             errorMessage={
-                                isErrorVisible.password_confirmation
-                                    ? [
-                                          errors.password_confirmation?.message,
-                                          ...(apiErrors?.password_confirmation ||
+                                isErrorVisible.passwordConfirmation
+                                    ? ([
+                                          errors.passwordConfirmation?.message,
+                                          ...(apiErrors?.passwordConfirmation ||
                                               []),
-                                      ]
+                                      ].filter(Boolean) as string[])
                                     : []
-                            }>
-                            <Controller
-                                control={control}
-                                name="password_confirmation"
-                                rules={{
-                                    required: '必須項目です',
-                                    minLength: {
-                                        value: 8,
-                                        message: '8文字以上で入力してください',
-                                    },
-                                    validate: value => {
-                                        if (value !== watch('password')) {
-                                            return 'パスワードとパスワード（確認用）が一致していません';
-                                        }
-                                        return true;
-                                    },
-                                }}
-                                render={({ field: { onChange, value } }) => (
-                                    <input
-                                        type="password"
-                                        value={value}
-                                        onChange={e => {
-                                            onChange(e);
-                                            setIsErrorVisible(prev => ({
-                                                ...prev,
-                                                password_confirmation: false,
-                                            }));
-                                            setApiErrors({
-                                                password_confirmation: [],
-                                            });
-                                        }}
-                                        className={`py-2 px-4 text-base border rounded-lg ${isErrorVisible.password_confirmation && (!!errors.password_confirmation?.message || (!!apiErrors.password_confirmation && apiErrors.password_confirmation?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
-                                    />
-                                )}
-                            />
-                        </FormItem>
+                            }
+                            rules={{
+                                required: '必須項目です',
+                                minLength: {
+                                    value: 8,
+                                    message: '8文字以上で入力してください',
+                                },
+                                validate: value => {
+                                    if (value !== watch('password')) {
+                                        return 'パスワードとパスワード（確認用）が一致していません';
+                                    }
+                                    return true;
+                                },
+                            }}>
+                            {({ value, onChange }) => (
+                                <input
+                                    type="password"
+                                    value={value as string}
+                                    onChange={e => {
+                                        onChange(e);
+                                        setIsErrorVisible(prev => ({
+                                            ...prev,
+                                            password_confirmation: false,
+                                        }));
+                                        setApiErrors({
+                                            password_confirmation: [],
+                                        });
+                                    }}
+                                    className={`py-2 px-4 border rounded-lg ${isErrorVisible.passwordConfirmation && (!!errors.passwordConfirmation?.message || (!!apiErrors.password_confirmation && apiErrors.password_confirmation?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
+                                />
+                            )}
+                        </VerticalRowField>
                     </div>
                     <div className="flex flex-col gap-y-4">
                         <Button
@@ -159,7 +156,7 @@ const PasswordReset = () => {
                             onClick={() =>
                                 setIsErrorVisible({
                                     password: true,
-                                    password_confirmation: true,
+                                    passwordConfirmation: true,
                                 })
                             }>
                             パスワードを再設定する

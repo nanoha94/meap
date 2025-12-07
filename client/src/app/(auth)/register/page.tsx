@@ -1,11 +1,11 @@
 'use client';
-
-import Button from '@/components/Button';
 import Link from 'next/link';
-import { useAuth } from '@/hooks';
+import { useAuth } from '@/hooks/api';
 import React from 'react';
-import { Controller, SubmitHandler, useForm } from 'react-hook-form';
-import { FormItem } from '@/components';
+import { SubmitHandler, useForm } from 'react-hook-form';
+import { Button } from '@/components/common';
+import LoadingAnimation from '@/components/common/LoadingAnimation';
+import { VerticalRowField } from '@/components/react-hook-form';
 
 interface FormInputs {
     name: string;
@@ -21,10 +21,7 @@ type visibleErrorFields =
     | 'passwordConfirmation';
 
 const Page = () => {
-    const { register } = useAuth({
-        middleware: 'guest',
-        redirectIfAuthenticated: '/plan',
-    });
+    const { isLoading, register } = useAuth();
 
     const {
         handleSubmit,
@@ -65,6 +62,7 @@ const Page = () => {
 
     return (
         <>
+            {isLoading && <LoadingAnimation />}
             <div className="flex flex-col gap-y-10">
                 <div className="relative w-full text-center">
                     <span className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-px bg-gray-main" />
@@ -76,13 +74,13 @@ const Page = () => {
                     {/* TODO: リンク設定 */}
                     <Link
                         href="#"
-                        className="text-base text-primary-main underline transition-opacity hover:text-opacity-70">
+                        className="text-primary-main underline transition-opacity hover:text-opacity-70">
                         利用規約
                     </Link>
                     と{/* TODO: リンク設定 */}
                     <Link
                         href="#"
-                        className="text-base text-primary-main underline transition-opacity hover:text-opacity-70">
+                        className="text-primary-main underline transition-opacity hover:text-opacity-70">
                         プライバシーポリシー
                     </Link>
                     に同意の上、ご登録ください
@@ -91,149 +89,140 @@ const Page = () => {
                     onSubmit={handleSubmit(onSubmit)}
                     className="flex flex-col gap-y-10">
                     <div className="flex flex-col gap-y-4">
-                        {/* Name */}
-                        <FormItem
+                        {/* ユーザ名 */}
+                        <VerticalRowField
+                            control={control}
+                            name="name"
                             label="ユーザ名"
                             errorMessage={
                                 isErrorVisible.name
-                                    ? [
+                                    ? ([
                                           errors.name?.message,
                                           ...(apiErrors?.name || []),
-                                      ]
+                                      ].filter(Boolean) as string[])
                                     : []
-                            }>
-                            <Controller
-                                control={control}
-                                name="name"
-                                rules={{
-                                    required: '必須項目です',
-                                }}
-                                render={({ field: { onChange, value } }) => (
-                                    <input
-                                        type="text"
-                                        value={value}
-                                        onChange={e => {
-                                            onChange(e);
-                                            setIsErrorVisible(prev => ({
-                                                ...prev,
-                                                name: false,
-                                            }));
-                                            setApiErrors({ name: [] });
-                                        }}
-                                        className={`py-2 px-4 text-base border rounded-lg ${isErrorVisible.name && (!!errors.name?.message || (!!apiErrors.name && apiErrors.name?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
-                                    />
-                                )}
-                            />
-                        </FormItem>
+                            }
+                            rules={{
+                                required: '必須項目です',
+                            }}>
+                            {({ value, onChange }) => (
+                                <input
+                                    type="text"
+                                    value={value as string}
+                                    onChange={e => {
+                                        onChange(e);
+                                        setIsErrorVisible(prev => ({
+                                            ...prev,
+                                            name: false,
+                                        }));
+                                        setApiErrors({ name: [] });
+                                    }}
+                                    className={`py-2 px-4 border rounded-lg ${isErrorVisible.name && (!!errors.name?.message || (!!apiErrors.name && apiErrors.name?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
+                                />
+                            )}
+                        </VerticalRowField>
 
-                        {/* Email Address */}
-                        <FormItem
+                        {/* メールアドレス */}
+                        <VerticalRowField
+                            control={control}
+                            name="email"
                             label="メールアドレス"
                             errorMessage={
                                 isErrorVisible.email
-                                    ? [
+                                    ? ([
                                           errors.email?.message,
                                           ...(apiErrors?.email || []),
-                                      ]
+                                      ].filter(Boolean) as string[])
                                     : []
-                            }>
-                            <Controller
-                                control={control}
-                                name="email"
-                                rules={{
-                                    required: '必須項目です',
-                                    pattern: {
-                                        value: /^[a-zA-Z0-9_+-]+(.[a-zA-Z0-9_+-]+)*@([a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.)+[a-zA-Z]{2,}$/,
-                                        message:
-                                            'メールアドレスの形式で入力してください',
-                                    },
-                                }}
-                                render={({ field: { onChange, value } }) => (
-                                    <input
-                                        type="email"
-                                        value={value}
-                                        onChange={e => {
-                                            onChange(e);
-                                            setIsErrorVisible(prev => ({
-                                                ...prev,
-                                                email: false,
-                                            }));
-                                            setApiErrors({ email: [] });
-                                        }}
-                                        className={`py-2 px-4 text-base border rounded-lg ${isErrorVisible.email && (!!errors.email?.message || (!!apiErrors.email && apiErrors.email?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
-                                    />
-                                )}
-                            />
-                        </FormItem>
-
-                        {/* Password */}
-                        <FormItem
+                            }
+                            rules={{
+                                required: '必須項目です',
+                                pattern: {
+                                    value: /^[a-zA-Z0-9_+-]+(.[a-zA-Z0-9_+-]+)*@([a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.)+[a-zA-Z]{2,}$/,
+                                    message:
+                                        'メールアドレスの形式で入力してください',
+                                },
+                            }}>
+                            {({ value, onChange }) => (
+                                <input
+                                    type="email"
+                                    value={value as string}
+                                    onChange={e => {
+                                        onChange(e);
+                                        setIsErrorVisible(prev => ({
+                                            ...prev,
+                                            email: false,
+                                        }));
+                                        setApiErrors({ email: [] });
+                                    }}
+                                    className={`py-2 px-4 border rounded-lg ${isErrorVisible.email && (!!errors.email?.message || (!!apiErrors.email && apiErrors.email?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
+                                />
+                            )}
+                        </VerticalRowField>
+                        {/* パスワード */}
+                        <VerticalRowField
+                            control={control}
+                            name="password"
                             label="パスワード"
                             errorMessage={
                                 isErrorVisible.password
-                                    ? [
+                                    ? ([
                                           errors.password?.message,
                                           ...(apiErrors?.password || []),
-                                      ]
+                                      ].filter(Boolean) as string[])
                                     : []
-                            }>
-                            <Controller
-                                control={control}
-                                name="password"
-                                rules={{ required: '必須項目です' }}
-                                render={({ field: { onChange, value } }) => (
-                                    <input
-                                        type="password"
-                                        value={value}
-                                        onChange={e => {
-                                            onChange(e);
-                                            setIsErrorVisible(prev => ({
-                                                ...prev,
-                                                password: false,
-                                            }));
-                                            setApiErrors({ password: [] });
-                                        }}
-                                        className={`py-2 px-4 text-base border rounded-lg ${isErrorVisible.password && (!!errors.password?.message || (!!apiErrors.password && apiErrors.password?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
-                                    />
-                                )}
-                            />
-                        </FormItem>
+                            }
+                            rules={{ required: '必須項目です' }}>
+                            {({ value, onChange }) => (
+                                <input
+                                    type="password"
+                                    value={value as string}
+                                    onChange={e => {
+                                        onChange(e);
+                                        setIsErrorVisible(prev => ({
+                                            ...prev,
+                                            password: false,
+                                        }));
+                                        setApiErrors({ password: [] });
+                                    }}
+                                    className={`py-2 px-4 border rounded-lg ${isErrorVisible.password && (!!errors.password?.message || (!!apiErrors.password && apiErrors.password?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
+                                />
+                            )}
+                        </VerticalRowField>
 
-                        {/* Confirm Password */}
-                        <FormItem
+                        {/* パスワード（確認用） */}
+                        <VerticalRowField
+                            control={control}
+                            name="passwordConfirmation"
                             label="パスワード（確認用）"
                             errorMessage={
                                 isErrorVisible.passwordConfirmation
-                                    ? [
+                                    ? ([
                                           errors.passwordConfirmation?.message,
                                           ...(apiErrors?.passwordConfirmation ||
                                               []),
-                                      ]
+                                      ].filter(Boolean) as string[])
                                     : []
-                            }>
-                            <Controller
-                                control={control}
-                                name="passwordConfirmation"
-                                rules={{ required: '必須項目です' }}
-                                render={({ field: { onChange, value } }) => (
-                                    <input
-                                        type="password"
-                                        value={value}
-                                        onChange={e => {
-                                            onChange(e);
-                                            setIsErrorVisible(prev => ({
-                                                ...prev,
-                                                passwordConfirmation: false,
-                                            }));
-                                            setApiErrors({
-                                                passwordConfirmation: [],
-                                            });
-                                        }}
-                                        className={`py-2 px-4 text-base border rounded-lg ${isErrorVisible.passwordConfirmation && (!!errors.passwordConfirmation?.message || (!!apiErrors.passwordConfirmation && apiErrors.passwordConfirmation?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
-                                    />
-                                )}
-                            />
-                        </FormItem>
+                            }
+                            rules={{ required: '必須項目です' }}>
+                            {({ value, onChange }) => (
+                                <input
+                                    type="password"
+                                    value={value as string}
+                                    onChange={e => {
+                                        onChange(e);
+                                        setIsErrorVisible(prev => ({
+                                            ...prev,
+                                            passwordConfirmation: false,
+                                        }));
+                                        setApiErrors({
+                                            passwordConfirmation: [],
+                                        });
+                                    }}
+                                    className={`py-2 px-4 border rounded-lg ${isErrorVisible.passwordConfirmation && (!!errors.passwordConfirmation?.message || (!!apiErrors.passwordConfirmation && apiErrors.passwordConfirmation?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
+                                />
+                            )}
+                        </VerticalRowField>
                     </div>
                     <Button
                         type="submit"
@@ -251,7 +240,7 @@ const Page = () => {
                 <div className="flex flex-col items-center gap-y-4">
                     <Link
                         href="/login"
-                        className="text-base font-bold text-primary-main underline transition-opacity hover:text-opacity-70">
+                        className="font-bold text-primary-main underline transition-opacity hover:text-opacity-70">
                         ログインはこちら
                     </Link>
                 </div>

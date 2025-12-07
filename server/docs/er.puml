@@ -1,279 +1,278 @@
 @startuml
-!define primary_key(x) <b><&key></b> x
-!define foreign_key(x) <b><&link-intact></b> x
+hide circle
+
+entity ingredients {
+    * id : string <<generated>>
+    --
+    * name : string
+    * group_id : string <<FK>>
+}
+
+entity ingredient_units {
+    * id : string <<generated>>
+    --
+    * name : string
+    * position : string / 'prefix'（数字の前）または'suffix'（数字の後）
+    * requires_quantity : boolean / 量を入力するかどうか
+    * order : int / ソート順
+    * group_id : string <<FK>>
+}
+
+entity ingredient_categories {
+    * id : string <<generated>>
+    --
+    * name : string
+    * order : int / ソート順
+    * group_id : string <<FK>>
+}
+
+entity recipe_category_mappings {
+    * recipe_id : string <<FK>>
+    * category_id : string <<FK>>
+}
+
+entity recipes {
+    * id : string <<generated>>
+    --
+    * name : string
+    * url : string / レシピURL
+    * memo : string / メモ
+    * group_id : string <<FK>>
+}
+
+entity recipe_steps{
+    * id : string <<generated>>
+    --
+    * recipe_id : string <<FK>>
+    * instruction : string / 手順
+}
+
+entity recipe_step_mappings {
+    * id : string <<generated>>
+    --
+    * recipe_id : string <<FK>>
+    * step_id : string <<FK>>
+    * order : int / ソート順
+}
+
+entity recipe_ingredient_mappings {
+    * recipe_id : string <<FK>>
+    * ingredient_id : string <<FK>>
+    * category_id : string <<FK>>
+    * unit_id : string <<FK>>
+    * quantity : float
+    * order : int / ソート順
+}
+
+entity menu_categories {
+    * id : string <<generated>>
+    ---
+    * name : string / 種別（主食、主菜、副菜、汁物、その他）
+    * group_id : string <<FK>>
+    * order : int / ソート順
+}
+
+entity recipe_categories {
+    * id : string <<generated>>
+    --
+    * name : string
+    * order : int / ソート順
+    * group_id : string <<FK>>
+}
+
+entity groups {
+    * id : string <<generated>>
+    * group_size : number / グループに属するユーザの数
+}
+
+entity meal_plan_recipe_mappings {
+    * meal_plan_id : string <<FK>>
+    * recipe_id : string <<FK>>
+    * menu_category_id : string <<FK>>
+}
+
+entity meal_plans {
+    * id : string <<generated>>
+    ---
+    * date : date
+    * group_id : string <<FK>>
+    * meal_category_id : string <<FK>>
+}
+
+
+entity meal_categories {
+    * id : string <<generated>>
+    --
+    * name : string
+    * color_id : string <<FK>>
+    * group_id : string <<FK>>
+    * order : int / ソート順
+}
+
+entity colors {
+    * id : string <<generated>>
+    --
+    * name : string / 色名（イエロー, オレンジ, ピンク, レッド, 
+        イエローグリーン, グリーン, スカイブルー, ブルー, パープル）
+    * color_code_hex: string / 色コード
+    * order : int / ソート順
+}
+
+entity shopping_items {
+    * id : string <<generated>>
+    --
+    * name : string
+    * is_pinned : boolean / trueの場合、リスト上部に固定化する
+    * is_checked : boolean / trueの場合、アイテムにチェックマークが付く
+    * order : int / ソート順
+    * group_id : string <<FK>>
+    * category_id : string <<FK>>
+}
+
+entity shopping_categories {
+    * id : string <<generated>>
+    --
+    * name : string
+    * is_default : boolean / trueの場合、デフォルトカテゴリとして扱う
+    * order : int / ソート順
+    * group_id : string <<FK>>
+}
+
+entity shopping_tags {
+    * id : string <<generated>>
+    --
+    * name : string
+    * group_id : string <<FK>>
+}
+
+entity shopping_item_tag_mappings {
+    * item_id : string <<FK>>
+    * tag_id : string <<FK>>
+}
+
+entity group_user_mappings {
+    * user_id : string <<FK>>
+    * group_id : string <<FK>>
+}
 
 entity users {
-    primary_key(id : string)
+    * id : string <<generated>>
     --
     * name : string
     * email : string
-    password : string
-    avatar_url : string
-    provider : string
-    provider_id : string
-    --
-    created_at : date
-    updated_at : date
+    password : string / ログイン用パスワード（ソーシャルログインでは使用しない）
+    * avatar_seed : string / プロフィール画像のシード
+    provider : string / プロバイダ名（例: 'google'）
+    provider_id : string / ソーシャルログイン用ID
 }
-
-note top of users
-  アプリのユーザー情報を管理する。
-
-  * name : ユーザ名
-  * email : メールアドレス
-  * password : ログイン用パスワード（ソーシャルログインでは使用しない）
-  * avatar_url : プロフィール画像URL
-  * provider : プロバイダ名（例: 'google'）
-  * provider_id : ソーシャルログイン用ID
-  * created_at : レコード作成日時（UTC）
-  * updated_at : レコード更新日時（UTC）
-end note
-
-
-entity groups {
-    primary_key(id : string)
-    group_size : number
-}
-
-note top of groups
-  データ共有するユーザー情報を管理する。
-  ユーザは１つのグループにのみ所属できる。（将来的に拡張可能性あり）
-  もしくは、すでに存在しているグループに招待してもらって所属する。
-
-  * group_size : グループに属するユーザの数
-end note
-
-entity group_user {
-    primary_key(id : string)
-    foreign_key(user_id : string)
-    foreign_key(group_id : string)
-}
-
-note bottom of group_user
-  groupテーブルとuserテーブルの中間テーブル。
-end note
 
 entity invitation_tokens {
-    primary_key(id : string)
-    foreign_key(inviter_id : string)
+    * id : string <<generated>>
     --
+    * inviter_id : string <<FK>>
     * token : string
     * expires_at : date
 }
 
-note bottom of invitation_tokens
+entity images {
+    * id : string <<generated>>
+    --
+    * src : string / 画像URL
+    * width : int / 画像の幅
+    * height : int / 画像の高さ
+}
+
+entity image_mappings {
+    * image_id : string <<FK>>
+    * related_model : string / 関連するモデルの型（'Recipe', 'RecipeStep', 'User'など）
+    * related_id : string / 関連するモデルのID
+    * image_type : string / 添付タイプ（'thumbnail', 'step_image', 'avatar'など）
+    * order : int / ソート順（複数画像がある場合）
+    * group_id : string <<FK>>
+}
+
+groups ||--o{ group_user_mappings
+group_user_mappings ||--|| users
+users ||--o{ invitation_tokens
+
+image_mappings }o--|| images
+recipes ||--o{ image_mappings
+recipe_steps ||--o{ image_mappings
+groups ||--o{ image_mappings
+
+groups ||--o{ shopping_items
+groups ||--o{ shopping_categories
+groups ||--o{ shopping_tags
+shopping_categories ||--o{ shopping_items
+shopping_items ||--o{ shopping_item_tag_mappings
+shopping_tags }o--|| shopping_item_tag_mappings
+
+groups ||--o{ meal_categories
+meal_categories |o--|| colors
+
+meal_plans }o--|| groups
+meal_plans }o--|| meal_categories
+recipes }o--|| groups
+menu_categories }o--|| groups
+recipes ||--o{ meal_plan_recipe_mappings
+meal_plans ||--o{ meal_plan_recipe_mappings
+meal_plan_recipe_mappings }o--|| menu_categories
+
+recipes ||--o{ recipe_step_mappings
+recipe_step_mappings }o--|| recipe_steps
+recipe_step_mappings }o--|| images
+
+recipes ||--o{ recipe_ingredient_mappings
+recipe_ingredient_mappings }o--|| ingredient_units
+recipe_ingredient_mappings }o--|| ingredients
+recipe_ingredient_mappings }o--|| ingredient_categories
+ingredient_units }o--|| groups
+ingredients }o--|| groups
+ingredient_categories }o--|| groups
+
+recipes ||--o{ recipe_category_mappings
+recipe_category_mappings }o--|| recipe_categories
+recipe_categories }o--|| groups
+
+note right of groups
+  データ共有するユーザー情報を管理する。
+  ユーザは１つのグループにのみ所属できる。（拡張可能性あり）
+  もしくは、すでに存在しているグループに招待してもらって所属する。
+end note
+
+note left of meal_plans
+  献立情報を管理する。
+end note
+
+note left of meal_categories
+  献立カテゴリを管理する。（朝食、昼食、夕食など）
+end note
+
+note right of recipes
+  料理/レシピ情報を管理する。
+end note
+
+note bottom of recipe_steps
+  料理手順を管理する。
+end note
+
+note top of menu_categories
+  料理分類を管理する。（料理カテゴリとは別物）
+end note
+
+note bottom of recipe_categories
+  料理カテゴリを管理する。
+end note
+
+note left of invitation_tokens
   ユーザ招待トークンを管理する。
   グループに招待するときにトークンを発行する。
   一定時間でトークンは使用できなくなり、テーブルからデータを消去する。
-
-  * inviter_id : 招待したユーザID（usersテーブルとのリレーション）
-  * token : トークン（UUID）
-  * expires_at : トークンの有効期限（UTC）
 end note
 
-
-entity meals {
-    primary_key(id : string)
-    foreign_key(group_id : string)
-    foreign_key(meal_type_id : string)
-    ---
-    * date : date
-}
-
-note top of meals
-  献立情報（日付、種別、メニュー）を管理する。
-
-  * group_id : グループID
-  * meal_type_id : 献立種別ID
-  * date : 日付
+note bottom of image_mappings
+  画像と他のテーブルとの中間テーブル。
+  image_typeは、同じモデルで複数種類の画像を管理するためのもの。
 end note
 
-entity dishes {
-    primary_key(id : string)
-    foreign_key(group_id : string)
-    --
-    * name : string
-    * url : string
-    * recipe : string
-    * memo : string
-    * lastDate : date
-}
-
-note top of dishes
-  料理情報（名前、カテゴリ、食材、調味料、レシピURL、テキスト入力のレシピ、メモ）を管理する。
-
-  * group_id : グループID
-  * name : 料理名
-  * url : レシピURL
-  * recipe : レシピ（テキスト入力）
-end note
-
-entity dish_types {
-    primary_key(id : string)
-    foreign_key(group_id : string)
-    ---
-    * name : string
-}
-
-note top of dish_types
-  料理種別を管理する。（料理カテゴリとは別物）
-
-  * name : 種別（主食、主菜、副菜、汁物、その他をデフォルトで設定）
-end note
-
-entity meal_dish_type_dish {
-    foreign_key(dish_id : string)   
-    foreign_key(dish_type_id : string)
-    foreign_key(meal_id : string)
-}
-
-note bottom of meal_dish_type_dish
-  mealsテーブル, dish_typesテーブル, dishesテーブルの中間テーブル。
-  料理種別と料理のペアを献立に紐づける。
-end note
-
-entity dish_categories {
-  primary_key(id : string)
-  foreign_key(group_id : string)
-  --
-  * name : string
-}
-
-note bottom of dish_categories
-  料理カテゴリを管理する。
-
-  * group_id : グループID
-  * name : カテゴリ名
-end note
-
-entity dish_category_dish {
-  foreign_key(category_id : string)
-  foreign_key(meal_id : string)
-}
-
-note bottom of dish_category_dish
-  dish_categoriesテーブル, dishesテーブルの中間テーブル。
-  料理カテゴリを料理に紐づける。
-end note
-
-entity ingredients {
-  primary_key(id : string)
-  foreign_key(group_id : string)
-  --
-  * name : string
-  * type : int
-}
-
-note top of ingredients
-  食材・調味料を管理する。
-
-  * group_id : グループID
-  * name : 食材名
-  * type : 種類（1: 食材, 2: 調味料）
-end note
-
-entity dish_ingredient {
-  primary_key(id : string)
-  foreign_key(dish_id : string)
-  foreign_key(ingredient_id : string)
-  foreign_key(unit_id : string)
-  --
-  * amount : float
-}
-
-note bottom of dish_ingredient
-  dishesテーブルとingredientsテーブルの中間テーブル。
-  食材・調味料を料理に紐づける。
-
-  * amount : 食材・調味料の数量
-end note
-
-entity units {
-  primary_key(id : string)
-  foreign_key(group_id : string)
-  --
-  * name : string
-}
-
-note bottom of units
-  単位を管理する。
-
-  * name : 単位
-end note
-
-entity meal_types {
-    primary_key(id : string)
-    foreign_key(group_id : string)
-    --
-    * name : string
-    * color : int
-}
-
-note bottom of meal_types
-  献立種別を管理する。
-
-  * group_id : グループID
-  * name : 種別名
-  * color : 色（1: イエロー, 2: オレンジ, 3: ピンク, 4: レッド, 5: イエローグリーン, 
-                        6: グリーン, 7: スカイブルー, 8: ブルー, 9: パープル）
-end note
-
-entity shopping_items {
-    primary_key(id : string)
-    foreign_key(group_id : string)
-    foreign_key(category_id : string)
-    --
-    * name : string
-    * isPinned : boolean
-    * isChecked : boolean
-    * order : int
-}
-
-note bottom of shopping_items
-  買い物リストを管理する。
-
-  * group_id : グループID
-  * category_id : 買い物カテゴリID
-  * name : 買い物アイテム名
-  * isPinned : trueの場合、リスト上部に固定化する
-  * isChecked : trueの場合、アイテムにチェックマークが付く
-  * order : ソート順
-end note
-
-entity shopping_categories {
-    primary_key(id : string)
-    foreign_key(group_id : string)
-    --
-    * name : string
-}
-
-note bottom of shopping_categories
-  買い物カテゴリを管理する。
-
-  * group_id : グループID
-  * name : カテゴリ名
-end note
-
-users ||--|| group_user
-groups }|-|| group_user
-users ||--o{ invitation_tokens
-groups ||--o{ meals
-meals ||--|| meal_dish_type_dish
-groups ||--o{ dish_types
-dish_types ||-|| meal_dish_type_dish
-groups ||--o{ dishes
-dishes }o--|| meal_dish_type_dish
-dishes }|--o{ dish_category_dish
-groups ||--o{ dish_categories
-dish_categories }|--o{ dish_category_dish
-groups ||--o{ ingredients
-dishes }|--o{ dish_ingredient
-ingredients }|--o{ dish_ingredient
-groups ||--o{ units
-units }|--o{ dish_ingredient
-groups ||--o{ meal_types
-meals }|--|| meal_types
-groups ||--o{ shopping_items
-shopping_items }|--|| shopping_categories
-groups ||--|{ shopping_categories
 @enduml

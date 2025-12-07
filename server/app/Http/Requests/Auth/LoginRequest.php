@@ -2,14 +2,17 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Enums\HttpStatusCode;
+use App\Http\Requests\Auth\BaseAuthRequest;
 use Illuminate\Auth\Events\Lockout;
-use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
-use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
-class LoginRequest extends FormRequest
+class LoginRequest extends BaseAuthRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -33,6 +36,32 @@ class LoginRequest extends FormRequest
     }
 
     /**
+     * Get custom messages for validator errors.
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'email.required' => __('validation.required', ['attribute' => 'email']),
+            'email.string' => __('validation.string', ['attribute' => 'email']),
+            'email.email' => __('validation.email', ['attribute' => 'email']),
+            'password.required' => __('validation.required', ['attribute' => 'password']),
+            'password.string' => __('validation.string', ['attribute' => 'password']),
+        ];
+    }
+
+    /**
+     * Get the operation key for error handling.
+     *
+     * @return string
+     */
+    protected function getOperationKey(): string
+    {
+        return __('operations.auth.login');
+    }
+
+    /**
      * Attempt to authenticate the request's credentials.
      *
      * @throws \Illuminate\Validation\ValidationException
@@ -44,9 +73,17 @@ class LoginRequest extends FormRequest
         if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
-            throw ValidationException::withMessages([
-                'email' => __('auth.failed'),
-            ]);
+            // 認証失敗をExceptionHandlerTraitで処理
+            $authException = new HttpException(HttpStatusCode::UNAUTHORIZED->value, __('auth.login.warning'));
+
+            $response = $this->handleException(
+                $authException,
+                $this,
+                __('auth.login.warning'),
+                __('operations.auth.login')
+            );
+
+            throw new HttpResponseException($response);
         }
 
         RateLimiter::clear($this->throttleKey());
@@ -67,12 +104,18 @@ class LoginRequest extends FormRequest
 
         $seconds = RateLimiter::availableIn($this->throttleKey());
 
-        throw ValidationException::withMessages([
-            'email' => trans('auth.throttle', [
-                'seconds' => $seconds,
-                'minutes' => ceil($seconds / 60),
-            ]),
-        ]);
+        // 制限時間を設定から取得（デフォルト60秒）
+        $throttleSeconds = config('auth.password_timeout', 60); // デフォルト60秒
+        $displaySeconds = min($throttleSeconds, $seconds);
+
+        $response = $this->handleException(
+            new ThrottleRequestsException(__('auth.throttle', ['seconds' => $displaySeconds])),
+            $this,
+            __('auth.throttle', ['seconds' => $displaySeconds]),
+            __('operations.auth.login')
+        );
+
+        throw new HttpResponseException($response);
     }
 
     /**
@@ -80,6 +123,6 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->input('email')).'|'.$this->ip());
+        return Str::transliterate(Str::lower($this->input('email')) . '|' . $this->ip());
     }
 }

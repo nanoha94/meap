@@ -52,8 +52,8 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'http://localhost:8000'),
-    'frontend_url' => env('FRONTEND_URL', 'http://localhost:3000'),
+    'url' => env('APP_URL', 'https://localhost:8000'),
+    'frontend_url' => env('FRONTEND_URL', 'https://localhost:3000'),
 
     /*
     |--------------------------------------------------------------------------
@@ -79,9 +79,9 @@ return [
     |
     */
 
-    'locale' => env('APP_LOCALE', 'en'),
+    'locale' => env('APP_LOCALE', 'ja'),
 
-    'fallback_locale' => env('APP_FALLBACK_LOCALE', 'en'),
+    'fallback_locale' => env('APP_FALLBACK_LOCALE', 'ja'),
 
     'faker_locale' => env('APP_FAKER_LOCALE', 'en_US'),
 

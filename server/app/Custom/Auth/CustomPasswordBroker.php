@@ -8,8 +8,8 @@ use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use Closure;
 use Illuminate\Auth\Events\PasswordResetLinkSent;
 use Illuminate\Auth\Passwords\PasswordBroker;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use App\Models\PasswordResetTokens;
 
 class CustomPasswordBroker extends PasswordBroker implements InterfacesCustomPasswordBroker
 {
@@ -68,22 +68,25 @@ class CustomPasswordBroker extends PasswordBroker implements InterfacesCustomPas
     {
         // トークンからメールアドレスを取得
         $token = $credentials['token'];
-        $passwordResets = DB::table(config('auth.passwords.users.table'))
-            ->where('created_at', '>=', now()->subMinutes(config('auth.passwords.users.expire')))
+        $passwordResets = PasswordResetTokens::where('created_at', '>=', now()->subMinutes(config('auth.passwords.users.expire')))
             ->get()
-            ->filter(
-                function ($record) use ($token) {
-                    return Hash::check($token, $record->token);
-                }
-            );
+            ->filter(function ($record) use ($token) {
+                return Hash::check($token, $record->token);
+            });
 
-        // usersテーブルに該当のメールアドレスが存在するかチェック
-        $isExistUser = User::where('email', $passwordResets->first()->email)->exists();
-
-        // トークンが有効期限内でない、もしくはトークンに一致するメールアドレスがない場合
-        if ($passwordResets->count() !== 1 || !$isExistUser) {
+        // トークンが有効期限内でない場合
+        if ($passwordResets->isEmpty() || $passwordResets->count() !== 1) {
             return static::INVALID_TOKEN;
         }
+
+
+        $isExistUser = User::where('email', $passwordResets->first()->email)->exists();
+
+        // トークンに一致するメールアドレスがない場合
+        if (is_null($passwordResets->first()->email) || !$isExistUser) {
+            return static::INVALID_USER;
+        }
+
 
         // $credentialsにメールアドレスの情報を含める
         $credentials['email'] = $passwordResets->first()->email;

@@ -12,6 +12,7 @@ return [
     'alpha' => ':attributeはアルファベットのみがご利用できます。',
     'alpha_dash' => ':attributeはアルファベットとダッシュ(-)及び下線(_)がご利用できます。',
     'alpha_num' => ':attributeはアルファベット数字がご利用できます。',
+    'any_of' => ':attributeには、正しい値を指定してください。',
     'array' => ':attributeは配列でなくてはなりません。',
     'ascii' => ':attributeは半角の英数字や記号のみで指定してください。',
     'before' => ':attributeには、:dateより前の日付をご利用ください。',
@@ -40,7 +41,10 @@ return [
     'distinct' => ':attributeには異なった値を指定してください。',
     'doesnt_end_with' => ':attributeは、:values以外の値で終わるように指定してください。',
     'doesnt_start_with' => ':attributeは、:values以外の値で始まるように指定してください。',
-    'email' => ':attributeには、有効なメールアドレスを指定してください。',
+    'email' => [
+        'string' => ':attributeは文字列でなくてはなりません。',
+        'email' => ':attributeには、有効なメールアドレスを指定してください。',
+    ],
     'ends_with' => ':attributeには、:valuesのどれかで終わる値を指定してください。',
     'enum' => '選択された:attributeは正しくありません。',
     'exists' => '選択された:attributeは正しくありません。',
@@ -63,6 +67,7 @@ return [
     'image' => ':attributeには画像ファイルを指定してください。',
     'in' => '選択された:attributeは正しくありません。',
     'in_array' => ':attributeには:otherの値を指定してください。',
+    'in_array_keys' => ':attributeには、:valuesの値を1つ以上指定してください。',
     'integer' => ':attributeは整数で指定してください。',
     'ip' => ':attributeには、有効なIPアドレスを指定してください。',
     'ipv4' => ':attributeには、有効なIPv4アドレスを指定してください。',
@@ -86,7 +91,7 @@ return [
     'max' => [
         'numeric' => ':attributeには、:max以下の数字を指定してください。',
         'file' => ':attributeには、:max kb以下のファイルを指定してください。',
-        'string' => ':attributeは、:max文字以下で指定してください。',
+        'string' => ':attributeは、:max文字以内で指定してください。',
         'array' => ':attributeは:max個以下指定してください。',
     ],
     'max_digits' => ':attributeは、:max桁以下で指定してください。',
@@ -109,10 +114,11 @@ return [
     'not_regex' => ':attributeの形式が正しくありません。',
     'numeric' => ':attributeには、数字を指定してください。',
     'password' => [
-        'letters' => ':attributeは、最低1文字以上の文字を含めてください。',
-        'mixed' => ':attributeは、最低1文字以上の大文字と小文字をそれぞれ含めてください。',
-        'numbers' => ':attributeは、最低1文字以上の数字を含めてください。',
-        'symbols' => ':attributeは、最低1文字以上の記号を含めてください。',
+        'confirmed' => ':attributeが一致しません。',
+        'letters' => ':attributeは、1文字以上の文字を含めてください。',
+        'mixed' => ':attributeは、1文字以上の大文字と小文字をそれぞれ含めてください。',
+        'numbers' => ':attributeは、1文字以上の数字を含めてください。',
+        'symbols' => ':attributeは、1文字以上の記号を含めてください。',
         'uncompromised' => '指定の:attributeは、漏洩している恐れがあります。他の:attributeを指定してください。',
     ],
     'present' => ':attributeが存在していません。',
@@ -122,6 +128,8 @@ return [
     'present_with_all' => ':attributeは:valuesがある場合に必須です。',
     'prohibited' => ':attributeは入力禁止です。',
     'prohibited_if' => ':otherが:valueの場合、:attributeは入力禁止です。',
+    'prohibited_if_accepted' => ':attributeは、:otherが承認された場合は、入力禁止です。',
+    'prohibited_if_declined' => ':attributeは、:otherが拒否された場合は、入力禁止です。',
     'prohibited_unless' => ':otherが:valueでない場合、:attributeは入力禁止です。',
     'prohibits' => 'attributeは:otherの入力を禁じています。',
     'regex' => ':attributeに正しい形式を指定してください。',
@@ -151,6 +159,9 @@ return [
     'url' => ':attributeに正しい形式を指定してください。',
     'ulid' => ':attributeに有効なULIDを指定してください。',
     'uuid' => ':attributeに有効なUUIDを指定してください。',
+    'id_must_be_string' => 'IDは文字列でなければなりません。',
+    'specified_id_does_not_exist' => '指定されたIDは存在しません。',
+    'required_when_unit_requires_quantity' => '選択した単位では:attributeの指定が必須です。',
 
     /*
     |--------------------------------------------------------------------------
@@ -253,9 +264,71 @@ return [
         'text' => 'テキスト',
         'time' => '時間',
         'title' => 'タイトル',
+        'token' => 'トークン',
         'updated_at' => '更新日',
         'username' => 'ユーザー名',
         'year' => '年',
+        'order' => '並び順',
+        'color' => '色',
+        'url' => 'URL',
+        'memo' => 'メモ',
+        'servings' => '人数',
+        'page' => 'ページ',
+        'per_page' => '1ページあたりの件数',
+        'id' => 'ID',
+        'menu' => 'メニュー',
+        'recipe_id' => 'レシピID',
+        'menu_category_id' => 'メニュー種別ID',
+        'recipe' => [
+            'name' => 'レシピ名',
+            'step_id' => '手順ID',
+            'step' => '手順'
+        ],
+        'shopping' => [
+            'item' => [
+                'name' => 'アイテム名',
+                'category_id' => 'カテゴリID',
+                'tags' => 'タグ',
+                'tag_id' => 'タグID',
+                'tag_name' => 'タグ名'
+            ],
+            'category' => [
+                'name' => 'カテゴリ名',
+            ]
+        ],
+        'ingredient' => [
+            'name' => '材料名',
+            'unit_id' => '単位ID',
+            'category_id' => 'カテゴリID',
+            'quantity' => '数量',
+        ],
+        'ingredient_category' => [
+            'name' => '材料カテゴリ名',
+        ],
+        'ingredient_unit' => [
+            'name' => '単位名',
+        ],
+        'meal_plan' => [
+            'date' => '日付',
+            'meal_category_id' => '献立カテゴリID',
+            'recipe_id' => 'レシピID',
+            'servings' => '人数'
+        ],
+        'meal_category' => [
+            'name' => '献立カテゴリ',
+        ],
+        'recipe_category' => [
+            'name' => 'レシピカテゴリ名',
+        ],
+        'image' => [
+            'id' => '画像ID',
+            'files' => '画像ファイル',
+            'directory' => 'ディレクトリ名',
+            'url' => '画像URL',
+            'width' => '画像幅',
+            'height' => '画像高さ'
+        ],
+        'data' => 'データ',
     ],
 
 ];

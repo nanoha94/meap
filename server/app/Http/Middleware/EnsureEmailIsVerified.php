@@ -6,23 +6,29 @@ use Closure;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use App\Traits\ApiResponse;
+use App\Enums\HttpStatusCode;
 
-// 使っていないのでコメントアウト（TOIDO: 問題なければ後で消す）
-// class EnsureEmailIsVerified
-// {
-//     /**
-//      * Handle an incoming request.
-//      *
-//      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-//      */
-//     public function handle(Request $request, Closure $next): Response
-//     {
-//         if (! $request->user() ||
-//             ($request->user() instanceof MustVerifyEmail &&
-//             ! $request->user()->hasVerifiedEmail())) {
-//             return response()->json(['message' => 'Your email address is not verified.'], 409);
-//         }
+class EnsureEmailIsVerified
+{
+    use ApiResponse;
+    /**
+     * Handle an incoming request.
+     *
+     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     */
+    public function handle(Request $request, Closure $next): Response
+    {
+        if (
+            ! $request->user() ||
+            ($request->user() instanceof MustVerifyEmail &&
+                ! $request->user()->hasVerifiedEmail())
+        ) {
+            if (!$request->expectsJson()) {
+                return $this->errorResponse('Your email address is not verified.', HttpStatusCode::CONFLICT);
+            }
+        }
 
-//         return $next($request);
-//     }
-// }
+        return $next($request);
+    }
+}

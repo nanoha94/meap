@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class ShoppingItem extends Model
 {
@@ -19,10 +20,26 @@ class ShoppingItem extends Model
         'name',
         'is_pinned',
         'is_checked',
+        'order',
     ];
+
+    protected $casts = [
+        'is_pinned' => 'boolean',
+        'is_checked' => 'boolean',
+    ];
+
+    public function group(): BelongsTo
+    {
+        return $this->belongsTo(Group::class);
+    }
 
     public function category(): BelongsTo
     {
-        return $this->belongsTo(ShoppingCategory::class);
+        return $this->belongsTo(ShoppingCategory::class, 'category_id');
+    }
+
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany(ShoppingTag::class, 'shopping_item_tag_mappings', 'item_id', 'tag_id');
     }
 }

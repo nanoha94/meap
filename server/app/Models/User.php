@@ -4,17 +4,19 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
-use App\Notifications\Api\Auth\Custom\CustomResetPasswordNotification;
+use App\Notifications\Auth\CustomResetPasswordNotification;
+use App\Notifications\Auth\CustomVerifyEmailNotification;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasUuids;
+    use HasApiTokens, HasFactory, Notifiable, HasUuids;
 
     /**
      * The attributes that are mass assignable.
@@ -25,7 +27,11 @@ class User extends Authenticatable implements MustVerifyEmail
         'name',
         'email',
         'password',
-        'custom_id',
+        'language',
+        'avatar_seed', // アイコン生成用のシード値
+        'avatar_image_url',
+        'avatar_image_width',
+        'avatar_image_height',
     ];
 
     /**
@@ -52,6 +58,15 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * The model's default values for attributes.
+     *
+     * @var array
+     */
+    protected $attributes = [
+        'language' => 'ja',
+    ];
+
+    /**
      * Send a password reset notification to the user.
      *
      * @param  string  $token
@@ -61,17 +76,28 @@ class User extends Authenticatable implements MustVerifyEmail
         $this->notify(new CustomResetPasswordNotification($token));
     }
 
+    /**
+     * Send the email verification notification.
+     *
+     * @return void
+     */
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new CustomVerifyEmailNotification());
+    }
+
     protected $keyType = 'string'; // UUIDの場合はstring
     public $incrementing = false; // UUIDは自動インクリメントしないため
 
     /**
      * ユニークなカスタムIDを生成
-     * TODO: 無限ループの可能性あり
      */
-    private static function generateUniqueCustomId(): string
+    public static function generateUniqueCustomId(): string
     {
         // 使用する文字セット（見間違いやすい文字を除外）
         $characters = 'abcdefghjkmnpqrstuvwxyz23456789';
+        $maxAttempts = 100; // 最大試行回数
+        $attempt = 0;
 
         do {
             $customId = '';
@@ -79,27 +105,25 @@ class User extends Authenticatable implements MustVerifyEmail
             for ($i = 0; $i < 8; $i++) {
                 $customId .= $characters[random_int(0, strlen($characters) - 1)];
             }
+
+            $attempt++;
+
+            // 最大試行回数を超えた場合は例外を投げる
+            if ($attempt >= $maxAttempts) {
+                throw new \Exception("ユニークなIDの生成に失敗しました。もう一度お試しください。");
+            }
+
             // 生成したIDが既に存在するかチェック
-        } while (static::where('custom_id', $customId)->exists());
+        } while (self::where('avatar_seed', $customId)->exists());
 
         return $customId;
     }
 
-    // モデルのイベントを使用してcustom_idを設定
-    protected static function boot()
+    public function groups()
     {
-        parent::boot();
-
-        static::creating(function ($user) {
-            // custom_idを生成して設定
-            $user->custom_id = static::generateUniqueCustomId();
-        });
+        return $this->belongsToMany(Group::class, 'group_user_mappings', 'user_id', 'group_id');
     }
 
-    public function groupUser()
-    {
-        return $this->hasOne(GroupUser::class);
-    }
 
     public function invitationTokens()
     {

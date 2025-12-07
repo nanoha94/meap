@@ -1,0 +1,72 @@
+import { Header } from '@/components/common';
+import { SnackbarHandler } from '@/components/handlers';
+import { TIMEOUT_MS } from '@/constants';
+import { apiClient } from '@/lib/apiClient';
+import RecipeListPage from '@/pages/recipe/RecipeListPage';
+import { IGetRecipeIndexResponse } from '@/types/api';
+import { Suspense } from 'react';
+import Loading from '@/app/(app)/loading';
+import { CirclePlus } from 'lucide-react';
+import { HeaderLinkTextButton } from '@/components/common/HeaderTextButtons';
+
+const RecipePageWithData = async () => {
+    let recipes: IGetRecipeIndexResponse | null = null;
+    let errorMessage: string = '';
+
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
+        recipes = await apiClient('/recipes', {
+            signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+    } catch (error) {
+        console.error(error);
+        // エラーオブジェクトから安全に文字列を抽出
+        if (error instanceof Error && error.name === 'AbortError') {
+            errorMessage =
+                'リクエストがタイムアウトしました。再度お試しください。';
+        } else {
+            errorMessage =
+                error instanceof Error
+                    ? error.message
+                    : typeof error === 'string'
+                      ? error
+                      : 'データの取得に失敗しました';
+        }
+    }
+    return (
+        <>
+            <Header title="料理/レシピ一覧">
+                <div className="hidden md:flex">
+                    <HeaderLinkTextButton
+                        href="/recipe/new"
+                        colorVariant="secondary">
+                        <CirclePlus size={20} />
+                        料理/レシピを追加
+                    </HeaderLinkTextButton>
+                </div>
+            </Header>
+            <main>
+                {errorMessage && (
+                    <SnackbarHandler type="error" message={errorMessage} />
+                )}
+                <RecipeListPage
+                    fetchRecipes={recipes?.data ?? []}
+                    total={recipes?.total ?? 0}
+                />
+            </main>
+        </>
+    );
+};
+
+const Page = () => {
+    return (
+        <Suspense fallback={<Loading />}>
+            <RecipePageWithData />
+        </Suspense>
+    );
+};
+
+export default Page;

@@ -1,0 +1,3915 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "meap api document",
+        "description": "meap api document",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "https://localhost:8000"
+        }
+    ],
+    "paths": {
+        "/images/upload-bulk": {
+            "post": {
+                "tags": [
+                    "Images"
+                ],
+                "summary": "画像をアップロード（単一または複数対応）",
+                "operationId": "2190b812dc7d2b98a5bdd11d2ba8ff60",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/ImageBulkUploadRequest"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/ImageUploadBulkSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationErrors"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/images/bulk": {
+            "delete": {
+                "tags": [
+                    "Images"
+                ],
+                "summary": "画像を一括削除",
+                "operationId": "fa5655d50cd1f2c7f82184051accfafd",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/ImageBulkDestroyRequest"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/ImageDeleteBulkSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationErrors"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/ingredient-categories": {
+            "get": {
+                "tags": [
+                    "Ingredients"
+                ],
+                "summary": "食材カテゴリ一覧を取得",
+                "operationId": "7f9d9d8a1477158b6e52b35a50284eef",
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/IngredientCategoryIndexSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/ingredient-categories/bulk": {
+            "put": {
+                "tags": [
+                    "Ingredients"
+                ],
+                "summary": "食材カテゴリを一括更新",
+                "operationId": "b426e97617348d2b2f3a7f6e64ea7ff6",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/IngredientCategoryBulkUpdateRequest"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/IngredientCategoryBulkUpdateSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationErrors"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Ingredients"
+                ],
+                "summary": "食材カテゴリを一括作成",
+                "operationId": "3f1d0d5f7983990ea2ff6faf00e08ef0",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/IngredientCategoryBulkStoreRequest"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/IngredientCategoryBulkStoreSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationErrors"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Ingredients"
+                ],
+                "summary": "食材カテゴリを削除",
+                "operationId": "8f1f5ae691627a40a8be92f4bbc7d226",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/IngredientCategoryBulkDestroyRequest"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/IngredientCategoryBulkDestroySuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationErrors"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/invitations": {
+            "post": {
+                "tags": [
+                    "Invitations"
+                ],
+                "summary": "グループへの招待トークンを生成",
+                "operationId": "c920efb879be91000464e7a4b34aa3ee",
+                "responses": {
+                    "201": {
+                        "$ref": "#/components/responses/InvitationStoreSuccess"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/UnexpectedError"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/invitations/{token}": {
+            "get": {
+                "tags": [
+                    "Invitations"
+                ],
+                "summary": "招待トークンの詳細を取得",
+                "operationId": "756746cde4fd8f71d53b0122e9a0ac33",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/InvitationShowParameter"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/InvitationShowSuccess"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/UnexpectedError"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/invitations/{token}/join": {
+            "post": {
+                "tags": [
+                    "Invitations"
+                ],
+                "summary": "招待トークンを使用してグループに参加",
+                "operationId": "46383ac26953e8a9d93e485badf1423b",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/InvitationShowParameter"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/InvitationJoinSuccess"
+                    },
+                    "403": {
+                        "description": "エラー",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "エラーメッセージ"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "エラー",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "エラーメッセージ"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/master": {
+            "get": {
+                "tags": [
+                    "Master"
+                ],
+                "summary": "マスターデータを取得",
+                "operationId": "63ba56a775b57dd3717b6cf5f41ccfdd",
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/MasterSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/meal-categories": {
+            "get": {
+                "tags": [
+                    "MealPlans"
+                ],
+                "summary": "献立カテゴリ一覧を取得",
+                "operationId": "0324af8abdd72a480dc4735cb8548816",
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/MealCategoryIndexSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "MealPlans"
+                ],
+                "summary": "献立カテゴリを作成",
+                "operationId": "5507f8d020066dacc5cd0de31893a88f",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/MealCategoryRequest"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/MealCategoryStoreSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/meal-categories/bulk": {
+            "put": {
+                "tags": [
+                    "MealPlans"
+                ],
+                "summary": "献立カテゴリを更新",
+                "operationId": "9d01ae83375d387a4e61e72c6a91fe57",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/MealCategoryBulkUpdateRequest"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/MealCategoryBulkUpdateSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/meal-categories/{id}": {
+            "delete": {
+                "tags": [
+                    "MealPlans"
+                ],
+                "summary": "献立カテゴリを削除",
+                "operationId": "a747cf41e12a8c3be60a81085a339829",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/MealCategoryIdParam"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/MealCategoryDestroySuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/meal-plans": {
+            "get": {
+                "tags": [
+                    "MealPlans"
+                ],
+                "summary": "献立一覧を取得",
+                "operationId": "97ebdfd313f0459c06cf0a048ab8b1d3",
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/MealPlanIndexSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "MealPlans"
+                ],
+                "summary": "献立を作成",
+                "description": "献立を作成します。",
+                "operationId": "8757b0ba77d78ebcf68636c44897a11c",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/MealPlanRequest"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/MealPlanStoreSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/meal-plans/{id}": {
+            "get": {
+                "tags": [
+                    "MealPlans"
+                ],
+                "summary": "献立の詳細を取得",
+                "operationId": "c5ba319a7da81610d3312fef1bd03388",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/MealPlanIdParam"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/MealPlanShowSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "MealPlans"
+                ],
+                "summary": "献立を更新",
+                "operationId": "c12aa611abd0e80f6f02214b178d3674",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/MealPlanIdParam"
+                    }
+                ],
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/MealPlanRequest"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/MealPlanUpdateSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "MealPlans"
+                ],
+                "summary": "献立を削除",
+                "operationId": "0492908ed27eeea9284a4d7d9522425f",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/MealPlanIdParam"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/MealPlanDestroySuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/recipe-categories": {
+            "get": {
+                "tags": [
+                    "Recipes"
+                ],
+                "summary": "料理カテゴリ一覧を取得",
+                "operationId": "12abd42a6e214d701102a5ff7fcdaa33",
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/RecipeCategoryIndexSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Recipes"
+                ],
+                "summary": "料理カテゴリを作成",
+                "operationId": "7c0d5887e066bbbd483be977fde9190d",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/RecipeCategoryRequest"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/RecipeCategoryStoreSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/recipe-categories/bulk": {
+            "put": {
+                "tags": [
+                    "Recipes"
+                ],
+                "summary": "料理カテゴリを更新",
+                "operationId": "0d4ab9983cbd49759ef8122cbba081df",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/RecipeCategoryBulkUpdateRequest"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/RecipeCategoryBulkUpdateSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Recipes"
+                ],
+                "summary": "料理カテゴリを削除",
+                "operationId": "c88e18cb4ead3c7746a57bb92d29a965",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/RecipeCategoryBulkDestroyRequest"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/RecipeCategoryBulkDestroySuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/recipes": {
+            "get": {
+                "tags": [
+                    "Recipes"
+                ],
+                "summary": "料理一覧を取得",
+                "operationId": "c8c22c89eaaa570cd6722a3901fed111",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/RecipePageParam"
+                    },
+                    {
+                        "$ref": "#/components/parameters/RecipePerPageParam"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/RecipeIndexSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Recipes"
+                ],
+                "summary": "料理を作成",
+                "operationId": "972a3558fca9c0601bf7f717d37e42b8",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/RecipeRequest"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/RecipeStoreSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/recipes/{id}": {
+            "get": {
+                "tags": [
+                    "Recipes"
+                ],
+                "summary": "料理の詳細を取得",
+                "operationId": "6b054efcc06297ad421f5f8c6b22d609",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/RecipeIdParam"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/RecipeShowSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Recipes"
+                ],
+                "summary": "料理を更新",
+                "operationId": "b9f1d6135c52c2d7e718025d4d2a83e5",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/RecipeIdParam"
+                    }
+                ],
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/RecipeRequest"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/RecipeUpdateSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Recipes"
+                ],
+                "summary": "料理を削除",
+                "operationId": "b163ab608ece4246a0e7bb46926839cf",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/RecipeIdParam"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/RecipeDestroySuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/shopping-categories": {
+            "get": {
+                "tags": [
+                    "Shopping"
+                ],
+                "summary": "買い物カテゴリ一覧を取得",
+                "operationId": "aefb602bbe25e71bc600268ed1061283",
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/ShoppingCategoryIndexSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/shopping-categories/bulk": {
+            "put": {
+                "tags": [
+                    "Shopping"
+                ],
+                "summary": "買い物カテゴリを一括更新（isDefaultは更新不可）",
+                "operationId": "ca6454518b6642e1cc7c5be1bdebd4f7",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/ShoppingCategoryBulkUpdateRequest"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/ShoppingCategoryBulkUpdateSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Shopping"
+                ],
+                "summary": "買い物カテゴリを一括作成",
+                "operationId": "d9923dd8d7add26b07bf55eef9ecc56e",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/ShoppingCategoryBulkStoreRequest"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/ShoppingCategoryBulkStoreSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Shopping"
+                ],
+                "summary": "買い物カテゴリを削除",
+                "operationId": "150b3008d405b8ff3b22573bd58a8609",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/ShoppingCategoryBulkDestroyRequest"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/ShoppingCategoryBulkDestroySuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/shopping-items": {
+            "get": {
+                "tags": [
+                    "Shopping"
+                ],
+                "summary": "買い物アイテム一覧を取得",
+                "operationId": "25e76ff57c6867eebf190c54706b2397",
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/ShoppingItemIndexSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Shopping"
+                ],
+                "summary": "買い物アイテムを作成",
+                "operationId": "5c39746ace78b613725ec210781f2d9b",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/ShoppingItemStoreRequest"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/ShoppingItemStoreSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/shopping-items/bulk": {
+            "put": {
+                "tags": [
+                    "Shopping"
+                ],
+                "summary": "買い物アイテムを一括更新",
+                "operationId": "34199b9f20cadd8a07c23f7a9073f3d5",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/ShoppingItemBulkUpdateRequest"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/ShoppingItemBulkUpdateSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Shopping"
+                ],
+                "summary": "買い物アイテムを一括削除",
+                "operationId": "761b207f2369a84383b52ef8c7359ec5",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/ShoppingItemBulkDestroyRequest"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/ShoppingItemBulkDestroySuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/shopping-tags": {
+            "get": {
+                "tags": [
+                    "Shopping"
+                ],
+                "summary": "買い物タグ一覧を取得",
+                "operationId": "9f801f94e02308389476779a76bb0739",
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/ShoppingTagIndexSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/users": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "認証ユーザーと同じグループに属するユーザ一覧を取得",
+                "operationId": "7208c29037df2b8bb02499ba39ed8a78",
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/UserIndexSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/login": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "ログイン",
+                "operationId": "42f77e072dec84b0e1094cca1228298e",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/UserLoginRequest"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/UserLoginSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationErrors"
+                    }
+                },
+                "security": []
+            }
+        },
+        "/logout": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "ログアウト",
+                "operationId": "03afb12b342c2ea43bdc1de4f39e91a8",
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/UserLogoutSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "scalar": "auth"
+                    }
+                ]
+            }
+        },
+        "/register": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "アカウント登録",
+                "operationId": "573de1fed352c1205a32c4d1b9877375",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/UserRegisterRequest"
+                },
+                "responses": {
+                    "204": {
+                        "$ref": "#/components/responses/UserRegisterSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "409": {
+                        "$ref": "#/components/responses/UserAlreadyLoggedIn"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationErrors"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/UnexpectedError"
+                    }
+                },
+                "security": []
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Color": {
+                "properties": {
+                    "id": {
+                        "description": "ID",
+                        "type": "string",
+                        "example": "1"
+                    },
+                    "name": {
+                        "description": "色名",
+                        "type": "string",
+                        "example": "イエロー"
+                    },
+                    "colorcode": {
+                        "description": "色コード",
+                        "type": "string",
+                        "example": "#F5B12E"
+                    },
+                    "order": {
+                        "description": "ソート順",
+                        "type": "integer",
+                        "example": 1
+                    }
+                },
+                "type": "object"
+            },
+            "Ingredient": {
+                "required": [
+                    "id",
+                    "name"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "ID",
+                        "type": "string",
+                        "example": "1"
+                    },
+                    "name": {
+                        "description": "食材名",
+                        "type": "string",
+                        "example": "牛肉"
+                    },
+                    "quantity": {
+                        "description": "量",
+                        "type": "number",
+                        "example": 1.5,
+                        "nullable": true
+                    },
+                    "unit": {
+                        "$ref": "#/components/schemas/IngredientUnit"
+                    },
+                    "categoryId": {
+                        "description": "カテゴリID",
+                        "type": "string",
+                        "example": "1"
+                    },
+                    "order": {
+                        "description": "並び順",
+                        "type": "integer",
+                        "example": 1
+                    }
+                },
+                "type": "object"
+            },
+            "IngredientCategory": {
+                "required": [
+                    "id",
+                    "name"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "ID",
+                        "type": "string",
+                        "example": "1"
+                    },
+                    "name": {
+                        "description": "カテゴリ名",
+                        "type": "string",
+                        "example": "食材"
+                    },
+                    "isDefault": {
+                        "description": "デフォルトカテゴリかどうか",
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "order": {
+                        "description": "順番",
+                        "type": "integer",
+                        "example": 1
+                    }
+                },
+                "type": "object"
+            },
+            "IngredientUnit": {
+                "required": [
+                    "id",
+                    "name",
+                    "requiresQuantity",
+                    "order"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "ID",
+                        "type": "string",
+                        "example": "1"
+                    },
+                    "name": {
+                        "description": "食材単位名",
+                        "type": "string",
+                        "example": "g"
+                    },
+                    "position": {
+                        "description": "単位の位置（prefix: 数値の前、suffix: 数値の後）",
+                        "type": "string",
+                        "example": "prefix"
+                    },
+                    "requiresQuantity": {
+                        "description": "量を入力するかどうか",
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "order": {
+                        "description": "並び順",
+                        "type": "integer",
+                        "example": 1
+                    }
+                },
+                "type": "object"
+            },
+            "MealPlan": {
+                "required": [
+                    "date",
+                    "categoryId"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "ID",
+                        "type": "string",
+                        "example": "1"
+                    },
+                    "date": {
+                        "description": "日付",
+                        "type": "string",
+                        "format": "date",
+                        "example": "2023-10-05"
+                    },
+                    "category": {
+                        "properties": {
+                            "id": {
+                                "description": "ID",
+                                "type": "string",
+                                "example": "1"
+                            },
+                            "name": {
+                                "description": "カテゴリ名",
+                                "type": "string",
+                                "example": "朝食"
+                            },
+                            "colorId": {
+                                "description": "色ID",
+                                "type": "string",
+                                "example": "1"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "menu": {
+                        "description": "献立",
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "category": {
+                                    "properties": {
+                                        "id": {
+                                            "description": "ID",
+                                            "type": "string",
+                                            "example": "1"
+                                        },
+                                        "name": {
+                                            "description": "分類名",
+                                            "type": "string",
+                                            "example": "主食"
+                                        }
+                                    },
+                                    "type": "object"
+                                },
+                                "recipes": {
+                                    "description": "料理",
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Recipe"
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "MealCategory": {
+                "required": [
+                    "id",
+                    "name",
+                    "colorId"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "ID",
+                        "type": "string",
+                        "example": "1"
+                    },
+                    "name": {
+                        "description": "カテゴリ名",
+                        "type": "string",
+                        "example": "朝食"
+                    },
+                    "colorId": {
+                        "description": "色ID",
+                        "type": "string",
+                        "example": "1"
+                    },
+                    "order": {
+                        "description": "ソート順",
+                        "type": "integer",
+                        "example": 1
+                    }
+                },
+                "type": "object"
+            },
+            "MenuCategory": {
+                "required": [
+                    "id",
+                    "name",
+                    "order"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "ID",
+                        "type": "string",
+                        "example": "1"
+                    },
+                    "name": {
+                        "description": "メニュー種別名",
+                        "type": "string",
+                        "example": "朝食"
+                    },
+                    "order": {
+                        "description": "ソート順",
+                        "type": "integer",
+                        "example": 1
+                    }
+                },
+                "type": "object"
+            },
+            "Recipe": {
+                "properties": {
+                    "id": {
+                        "description": "ID",
+                        "type": "string",
+                        "example": "1"
+                    },
+                    "name": {
+                        "description": "料理名",
+                        "type": "string",
+                        "example": "ハンバーグ"
+                    },
+                    "categories": {
+                        "description": "カテゴリ",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/RecipeCategory"
+                        }
+                    },
+                    "ingredients": {
+                        "description": "食材",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Ingredient"
+                        }
+                    },
+                    "thumbnail": {
+                        "$ref": "#/components/schemas/RecipeThumbnail"
+                    },
+                    "url": {
+                        "description": "レシピURL",
+                        "type": "string",
+                        "example": "https://www.google.com"
+                    },
+                    "steps": {
+                        "description": "手順",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/RecipeStep"
+                        }
+                    },
+                    "memo": {
+                        "description": "メモ",
+                        "type": "string",
+                        "example": "ハンバーグは美味しい"
+                    }
+                },
+                "type": "object"
+            },
+            "RecipeThumbnail": {
+                "properties": {
+                    "id": {
+                        "description": "画像ID",
+                        "type": "string",
+                        "example": "1"
+                    },
+                    "src": {
+                        "description": "サムネイル画像パス",
+                        "type": "string",
+                        "example": "https://example.com/image.jpg"
+                    },
+                    "width": {
+                        "description": "サムネイル画像幅",
+                        "type": "integer",
+                        "example": 300
+                    },
+                    "height": {
+                        "description": "サムネイル画像高さ",
+                        "type": "integer",
+                        "example": 200
+                    }
+                },
+                "type": "object",
+                "nullable": true
+            },
+            "RecipeStep": {
+                "required": [
+                    "id",
+                    "instruction",
+                    "order"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "ID",
+                        "type": "string",
+                        "example": "1"
+                    },
+                    "instruction": {
+                        "description": "手順",
+                        "type": "string",
+                        "example": "ハンバーグを作る"
+                    },
+                    "image": {
+                        "$ref": "#/components/schemas/RecipeStepImage"
+                    },
+                    "order": {
+                        "description": "並び順",
+                        "type": "integer",
+                        "example": 1
+                    }
+                },
+                "type": "object"
+            },
+            "RecipeStepImage": {
+                "properties": {
+                    "id": {
+                        "description": "画像ID",
+                        "type": "string",
+                        "example": "1"
+                    },
+                    "src": {
+                        "description": "画像パス",
+                        "type": "string",
+                        "example": "https://example.com/step1.jpg"
+                    },
+                    "width": {
+                        "description": "画像幅",
+                        "type": "integer",
+                        "example": 300
+                    },
+                    "height": {
+                        "description": "画像高さ",
+                        "type": "integer",
+                        "example": 200
+                    }
+                },
+                "type": "object",
+                "nullable": true
+            },
+            "RecipeCategory": {
+                "required": [
+                    "id",
+                    "name"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "ID",
+                        "type": "string",
+                        "example": "1"
+                    },
+                    "name": {
+                        "description": "カテゴリ名",
+                        "type": "string",
+                        "example": "肉料理"
+                    },
+                    "order": {
+                        "description": "並び順",
+                        "type": "integer",
+                        "example": 1
+                    }
+                },
+                "type": "object"
+            },
+            "ShoppingItem": {
+                "required": [
+                    "id",
+                    "name",
+                    "isPinned",
+                    "isChecked",
+                    "categoryId",
+                    "order"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "ID",
+                        "type": "string",
+                        "example": "1"
+                    },
+                    "name": {
+                        "description": "買い物アイテム名（数量込み）",
+                        "type": "string",
+                        "example": "ひき肉100g"
+                    },
+                    "isPinned": {
+                        "description": "ピン留め",
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "isChecked": {
+                        "description": "チェック状態",
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "categoryId": {
+                        "description": "カテゴリID",
+                        "type": "string",
+                        "example": "1"
+                    },
+                    "tags": {
+                        "description": "買い物タグ配列",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ShoppingTag"
+                        }
+                    },
+                    "order": {
+                        "description": "順番",
+                        "type": "integer",
+                        "example": 1
+                    }
+                },
+                "type": "object"
+            },
+            "ShoppingCategory": {
+                "required": [
+                    "id",
+                    "name"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "ID",
+                        "type": "string",
+                        "example": "1"
+                    },
+                    "name": {
+                        "description": "カテゴリ名",
+                        "type": "string",
+                        "example": "スーパーA"
+                    },
+                    "isDefault": {
+                        "description": "デフォルト",
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "order": {
+                        "description": "順番",
+                        "type": "integer",
+                        "example": 1
+                    }
+                },
+                "type": "object"
+            },
+            "ShoppingTag": {
+                "required": [
+                    "id",
+                    "name"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "ID",
+                        "type": "string",
+                        "example": "1"
+                    },
+                    "name": {
+                        "description": "タグ名",
+                        "type": "string",
+                        "example": "サラダ"
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "responses": {
+            "UserLoginSuccess": {
+                "description": "ログインに成功しました",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "ログインに成功しました"
+                                },
+                                "data": {
+                                    "type": "null",
+                                    "example": null
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "UserLogoutSuccess": {
+                "description": "ログアウトに成功しました",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "ログアウトに成功しました"
+                                },
+                                "data": {
+                                    "type": "null",
+                                    "example": null
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "UserRegisterSuccess": {
+                "description": "アカウント登録に成功しました",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "アカウント登録に成功しました"
+                                },
+                                "data": {
+                                    "type": "null",
+                                    "example": null
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "UserAlreadyLoggedIn": {
+                "description": "既にログインしています",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "既にログインしています"
+                                },
+                                "data": {
+                                    "type": "null",
+                                    "example": null
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "Unauthorized": {
+                "description": "認証エラー",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": false
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "認証が必要です。"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "NotFound": {
+                "description": "リソースが見つかりませんでした",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": false
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "指定されたレコードが見つかりません。"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "ValidationErrors": {
+                "description": "バリデーションエラー",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": false
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "入力内容に誤りがあります。"
+                                },
+                                "errors": {
+                                    "properties": {
+                                        "name": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "example": "名前は必須です。"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "UnexpectedError": {
+                "description": "予期せぬエラー",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": false
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "エラーが発生しました。"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "ImageUploadBulkSuccess": {
+                "description": "複数画像アップロード成功",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "5枚の画像をアップロードしました。"
+                                },
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "string",
+                                                "example": "1"
+                                            },
+                                            "src": {
+                                                "type": "string",
+                                                "example": "/storage/group_id/recipes/steps/filename.jpg"
+                                            },
+                                            "width": {
+                                                "type": "integer",
+                                                "example": 800
+                                            },
+                                            "height": {
+                                                "type": "integer",
+                                                "example": 600
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                },
+                                "total": {
+                                    "description": "アップロードされた画像数",
+                                    "type": "integer",
+                                    "example": 5
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "ImageDeleteBulkSuccess": {
+                "description": "画像一括削除成功",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "3件の画像を削除しました。"
+                                },
+                                "data": {
+                                    "type": "null",
+                                    "example": null
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "IngredientCategoryIndexSuccess": {
+                "description": "食材カテゴリーを5件取得しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "食材カテゴリーを5件取得しました。"
+                                },
+                                "data": {
+                                    "description": "食材カテゴリ一覧",
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/IngredientCategory"
+                                    }
+                                },
+                                "total": {
+                                    "description": "食材カテゴリ総数",
+                                    "type": "integer",
+                                    "example": 5
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "IngredientCategoryBulkStoreSuccess": {
+                "description": "3件の食材カテゴリーを一括作成しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "3件の食材カテゴリーを一括作成しました。"
+                                },
+                                "data": {
+                                    "description": "作成された食材カテゴリ一覧",
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/IngredientCategory"
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "IngredientCategoryBulkUpdateSuccess": {
+                "description": "3件の食材カテゴリーを更新しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "3件の食材カテゴリーを更新しました。"
+                                },
+                                "data": {
+                                    "$ref": "#/components/schemas/IngredientCategory"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "IngredientCategoryBulkDestroySuccess": {
+                "description": "2件の食材カテゴリーを削除しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "2件の食材カテゴリーを削除しました。"
+                                },
+                                "data": {
+                                    "type": "null",
+                                    "example": null
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "InvitationStoreSuccess": {
+                "description": "招待トークンを作成しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "招待トークンを作成しました。"
+                                },
+                                "data": {
+                                    "properties": {
+                                        "token": {
+                                            "type": "string",
+                                            "example": "1234567890"
+                                        },
+                                        "expires_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2025-01-01 00:00:00"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "InvitationShowSuccess": {
+                "description": "招待情報を取得しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "招待情報を取得しました。"
+                                },
+                                "data": {
+                                    "properties": {
+                                        "token": {
+                                            "type": "string",
+                                            "example": "1234567890"
+                                        },
+                                        "expires_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2025-01-01 00:00:00"
+                                        },
+                                        "inviter": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "山田太郎"
+                                                },
+                                                "avatar": {
+                                                    "properties": {
+                                                        "seed": {
+                                                            "type": "string",
+                                                            "example": "1234567890"
+                                                        },
+                                                        "url": {
+                                                            "type": "string",
+                                                            "example": "https://example.com/image.jpg"
+                                                        },
+                                                        "width": {
+                                                            "type": "integer",
+                                                            "example": 300
+                                                        },
+                                                        "height": {
+                                                            "type": "integer",
+                                                            "example": 200
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "InvitationJoinSuccess": {
+                "description": "グループに参加しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "グループに参加しました。"
+                                },
+                                "data": {
+                                    "type": "null",
+                                    "example": null
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "MasterSuccess": {
+                "description": "マスターデータを取得しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "マスターデータを取得しました。"
+                                },
+                                "data": {
+                                    "properties": {
+                                        "recipeCategories": {
+                                            "description": "料理カテゴリ一覧",
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/RecipeCategory"
+                                            }
+                                        },
+                                        "ingredientCategories": {
+                                            "description": "食材カテゴリ一覧",
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/IngredientCategory"
+                                            }
+                                        },
+                                        "ingredientUnits": {
+                                            "description": "食材単位一覧",
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/IngredientUnit"
+                                            }
+                                        },
+                                        "menuCategories": {
+                                            "description": "メニュー種別一覧",
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/MenuCategory"
+                                            }
+                                        },
+                                        "shoppingTags": {
+                                            "description": "買い物タグ一覧",
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ShoppingTag"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "MealPlanIndexSuccess": {
+                "description": "献立を5件取得しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "献立を5件取得しました。"
+                                },
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "date": {
+                                                "description": "日付",
+                                                "type": "string",
+                                                "format": "date",
+                                                "example": "2023-10-05"
+                                            },
+                                            "mealPlans": {
+                                                "description": "献立メニュー",
+                                                "type": "array",
+                                                "items": {
+                                                    "$ref": "#/components/schemas/MealPlan"
+                                                }
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                },
+                                "total": {
+                                    "description": "献立総数",
+                                    "type": "integer",
+                                    "example": 5
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "MealPlanStoreSuccess": {
+                "description": "献立(2024-01-15)を作成しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "献立(2024-01-15)を作成しました。"
+                                },
+                                "data": {
+                                    "$ref": "#/components/schemas/MealPlan"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "MealPlanShowSuccess": {
+                "description": "献立(2024-01-15)を取得しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "献立(2024-01-15)を取得しました。"
+                                },
+                                "data": {
+                                    "$ref": "#/components/schemas/MealPlan"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "MealPlanUpdateSuccess": {
+                "description": "献立(2024-01-15)を更新しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "献立(2024-01-15)を更新しました。"
+                                },
+                                "data": {
+                                    "$ref": "#/components/schemas/MealPlan"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "MealPlanDestroySuccess": {
+                "description": "献立(2024-01-15)を削除しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "献立(2024-01-15)を削除しました。"
+                                },
+                                "data": {
+                                    "type": "null",
+                                    "example": null
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "MealCategoryIndexSuccess": {
+                "description": "献立カテゴリ一覧を取得しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "献立カテゴリ一覧を取得しました。"
+                                },
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/MealCategory"
+                                    }
+                                },
+                                "total": {
+                                    "type": "integer",
+                                    "example": 100
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "MealCategoryStoreSuccess": {
+                "description": "献立カテゴリ(朝食)を作成しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "献立カテゴリ(朝食)を作成しました。"
+                                },
+                                "data": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "example": "1"
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "example": "朝食"
+                                        },
+                                        "colorId": {
+                                            "type": "string",
+                                            "example": "2"
+                                        },
+                                        "order": {
+                                            "type": "integer",
+                                            "example": 0
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "MealCategoryBulkUpdateSuccess": {
+                "description": "3件の献立カテゴリを更新しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "3件の献立カテゴリを更新しました。"
+                                },
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/MealCategory"
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "MealCategoryDestroySuccess": {
+                "description": "献立カテゴリ(昼食)を削除しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "献立カテゴリ(昼食)を削除しました。"
+                                },
+                                "data": {
+                                    "type": "null",
+                                    "example": null
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "MenuCategoryIndexSuccess": {
+                "description": "正常に取得されました",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "description": "コース種別一覧",
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/MenuCategory"
+                                    }
+                                },
+                                "total": {
+                                    "description": "コース種別総数",
+                                    "type": "integer",
+                                    "example": 100
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "RecipeIndexSuccess": {
+                "description": "レシピを10件取得しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "レシピを10件取得しました。"
+                                },
+                                "data": {
+                                    "description": "料理データ一覧",
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Recipe"
+                                    }
+                                },
+                                "total": {
+                                    "description": "料理総数",
+                                    "type": "integer",
+                                    "example": 10
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "RecipeStoreSuccess": {
+                "description": "レシピ(カレーライス)を作成しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "レシピ(カレーライス)を作成しました。"
+                                },
+                                "data": {
+                                    "$ref": "#/components/schemas/Recipe"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "RecipeShowSuccess": {
+                "description": "レシピ(カレーライス)を取得しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "レシピ(カレーライス)を取得しました。"
+                                },
+                                "data": {
+                                    "$ref": "#/components/schemas/Recipe"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "RecipeUpdateSuccess": {
+                "description": "レシピ(カレーライス)を更新しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "レシピ(カレーライス)を更新しました。"
+                                },
+                                "data": {
+                                    "$ref": "#/components/schemas/Recipe"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "RecipeDestroySuccess": {
+                "description": "レシピ(カレーライス)を削除しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "レシピ(カレーライス)を削除しました。"
+                                },
+                                "data": {
+                                    "type": "null",
+                                    "example": null
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "RecipeCategoryIndexSuccess": {
+                "description": "料理カテゴリ一覧を取得しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "料理カテゴリ一覧を取得しました。"
+                                },
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/RecipeCategory"
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "RecipeCategoryStoreSuccess": {
+                "description": "料理カテゴリー(和食)を作成しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "料理カテゴリー(和食)を作成しました。"
+                                },
+                                "data": {
+                                    "$ref": "#/components/schemas/RecipeCategory"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "RecipeCategoryBulkUpdateSuccess": {
+                "description": "料理カテゴリーを3件更新しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "料理カテゴリーを3件更新しました。"
+                                },
+                                "data": {
+                                    "$ref": "#/components/schemas/RecipeCategory"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "RecipeCategoryBulkDestroySuccess": {
+                "description": "料理カテゴリーを2件削除しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "料理カテゴリーを2件削除しました。"
+                                },
+                                "data": {
+                                    "type": "null",
+                                    "example": null
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "ShoppingItemIndexSuccess": {
+                "description": "買い物リストを5件取得しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "買い物リストを5件取得しました。"
+                                },
+                                "data": {
+                                    "description": "買い物アイテム一覧（カテゴリーのorder順でソートされた1次元配列）",
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ShoppingItem"
+                                    }
+                                },
+                                "total": {
+                                    "type": "integer",
+                                    "example": 5
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "ShoppingItemStoreSuccess": {
+                "description": "買い物アイテム(りんご)を作成しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "買い物アイテム(りんご)を作成しました。"
+                                },
+                                "data": {
+                                    "$ref": "#/components/schemas/ShoppingItem"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "ShoppingItemShowSuccess": {
+                "description": "買い物アイテム(りんご)を取得しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "買い物アイテム(りんご)を取得しました。"
+                                },
+                                "data": {
+                                    "$ref": "#/components/schemas/ShoppingItem"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "ShoppingItemBulkUpdateSuccess": {
+                "description": "買い物アイテムを3件更新しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "買い物アイテムを3件更新しました。"
+                                },
+                                "data": {
+                                    "description": "更新された買い物アイテム一覧",
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ShoppingItem"
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "ShoppingItemBulkDestroySuccess": {
+                "description": "買い物アイテムを2件削除しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "買い物アイテムを2件削除しました。"
+                                },
+                                "data": {
+                                    "type": "null",
+                                    "example": null
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "ShoppingCategoryIndexSuccess": {
+                "description": "買い物カテゴリーを5件取得しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "買い物カテゴリーを5件取得しました。"
+                                },
+                                "data": {
+                                    "description": "買い物カテゴリ一覧",
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ShoppingCategory"
+                                    }
+                                },
+                                "total": {
+                                    "description": "買い物カテゴリ総数",
+                                    "type": "integer",
+                                    "example": 5
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "ShoppingCategoryStoreSuccess": {
+                "description": "買い物カテゴリー(食品)を作成しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "買い物カテゴリー(食品)を作成しました。"
+                                },
+                                "data": {
+                                    "$ref": "#/components/schemas/ShoppingCategory"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "ShoppingCategoryBulkStoreSuccess": {
+                "description": "買い物カテゴリーを3件作成しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "買い物カテゴリーを3件作成しました。"
+                                },
+                                "data": {
+                                    "description": "作成された買い物カテゴリ一覧",
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ShoppingCategory"
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "ShoppingCategoryBulkUpdateSuccess": {
+                "description": "買い物カテゴリーを3件更新しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "買い物カテゴリーを3件更新しました。"
+                                },
+                                "data": {
+                                    "description": "更新された買い物カテゴリ一覧",
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ShoppingCategory"
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "ShoppingCategoryBulkDestroySuccess": {
+                "description": "買い物カテゴリーを2件削除しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "買い物カテゴリーを2件削除しました。"
+                                },
+                                "data": {
+                                    "type": "null",
+                                    "example": null
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "ShoppingTagIndexSuccess": {
+                "description": "買い物タグを5件取得しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "買い物タグを5件取得しました。"
+                                },
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ShoppingTag"
+                                    }
+                                },
+                                "total": {
+                                    "type": "integer",
+                                    "example": 5
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "UserIndexSuccess": {
+                "description": "同じグループのユーザーを5件取得しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "同じグループのユーザーを5件取得しました。"
+                                },
+                                "data": {
+                                    "description": "ユーザ一覧",
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "name": {
+                                                "type": "string",
+                                                "example": "山田太郎"
+                                            },
+                                            "language": {
+                                                "description": "ユーザーの言語設定",
+                                                "type": "string",
+                                                "example": "ja"
+                                            },
+                                            "avatar": {
+                                                "properties": {
+                                                    "seed": {
+                                                        "type": "string",
+                                                        "example": "1234567890"
+                                                    },
+                                                    "url": {
+                                                        "type": "string",
+                                                        "example": "https://example.com/avatar.jpg"
+                                                    },
+                                                    "width": {
+                                                        "type": "integer",
+                                                        "example": 300
+                                                    },
+                                                    "height": {
+                                                        "type": "integer",
+                                                        "example": 300
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                },
+                                "total": {
+                                    "description": "ユーザ総数",
+                                    "type": "integer",
+                                    "example": 5
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "parameters": {
+            "InvitationShowParameter": {
+                "name": "token",
+                "in": "path",
+                "required": true,
+                "schema": {
+                    "type": "string",
+                    "example": "1234567890"
+                }
+            },
+            "MealPlanIdParam": {
+                "name": "id",
+                "in": "path",
+                "description": "献立ID",
+                "required": true,
+                "schema": {
+                    "type": "string",
+                    "example": "1"
+                }
+            },
+            "MealCategoryIdParam": {
+                "name": "id",
+                "in": "path",
+                "description": "献立カテゴリID",
+                "required": true,
+                "schema": {
+                    "type": "string",
+                    "example": "1"
+                }
+            },
+            "RecipePageParam": {
+                "name": "page",
+                "in": "query",
+                "description": "ページ番号",
+                "required": false,
+                "schema": {
+                    "type": "integer",
+                    "default": 1,
+                    "minimum": 1
+                }
+            },
+            "RecipePerPageParam": {
+                "name": "per_page",
+                "in": "query",
+                "description": "1ページあたりの表示件数",
+                "required": false,
+                "schema": {
+                    "type": "integer",
+                    "default": 15,
+                    "maximum": 100,
+                    "minimum": 1
+                }
+            },
+            "RecipeIdParam": {
+                "name": "id",
+                "in": "path",
+                "description": "料理ID",
+                "required": true,
+                "schema": {
+                    "type": "string",
+                    "example": "1"
+                }
+            },
+            "RecipeCategoryIdParam": {
+                "name": "id",
+                "in": "path",
+                "description": "料理カテゴリID",
+                "required": true,
+                "schema": {
+                    "type": "string",
+                    "example": "1"
+                }
+            },
+            "ShoppingIdParam": {
+                "name": "id",
+                "in": "path",
+                "description": "買い物アイテムID",
+                "required": true,
+                "schema": {
+                    "type": "string",
+                    "example": "1"
+                }
+            },
+            "ShoppingCategoryIdParam": {
+                "name": "id",
+                "in": "path",
+                "description": "買い物カテゴリID",
+                "required": true,
+                "schema": {
+                    "type": "string",
+                    "example": "1"
+                }
+            }
+        },
+        "requestBodies": {
+            "UserLoginRequest": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "required": [
+                                "email",
+                                "password"
+                            ],
+                            "properties": {
+                                "email": {
+                                    "type": "string",
+                                    "format": "email",
+                                    "example": "test@example.com"
+                                },
+                                "password": {
+                                    "type": "string",
+                                    "format": "password",
+                                    "example": "password"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "UserRegisterRequest": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "required": [
+                                "name",
+                                "email",
+                                "password",
+                                "password_confirmation"
+                            ],
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "example": "John Doe"
+                                },
+                                "email": {
+                                    "type": "string",
+                                    "format": "email",
+                                    "example": "test@example.com"
+                                },
+                                "password": {
+                                    "type": "string",
+                                    "format": "password",
+                                    "example": "password"
+                                },
+                                "password_confirmation": {
+                                    "type": "string",
+                                    "format": "password",
+                                    "example": "password"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "ImageBulkUploadRequest": {
+                "required": true,
+                "content": {
+                    "multipart/form-data": {
+                        "schema": {
+                            "required": [
+                                "images[0]"
+                            ],
+                            "properties": {
+                                "images[0]": {
+                                    "description": "1枚目の画像ファイル（必須）",
+                                    "type": "string",
+                                    "format": "binary"
+                                },
+                                "images[1]": {
+                                    "description": "2枚目の画像ファイル（オプション）",
+                                    "type": "string",
+                                    "format": "binary"
+                                },
+                                "images[2]": {
+                                    "description": "3枚目の画像ファイル（オプション）",
+                                    "type": "string",
+                                    "format": "binary"
+                                },
+                                "images[3]": {
+                                    "description": "4枚目の画像ファイル（オプション）",
+                                    "type": "string",
+                                    "format": "binary"
+                                },
+                                "images[4]": {
+                                    "description": "5枚目の画像ファイル（オプション）",
+                                    "type": "string",
+                                    "format": "binary"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "ImageBulkDestroyRequest": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "required": [
+                                "ids"
+                            ],
+                            "properties": {
+                                "ids": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "related_id": {
+                                    "description": "画像が紐づいているエンティティのID",
+                                    "type": "string",
+                                    "format": "uuid"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "IngredientCategoryBulkStoreRequest": {
+                "description": "一括作成する食材カテゴリデータ",
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "name": {
+                                                "description": "食材カテゴリ名",
+                                                "type": "string",
+                                                "example": "野菜"
+                                            },
+                                            "order": {
+                                                "description": "食材カテゴリ順序",
+                                                "type": "integer",
+                                                "example": "1"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "IngredientCategoryBulkUpdateRequest": {
+                "description": "一括更新する食材カテゴリデータ",
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "description": "食材カテゴリID",
+                                                "type": "string",
+                                                "example": "1"
+                                            },
+                                            "name": {
+                                                "description": "食材カテゴリ名",
+                                                "type": "string",
+                                                "example": "野菜"
+                                            },
+                                            "order": {
+                                                "description": "食材カテゴリ順序",
+                                                "type": "integer",
+                                                "example": "1"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "IngredientCategoryBulkDestroyRequest": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "ids": {
+                                    "type": "array",
+                                    "items": {
+                                        "description": "カテゴリID",
+                                        "type": "string",
+                                        "example": "1"
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "MealPlanRequest": {
+                "description": "※新規作成時はid不要",
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "required": [
+                                "date",
+                                "categoryId"
+                            ],
+                            "properties": {
+                                "date": {
+                                    "description": "日付",
+                                    "type": "string",
+                                    "format": "date",
+                                    "example": "2023-10-05"
+                                },
+                                "mealCategoryId": {
+                                    "description": "種別ID",
+                                    "type": "string",
+                                    "example": "1"
+                                },
+                                "menu": {
+                                    "description": "献立メニュー",
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "categoryId": {
+                                                "description": "メニュー種別ID",
+                                                "type": "string",
+                                                "example": "1"
+                                            },
+                                            "recipeIds": {
+                                                "description": "料理ID",
+                                                "type": "array",
+                                                "items": {
+                                                    "description": "料理ID",
+                                                    "type": "string",
+                                                    "example": "1"
+                                                }
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "MealCategoryRequest": {
+                "description": "※新規作成時はid不要",
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "required": [
+                                "name",
+                                "colorId"
+                            ],
+                            "properties": {
+                                "name": {
+                                    "description": "カテゴリ名",
+                                    "type": "string",
+                                    "example": "朝食"
+                                },
+                                "colorId": {
+                                    "description": "色ID",
+                                    "type": "string",
+                                    "example": "1"
+                                },
+                                "order": {
+                                    "description": "ソート順",
+                                    "type": "integer",
+                                    "example": 1
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "MealCategoryBulkUpdateRequest": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/MealCategory"
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "MealCategoryBulkDestroyRequest": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "ids": {
+                                    "description": "削除する献立カテゴリのID配列",
+                                    "type": "array",
+                                    "items": {
+                                        "description": "献立カテゴリID",
+                                        "type": "string",
+                                        "example": "2"
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "RecipeRequest": {
+                "description": "※新規作成時はid不要",
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "name": {
+                                    "description": "料理名",
+                                    "type": "string",
+                                    "example": "ハンバーグ"
+                                },
+                                "categoryIds": {
+                                    "description": "カテゴリID",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string",
+                                        "example": "1"
+                                    }
+                                },
+                                "ingredients": {
+                                    "description": "食材",
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "description": "ID（更新時）",
+                                                "type": "string",
+                                                "example": "1",
+                                                "nullable": true
+                                            },
+                                            "name": {
+                                                "description": "食材名",
+                                                "type": "string",
+                                                "example": "牛肉"
+                                            },
+                                            "quantity": {
+                                                "description": "量",
+                                                "type": "number",
+                                                "example": 1.5,
+                                                "nullable": true
+                                            },
+                                            "unitId": {
+                                                "description": "単位ID",
+                                                "type": "string",
+                                                "example": "1"
+                                            },
+                                            "categoryId": {
+                                                "description": "カテゴリID",
+                                                "type": "string",
+                                                "example": "1"
+                                            },
+                                            "order": {
+                                                "description": "並び順",
+                                                "type": "integer",
+                                                "example": 1,
+                                                "nullable": true
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                },
+                                "thumbnailId": {
+                                    "description": "サムネイル画像ID",
+                                    "type": "string",
+                                    "example": "1"
+                                },
+                                "url": {
+                                    "description": "レシピURL",
+                                    "type": "string",
+                                    "example": "https://www.google.com"
+                                },
+                                "steps": {
+                                    "description": "手順",
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "description": "手順ID",
+                                                "type": "string",
+                                                "example": "1",
+                                                "nullable": true
+                                            },
+                                            "instruction": {
+                                                "description": "手順",
+                                                "type": "string",
+                                                "example": "ハンバーグを作る"
+                                            },
+                                            "imageId": {
+                                                "description": "画像ID",
+                                                "type": "string",
+                                                "example": "1"
+                                            },
+                                            "order": {
+                                                "description": "並び順",
+                                                "type": "integer",
+                                                "example": 1
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                },
+                                "memo": {
+                                    "description": "メモ",
+                                    "type": "string",
+                                    "example": "ハンバーグは美味しい"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "RecipeCategoryRequest": {
+                "description": "※新規作成時はid不要",
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/RecipeCategory"
+                        }
+                    }
+                }
+            },
+            "RecipeCategoryBulkUpdateRequest": {
+                "description": "一括更新する料理カテゴリデータ",
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/RecipeCategory"
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "RecipeCategoryBulkDestroyRequest": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "ids": {
+                                    "type": "array",
+                                    "items": {
+                                        "description": "料理カテゴリID",
+                                        "type": "string",
+                                        "example": "1"
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "ShoppingItemStoreRequest": {
+                "description": "登録する買い物アイテムデータ",
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "required": [
+                                "name",
+                                "categoryId"
+                            ],
+                            "properties": {
+                                "name": {
+                                    "description": "買い物アイテム名（数量込み）",
+                                    "type": "string",
+                                    "example": "ひき肉100g"
+                                },
+                                "categoryId": {
+                                    "description": "カテゴリID",
+                                    "type": "string",
+                                    "example": "1"
+                                },
+                                "tags": {
+                                    "description": "買い物タグ配列",
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "description": "買い物タグID",
+                                                "type": "string",
+                                                "example": "1",
+                                                "nullable": true
+                                            },
+                                            "name": {
+                                                "description": "買い物タグ名",
+                                                "type": "string",
+                                                "example": "サラダ"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "ShoppingItemBulkUpdateRequest": {
+                "description": "一括更新する買い物アイテムデータ",
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ShoppingItem"
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "ShoppingItemBulkDestroyRequest": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "ids": {
+                                    "description": "削除する買い物アイテムのID配列",
+                                    "type": "array",
+                                    "items": {
+                                        "description": "買い物アイテムID",
+                                        "type": "string",
+                                        "example": "2"
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "ShoppingCategoryStoreRequest": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "name": {
+                                    "description": "買い物カテゴリ名",
+                                    "type": "string",
+                                    "example": "食料品"
+                                },
+                                "order": {
+                                    "description": "買い物カテゴリ順序",
+                                    "type": "integer",
+                                    "example": "1"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "ShoppingCategoryBulkStoreRequest": {
+                "description": "一括登録する買い物カテゴリデータ",
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "name": {
+                                                "description": "買い物カテゴリ名",
+                                                "type": "string",
+                                                "example": "スーパー"
+                                            },
+                                            "order": {
+                                                "description": "買い物カテゴリ順序",
+                                                "type": "integer",
+                                                "example": "1"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "ShoppingCategoryBulkUpdateRequest": {
+                "description": "一括更新する買い物カテゴリデータ",
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "description": "買い物カテゴリID",
+                                                "type": "string",
+                                                "example": "1"
+                                            },
+                                            "name": {
+                                                "description": "買い物カテゴリ名",
+                                                "type": "string",
+                                                "example": "食料品"
+                                            },
+                                            "order": {
+                                                "description": "買い物カテゴリ順序",
+                                                "type": "integer",
+                                                "example": "1"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "ShoppingCategoryBulkDestroyRequest": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "ids": {
+                                    "type": "array",
+                                    "items": {
+                                        "description": "買い物カテゴリID",
+                                        "type": "string",
+                                        "example": "1"
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "ShoppingTagStoreRequest": {
+                "description": "登録する買い物タグデータ",
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "name": {
+                                    "description": "買い物タグ名",
+                                    "type": "string",
+                                    "example": "サラダ"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Authentication",
+            "description": "認証関連のAPI　※swagger上でAPIを実行するには、まずはログインが必要"
+        },
+        {
+            "name": "Users",
+            "description": "ユーザー関連のAPI"
+        },
+        {
+            "name": "Invitations",
+            "description": "招待関連のAPI"
+        },
+        {
+            "name": "Recipes",
+            "description": "料理関連のAPI"
+        },
+        {
+            "name": "Ingredients",
+            "description": "食材関連のAPI"
+        },
+        {
+            "name": "MealPlans",
+            "description": "献立関連のAPI"
+        },
+        {
+            "name": "Shopping",
+            "description": "買い物関連のAPI"
+        },
+        {
+            "name": "Images",
+            "description": "画像関連のAPI"
+        },
+        {
+            "name": "Master",
+            "description": "Master"
+        }
+    ]
+}

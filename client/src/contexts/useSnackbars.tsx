@@ -55,6 +55,10 @@ export const SnackbarsProvider: React.FC<Props> = ({ children }) => {
                 setTimeout(() => {
                     removeSnackbar(id);
                 }, 10000);
+            } else {
+                setTimeout(() => {
+                    removeSnackbar(id);
+                }, 60000);
             }
         },
         [],
