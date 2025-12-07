@@ -2398,7 +2398,86 @@ test('3-8-82: 【更新】 最小限の必須フィールドのみで手順を�
     $response->assertStatus(200);
 });
 
-test('3-8-83: 【更新】 料理の画像更新', function () {
+test('3-8-83: 【更新】 手順の画像を削除（imageIdがnull）', function () {
+    // テスト用の料理をAPIで作成し、手順に画像を紐づけ
+    $createResponse = $this->actingAs($this->user)->post('/recipes', [
+        'name' => 'カレーライス',
+        'steps' => [
+            [
+                'instruction' => '野菜を炒める',
+                'imageId' => $this->image->id,
+                'order' => 0
+            ]
+        ]
+    ]);
+    $recipeId = $createResponse->json('data.id');
+
+    // 手順IDを取得
+    $recipe = Recipe::with('steps')->find($recipeId);
+    $stepId = $recipe->steps->first()->id;
+
+    // 画像を削除（imageIdをnullに指定）
+    $data = [
+        'name' => 'カレーライス',
+        'steps' => [
+            [
+                'id' => $stepId,
+                'instruction' => '野菜を炒める',
+                'imageId' => null,
+                'order' => 0
+            ]
+        ]
+    ];
+
+    $response = $this->actingAs($this->user)->put("/recipes/{$recipeId}", $data);
+
+    $response->assertStatus(200);
+
+    // 画像が削除されていることを確認
+    $recipe = Recipe::with('steps.images')->find($recipeId);
+    expect($recipe->steps->first()->images)->toHaveCount(0);
+});
+
+test('3-8-84: 【更新】 手順の画像を削除（imageIdキーが存在しない）', function () {
+    // テスト用の料理をAPIで作成し、手順に画像を紐づけ
+    $createResponse = $this->actingAs($this->user)->post('/recipes', [
+        'name' => 'カレーライス',
+        'steps' => [
+            [
+                'instruction' => '野菜を炒める',
+                'imageId' => $this->image->id,
+                'order' => 0
+            ]
+        ]
+    ]);
+    $recipeId = $createResponse->json('data.id');
+
+    // 手順IDを取得
+    $recipe = Recipe::with('steps')->find($recipeId);
+    $stepId = $recipe->steps->first()->id;
+
+    // 画像を削除（imageIdキーを省略）
+    $data = [
+        'name' => 'カレーライス',
+        'steps' => [
+            [
+                'id' => $stepId,
+                'instruction' => '野菜を炒める',
+                'order' => 0
+            ]
+        ]
+    ];
+
+    $response = $this->actingAs($this->user)->put("/recipes/{$recipeId}", $data);
+
+    $response->assertStatus(200);
+
+    // 画像が削除されていることを確認
+    $recipe = Recipe::with('steps.images')->find($recipeId);
+    expect($recipe->steps->first()->images)->toHaveCount(0);
+});
+
+test('3-8-85: 【更新】 料理の画像更新', function () {
     // テスト用の料理をAPIで作成
     $createResponse = $this->actingAs($this->user)->post('/recipes', [
         'name' => 'カレーライス'
@@ -2419,7 +2498,60 @@ test('3-8-83: 【更新】 料理の画像更新', function () {
     expect($recipe->thumbnails)->toHaveCount(1);
 });
 
-test('3-8-84: 【更新】 更新成功メッセージの確認', function () {
+test('3-8-86: 【更新】 サムネイルを削除（thumbnailIdがnull）', function () {
+    // テスト用の料理をAPIで作成し、サムネイルを紐づけ
+    $createResponse = $this->actingAs($this->user)->post('/recipes', [
+        'name' => 'カレーライス',
+        'thumbnailId' => $this->image->id
+    ]);
+    $recipeId = $createResponse->json('data.id');
+
+    // サムネイルが紐づいていることを確認
+    $recipe = Recipe::with('thumbnails')->find($recipeId);
+    expect($recipe->thumbnails)->toHaveCount(1);
+
+    // サムネイルを削除（thumbnailIdをnullに指定）
+    $data = [
+        'name' => 'カレーライス',
+        'thumbnailId' => null
+    ];
+
+    $response = $this->actingAs($this->user)->put("/recipes/{$recipeId}", $data);
+
+    $response->assertStatus(200);
+
+    // サムネイルが削除されていることを確認
+    $recipe = Recipe::with('thumbnails')->find($recipeId);
+    expect($recipe->thumbnails)->toHaveCount(0);
+});
+
+test('3-8-87: 【更新】 サムネイルを削除（thumbnailIdキーが存在しない）', function () {
+    // テスト用の料理をAPIで作成し、サムネイルを紐づけ
+    $createResponse = $this->actingAs($this->user)->post('/recipes', [
+        'name' => 'カレーライス',
+        'thumbnailId' => $this->image->id
+    ]);
+    $recipeId = $createResponse->json('data.id');
+
+    // サムネイルが紐づいていることを確認
+    $recipe = Recipe::with('thumbnails')->find($recipeId);
+    expect($recipe->thumbnails)->toHaveCount(1);
+
+    // サムネイルを削除（thumbnailIdキーを省略）
+    $data = [
+        'name' => 'カレーライス'
+    ];
+
+    $response = $this->actingAs($this->user)->put("/recipes/{$recipeId}", $data);
+
+    $response->assertStatus(200);
+
+    // サムネイルが削除されていることを確認
+    $recipe = Recipe::with('thumbnails')->find($recipeId);
+    expect($recipe->thumbnails)->toHaveCount(0);
+});
+
+test('3-8-88: 【更新】 更新成功メッセージの確認', function () {
     // テスト用の料理をAPIで作成
     $createResponse = $this->actingAs($this->user)->post('/recipes', [
         'name' => 'カレーライス'
@@ -2439,7 +2571,7 @@ test('3-8-84: 【更新】 更新成功メッセージの確認', function () {
     expect($message)->toBe('料理/レシピ(スパイスカレー)を更新しました。');
 });
 
-test('3-8-85: 【更新】 requires_quantity=true の食材単位で数量指定', function () {
+test('3-8-89: 【更新】 requires_quantity=true の食材単位で数量指定', function () {
     // requires_quantity=true の食材単位を作成
     $unitWithQuantity = IngredientUnit::create([
         'group_id' => $this->group->id,
@@ -2488,7 +2620,7 @@ test('3-8-85: 【更新】 requires_quantity=true の食材単位で数量指定
     ]);
 });
 
-test('3-8-86: 【更新】 requires_quantity=false の食材単位で数量指定', function () {
+test('3-8-90: 【更新】 requires_quantity=false の食材単位で数量指定', function () {
     // requires_quantity=false の食材単位を作成
     $unitWithoutQuantity = IngredientUnit::create([
         'group_id' => $this->group->id,
@@ -2537,7 +2669,7 @@ test('3-8-86: 【更新】 requires_quantity=false の食材単位で数量指�
     ]);
 });
 
-test('3-8-87: 【更新】 requires_quantity=false の食材単位で数量省略', function () {
+test('3-8-91: 【更新】 requires_quantity=false の食材単位で数量省略', function () {
     // requires_quantity=false の食材単位を作成
     $unitWithoutQuantity = IngredientUnit::create([
         'group_id' => $this->group->id,
@@ -2586,7 +2718,7 @@ test('3-8-87: 【更新】 requires_quantity=false の食材単位で数量省�
     ]);
 });
 
-test('3-8-88: 【更新】 バリデーションエラー（requires_quantity=true の単位で数量省略）', function () {
+test('3-8-92: 【更新】 バリデーションエラー（requires_quantity=true の単位で数量省略）', function () {
     // requires_quantity=true の食材単位を作成
     $unitWithQuantity = IngredientUnit::create([
         'group_id' => $this->group->id,
@@ -2618,7 +2750,7 @@ test('3-8-88: 【更新】 バリデーションエラー（requires_quantity=tr
 });
 
 // Update validation tests
-test('3-8-89: 【更新】 バリデーションエラー（name 未入力）', function () {
+test('3-8-93: 【更新】 バリデーションエラー（name 未入力）', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', ['name' => 'カレーライス']);
     $recipeId = $createResponse->json('data.id');
 
@@ -2630,7 +2762,7 @@ test('3-8-89: 【更新】 バリデーションエラー（name 未入力）', 
     $response->assertJsonValidationErrors(['name']);
 });
 
-test('3-8-90: 【更新】 バリデーションエラー（name が文字列でない）', function () {
+test('3-8-94: 【更新】 バリデーションエラー（name が文字列でない）', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', ['name' => 'カレーライス']);
     $recipeId = $createResponse->json('data.id');
 
@@ -2642,7 +2774,7 @@ test('3-8-90: 【更新】 バリデーションエラー（name が文字列で
     $response->assertJsonValidationErrors(['name']);
 });
 
-test('3-8-91: 【更新】 バリデーションエラー（name が 255 文字超過）', function () {
+test('3-8-95: 【更新】 バリデーションエラー（name が 255 文字超過）', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', ['name' => 'カレーライス']);
     $recipeId = $createResponse->json('data.id');
 
@@ -2654,7 +2786,7 @@ test('3-8-91: 【更新】 バリデーションエラー（name が 255 文字�
     $response->assertJsonValidationErrors(['name']);
 });
 
-test('3-8-92: 【更新】 バリデーションエラー（url が文字列でない）', function () {
+test('3-8-96: 【更新】 バリデーションエラー（url が文字列でない）', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', ['name' => 'カレーライス']);
     $recipeId = $createResponse->json('data.id');
 
@@ -2666,7 +2798,7 @@ test('3-8-92: 【更新】 バリデーションエラー（url が文字列で�
     $response->assertJsonValidationErrors(['url']);
 });
 
-test('3-8-93: 【更新】 バリデーションエラー（url が 2048 文字超過）', function () {
+test('3-8-97: 【更新】 バリデーションエラー（url が 2048 文字超過）', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', ['name' => 'カレーライス']);
     $recipeId = $createResponse->json('data.id');
 
@@ -2678,7 +2810,7 @@ test('3-8-93: 【更新】 バリデーションエラー（url が 2048 文字�
     $response->assertJsonValidationErrors(['url']);
 });
 
-test('3-8-94: 【更新】 バリデーションエラー（thumbnailId が UUID 形式でない）', function () {
+test('3-8-98: 【更新】 バリデーションエラー（thumbnailId が UUID 形式でない）', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', ['name' => 'カレーライス']);
     $recipeId = $createResponse->json('data.id');
 
@@ -2690,7 +2822,7 @@ test('3-8-94: 【更新】 バリデーションエラー（thumbnailId が UUID
     $response->assertJsonValidationErrors(['thumbnailId']);
 });
 
-test('3-8-95: 【更新】 バリデーションエラー（categoryIds が配列でない）', function () {
+test('3-8-99: 【更新】 バリデーションエラー（categoryIds が配列でない）', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', ['name' => 'カレーライス']);
     $recipeId = $createResponse->json('data.id');
 
@@ -2702,7 +2834,7 @@ test('3-8-95: 【更新】 バリデーションエラー（categoryIds が配�
     $response->assertJsonValidationErrors(['categoryIds']);
 });
 
-test('3-8-96: 【更新】 バリデーションエラー（categoryIds.* が UUID 形式でない）', function () {
+test('3-8-100: 【更新】 バリデーションエラー（categoryIds.* が UUID 形式でない）', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', ['name' => 'カレーライス']);
     $recipeId = $createResponse->json('data.id');
 
@@ -2714,7 +2846,7 @@ test('3-8-96: 【更新】 バリデーションエラー（categoryIds.* が UU
     $response->assertJsonValidationErrors(['categoryIds.0']);
 });
 
-test('3-8-97: 【更新】 バリデーションエラー（ingredients が配列でない）', function () {
+test('3-8-101: 【更新】 バリデーションエラー（ingredients が配列でない）', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', ['name' => 'カレーライス']);
     $recipeId = $createResponse->json('data.id');
 
@@ -2726,7 +2858,7 @@ test('3-8-97: 【更新】 バリデーションエラー（ingredients が配�
     $response->assertJsonValidationErrors(['ingredients']);
 });
 
-test('3-8-98: 【更新】 バリデーションエラー（ingredients.*.id が UUID 形式でない）', function () {
+test('3-8-102: 【更新】 バリデーションエラー（ingredients.*.id が UUID 形式でない）', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', ['name' => 'カレーライス']);
     $recipeId = $createResponse->json('data.id');
 
@@ -2741,7 +2873,7 @@ test('3-8-98: 【更新】 バリデーションエラー（ingredients.*.id が
     $response->assertJsonValidationErrors(['ingredients.0.id']);
 });
 
-test('3-8-99: 【更新】 バリデーションエラー（ingredients.*.name 未入力）', function () {
+test('3-8-103: 【更新】 バリデーションエラー（ingredients.*.name 未入力）', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', ['name' => 'カレーライス']);
     $recipeId = $createResponse->json('data.id');
 
@@ -2756,7 +2888,7 @@ test('3-8-99: 【更新】 バリデーションエラー（ingredients.*.name �
     $response->assertJsonValidationErrors(['ingredients.0.name']);
 });
 
-test('3-8-100: 【更新】 バリデーションエラー（ingredients.*.name が文字列でない）', function () {
+test('3-8-104: 【更新】 バリデーションエラー（ingredients.*.name が文字列でない）', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', ['name' => 'カレーライス']);
     $recipeId = $createResponse->json('data.id');
 
@@ -2771,7 +2903,7 @@ test('3-8-100: 【更新】 バリデーションエラー（ingredients.*.name 
     $response->assertJsonValidationErrors(['ingredients.0.name']);
 });
 
-test('3-8-101: 【更新】 バリデーションエラー（ingredients.*.name が 255 文字超過）', function () {
+test('3-8-105: 【更新】 バリデーションエラー（ingredients.*.name が 255 文字超過）', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', ['name' => 'カレーライス']);
     $recipeId = $createResponse->json('data.id');
 
@@ -2786,7 +2918,7 @@ test('3-8-101: 【更新】 バリデーションエラー（ingredients.*.name 
     $response->assertJsonValidationErrors(['ingredients.0.name']);
 });
 
-test('3-8-102: 【更新】 バリデーションエラー（ingredients.*.unitId 未入力）', function () {
+test('3-8-106: 【更新】 バリデーションエラー（ingredients.*.unitId 未入力）', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', ['name' => 'カレーライス']);
     $recipeId = $createResponse->json('data.id');
 
@@ -2801,7 +2933,7 @@ test('3-8-102: 【更新】 バリデーションエラー（ingredients.*.unitI
     $response->assertJsonValidationErrors(['ingredients.0.unitId']);
 });
 
-test('3-8-103: 【更新】 バリデーションエラー（ingredients.*.unitId が UUID 形式でない）', function () {
+test('3-8-107: 【更新】 バリデーションエラー（ingredients.*.unitId が UUID 形式でない）', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', ['name' => 'カレーライス']);
     $recipeId = $createResponse->json('data.id');
 
@@ -2816,7 +2948,7 @@ test('3-8-103: 【更新】 バリデーションエラー（ingredients.*.unitI
     $response->assertJsonValidationErrors(['ingredients.0.unitId']);
 });
 
-test('3-8-104: 【更新】 バリデーションエラー（ingredients.*.categoryId 未入力）', function () {
+test('3-8-108: 【更新】 バリデーションエラー（ingredients.*.categoryId 未入力）', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', ['name' => 'カレーライス']);
     $recipeId = $createResponse->json('data.id');
 
@@ -2831,7 +2963,7 @@ test('3-8-104: 【更新】 バリデーションエラー（ingredients.*.categ
     $response->assertJsonValidationErrors(['ingredients.0.categoryId']);
 });
 
-test('3-8-105: 【更新】 バリデーションエラー（ingredients.*.categoryId が UUID 形式でない）', function () {
+test('3-8-109: 【更新】 バリデーションエラー（ingredients.*.categoryId が UUID 形式でない）', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', ['name' => 'カレーライス']);
     $recipeId = $createResponse->json('data.id');
 
@@ -2846,7 +2978,7 @@ test('3-8-105: 【更新】 バリデーションエラー（ingredients.*.categ
     $response->assertJsonValidationErrors(['ingredients.0.categoryId']);
 });
 
-test('3-8-106: 【更新】 バリデーションエラー（ingredients.*.quantity が数値でない）', function () {
+test('3-8-110: 【更新】 バリデーションエラー（ingredients.*.quantity が数値でない）', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', ['name' => 'カレーライス']);
     $recipeId = $createResponse->json('data.id');
 
@@ -2861,7 +2993,7 @@ test('3-8-106: 【更新】 バリデーションエラー（ingredients.*.quant
     $response->assertJsonValidationErrors(['ingredients.0.quantity']);
 });
 
-test('3-8-107: 【更新】 バリデーションエラー（ingredients.*.order が整数でない）', function () {
+test('3-8-111: 【更新】 バリデーションエラー（ingredients.*.order が整数でない）', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', ['name' => 'カレーライス']);
     $recipeId = $createResponse->json('data.id');
 
@@ -2876,7 +3008,7 @@ test('3-8-107: 【更新】 バリデーションエラー（ingredients.*.order
     $response->assertJsonValidationErrors(['ingredients.0.order']);
 });
 
-test('3-8-108: 【更新】 バリデーションエラー（ingredients.*.order が負の値）', function () {
+test('3-8-112: 【更新】 バリデーションエラー（ingredients.*.order が負の値）', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', ['name' => 'カレーライス']);
     $recipeId = $createResponse->json('data.id');
 
@@ -2891,7 +3023,7 @@ test('3-8-108: 【更新】 バリデーションエラー（ingredients.*.order
     $response->assertJsonValidationErrors(['ingredients.0.order']);
 });
 
-test('3-8-109: 【更新】 バリデーションエラー（steps が配列でない）', function () {
+test('3-8-113: 【更新】 バリデーションエラー（steps が配列でない）', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', ['name' => 'カレーライス']);
     $recipeId = $createResponse->json('data.id');
 
@@ -2903,7 +3035,7 @@ test('3-8-109: 【更新】 バリデーションエラー（steps が配列で�
     $response->assertJsonValidationErrors(['steps']);
 });
 
-test('3-8-110: 【更新】 バリデーションエラー（steps.*.id が UUID 形式でない）', function () {
+test('3-8-114: 【更新】 バリデーションエラー（steps.*.id が UUID 形式でない）', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', ['name' => 'カレーライス']);
     $recipeId = $createResponse->json('data.id');
 
@@ -2918,7 +3050,7 @@ test('3-8-110: 【更新】 バリデーションエラー（steps.*.id が UUID
     $response->assertJsonValidationErrors(['steps.0.id']);
 });
 
-test('3-8-111: 【更新】 バリデーションエラー（steps.*.instruction 未入力）', function () {
+test('3-8-115: 【更新】 バリデーションエラー（steps.*.instruction 未入力）', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', ['name' => 'カレーライス']);
     $recipeId = $createResponse->json('data.id');
 
@@ -2933,7 +3065,7 @@ test('3-8-111: 【更新】 バリデーションエラー（steps.*.instruction
     $response->assertJsonValidationErrors(['steps.0.instruction']);
 });
 
-test('3-8-112: 【更新】 バリデーションエラー（steps.*.instruction が文字列でない）', function () {
+test('3-8-116: 【更新】 バリデーションエラー（steps.*.instruction が文字列でない）', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', ['name' => 'カレーライス']);
     $recipeId = $createResponse->json('data.id');
 
@@ -2948,7 +3080,7 @@ test('3-8-112: 【更新】 バリデーションエラー（steps.*.instruction
     $response->assertJsonValidationErrors(['steps.0.instruction']);
 });
 
-test('3-8-113: 【更新】 バリデーションエラー（steps.*.instruction が 255 文字超過）', function () {
+test('3-8-117: 【更新】 バリデーションエラー（steps.*.instruction が 255 文字超過）', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', ['name' => 'カレーライス']);
     $recipeId = $createResponse->json('data.id');
 
@@ -2963,7 +3095,7 @@ test('3-8-113: 【更新】 バリデーションエラー（steps.*.instruction
     $response->assertJsonValidationErrors(['steps.0.instruction']);
 });
 
-test('3-8-114: 【更新】 バリデーションエラー（steps.*.imageId が UUID 形式でない）', function () {
+test('3-8-118: 【更新】 バリデーションエラー（steps.*.imageId が UUID 形式でない）', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', ['name' => 'カレーライス']);
     $recipeId = $createResponse->json('data.id');
 
@@ -2978,7 +3110,7 @@ test('3-8-114: 【更新】 バリデーションエラー（steps.*.imageId が
     $response->assertJsonValidationErrors(['steps.0.imageId']);
 });
 
-test('3-8-115: 【更新】 バリデーションエラー（steps.*.order 未入力）', function () {
+test('3-8-119: 【更新】 バリデーションエラー（steps.*.order 未入力）', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', ['name' => 'カレーライス']);
     $recipeId = $createResponse->json('data.id');
 
@@ -2993,7 +3125,7 @@ test('3-8-115: 【更新】 バリデーションエラー（steps.*.order 未�
     $response->assertJsonValidationErrors(['steps.0.order']);
 });
 
-test('3-8-116: 【更新】 バリデーションエラー（steps.*.order が整数でない）', function () {
+test('3-8-120: 【更新】 バリデーションエラー（steps.*.order が整数でない）', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', ['name' => 'カレーライス']);
     $recipeId = $createResponse->json('data.id');
 
@@ -3008,7 +3140,7 @@ test('3-8-116: 【更新】 バリデーションエラー（steps.*.order が�
     $response->assertJsonValidationErrors(['steps.0.order']);
 });
 
-test('3-8-117: 【更新】 バリデーションエラー（steps.*.order が負の値）', function () {
+test('3-8-121: 【更新】 バリデーションエラー（steps.*.order が負の値）', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', ['name' => 'カレーライス']);
     $recipeId = $createResponse->json('data.id');
 
@@ -3023,7 +3155,7 @@ test('3-8-117: 【更新】 バリデーションエラー（steps.*.order が�
     $response->assertJsonValidationErrors(['steps.0.order']);
 });
 
-test('3-8-118: 【更新】 バリデーションエラー（memo が文字列でない）', function () {
+test('3-8-122: 【更新】 バリデーションエラー（memo が文字列でない）', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', ['name' => 'カレーライス']);
     $recipeId = $createResponse->json('data.id');
 
@@ -3035,7 +3167,7 @@ test('3-8-118: 【更新】 バリデーションエラー（memo が文字列�
     $response->assertJsonValidationErrors(['memo']);
 });
 
-test('3-8-119: 【更新】 バリデーションエラー（memo が 255 文字超過）', function () {
+test('3-8-123: 【更新】 バリデーションエラー（memo が 255 文字超過）', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', ['name' => 'カレーライス']);
     $recipeId = $createResponse->json('data.id');
 
@@ -3047,7 +3179,7 @@ test('3-8-119: 【更新】 バリデーションエラー（memo が 255 文字
     $response->assertJsonValidationErrors(['memo']);
 });
 
-test('3-8-120: 【更新】 存在しない食材単位 ID 指定', function () {
+test('3-8-124: 【更新】 存在しない食材単位 ID 指定', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', ['name' => 'カレーライス']);
     $recipeId = $createResponse->json('data.id');
 
@@ -3071,7 +3203,7 @@ test('3-8-120: 【更新】 存在しない食材単位 ID 指定', function () 
     ]);
 });
 
-test('3-8-121: 【更新】 他グループの食材単位 ID 指定', function () {
+test('3-8-125: 【更新】 他グループの食材単位 ID 指定', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', ['name' => 'カレーライス']);
     $recipeId = $createResponse->json('data.id');
 
@@ -3090,7 +3222,7 @@ test('3-8-121: 【更新】 他グループの食材単位 ID 指定', function 
     $response->assertStatus(404);
 });
 
-test('3-8-122: 【更新】 存在しない食材カテゴリ ID 指定', function () {
+test('3-8-126: 【更新】 存在しない食材カテゴリ ID 指定', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', ['name' => 'カレーライス']);
     $recipeId = $createResponse->json('data.id');
 
@@ -3104,7 +3236,7 @@ test('3-8-122: 【更新】 存在しない食材カテゴリ ID 指定', functi
     $response->assertStatus(404);
 });
 
-test('3-8-123: 【更新】 他グループの食材カテゴリ ID 指定', function () {
+test('3-8-127: 【更新】 他グループの食材カテゴリ ID 指定', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', ['name' => 'カレーライス']);
     $recipeId = $createResponse->json('data.id');
 
@@ -3123,7 +3255,7 @@ test('3-8-123: 【更新】 他グループの食材カテゴリ ID 指定', fun
     $response->assertStatus(404);
 });
 
-test('3-8-124: 【更新】 存在しない料理カテゴリ ID 指定', function () {
+test('3-8-128: 【更新】 存在しない料理カテゴリ ID 指定', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', ['name' => 'カレーライス']);
     $recipeId = $createResponse->json('data.id');
 
@@ -3137,7 +3269,7 @@ test('3-8-124: 【更新】 存在しない料理カテゴリ ID 指定', functi
     $response->assertStatus(404);
 });
 
-test('3-8-125: 【更新】 他グループの料理カテゴリ ID 指定', function () {
+test('3-8-129: 【更新】 他グループの料理カテゴリ ID 指定', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', ['name' => 'カレーライス']);
     $recipeId = $createResponse->json('data.id');
 
@@ -3156,7 +3288,7 @@ test('3-8-125: 【更新】 他グループの料理カテゴリ ID 指定', fun
     $response->assertStatus(404);
 });
 
-test('3-8-126: 【更新】 存在しない画像 ID 指定（thumbnailId）', function () {
+test('3-8-130: 【更新】 存在しない画像 ID 指定（thumbnailId）', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', ['name' => 'カレーライス']);
     $recipeId = $createResponse->json('data.id');
 
@@ -3170,7 +3302,7 @@ test('3-8-126: 【更新】 存在しない画像 ID 指定（thumbnailId）', f
     $response->assertStatus(404);
 });
 
-test('3-8-127: 【更新】 他グループの画像 ID 指定（thumbnailId）', function () {
+test('3-8-131: 【更新】 他グループの画像 ID 指定（thumbnailId）', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', ['name' => 'カレーライス']);
     $recipeId = $createResponse->json('data.id');
 
@@ -3193,7 +3325,7 @@ test('3-8-127: 【更新】 他グループの画像 ID 指定（thumbnailId）'
     $response->assertStatus(404);
 });
 
-test('3-8-128: 【更新】 存在しない画像 ID 指定（steps.*.imageId）', function () {
+test('3-8-132: 【更新】 存在しない画像 ID 指定（steps.*.imageId）', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', ['name' => 'カレーライス']);
     $recipeId = $createResponse->json('data.id');
 
@@ -3207,7 +3339,7 @@ test('3-8-128: 【更新】 存在しない画像 ID 指定（steps.*.imageId）
     $response->assertStatus(404);
 });
 
-test('3-8-129: 【更新】 他グループの画像 ID 指定（steps.*.imageId）', function () {
+test('3-8-133: 【更新】 他グループの画像 ID 指定（steps.*.imageId）', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', ['name' => 'カレーライス']);
     $recipeId = $createResponse->json('data.id');
 
@@ -3230,7 +3362,7 @@ test('3-8-129: 【更新】 他グループの画像 ID 指定（steps.*.imageId
     $response->assertStatus(404);
 });
 
-test('3-8-130: 【更新】 存在しない料理更新', function () {
+test('3-8-134: 【更新】 存在しない料理更新', function () {
     $data = ['name' => 'カレーライス'];
 
     $response = $this->actingAs($this->user)->put('/recipes/00000000-0000-0000-0000-000000000000', $data);
@@ -3239,7 +3371,7 @@ test('3-8-130: 【更新】 存在しない料理更新', function () {
     $response->assertJson(['success' => false]);
 });
 
-test('3-8-131: 【更新】 他グループの料理更新', function () {
+test('3-8-135: 【更新】 他グループの料理更新', function () {
     $otherUser = User::factory()->create(['email_verified_at' => now()]);
     $otherGroup = Group::create(['group_size' => 1]);
     DB::table('group_user_mappings')->insert(['user_id' => $otherUser->id, 'group_id' => $otherGroup->id]);
@@ -3252,7 +3384,7 @@ test('3-8-131: 【更新】 他グループの料理更新', function () {
     $response->assertStatus(404);
 });
 
-test('3-8-132: 【更新】 未認証ユーザー', function () {
+test('3-8-136: 【更新】 未認証ユーザー', function () {
     $data = ['name' => 'カレーライス'];
 
     $response = $this->put('/recipes/00000000-0000-0000-0000-000000000000', $data);
@@ -3261,7 +3393,7 @@ test('3-8-132: 【更新】 未認証ユーザー', function () {
     $response->assertJson(['success' => false, 'message' => '認証が必要です。']);
 });
 
-test('3-8-133: 【更新】 グループが存在しない', function () {
+test('3-8-137: 【更新】 グループが存在しない', function () {
     $user = User::factory()->create(['email_verified_at' => now()]);
     $data = ['name' => 'カレーライス'];
 
@@ -3271,7 +3403,7 @@ test('3-8-133: 【更新】 グループが存在しない', function () {
     $response->assertJson(['success' => false, 'message' => 'ユーザーはグループに所属していません。']);
 });
 
-test('3-8-134: 【更新】 データベース接続エラー', function () {
+test('3-8-138: 【更新】 データベース接続エラー', function () {
     $this->mock(\App\Services\RecipeService::class, function ($mock) {
         $mock->shouldReceive('update')->once()->andThrow(new \Exception('Database connection failed'));
     });
@@ -3286,7 +3418,7 @@ test('3-8-134: 【更新】 データベース接続エラー', function () {
 
 // ===== destroy() メソッドのテストケース =====
 
-test('3-8-135: 【削除】 正常な料理削除', function () {
+test('3-8-139: 【削除】 正常な料理削除', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', ['name' => 'カレーライス']);
     $recipeId = $createResponse->json('data.id');
 
@@ -3305,7 +3437,7 @@ test('3-8-135: 【削除】 正常な料理削除', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-8-136: 【削除】 削除成功メッセージの確認', function () {
+test('3-8-140: 【削除】 削除成功メッセージの確認', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', ['name' => 'カレーライス']);
     $recipeId = $createResponse->json('data.id');
 
@@ -3318,7 +3450,7 @@ test('3-8-136: 【削除】 削除成功メッセージの確認', function () {
     expect($message)->toContain('カレーライス');
 });
 
-test('3-8-137: 【削除】 存在しない料理削除', function () {
+test('3-8-141: 【削除】 存在しない料理削除', function () {
     $response = $this->actingAs($this->user)->delete('/recipes/00000000-0000-0000-0000-000000000000');
 
     $response->assertStatus(404);
@@ -3331,7 +3463,7 @@ test('3-8-137: 【削除】 存在しない料理削除', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-8-138: 【削除】 他グループの料理削除', function () {
+test('3-8-142: 【削除】 他グループの料理削除', function () {
     $otherUser = User::factory()->create(['email_verified_at' => now()]);
     $otherGroup = Group::create(['group_size' => 1]);
     DB::table('group_user_mappings')->insert(['user_id' => $otherUser->id, 'group_id' => $otherGroup->id]);
@@ -3349,7 +3481,7 @@ test('3-8-138: 【削除】 他グループの料理削除', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-8-139: 【削除】 未認証ユーザー', function () {
+test('3-8-143: 【削除】 未認証ユーザー', function () {
     $response = $this->delete('/recipes/00000000-0000-0000-0000-000000000000');
 
     $response->assertStatus(401);
@@ -3362,7 +3494,7 @@ test('3-8-139: 【削除】 未認証ユーザー', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-8-140: 【削除】 グループが存在しない', function () {
+test('3-8-144: 【削除】 グループが存在しない', function () {
     $user = User::factory()->create(['email_verified_at' => now()]);
 
     $response = $this->actingAs($user)->delete('/recipes/00000000-0000-0000-0000-000000000000');
@@ -3377,7 +3509,7 @@ test('3-8-140: 【削除】 グループが存在しない', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-8-141: 【削除】 データベース接続エラー', function () {
+test('3-8-145: 【削除】 データベース接続エラー', function () {
     $this->mock(\App\Services\RecipeService::class, function ($mock) {
         $mock->shouldReceive('delete')->once()->andThrow(new \Exception('Database connection failed'));
     });

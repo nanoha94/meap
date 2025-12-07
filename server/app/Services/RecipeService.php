@@ -202,6 +202,7 @@ class RecipeService extends AbstractDomainService
             }
             $currentItem->update($updateData);
 
+            // サムネイルの更新処理
             // 既存のサムネイルを取得
             $prevThumbnail = $currentItem->thumbnails->first();
             $newThumbnailId = $data['thumbnailId'] ?? null;
@@ -212,12 +213,16 @@ class RecipeService extends AbstractDomainService
                 $this->imageService->findImagesByIds([$newThumbnailId], $group);
             }
 
-            // サムネイルが変更された場合、古いサムネイルの紐づけを解除
-            if ($prevThumbnail && $prevThumbnail->id !== $newThumbnailId) {
-                $this->imageService->deleteImages([$prevThumbnail->id], $currentItem->id, $group);
+            // 既存のサムネイルがある場合
+            if ($prevThumbnail) {
+                // 新しいサムネイルが空（nullまたは空文字列）の場合、または変更された場合
+                if (empty($newThumbnailId) || $prevThumbnail->id !== $newThumbnailId) {
+                    // 古いサムネイルの紐づけを解除
+                    $this->imageService->deleteImages([$prevThumbnail->id], $currentItem->id, $group);
+                }
             }
 
-            // 新しいサムネイルを紐づけ
+            // 新しいサムネイルを紐づけ（空でない場合のみ）
             if (!empty($newThumbnailId) && (!$prevThumbnail || $prevThumbnail->id !== $newThumbnailId)) {
                 $this->attachThumbnail($currentItem, $newThumbnailId, $group);
             }
@@ -480,25 +485,27 @@ class RecipeService extends AbstractDomainService
                 // 更新対象：instructionを更新
                 $step->update(['instruction' => $requestStep['instruction']]);
 
-                // 画像の変更処理（imageIdキーが存在する場合のみ）
-                if (array_key_exists('imageId', $requestStep)) {
-                    $newImageId = $requestStep['imageId'];
-                    $currentImageId = $step->images->first()?->id;
+                // 画像の変更処理
+                $newImageId = $requestStep['imageId'] ?? null;
+                $currentImageId = $step->images->first()?->id;
 
+                // 新しい画像IDが指定されている場合、先に存在確認を行う
+                // これにより、存在しない画像の場合は古い画像を削除する前にエラーになる
+                if (!empty($newImageId)) {
+                    $this->imageService->findImagesByIds([$newImageId], $group);
+                }
 
-                    if ($newImageId !== $currentImageId) {
-                        // 既存の画像を削除リストに追加
-                        if ($step->images->isNotEmpty()) {
-                            $imageIdsToAdd = $step->images->pluck('id')->toArray();
-
-                            $imagesToDelete = array_merge($imagesToDelete, $imageIdsToAdd);
-                            // 既存の画像との紐づけを解除（重要）
-                            $step->images()->detach();
-                        }
-                        // 新しい画像を紐づけ
-                        if ($newImageId) {
-                            $this->attachStepImage($step, $newImageId, $group);
-                        }
+                // 画像が変更された場合（null/空文字列も含む）
+                if ($newImageId !== $currentImageId) {
+                    // 既存の画像を削除リストに追加
+                    if ($step->images->isNotEmpty()) {
+                        $imagesToDelete = array_merge($imagesToDelete, $step->images->pluck('id')->toArray());
+                        // 既存の画像との紐づけを解除（重要）
+                        $step->images()->detach();
+                    }
+                    // 新しい画像を紐づけ（空でない場合のみ）
+                    if ($newImageId) {
+                        $this->attachStepImage($step, $newImageId, $group);
                     }
                 }
 

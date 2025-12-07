@@ -18,8 +18,8 @@ const RecipeDetailPage = ({
     return (
         <>
             {isLoadings.recipe && <LoadingAnimation />}
-            <div className="p-5 pb-[60px] grid grid-cols-[repeat(auto-fill,_minmax(350px,_1fr))] gap-x-10 gap-y-5 md:px-10">
-                <div className="flex-1 flex flex-col gap-y-5">
+            <div className="p-5 pb-[60px] grid grid-cols-1 gap-x-10 gap-y-5 md:px-10 md:grid-cols-[400px_1fr]">
+                <div className="flex-1 flex flex-col gap-y-10">
                     {/* 料理名 */}
                     <div className="text-2xl font-bold">
                         {fetchRecipe?.name}
@@ -38,8 +38,8 @@ const RecipeDetailPage = ({
                             </ul>
                         )}
                     {/* サムネイル */}
-                    <div className="relative w-full h-auto aspect-video bg-gray-light rounded-lg overflow-hidden transition-opcity">
-                        {fetchRecipe?.thumbnail && (
+                    {fetchRecipe?.thumbnail && (
+                        <div className="relative w-full h-auto aspect-video bg-gray-light rounded-lg overflow-hidden">
                             <Image
                                 src={fetchRecipe?.thumbnail.src}
                                 alt="thumbnail"
@@ -47,12 +47,12 @@ const RecipeDetailPage = ({
                                 height={fetchRecipe?.thumbnail.height}
                                 className="absolute top-0 left-0 w-full h-full object-cover"
                             />
-                        )}
-                    </div>
+                        </div>
+                    )}
                     {/* 食材 */}
                     {fetchRecipe?.ingredients &&
                         fetchRecipe?.ingredients.length > 0 && (
-                            <div>
+                            <div className="flex flex-col gap-y-5">
                                 <div className="mb-2 text-xl font-bold">
                                     材料【○○人分】
                                 </div>
@@ -111,7 +111,7 @@ const RecipeDetailPage = ({
                             </div>
                         )}
                 </div>
-                <div className="flex-1 flex flex-col gap-y-5">
+                <div className="flex-1 flex flex-col gap-y-10">
                     {/* レシピ */}
                     {fetchRecipe?.url && (
                         <div className="flex flex-col gap-y-1">
@@ -125,20 +125,38 @@ const RecipeDetailPage = ({
                             </a>
                         </div>
                     )}
-                    {/* {recipe?.url ||
-                        (recipe?.instructions && (
-                            <div className="flex flex-col gap-y-1">
-                                <div>レシピ</div>
-                                <a
-                                    href={recipe?.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-primary-main underline transition-colors hover:text-accent-main">
-                                    {recipe?.url}
-                                </a>
-                                <div>{recipe?.instructions}</div>
-                            </div>
-                        ))} */}
+
+                    {/* 手順 */}
+                    {fetchRecipe?.steps && (
+                        <div className="flex flex-col gap-y-1">
+                            <div>手順</div>
+                            <ul className="grid grid-cols-[repeat(auto-fill,_minmax(180px,_1fr))] gap-5">
+                                {fetchRecipe?.steps.map((step, index) => (
+                                    <li key={step.id}>
+                                        <div className="flex flex-col gap-y-1">
+                                            <div>{index + 1}.&nbsp;</div>
+                                            {step.image && (
+                                                <div className="relative w-full h-auto aspect-[5/3] bg-gray-light rounded-lg overflow-hidden">
+                                                    <Image
+                                                        src={step.image.src}
+                                                        alt={step.instruction}
+                                                        width={step.image.width}
+                                                        height={
+                                                            step.image.height
+                                                        }
+                                                        className="absolute top-0 left-0 w-full h-full object-cover"
+                                                    />
+                                                </div>
+                                            )}
+                                            <div className="whitespace-pre-wrap">
+                                                {step.instruction}
+                                            </div>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
 
                     {/* メモ */}
                     {fetchRecipe?.memo && (
