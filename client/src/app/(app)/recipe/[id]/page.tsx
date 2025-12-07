@@ -1,4 +1,4 @@
-import { Header } from '@/components/common';
+import { Header, Loading } from '@/components/common';
 import { SnackbarHandler } from '@/components/handlers';
 import { TIMEOUT_MS } from '@/constants';
 import { Suspense } from 'react';
@@ -12,7 +12,6 @@ import {
 } from '@/types/api';
 import RecipeDetailPage from '@/pages/recipe/RecipeDetailPage';
 import { notFound } from 'next/navigation';
-import Loading from '../../loading';
 
 interface Props {
     params: Promise<{ id: string }>;

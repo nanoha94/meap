@@ -1,5 +1,4 @@
-import Loading from '../../../loading';
-import { Header } from '@/components/common';
+import { Header, Loading } from '@/components/common';
 import { SnackbarHandler } from '@/components/handlers';
 import { TIMEOUT_MS } from '@/constants';
 import { apiClient } from '@/lib/apiClient';

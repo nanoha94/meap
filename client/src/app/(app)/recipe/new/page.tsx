@@ -1,11 +1,10 @@
-import { Header } from '@/components/common';
+import { Header, Loading } from '@/components/common';
 import { SnackbarHandler } from '@/components/handlers';
 import { TIMEOUT_MS } from '@/constants';
 import RecipeEditPage from '@/pages/recipe/RecipeEditPage';
 import { IGetIngredientCategoryIndexResponse } from '@/types/api';
 import { Suspense } from 'react';
 import { apiClient } from '@/lib/apiClient';
-import Loading from '../../loading';
 
 async function RecipeNewPageWithData() {
     let ingredientCategories: IGetIngredientCategoryIndexResponse | null = null;

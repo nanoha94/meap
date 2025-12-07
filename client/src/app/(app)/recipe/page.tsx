@@ -1,4 +1,4 @@
-import { Header } from '@/components/common';
+import { Header, Loading } from '@/components/common';
 import { SnackbarHandler } from '@/components/handlers';
 import { TIMEOUT_MS } from '@/constants';
 import { apiClient } from '@/lib/apiClient';
@@ -7,7 +7,6 @@ import { IGetRecipeIndexResponse } from '@/types/api';
 import { Suspense } from 'react';
 import { CirclePlus } from 'lucide-react';
 import { HeaderLinkTextButton } from '@/components/common/HeaderTextButtons';
-import Loading from '../loading';
 
 const RecipePageWithData = async () => {
     let recipes: IGetRecipeIndexResponse | null = null;

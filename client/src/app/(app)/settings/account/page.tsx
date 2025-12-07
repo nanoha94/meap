@@ -1,6 +1,6 @@
 import React, { Suspense } from 'react';
 import AccountTopPage from '@/pages/settings/AccountTopPage';
-import { Header } from '@/components/common';
+import { Header, Loading } from '@/components/common';
 import {
     IGetGroupUserResponse,
     IGetInvitationDetailResponse,
@@ -9,7 +9,6 @@ import { apiClient } from '@/lib/apiClient';
 import { SnackbarHandler } from '@/components/handlers';
 import { TIMEOUT_MS } from '@/constants';
 import dynamic from 'next/dynamic';
-import Loading from '../../loading';
 
 // 動的インポートでダイアログコンポーネントを遅延読み込み
 const JoinDialog = dynamic(
