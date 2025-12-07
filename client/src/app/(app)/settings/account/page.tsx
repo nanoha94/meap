@@ -1,13 +1,12 @@
 import React, { Suspense } from 'react';
 import AccountTopPage from '@/pages/settings/AccountTopPage';
-import { Header } from '@/components/common';
+import { Header, Loading } from '@/components/common';
 import {
     IGetGroupUserResponse,
     IGetInvitationDetailResponse,
 } from '@/types/api';
 import { apiClient } from '@/lib/apiClient';
 import { SnackbarHandler } from '@/components/handlers';
-import Loading from '@/app/(app)/loading';
 import { TIMEOUT_MS } from '@/constants';
 import dynamic from 'next/dynamic';
 

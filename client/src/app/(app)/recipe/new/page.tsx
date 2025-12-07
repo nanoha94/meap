@@ -1,9 +1,8 @@
-import { Header } from '@/components/common';
+import { Header, Loading } from '@/components/common';
 import { SnackbarHandler } from '@/components/handlers';
 import { TIMEOUT_MS } from '@/constants';
 import RecipeEditPage from '@/pages/recipe/RecipeEditPage';
 import { IGetIngredientCategoryIndexResponse } from '@/types/api';
-import Loading from '@/app/(app)/loading';
 import { Suspense } from 'react';
 import { apiClient } from '@/lib/apiClient';
 

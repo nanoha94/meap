@@ -1,8 +1,7 @@
-import { Header } from '@/components/common';
+import { Header, Loading } from '@/components/common';
 import { SnackbarHandler } from '@/components/handlers';
 import { TIMEOUT_MS } from '@/constants';
 import { Suspense } from 'react';
-import Loading from '@/app/(app)/loading';
 import { HeaderRecipeDeleteButton } from '@/models/recipe/components';
 import { Pencil } from 'lucide-react';
 import { HeaderLinkTextButton } from '@/components/common/HeaderTextButtons';

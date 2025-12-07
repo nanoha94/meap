@@ -4,11 +4,10 @@ import {
     IGetShoppingCategoryIndexResponse,
     IGetShoppingItemIndexResponse,
 } from '@/types/api';
-import Loading from '../loading';
+import { Header, Loading } from '@/components/common';
 import { apiClient } from '@/lib/apiClient';
 import { SnackbarHandler } from '@/components/handlers';
 import { TIMEOUT_MS } from '@/constants';
-import { Header } from '@/components/common';
 import HeaderButton from '@/models/shopping/components/HeaderButton/HeaderButton';
 
 async function ShoppingListsWithData() {

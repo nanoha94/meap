@@ -1,11 +1,33 @@
 import React from 'react';
-import { IPostPutRecipeRequest, IRecipe } from '@/types/api';
+import { IPostPutRecipeRequest, IRecipe, IIngredientItem } from '@/types/api';
 import { RecipeEditFormData } from '../types';
 import { useRecipeApi } from './useRecipeApi';
 import { useForm, useWatch } from 'react-hook-form';
 import { defaultPostData } from '../constants';
-import { EDIT_MODE } from '@/constants';
-import { formatIngredientItems } from '../utils';
+import { EDIT_MODE, TMP_ID_PREFIX } from '@/constants';
+
+/**
+ * 食材をフォーマット
+ * @param items 食材リスト
+ * @returns フォーマットされた食材
+ */
+export const formatIngredientItems = (
+    items: IIngredientItem[],
+): IPostPutRecipeRequest['ingredients'] => {
+    return items
+        .filter(v => v.name && v.name.length > 0)
+        .map((v, idx) => {
+            const isNew = v.id?.startsWith(TMP_ID_PREFIX.INGREDIENT_ITEM);
+            return {
+                ...(v.id && !isNew ? { id: v.id } : {}),
+                name: v.name,
+                quantity: v.quantity,
+                unitId: v.unit?.id ?? '',
+                categoryId: v.categoryId,
+                order: idx,
+            };
+        });
+};
 
 export const useRecipeEditForm = (fetchRecipe?: IRecipe) => {
     const [errors, setErrors] = React.useState<Record<string, string> | null>(
