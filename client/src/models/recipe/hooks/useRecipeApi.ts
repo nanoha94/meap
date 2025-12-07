@@ -2,12 +2,36 @@ import { useSnackbars } from '@/contexts';
 import { useRouter } from 'next/navigation';
 import { useRecipeStore } from './recipeStores';
 import axios from '@/lib/axios';
-import { TIMEOUT_MS } from '@/constants';
+import { TIMEOUT_MS, TMP_ID_PREFIX } from '@/constants';
 import React from 'react';
-import { IPostPutRecipeRequest, IPostRecipeResponse } from '@/types/api';
+import {
+    IPostPutRecipeRequest,
+    IPostRecipeResponse,
+    IRecipeStep,
+} from '@/types/api';
 import { useImageApi } from '@/models/image/hooks/useImageApi';
 import { RecipeStepEditFormData } from '../types';
-import { formatStepItems } from '../utils';
+
+/**
+ * 手順をフォーマット
+ * @param items 手順リスト
+ * @returns フォーマットされた手順
+ */
+export const formatStepItems = (
+    items: IRecipeStep[],
+): IPostPutRecipeRequest['steps'] => {
+    return items
+        .filter(v => v.instruction && v.instruction.length > 0)
+        .map((v, idx) => {
+            const isNew = v.id?.startsWith(TMP_ID_PREFIX.RECIPE_STEP);
+            return {
+                ...(isNew ? {} : { id: v.id }),
+                instruction: v.instruction,
+                imageId: v.image?.id,
+                order: idx,
+            };
+        });
+};
 
 export const useRecipeApi = () => {
     const { isLoadings, setIsLoadings } = useRecipeStore();
