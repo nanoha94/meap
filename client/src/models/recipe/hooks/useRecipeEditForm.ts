@@ -19,7 +19,7 @@ export const formatIngredientItems = (
         .map((v, idx) => {
             const isNew = v.id?.startsWith(TMP_ID_PREFIX.INGREDIENT_ITEM);
             return {
-                ...(isNew ? {} : { id: v.id }),
+                ...(v.id && !isNew ? { id: v.id } : {}),
                 name: v.name,
                 quantity: v.quantity,
                 unitId: v.unit?.id ?? '',

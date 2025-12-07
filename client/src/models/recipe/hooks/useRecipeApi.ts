@@ -25,7 +25,7 @@ export const formatStepItems = (
         .map((v, idx) => {
             const isNew = v.id?.startsWith(TMP_ID_PREFIX.RECIPE_STEP);
             return {
-                ...(isNew ? {} : { id: v.id }),
+                ...(v.id && !isNew ? { id: v.id } : {}),
                 instruction: v.instruction,
                 imageId: v.image?.id,
                 order: idx,

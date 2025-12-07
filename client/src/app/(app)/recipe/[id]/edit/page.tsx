@@ -1,4 +1,4 @@
-import Loading from '@/app/(app)/loading';
+import Loading from '../../../loading';
 import { Header } from '@/components/common';
 import { SnackbarHandler } from '@/components/handlers';
 import { TIMEOUT_MS } from '@/constants';

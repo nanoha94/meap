@@ -7,9 +7,9 @@ import {
 } from '@/types/api';
 import { apiClient } from '@/lib/apiClient';
 import { SnackbarHandler } from '@/components/handlers';
-import Loading from '@/app/(app)/loading';
 import { TIMEOUT_MS } from '@/constants';
 import dynamic from 'next/dynamic';
+import Loading from '../../loading';
 
 // 動的インポートでダイアログコンポーネントを遅延読み込み
 const JoinDialog = dynamic(

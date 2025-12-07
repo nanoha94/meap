@@ -5,9 +5,9 @@ import { apiClient } from '@/lib/apiClient';
 import RecipeListPage from '@/pages/recipe/RecipeListPage';
 import { IGetRecipeIndexResponse } from '@/types/api';
 import { Suspense } from 'react';
-import Loading from '@/app/(app)/loading';
 import { CirclePlus } from 'lucide-react';
 import { HeaderLinkTextButton } from '@/components/common/HeaderTextButtons';
+import Loading from '../loading';
 
 const RecipePageWithData = async () => {
     let recipes: IGetRecipeIndexResponse | null = null;

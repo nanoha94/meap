@@ -2,7 +2,6 @@ import { Header } from '@/components/common';
 import { SnackbarHandler } from '@/components/handlers';
 import { TIMEOUT_MS } from '@/constants';
 import { Suspense } from 'react';
-import Loading from '@/app/(app)/loading';
 import { HeaderRecipeDeleteButton } from '@/models/recipe/components';
 import { Pencil } from 'lucide-react';
 import { HeaderLinkTextButton } from '@/components/common/HeaderTextButtons';
@@ -13,6 +12,7 @@ import {
 } from '@/types/api';
 import RecipeDetailPage from '@/pages/recipe/RecipeDetailPage';
 import { notFound } from 'next/navigation';
+import Loading from '../../loading';
 
 interface Props {
     params: Promise<{ id: string }>;
