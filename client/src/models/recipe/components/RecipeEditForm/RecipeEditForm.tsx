@@ -31,7 +31,7 @@ const RecipeEditForm = ({ fetchRecipe }: Props) => {
         <FormProvider {...methods}>
             <form
                 onSubmit={onSubmit}
-                className="p-5 pb-[60px] grid grid-cols-[repeat(auto-fill,_minmax(350px,_1fr))] gap-x-10 gap-y-5 md:px-10">
+                className="p-5 pb-[60px] max-w-[1000px] mx-auto grid grid-cols-1 gap-x-10 gap-y-5 md:px-10 md:grid-cols-2">
                 <div className="flex-1 flex flex-col gap-y-5">
                     {/* サムネイル画像 */}
                     <ImageEditField control={control} name="thumbnail" />
