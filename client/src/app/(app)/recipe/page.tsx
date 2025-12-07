@@ -5,7 +5,7 @@ import { apiClient } from '@/lib/apiClient';
 import RecipeListPage from '@/pages/recipe/RecipeListPage';
 import { IGetRecipeIndexResponse } from '@/types/api';
 import { Suspense } from 'react';
-import Loading from '../loading';
+import Loading from '@/app/(app)/loading';
 import { CirclePlus } from 'lucide-react';
 import { HeaderLinkTextButton } from '@/components/common/HeaderTextButtons';
 

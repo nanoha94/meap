@@ -8,7 +8,7 @@ import { TMP_ID_PREFIX } from '@/constants';
 export const LOADING_STATE_KEYS = {
     INGREDIENT: 'ingredient',
     INGREDIENT_CATEGORY: 'ingredientCategory',
-};
+} as const;
 
 // ------------------------------------------------------------
 // デフォルト設定
