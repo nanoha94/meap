@@ -6,27 +6,24 @@ import { AxiosError } from 'axios';
 export const useApiErrorHandler = () => {
     const { addSnackbar } = useSnackbars();
 
-    const handleApiError = (error: AxiosError): boolean => {
+    const handleApiError = (error: AxiosError): void => {
         // タイムアウトエラー
         if (error.code === 'ECONNABORTED') {
             console.error(error.message);
             addSnackbar('error', 'リクエストがタイムアウトしました');
-            return true; // エラーが発生したことを示す
+            return;
         }
 
         // バックエンドからのエラーメッセージがある場合
         if (error.response?.data?.message) {
             console.error(error.response.data.message);
             addSnackbar('error', error.response.data.message);
-            return true;
+            return;
         }
 
         // 予期せぬエラー
-        else {
-            console.error(error.message);
-            addSnackbar('error', '予期せぬエラーが発生しました');
-            return true;
-        }
+        console.error(error.message);
+        addSnackbar('error', '予期せぬエラーが発生しました');
     };
 
     return { handleApiError };

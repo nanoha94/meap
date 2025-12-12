@@ -5,8 +5,9 @@ import { IPostRecipeCategoryRequest, IRecipeCategory } from '@/types/api';
 import axios from '@/lib/axios';
 import { TIMEOUT_MS, TMP_ID_PREFIX } from '@/constants';
 import React from 'react';
+import { useApiErrorHandler } from '@/hooks/api';
 
-export const useRecipeCategories = () => {
+export const useRecipeCategoryApi = () => {
     const {
         categories: storeCategories,
         isLoadings,
@@ -14,6 +15,7 @@ export const useRecipeCategories = () => {
     } = useRecipeStore();
     const router = useRouter();
     const { addSnackbar } = useSnackbars();
+    const { handleApiError } = useApiErrorHandler();
 
     const bulkUpdateRecipeCategories = React.useCallback(
         async (categories: IRecipeCategory[]) => {
@@ -47,16 +49,8 @@ export const useRecipeCategories = () => {
                         timeout: TIMEOUT_MS,
                     });
                 } catch (error) {
-                    if (error.code === 'ECONNABORTED') {
-                        addSnackbar(
-                            'error',
-                            'リクエストがタイムアウトしました',
-                        );
-                    } else {
-                        hasError = true;
-                        console.error(error.response?.data.message);
-                        addSnackbar('error', error.response?.data.message);
-                    }
+                    hasError = true;
+                    handleApiError(error);
                 }
             }
 
@@ -99,16 +93,8 @@ export const useRecipeCategories = () => {
                             },
                         );
                     } catch (error) {
-                        if (error.code === 'ECONNABORTED') {
-                            addSnackbar(
-                                'error',
-                                'リクエストがタイムアウトしました',
-                            );
-                        } else {
-                            hasError = true;
-                            console.error(error.response?.data.message);
-                            addSnackbar('error', error.response?.data.message);
-                        }
+                        hasError = true;
+                        handleApiError(error);
                     }
                 }
             }
@@ -124,28 +110,26 @@ export const useRecipeCategories = () => {
                         router.refresh();
                     }
                 } catch (error) {
-                    if (error.code === 'ECONNABORTED') {
-                        addSnackbar(
-                            'error',
-                            'リクエストがタイムアウトしました',
-                        );
-                    } else {
-                        hasError = true;
-                        console.error(error.response?.data.message);
-                        addSnackbar('error', error.response?.data.message);
-                    }
+                    hasError = true;
+                    handleApiError(error);
                 }
             }
 
             // すべての処理がエラーなく完了した場合
             if (!hasError) {
-                addSnackbar('success', '買い物カテゴリーを更新しました');
+                addSnackbar('success', 'レシピカテゴリーを更新しました');
                 router.refresh();
             }
 
             setIsLoadings('recipeCategory', false);
         },
-        [storeCategories, isLoadings.recipeCategory],
+        [
+            storeCategories,
+            isLoadings.recipeCategory,
+            addSnackbar,
+            handleApiError,
+            router,
+        ],
     );
 
     return {

@@ -1,11 +1,13 @@
 import { TIMEOUT_MS } from '@/constants';
 import { useSnackbars } from '@/contexts';
+import { useApiErrorHandler } from '@/hooks/api';
 import axios from '@/lib/axios';
 import { IUploadRecipeResponse } from '@/types/api';
 import React from 'react';
 
 export const useImageApi = () => {
     const { addSnackbar } = useSnackbars();
+    const { handleApiError } = useApiErrorHandler();
     const bulkUploadImage = React.useCallback(async (files: File[]) => {
         try {
             // FormDataを作成してファイルを追加
@@ -37,12 +39,7 @@ export const useImageApi = () => {
             }
             return responseData;
         } catch (error) {
-            if (error.code === 'ECONNABORTED') {
-                addSnackbar('error', 'リクエストがタイムアウトしました');
-            } else {
-                console.error(error.response?.data.message);
-                addSnackbar('error', error.response?.data.message);
-            }
+            handleApiError(error);
             throw error;
         }
     }, []);

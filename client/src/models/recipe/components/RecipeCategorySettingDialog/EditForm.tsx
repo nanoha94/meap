@@ -5,7 +5,7 @@ import { DndSortableList } from '@/components/dnd';
 import { CirclePlus } from 'lucide-react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { defaultRecipeCategory } from '../../constants';
-import { useRecipeCategories } from '../../hooks/useRecipeCategories';
+import { useRecipeCategoryApi } from '../../hooks';
 import { IRecipeCategory } from '@/types/api';
 import { TMP_ID_PREFIX } from '@/constants';
 import GrippableEditItem from '@/components/common/GrippableEditItem';
@@ -19,7 +19,7 @@ interface Props {
 }
 
 const EditForm: React.FC<Props> = ({ onClose }) => {
-    const { storeData, bulkUpdateRecipeCategories } = useRecipeCategories();
+    const { storeData, bulkUpdateRecipeCategories } = useRecipeCategoryApi();
     const prefix = TMP_ID_PREFIX.RECIPE_CATEGORY;
 
     const { control, handleSubmit, watch, reset } = useForm<FormData>({

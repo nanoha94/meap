@@ -1,11 +1,16 @@
 import { TIMEOUT_MS } from '@/constants';
 import { useSnackbars } from '@/contexts';
+import { useApiErrorHandler } from '@/hooks/api';
 import axios from '@/lib/axios';
-import { IGetInvitationDetailResponse } from '@/types/api';
+import {
+    IPostInvitaionResponse,
+    IPostInvitationJoinResponse,
+} from '@/types/api';
 import React from 'react';
 
-export const useInvitations = () => {
+export const useInvitationApi = () => {
     const { addSnackbar } = useSnackbars();
+    const { handleApiError } = useApiErrorHandler();
     const [isLoading, setIsLoading] = React.useState(false);
     const [invitationLink, setInvitationLink] = React.useState<string | null>(
         null,
@@ -13,8 +18,6 @@ export const useInvitations = () => {
     const [tokenExpiresAt, setTokenExpiresAt] = React.useState<string | null>(
         null,
     );
-    const [invitationDetail, setInvitationDetail] =
-        React.useState<IGetInvitationDetailResponse | null>(null);
 
     /**
      * 招待トークンを取得する
@@ -27,58 +30,28 @@ export const useInvitations = () => {
     }> => {
         try {
             setIsLoading(true);
-            const res = await axios.post('/invitations', {
-                timeout: TIMEOUT_MS,
-            });
 
-            if (res.data) {
+            // 招待トークン発行
+            const res = await axios.post<IPostInvitaionResponse>(
+                '/invitations',
+                {
+                    timeout: TIMEOUT_MS,
+                },
+            );
+
+            // レスポンスデータ
+            const responseData: IPostInvitaionResponse = res.data;
+
+            if (responseData.success) {
                 setInvitationLink(
-                    `${process.env.NEXT_PUBLIC_FRONT_URL}/settings/account?token=${res.data.token}`,
+                    `${process.env.NEXT_PUBLIC_FRONT_URL}/settings/account?token=${responseData.data.token}`,
                 );
-                setTokenExpiresAt(res.data.expires_at);
+                setTokenExpiresAt(responseData.data.expires_at);
             }
             return { success: true };
         } catch (error) {
-            if (error.code === 'ECONNABORTED') {
-                addSnackbar('error', 'リクエストがタイムアウトしました');
-            } else {
-                console.error(error.response?.data.message);
-                addSnackbar('error', error.response?.data.message);
-                onError?.();
-            }
-            return { success: false };
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    /**
-     * 招待詳細を取得する
-     * @param token 招待トークン
-     * @returns {Promise<{success: boolean}>} 成功/失敗の情報
-     */
-    const fetchInvitationDetail = async (
-        token: string,
-    ): Promise<{
-        success: boolean;
-    }> => {
-        setIsLoading(true);
-        setInvitationDetail(null);
-        try {
-            const res = await axios.get(`/invitations/${token}`, {
-                timeout: TIMEOUT_MS,
-            });
-            if (res.data) {
-                setInvitationDetail(res.data);
-            }
-            return { success: true };
-        } catch (error) {
-            if (error.code === 'ECONNABORTED') {
-                addSnackbar('error', 'リクエストがタイムアウトしました');
-            } else {
-                console.error(error.response?.data.message);
-                addSnackbar('error', error.response?.data.message);
-            }
+            handleApiError(error);
+            onError?.();
             return { success: false };
         } finally {
             setIsLoading(false);
@@ -101,16 +74,23 @@ export const useInvitations = () => {
     }> => {
         setIsLoading(true);
         try {
-            const res = await axios.post(`/invitations/${token}/join`, {
-                isDelete,
-                timeout: TIMEOUT_MS,
-            });
+            const res = await axios.post<IPostInvitationJoinResponse>(
+                `/invitations/${token}/join`,
+                {
+                    isDelete,
+                    timeout: TIMEOUT_MS,
+                },
+            );
 
-            if (res.data) {
-                addSnackbar('success', res.data.message);
+            // レスポンスデータ
+            const responseData: IPostInvitationJoinResponse = res.data;
+
+            if (responseData.success) {
+                addSnackbar('success', responseData.message);
             }
             return { success: true };
         } catch (error) {
+            // TODO: 見直し（handleApiErrorは使用できないのか？）
             if (error.code === 'ECONNABORTED') {
                 addSnackbar('error', 'リクエストがタイムアウトしました');
                 return { success: false, errorStatus: 408 };
@@ -141,9 +121,7 @@ export const useInvitations = () => {
         isLoading,
         invitationLink,
         tokenExpiresAt,
-        invitationDetail,
         fetchInvitationToken,
-        fetchInvitationDetail,
         joinGroup,
     };
 };

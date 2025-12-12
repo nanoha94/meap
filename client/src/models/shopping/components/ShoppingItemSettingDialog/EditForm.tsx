@@ -3,8 +3,8 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/common';
 import {
-    useShoppingCategories,
-    useShoppingItems,
+    useShoppingCategoryApi,
+    useShoppingItemApi,
     useShoppingStore,
 } from '../../hooks';
 import { SHOPPING_ITEM_SETTING_DIALOG_CONFIGS } from '../../constants';
@@ -23,8 +23,8 @@ interface FormData {
 }
 
 const EditForm: React.FC<Props> = ({ onClose }) => {
-    const { storeShoppingItem, updateShoppingItems } = useShoppingItems();
-    const { storeData } = useShoppingCategories();
+    const { storeShoppingItem, updateShoppingItems } = useShoppingItemApi();
+    const { storeData } = useShoppingCategoryApi();
     const { dialogs } = useShoppingStore();
     const { item: editingItem, editMode } =
         dialogs[DIALOG_NAME.SHOPPING_ITEM_ADD_EDIT].payload;

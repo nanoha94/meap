@@ -1,7 +1,6 @@
 import { Header, Loading } from '@/components/common';
 import { SnackbarHandler } from '@/components/handlers';
-import { TIMEOUT_MS } from '@/constants';
-import { apiClient } from '@/lib/apiClient';
+import { fetchData } from '@/lib/apiClient';
 import RecipeListPage from '@/pages/recipe/RecipeListPage';
 import { IGetRecipeIndexResponse } from '@/types/api';
 import { Suspense } from 'react';
@@ -9,32 +8,8 @@ import { CirclePlus } from 'lucide-react';
 import { HeaderLinkTextButton } from '@/components/common/HeaderTextButtons';
 
 const RecipePageWithData = async () => {
-    let recipes: IGetRecipeIndexResponse | null = null;
-    let errorMessage: string = '';
-
-    try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
-
-        recipes = await apiClient('/recipes', {
-            signal: controller.signal,
-        });
-        clearTimeout(timeoutId);
-    } catch (error) {
-        console.error(error);
-        // エラーオブジェクトから安全に文字列を抽出
-        if (error instanceof Error && error.name === 'AbortError') {
-            errorMessage =
-                'リクエストがタイムアウトしました。再度お試しください。';
-        } else {
-            errorMessage =
-                error instanceof Error
-                    ? error.message
-                    : typeof error === 'string'
-                      ? error
-                      : 'データの取得に失敗しました';
-        }
-    }
+    const { data: recipes, errorMessage } =
+        await fetchData<IGetRecipeIndexResponse>('/recipes');
     return (
         <>
             <Header title="料理/レシピ一覧">

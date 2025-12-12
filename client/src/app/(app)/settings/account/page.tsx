@@ -4,10 +4,10 @@ import { Header, Loading } from '@/components/common';
 import {
     IGetGroupUserResponse,
     IGetInvitationDetailResponse,
+    IUser,
 } from '@/types/api';
-import { apiClient } from '@/lib/apiClient';
+import { apiClient, fetchDataParallel } from '@/lib/apiClient';
 import { SnackbarHandler } from '@/components/handlers';
-import { TIMEOUT_MS } from '@/constants';
 import dynamic from 'next/dynamic';
 
 // 動的インポートでダイアログコンポーネントを遅延読み込み
@@ -23,40 +23,32 @@ interface AccountWithDataProps {
     token: string;
 }
 const AccountWithData = async ({ token }: AccountWithDataProps) => {
-    let users: IGetGroupUserResponse = { data: [], total: 0 };
-    let invitationDetail: IGetInvitationDetailResponse | null = null;
-    let errorMessage: string = '';
+    // tokenがある場合は2つのリクエストを並列実行、ない場合は1つだけ
+    const requests: Array<
+        (
+            signal: AbortSignal,
+        ) => Promise<IGetGroupUserResponse | IGetInvitationDetailResponse>
+    > = [signal => apiClient<IGetGroupUserResponse>('/users', { signal })];
 
-    try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
-
-        users = await apiClient('/users', {
-            signal: controller.signal,
-        });
-
-        if (!!token && token.length > 0) {
-            invitationDetail = await apiClient(`/invitations/${token}`, {
-                signal: controller.signal,
-            });
-        }
-
-        clearTimeout(timeoutId);
-    } catch (error) {
-        console.error(error);
-        // エラーオブジェクトから安全に文字列を抽出
-        if (error instanceof Error && error.name === 'AbortError') {
-            errorMessage =
-                'リクエストがタイムアウトしました。再度お試しください。';
-        } else {
-            errorMessage =
-                error instanceof Error
-                    ? error.message
-                    : typeof error === 'string'
-                      ? error
-                      : 'データの取得に失敗しました';
-        }
+    if (token && token.length > 0) {
+        requests.push(signal =>
+            apiClient<IGetInvitationDetailResponse>(`/invitations/${token}`, {
+                signal,
+            }),
+        );
     }
+
+    const { data, errorMessage } = await fetchDataParallel<
+        [IGetGroupUserResponse, IGetInvitationDetailResponse?]
+    >(
+        requests as Array<
+            (
+                signal: AbortSignal,
+            ) => Promise<IGetGroupUserResponse | IGetInvitationDetailResponse>
+        >,
+    );
+
+    const [users, invitationDetail] = data ?? [{ data: [], total: 0 }, null];
 
     return (
         <>
@@ -65,9 +57,9 @@ const AccountWithData = async ({ token }: AccountWithDataProps) => {
                 {errorMessage && (
                     <SnackbarHandler type="error" message={errorMessage} />
                 )}
-                <AccountTopPage users={users['data']} />
+                <AccountTopPage users={users?.data as IUser[]} />
                 {invitationDetail && token && (
-                    <JoinDialog invitationDetail={invitationDetail} />
+                    <JoinDialog invitationDetail={invitationDetail.data} />
                 )}
             </main>
         </>

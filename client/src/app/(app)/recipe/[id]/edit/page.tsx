@@ -1,7 +1,6 @@
 import { Header, Loading } from '@/components/common';
 import { SnackbarHandler } from '@/components/handlers';
-import { TIMEOUT_MS } from '@/constants';
-import { apiClient } from '@/lib/apiClient';
+import { apiClient, fetchDataParallel } from '@/lib/apiClient';
 import RecipeEditPage from '@/pages/recipe/RecipeEditPage';
 import {
     IGetIngredientCategoryIndexResponse,
@@ -17,43 +16,19 @@ interface PageWithDataProps {
     id: string;
 }
 const PageWithData = async ({ id }: PageWithDataProps) => {
-    let recipe: IGetRecipeShowResponse | null = null;
-    let ingredientCategories: IGetIngredientCategoryIndexResponse | null = null;
-    let errorMessage: string = '';
-
-    try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
-
-        // 2つのリクエストを並列実行
-        [recipe, ingredientCategories] = await Promise.all([
-            apiClient<IGetRecipeShowResponse>(`/recipes/${id}`, {
-                signal: controller.signal,
-            }),
+    const { data, errorMessage } = await fetchDataParallel<
+        [IGetRecipeShowResponse, IGetIngredientCategoryIndexResponse]
+    >([
+        signal =>
+            apiClient<IGetRecipeShowResponse>(`/recipes/${id}`, { signal }),
+        signal =>
             apiClient<IGetIngredientCategoryIndexResponse>(
                 '/ingredient-categories',
-                {
-                    signal: controller.signal,
-                },
+                { signal },
             ),
-        ]);
+    ]);
 
-        clearTimeout(timeoutId);
-    } catch (error) {
-        console.error(error);
-        // エラーオブジェクトから安全に文字列を抽出
-        if (error instanceof Error && error.name === 'AbortError') {
-            errorMessage =
-                'リクエストがタイムアウトしました。再度お試しください。';
-        } else {
-            errorMessage =
-                error instanceof Error
-                    ? error.message
-                    : typeof error === 'string'
-                      ? error
-                      : 'データの取得に失敗しました';
-        }
-    }
+    const [recipe, ingredientCategories] = data ?? [null, null];
 
     return (
         <>

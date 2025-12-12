@@ -11,7 +11,7 @@ import { TIMEOUT_MS, TMP_ID_PREFIX } from '@/constants';
 import { useRouter } from 'next/navigation';
 import { useApiErrorHandler } from '@/hooks/api/useApiErrorHandler';
 
-export const useShoppingCategories = () => {
+export const useShoppingCategoryApi = () => {
     const router = useRouter();
     const { addSnackbar } = useSnackbars();
     const { handleApiError } = useApiErrorHandler();

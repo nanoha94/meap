@@ -4,10 +4,9 @@ import { colors } from '@/constants/colors';
 import dayjs from 'dayjs';
 import { LoaderCircle } from 'lucide-react';
 import React from 'react';
-import { useAccountStore } from '../../hooks';
+import { useAccountStore, useInvitationApi } from '../../hooks';
 import { useAccountHandlers } from '../../hooks/useAccountHandlers';
-import { IGetInvitationDetailResponse } from '@/types/api';
-import { useInvitations } from '../../hooks/useInvitations';
+import { IInvitation } from '@/types/api';
 import { useRouter } from 'next/navigation';
 import {
     DELETE_CHECK_FOR_JOIN_GROUP_DIALOG_CONFIGS,
@@ -17,12 +16,12 @@ import { AlertDialogConfig, AlertDialogData } from '@/types/dialog';
 import { ALERT_DIALOG_STATE_DEFAULT } from '@/constants/dialog';
 
 interface Props {
-    invitationDetail: IGetInvitationDetailResponse | null;
+    invitationDetail: IInvitation | null;
 }
 
 const JoinDialog = ({ invitationDetail }: Props) => {
     const router = useRouter();
-    const { isLoading, joinGroup } = useInvitations();
+    const { isLoading, joinGroup } = useInvitationApi();
     const { dialogs, openDialog, closeDialog } = useAccountStore();
     const { isOpen } = dialogs.join;
     const { iconAvatar, removeTokenFromPath } = useAccountHandlers();
@@ -127,8 +126,8 @@ const JoinDialog = ({ invitationDetail }: Props) => {
                                     className="max-w-[100px] w-full h-auto aspect-square rounded-full overflow-hidden"
                                     dangerouslySetInnerHTML={{
                                         __html: iconAvatar(
-                                            invitationDetail?.inviter
-                                                .avatar_seed,
+                                            invitationDetail?.inviter.avatar
+                                                .seed,
                                         ).toString(),
                                     }}
                                 />

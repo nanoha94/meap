@@ -1,6 +1,6 @@
 import { FooterNavigation, SideNavigation } from '@/components/common';
 import { IGetUserResponse, IGetMasterResponse } from '@/types/api';
-import { apiClient } from '@/lib/apiClient';
+import { fetchData } from '@/lib/apiClient';
 import { DataHandler, RedirectHandler } from '@/components/handlers';
 import { cookies } from 'next/headers';
 import { handleAuthRedirect } from '@/utils';
@@ -13,17 +13,25 @@ interface Props {
 }
 
 const AppLayout = async ({ children }: Props) => {
-    let user: IGetUserResponse;
+    let user: IGetUserResponse | null = null;
     let masterData: IGetMasterResponse = { data: defaultMasterData };
 
-    try {
-        user = await apiClient('/user');
+    // まずuserを取得して認証チェック
+    const { data: userData, errorMessage: userError } =
+        await fetchData<IGetUserResponse>('/user');
+
+    if (userError || !userData) {
+        handleAuthRedirect(null, false);
+    } else {
+        user = userData;
         handleAuthRedirect(user, false);
 
-        masterData = await apiClient('/master');
-    } catch (error) {
-        console.error('Failed to fetch data:', error);
-        handleAuthRedirect(null, false);
+        // 認証が成功した場合のみmasterDataを取得
+        const { data: masterDataResult } =
+            await fetchData<IGetMasterResponse>('/master');
+        if (masterDataResult) {
+            masterData = masterDataResult;
+        }
     }
 
     // RSCでクッキーを取得する正しい方法

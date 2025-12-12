@@ -5,43 +5,26 @@ import {
     IGetShoppingItemIndexResponse,
 } from '@/types/api';
 import { Header, Loading } from '@/components/common';
-import { apiClient } from '@/lib/apiClient';
+import { apiClient, fetchDataParallel } from '@/lib/apiClient';
 import { SnackbarHandler } from '@/components/handlers';
-import { TIMEOUT_MS } from '@/constants';
 import HeaderButton from '@/models/shopping/components/HeaderButton/HeaderButton';
 
 async function ShoppingListsWithData() {
-    let items: IGetShoppingItemIndexResponse | null = null;
-    let categories: IGetShoppingCategoryIndexResponse | null = null;
-    let errorMessage: string = '';
-    try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
-
-        // 2つのリクエストを並列実行
-        [items, categories] = await Promise.all([
+    const { data, errorMessage } = await fetchDataParallel<
+        [IGetShoppingItemIndexResponse, IGetShoppingCategoryIndexResponse]
+    >([
+        signal =>
             apiClient<IGetShoppingItemIndexResponse>('/shopping-items', {
-                signal: controller.signal,
+                signal,
             }),
+        signal =>
             apiClient<IGetShoppingCategoryIndexResponse>(
                 '/shopping-categories',
-                {
-                    signal: controller.signal,
-                },
+                { signal },
             ),
-        ]);
+    ]);
 
-        clearTimeout(timeoutId);
-    } catch (error) {
-        console.error(error);
-        // エラーオブジェクトから安全に文字列を抽出
-        errorMessage =
-            error instanceof Error
-                ? error.message
-                : typeof error === 'string'
-                  ? error
-                  : 'データの取得に失敗しました';
-    }
+    const [items, categories] = data ?? [null, null];
 
     return (
         <>

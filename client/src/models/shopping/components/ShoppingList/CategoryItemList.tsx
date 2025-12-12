@@ -5,7 +5,7 @@ import { useDroppable } from '@dnd-kit/core';
 import Sortable from '@/components/dnd/Sortable';
 import ShoppingItemCard from './ShoppingItemCard';
 import { ActionMenu, AlertDialog } from '@/components/common';
-import { useShoppingItems, useShoppingStore } from '../../hooks';
+import { useShoppingItemApi, useShoppingStore } from '../../hooks';
 import { SHOPPING_ALERT_DIALOG_CONFIGS } from '../../constants';
 import { AlertDialogData } from '@/types/dialog';
 import { ALERT_DIALOG_STATE_DEFAULT } from '@/constants/dialog';
@@ -17,7 +17,7 @@ interface Props {
 }
 
 const CategoryItemList: React.FC<Props> = ({ category, items }) => {
-    const { deleteShoppingItems } = useShoppingItems();
+    const { deleteShoppingItems } = useShoppingItemApi();
     const { items: storeItems, setItems: setStoreItems } = useShoppingStore();
     const [deleteCheckDialog, setDeleteCheckDialog] =
         React.useState<AlertDialogData>(ALERT_DIALOG_STATE_DEFAULT);

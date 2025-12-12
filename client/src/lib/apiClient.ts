@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers';
 import { Agent } from 'undici';
+import { TIMEOUT_MS } from '@/constants';
 
 type ApiClientOptions = Omit<RequestInit, 'body'> & {
     body?: Record<string, unknown> | BodyInit | null;
@@ -95,4 +96,93 @@ export async function apiClient<T>(
     }
 
     return response.json();
+}
+
+/**
+ * タイムアウトとエラーハンドリングを内包したapiClientのラッパー関数
+ * サーバーコンポーネントで使用する
+ * エラーが発生しても例外を投げず、エラーメッセージを返す
+ * @param path リクエストパス
+ * @param options fetchに渡すオプション
+ * @returns データとエラーメッセージを含むオブジェクト
+ */
+export type FetchDataResult<T> = {
+    data: T | null;
+    errorMessage: string;
+};
+
+export async function fetchData<T>(
+    path: string,
+    options: ApiClientOptions = {},
+): Promise<FetchDataResult<T>> {
+    let data: T | null = null;
+    let errorMessage: string = '';
+
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
+        data = await apiClient<T>(path, {
+            ...options,
+            signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+    } catch (error) {
+        console.error(error);
+        // エラーオブジェクトから安全に文字列を抽出
+        if (error instanceof Error && error.name === 'AbortError') {
+            errorMessage =
+                'リクエストがタイムアウトしました。再度お試しください。';
+        } else {
+            errorMessage =
+                error instanceof Error
+                    ? error.message
+                    : typeof error === 'string'
+                      ? error
+                      : 'データの取得に失敗しました';
+        }
+    }
+
+    return { data, errorMessage };
+}
+
+/**
+ * 複数のリクエストを並列実行し、タイムアウトとエラーハンドリングを内包した関数
+ * サーバーコンポーネントで使用する
+ * @param requests リクエスト関数の配列（各関数はAbortSignalを受け取る）
+ * @returns データとエラーメッセージを含むオブジェクト
+ */
+export async function fetchDataParallel<T extends unknown[]>(
+    requests: Array<(signal: AbortSignal) => Promise<T[number]>>,
+): Promise<FetchDataResult<T>> {
+    let data: T | null = null;
+    let errorMessage: string = '';
+
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
+        data = (await Promise.all(
+            requests.map(request => request(controller.signal)),
+        )) as T;
+
+        clearTimeout(timeoutId);
+    } catch (error) {
+        console.error(error);
+        // エラーオブジェクトから安全に文字列を抽出
+        if (error instanceof Error && error.name === 'AbortError') {
+            errorMessage =
+                'リクエストがタイムアウトしました。再度お試しください。';
+        } else {
+            errorMessage =
+                error instanceof Error
+                    ? error.message
+                    : typeof error === 'string'
+                      ? error
+                      : 'データの取得に失敗しました';
+        }
+    }
+
+    return { data, errorMessage };
 }

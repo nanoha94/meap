@@ -3,10 +3,11 @@ import { TextButton } from '@/components/common';
 import { InvitationDialog } from '@/models/settings/components';
 import { useAccountStore } from '@/models/settings/hooks';
 import { ChevronRight } from 'lucide-react';
-import { IGetGroupUserResponse } from '@/types/api';
+import { IUser } from '@/types/api';
 import { useAccountHandlers } from '@/models/settings/hooks/useAccountHandlers';
+
 interface Props {
-    users: IGetGroupUserResponse['data'];
+    users: IUser[];
 }
 
 const AccountTopPage = ({ users }: Props) => {
@@ -44,19 +45,19 @@ const AccountTopPage = ({ users }: Props) => {
                             {users
                                 .filter(
                                     v =>
-                                        v.avatar_seed !==
+                                        v.avatar.seed !==
                                         loginUser?.avatar_seed,
                                 )
                                 .map(user => (
                                     <div
-                                        key={user.avatar_seed}
+                                        key={user.avatar.seed}
                                         className="w-full max-w-[100px] mx-auto flex flex-col gap-y-1">
                                         {/* TODO: アイコンの指定がある場合はアイコン、指定がない場合はiconsを使用する */}
                                         <div
                                             className="w-full h-auto aspect-square rounded-full overflow-hidden"
                                             dangerouslySetInnerHTML={{
                                                 __html: iconAvatar(
-                                                    user.avatar_seed ?? '',
+                                                    user.avatar.seed ?? '',
                                                 ).toString(),
                                             }}
                                         />

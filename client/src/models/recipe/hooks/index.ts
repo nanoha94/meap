@@ -1,3 +1,3 @@
 export { useRecipeStore } from './recipeStores';
-export { useRecipeCategories } from './useRecipeCategories';
+export { useRecipeCategoryApi } from './useRecipeCategoryApi';
 export { useRecipeApi } from './useRecipeApi';

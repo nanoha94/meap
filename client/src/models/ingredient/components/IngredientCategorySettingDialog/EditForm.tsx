@@ -8,7 +8,7 @@ import { TMP_ID_PREFIX } from '@/constants';
 import { defaultIngredientCategory } from '@/models/ingredient/constants';
 import { IIngredientCategory } from '@/types/api';
 import GrippableEditItem from '@/components/common/GrippableEditItem';
-import { useIngredientCatgories } from '../../hooks/useIngredientCatgories';
+import { useIngredientCatgoryApi } from '../../hooks';
 
 interface Props {
     onClose: () => void;
@@ -20,7 +20,7 @@ interface FormData {
 
 const EditForm: React.FC<Props> = ({ onClose }) => {
     const { storeData, bulkUpdateIngredientCategories } =
-        useIngredientCatgories();
+        useIngredientCatgoryApi();
     const prefix = TMP_ID_PREFIX.INGREDIENT_CATEGORY;
 
     const { control, handleSubmit, watch, reset } = useForm<FormData>({

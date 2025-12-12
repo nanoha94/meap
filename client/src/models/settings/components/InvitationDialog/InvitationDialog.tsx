@@ -5,15 +5,14 @@ import { colors } from '@/constants/colors';
 import dayjs from 'dayjs';
 import { Copy, LoaderCircle, RotateCw } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
-import { useAccountStore } from '../../hooks';
-import { useInvitations } from '../../hooks/useInvitations';
+import { useAccountStore, useInvitationApi } from '../../hooks';
 
 const InvitationDialog = () => {
     const { dialogs, closeDialog } = useAccountStore();
     const { isOpen } = dialogs.invitation;
     const [isCopied, setIsCopied] = React.useState(false);
     const { isLoading, invitationLink, tokenExpiresAt, fetchInvitationToken } =
-        useInvitations();
+        useInvitationApi();
 
     // 招待リンクをコピー
     const copyToClipboard = async (link: string) => {

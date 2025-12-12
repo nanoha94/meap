@@ -7,9 +7,11 @@ import {
     IPutShoppingItemRequestData,
 } from '@/types/api';
 import { TIMEOUT_MS } from '@/constants';
+import { useApiErrorHandler } from '@/hooks/api';
 
-export const useShoppingItems = () => {
+export const useShoppingItemApi = () => {
     const { addSnackbar } = useSnackbars();
+    const { handleApiError } = useApiErrorHandler();
     const {
         items: storeItems,
         serverItems,
@@ -37,17 +39,12 @@ export const useShoppingItems = () => {
                     }
                 }
             } catch (error) {
-                if (error.code === 'ECONNABORTED') {
-                    addSnackbar('error', 'リクエストがタイムアウトしました');
-                } else {
-                    console.error(error.response?.data.message);
-                    addSnackbar('error', error.response?.data.message);
-                }
+                handleApiError(error);
             } finally {
                 setIsLoading(false);
             }
         },
-        [isLoading, addSnackbar],
+        [isLoading],
     );
 
     /**
@@ -74,12 +71,7 @@ export const useShoppingItems = () => {
                 fetchShoppingItems();
             }
         } catch (error) {
-            if (error.code === 'ECONNABORTED') {
-                addSnackbar('error', 'リクエストがタイムアウトしました');
-            } else {
-                console.error(error.response?.data.message);
-                addSnackbar('error', error.response?.data.message);
-            }
+            handleApiError(error);
         } finally {
             setIsLoading(false);
         }
@@ -111,12 +103,7 @@ export const useShoppingItems = () => {
                     addSnackbar('success', '買い物リストを更新しました');
                 }
             } catch (error) {
-                if (error.code === 'ECONNABORTED') {
-                    addSnackbar('error', 'リクエストがタイムアウトしました');
-                } else {
-                    console.error(error.response?.data.message);
-                    addSnackbar('error', error.response?.data.message);
-                }
+                handleApiError(error);
             } finally {
                 setIsLoading(false);
             }
@@ -145,12 +132,7 @@ export const useShoppingItems = () => {
                 addSnackbar('success', '買い物アイテムを削除しました');
             }
         } catch (error) {
-            if (error.code === 'ECONNABORTED') {
-                addSnackbar('error', 'リクエストがタイムアウトしました');
-            } else {
-                console.error(error.response?.data.message);
-                addSnackbar('error', error.response?.data.message);
-            }
+            handleApiError(error);
             // エラーが発生した場合は再取得して状態を復元
             await fetchShoppingItems();
         } finally {

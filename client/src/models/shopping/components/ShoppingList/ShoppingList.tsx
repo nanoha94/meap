@@ -4,7 +4,7 @@ import { DndContext, DragOverlay, rectIntersection } from '@dnd-kit/core';
 import CategoryItemList from './CategoryItemList';
 import ShoppingItemCard from './ShoppingItemCard';
 import { useDebounce } from '@/hooks/useDebounce';
-import { useShoppingStore, useShoppingItems } from '../../hooks';
+import { useShoppingStore, useShoppingItemApi } from '../../hooks';
 
 import { DEBOUNCE_DELAY } from '../../constants';
 import { IShoppingItem } from '@/types/api';
@@ -20,7 +20,7 @@ const ShoppingList = () => {
         categories,
         isLoadingItems,
     } = useShoppingStore();
-    const { updateShoppingItems } = useShoppingItems();
+    const { updateShoppingItems } = useShoppingItemApi();
     const [tmpItems, setTmpItems] = React.useState<IShoppingItem[]>([]);
 
     // 最後に送信したアイテムを記録して重複実行を防ぐ

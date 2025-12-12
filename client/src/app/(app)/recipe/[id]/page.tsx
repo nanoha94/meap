@@ -1,11 +1,10 @@
 import { Header, Loading } from '@/components/common';
 import { SnackbarHandler } from '@/components/handlers';
-import { TIMEOUT_MS } from '@/constants';
 import { Suspense } from 'react';
 import { HeaderRecipeDeleteButton } from '@/models/recipe/components';
 import { Pencil } from 'lucide-react';
 import { HeaderLinkTextButton } from '@/components/common/HeaderTextButtons';
-import { apiClient } from '@/lib/apiClient';
+import { apiClient, fetchDataParallel } from '@/lib/apiClient';
 import {
     IGetRecipeShowResponse,
     IGetIngredientCategoryIndexResponse,
@@ -21,44 +20,23 @@ interface PageWithDataProps {
     id: string;
 }
 const PageWithData = async ({ id }: PageWithDataProps) => {
-    let recipe: IGetRecipeShowResponse | null = null;
-    let ingredientCategories: IGetIngredientCategoryIndexResponse | null = null;
-    let errorMessage: string = '';
-
-    try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
-
-        // 2つのリクエストを並列実行
-        [recipe, ingredientCategories] = await Promise.all([
-            apiClient<IGetRecipeShowResponse>(`/recipes/${id}`, {
-                signal: controller.signal,
-            }),
+    const { data, errorMessage } = await fetchDataParallel<
+        [IGetRecipeShowResponse, IGetIngredientCategoryIndexResponse]
+    >([
+        signal =>
+            apiClient<IGetRecipeShowResponse>(`/recipes/${id}`, { signal }),
+        signal =>
             apiClient<IGetIngredientCategoryIndexResponse>(
                 '/ingredient-categories',
-                {
-                    signal: controller.signal,
-                },
+                { signal },
             ),
-        ]);
+    ]);
 
-        clearTimeout(timeoutId);
-    } catch (error) {
-        console.error(error);
-        // エラーオブジェクトから安全に文字列を抽出
-        if (error instanceof Error && error.name === 'AbortError') {
-            errorMessage =
-                'リクエストがタイムアウトしました。再度お試しください。';
-        } else {
-            errorMessage =
-                error instanceof Error
-                    ? error.message
-                    : typeof error === 'string'
-                      ? error
-                      : 'データの取得に失敗しました';
-        }
+    if (errorMessage || !data) {
         notFound();
     }
+
+    const [recipe, ingredientCategories] = data;
 
     return (
         <>
@@ -78,8 +56,8 @@ const PageWithData = async ({ id }: PageWithDataProps) => {
                     <SnackbarHandler type="error" message={errorMessage} />
                 )}
                 <RecipeDetailPage
-                    fetchRecipe={recipe?.data}
-                    fetchIngredientCategories={ingredientCategories?.data}
+                    fetchRecipe={recipe.data}
+                    fetchIngredientCategories={ingredientCategories.data}
                 />
             </main>
         </>

@@ -1,3 +1,3 @@
 export { useShoppingStore } from './shoppingStores';
-export { useShoppingCategories } from './useShoppingCategories';
-export { useShoppingItems } from './useShoppingItems';
+export { useShoppingCategoryApi } from './useShoppingCategoryApi';
+export { useShoppingItemApi } from './useShoppingItemApi';

@@ -1,3 +1,9 @@
+import { IBaseApiIndexResponse } from './common';
+
+//--------------------------------
+// レスポンス型
+//--------------------------------
+// ユーザー情報取得
 export interface IGetUserResponse {
     name?: string;
     email?: string;
@@ -6,10 +12,20 @@ export interface IGetUserResponse {
     avatar_seed: string;
 }
 
-export interface IGetGroupUserResponse {
-    data: {
-        avatar_seed: string;
-        name: string;
-    }[];
-    total: number;
+// グループユーザー一覧取得
+export type IGetGroupUserResponse = IBaseApiIndexResponse<IUser>;
+
+//--------------------------------
+// データ型
+//--------------------------------
+export interface IUser {
+    id: string;
+    name: string;
+    language: string;
+    avatar: {
+        seed: string;
+        url: string;
+        width: number;
+        height: number;
+    };
 }

@@ -32,7 +32,7 @@ export const navigationItems: NavigationItem[] = [
         iconType: NAVIGATION_ICON_TYPES.BOOK_OPEN_CHECK,
     },
     {
-        link: '/setting',
+        link: '/settings',
         name: '設定',
         iconType: NAVIGATION_ICON_TYPES.SETTINGS,
     },

@@ -11,6 +11,7 @@ import {
 } from '@/types/api';
 import { useImageApi } from '@/models/image/hooks/useImageApi';
 import { RecipeStepEditFormData } from '../types';
+import { useApiErrorHandler } from '@/hooks/api';
 
 /**
  * 手順をフォーマット
@@ -38,6 +39,7 @@ export const useRecipeApi = () => {
     const { bulkUploadImage } = useImageApi();
     const router = useRouter();
     const { addSnackbar } = useSnackbars();
+    const { handleApiError } = useApiErrorHandler();
 
     /**
      * 手順画像のアップロード
@@ -141,12 +143,7 @@ export const useRecipeApi = () => {
                     );
                 }
             } catch (error) {
-                if (error.code === 'ECONNABORTED') {
-                    addSnackbar('error', 'リクエストがタイムアウトしました');
-                } else {
-                    console.error(error.response?.data.message);
-                    addSnackbar('error', error.response?.data.message);
-                }
+                handleApiError(error);
             } finally {
                 setIsLoadings('recipe', false);
             }
@@ -198,12 +195,7 @@ export const useRecipeApi = () => {
                     );
                 }
             } catch (error) {
-                if (error.code === 'ECONNABORTED') {
-                    addSnackbar('error', 'リクエストがタイムアウトしました');
-                } else {
-                    console.error(error.response?.data.message);
-                    addSnackbar('error', error.response?.data.message);
-                }
+                handleApiError(error);
             } finally {
                 setIsLoadings('recipe', false);
             }
@@ -224,12 +216,7 @@ export const useRecipeApi = () => {
                 router.push('/recipe/');
             }
         } catch (error) {
-            if (error.code === 'ECONNABORTED') {
-                addSnackbar('error', 'リクエストがタイムアウトしました');
-            } else {
-                console.error(error.response?.data.message);
-                addSnackbar('error', error.response?.data.message);
-            }
+            handleApiError(error);
         } finally {
             setIsLoadings('recipe', false);
         }

@@ -4,7 +4,7 @@ import { ActionMenu, AlertDialog } from '@/components/common';
 import { colors } from '@/constants/colors';
 import { Check, GripVertical, Pencil, Pin, PinOff, Trash } from 'lucide-react';
 import { IShoppingItem } from '@/types/api';
-import { useShoppingItems, useShoppingStore } from '../../hooks';
+import { useShoppingItemApi, useShoppingStore } from '../../hooks';
 import { SHOPPING_ALERT_DIALOG_CONFIGS } from '../../constants';
 import { AlertDialogData } from '@/types/dialog';
 import { ALERT_DIALOG_STATE_DEFAULT, DIALOG_NAME } from '@/constants/dialog';
@@ -17,7 +17,7 @@ interface Props {
 const ShoppingItemCard = ({ item }: Props) => {
     const { id, name, isPinned = false, isChecked = false } = item;
     const { items: storeItems, setItems: setStoreItems } = useShoppingStore();
-    const { deleteShoppingItems } = useShoppingItems();
+    const { deleteShoppingItems } = useShoppingItemApi();
     const { openDialog } = useShoppingStore();
     const [deleteCheckDialog, setDeleteCheckDialog] =
         React.useState<AlertDialogData>(ALERT_DIALOG_STATE_DEFAULT);

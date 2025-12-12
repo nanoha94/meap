@@ -5,7 +5,7 @@ import { CirclePlus } from 'lucide-react';
 import React from 'react';
 import { IShoppingCategory } from '@/types/api';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
-import { useShoppingCategories } from '../../hooks';
+import { useShoppingCategoryApi } from '../../hooks';
 import { TMP_ID_PREFIX } from '@/constants';
 import GrippableEditItem from '@/components/common/GrippableEditItem';
 
@@ -18,7 +18,8 @@ interface Props {
 }
 
 const ShoppingCategorySettingForm: React.FC<Props> = ({ onClose }) => {
-    const { storeData, bulkUpdateShoppingCategories } = useShoppingCategories();
+    const { storeData, bulkUpdateShoppingCategories } =
+        useShoppingCategoryApi();
     const prefix = TMP_ID_PREFIX.SHOPPING_CATEGORY;
 
     const { control, handleSubmit, watch, reset } = useForm<FormData>({

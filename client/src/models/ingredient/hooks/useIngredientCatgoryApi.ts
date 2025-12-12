@@ -12,7 +12,7 @@ import axios from '@/lib/axios';
 import { TIMEOUT_MS, TMP_ID_PREFIX } from '@/constants';
 import { useRouter } from 'next/navigation';
 
-export const useIngredientCatgories = () => {
+export const useIngredientCatgoryApi = () => {
     const router = useRouter();
     const { addSnackbar } = useSnackbars();
     const { handleApiError } = useApiErrorHandler();
