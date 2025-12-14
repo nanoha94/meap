@@ -1,7 +1,7 @@
 import { Header, Loading } from '@/components/common';
 import { SnackbarHandler } from '@/components/handlers';
 import { fetchData } from '@/lib/apiClient';
-import RecipeEditPage from '@/pages/recipe/RecipeEditPage';
+import RecipeDetailPage from '@/pages/recipe/RecipeDetailPage';
 import { IGetIngredientCategoryIndexResponse } from '@/types/api';
 import { Suspense } from 'react';
 
@@ -18,7 +18,7 @@ async function RecipeNewPageWithData() {
             )}
             <Header title="料理/レシピ追加" />
             <main>
-                <RecipeEditPage
+                <RecipeDetailPage
                     fetchIngredientCategories={ingredientCategories?.data}
                 />
             </main>

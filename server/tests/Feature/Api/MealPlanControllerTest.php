@@ -114,12 +114,13 @@ beforeEach(function () {
             throw new \Exception('Failed to create meal type via API: ' . $response->json('message'));
         }
 
-        public function createRecipeViaApi($testInstance, $user, $name = '人参の煮物', $url = null, $memo = '美味しい人参の煮物です', $thumbnailId = null, $categoryIds = [])
+        public function createRecipeViaApi($testInstance, $user, $name = '人参の煮物', $url = null, $memo = '美味しい人参の煮物です', $thumbnailId = null, $categoryIds = [], $servingCount = 4)
         {
             $requestData = [
                 'name' => $name,
                 'url' => $url,
                 'memo' => $memo,
+                'servingCount' => $servingCount,
                 'thumbnailId' => $thumbnailId,
                 'categoryIds' => $categoryIds
             ];

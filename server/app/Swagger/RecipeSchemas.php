@@ -18,7 +18,8 @@ namespace App\Swagger;
  *     @OA\Property(property="steps", type="array", description="手順", 
  *         @OA\Items(ref="#/components/schemas/RecipeStep")
  *     ),
- *     @OA\Property(property="memo", type="string", description="メモ", example="ハンバーグは美味しい")
+ *     @OA\Property(property="memo", type="string", description="メモ", example="ハンバーグは美味しい"),
+ *     @OA\Property(property="servingCount", type="integer", nullable=true, description="分量（○○人分）", example=4)
  * )
  * 
  * @OA\Schema(

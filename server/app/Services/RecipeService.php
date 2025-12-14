@@ -45,7 +45,7 @@ class RecipeService extends AbstractDomainService
 
     protected function getSelectColumns(): array
     {
-        return ['id', 'group_id', 'name', 'url', 'memo'];
+        return ['id', 'group_id', 'name', 'url', 'memo', 'serving_count'];
     }
 
     protected function getWithColumns(): array
@@ -55,12 +55,12 @@ class RecipeService extends AbstractDomainService
 
     protected function getCreateFields(): array
     {
-        return ['name' => 'name', 'url' => 'url', 'memo' => 'memo'];
+        return ['name' => 'name', 'url' => 'url', 'memo' => 'memo', 'serving_count' => 'servingCount'];
     }
 
     protected function getUpdateFields(): array
     {
-        return ['name' => 'name', 'url' => 'url', 'memo' => 'memo'];
+        return ['name' => 'name', 'url' => 'url', 'memo' => 'memo', 'serving_count' => 'servingCount'];
     }
 
 
@@ -81,6 +81,7 @@ class RecipeService extends AbstractDomainService
             'url' => $item->url,
             'steps' => $this->formatRecipeSteps($item->steps->sortBy('pivot.order')),
             'memo' => $item->memo,
+            'servingCount' => $item->serving_count,
             'categories' => $this->formatRecipeCategories($item->categories),
             'ingredients' => $this->formatRecipeIngredients($item, $item->group),
         ];
@@ -103,6 +104,7 @@ class RecipeService extends AbstractDomainService
             'url' => $item->url,
             'steps' => $this->formatRecipeSteps($item->steps->sortBy('pivot.order')),
             'memo' => $item->memo,
+            'servingCount' => $item->serving_count,
             'categories' => $this->formatRecipeCategories($item->categories),
             'ingredients' => $this->formatRecipeIngredients($item, $item->group),
         ];
@@ -125,6 +127,7 @@ class RecipeService extends AbstractDomainService
             'url' => $item->url,
             'steps' => $this->formatRecipeSteps($item->steps->sortBy('pivot.order')),
             'memo' => $item->memo,
+            'servingCount' => $item->serving_count,
             'categories' => $this->formatRecipeCategories($item->categories),
             'ingredients' => $this->formatRecipeIngredients($item, $item->group),
         ];
@@ -147,6 +150,7 @@ class RecipeService extends AbstractDomainService
             'url' => $item->url,
             'steps' => $this->formatRecipeSteps($item->steps->sortBy('pivot.order')),
             'memo' => $item->memo,
+            'servingCount' => $item->serving_count,
             'categories' => $this->formatRecipeCategories($item->categories),
             'ingredients' => $this->formatRecipeIngredients($item, $item->group),
         ];

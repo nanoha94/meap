@@ -2,8 +2,6 @@ import { Header, Loading } from '@/components/common';
 import { SnackbarHandler } from '@/components/handlers';
 import { Suspense } from 'react';
 import { HeaderRecipeDeleteButton } from '@/models/recipe/components';
-import { Pencil } from 'lucide-react';
-import { HeaderLinkTextButton } from '@/components/common/HeaderTextButtons';
 import { apiClient, fetchDataParallel } from '@/lib/apiClient';
 import {
     IGetRecipeShowResponse,
@@ -43,12 +41,6 @@ const PageWithData = async ({ id }: PageWithDataProps) => {
             <Header title="料理/レシピ">
                 <div className="flex items-center gap-x-4">
                     <HeaderRecipeDeleteButton id={id} name={recipe.data.name} />
-                    <HeaderLinkTextButton
-                        href={`/recipe/${id}/edit`}
-                        colorVariant="secondary">
-                        <Pencil size={20} />
-                        編集
-                    </HeaderLinkTextButton>
                 </div>
             </Header>
             <main>

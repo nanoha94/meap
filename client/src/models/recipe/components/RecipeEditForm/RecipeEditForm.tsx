@@ -9,8 +9,10 @@ import { useRouter } from 'next/navigation';
 import { IngredientEditFields } from './IngredientEditFields';
 import { useRecipeEditForm } from '../../hooks/useRecipeEditForm';
 import { StepEditFields } from './StepEditFields';
-import { EDIT_MODE } from '@/constants';
+import { colors, EDIT_MODE } from '@/constants';
 import ImageEditField from '@/components/react-hook-form/ImageEditField';
+import { Copy } from 'lucide-react';
+import { useTextCopy } from '@/hooks/useTextCopy';
 
 interface Props {
     fetchRecipe?: IRecipe;
@@ -26,6 +28,7 @@ const RecipeEditForm = ({ fetchRecipe }: Props) => {
         onSubmit,
         errors,
     } = useRecipeEditForm(fetchRecipe);
+    const { isTextCopied, copyToClipboard } = useTextCopy();
 
     return (
         <FormProvider {...methods}>
@@ -53,7 +56,25 @@ const RecipeEditForm = ({ fetchRecipe }: Props) => {
                     </VerticalRowField>
                     {/* カテゴリー */}
                     <CategoryEditFields control={control} />
-                    {/* TODO:分量目安 */}
+                    {/* 分量目安 */}
+                    <VerticalRowField
+                        control={control}
+                        name="servingCount"
+                        label="分量目安">
+                        {({ value, onChange }) => (
+                            <div className="flex items-center gap-x-2">
+                                <input
+                                    type="number"
+                                    value={(value as string) ?? ''}
+                                    min={1}
+                                    placeholder="分量目安を入力"
+                                    onChange={e => onChange(e)}
+                                    className="py-2 px-4 flex-1 border rounded-lg"
+                                />
+                                人分
+                            </div>
+                        )}
+                    </VerticalRowField>
                     {/* 食材 */}
                     <IngredientEditFields control={control} />
                 </div>
@@ -64,13 +85,40 @@ const RecipeEditForm = ({ fetchRecipe }: Props) => {
                         name="url"
                         label="レシピURL">
                         {({ value, onChange }) => (
-                            <input
-                                type="text"
-                                value={(value as string) ?? ''}
-                                placeholder="レシピURLを入力"
-                                onChange={e => onChange(e)}
-                                className="py-2 px-4 border rounded-lg "
-                            />
+                            <div className="flex flex-col gap-y-2">
+                                <div className="flex items-center gap-x-2">
+                                    <input
+                                        type="text"
+                                        value={(value as string) ?? ''}
+                                        placeholder="レシピURLを入力"
+                                        onChange={e => onChange(e)}
+                                        className="py-2 px-4 flex-1 border rounded-lg "
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            copyToClipboard(value as string)
+                                        }
+                                        className="p-1 w-fit h-fit rounded-full hover:bg-gray-light transition-colors disabled:opacity-0  disabled:cursor-default"
+                                        disabled={
+                                            !value ||
+                                            value === '' ||
+                                            value?.toString()?.length <= 0
+                                        }>
+                                        <Copy
+                                            size={28}
+                                            color={colors.primary.main}
+                                        />
+                                    </button>
+                                </div>
+                                {isTextCopied && (
+                                    <div className="min-h-[1.5rem]">
+                                        <p className="text-alert-main">
+                                            レシピURLをコピーしました
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
                         )}
                     </VerticalRowField>
                     {/* 手順 */}

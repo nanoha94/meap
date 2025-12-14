@@ -20,6 +20,7 @@ class Recipe extends Model
         'name',
         'url',
         'memo',
+        'serving_count',
     ];
 
     public function categories()

@@ -37,6 +37,7 @@ entity recipes {
     * name : string
     * url : string / レシピURL
     * memo : string / メモ
+    * serving_count : int / 分量（○○人分）
     * group_id : string <<FK>>
 }
 

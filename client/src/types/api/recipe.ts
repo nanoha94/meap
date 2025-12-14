@@ -29,6 +29,7 @@ export interface IPostPutRecipeRequest {
     name: string;
     url?: string;
     memo?: string;
+    servingCount?: number | null;
     thumbnailId?: string;
     categoryIds: string[];
     ingredients?: {
@@ -74,6 +75,7 @@ export interface IRecipe {
     name: string;
     url: string;
     memo: string;
+    servingCount: number | null;
     thumbnail: IImage | null;
     categories: IRecipeCategory[];
     ingredients: IIngredientItem[];

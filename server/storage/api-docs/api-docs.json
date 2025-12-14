@@ -1440,6 +1440,12 @@
                         "description": "メモ",
                         "type": "string",
                         "example": "ハンバーグは美味しい"
+                    },
+                    "servingCount": {
+                        "description": "分量（○○人分）",
+                        "type": "integer",
+                        "example": 4,
+                        "nullable": true
                     }
                 },
                 "type": "object"
@@ -3601,6 +3607,13 @@
                                     "description": "メモ",
                                     "type": "string",
                                     "example": "ハンバーグは美味しい"
+                                },
+                                "servingCount": {
+                                    "description": "分量（○○人分）",
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "example": 4,
+                                    "nullable": true
                                 }
                             },
                             "type": "object"

@@ -425,6 +425,10 @@ test('3-10-15: 【新規作成】 バリデーションエラー（アイテム�
     $response->assertStatus(422);
     $response->assertJsonValidationErrors(['name']);
 
+    // エラーメッセージの内容を検証
+    $responseData = $response->json();
+    $this->assertContains('nameは必ず指定してください。', $responseData['errors']['name']);
+
     // レスポンス構造の確認
     $response->assertJsonStructure([
         'success',
@@ -449,6 +453,10 @@ test('3-10-16: 【新規作成】 バリデーションエラー（アイテム�
     $response->assertStatus(422);
     $response->assertJsonValidationErrors(['name']);
 
+    // エラーメッセージの内容を検証
+    $responseData = $response->json();
+    $this->assertContains('nameは、255文字以内で指定してください。', $responseData['errors']['name']);
+
     // レスポンス構造の確認
     $response->assertJsonStructure([
         'success',
@@ -471,6 +479,10 @@ test('3-10-17: 【新規作成】 バリデーションエラー（カテゴリ 
 
     $response->assertStatus(422);
     $response->assertJsonValidationErrors(['categoryId']);
+
+    // エラーメッセージの内容を検証
+    $responseData = $response->json();
+    $this->assertContains('categoryIdは必ず指定してください。', $responseData['errors']['categoryId']);
 
     // レスポンス構造の確認
     $response->assertJsonStructure([
@@ -496,6 +508,10 @@ test('3-10-18: 【新規作成】 バリデーションエラー（カテゴリ 
     $response->assertStatus(422);
     $response->assertJsonValidationErrors(['categoryId']);
 
+    // エラーメッセージの内容を検証
+    $responseData = $response->json();
+    $this->assertContains('categoryIdに有効なUUIDを指定してください。', $responseData['errors']['categoryId']);
+
     // レスポンス構造の確認
     $response->assertJsonStructure([
         'success',
@@ -520,6 +536,10 @@ test('3-10-19: 【新規作成】 バリデーションエラー（tags が配�
 
     $response->assertStatus(422);
     $response->assertJsonValidationErrors(['tags']);
+
+    // エラーメッセージの内容を検証
+    $responseData = $response->json();
+    $this->assertContains('tagsは配列でなくてはなりません。', $responseData['errors']['tags']);
 
     // レスポンス構造の確認
     $response->assertJsonStructure([
@@ -551,6 +571,10 @@ test('3-10-20: 【新規作成】 バリデーションエラー（tags.id が U
     $response->assertStatus(422);
     $response->assertJsonValidationErrors(['tags.0.id']);
 
+    // エラーメッセージの内容を検証
+    $responseData = $response->json();
+    $this->assertContains('tags.*.idに有効なUUIDを指定してください。', $responseData['errors']['tags.0.id']);
+
     // レスポンス構造の確認
     $response->assertJsonStructure([
         'success',
@@ -579,6 +603,10 @@ test('3-10-21: 【新規作成】 バリデーションエラー（tags.name 未
 
     $response->assertStatus(422);
     $response->assertJsonValidationErrors(['tags.0.name']);
+
+    // エラーメッセージの内容を検証
+    $responseData = $response->json();
+    $this->assertContains('tags.*.nameは必ず指定してください。', $responseData['errors']['tags.0.name']);
 
     // レスポンス構造の確認
     $response->assertJsonStructure([
@@ -609,6 +637,10 @@ test('3-10-22: 【新規作成】 バリデーションエラー（tags.name が
     $response->assertStatus(422);
     $response->assertJsonValidationErrors(['tags.0.name']);
 
+    // エラーメッセージの内容を検証
+    $responseData = $response->json();
+    $this->assertContains('tags.*.nameは文字列を指定してください。', $responseData['errors']['tags.0.name']);
+
     // レスポンス構造の確認
     $response->assertJsonStructure([
         'success',
@@ -637,6 +669,10 @@ test('3-10-23: 【新規作成】 バリデーションエラー（tags.name が
 
     $response->assertStatus(422);
     $response->assertJsonValidationErrors(['tags.0.name']);
+
+    // エラーメッセージの内容を検証
+    $responseData = $response->json();
+    $this->assertContains('tags.*.nameは、255文字以内で指定してください。', $responseData['errors']['tags.0.name']);
 
     // レスポンス構造の確認
     $response->assertJsonStructure([
@@ -1279,6 +1315,10 @@ test('3-10-40: 【一括更新】 バリデーションエラー（data 未入�
     $response->assertStatus(422);
     $response->assertJsonValidationErrors(['data']);
 
+    // エラーメッセージの内容を検証
+    $responseData = $response->json();
+    $this->assertContains('dataは必ず指定してください。', $responseData['errors']['data']);
+
     // レスポンス構造の確認
     $response->assertJsonStructure([
         'success',
@@ -1302,6 +1342,10 @@ test('3-10-37: 【一括更新】 バリデーションエラー（data が配�
     $response->assertStatus(422);
     $response->assertJsonValidationErrors(['data']);
 
+    // エラーメッセージの内容を検証
+    $responseData = $response->json();
+    $this->assertContains('dataは配列でなくてはなりません。', $responseData['errors']['data']);
+
     // レスポンス構造の確認
     $response->assertJsonStructure([
         'success',
@@ -1324,6 +1368,10 @@ test('3-10-38: 【一括更新】 バリデーションエラー（data が空�
 
     $response->assertStatus(422);
     $response->assertJsonValidationErrors(['data']);
+
+    // エラーメッセージの内容を検証
+    $responseData = $response->json();
+    $this->assertContains('dataは1個以上指定してください。', $responseData['errors']['data']);
 
     // レスポンス構造の確認
     $response->assertJsonStructure([
@@ -1355,6 +1403,10 @@ test('3-10-39: 【一括更新】 バリデーションエラー（id 未入力�
 
     $response->assertStatus(422);
     $response->assertJsonValidationErrors(['data.0.id']);
+
+    // エラーメッセージの内容を検証
+    $responseData = $response->json();
+    $this->assertContains('data.*.idは必ず指定してください。', $responseData['errors']['data.0.id']);
 
     // レスポンス構造の確認
     $response->assertJsonStructure([
@@ -1388,6 +1440,10 @@ test('3-10-40: 【一括更新】 バリデーションエラー（id が UUID �
     $response->assertStatus(422);
     $response->assertJsonValidationErrors(['data.0.id']);
 
+    // エラーメッセージの内容を検証
+    $responseData = $response->json();
+    $this->assertContains('data.*.idに有効なUUIDを指定してください。', $responseData['errors']['data.0.id']);
+
     // レスポンス構造の確認
     $response->assertJsonStructure([
         'success',
@@ -1418,6 +1474,10 @@ test('3-10-41: 【一括更新】 バリデーションエラー（name 未入�
 
     $response->assertStatus(422);
     $response->assertJsonValidationErrors(['data.0.name']);
+
+    // エラーメッセージの内容を検証
+    $responseData = $response->json();
+    $this->assertContains('data.*.nameは必ず指定してください。', $responseData['errors']['data.0.name']);
 
     // レスポンス構造の確認
     $response->assertJsonStructure([
@@ -1451,6 +1511,10 @@ test('3-10-42: 【一括更新】 バリデーションエラー（name が文�
     $response->assertStatus(422);
     $response->assertJsonValidationErrors(['data.0.name']);
 
+    // エラーメッセージの内容を検証
+    $responseData = $response->json();
+    $this->assertContains('data.*.nameは文字列を指定してください。', $responseData['errors']['data.0.name']);
+
     // レスポンス構造の確認
     $response->assertJsonStructure([
         'success',
@@ -1483,6 +1547,10 @@ test('3-10-43: 【一括更新】 バリデーションエラー（name が 255 
     $response->assertStatus(422);
     $response->assertJsonValidationErrors(['data.0.name']);
 
+    // エラーメッセージの内容を検証
+    $responseData = $response->json();
+    $this->assertContains('data.*.nameは、255文字以内で指定してください。', $responseData['errors']['data.0.name']);
+
     // レスポンス構造の確認
     $response->assertJsonStructure([
         'success',
@@ -1513,6 +1581,10 @@ test('3-10-44: 【一括更新】 バリデーションエラー（categoryId �
 
     $response->assertStatus(422);
     $response->assertJsonValidationErrors(['data.0.categoryId']);
+
+    // エラーメッセージの内容を検証
+    $responseData = $response->json();
+    $this->assertContains('data.*.categoryIdは必ず指定してください。', $responseData['errors']['data.0.categoryId']);
 
     // レスポンス構造の確認
     $response->assertJsonStructure([
@@ -1546,6 +1618,10 @@ test('3-10-45: 【一括更新】 バリデーションエラー（categoryId �
     $response->assertStatus(422);
     $response->assertJsonValidationErrors(['data.0.categoryId']);
 
+    // エラーメッセージの内容を検証
+    $responseData = $response->json();
+    $this->assertContains('data.*.categoryIdに有効なUUIDを指定してください。', $responseData['errors']['data.0.categoryId']);
+
     // レスポンス構造の確認
     $response->assertJsonStructure([
         'success',
@@ -1576,6 +1652,10 @@ test('3-10-46: 【一括更新】 バリデーションエラー（isPinned 未�
 
     $response->assertStatus(422);
     $response->assertJsonValidationErrors(['data.0.isPinned']);
+
+    // エラーメッセージの内容を検証
+    $responseData = $response->json();
+    $this->assertContains('data.*.isPinnedは必ず指定してください。', $responseData['errors']['data.0.isPinned']);
 
     // レスポンス構造の確認
     $response->assertJsonStructure([
@@ -1609,6 +1689,10 @@ test('3-10-47: 【一括更新】 バリデーションエラー（isPinned が 
     $response->assertStatus(422);
     $response->assertJsonValidationErrors(['data.0.isPinned']);
 
+    // エラーメッセージの内容を検証
+    $responseData = $response->json();
+    $this->assertContains('data.*.isPinnedは、trueかfalseを指定してください。', $responseData['errors']['data.0.isPinned']);
+
     // レスポンス構造の確認
     $response->assertJsonStructure([
         'success',
@@ -1639,6 +1723,10 @@ test('3-10-48: 【一括更新】 バリデーションエラー（isChecked 未
 
     $response->assertStatus(422);
     $response->assertJsonValidationErrors(['data.0.isChecked']);
+
+    // エラーメッセージの内容を検証
+    $responseData = $response->json();
+    $this->assertContains('data.*.isCheckedは必ず指定してください。', $responseData['errors']['data.0.isChecked']);
 
     // レスポンス構造の確認
     $response->assertJsonStructure([
@@ -1672,6 +1760,10 @@ test('3-10-49: 【一括更新】 バリデーションエラー（isChecked が
     $response->assertStatus(422);
     $response->assertJsonValidationErrors(['data.0.isChecked']);
 
+    // エラーメッセージの内容を検証
+    $responseData = $response->json();
+    $this->assertContains('data.*.isCheckedは、trueかfalseを指定してください。', $responseData['errors']['data.0.isChecked']);
+
     // レスポンス構造の確認
     $response->assertJsonStructure([
         'success',
@@ -1702,6 +1794,10 @@ test('3-10-50: 【一括更新】 バリデーションエラー（order 未入�
 
     $response->assertStatus(422);
     $response->assertJsonValidationErrors(['data.0.order']);
+
+    // エラーメッセージの内容を検証
+    $responseData = $response->json();
+    $this->assertContains('data.*.orderは必ず指定してください。', $responseData['errors']['data.0.order']);
 
     // レスポンス構造の確認
     $response->assertJsonStructure([
@@ -1735,6 +1831,10 @@ test('3-10-51: 【一括更新】 バリデーションエラー（order が数�
     $response->assertStatus(422);
     $response->assertJsonValidationErrors(['data.0.order']);
 
+    // エラーメッセージの内容を検証
+    $responseData = $response->json();
+    $this->assertContains('data.*.orderは整数で指定してください。', $responseData['errors']['data.0.order']);
+
     // レスポンス構造の確認
     $response->assertJsonStructure([
         'success',
@@ -1766,6 +1866,10 @@ test('3-10-52: 【一括更新】 バリデーションエラー（order が負�
 
     $response->assertStatus(422);
     $response->assertJsonValidationErrors(['data.0.order']);
+
+    // エラーメッセージの内容を検証
+    $responseData = $response->json();
+    $this->assertContains('data.*.orderには、0以上の数字を指定してください。', $responseData['errors']['data.0.order']);
 
     // レスポンス構造の確認
     $response->assertJsonStructure([
@@ -1799,6 +1903,10 @@ test('3-10-53: 【一括更新】 バリデーションエラー（tags が配�
 
     $response->assertStatus(422);
     $response->assertJsonValidationErrors(['data.0.tags']);
+
+    // エラーメッセージの内容を検証
+    $responseData = $response->json();
+    $this->assertContains('data.*.tagsは配列でなくてはなりません。', $responseData['errors']['data.0.tags']);
 
     // レスポンス構造の確認
     $response->assertJsonStructure([
@@ -1838,6 +1946,10 @@ test('3-10-54: 【一括更新】 バリデーションエラー（tags.id が U
     $response->assertStatus(422);
     $response->assertJsonValidationErrors(['data.0.tags.0.id']);
 
+    // エラーメッセージの内容を検証
+    $responseData = $response->json();
+    $this->assertContains('data.*.tags.*.idに有効なUUIDを指定してください。', $responseData['errors']['data.0.tags.0.id']);
+
     // レスポンス構造の確認
     $response->assertJsonStructure([
         'success',
@@ -1874,6 +1986,10 @@ test('3-10-55: 【一括更新】 バリデーションエラー（tags.name 未
 
     $response->assertStatus(422);
     $response->assertJsonValidationErrors(['data.0.tags.0.name']);
+
+    // エラーメッセージの内容を検証
+    $responseData = $response->json();
+    $this->assertContains('data.*.tags.*.nameは必ず指定してください。', $responseData['errors']['data.0.tags.0.name']);
 
     // レスポンス構造の確認
     $response->assertJsonStructure([
@@ -1912,6 +2028,10 @@ test('3-10-56: 【一括更新】 バリデーションエラー（tags.name が
     $response->assertStatus(422);
     $response->assertJsonValidationErrors(['data.0.tags.0.name']);
 
+    // エラーメッセージの内容を検証
+    $responseData = $response->json();
+    $this->assertContains('data.*.tags.*.nameは文字列を指定してください。', $responseData['errors']['data.0.tags.0.name']);
+
     // レスポンス構造の確認
     $response->assertJsonStructure([
         'success',
@@ -1948,6 +2068,10 @@ test('3-10-57: 【一括更新】 バリデーションエラー（tags.name が
 
     $response->assertStatus(422);
     $response->assertJsonValidationErrors(['data.0.tags.0.name']);
+
+    // エラーメッセージの内容を検証
+    $responseData = $response->json();
+    $this->assertContains('data.*.tags.*.nameは、255文字以内で指定してください。', $responseData['errors']['data.0.tags.0.name']);
 
     // レスポンス構造の確認
     $response->assertJsonStructure([
@@ -2246,6 +2370,10 @@ test('3-10-66: 【一括削除】 バリデーションエラー（IDs 未入力
     $response->assertStatus(422);
     $response->assertJsonValidationErrors(['ids']);
 
+    // エラーメッセージの内容を検証
+    $responseData = $response->json();
+    $this->assertContains('idsは必ず指定してください。', $responseData['errors']['ids']);
+
     // レスポンス構造の確認
     $response->assertJsonStructure([
         'success',
@@ -2268,6 +2396,10 @@ test('3-10-67: 【一括削除】 バリデーションエラー（IDs が配列
 
     $response->assertStatus(422);
     $response->assertJsonValidationErrors(['ids']);
+
+    // エラーメッセージの内容を検証
+    $responseData = $response->json();
+    $this->assertContains('idsは配列でなくてはなりません。', $responseData['errors']['ids']);
 
     // レスポンス構造の確認
     $response->assertJsonStructure([
@@ -2292,6 +2424,10 @@ test('3-10-68: 【一括削除】 バリデーションエラー（IDs が空配
     $response->assertStatus(422);
     $response->assertJsonValidationErrors(['ids']);
 
+    // エラーメッセージの内容を検証
+    $responseData = $response->json();
+    $this->assertContains('idsは必ず指定してください。', $responseData['errors']['ids']);
+
     // レスポンス構造の確認
     $response->assertJsonStructure([
         'success',
@@ -2314,6 +2450,10 @@ test('3-10-69: 【一括削除】 バリデーションエラー（ID が UUID �
 
     $response->assertStatus(422);
     $response->assertJsonValidationErrors(['ids.0']);
+
+    // エラーメッセージの内容を検証
+    $responseData = $response->json();
+    $this->assertContains('ids.*に有効なUUIDを指定してください。', $responseData['errors']['ids.0']);
 
     // レスポンス構造の確認
     $response->assertJsonStructure([

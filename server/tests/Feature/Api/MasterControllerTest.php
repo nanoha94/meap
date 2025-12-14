@@ -158,11 +158,12 @@ test('3-4-1: 正常なマスターデータ取得', function () {
     ]);
     $recipeCategoryId = $recipeCategoryResponse->json('data.id');
 
-    $ingredientCategoryResponse = $this->actingAs($user)->post('/ingredient-categories', [
-        'name' => '野菜',
-        'order' => 0
+    $ingredientCategoryResponse = $this->actingAs($user)->post('/ingredient-categories/bulk', [
+        'data' => [
+            ['name' => '野菜', 'order' => 0]
+        ]
     ]);
-    $ingredientCategoryId = $ingredientCategoryResponse->json('data.id');
+    $ingredientCategoryId = $ingredientCategoryResponse->json('data.0.id');
 
     // MenuCategory とShoppingTag はAPIがないので直接作成
     $menuCategory = MenuCategory::create([
@@ -289,9 +290,13 @@ test('3-4-3: 食材カテゴリデータ取得確認', function () {
     $user = $this->testData->createUserWithGroup();
 
     // 食材カテゴリをAPIで作成
-    $this->actingAs($user)->post('/ingredient-categories', ['name' => '野菜', 'order' => 0]);
-    $this->actingAs($user)->post('/ingredient-categories', ['name' => '肉類', 'order' => 1]);
-    $this->actingAs($user)->post('/ingredient-categories', ['name' => '魚介類', 'order' => 2]);
+    $this->actingAs($user)->post('/ingredient-categories/bulk', [
+        'data' => [
+            ['name' => '野菜', 'order' => 0],
+            ['name' => '肉類', 'order' => 1],
+            ['name' => '魚介類', 'order' => 2]
+        ]
+    ]);
 
     $response = $this->actingAs($user)->get('/master');
 

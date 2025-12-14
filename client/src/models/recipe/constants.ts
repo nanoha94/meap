@@ -34,6 +34,7 @@ export const defaultPostData: IRecipe = {
     name: '',
     url: '',
     memo: '',
+    servingCount: null,
     thumbnail: null,
     categories: [],
     ingredients: [],

@@ -34,6 +34,7 @@ class RecipeUpdateRequest extends BaseApiRequest
             'steps.*.imageId' => 'uuid|nullable',
             'steps.*.order' => 'integer|min:0|required',
             'memo' => 'string|max:255|nullable',
+            'servingCount' => 'integer|min:1|nullable',
         ];
     }
 
@@ -77,6 +78,8 @@ class RecipeUpdateRequest extends BaseApiRequest
             'steps.*.order.required' => __('validation.required', ['attribute' => 'steps.*.order']),
             'memo.string' => __('validation.string', ['attribute' => 'memo']),
             'memo.max' => __('validation.max.string', ['attribute' => 'memo', 'max' => 255]),
+            'servingCount.integer' => __('validation.integer', ['attribute' => 'servingCount']),
+            'servingCount.min' => __('validation.min.numeric', ['attribute' => 'servingCount', 'min' => 1]),
         ];
     }
 

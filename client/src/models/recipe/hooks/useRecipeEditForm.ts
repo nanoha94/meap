@@ -63,18 +63,16 @@ export const useRecipeEditForm = (fetchRecipe?: IRecipe) => {
      * @param data フォームのデータ
      */
     const onSubmit = (data: RecipeEditFormData) => {
-        console.log({ data });
         const sendData: IPostPutRecipeRequest = {
             name: data.name,
             url: data.url,
             memo: data.memo,
+            servingCount: data.servingCount ?? null,
             thumbnailId: data.thumbnail?.id,
             categoryIds: data.categories.map(v => v.id),
             ingredients: formatIngredientItems(data.ingredients),
             // stepsはstoreRecipe()/updateRecipe()でフォーマットする
         };
-
-        console.log({ sendData });
 
         if (editMode === EDIT_MODE.CREATE) {
             storeRecipe(sendData, data.thumbnail?.file ?? null, data.steps);

@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('url')->nullable();
             $table->string('memo')->nullable();
+            $table->integer('serving_count')->nullable();
             $table->timestamps();
         });
     }

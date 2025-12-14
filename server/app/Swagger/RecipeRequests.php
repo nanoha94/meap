@@ -32,7 +32,8 @@ namespace App\Swagger;
  *                @OA\Property(property="imageId", type="string", description="画像ID", example="1"),
  *                @OA\Property(property="order", type="integer", description="並び順", example=1)
  *            )),
- *         @OA\Property(property="memo", type="string", description="メモ", example="ハンバーグは美味しい")
+ *         @OA\Property(property="memo", type="string", description="メモ", example="ハンバーグは美味しい"),
+ *         @OA\Property(property="servingCount", type="integer", nullable=true, description="分量（○○人分）", example=4, minimum=1)
  *     )
  * )
  * @OA\RequestBody(

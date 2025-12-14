@@ -6,23 +6,14 @@ import dayjs from 'dayjs';
 import { Copy, LoaderCircle, RotateCw } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useAccountStore, useInvitationApi } from '../../hooks';
+import { useTextCopy } from '@/hooks/useTextCopy';
 
 const InvitationDialog = () => {
     const { dialogs, closeDialog } = useAccountStore();
     const { isOpen } = dialogs.invitation;
-    const [isCopied, setIsCopied] = React.useState(false);
+    const { isTextCopied, copyToClipboard } = useTextCopy();
     const { isLoading, invitationLink, tokenExpiresAt, fetchInvitationToken } =
         useInvitationApi();
-
-    // 招待リンクをコピー
-    const copyToClipboard = async (link: string) => {
-        try {
-            await navigator.clipboard.writeText(link);
-            setIsCopied(true);
-        } catch (err) {
-            console.error(err);
-        }
-    };
 
     // ダイアログが開いたら招待リンクを取得
     // 取得に失敗したらダイアログを閉じる
@@ -33,15 +24,6 @@ const InvitationDialog = () => {
             });
         }
     }, [isOpen]);
-
-    // 招待リンクをコピーしたら10秒後にリセット
-    React.useEffect(() => {
-        if (isCopied) {
-            setTimeout(() => {
-                setIsCopied(false);
-            }, 10000);
-        }
-    }, [isCopied]);
 
     return (
         <Dialog
@@ -88,7 +70,7 @@ const InvitationDialog = () => {
                                 <Copy size={20} />
                             </TextButton>
                             <div className="min-h-[1.5rem]">
-                                {isCopied && (
+                                {isTextCopied && (
                                     <p className="text-alert-main">
                                         招待リンクをコピーしました
                                     </p>
