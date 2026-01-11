@@ -528,7 +528,6 @@ class RecipeService extends AbstractDomainService
         foreach ($requestSteps as $index => $requestStep) {
             if (empty($requestStep['id'])) {
                 $step = RecipeStep::create([
-                    'recipe_id' => $recipe->id,
                     'instruction' => $requestStep['instruction']
                 ]);
 

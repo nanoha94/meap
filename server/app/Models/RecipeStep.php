@@ -13,14 +13,8 @@ class RecipeStep extends Model
     public $incrementing = false;
 
     protected $fillable = [
-        'recipe_id',
         'instruction',
     ];
-
-    public function recipe()
-    {
-        return $this->belongsTo(Recipe::class);
-    }
 
     public function images()
     {

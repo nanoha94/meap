@@ -13,7 +13,7 @@ class InvitationToken extends Model
     public $incrementing = false;
 
     protected $fillable = [
-        'inviter_id',
+        'inviter_user_id',
         'token',
         'expires_at',
     ];
@@ -24,6 +24,6 @@ class InvitationToken extends Model
 
     public function inviter()
     {
-        return $this->belongsTo(User::class, 'inviter_id');
+        return $this->belongsTo(User::class, 'inviter_user_id');
     }
 }

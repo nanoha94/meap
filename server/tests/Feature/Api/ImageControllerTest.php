@@ -5,7 +5,6 @@ use App\Models\Group;
 use App\Models\Image;
 use App\Models\Color;
 use App\Models\Recipe;
-use App\Models\RecipeStep;
 use App\Services\ImageService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;

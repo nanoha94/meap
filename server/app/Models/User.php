@@ -127,6 +127,6 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function invitationTokens()
     {
-        return $this->hasMany(InvitationToken::class, 'inviter_id');
+        return $this->hasMany(InvitationToken::class, 'inviter_user_id');
     }
 }

@@ -1,14 +1,15 @@
 @startuml
 hide circle
 
-entity ingredients {
+' グループ関連エンティティ（group_idを持つ、またはgroupsと直接関係がある）
+entity ingredients #LightBlue {
     * id : string <<generated>>
     --
     * name : string
     * group_id : string <<FK>>
 }
 
-entity ingredient_units {
+entity ingredient_units #LightBlue {
     * id : string <<generated>>
     --
     * name : string
@@ -18,7 +19,7 @@ entity ingredient_units {
     * group_id : string <<FK>>
 }
 
-entity ingredient_categories {
+entity ingredient_categories #LightBlue {
     * id : string <<generated>>
     --
     * name : string
@@ -31,29 +32,25 @@ entity recipe_category_mappings {
     * category_id : string <<FK>>
 }
 
-entity recipes {
+entity recipes #LightBlue {
     * id : string <<generated>>
     --
     * name : string
     * url : string / レシピURL
     * memo : string / メモ
     * serving_count : int / 分量（○○人分）
+    * status: ENUM('limited', 'public') / 公開状態（デフォルト: 'limited'）
     * group_id : string <<FK>>
+    * owner_user_id : string <<FK>>
+    * published_recipe_id : string <<FK>> / 公開レシピID（1対1の関係）
 }
 
 entity recipe_steps{
     * id : string <<generated>>
     --
-    * recipe_id : string <<FK>>
     * instruction : string / 手順
-}
-
-entity recipe_step_mappings {
-    * id : string <<generated>>
-    --
-    * recipe_id : string <<FK>>
-    * step_id : string <<FK>>
     * order : int / ソート順
+    * recipe_id : string <<FK>>
 }
 
 entity recipe_ingredient_mappings {
@@ -65,7 +62,7 @@ entity recipe_ingredient_mappings {
     * order : int / ソート順
 }
 
-entity menu_categories {
+entity menu_categories #LightBlue {
     * id : string <<generated>>
     ---
     * name : string / 種別（主食、主菜、副菜、汁物、その他）
@@ -73,7 +70,7 @@ entity menu_categories {
     * order : int / ソート順
 }
 
-entity recipe_categories {
+entity recipe_categories #LightBlue {
     * id : string <<generated>>
     --
     * name : string
@@ -81,7 +78,7 @@ entity recipe_categories {
     * group_id : string <<FK>>
 }
 
-entity groups {
+entity groups #LightBlue {
     * id : string <<generated>>
     * group_size : number / グループに属するユーザの数
 }
@@ -92,7 +89,7 @@ entity meal_plan_recipe_mappings {
     * menu_category_id : string <<FK>>
 }
 
-entity meal_plans {
+entity meal_plans #LightBlue {
     * id : string <<generated>>
     ---
     * date : date
@@ -101,7 +98,7 @@ entity meal_plans {
 }
 
 
-entity meal_categories {
+entity meal_categories #LightBlue {
     * id : string <<generated>>
     --
     * name : string
@@ -119,7 +116,7 @@ entity colors {
     * order : int / ソート順
 }
 
-entity shopping_items {
+entity shopping_items #LightBlue {
     * id : string <<generated>>
     --
     * name : string
@@ -130,7 +127,7 @@ entity shopping_items {
     * category_id : string <<FK>>
 }
 
-entity shopping_categories {
+entity shopping_categories #LightBlue {
     * id : string <<generated>>
     --
     * name : string
@@ -139,7 +136,7 @@ entity shopping_categories {
     * group_id : string <<FK>>
 }
 
-entity shopping_tags {
+entity shopping_tags #LightBlue {
     * id : string <<generated>>
     --
     * name : string
@@ -151,7 +148,7 @@ entity shopping_item_tag_mappings {
     * tag_id : string <<FK>>
 }
 
-entity group_user_mappings {
+entity group_user_mappings #LightBlue {
     * user_id : string <<FK>>
     * group_id : string <<FK>>
 }
@@ -170,9 +167,9 @@ entity users {
 entity invitation_tokens {
     * id : string <<generated>>
     --
-    * inviter_id : string <<FK>>
     * token : string
     * expires_at : date
+    * inviter_user_id : string <<FK>>
 }
 
 entity images {
@@ -183,59 +180,124 @@ entity images {
     * height : int / 画像の高さ
 }
 
-entity image_mappings {
-    * image_id : string <<FK>>
+entity image_mappings #LightBlue {
     * related_model : string / 関連するモデルの型（'Recipe', 'RecipeStep', 'User'など）
-    * related_id : string / 関連するモデルのID
     * image_type : string / 添付タイプ（'thumbnail', 'step_image', 'avatar'など）
     * order : int / ソート順（複数画像がある場合）
-    * group_id : string <<FK>>
+    * group_id : string <<FK>>  
+    * related_id : string <<FK>> / 関連するモデルのID
+    * image_id : string <<FK>>
 }
 
-groups ||--o{ group_user_mappings
-group_user_mappings ||--|| users
-users ||--o{ invitation_tokens
+' 公開レシピ関連エンティティ（グループ非依存）
+entity published_recipes #LightGreen {
+    * id : string <<generated>>
+    --
+    * name : string
+    * serving_count : int / 分量
+    * published_at : timestamp / 初回公開日時
+    * last_published_at : timestamp / 最終公開更新日時
+    * recipe_id : string <<FK>> / レシピID（1対1の関係、ユニーク制約）
+    * owner_user_id : string <<FK>> / 外部公開時の編集責任者のユーザーID
+    * thumbnail_image_id : string <<FK>> / サムネイル画像ID
+}
 
-image_mappings }o--|| images
-recipes ||--o{ image_mappings
-recipe_steps ||--o{ image_mappings
-groups ||--o{ image_mappings
+entity published_recipe_categories #LightGreen {
+    * id : string <<generated>>
+    --
+    * name : string / カテゴリー名（ユニーク）
+}
 
-groups ||--o{ shopping_items
-groups ||--o{ shopping_categories
-groups ||--o{ shopping_tags
-shopping_categories ||--o{ shopping_items
-shopping_items ||--o{ shopping_item_tag_mappings
-shopping_tags }o--|| shopping_item_tag_mappings
+entity published_recipe_category_mappings #LightGreen {
+    * published_recipe_id : string <<FK>>
+    * published_recipe_category_id : string <<FK>>
+    * order : int / 表示順
+}
 
-groups ||--o{ meal_categories
-meal_categories |o--|| colors
+entity published_ingredients #LightGreen {
+     * id : string <<generated>>
+    --
+    * name : string / 食材名（ユニーク）
+}
 
-meal_plans }o--|| groups
-meal_plans }o--|| meal_categories
-recipes }o--|| groups
-menu_categories }o--|| groups
-recipes ||--o{ meal_plan_recipe_mappings
-meal_plans ||--o{ meal_plan_recipe_mappings
-meal_plan_recipe_mappings }o--|| menu_categories
+entity published_ingredient_categories #LightGreen {
+    * id : string <<generated>>
+    --
+    * name : string / カテゴリー名（ユニーク）
+    * order : int / ソート順
+}
 
-recipes ||--o{ recipe_step_mappings
-recipe_step_mappings }o--|| recipe_steps
-recipe_step_mappings }o--|| images
+entity published_recipe_ingredient_mappings #LightGreen {
+    * published_recipe_id : string <<FK>>
+    * published_ingredient_id : string <<FK>>
+    * published_ingredient_category_id : string <<FK>>
+    * quantity : float / 数量
+    * unit : string / 単位（"g", "ml"など）
+    * order : int / 表示順
+}
 
-recipes ||--o{ recipe_ingredient_mappings
-recipe_ingredient_mappings }o--|| ingredient_units
-recipe_ingredient_mappings }o--|| ingredients
-recipe_ingredient_mappings }o--|| ingredient_categories
-ingredient_units }o--|| groups
-ingredients }o--|| groups
-ingredient_categories }o--|| groups
+entity published_recipe_steps #LightGreen {
+    * id : string <<generated>>
+    --
+    * instruction : string / 手順説明
+    * order : int / 表示順
+    * published_recipe_id : string <<FK>>
+    * image_id : string <<FK>> / 手順画像ID
+}
 
-recipes ||--o{ recipe_category_mappings
-recipe_category_mappings }o--|| recipe_categories
-recipe_categories }o--|| groups
+group_user_mappings }o--|| groups : group_id
+users ||--|| group_user_mappings : user_id
+invitation_tokens  }o--|| users : inviter_user_id
 
-note right of groups
+images ||--o{ image_mappings : image_id
+groups ||--o{ image_mappings : group_id
+recipes ||--o{ image_mappings : related_id
+recipe_steps ||--o{ image_mappings : related_id
+
+groups ||--o{ shopping_items : group_id
+groups ||--o{ shopping_categories : group_id
+groups ||--o{ shopping_tags : group_id
+shopping_categories ||--o{ shopping_items : category_id
+shopping_items ||--o{ shopping_item_tag_mappings : item_id
+shopping_tags }o--|| shopping_item_tag_mappings : tag_id
+
+meal_categories }o--|| groups : group_id
+colors ||--o| meal_categories : color_id
+
+meal_plans }o--|| groups : group_id
+meal_plans }o--|| meal_categories : meal_category_id
+recipes }o--|| groups : group_id
+menu_categories }o--|| groups : group_id    
+recipes ||--o{ meal_plan_recipe_mappings : recipe_id
+meal_plan_recipe_mappings }o--|| menu_categories : menu_category_id
+meal_plan_recipe_mappings }o--|| meal_plans : meal_plan_id
+
+recipes ||--o{ recipe_steps : recipe_id
+users ||--o{ recipes : owner_user_id
+recipes ||--o{ recipe_ingredient_mappings : recipe_id
+recipe_ingredient_mappings }o--|| ingredients : ingredient_id
+recipe_ingredient_mappings }o--|| ingredient_categories : category_id
+ingredient_units }o--|| groups : group_id
+recipe_ingredient_mappings }o--|| ingredient_units : unit_id
+ingredients }o--|| groups : group_id
+ingredient_categories }o--|| groups : group_id
+
+recipes ||--o{ recipe_category_mappings : recipe_id
+recipe_category_mappings }o--|| recipe_categories : category_id
+recipe_categories }o--|| groups : group_id
+
+published_recipes }o--|| recipes : recipe_id
+published_recipes }o--|| users : owner_user_id
+published_recipes }o--o| images : thumbnail_image_id
+published_recipe_categories ||--o{ published_recipe_category_mappings : published_recipe_category_id
+published_recipe_category_mappings }o--|| published_recipes : published_recipe_id
+published_ingredients ||--o{ published_recipe_ingredient_mappings : published_ingredient_id
+published_ingredient_categories ||--o{ published_recipe_ingredient_mappings : published_ingredient_category_id
+published_recipe_ingredient_mappings }o--|| published_recipes : published_recipe_id
+published_recipes ||--o{ published_recipe_steps : published_recipe_id
+published_recipe_steps }o--o| images : image_id
+
+note bottom of groups
   データ共有するユーザー情報を管理する。
   ユーザは１つのグループにのみ所属できる。（拡張可能性あり）
   もしくは、すでに存在しているグループに招待してもらって所属する。
@@ -245,7 +307,7 @@ note left of meal_plans
   献立情報を管理する。
 end note
 
-note left of meal_categories
+note right of meal_categories
   献立カテゴリを管理する。（朝食、昼食、夕食など）
 end note
 
@@ -253,7 +315,11 @@ note right of recipes
   料理/レシピ情報を管理する。
 end note
 
-note bottom of recipe_steps
+note right of published_recipes
+  公開レシピ情報を管理する。
+end note
+
+note right of recipe_steps
   料理手順を管理する。
 end note
 
@@ -261,11 +327,11 @@ note top of menu_categories
   料理分類を管理する。（料理カテゴリとは別物）
 end note
 
-note bottom of recipe_categories
+note top of recipe_categories
   料理カテゴリを管理する。
 end note
 
-note left of invitation_tokens
+note top of invitation_tokens
   ユーザ招待トークンを管理する。
   グループに招待するときにトークンを発行する。
   一定時間でトークンは使用できなくなり、テーブルからデータを消去する。
@@ -275,5 +341,11 @@ note bottom of image_mappings
   画像と他のテーブルとの中間テーブル。
   image_typeは、同じモデルで複数種類の画像を管理するためのもの。
 end note
+
+legend right
+  |<#LightBlue> グループ関連 | グループに依存するエンティティ |
+  |<#LightGreen> 公開レシピ関連 | グループ非依存の公開レシピエンティティ |
+  | その他 | グループ非依存の共通エンティティ |
+endlegend
 
 @enduml

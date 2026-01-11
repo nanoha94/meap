@@ -49,7 +49,7 @@ class InvitationTokenService
 
         // トークンをデータベースに保存
         InvitationToken::create([
-            'inviter_id' => $inviterId,
+            'inviter_user_id' => $inviterId,
             'token' => Hash::make($token),
             'expires_at' => $expiresAt,
         ]);

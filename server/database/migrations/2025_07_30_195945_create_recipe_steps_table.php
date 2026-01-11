@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('recipe_steps', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('recipe_id')->constrained('recipes', 'id')->cascadeOnDelete();
             $table->string('instruction');
             $table->timestamps();
         });
@@ -24,9 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('recipe_steps', function (Blueprint $table) {
-            $table->dropForeign(['recipe_id']);
-        });
         Schema::dropIfExists('recipe_steps');
     }
 };
