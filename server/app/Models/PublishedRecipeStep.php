@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class MealCategory extends Model
+class PublishedRecipeStep extends Model
 {
     use HasUuids;
 
@@ -14,25 +14,17 @@ class MealCategory extends Model
     public $incrementing = false;
 
     protected $fillable = [
-        'group_id',
-        'color_id',
-        'name',
+        'published_recipe_id',
+        'image_id',
+        'instruction',
         'order',
     ];
 
     /**
-     * グループを取得する
+     * 画像を取得する
      */
-    public function group(): BelongsTo
+    public function image(): BelongsTo
     {
-        return $this->belongsTo(Group::class);
-    }
-
-    /**
-     * 色を取得する
-     */
-    public function color(): BelongsTo
-    {
-        return $this->belongsTo(Color::class);
+        return $this->belongsTo(Image::class, 'image_id');
     }
 }

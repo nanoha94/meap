@@ -25,11 +25,17 @@ class ShoppingCategory extends Model
         'is_default' => 'boolean',
     ];
 
+    /**
+     * グループを取得する
+     */
     public function group(): BelongsTo
     {
         return $this->belongsTo(Group::class);
     }
 
+    /**
+     * 買い物リストを取得する
+     */
     public function shoppingItems(): HasMany
     {
         return $this->hasMany(ShoppingItem::class, 'category_id');

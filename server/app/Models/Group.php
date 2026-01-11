@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
 
 class Group extends Model
@@ -20,7 +22,7 @@ class Group extends Model
     ];
 
     // Groupを作成
-    public static function createGroup()
+    public static function createGroup(): Group
     {
         return DB::transaction(function () {
             $group = self::create([
@@ -128,7 +130,9 @@ class Group extends Model
         });
     }
 
-    // グループに属するユーザー数を更新
+    /**
+     * グループに属するユーザー数を更新
+     */
     public function refreshGroupSize(): void
     {
         $this->group_size = $this->users()->count();
@@ -141,75 +145,116 @@ class Group extends Model
         }
     }
 
-    // グループに属するのユーザー数を取得
+    /**
+     * グループに属するのユーザー数を取得
+     */
     public function getGroupSize(): int
     {
         return $this->users()->count();
     }
 
-    public function users()
+    /*
+     * グループに属するユーザーを取得
+     */
+    public function users(): BelongsToMany
     {
         // 1つのグループに複数のユーザーが属する（各ユーザーは1つのグループにのみ属する）
         // 中間テーブルを使用するため、belongsToManyを使用
         return $this->belongsToMany(User::class, 'group_user_mappings', 'group_id', 'user_id');
     }
 
-    public function mealCategories()
+    /**
+     * 献立カテゴリを取得する
+     */
+    public function mealCategories(): HasMany
     {
         return $this->hasMany(MealCategory::class);
     }
 
-    public function mealPlans()
+    /**
+     * 献立を取得する
+     */
+    public function mealPlans(): HasMany
     {
         return $this->hasMany(MealPlan::class);
     }
 
-    public function recipes()
+    /**
+     * レシピを取得する
+     */
+    public function recipes(): HasMany
     {
         return $this->hasMany(Recipe::class);
     }
 
-    public function recipeCategories()
+    /**
+     * 料理分類を取得する
+     */
+    public function recipeCategories(): HasMany
     {
         return $this->hasMany(RecipeCategory::class);
     }
 
-    public function menuCategories()
+    /**
+     * 献立カテゴリを取得する
+     */
+    public function menuCategories(): HasMany
     {
         return $this->hasMany(MenuCategory::class);
     }
 
-    public function ingredients()
+    /**
+     * 食材を取得する
+     */
+    public function ingredients(): HasMany
     {
         return $this->hasMany(Ingredient::class);
     }
 
-    public function ingredientCategories()
+    /**
+     * 食材カテゴリを取得する
+     */
+    public function ingredientCategories(): HasMany
     {
         return $this->hasMany(IngredientCategory::class);
     }
 
-    public function ingredientUnits()
+    /**
+     * 食材単位を取得する
+     */
+    public function ingredientUnits(): HasMany
     {
         return $this->hasMany(IngredientUnit::class);
     }
 
-    public function shoppingItems()
+    /**
+     * 買い物リストを取得する
+     */
+    public function shoppingItems(): HasMany
     {
         return $this->hasMany(ShoppingItem::class);
     }
 
-    public function shoppingCategories()
+    /**
+     * 買い物カテゴリを取得する
+     */
+    public function shoppingCategories(): HasMany
     {
         return $this->hasMany(ShoppingCategory::class);
     }
 
-    public function shoppingTags()
+    /**
+     * 買い物タグを取得する
+     */
+    public function shoppingTags(): HasMany
     {
         return $this->hasMany(ShoppingTag::class);
     }
 
-    public function images()
+    /**
+     * 画像を取得する
+     */
+    public function images(): BelongsToMany
     {
         return $this->belongsToMany(Image::class, 'image_mappings', 'group_id', 'image_id')
             ->withPivot('related_model', 'related_id', 'image_type', 'order');

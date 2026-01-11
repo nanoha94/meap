@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class MealPlan extends Model
 {
@@ -18,25 +20,39 @@ class MealPlan extends Model
         'date',
     ];
 
-    public function group()
+    /**
+     * グループを取得する
+     */
+    public function group(): BelongsTo
     {
         return $this->belongsTo(Group::class);
     }
 
-    public function mealCategory()
+    /**
+     * 献立カテゴリを取得する
+     */
+    public function mealCategory(): BelongsTo
     {
         return $this->belongsTo(MealCategory::class);
     }
 
-    public function recipes()
+    /**
+     * レシピを取得する
+     */
+    public function recipes(): BelongsToMany
     {
         return $this->belongsToMany(Recipe::class, 'meal_plan_recipe_mappings', 'meal_plan_id', 'recipe_id')
-            ->withPivot('menu_category_id');
+            ->withPivot('menu_category_id')
+            ->orderByPivot('order');
     }
 
-    public function menuCategories()
+    /**
+     * 献立カテゴリを取得する
+     */
+    public function menuCategories(): BelongsToMany
     {
         return $this->belongsToMany(MenuCategory::class, 'meal_plan_recipe_mappings', 'meal_plan_id', 'menu_category_id')
-            ->withPivot('recipe_id');
+            ->withPivot('recipe_id')
+            ->orderByPivot('order');
     }
 }

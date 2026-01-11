@@ -25,13 +25,18 @@ class IngredientCategory extends Model
         'is_default' => 'boolean',
     ];
 
-
+    /**
+     * グループを取得する
+     */
     public function group(): BelongsTo
     {
         return $this->belongsTo(Group::class);
     }
 
 
+    /**
+     * 食材を取得する
+     */
     public function ingredients(): BelongsToMany
     {
         return $this->belongsToMany(Ingredient::class, 'recipe_ingredient_mappings', 'category_id', 'ingredient_id');

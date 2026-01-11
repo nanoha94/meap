@@ -13,7 +13,7 @@ entity ingredient_units #LightBlue {
     * id : string <<generated>>
     --
     * name : string
-    * position : string / 'prefix'（数字の前）または'suffix'（数字の後）
+    * position :  ENUM('prefix', 'suffix')  / 'prefix'（数字の前）または'suffix'（数字の後）
     * requires_quantity : boolean / 量を入力するかどうか
     * order : int / ソート順
     * group_id : string <<FK>>
@@ -210,8 +210,7 @@ entity published_recipe_categories #LightGreen {
 
 entity published_recipe_category_mappings #LightGreen {
     * published_recipe_id : string <<FK>>
-    * published_recipe_category_id : string <<FK>>
-    * order : int / 表示順
+    * category_id : string <<FK>>
 }
 
 entity published_ingredients #LightGreen {
@@ -229,10 +228,12 @@ entity published_ingredient_categories #LightGreen {
 
 entity published_recipe_ingredient_mappings #LightGreen {
     * published_recipe_id : string <<FK>>
-    * published_ingredient_id : string <<FK>>
-    * published_ingredient_category_id : string <<FK>>
+    * ingredient_id : string <<FK>>
+    * category_id : string <<FK>>
+    --
     * quantity : float / 数量
-    * unit : string / 単位（"g", "ml"など）
+    * unit_name : string / 単位（"g", "ml"など）
+    * unit_position : ENUM('prefix', 'suffix') / 'prefix'（数字の前）または'suffix'（数字の後）
     * order : int / 表示順
 }
 

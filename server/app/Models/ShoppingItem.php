@@ -28,16 +28,25 @@ class ShoppingItem extends Model
         'is_checked' => 'boolean',
     ];
 
+    /**
+     * グループを取得する
+     */
     public function group(): BelongsTo
     {
         return $this->belongsTo(Group::class);
     }
 
+    /**
+     * 買い物カテゴリを取得する
+     */
     public function category(): BelongsTo
     {
         return $this->belongsTo(ShoppingCategory::class, 'category_id');
     }
 
+    /**
+     * 買い物タグを取得する
+     */
     public function tags(): BelongsToMany
     {
         return $this->belongsToMany(ShoppingTag::class, 'shopping_item_tag_mappings', 'item_id', 'tag_id');

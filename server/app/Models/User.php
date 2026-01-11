@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable implements MustVerifyEmail
@@ -119,13 +121,20 @@ class User extends Authenticatable implements MustVerifyEmail
         return $customId;
     }
 
-    public function groups()
+    /**
+     * グループを取得する
+     */
+    public function groups(): BelongsToMany
     {
-        return $this->belongsToMany(Group::class, 'group_user_mappings', 'user_id', 'group_id');
+        return $this->belongsToMany(Group::class, 'group_user_mappings', 'user_id', 'group_id')
+            ->orderByPivot('order');
     }
 
 
-    public function invitationTokens()
+    /**
+     * 招待トークンを取得する
+     */
+    public function invitationTokens(): HasMany
     {
         return $this->hasMany(InvitationToken::class, 'inviter_user_id');
     }

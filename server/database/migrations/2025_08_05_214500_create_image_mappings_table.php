@@ -15,10 +15,12 @@ return new class extends Migration
             $table->foreignUuid('image_id')->constrained('images', 'id')->cascadeOnDelete();
             $table->foreignUuid('group_id')->constrained('groups', 'id')->cascadeOnDelete();
             $table->string('related_model');
-            $table->string('related_id');
+            $table->uuid('related_id');
             $table->string('image_type');
             $table->integer('order');
-            $table->primary(['image_id', 'related_id', 'group_id']);
+            // ポリモーフィックリレーション: related_modelとrelated_idの組み合わせで異なるモデル（Recipe, RecipeStep, Userなど）を参照
+            // related_modelが主キーに含まれる理由: 異なるモデルで同じIDが存在する可能性があるため（例: RecipeのIDとRecipeStepのIDが同じ値）
+            $table->primary(['image_id', 'related_model', 'related_id', 'group_id']);
         });
     }
 
