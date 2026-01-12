@@ -4,8 +4,10 @@ use App\Enums\HttpStatusCode;
 use App\Models\User;
 use App\Models\Group;
 use App\Traits\LoggingTrait;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 beforeEach(function () {
     $this->dummy = new class {
@@ -43,7 +45,7 @@ test('1-4-1: 基本動作テスト', function () {
     $group = new Group();
     $group->id = 100;
 
-    $relationBuilder = \Mockery::mock();
+    $relationBuilder = \Mockery::mock(BelongsToMany::class);
     $relationBuilder->shouldReceive('first')
         ->andReturn($group);
 
@@ -77,7 +79,7 @@ test('1-4-2: リクエスト情報記録テスト', function () {
     $group = new Group();
     $group->id = 400;
 
-    $relationBuilder = \Mockery::mock();
+    $relationBuilder = \Mockery::mock(BelongsToMany::class);
     $relationBuilder->shouldReceive('first')
         ->andReturn($group);
 
@@ -130,7 +132,7 @@ test('1-4-4: エラーログ出力テスト', function () {
     $request = Request::create('/test', 'POST');
 
     // グループがないユーザーをシミュレート
-    $relationBuilder = \Mockery::mock();
+    $relationBuilder = \Mockery::mock(BelongsToMany::class);
     $relationBuilder->shouldReceive('first')
         ->andReturn(null);
 
@@ -169,7 +171,7 @@ test('1-4-5: ログメッセージ統合テスト', function () {
     $group = new Group();
     $group->id = 600;
 
-    $relationBuilder = \Mockery::mock();
+    $relationBuilder = \Mockery::mock(BelongsToMany::class);
     $relationBuilder->shouldReceive('first')
         ->andReturn($group);
 
@@ -206,7 +208,7 @@ test('1-4-6: 機密情報フィルタリングテスト', function () {
     $group = new Group();
     $group->id = 700;
 
-    $relationBuilder = \Mockery::mock();
+    $relationBuilder = \Mockery::mock(BelongsToMany::class);
     $relationBuilder->shouldReceive('first')
         ->andReturn($group);
 

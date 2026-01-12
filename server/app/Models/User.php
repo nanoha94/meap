@@ -126,8 +126,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function groups(): BelongsToMany
     {
-        return $this->belongsToMany(Group::class, 'group_user_mappings', 'user_id', 'group_id')
-            ->orderByPivot('order');
+        return $this->belongsToMany(Group::class, 'group_user_mappings', 'user_id', 'group_id');
     }
 
 

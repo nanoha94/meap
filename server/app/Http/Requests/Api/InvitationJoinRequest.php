@@ -44,7 +44,7 @@ class InvitationJoinRequest extends BaseApiRequest
         $this->invitationToken = $foundToken;
 
         // 3. 自己招待チェック → 403 Forbidden
-        if ($this->invitationToken->inviter_id === $user->id) {
+        if ($this->invitationToken->inviter_user_id === $user->id) {
             throw new HttpException(
                 HttpStatusCode::FORBIDDEN->value,
                 __('api.invitation.self_invitation_error')

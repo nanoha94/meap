@@ -19,7 +19,10 @@ namespace App\Swagger;
  *         @OA\Items(ref="#/components/schemas/RecipeStep")
  *     ),
  *     @OA\Property(property="memo", type="string", description="メモ", example="ハンバーグは美味しい"),
- *     @OA\Property(property="servingCount", type="integer", nullable=true, description="分量（○○人分）", example=4)
+ *     @OA\Property(property="servingCount", type="integer", nullable=true, description="分量（○○人分）", example=4),
+ *     @OA\Property(property="ownerUserId", type="string", description="作成者のユーザーID", example="550e8400-e29b-41d4-a716-446655440000"),
+ *     @OA\Property(property="status", type="string", enum={"limited", "public"}, description="公開状態", example="limited"),
+ *     @OA\Property(property="publishedRecipeId", type="string", nullable=true, description="公開レシピID（セカンドリリースで使用）", example=null)
  * )
  * 
  * @OA\Schema(

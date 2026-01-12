@@ -42,8 +42,7 @@ class MealPlan extends Model
     public function recipes(): BelongsToMany
     {
         return $this->belongsToMany(Recipe::class, 'meal_plan_recipe_mappings', 'meal_plan_id', 'recipe_id')
-            ->withPivot('menu_category_id')
-            ->orderByPivot('order');
+            ->withPivot('menu_category_id');
     }
 
     /**
@@ -52,7 +51,6 @@ class MealPlan extends Model
     public function menuCategories(): BelongsToMany
     {
         return $this->belongsToMany(MenuCategory::class, 'meal_plan_recipe_mappings', 'meal_plan_id', 'menu_category_id')
-            ->withPivot('recipe_id')
-            ->orderByPivot('order');
+            ->withPivot('recipe_id');
     }
 }

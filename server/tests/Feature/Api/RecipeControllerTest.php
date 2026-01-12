@@ -198,7 +198,10 @@ test('3-8-4: 【一覧取得】 レスポンス形式確認', function () {
                         'categoryId',
                         'order'
                     ]
-                ]
+                ],
+                'ownerUserId',
+                'status',
+                'publishedRecipeId'
             ]
         ]
     ]);
@@ -311,7 +314,10 @@ test('3-8-9: 【新規作成】 正常な料理作成', function () {
     // データベースに保存されていることを確認
     $this->assertDatabaseHas('recipes', [
         'group_id' => $this->group->id,
-        'name' => 'カレーライス'
+        'owner_user_id' => $this->user->id,
+        'name' => 'カレーライス',
+        'status' => 'limited',
+        'published_recipe_id' => null
     ]);
 
     // レスポンス構造の確認
@@ -345,7 +351,10 @@ test('3-8-10: 【新規作成】 最小限のデータで料理作成', function
     // データベースに保存されていることを確認
     $this->assertDatabaseHas('recipes', [
         'group_id' => $this->group->id,
-        'name' => 'カレーライス'
+        'owner_user_id' => $this->user->id,
+        'name' => 'カレーライス',
+        'status' => 'limited',
+        'published_recipe_id' => null
     ]);
 });
 
@@ -443,6 +452,8 @@ test('3-8-14: 【新規作成】 料理に手順を紐づけ', function () {
     $recipeId = $response->json('data.id');
     $recipe = Recipe::with('steps')->find($recipeId);
     expect($recipe->steps)->toHaveCount(1);
+    expect($recipe->steps[0]->order)->toBe(0);
+    expect($recipe->steps[0]->recipe_id)->toBe($recipeId);
 });
 
 test('3-8-15: 【新規作成】 最小限の必須フィールドのみで手順を紐づけ', function () {
@@ -466,6 +477,8 @@ test('3-8-15: 【新規作成】 最小限の必須フィールドのみで手�
     $recipe = Recipe::with('steps')->find($recipeId);
     expect($recipe->steps)->toHaveCount(1);
     expect($recipe->steps[0]->instruction)->toBe('玉ねぎを切る');
+    expect($recipe->steps[0]->order)->toBe(0);
+    expect($recipe->steps[0]->recipe_id)->toBe($recipeId);
 });
 
 test('3-8-16: 【新規作成】 料理に画像を紐づけ', function () {
@@ -2321,6 +2334,7 @@ test('3-8-75: 【詳細取得】 他グループの料理詳細取得', function
     // 他グループの料理を作成
     $otherRecipe = Recipe::create([
         'group_id' => $otherGroup->id,
+        'owner_user_id' => $otherUser->id,
         'name' => '他のグループの料理'
     ]);
 
@@ -2588,6 +2602,7 @@ test('3-8-84: 【更新】 料理の手順更新', function () {
     // 手順が正しく更新されていることを確認
     $recipe = Recipe::with('steps')->find($recipeId);
     expect($recipe->steps)->toHaveCount(1);
+    expect($recipe->steps[0]->order)->toBe(0);
 });
 
 test('3-8-85: 【更新】 最小限の必須フィールドのみで手順を更新', function () {
@@ -3692,7 +3707,7 @@ test('3-8-141: 【更新】 他グループの料理更新', function () {
     $otherUser = User::factory()->create(['email_verified_at' => now()]);
     $otherGroup = Group::create(['group_size' => 1]);
     DB::table('group_user_mappings')->insert(['user_id' => $otherUser->id, 'group_id' => $otherGroup->id]);
-    $otherRecipe = Recipe::create(['group_id' => $otherGroup->id, 'name' => '他の料理']);
+    $otherRecipe = Recipe::create(['group_id' => $otherGroup->id, 'owner_user_id' => $otherUser->id, 'name' => '他の料理']);
 
     $data = ['name' => 'カレーライス', 'servingCount' => 4];
 
@@ -3784,7 +3799,7 @@ test('3-8-148: 【削除】 他グループの料理削除', function () {
     $otherUser = User::factory()->create(['email_verified_at' => now()]);
     $otherGroup = Group::create(['group_size' => 1]);
     DB::table('group_user_mappings')->insert(['user_id' => $otherUser->id, 'group_id' => $otherGroup->id]);
-    $otherRecipe = Recipe::create(['group_id' => $otherGroup->id, 'name' => '他の料理']);
+    $otherRecipe = Recipe::create(['group_id' => $otherGroup->id, 'owner_user_id' => $otherUser->id, 'name' => '他の料理']);
 
     $response = $this->actingAs($this->user)->delete("/recipes/{$otherRecipe->id}");
 

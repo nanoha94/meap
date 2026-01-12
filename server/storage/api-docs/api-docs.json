@@ -1446,6 +1446,26 @@
                         "type": "integer",
                         "example": 4,
                         "nullable": true
+                    },
+                    "ownerUserId": {
+                        "description": "作成者のユーザーID",
+                        "type": "string",
+                        "example": "550e8400-e29b-41d4-a716-446655440000"
+                    },
+                    "status": {
+                        "description": "公開状態",
+                        "type": "string",
+                        "enum": [
+                            "limited",
+                            "public"
+                        ],
+                        "example": "limited"
+                    },
+                    "publishedRecipeId": {
+                        "description": "公開レシピID（セカンドリリースで使用）",
+                        "type": "string",
+                        "example": null,
+                        "nullable": true
                     }
                 },
                 "type": "object"
