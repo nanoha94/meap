@@ -185,7 +185,14 @@ class MealPlanService extends AbstractDomainService
                     'id' => $menuCategory->id,
                     'name' => $menuCategory->name
                 ],
-                'recipes' => $recipes->map(fn($recipe) => $this->recipeService->formatIndexResponse($recipe))
+                'recipes' => $recipes->map(function ($recipe) {
+                    return [
+                        'id' => $recipe->id,
+                        'name' => $recipe->name,
+                        'categories' => $this->recipeService->formatRecipeCategories($recipe->categories),
+                        'thumbnail' => $this->imageService->formatImage($recipe->thumbnails->first()),
+                    ];
+                })
             ];
         })->values()->toArray();
     }

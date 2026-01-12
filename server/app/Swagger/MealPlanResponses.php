@@ -10,15 +10,37 @@ namespace App\Swagger;
  *         type="object",
  *         @OA\Property(property="success", type="boolean", example=true),
  *         @OA\Property(property="message", type="string", example="献立を5件取得しました。"),
- *         @OA\Property(
- *             property="data",
- *             type="array", 
- *             @OA\Items(type="object",
- *                 @OA\Property(property="date", type="string", format="date", description="日付", example="2023-10-05"),
- *                 @OA\Property(property="mealPlans", type="array", description="献立メニュー",
- *                     @OA\Items(ref="#/components/schemas/MealPlan")
+ *         @OA\Property(property="data", type="object",
+ *             @OA\Property(property="date", type="string", format="date", description="日付", example="2023-10-05"),
+ *             @OA\Property(property="mealPlans", type="array", description="献立メニュー",
+ *                 @OA\Items(type="object",
+ *                     @OA\Property(property="id", type="string", description="ID", example="1"),
+ *                     @OA\Property(property="date", type="string", format="date", description="日付", example="2023-10-05"),
+ *                     @OA\Property(property="category", type="object",
+ *                         @OA\Property(property="id", type="string", description="ID", example="1"),
+ *                         @OA\Property(property="name", type="string", description="カテゴリ名", example="朝食"),
+ *                         @OA\Property(property="colorId", type="string", description="色ID", example="1")
+ *                     ),
+ *                     @OA\Property(property="menu", type="array", description="献立",
+ *                         @OA\Items(type="object",
+ *                             @OA\Property(property="category", type="object",
+ *                                 @OA\Property(property="id", type="string", description="ID", example="1"),
+ *                                 @OA\Property(property="name", type="string", description="カテゴリ名", example="朝食"),
+ *                             ),
+ *                             @OA\Property(property="recipes", type="array", description="料理",
+ *                                 @OA\Items(type="object",
+ *                                     @OA\Property(property="id", type="string", description="ID", example="1"),
+ *                                     @OA\Property(property="name", type="string", description="料理名", example="ハンバーグ"),
+ *                                     @OA\Property(property="categories", type="array", description="カテゴリ",
+ *                                         @OA\Items(ref="#/components/schemas/RecipeCategory")
+ *                                     ),
+ *                                     @OA\Property(property="thumbnail", type="object", ref="#/components/schemas/RecipeThumbnail"),
+ *                                 ),
+ *                             )
+ *                         )
+ *                     )
  *                 )
- *             ),
+ *             )
  *         ),
  *         @OA\Property(
  *             property="total",

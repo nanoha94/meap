@@ -121,24 +121,11 @@ class RecipeService extends AbstractDomainService
         // 型チェック
         $this->typeCheck($item, Recipe::class);
 
-        // groupが読み込まれていない場合は読み込む
-        if (!$item->relationLoaded('group')) {
-            $item->load('group');
-        }
-
         return [
             'id' => $item->id,
             'name' => $item->name,
-            'thumbnail' => $this->imageService->formatImage($item->thumbnails->first()),
-            'url' => $item->url,
-            'steps' => $this->formatRecipeSteps($item->steps->sortBy('order')),
-            'memo' => $item->memo,
-            'servingCount' => $item->serving_count,
             'categories' => $this->formatRecipeCategories($item->categories),
-            'ingredients' => $this->formatRecipeIngredients($item, $item->group),
-            'ownerUserId' => $item->owner_user_id,
-            'status' => $item->status,
-            'publishedRecipeId' => $item->published_recipe_id,
+            'thumbnail' => $this->imageService->formatImage($item->thumbnails->first()),
         ];
     }
 
@@ -320,7 +307,7 @@ class RecipeService extends AbstractDomainService
     /**
      * レシピのカテゴリー情報をフォーマット
      */
-    private function formatRecipeCategories(Collection $categories): array
+    public function formatRecipeCategories(Collection $categories): array
     {
         // 型チェック
         $this->typeCheck($categories, Collection::class);

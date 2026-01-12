@@ -247,12 +247,8 @@ test('3-6-1: 【一覧取得】 正常な献立一覧取得', function () {
                                     '*' => [
                                         'id',
                                         'name',
-                                        'thumbnail',
-                                        'url',
-                                        'memo',
                                         'categories',
-                                        'ingredients',
-                                        'steps'
+                                        'thumbnail'
                                     ]
                                 ]
                             ]
@@ -473,12 +469,8 @@ test('3-6-8: 【新規作成】 正常な献立作成', function () {
                         '*' => [
                             'id',
                             'name',
-                            'thumbnail',
-                            'url',
-                            'memo',
                             'categories',
-                            'ingredients',
-                            'steps'
+                            'thumbnail',
                         ]
                     ]
                 ]
@@ -1201,32 +1193,7 @@ test('3-6-31: 【詳細取得】 正常な献立詳細取得', function () {
                                     'order'
                                 ]
                             ],
-                            'ingredients' => [
-                                '*' => [
-                                    'id',
-                                    'name',
-                                    'categoryId',
-                                    'quantity',
-                                    'unitId',
-                                    'order'
-                                ]
-                            ],
                             'thumbnail',
-                            'url',
-                            'steps' => [
-                                '*' => [
-                                    'id',
-                                    'instruction',
-                                    'image' => [
-                                        'id',
-                                        'src',
-                                        'width',
-                                        'height'
-                                    ],
-                                    'order'
-                                ]
-                            ],
-                            'memo'
                         ]
                     ]
                 ]

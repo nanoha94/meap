@@ -14,7 +14,14 @@ namespace App\Swagger;
  *             property="data",
  *             type="array",
  *             description="料理データ一覧",
- *             @OA\Items(ref="#/components/schemas/Recipe")
+ *             @OA\Items(
+ *                  @OA\Property(property="id", type="string", description="料理ID", example="1"),
+ *                  @OA\Property(property="name", type="string", description="料理名", example="ハンバーグ"),
+ *                  @OA\Property(property="categories", type="array", description="カテゴリ",
+ *                      @OA\Items(ref="#/components/schemas/RecipeCategory")
+ *                  ),
+ *                  @OA\Property(property="thumbnail", type="object", ref="#/components/schemas/RecipeThumbnail"),
+ *             ),
  *         ),
  *         @OA\Property(
  *             property="total",

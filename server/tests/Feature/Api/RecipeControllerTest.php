@@ -2299,7 +2299,8 @@ test('3-8-73: 【詳細取得】 正常な料理詳細取得', function () {
         'message',
         'data' => [
             'id',
-            'name'
+            'name',
+            'categories',
         ]
     ]);
 

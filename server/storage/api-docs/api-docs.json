@@ -2242,25 +2242,108 @@
                                     "example": "献立を5件取得しました。"
                                 },
                                 "data": {
-                                    "type": "array",
-                                    "items": {
-                                        "properties": {
-                                            "date": {
-                                                "description": "日付",
-                                                "type": "string",
-                                                "format": "date",
-                                                "example": "2023-10-05"
-                                            },
-                                            "mealPlans": {
-                                                "description": "献立メニュー",
-                                                "type": "array",
-                                                "items": {
-                                                    "$ref": "#/components/schemas/MealPlan"
-                                                }
-                                            }
+                                    "properties": {
+                                        "date": {
+                                            "description": "日付",
+                                            "type": "string",
+                                            "format": "date",
+                                            "example": "2023-10-05"
                                         },
-                                        "type": "object"
-                                    }
+                                        "mealPlans": {
+                                            "description": "献立メニュー",
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "description": "ID",
+                                                        "type": "string",
+                                                        "example": "1"
+                                                    },
+                                                    "date": {
+                                                        "description": "日付",
+                                                        "type": "string",
+                                                        "format": "date",
+                                                        "example": "2023-10-05"
+                                                    },
+                                                    "category": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "description": "ID",
+                                                                "type": "string",
+                                                                "example": "1"
+                                                            },
+                                                            "name": {
+                                                                "description": "カテゴリ名",
+                                                                "type": "string",
+                                                                "example": "朝食"
+                                                            },
+                                                            "colorId": {
+                                                                "description": "色ID",
+                                                                "type": "string",
+                                                                "example": "1"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    },
+                                                    "menu": {
+                                                        "description": "献立",
+                                                        "type": "array",
+                                                        "items": {
+                                                            "properties": {
+                                                                "category": {
+                                                                    "properties": {
+                                                                        "id": {
+                                                                            "description": "ID",
+                                                                            "type": "string",
+                                                                            "example": "1"
+                                                                        },
+                                                                        "name": {
+                                                                            "description": "カテゴリ名",
+                                                                            "type": "string",
+                                                                            "example": "朝食"
+                                                                        }
+                                                                    },
+                                                                    "type": "object"
+                                                                },
+                                                                "recipes": {
+                                                                    "description": "料理",
+                                                                    "type": "array",
+                                                                    "items": {
+                                                                        "properties": {
+                                                                            "id": {
+                                                                                "description": "ID",
+                                                                                "type": "string",
+                                                                                "example": "1"
+                                                                            },
+                                                                            "name": {
+                                                                                "description": "料理名",
+                                                                                "type": "string",
+                                                                                "example": "ハンバーグ"
+                                                                            },
+                                                                            "categories": {
+                                                                                "description": "カテゴリ",
+                                                                                "type": "array",
+                                                                                "items": {
+                                                                                    "$ref": "#/components/schemas/RecipeCategory"
+                                                                                }
+                                                                            },
+                                                                            "thumbnail": {
+                                                                                "$ref": "#/components/schemas/RecipeThumbnail"
+                                                                            }
+                                                                        },
+                                                                        "type": "object"
+                                                                    }
+                                                                }
+                                                            },
+                                                            "type": "object"
+                                                        }
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
                                 },
                                 "total": {
                                     "description": "献立総数",
@@ -2529,7 +2612,29 @@
                                     "description": "料理データ一覧",
                                     "type": "array",
                                     "items": {
-                                        "$ref": "#/components/schemas/Recipe"
+                                        "properties": {
+                                            "id": {
+                                                "description": "料理ID",
+                                                "type": "string",
+                                                "example": "1"
+                                            },
+                                            "name": {
+                                                "description": "料理名",
+                                                "type": "string",
+                                                "example": "ハンバーグ"
+                                            },
+                                            "categories": {
+                                                "description": "カテゴリ",
+                                                "type": "array",
+                                                "items": {
+                                                    "$ref": "#/components/schemas/RecipeCategory"
+                                                }
+                                            },
+                                            "thumbnail": {
+                                                "$ref": "#/components/schemas/RecipeThumbnail"
+                                            }
+                                        },
+                                        "type": "object"
                                     }
                                 },
                                 "total": {
