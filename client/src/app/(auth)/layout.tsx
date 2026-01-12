@@ -23,9 +23,13 @@ const AuthLayout = async ({ children }: Props) => {
         handleAuthRedirect(user, true);
     }
 
+    // 認証エラー（AUTHENTICATION_REQUIRED）はログインページでは表示しない
+    const shouldShowError =
+        errorMessage && errorMessage !== 'AUTHENTICATION_REQUIRED';
+
     return (
         <>
-            {errorMessage && (
+            {shouldShowError && (
                 <SnackbarHandler type="error" message={errorMessage} />
             )}
             <div className="max-w-xl mx-auto pt-10 pb-20 px-5 flex flex-col gap-y-16">
