@@ -7,7 +7,7 @@ export const useAuth = () => {
     const router = useRouter();
     const params = useParams();
     const pathname = usePathname();
-    const { addSnackbar } = useSnackbars();
+    const { addSnackbar, clearAllSnackbars } = useSnackbars();
     const [isLoading, setIsLoading] = React.useState(false);
     const [isResetLoading, setIsResetLoading] = React.useState(false);
     const [prevPath, setPrevPath] = React.useState<string | null>(null);
@@ -20,10 +20,14 @@ export const useAuth = () => {
      * @param props ユーザー登録フォームの入力値
      */
     const register = async ({ setErrors, ...props }) => {
+        // ローディングアニメーションを開始
         setIsLoading(true);
-        await csrf();
-
+        // スナックバーをすべて削除
+        clearAllSnackbars();
+        // エラーをクリア
         setErrors([]);
+        // CSRFトークンを取得
+        await csrf();
 
         await axios
             .post('/register', props)
@@ -42,9 +46,11 @@ export const useAuth = () => {
                     'error',
                     error.response.data.message || 'エラーが発生しました',
                 );
+            })
+            .finally(() => {
+                // ローディングアニメーションを終了
+                setIsLoading(false);
             });
-
-        setIsLoading(false);
     };
 
     /**
@@ -54,11 +60,16 @@ export const useAuth = () => {
      * @param props ログインフォームの入力値
      */
     const login = async ({ setErrors, setStatus, ...props }) => {
+        // ローディングアニメーションを開始
         setIsLoading(true);
-        await csrf();
-
+        // スナックバーをすべて削除
+        clearAllSnackbars();
+        // エラーをクリア
         setErrors([]);
+        // ステータスをクリア
         setStatus(null);
+        // CSRFトークンを取得
+        await csrf();
 
         axios
             .post('/login/', props)
@@ -69,10 +80,17 @@ export const useAuth = () => {
                 setPrevPath(pathname);
             })
             .catch(error => {
-                if (error.response.status !== 422) throw error;
-                setErrors(error.response.data.errors);
+                if (error.response.status === 422) {
+                    setErrors(error.response.data.errors);
+                }
                 console.error(error);
-                addSnackbar('error', error.response.data.message);
+                addSnackbar(
+                    'error',
+                    error.response.data.message || 'エラーが発生しました',
+                );
+            })
+            .finally(() => {
+                // ローディングアニメーションを終了
                 setIsLoading(false);
             });
     };
@@ -84,11 +102,16 @@ export const useAuth = () => {
      * @param email メールアドレス
      */
     const passwordResetRequest = async ({ setErrors, setStatus, email }) => {
+        // ローディングアニメーションを開始
         setIsLoading(true);
-        await csrf();
-
+        // スナックバーをすべて削除
+        clearAllSnackbars();
+        // エラーをクリア
         setErrors([]);
+        // ステータスをクリア
         setStatus(null);
+        // CSRFトークンを取得
+        await csrf();
 
         await axios
             .post('/password/reset/request', { email })
@@ -102,7 +125,10 @@ export const useAuth = () => {
                 console.error(error);
                 addSnackbar('error', error.response.data.message);
             })
-            .finally(() => setIsLoading(false));
+            .finally(() =>
+                // ローディングアニメーションを終了
+                setIsLoading(false),
+            );
     };
 
     /**
@@ -112,11 +138,16 @@ export const useAuth = () => {
      * @param props パスワードリセットフォームの入力値
      */
     const resetPassword = async ({ setErrors, setStatus, ...props }) => {
+        // ローディングアニメーションを開始
         setIsLoading(true);
-        await csrf();
-
+        // スナックバーをすべて削除
+        clearAllSnackbars();
+        // エラーをクリア
         setErrors([]);
+        // ステータスをクリア
         setStatus(null);
+        // CSRFトークンを取得
+        await csrf();
 
         await axios
             .post('/password/reset', { token: params?.token, ...props })
@@ -134,6 +165,9 @@ export const useAuth = () => {
                 }
                 console.error(error);
                 addSnackbar('error', error.response.data.message);
+            })
+            .finally(() => {
+                // ローディングアニメーションを終了
                 setIsLoading(false);
             });
     };
@@ -143,7 +177,11 @@ export const useAuth = () => {
      * @param setStatus ステータスを設定する関数
      */
     const resendEmailVerification = async ({ setMessage }) => {
+        // ローディングアニメーションを開始
         setIsLoading(true);
+        // スナックバーをすべて削除
+        clearAllSnackbars();
+        // CSRFトークンを取得
         await csrf();
 
         await axios
@@ -152,12 +190,19 @@ export const useAuth = () => {
             .catch(error => {
                 console.error(error);
                 addSnackbar('error', error.response.data.message);
+            })
+            .finally(() => {
+                // ローディングアニメーションを終了
+                setIsLoading(false);
             });
-        setIsLoading(false);
     };
 
     const logout = async () => {
+        // ローディングアニメーションを開始
         setIsLoading(true);
+        // スナックバーをすべて削除
+        clearAllSnackbars();
+
         await axios.post('/logout');
 
         // セッションストレージをクリア
@@ -168,6 +213,7 @@ export const useAuth = () => {
 
         // Laravel側でCookieは削除されるので、ページをリロード
         window.location.href = '/login';
+        // ローディングアニメーションを終了
         setIsLoading(false);
     };
 

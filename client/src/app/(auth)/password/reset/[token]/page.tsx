@@ -15,7 +15,6 @@ type visibleErrorFields = 'password' | 'passwordConfirmation';
 
 const PasswordReset = () => {
     const { isLoading, resetPassword } = useAuth();
-
     const {
         handleSubmit,
         control,
@@ -41,6 +40,10 @@ const PasswordReset = () => {
         passwordConfirmation: false,
     });
 
+    /**
+     * パスワード再設定フォームの送信
+     * @param data フォームの入力値
+     */
     const onSubmit: SubmitHandler<FormInputs> = (data: FormInputs) => {
         resetPassword({
             password: data.password,

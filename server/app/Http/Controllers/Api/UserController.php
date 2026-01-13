@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\Api\UserIndexRequest;
 use App\Services\UserService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class UserController extends ApiController
 {
@@ -45,5 +46,28 @@ class UserController extends ApiController
             $failedMessage,
             $operation
         );
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/user",
+     *     summary="認証ユーザー情報を取得",
+     *     tags={"Users"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Response(
+     *         response=200, ref="#/components/responses/UserShowSuccess"
+     *     ),
+     *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
+     * )
+     */
+    public function show(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        return response()->json([
+            'name' => $user->name,
+            'email' => $user->email,
+            'email_verified_at' => $user->email_verified_at,
+            'avatar_seed' => $user->avatar_seed,
+        ]);
     }
 }

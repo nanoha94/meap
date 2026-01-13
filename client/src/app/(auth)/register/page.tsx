@@ -50,6 +50,10 @@ const Page = () => {
         passwordConfirmation: false,
     });
 
+    /**
+     * アカウント登録フォームの送信
+     * @param data フォームの入力値
+     */
     const onSubmit: SubmitHandler<FormInputs> = (data: FormInputs) => {
         register({
             name: data.name,

@@ -118,18 +118,19 @@ export async function fetchData<T>(
     let data: T | null = null;
     let errorMessage: string = '';
 
+    // タイムアウトタイマー
+    let timeoutId: NodeJS.Timeout | null = null;
+
     try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+        timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
         data = await apiClient<T>(path, {
             ...options,
             signal: controller.signal,
         });
-
-        clearTimeout(timeoutId);
     } catch (error) {
-        console.error(error);
+        console.error(`[fetchData] エラー発生: ${path}`, error);
         // エラーオブジェクトから安全に文字列を抽出
         if (error instanceof Error && error.name === 'AbortError') {
             errorMessage =
@@ -141,6 +142,11 @@ export async function fetchData<T>(
                     : typeof error === 'string'
                       ? error
                       : 'データの取得に失敗しました';
+        }
+    } finally {
+        // タイムアウトタイマーをクリア
+        if (timeoutId) {
+            clearTimeout(timeoutId);
         }
     }
 
@@ -159,17 +165,21 @@ export async function fetchDataParallel<T extends unknown[]>(
     let data: T | null = null;
     let errorMessage: string = '';
 
+    // タイムアウトタイマー
+    let timeoutId: NodeJS.Timeout | null = null;
+
     try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+        timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
         data = (await Promise.all(
             requests.map(request => request(controller.signal)),
         )) as T;
-
-        clearTimeout(timeoutId);
     } catch (error) {
-        console.error(error);
+        console.error(
+            `[fetchDataParallel] エラー発生: ${requests.length}件のリクエスト`,
+            error,
+        );
         // エラーオブジェクトから安全に文字列を抽出
         if (error instanceof Error && error.name === 'AbortError') {
             errorMessage =
@@ -181,6 +191,11 @@ export async function fetchDataParallel<T extends unknown[]>(
                     : typeof error === 'string'
                       ? error
                       : 'データの取得に失敗しました';
+        }
+    } finally {
+        // タイムアウトタイマーをクリア
+        if (timeoutId) {
+            clearTimeout(timeoutId);
         }
     }
 

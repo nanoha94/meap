@@ -34,5 +34,17 @@ namespace App\Swagger;
  *         )
  *     )
  * )
+ * 
+ * @OA\Response(
+ *     response="UserShowSuccess",
+ *     description="認証ユーザー情報を取得しました。",
+ *     @OA\JsonContent(
+ *         type="object",
+ *         @OA\Property(property="name", type="string", example="山田太郎"),
+ *         @OA\Property(property="email", type="string", format="email", example="test@example.com"),
+ *         @OA\Property(property="email_verified_at", type="string", format="date-time", nullable=true, example="2024-01-01T00:00:00.000000Z"),
+ *         @OA\Property(property="avatar_seed", type="string", example="1234567890")
+ *     )
+ * )
  */
 class UserResponses {}

@@ -36,6 +36,10 @@ const Page = () => {
         Record<visibleErrorFields, boolean>
     >({ email: false });
 
+    /**
+     * パスワード再設定リクエストフォームの送信
+     * @param data フォームの入力値
+     */
     const onSubmit: SubmitHandler<FormInputs> = (data: FormInputs) => {
         passwordResetRequest({
             email: data.email,

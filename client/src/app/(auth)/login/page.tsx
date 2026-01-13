@@ -59,6 +59,10 @@ const LoginForm = () => {
         }
     }, [searchParams, errors]);
 
+    /**
+     * ログインフォームの送信
+     * @param data フォームの入力値
+     */
     const onSubmit: SubmitHandler<FormInputs> = (data: FormInputs) => {
         login({
             email: data.email,

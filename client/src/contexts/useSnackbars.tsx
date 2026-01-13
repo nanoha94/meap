@@ -1,18 +1,21 @@
 'use client';
 import { Snackbar } from '@/types';
 import React from 'react';
+import { usePathname } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
 
 interface SnackbarsContextType {
     snackbars: Snackbar[];
     addSnackbar: (type: Snackbar['type'], message: Snackbar['message']) => void;
     removeSnackbar: (id: string) => void;
+    clearAllSnackbars: (immediate?: boolean) => void;
 }
 
 const SnackbarsContext = React.createContext<SnackbarsContextType>({
     snackbars: [],
     addSnackbar: () => {},
     removeSnackbar: () => {},
+    clearAllSnackbars: () => {},
 });
 
 export const useSnackbars = () => {
@@ -24,6 +27,7 @@ interface Props {
 }
 
 export const SnackbarsProvider: React.FC<Props> = ({ children }) => {
+    const pathname = usePathname();
     const [snackbars, setSnackbars] = React.useState<
         {
             id: string;
@@ -32,6 +36,7 @@ export const SnackbarsProvider: React.FC<Props> = ({ children }) => {
             isOpen: boolean;
         }[]
     >([]);
+    const prevPathnameRef = React.useRef<string | null>(null);
 
     const addSnackbar = React.useCallback(
         (type: 'success' | 'error', message: string) => {
@@ -65,19 +70,46 @@ export const SnackbarsProvider: React.FC<Props> = ({ children }) => {
     );
 
     const removeSnackbar = React.useCallback((id: string) => {
+        // まずは非表示にする
         setSnackbars(prev =>
             prev?.map(v => (v.id === id ? { ...v, isOpen: false } : v)),
         );
 
-        // 1秒後に削除（ふわっとアニメーションのため）
+        // 100ms後に削除（アニメーション完了を待って削除）
         setTimeout(() => {
             setSnackbars(prev => prev.filter(v => v.id !== id));
+        }, 100);
+    }, []);
+
+    const clearAllSnackbars = React.useCallback(() => {
+        // すべて非表示にする
+        setSnackbars(prev => prev.map(v => ({ ...v, isOpen: false })));
+
+        // 100ms後に削除（アニメーション完了を待って削除）
+        setTimeout(() => {
+            setSnackbars([]);
         }, 1000);
     }, []);
 
+    // ページ遷移時にすべてのスナックバーをクリア
+    React.useEffect(() => {
+        if (
+            prevPathnameRef.current !== null &&
+            prevPathnameRef.current !== pathname
+        ) {
+            clearAllSnackbars();
+        }
+        prevPathnameRef.current = pathname;
+    }, [pathname]);
+
     return (
         <SnackbarsContext.Provider
-            value={{ snackbars, addSnackbar, removeSnackbar }}>
+            value={{
+                snackbars,
+                addSnackbar,
+                removeSnackbar,
+                clearAllSnackbars,
+            }}>
             {children}
         </SnackbarsContext.Provider>
     );

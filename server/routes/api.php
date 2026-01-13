@@ -45,15 +45,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
     // users
     Route::get('/users', [UserController::class, 'index']);
-    Route::get('/user',  function (Request $request) {
-        $user = $request->user();
-        return [
-            'name' => $user->name,
-            'email' => $user->email,
-            'email_verified_at' => $user->email_verified_at,
-            'avatar_seed' => $user->avatar_seed,
-        ];
-    });
+    Route::get('/user', [UserController::class, 'show']);
 
     // shopping
     Route::apiResource('/shopping-items', ShoppingItemController::class)->only(['index', 'store']);

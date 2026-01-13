@@ -1062,6 +1062,28 @@
                 ]
             }
         },
+        "/user": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "認証ユーザー情報を取得",
+                "operationId": "f2a190df786c490b752271d58b074c9a",
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/UserShowSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/login": {
             "post": {
                 "tags": [
@@ -3185,6 +3207,37 @@
                                     "description": "ユーザ総数",
                                     "type": "integer",
                                     "example": 5
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "UserShowSuccess": {
+                "description": "認証ユーザー情報を取得しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "example": "山田太郎"
+                                },
+                                "email": {
+                                    "type": "string",
+                                    "format": "email",
+                                    "example": "test@example.com"
+                                },
+                                "email_verified_at": {
+                                    "type": "string",
+                                    "format": "date-time",
+                                    "example": "2024-01-01T00:00:00.000000Z",
+                                    "nullable": true
+                                },
+                                "avatar_seed": {
+                                    "type": "string",
+                                    "example": "1234567890"
                                 }
                             },
                             "type": "object"
