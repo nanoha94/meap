@@ -1,6 +1,5 @@
 'use client';
 import React from 'react';
-import { LoadingAnimation } from '@/components/common';
 import { IRecipe, IIngredientCategory } from '@/types/api';
 import { useIngredientStore } from '@/models/ingredient/hooks';
 import { useRecipeStore } from '@/models/recipe/hooks';
@@ -12,6 +11,7 @@ import {
     RecipeCategorySettingDialog,
     RecipeEditForm,
 } from '@/models/recipe/components';
+import { useGlobalStore } from '@/stores';
 
 interface Props {
     fetchRecipe?: IRecipe;
@@ -28,7 +28,7 @@ const RecipeDetailPage = ({
         isLoadings: isLoadingCategories,
     } = useIngredientStore();
     const { isLoadings: isLoadingRecipe } = useRecipeStore();
-    const [isLoading, setIsLoading] = React.useState(false);
+    const { setIsLoading } = useGlobalStore();
 
     /**
      * ローディング状態を更新
@@ -55,7 +55,6 @@ const RecipeDetailPage = ({
 
     return (
         <>
-            {isLoading && <LoadingAnimation />}
             <RecipeEditForm fetchRecipe={fetchRecipe} />
 
             {/* 食材編集ダイアログ */}

@@ -8,6 +8,7 @@ export { default as FooterNavigation } from './FooterNavigation';
 export { default as Header } from './Header';
 export { default as Loading } from './Loading';
 export { default as LoadingAnimation } from './LoadingAnimation';
+export { default as AuthLoading } from './AuthLoading';
 export { default as LucideIconWrapper } from './LucideIconWrapper';
 export { default as NavigationIcon } from './NavigationIcon';
 export { default as SideNavigation } from './SideNavigation';

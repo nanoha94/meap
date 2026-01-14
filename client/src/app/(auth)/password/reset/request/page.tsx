@@ -4,7 +4,6 @@ import React from 'react';
 import { Button } from '@/components/common';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import Link from 'next/link';
-import LoadingAnimation from '@/components/common/LoadingAnimation';
 import { VerticalRowField } from '@/components/react-hook-form';
 
 interface FormInputs {
@@ -14,7 +13,7 @@ interface FormInputs {
 type visibleErrorFields = 'email';
 
 const Page = () => {
-    const { isLoading, passwordResetRequest } = useAuth();
+    const { passwordResetRequest } = useAuth();
 
     const {
         handleSubmit,
@@ -50,7 +49,6 @@ const Page = () => {
 
     return (
         <>
-            {isLoading && <LoadingAnimation />}
             <div className="flex flex-col gap-y-10">
                 <div className="relative w-full text-center">
                     <span className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-px bg-gray-main" />

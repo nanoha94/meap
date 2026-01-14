@@ -2,13 +2,14 @@ import axios from '@/lib/axios';
 import { useParams, useRouter, usePathname } from 'next/navigation';
 import React from 'react';
 import { useSnackbars } from '@/contexts';
+import { useGlobalStore } from '@/stores';
 
 export const useAuth = () => {
     const router = useRouter();
     const params = useParams();
     const pathname = usePathname();
     const { addSnackbar, clearAllSnackbars } = useSnackbars();
-    const [isLoading, setIsLoading] = React.useState(false);
+    const { setIsLoading } = useGlobalStore();
     const [isResetLoading, setIsResetLoading] = React.useState(false);
     const [prevPath, setPrevPath] = React.useState<string | null>(null);
 
@@ -215,6 +216,9 @@ export const useAuth = () => {
         window.location.href = '/login';
         // ローディングアニメーションを終了
         setIsLoading(false);
+
+        // ログインページにリダイレクト
+        router.push('/login');
     };
 
     // ログインページから他のページに遷移した時にローディング状態をリセット
@@ -227,7 +231,6 @@ export const useAuth = () => {
     }, [prevPath, pathname, isResetLoading]);
 
     return {
-        isLoading,
         register,
         login,
         passwordResetRequest,

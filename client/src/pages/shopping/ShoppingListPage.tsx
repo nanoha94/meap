@@ -1,6 +1,5 @@
 'use client';
 import { Dialog, TextButton } from '@/components/common';
-import LoadingAnimation from '@/components/common/LoadingAnimation';
 import {
     AddShoppingItemButton,
     ShoppingCategorySettingForm,
@@ -8,6 +7,7 @@ import {
     ShoppingList,
 } from '@/models/shopping/components';
 import { useShoppingStore } from '@/models/shopping/hooks';
+import { useGlobalStore } from '@/stores';
 import { IShoppingCategory, IShoppingItem } from '@/types/api';
 import { ChevronRight } from 'lucide-react';
 import React from 'react';
@@ -25,7 +25,7 @@ const ShoppingListPage: React.FC<Props> = ({ fetchItems, fetchCategories }) => {
         isLoadingCategories,
         isLoadingItems,
     } = useShoppingStore();
-    const [isLoading, setIsLoading] = React.useState(false);
+    const { setIsLoading } = useGlobalStore();
     const [isOpenCategorySettingDialog, setIsOpenCategorySettingDialog] =
         React.useState<boolean>(false);
 
@@ -58,7 +58,6 @@ const ShoppingListPage: React.FC<Props> = ({ fetchItems, fetchCategories }) => {
 
     return (
         <>
-            {isLoading && <LoadingAnimation />}
             {/* メインコンテンツ */}
             <div className="p-5 pb-[60px] md:px-10">
                 <div className="pb-12 flex flex-col gap-y-7">

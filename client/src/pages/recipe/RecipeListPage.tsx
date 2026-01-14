@@ -1,7 +1,7 @@
 'use client';
-import { LoadingAnimation } from '@/components/common';
 import { RecipeList } from '@/models/recipe/components';
 import { useRecipeStore } from '@/models/recipe/hooks/recipeStores';
+import { useGlobalStore } from '@/stores';
 import { IRecipe } from '@/types/api';
 import React from 'react';
 
@@ -12,7 +12,7 @@ interface Props {
 
 const RecipeListPage = ({ fetchRecipes = [], total = 0 }: Props) => {
     const { setRecipes: setStoreRecipes, isLoadings } = useRecipeStore();
-    const [isLoading, setIsLoading] = React.useState(false);
+    const { setIsLoading } = useGlobalStore();
 
     React.useEffect(() => {
         setIsLoading(isLoadings.recipe || isLoadings.recipeCategory);
@@ -25,7 +25,6 @@ const RecipeListPage = ({ fetchRecipes = [], total = 0 }: Props) => {
     }, [fetchRecipes]);
     return (
         <>
-            {isLoading && <LoadingAnimation />}
             <div className="p-5 pb-[60px] md:px-10">
                 {total > 0 ? (
                     <RecipeList />

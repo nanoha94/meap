@@ -3,9 +3,8 @@ import Link from 'next/link';
 import { useAuth } from '@/hooks/api';
 import React, { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Button } from '@/components/common';
+import { Button, AuthLoading } from '@/components/common';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
-import LoadingAnimation from '@/components/common/LoadingAnimation';
 import { VerticalRowField } from '@/components/react-hook-form';
 
 interface FormInputs {
@@ -18,7 +17,7 @@ type visibleErrorFields = 'email' | 'password';
 
 const LoginForm = () => {
     const searchParams = useSearchParams();
-    const { isLoading, login } = useAuth();
+    const { login } = useAuth();
 
     const {
         handleSubmit,
@@ -75,7 +74,6 @@ const LoginForm = () => {
 
     return (
         <>
-            {isLoading && <LoadingAnimation />}
             <div className="flex flex-col gap-y-10">
                 <div className="relative w-full text-center">
                     <span className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-px bg-gray-main" />
@@ -224,7 +222,7 @@ const LoginForm = () => {
 
 const Login = () => {
     return (
-        <Suspense fallback={<LoadingAnimation />}>
+        <Suspense fallback={<AuthLoading />}>
             <LoginForm />
         </Suspense>
     );
