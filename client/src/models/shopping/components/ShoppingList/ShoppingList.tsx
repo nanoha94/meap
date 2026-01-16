@@ -161,29 +161,27 @@ const ShoppingList = () => {
 
     return (
         <div className="flex flex-col gap-y-7">
-            {tmpItems?.length > 0 && (
-                <DndContext
-                    sensors={sensors}
-                    collisionDetection={rectIntersection}
-                    onDragStart={handleDragStart}
-                    onDragEnd={handleDragEnd}
-                    onDragOver={handleDragOver}>
-                    {categories.map(category => {
-                        const items = getItemsInCategory(tmpItems, category.id);
-                        const itemsKey = items.map(item => item.id).join(',');
-                        return (
-                            <CategoryItemList
-                                key={`${category.id}-${itemsKey}`}
-                                category={category}
-                                items={items}
-                            />
-                        );
-                    })}
-                    <DragOverlay>
-                        {activeItem && <ShoppingItemCard item={activeItem} />}
-                    </DragOverlay>
-                </DndContext>
-            )}
+            <DndContext
+                sensors={sensors}
+                collisionDetection={rectIntersection}
+                onDragStart={handleDragStart}
+                onDragEnd={handleDragEnd}
+                onDragOver={handleDragOver}>
+                {categories.map(category => {
+                    const items = getItemsInCategory(tmpItems, category.id);
+                    const itemsKey = items.map(item => item.id).join(',');
+                    return (
+                        <CategoryItemList
+                            key={`${category.id}-${itemsKey}`}
+                            category={category}
+                            items={items}
+                        />
+                    );
+                })}
+                <DragOverlay>
+                    {activeItem && <ShoppingItemCard item={activeItem} />}
+                </DragOverlay>
+            </DndContext>
         </div>
     );
 };
