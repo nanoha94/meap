@@ -1,17 +1,13 @@
 import axios from '@/lib/axios';
-import { useParams, useRouter, usePathname } from 'next/navigation';
-import React from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import { useGlobalStore } from '@/stores';
 import { useSnackbars } from '../useSnackbars';
 
 export const useAuth = () => {
     const router = useRouter();
     const params = useParams();
-    const pathname = usePathname();
     const { addSnackbar, clearAllSnackbars } = useSnackbars();
     const { setIsLoading } = useGlobalStore();
-    const [isResetLoading, setIsResetLoading] = React.useState(false);
-    const [prevPath, setPrevPath] = React.useState<string | null>(null);
 
     const csrf = () => axios.get('/sanctum/csrf-cookie');
 
@@ -33,10 +29,8 @@ export const useAuth = () => {
         await axios
             .post('/register', props)
             .then(() => {
+                // ユーザー登録成功時にメール認証ページにリダイレクト
                 router.push('/email/verify');
-                // ローディング状態はuseEffectでパス変化時に自動リセット
-                setIsResetLoading(true);
-                setPrevPath(pathname);
             })
             .catch(error => {
                 if (error.response.status === 422) {
@@ -47,10 +41,6 @@ export const useAuth = () => {
                     'error',
                     error.response.data.message || 'エラーが発生しました',
                 );
-            })
-            .finally(() => {
-                // ローディングアニメーションを終了
-                setIsLoading(false);
             });
     };
 
@@ -75,10 +65,8 @@ export const useAuth = () => {
         axios
             .post('/login/', props)
             .then(() => {
+                // ログイン成功時にトップ画面にリダイレクト
                 router.push('/plan');
-                // ローディング状態はuseEffectでパス変化時に自動リセット
-                setIsResetLoading(true);
-                setPrevPath(pathname);
             })
             .catch(error => {
                 if (error.response.status === 422) {
@@ -89,10 +77,6 @@ export const useAuth = () => {
                     'error',
                     error.response.data.message || 'エラーが発生しました',
                 );
-            })
-            .finally(() => {
-                // ローディングアニメーションを終了
-                setIsLoading(false);
             });
     };
 
@@ -125,11 +109,7 @@ export const useAuth = () => {
                 }
                 console.error(error);
                 addSnackbar('error', error.response.data.message);
-            })
-            .finally(() =>
-                // ローディングアニメーションを終了
-                setIsLoading(false),
-            );
+            });
     };
 
     /**
@@ -153,10 +133,8 @@ export const useAuth = () => {
         await axios
             .post('/password/reset', { token: params?.token, ...props })
             .then(response => {
+                // パスワードリセット成功時にリセットトークンをクエリパラメータに追加してログインページにリダイレクト
                 router.push('/login?reset=' + btoa(response.data.status));
-                // ローディング状態はuseEffectでパス変化時に自動リセット
-                setIsResetLoading(true);
-                setPrevPath(pathname);
             })
             .catch(error => {
                 if (error.response.status !== 422) {
@@ -166,10 +144,6 @@ export const useAuth = () => {
                 }
                 console.error(error);
                 addSnackbar('error', error.response.data.message);
-            })
-            .finally(() => {
-                // ローディングアニメーションを終了
-                setIsLoading(false);
             });
     };
 
@@ -191,10 +165,6 @@ export const useAuth = () => {
             .catch(error => {
                 console.error(error);
                 addSnackbar('error', error.response.data.message);
-            })
-            .finally(() => {
-                // ローディングアニメーションを終了
-                setIsLoading(false);
             });
     };
 
@@ -214,21 +184,10 @@ export const useAuth = () => {
 
         // Laravel側でCookieは削除されるので、ページをリロード
         window.location.href = '/login';
-        // ローディングアニメーションを終了
-        setIsLoading(false);
 
         // ログインページにリダイレクト
         router.push('/login');
     };
-
-    // ログインページから他のページに遷移した時にローディング状態をリセット
-    React.useEffect(() => {
-        if (isResetLoading && prevPath && prevPath !== pathname) {
-            setIsLoading(false);
-            setIsResetLoading(false);
-            setPrevPath(null);
-        }
-    }, [prevPath, pathname, isResetLoading]);
 
     return {
         register,

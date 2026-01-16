@@ -2,17 +2,24 @@
 import { colors } from '@/constants/colors';
 import { useGlobalStore } from '@/stores';
 import { LoaderCircle } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 import React from 'react';
 
 const LoadingAnimation = () => {
-    const { isLoading, visibleLoadingAnimation } = useGlobalStore();
+    const { isLoading, visibleLoadingAnimation, setIsLoading } =
+        useGlobalStore();
+    const pathname = usePathname();
+    const prevPath = React.useRef<string>(pathname);
+
+    React.useEffect(() => {
+        if (prevPath.current !== pathname) {
+            setIsLoading(false);
+        }
+        prevPath.current = pathname;
+    }, [pathname]);
 
     // isLoadingがtrueかつloadingConditionがtrueの時のみ表示
-    if (!isLoading || !visibleLoadingAnimation) {
-        return null;
-    }
-
-    return (
+    return isLoading && visibleLoadingAnimation ? (
         <div className="fixed z-50 top-0 left-0 w-full h-screen flex justify-center items-center bg-black/50">
             <div className="py-10 px-20 bg-white rounded-xl flex flex-col items-center gap-y-5">
                 <LoaderCircle
@@ -24,6 +31,8 @@ const LoadingAnimation = () => {
                 <p className="text-center text-lg font-bold">Loading...</p>
             </div>
         </div>
+    ) : (
+        <></>
     );
 };
 
