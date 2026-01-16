@@ -23,6 +23,7 @@ const RecipeListPage = ({ fetchRecipes = [], total = 0 }: Props) => {
             setStoreRecipes(fetchRecipes);
         }
     }, [fetchRecipes]);
+
     return (
         <>
             <div className="p-5 pb-[60px] md:px-10">

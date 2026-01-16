@@ -1,4 +1,4 @@
-import { useSnackbars } from '@/contexts';
+import { useSnackbars } from '@/hooks/useSnackbars';
 import { useRouter } from 'next/navigation';
 import { useRecipeStore } from './recipeStores';
 import axios from '@/lib/axios';

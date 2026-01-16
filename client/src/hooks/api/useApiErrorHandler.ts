@@ -1,7 +1,7 @@
 // client/src/hooks/api/useApiErrorHandler.ts
 
-import { useSnackbars } from '@/contexts/useSnackbars'; // スナックバーフックのパスを確認してください
 import { AxiosError } from 'axios';
+import { useSnackbars } from '@/hooks/useSnackbars';
 
 export const useApiErrorHandler = () => {
     const { addSnackbar } = useSnackbars();

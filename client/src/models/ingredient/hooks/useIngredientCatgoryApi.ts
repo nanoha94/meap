@@ -5,7 +5,7 @@ import {
 } from '@/types/api';
 import React from 'react';
 import { useIngredientStore } from './ingredientStores';
-import { useSnackbars } from '@/contexts';
+import { useSnackbars } from '@/hooks/useSnackbars';
 import { useApiErrorHandler } from '@/hooks/api/useApiErrorHandler';
 import { LOADING_STATE_KEYS } from '../constants';
 import axios from '@/lib/axios';

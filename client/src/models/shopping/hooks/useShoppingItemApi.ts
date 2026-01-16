@@ -1,6 +1,6 @@
 import React from 'react';
 import { useShoppingStore } from './shoppingStores';
-import { useSnackbars } from '@/contexts';
+import { useSnackbars } from '@/hooks/useSnackbars';
 import axios from '@/lib/axios';
 import {
     IPostShoppingItemRequestData,

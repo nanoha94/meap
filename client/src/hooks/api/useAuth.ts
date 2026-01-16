@@ -1,8 +1,8 @@
 import axios from '@/lib/axios';
 import { useParams, useRouter, usePathname } from 'next/navigation';
 import React from 'react';
-import { useSnackbars } from '@/contexts';
 import { useGlobalStore } from '@/stores';
+import { useSnackbars } from '../useSnackbars';
 
 export const useAuth = () => {
     const router = useRouter();

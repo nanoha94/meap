@@ -1,5 +1,5 @@
 import { TIMEOUT_MS } from '@/constants';
-import { useSnackbars } from '@/contexts';
+import { useSnackbars } from '@/hooks/useSnackbars';
 import { useApiErrorHandler } from '@/hooks/api';
 import axios from '@/lib/axios';
 import {

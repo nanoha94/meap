@@ -17,34 +17,22 @@ type DialogsState = {
 };
 
 interface ShoppingState {
-    // サーバー状態
-    serverItems: IShoppingItem[];
+    // state
+    serverItems: IShoppingItem[]; // DBに保存されているアイテム一覧
+    items: IShoppingItem[]; // ローカルのアイテム一覧
+    categories: IShoppingCategory[]; // ローカルのカテゴリー一覧
+    isLoadingCategories: boolean; // カテゴリーのローディング状態
+    isLoadingItems: boolean; // アイテムのローディング状態
+    dialogs: DialogsState; // ダイアログの状態
 
-    // ローカル状態
-    items: IShoppingItem[];
-    categories: IShoppingCategory[];
-
-    // ローディング状態
-    isLoadingCategories: boolean;
-    isLoadingItems: boolean;
-
-    // ダイアログの状態
-    dialogs: DialogsState;
-
-    // サーバー状態のアクション
+    // setter func
     setServerItems: (items: IShoppingItem[]) => void;
-
-    // アイテムのアクション
     setItems: (items: IShoppingItem[]) => void;
-
-    // カテゴリーのアクション
     setCategories: (categories: IShoppingCategory[]) => void;
-
-    // ローディング状態のアクション
     setIsLoadingCategories: (isLoading: boolean) => void;
     setIsLoadingItems: (isLoading: boolean) => void;
 
-    // ダイアログのアクション
+    // action func
     openDialog: <K extends keyof DialogPayload>(
         dialogName: K,
         payload: DialogPayload[K],
@@ -60,7 +48,7 @@ const initialDialogsState: DialogsState = {
 };
 
 export const useShoppingStore = create<ShoppingState>(set => ({
-    // 初期状態
+    // initial state
     serverItems: [],
     items: [],
     categories: [],
@@ -68,38 +56,39 @@ export const useShoppingStore = create<ShoppingState>(set => ({
     isLoadingItems: false,
     dialogs: initialDialogsState,
 
-    // サーバー状態のアクション
-    setServerItems: items => {
+    // setter func
+    setServerItems: (items: IShoppingItem[]) => {
         set({ serverItems: items });
     },
 
-    // アイテムのアクション
-    setItems: items => {
+    setItems: (items: IShoppingItem[]) => {
         set({ items });
     },
 
-    // カテゴリーのアクション
-    setCategories: categories => {
+    setCategories: (categories: IShoppingCategory[]) => {
         set({ categories });
     },
 
-    // ローディング状態のアクション
-    setIsLoadingCategories: isLoading => {
+    setIsLoadingCategories: (isLoading: boolean) => {
         set({ isLoadingCategories: isLoading });
     },
-    setIsLoadingItems: isLoading => {
+
+    setIsLoadingItems: (isLoading: boolean) => {
         set({ isLoadingItems: isLoading });
     },
 
-    // ダイアログのアクション
-    openDialog: (dialogName, payload) =>
+    // action func
+    openDialog: <K extends keyof DialogPayload>(
+        dialogName: K,
+        payload: DialogPayload[K],
+    ) =>
         set(state => ({
             dialogs: {
                 ...state.dialogs,
                 [dialogName]: { isOpen: true, payload },
             },
         })),
-    closeDialog: dialogName =>
+    closeDialog: (dialogName: keyof DialogPayload) =>
         set(state => ({
             dialogs: {
                 ...state.dialogs,

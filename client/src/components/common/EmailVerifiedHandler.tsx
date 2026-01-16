@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { useSnackbars } from '@/contexts';
+import { useSnackbars } from '@/hooks/useSnackbars';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 const EmailVerifiedHandler = () => {
