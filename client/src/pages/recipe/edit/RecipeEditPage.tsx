@@ -11,6 +11,7 @@ import {
     RecipeCategorySettingDialog,
     RecipeEditForm,
 } from '@/models/recipe/components';
+import type { RecipeEditFormRef } from '@/models/recipe/components/RecipeEditForm/RecipeEditForm';
 import { useGlobalStore } from '@/stores';
 import RecipeEditPageHeader from './RecipeEditPageHeader';
 import { useSnackbars } from '@/hooks/useSnackbars';
@@ -36,6 +37,7 @@ const RecipeEditPage = ({
     const { addSnackbar } = useSnackbars();
     const { isLoadings: isLoadingRecipe } = useRecipeStore();
     const { setIsLoading } = useGlobalStore();
+    const formRef = React.useRef<RecipeEditFormRef>(null);
 
     /**
      * ローディング状態を更新
@@ -75,9 +77,12 @@ const RecipeEditPage = ({
             <RecipeEditPageHeader
                 initialUserId={fetchRecipe?.userId}
                 users={fetchUsers ?? []}
+                onClickSaveButton={() => {
+                    formRef.current?.submit();
+                }}
             />
             <main>
-                <RecipeEditForm fetchRecipe={fetchRecipe} />
+                <RecipeEditForm ref={formRef} fetchRecipe={fetchRecipe} />
 
                 {/* 食材編集ダイアログ */}
                 <IngredientEditDialog />

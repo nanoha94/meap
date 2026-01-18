@@ -209,32 +209,29 @@ const RecipeDetailPage = ({
                     )}
                     {/* 手順 */}
                     {fetchRecipe?.steps && (
-                        <div className="flex flex-col gap-y-1">
-                            <div>手順</div>
-                            <ul className="grid grid-cols-[repeat(auto-fill,_minmax(180px,_1fr))] gap-5">
-                                {fetchRecipe?.steps.map((step, index) => (
-                                    <li key={step.id}>
-                                        <div className="flex flex-col gap-y-1">
-                                            <div>{index + 1}.&nbsp;</div>
-                                            {step.image && (
-                                                <div className="relative w-full h-auto aspect-[5/3] bg-gray-light rounded-lg overflow-hidden">
-                                                    <Image
-                                                        src={step.image.src}
-                                                        alt={step.instruction}
-                                                        width={step.image.width}
-                                                        height={step.image.height}
-                                                        className="absolute top-0 left-0 w-full h-full object-cover"
-                                                    />
-                                                </div>
-                                            )}
-                                            <div className="whitespace-pre-wrap">
-                                                {step.instruction}
+                        <ul className="grid grid-cols-[repeat(auto-fill,_minmax(180px,_1fr))] gap-5">
+                            {fetchRecipe?.steps.map((step, index) => (
+                                <li key={step.id}>
+                                    <div className="flex flex-col gap-y-1">
+                                        <div>{index + 1}.&nbsp;</div>
+                                        {step.image && (
+                                            <div className="relative w-full h-auto aspect-[5/3] bg-gray-light rounded-lg overflow-hidden">
+                                                <Image
+                                                    src={step.image.src}
+                                                    alt={step.instruction}
+                                                    width={step.image.width}
+                                                    height={step.image.height}
+                                                    className="absolute top-0 left-0 w-full h-full object-cover"
+                                                />
                                             </div>
+                                        )}
+                                        <div className="whitespace-pre-wrap">
+                                            {step.instruction}
                                         </div>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
                     )}
                 </div>
             </div>

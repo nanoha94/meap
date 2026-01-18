@@ -1,16 +1,18 @@
 'use client';
 
-import { Header } from '@/components/common';
+import { Header, HeaderTextButton } from '@/components/common';
 import StyledSelect from '@/components/common/StyledSelect';
 import { IUser } from '@/types/api';
+import { Save } from 'lucide-react';
 import { useState } from 'react';
 
-interface RecipeEditPageHeaderProps {
+interface Props {
     initialUserId?: string;
     users: IUser[];
+    onClickSaveButton: () => void;
 }
 
-const RecipeEditPageHeader = ({ initialUserId, users }: RecipeEditPageHeaderProps) => {
+const RecipeEditPageHeader = ({ initialUserId, users, onClickSaveButton }: Props) => {
     const [userId, setUserId] = useState(initialUserId ?? '');
 
     return (
@@ -27,6 +29,23 @@ const RecipeEditPageHeader = ({ initialUserId, users }: RecipeEditPageHeaderProp
                             setUserId(e.target.value);
                         }}
                     />
+                </div>
+            }
+            rightContent={
+                <div className='flex items-center gap-x-4'>
+                    <HeaderTextButton colorVariant="secondary"
+                        onClick={onClickSaveButton}>
+                        <Save size={20} strokeWidth={2} />
+                        保存
+                    </HeaderTextButton>
+                    {/* TODO: 外部公開 */}
+                    {/* <HeaderTextButton colorVariant="gray"
+                        onClick={() => {
+                            console.log('save');
+                        }}>
+                        <Earth size={20} strokeWidth={2} />
+                        外部公開
+                    </HeaderTextButton> */}
                 </div>
             }
         />

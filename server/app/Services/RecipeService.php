@@ -77,16 +77,8 @@ class RecipeService extends AbstractDomainService
         return [
             'id' => $item->id,
             'name' => $item->name,
-            'thumbnail' => $this->imageService->formatImage($item->thumbnails->first()),
-            'url' => $item->url,
-            'steps' => $this->formatRecipeSteps($item->steps->sortBy('order')),
-            'memo' => $item->memo,
-            'servingCount' => $item->serving_count,
             'categories' => $this->formatRecipeCategories($item->categories),
-            'ingredients' => $this->formatRecipeIngredients($item, $item->group),
-            'ownerUserId' => $item->owner_user_id,
-            'status' => $item->status,
-            'publishedRecipeId' => $item->published_recipe_id,
+            'thumbnail' => $this->imageService->formatImage($item->thumbnails->first()),
         ];
     }
 
@@ -124,8 +116,16 @@ class RecipeService extends AbstractDomainService
         return [
             'id' => $item->id,
             'name' => $item->name,
-            'categories' => $this->formatRecipeCategories($item->categories),
             'thumbnail' => $this->imageService->formatImage($item->thumbnails->first()),
+            'url' => $item->url,
+            'steps' => $this->formatRecipeSteps($item->steps->sortBy('order')),
+            'memo' => $item->memo,
+            'servingCount' => $item->serving_count,
+            'categories' => $this->formatRecipeCategories($item->categories),
+            'ingredients' => $this->formatRecipeIngredients($item, $item->group),
+            'ownerUserId' => $item->owner_user_id,
+            'status' => $item->status,
+            'publishedRecipeId' => $item->published_recipe_id,
         ];
     }
 
