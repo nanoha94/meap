@@ -14,8 +14,6 @@ interface Props<T extends FieldValues> {
 
 const sizeConfigs = {
     [STYLE_SIZE.SM]: {
-        width: 'w-[100px]',
-        aspectRatio: 'aspect-[5/4]',
         iconSmSize: 20,
         iconMdSize: 32,
         iconSmPadding: 'p-1.5',
@@ -23,8 +21,6 @@ const sizeConfigs = {
         iconTextGapY: 'gap-y-1',
     },
     [STYLE_SIZE.LG]: {
-        width: 'w-full',
-        aspectRatio: 'aspect-video',
         iconSmSize: 32,
         iconMdSize: 40,
         iconSmPadding: 'p-4',
@@ -108,13 +104,12 @@ const ImageEditField = <T extends FieldValues>({
     };
 
     return (
-        <div className={`flex flex-col gap-y-1 ${sizeConfigs[size].width}`}>
+        <div className="flex flex-col gap-y-1 w-full">
             <Controller
                 control={control}
                 name={name}
                 render={({ field: { onChange, value } }) => (
-                    <div
-                        className={`relative w-full h-auto ${sizeConfigs[size].aspectRatio} bg-gray-light rounded-lg transition-opcity`}>
+                    <div className="relative w-full h-auto aspect-[4/3] bg-gray-light rounded-lg transition-opcity">
                         {/* サムネイルが設定されている場合 */}
                         {value?.src && value?.src?.length > 0 ? (
                             <>

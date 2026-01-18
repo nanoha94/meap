@@ -1,10 +1,10 @@
 'use client';
 import React from 'react';
-import GrippableEditItem from '@/components/common/GrippableEditItem';
+import { GrippableVerticalItem } from '@/components/common';
 import { IRecipeStep } from '@/types/api';
 import { Control, Controller } from 'react-hook-form';
 import ImageEditField from '@/components/react-hook-form/ImageEditField';
-import { FLEX_ALIGN_ITEMS, STYLE_SIZE } from '@/constants';
+import { STYLE_SIZE } from '@/constants';
 import { RecipeEditFormData } from '@/models/recipe/types';
 
 interface Props {
@@ -42,41 +42,39 @@ const StepEditItem = ({
 
     return (
         <div className="flex flex-col gap-y-1">
-            <div className="flex gap-x-2">
-                <div>{index + 1}.</div>
-                <GrippableEditItem
-                    hasDeleteButton={true}
-                    isDisabledDeleteButton={isDisabledDeleteButton}
-                    onDelete={onDelete}
-                    className="flex-1"
-                    alignItems={FLEX_ALIGN_ITEMS.START}>
-                    <div className="py-2 px-4 flex-1 flex gap-x-2 bg-white border rounded-lg has-[:focus-visible]:outline has-[:focus-visible]:outline-1 has-[:focus-visible]:outline-offset-0">
-                        <Controller
-                            control={control}
-                            name={`steps.${index}.instruction`}
-                            render={({ field: { onChange, value } }) => (
-                                <textarea
-                                    ref={textareaRef}
-                                    data-item-id={item.id}
-                                    value={(value as string) ?? ''}
-                                    rows={4}
-                                    placeholder="説明文を入力"
-                                    onChange={e => {
-                                        onChange(e);
-                                        adjustTextareaHeight(e.target);
-                                    }}
-                                    className="flex-1 outline-none resize-none overflow-hidden"
-                                />
-                            )}
-                        />
-                        <ImageEditField
-                            control={control}
-                            name={`steps.${index}.image`}
-                            size={STYLE_SIZE.SM}
-                        />
-                    </div>
-                </GrippableEditItem>
-            </div>
+            <GrippableVerticalItem
+                order={index + 1}
+                hasDeleteButton={true}
+                isDisabledDeleteButton={isDisabledDeleteButton}
+                onDelete={onDelete}
+                className="flex-1">
+                <div className="flex flex-col gap-y-2">
+                    <ImageEditField
+                        control={control}
+                        name={`steps.${index}.image`}
+                        size={STYLE_SIZE.SM}
+                    />
+
+                    <Controller
+                        control={control}
+                        name={`steps.${index}.instruction`}
+                        render={({ field: { onChange, value } }) => (
+                            <textarea
+                                ref={textareaRef}
+                                data-item-id={item.id}
+                                value={(value as string) ?? ''}
+                                rows={4}
+                                placeholder="説明文を入力"
+                                onChange={e => {
+                                    onChange(e);
+                                    adjustTextareaHeight(e.target);
+                                }}
+                                className="flex-1 py-2 px-4  border rounded-lg resize-none overflow-hidden"
+                            />
+                        )}
+                    />
+                </div>
+            </GrippableVerticalItem>
             {errorMessage && (
                 <p className="text-alert-main text-sm">{errorMessage}</p>
             )}

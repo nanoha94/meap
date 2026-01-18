@@ -1,13 +1,16 @@
 'use client';
 import React from 'react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
-import { Button, TextButton } from '@/components/common';
+import {
+    Button,
+    TextButton,
+    GrippableHorizontalItem,
+} from '@/components/common';
 import { CirclePlus } from 'lucide-react';
 import { DndSortableList } from '@/components/dnd';
-import { TMP_ID_PREFIX } from '@/constants';
+import { DND_SORTABLE_LIST_TYPE, TMP_ID_PREFIX } from '@/constants';
 import { defaultIngredientCategory } from '@/models/ingredient/constants';
 import { IIngredientCategory } from '@/types/api';
-import GrippableEditItem from '@/components/common/GrippableEditItem';
 import { useIngredientCatgoryApi } from '../../hooks';
 
 interface Props {
@@ -106,13 +109,14 @@ const EditForm: React.FC<Props> = ({ onClose }) => {
             <div className="w-full flex flex-col gap-y-5">
                 <div className="flex flex-col gap-y-2">
                     <DndSortableList
+                        type={DND_SORTABLE_LIST_TYPE.LIST}
                         items={fields}
                         prefix={prefix}
                         onDragEnd={(oldIndex, newIndex) => {
                             move(oldIndex, newIndex);
                         }}
                         renderItem={(item, index) => (
-                            <GrippableEditItem
+                            <GrippableHorizontalItem
                                 hasDeleteButton={true}
                                 isDisabledDeleteButton={item.isDefault}
                                 onDelete={() => remove(index)}>
@@ -129,7 +133,7 @@ const EditForm: React.FC<Props> = ({ onClose }) => {
                                         />
                                     )}
                                 />
-                            </GrippableEditItem>
+                            </GrippableHorizontalItem>
                         )}
                     />
                 </div>

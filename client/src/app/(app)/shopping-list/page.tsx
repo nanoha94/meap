@@ -31,9 +31,7 @@ async function ShoppingListsWithData() {
             {errorMessage && (
                 <SnackbarHandler type="error" message={errorMessage} />
             )}
-            <Header title="買い物リスト">
-                <HeaderButton />
-            </Header>
+            <Header title="買い物リスト" rightContent={<HeaderButton />} />
             <main>
                 <ShoppingListPage
                     fetchItems={items?.data ?? []}

@@ -1,9 +1,8 @@
 'use client';
-import HeaderTextButton from '@/components/common/HeaderTextButtons/HeaderTextButton';
 import { Trash } from 'lucide-react';
 import React from 'react';
 import { useRecipeApi } from '../../hooks/useRecipeApi';
-import { AlertDialog } from '@/components/common';
+import { AlertDialog, HeaderTextButton } from '@/components/common';
 import { AlertDialogData } from '@/types/dialog';
 import { ALERT_DIALOG_STATE_DEFAULT } from '@/constants';
 

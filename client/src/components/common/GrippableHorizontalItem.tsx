@@ -1,5 +1,5 @@
 'use client';
-import { colors, FLEX_ALIGN_ITEMS } from '@/constants';
+import { colors } from '@/constants';
 import { GripVertical, Trash } from 'lucide-react';
 
 interface Props {
@@ -7,33 +7,19 @@ interface Props {
     isDisabledDeleteButton?: boolean;
     onDelete: () => void;
     children: React.ReactNode;
-    alignItems?: (typeof FLEX_ALIGN_ITEMS)[keyof typeof FLEX_ALIGN_ITEMS];
     className?: string;
 }
 
-const styleConfigs = {
-    [FLEX_ALIGN_ITEMS.START]: {
-        paddingTop: 'pt-1',
-    },
-    [FLEX_ALIGN_ITEMS.CENTER]: {
-        paddingTop: '',
-    },
-};
-
-const GrippableEditItem: React.FC<Props> = ({
+const GrippableHorizontalItem: React.FC<Props> = ({
     hasDeleteButton = false,
     isDisabledDeleteButton = false,
     onDelete,
     children,
-    alignItems = 'center',
     className = '',
 }) => {
     return (
-        <div className={`flex items-${alignItems} gap-x-2 ${className}`}>
-            <GripVertical
-                color={colors.gray.main}
-                className={styleConfigs[alignItems].paddingTop}
-            />
+        <div className={`flex items-center gap-x-2 ${className}`}>
+            <GripVertical color={colors.gray.main} />
             {children}
             {hasDeleteButton && (
                 <button
@@ -48,4 +34,4 @@ const GrippableEditItem: React.FC<Props> = ({
     );
 };
 
-export default GrippableEditItem;
+export default GrippableHorizontalItem;

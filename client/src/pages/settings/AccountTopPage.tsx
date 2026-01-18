@@ -1,4 +1,5 @@
 'use client';
+import React from 'react';
 import { TextButton } from '@/components/common';
 import { InvitationDialog } from '@/models/settings/components';
 import { useAccountStore } from '@/models/settings/hooks';
@@ -11,8 +12,12 @@ interface Props {
 }
 
 const AccountTopPage = ({ users }: Props) => {
-    const { openDialog, loginUser } = useAccountStore();
+    const { openDialog, loginUser, setUsers } = useAccountStore();
     const { iconAvatar } = useAccountHandlers();
+
+    React.useEffect(() => {
+        setUsers(users);
+    }, [users]);
 
     return (
         <div className="p-5 flex flex-col">

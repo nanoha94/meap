@@ -19,3 +19,8 @@ export const TOUCH_ACTIVATION_DELAY = 250;
  * スクロールとドラッグを区別するために使用
  */
 export const TOUCH_ACTIVATION_TOLERANCE = 5;
+
+export enum DND_SORTABLE_LIST_TYPE {
+    GRID = 'grid',
+    LIST = 'list',
+}

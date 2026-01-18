@@ -104,7 +104,7 @@ const IngredientItemList = ({
                 onClick={openEditDialog}
                 className="!border-none !bg-transparent hover:!bg-gray-light">
                 <CirclePlus size={20} />
-                追加
+                {category.name}を追加
             </TextButton>
         </>
     );

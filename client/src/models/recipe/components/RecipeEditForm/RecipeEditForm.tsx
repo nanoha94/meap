@@ -18,6 +18,11 @@ interface Props {
     fetchRecipe?: IRecipe;
 }
 
+const lineTitleWrapperStyle =
+    "relative w-full mx-auto flex justify-center after:content-[''] after:absolute after:top-1/2 after:left-0 after:translate-y-[-50%] after:block after:w-full after:h-[1px] after:bg-gray-main";
+
+const lineTitleStyle = 'z-10 px-5 text-2xl bg-primary-background';
+
 const RecipeEditForm = ({ fetchRecipe }: Props) => {
     const router = useRouter();
     const {
@@ -34,16 +39,17 @@ const RecipeEditForm = ({ fetchRecipe }: Props) => {
         <FormProvider {...methods}>
             <form
                 onSubmit={onSubmit}
-                className="p-5 pb-[60px] max-w-[1000px] mx-auto grid grid-cols-1 gap-x-10 gap-y-5 md:px-10 md:grid-cols-2">
-                <div className="flex-1 flex flex-col gap-y-5">
+                className="p-5 pb-[60px] max-w-[1000px] mx-auto grid grid-cols-1 gap-14 md:px-10 md:grid-cols-2">
+                <div>
                     {/* サムネイル画像 */}
                     <ImageEditField control={control} name="thumbnail" />
+                </div>
+                <div className="flex-1 flex flex-col gap-y-5">
                     {/* 料理名 */}
                     <VerticalRowField
                         control={control}
                         name="name"
-                        label="料理名"
-                        required={true}>
+                        label="料理名">
                         {({ value, onChange }) => (
                             <input
                                 type="text"
@@ -56,6 +62,26 @@ const RecipeEditForm = ({ fetchRecipe }: Props) => {
                     </VerticalRowField>
                     {/* カテゴリー */}
                     <CategoryEditFields control={control} />
+                    {/* メモ */}
+                    <VerticalRowField
+                        control={control}
+                        name="memo"
+                        label="メモ">
+                        {({ value, onChange }) => (
+                            <textarea
+                                value={(value as string) ?? ''}
+                                rows={5}
+                                placeholder="メモを入力"
+                                onChange={e => onChange(e)}
+                                className="py-2 px-4 border rounded-lg"
+                            />
+                        )}
+                    </VerticalRowField>
+                </div>
+                <div className="flex-1 flex flex-col gap-y-8">
+                    <div className={lineTitleWrapperStyle}>
+                        <span className={lineTitleStyle}>材料</span>
+                    </div>
                     {/* 分量目安 */}
                     <VerticalRowField
                         control={control}
@@ -75,10 +101,13 @@ const RecipeEditForm = ({ fetchRecipe }: Props) => {
                             </div>
                         )}
                     </VerticalRowField>
-                    {/* 食材 */}
+                    {/* 材料 */}
                     <IngredientEditFields control={control} />
                 </div>
-                <div className="flex-1 flex flex-col gap-y-5">
+                <div className="flex-1 flex flex-col gap-y-8">
+                    <div className={lineTitleWrapperStyle}>
+                        <span className={lineTitleStyle}>作り方</span>
+                    </div>
                     {/* レシピURL */}
                     <VerticalRowField
                         control={control}
@@ -123,21 +152,7 @@ const RecipeEditForm = ({ fetchRecipe }: Props) => {
                     </VerticalRowField>
                     {/* 手順 */}
                     <StepEditFields control={control} errors={errors} />
-                    {/* メモ */}
-                    <VerticalRowField
-                        control={control}
-                        name="memo"
-                        label="メモ">
-                        {({ value, onChange }) => (
-                            <textarea
-                                value={(value as string) ?? ''}
-                                rows={5}
-                                placeholder="メモを入力"
-                                onChange={e => onChange(e)}
-                                className="py-2 px-4 border rounded-lg"
-                            />
-                        )}
-                    </VerticalRowField>
+                    {/* TODO: ヘッダーにボタンを移動する */}
                     <div className="ml-auto mr-0 max-w-[200px] w-full flex gap-x-3">
                         <Button
                             type="button"

@@ -3717,7 +3717,28 @@ test('3-8-141: 【更新】 他グループの料理更新', function () {
     $response->assertStatus(404);
 });
 
-test('3-8-142: 【更新】 未認証ユーザー', function () {
+test('3-8-142: 【更新】 同一グループの他ユーザーの料理更新', function () {
+    // 同一グループの別のユーザーを作成
+    $otherUser = User::factory()->create(['email_verified_at' => now()]);
+    $this->group->users()->attach($otherUser->id);
+
+    // そのユーザーが作成したレシピ
+    $otherRecipe = Recipe::create([
+        'group_id' => $this->group->id,
+        'owner_user_id' => $otherUser->id,
+        'name' => '他人のレシピ',
+        'serving_count' => 2
+    ]);
+
+    $data = ['name' => '勝手に更新', 'servingCount' => 4];
+
+    // 別のユーザー（自分）で更新を試みる
+    $response = $this->actingAs($this->user)->put("/recipes/{$otherRecipe->id}", $data);
+
+    $response->assertStatus(403);
+});
+
+test('3-8-143: 【更新】 未認証ユーザー', function () {
     $data = ['name' => 'カレーライス', 'servingCount' => 4];
 
     $response = $this->put('/recipes/00000000-0000-0000-0000-000000000000', $data);
@@ -3726,7 +3747,7 @@ test('3-8-142: 【更新】 未認証ユーザー', function () {
     $response->assertJson(['success' => false, 'message' => '認証が必要です。']);
 });
 
-test('3-8-143: 【更新】 グループが存在しない', function () {
+test('3-8-144: 【更新】 グループが存在しない', function () {
     $user = User::factory()->create(['email_verified_at' => now()]);
     $data = ['name' => 'カレーライス', 'servingCount' => 4];
 
@@ -3736,7 +3757,7 @@ test('3-8-143: 【更新】 グループが存在しない', function () {
     $response->assertJson(['success' => false, 'message' => 'ユーザーはグループに所属していません。']);
 });
 
-test('3-8-144: 【更新】 データベース接続エラー', function () {
+test('3-8-145: 【更新】 データベース接続エラー', function () {
     $this->mock(\App\Services\RecipeService::class, function ($mock) {
         $mock->shouldReceive('update')->once()->andThrow(new \Exception('Database connection failed'));
     });
@@ -3751,7 +3772,7 @@ test('3-8-144: 【更新】 データベース接続エラー', function () {
 
 // ===== destroy() メソッドのテストケース =====
 
-test('3-8-145: 【削除】 正常な料理削除', function () {
+test('3-8-146: 【削除】 正常な料理削除', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', ['name' => 'カレーライス', 'servingCount' => 4]);
     $recipeId = $createResponse->json('data.id');
 
@@ -3770,7 +3791,7 @@ test('3-8-145: 【削除】 正常な料理削除', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-8-146: 【削除】 削除成功メッセージの確認', function () {
+test('3-8-147: 【削除】 削除成功メッセージの確認', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', ['name' => 'カレーライス', 'servingCount' => 4]);
     $recipeId = $createResponse->json('data.id');
 
@@ -3783,7 +3804,7 @@ test('3-8-146: 【削除】 削除成功メッセージの確認', function () {
     expect($message)->toContain('カレーライス');
 });
 
-test('3-8-147: 【削除】 存在しない料理削除', function () {
+test('3-8-148: 【削除】 存在しない料理削除', function () {
     $response = $this->actingAs($this->user)->delete('/recipes/00000000-0000-0000-0000-000000000000');
 
     $response->assertStatus(404);
@@ -3796,7 +3817,7 @@ test('3-8-147: 【削除】 存在しない料理削除', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-8-148: 【削除】 他グループの料理削除', function () {
+test('3-8-149: 【削除】 他グループの料理削除', function () {
     $otherUser = User::factory()->create(['email_verified_at' => now()]);
     $otherGroup = Group::create(['group_size' => 1]);
     DB::table('group_user_mappings')->insert(['user_id' => $otherUser->id, 'group_id' => $otherGroup->id]);
@@ -3814,7 +3835,26 @@ test('3-8-148: 【削除】 他グループの料理削除', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-8-149: 【削除】 未認証ユーザー', function () {
+test('3-8-150: 【削除】 同一グループの他ユーザーの料理削除', function () {
+    // 同一グループの別のユーザーを作成
+    $otherUser = User::factory()->create(['email_verified_at' => now()]);
+    $this->group->users()->attach($otherUser->id);
+
+    // そのユーザーが作成したレシピ
+    $otherRecipe = Recipe::create([
+        'group_id' => $this->group->id,
+        'owner_user_id' => $otherUser->id,
+        'name' => '他人のレシピ',
+        'serving_count' => 2
+    ]);
+
+    // 別のユーザー（自分）で削除を試みる
+    $response = $this->actingAs($this->user)->delete("/recipes/{$otherRecipe->id}");
+
+    $response->assertStatus(403);
+});
+
+test('3-8-151: 【削除】 未認証ユーザー', function () {
     $response = $this->delete('/recipes/00000000-0000-0000-0000-000000000000');
 
     $response->assertStatus(401);
@@ -3827,7 +3867,7 @@ test('3-8-149: 【削除】 未認証ユーザー', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-8-150: 【削除】 グループが存在しない', function () {
+test('3-8-152: 【削除】 グループが存在しない', function () {
     $user = User::factory()->create(['email_verified_at' => now()]);
 
     $response = $this->actingAs($user)->delete('/recipes/00000000-0000-0000-0000-000000000000');
@@ -3842,7 +3882,7 @@ test('3-8-150: 【削除】 グループが存在しない', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-8-151: 【削除】 データベース接続エラー', function () {
+test('3-8-153: 【削除】 データベース接続エラー', function () {
     $this->mock(\App\Services\RecipeService::class, function ($mock) {
         $mock->shouldReceive('delete')->once()->andThrow(new \Exception('Database connection failed'));
     });

@@ -1,14 +1,15 @@
-import { Header, Loading } from '@/components/common';
+import { Loading } from '@/components/common';
 import { SnackbarHandler } from '@/components/handlers';
-import { Suspense } from 'react';
-import { HeaderRecipeDeleteButton } from '@/models/recipe/components';
 import { apiClient, fetchDataParallel } from '@/lib/apiClient';
+import RecipeEditPage from '@/pages/recipe/RecipeEditPage';
 import {
-    IGetRecipeShowResponse,
+    IGetGroupUserResponse,
     IGetIngredientCategoryIndexResponse,
+    IGetRecipeShowResponse,
+    IUser,
 } from '@/types/api';
-import { notFound } from 'next/navigation';
-import RecipeDetailPage from '@/pages/recipe/RecipeDetailPage';
+import { Suspense } from 'react';
+import EditHeader from './EditHeader';
 
 interface Props {
     params: Promise<{ id: string }>;
@@ -19,7 +20,11 @@ interface PageWithDataProps {
 }
 const PageWithData = async ({ id }: PageWithDataProps) => {
     const { data, errorMessage } = await fetchDataParallel<
-        [IGetRecipeShowResponse, IGetIngredientCategoryIndexResponse]
+        [
+            IGetRecipeShowResponse,
+            IGetIngredientCategoryIndexResponse,
+            IGetGroupUserResponse,
+        ]
     >([
         signal =>
             apiClient<IGetRecipeShowResponse>(`/recipes/${id}`, { signal }),
@@ -28,34 +33,28 @@ const PageWithData = async ({ id }: PageWithDataProps) => {
                 '/ingredient-categories',
                 { signal },
             ),
+        signal => apiClient<IGetGroupUserResponse>('/users', { signal }),
     ]);
 
-    if (errorMessage || !data) {
-        notFound();
-    }
-
-    const [recipe, ingredientCategories] = data;
+    const [recipe, ingredientCategories, users] = data ?? [
+        null,
+        null,
+        { data: [], total: 0 },
+    ];
 
     return (
         <>
-            <Header
-                title="料理/レシピ"
-                rightContent={
-                    <div className="flex items-center gap-x-4">
-                        <HeaderRecipeDeleteButton
-                            id={id}
-                            name={recipe.data.name}
-                        />
-                    </div>
-                }
+            <EditHeader
+                initialUserId={recipe?.data?.userId as string}
+                users={users.data as IUser[]}
             />
             <main>
                 {errorMessage && (
                     <SnackbarHandler type="error" message={errorMessage} />
                 )}
-                <RecipeDetailPage
-                    fetchRecipe={recipe.data}
-                    fetchIngredientCategories={ingredientCategories.data}
+                <RecipeEditPage
+                    fetchRecipe={recipe?.data}
+                    fetchIngredientCategories={ingredientCategories?.data}
                 />
             </main>
         </>

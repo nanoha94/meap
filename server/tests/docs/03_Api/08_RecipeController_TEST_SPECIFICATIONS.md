@@ -149,16 +149,18 @@ RecipeController のテストケースの詳細仕様を示します。料理の
 | 3-8-139 | 【更新】 他グループの画像 ID 指定（steps.\*.imageId）                             | 異常系 | 他グループの画像 ID を steps.\*.imageId に指定          | HTTP 404 Not Found                    | `RecipeController::update()`   |
 | 3-8-140 | 【更新】 存在しない料理更新                                                       | 異常系 | 存在しない料理 ID を提供                                | HTTP 404 Not Found                    | `RecipeController::update()`   |
 | 3-8-141 | 【更新】 他グループの料理更新                                                     | 異常系 | 他グループの料理 ID を提供                              | HTTP 404 Not Found                    | `RecipeController::update()`   |
-| 3-8-142 | 【更新】 未認証ユーザー                                                           | 異常系 | 認証されていないユーザー                                | HTTP 401 Unauthorized                 | `RecipeController::update()`   |
-| 3-8-143 | 【更新】 グループが存在しない                                                     | 異常系 | ユーザーにグループが紐づいていない                      | HTTP 422 Unprocessable Entity         | `RecipeController::update()`   |
-| 3-8-144 | 【更新】 データベース接続エラー                                                   | 異常系 | データベース接続が失敗                                  | HTTP 500 Internal Server Error        | `RecipeController::update()`   |
-| 3-8-145 | 【削除】 正常な料理削除                                                           | 正常系 | 有効な料理 ID を提供                                    | HTTP 200 JSON success                 | `RecipeController::destroy()`  |
-| 3-8-146 | 【削除】 削除成功メッセージの確認                                                 | 正常系 | 正常な料理削除後                                        | 料理名を含むメッセージが返される      | `RecipeController::destroy()`  |
-| 3-8-147 | 【削除】 存在しない料理削除                                                       | 異常系 | 存在しない料理 ID を提供                                | HTTP 404 Not Found                    | `RecipeController::destroy()`  |
-| 3-8-148 | 【削除】 他グループの料理削除                                                     | 異常系 | 他グループの料理 ID を提供                              | HTTP 404 Not Found                    | `RecipeController::destroy()`  |
-| 3-8-149 | 【削除】 未認証ユーザー                                                           | 異常系 | 認証されていないユーザー                                | HTTP 401 Unauthorized                 | `RecipeController::destroy()`  |
-| 3-8-150 | 【削除】 グループが存在しない                                                     | 異常系 | ユーザーにグループが紐づいていない                      | HTTP 422 Unprocessable Entity         | `RecipeController::destroy()`  |
-| 3-8-151 | 【削除】 データベース接続エラー                                                   | 異常系 | データベース接続が失敗                                  | HTTP 500 Internal Server Error        | `RecipeController::destroy()`  |
+| 3-8-142 | 【更新】 同一グループの他ユーザーの料理更新                                       | 異常系 | 同一グループ内の他ユーザーの料理 ID を提供              | HTTP 403 Forbidden                    | `RecipeController::update()`   |
+| 3-8-143 | 【更新】 未認証ユーザー                                                           | 異常系 | 認証されていないユーザー                                | HTTP 401 Unauthorized                 | `RecipeController::update()`   |
+| 3-8-144 | 【更新】 グループが存在しない                                                     | 異常系 | ユーザーにグループが紐づいていない                      | HTTP 422 Unprocessable Entity         | `RecipeController::update()`   |
+| 3-8-145 | 【更新】 データベース接続エラー                                                   | 異常系 | データベース接続が失敗                                  | HTTP 500 Internal Server Error        | `RecipeController::update()`   |
+| 3-8-146 | 【削除】 正常な料理削除                                                           | 正常系 | 有効な料理 ID を提供                                    | HTTP 200 JSON success                 | `RecipeController::destroy()`  |
+| 3-8-147 | 【削除】 削除成功メッセージの確認                                                 | 正常系 | 正常な料理削除後                                        | 料理名を含むメッセージが返される      | `RecipeController::destroy()`  |
+| 3-8-148 | 【削除】 存在しない料理削除                                                       | 異常系 | 存在しない料理 ID を提供                                | HTTP 404 Not Found                    | `RecipeController::destroy()`  |
+| 3-8-149 | 【削除】 他グループの料理削除                                                     | 異常系 | 他グループの料理 ID を提供                              | HTTP 404 Not Found                    | `RecipeController::destroy()`  |
+| 3-8-150 | 【削除】 同一グループの他ユーザーの料理削除                                       | 異常系 | 同一グループ内の他ユーザーの料理 ID を提供              | HTTP 403 Forbidden                    | `RecipeController::destroy()`  |
+| 3-8-151 | 【削除】 未認証ユーザー                                                           | 異常系 | 認証されていないユーザー                                | HTTP 401 Unauthorized                 | `RecipeController::destroy()`  |
+| 3-8-152 | 【削除】 グループが存在しない                                                     | 異常系 | ユーザーにグループが紐づいていない                      | HTTP 422 Unprocessable Entity         | `RecipeController::destroy()`  |
+| 3-8-153 | 【削除】 データベース接続エラー                                                   | 異常系 | データベース接続が失敗                                  | HTTP 500 Internal Server Error        | `RecipeController::destroy()`  |
 
 ## テスト実行方法
 

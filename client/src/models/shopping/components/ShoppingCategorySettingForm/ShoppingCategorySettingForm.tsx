@@ -1,13 +1,16 @@
 'use client';
-import { Button, TextButton } from '@/components/common';
+import {
+    Button,
+    TextButton,
+    GrippableHorizontalItem,
+} from '@/components/common';
 import { DndSortableList } from '@/components/dnd';
 import { CirclePlus } from 'lucide-react';
 import React from 'react';
 import { IShoppingCategory } from '@/types/api';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { useShoppingCategoryApi } from '../../hooks';
-import { TMP_ID_PREFIX } from '@/constants';
-import GrippableEditItem from '@/components/common/GrippableEditItem';
+import { DND_SORTABLE_LIST_TYPE, TMP_ID_PREFIX } from '@/constants';
 
 interface FormData {
     categories: IShoppingCategory[];
@@ -107,13 +110,14 @@ const ShoppingCategorySettingForm: React.FC<Props> = ({ onClose }) => {
             <div className="w-full flex flex-col gap-y-5">
                 <div className="flex flex-col gap-y-2">
                     <DndSortableList
+                        type={DND_SORTABLE_LIST_TYPE.LIST}
                         items={fields}
                         prefix={prefix}
                         onDragEnd={(oldIndex, newIndex) =>
                             move(oldIndex, newIndex)
                         }
                         renderItem={(item, index) => (
-                            <GrippableEditItem
+                            <GrippableHorizontalItem
                                 hasDeleteButton={true}
                                 isDisabledDeleteButton={item.isDefault}
                                 onDelete={() => remove(index)}>
@@ -130,7 +134,7 @@ const ShoppingCategorySettingForm: React.FC<Props> = ({ onClose }) => {
                                         />
                                     )}
                                 />
-                            </GrippableEditItem>
+                            </GrippableHorizontalItem>
                         )}
                     />
                 </div>

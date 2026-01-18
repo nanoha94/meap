@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 import { DndSortableList } from '@/components/dnd';
-import { TMP_ID_PREFIX } from '@/constants';
+import { DND_SORTABLE_LIST_TYPE, TMP_ID_PREFIX } from '@/constants';
 import { defaultRecipeStep } from '@/models/recipe/constants';
 import { createDefaultData, focusItemById } from '@/utils';
 import { useFocusItem } from '@/hooks/useFocusItem';
@@ -91,34 +91,41 @@ const StepEditFields = ({ control, errors }: Props) => {
         <>
             <div className="flex flex-col gap-y-2">
                 <div>手順</div>
-                <DndSortableList
-                    items={fields}
-                    prefix={prefix}
-                    onDragEnd={(oldIndex, newIndex) => move(oldIndex, newIndex)}
-                    renderItem={(item, index) =>
-                        watchSteps[index] && (
-                            <StepEditItem
-                                control={control}
-                                index={index}
-                                item={watchSteps[index]}
-                                onDelete={() => removeItem(index)}
-                                isDisabledDeleteButton={
-                                    index === 0 &&
-                                    watchSteps.length === 1 &&
-                                    item.instruction === '' &&
-                                    item.image?.src.length === 0
-                                }
-                                errorMessage={errors?.[`steps.${index}`] ?? ''}
-                            />
-                        )
-                    }
-                />
+                <div className="grid grid-cols-[repeat(auto-fill,_minmax(150px,_1fr))] gap-3">
+                    <DndSortableList
+                        type={DND_SORTABLE_LIST_TYPE.GRID}
+                        items={fields}
+                        prefix={prefix}
+                        onDragEnd={(oldIndex, newIndex) =>
+                            move(oldIndex, newIndex)
+                        }
+                        renderItem={(item, index) =>
+                            watchSteps[index] && (
+                                <StepEditItem
+                                    control={control}
+                                    index={index}
+                                    item={watchSteps[index]}
+                                    onDelete={() => removeItem(index)}
+                                    isDisabledDeleteButton={
+                                        index === 0 &&
+                                        watchSteps.length === 1 &&
+                                        item.instruction === '' &&
+                                        item.image?.src.length === 0
+                                    }
+                                    errorMessage={
+                                        errors?.[`steps.${index}`] ?? ''
+                                    }
+                                />
+                            )
+                        }
+                    />
+                </div>
                 <TextButton
                     type="button"
                     onClick={addEmptyItem}
                     className="!border-none !bg-transparent hover:!bg-gray-light">
                     <CirclePlus size={20} />
-                    追加
+                    手順を追加
                 </TextButton>
             </div>
         </>

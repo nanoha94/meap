@@ -17,21 +17,21 @@ const StyledSelect = ({
     isShowPlaceholder = true,
 }: Props) => {
     return (
-        <div className="relative">
+        <div className="relative w-full">
             <select
                 value={value}
                 onChange={e => {
                     onChange(e);
                 }}
                 id={name}
-                className={`py-2 px-4 w-full border rounded-lg border-gray-main appearance-none outline-none cursor-pointer
+                className={`py-2 pl-4 pr-10 w-full border rounded-lg border-gray-main appearance-none outline-none cursor-pointer
                     ${value === '' ? 'text-gray-placeholder' : 'text-black'}
                 `}>
                 {isShowPlaceholder && (
                     <option value="">--選択してください--</option>
                 )}
                 {options.map(v => (
-                    <option key={v.id} value={v.id} className="text-black">
+                    <option key={v.id} value={v.id} className="text-black">                     
                         {v.name}
                     </option>
                 ))}

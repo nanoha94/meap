@@ -1,4 +1,4 @@
-import { IGetUserResponse } from '@/types/api';
+import { IGetUserResponse, IUser } from '@/types/api';
 import { create } from 'zustand';
 
 type DialogPayload = {
@@ -14,21 +14,21 @@ type DialogsState = {
 };
 
 interface AccountState {
-    // ダイアログの状態
-    dialogs: DialogsState;
+    // state
+    dialogs: DialogsState; // ダイアログの状態
+    loginUser: IGetUserResponse; // ログインユーザー
+    users: IUser[]; // グループ内ユーザー一覧
 
-    // ログインユーザー
-    loginUser: IGetUserResponse;
+    // setter func
+    setLoginUser: (loginUser: IGetUserResponse) => void;
+    setUsers: (users: IUser[]) => void;
 
-    // ダイアログのアクション
+    // action func
     openDialog: <K extends keyof DialogPayload>(
         dialogName: K,
         payload: DialogPayload[K],
     ) => void;
     closeDialog: (dialogName: keyof DialogPayload) => void;
-
-    // ログインユーザーのアクション
-    setLoginUser: (loginUser: IGetUserResponse) => void;
 }
 
 const initialDialogsState: DialogsState = {
@@ -37,11 +37,16 @@ const initialDialogsState: DialogsState = {
 };
 
 export const useAccountStore = create<AccountState>(set => ({
-    // 初期状態
+    // initial state
     dialogs: initialDialogsState,
     loginUser: {} as IGetUserResponse,
+    users: [] as IUser[],
 
-    // ダイアログのアクション
+    // setter func
+    setLoginUser: loginUser => set({ loginUser }),
+    setUsers: users => set({ users }),
+
+    // action func
     openDialog: (dialogName, payload) =>
         set(state => ({
             dialogs: {
@@ -59,7 +64,4 @@ export const useAccountStore = create<AccountState>(set => ({
                 },
             },
         })),
-
-    // ログインユーザーのアクション
-    setLoginUser: loginUser => set({ loginUser }),
 }));

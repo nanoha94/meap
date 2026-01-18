@@ -5,7 +5,7 @@ import { Pencil } from 'lucide-react';
 import { IIngredientItem } from '@/types/api';
 import { EDIT_MODE, DIALOG_NAME } from '@/constants';
 import { useIngredientStore } from '@/models/ingredient/hooks/ingredientStores';
-import GrippableEditItem from '@/components/common/GrippableEditItem';
+import { GrippableHorizontalItem } from '@/components/common';
 
 interface Props {
     item: IIngredientItem;
@@ -51,7 +51,7 @@ function IngredientEditDialogButton({
 
     return (
         <>
-            <GrippableEditItem
+            <GrippableHorizontalItem
                 hasDeleteButton={true}
                 isDisabledDeleteButton={isDisabled}
                 onDelete={onDelete}>
@@ -82,7 +82,7 @@ function IngredientEditDialogButton({
                         />
                     </button>
                 </div>
-            </GrippableEditItem>
+            </GrippableHorizontalItem>
         </>
     );
 }

@@ -72,6 +72,7 @@ export interface IRecipeStep {
 // レシピ
 export interface IRecipe {
     id: string;
+    userId: string;
     name: string;
     url: string;
     memo: string;
