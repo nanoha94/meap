@@ -11,7 +11,7 @@ export type IGetInvitationDetailResponse = IBaseApiResponse<IInvitation>;
 export type IPostInvitaionResponse =  IBaseApiResponse<Omit<IInvitation, 'inviter'>>;
 
 // グループへの参加
-export type IPostInvitationJoinResponse = IBase<null>;
+export type IPostInvitationJoinResponse = IBaseApiResponse<null>;
 
 //--------------------------------
 // データ型

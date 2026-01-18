@@ -1,12 +1,12 @@
 'use client';
-import { CalendarDays, CirclePlus, Pencil } from 'lucide-react';
-import itemOpenStyles from '@/styles/itemOpen.module.css';
 import React from 'react';
-import { LucideIconWrapper, HeaderTextButton } from '@/components/common';
-import { colors, EDIT_MODE, DIALOG_NAME } from '@/constants';
-import { useShoppingStore } from '../../hooks';
+import itemOpenStyles from '@/styles/itemOpen.module.css';
+import { Header, HeaderTextButton, LucideIconWrapper } from '@/components/common';
+import { colors, DIALOG_NAME, EDIT_MODE } from '@/constants';
+import { useShoppingStore } from '@/models/shopping/hooks';
+import { CalendarDays, CirclePlus, Pencil } from 'lucide-react';
 
-const HeaderButton = () => {
+const ShoppingListPageHeader = () => {
     const { openDialog } = useShoppingStore();
     const [isOpen, setIsOpen] = React.useState<boolean>(false);
     const containerRef = React.useRef<HTMLDivElement>(null);
@@ -16,7 +16,7 @@ const HeaderButton = () => {
             label: '献立から追加',
             icon: <CalendarDays />,
             // TODO: 実装
-            onClick: () => {},
+            onClick: () => { },
         },
         {
             label: 'テキストで追加',
@@ -54,8 +54,9 @@ const HeaderButton = () => {
         };
     }, [isOpen]);
 
+
     return (
-        <div className="relative leading-none">
+        <Header title="買い物リスト" rightContent={<div className="relative leading-none">
             <HeaderTextButton
                 disabled={isOpen}
                 colorVariant="secondary"
@@ -65,9 +66,8 @@ const HeaderButton = () => {
             </HeaderTextButton>
             <div
                 ref={containerRef}
-                className={`z-10 absolute top-10 right-0 py-1 flex flex-col items-start bg-white rounded border border-gray-main shadow-lg  ${
-                    isOpen ? itemOpenStyles.open : itemOpenStyles.close
-                }`}>
+                className={`z-10 absolute top-10 right-0 py-1 flex flex-col items-start bg-white rounded border border-gray-main shadow-lg  ${isOpen ? itemOpenStyles.open : itemOpenStyles.close
+                    }`}>
                 {actionButtons.map((v, idx) => (
                     <button
                         key={idx}
@@ -86,8 +86,9 @@ const HeaderButton = () => {
                     </button>
                 ))}
             </div>
-        </div>
+        </div>} />
+
     );
 };
 
-export default HeaderButton;
+export default ShoppingListPageHeader;

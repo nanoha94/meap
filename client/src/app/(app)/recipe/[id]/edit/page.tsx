@@ -1,15 +1,12 @@
 import { Loading } from '@/components/common';
-import { SnackbarHandler } from '@/components/handlers';
 import { apiClient, fetchDataParallel } from '@/lib/apiClient';
-import RecipeEditPage from '@/pages/recipe/RecipeEditPage';
+import RecipeEditPage from '@/pages/recipe/edit/RecipeEditPage';
 import {
     IGetGroupUserResponse,
     IGetIngredientCategoryIndexResponse,
     IGetRecipeShowResponse,
-    IUser,
 } from '@/types/api';
 import { Suspense } from 'react';
-import EditHeader from './EditHeader';
 
 interface Props {
     params: Promise<{ id: string }>;
@@ -29,34 +26,27 @@ const PageWithData = async ({ id }: PageWithDataProps) => {
         signal =>
             apiClient<IGetRecipeShowResponse>(`/recipes/${id}`, { signal }),
         signal =>
-            apiClient<IGetIngredientCategoryIndexResponse>(
-                '/ingredient-categories',
-                { signal },
-            ),
-        signal => apiClient<IGetGroupUserResponse>('/users', { signal }),
+            apiClient<IGetIngredientCategoryIndexResponse>('/ingredient-categories', { signal },),
+        signal =>
+            apiClient<IGetGroupUserResponse>('/users', { signal },),
+
     ]);
 
     const [recipe, ingredientCategories, users] = data ?? [
         null,
         null,
-        { data: [], total: 0 },
+        null,
     ];
 
     return (
         <>
-            <EditHeader
-                initialUserId={recipe?.data?.userId as string}
-                users={users.data as IUser[]}
+            <RecipeEditPage
+                fetchRecipe={recipe?.data}
+                fetchIngredientCategories={ingredientCategories?.data}
+                fetchUsers={users?.data}
+                errorMessage={errorMessage}
             />
-            <main>
-                {errorMessage && (
-                    <SnackbarHandler type="error" message={errorMessage} />
-                )}
-                <RecipeEditPage
-                    fetchRecipe={recipe?.data}
-                    fetchIngredientCategories={ingredientCategories?.data}
-                />
-            </main>
+
         </>
     );
 };

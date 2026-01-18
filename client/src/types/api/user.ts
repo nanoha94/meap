@@ -13,7 +13,7 @@ export interface IGetUserResponse {
 }
 
 // グループユーザー一覧取得
-export type IGetGroupUserResponse = IBaseApiIndexResponse<IUser>;
+export type IGetGroupUserResponse = IBaseApiIndexResponse<IUser[]>;
 
 //--------------------------------
 // データ型

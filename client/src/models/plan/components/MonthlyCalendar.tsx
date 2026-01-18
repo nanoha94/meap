@@ -5,6 +5,11 @@ import dayjs, { Dayjs } from 'dayjs';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import React from 'react';
 
+/**
+ * 曜日の色を返す
+ * @param day 曜日（0:日曜日, 1:月曜日, 2:火曜日, 3:水曜日, 4:木曜日, 5:金曜日, 6:土曜日）
+ * @returns 曜日の色
+ */
 const dayColor = (day: number) => {
     if (day === DayOfWeek.SUNDAY) {
         return 'text-red';
@@ -15,6 +20,12 @@ const dayColor = (day: number) => {
     return 'text-black';
 };
 
+/**
+ * 日付のスタイルを返す
+ * @param isToday 今日の場合はtrue、それ以外はfalse
+ * @param day 曜日（0:日曜日, 1:月曜日, 2:火曜日, 3:水曜日, 4:木曜日, 5:金曜日, 6:土曜日）
+ * @returns 日付のスタイル
+ */
 const dateStyle = (isToday: boolean, day: number) => {
     if (isToday) {
         return 'min-w-6 h-6 flex justify-center items-center text-sm font-bold text-white bg-primary-main rounded-full';
@@ -22,11 +33,12 @@ const dateStyle = (isToday: boolean, day: number) => {
     return dayColor(day);
 };
 
-const CalendarHeader = () => {
+const MonthlyCalendar = () => {
     const [selectedDate, setSelectedDate] = React.useState<Dayjs>(dayjs());
     // TODO: 月曜始まりに対応する場合、ここを変更する
     const startOfWeek = DayOfWeek.MONDAY;
 
+    // 曜日のリスト
     const dayOfWeeks = React.useMemo(
         () => [
             ...DAY_OF_WEEK_LIST.slice(startOfWeek),
@@ -35,28 +47,42 @@ const CalendarHeader = () => {
         [startOfWeek],
     );
 
+    // 月の最初の日
     const startOfMonth = React.useMemo(
         () => dayjs(selectedDate).startOf('month'),
         [selectedDate],
     );
 
+    // 月の最後の日
     const endOfMonth = React.useMemo(
         () => dayjs(selectedDate).endOf('month'),
         [selectedDate],
     );
 
+    /**
+     * 今日に移動
+     */
     const moveToToday = () => {
         setSelectedDate(dayjs());
     };
 
+    /**
+     * 次の月に移動
+     */
     const moveToNextMonth = () => {
         setSelectedDate(prev => prev.add(1, 'month'));
     };
 
+    /**
+     * 前の月に移動
+     */
     const moveToPreviousMonth = () => {
         setSelectedDate(prev => prev.add(-1, 'month'));
     };
 
+    /**
+     * 日付のリスト
+     */
     const days: (Dayjs | null)[] = React.useMemo(() => {
         const daysArray = [
             ...Array.from({
@@ -124,4 +150,4 @@ const CalendarHeader = () => {
     );
 };
 
-export default CalendarHeader;
+export default MonthlyCalendar;

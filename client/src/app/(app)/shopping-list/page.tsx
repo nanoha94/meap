@@ -4,10 +4,8 @@ import {
     IGetShoppingCategoryIndexResponse,
     IGetShoppingItemIndexResponse,
 } from '@/types/api';
-import { Header, Loading } from '@/components/common';
+import { Loading } from '@/components/common';
 import { apiClient, fetchDataParallel } from '@/lib/apiClient';
-import { SnackbarHandler } from '@/components/handlers';
-import HeaderButton from '@/models/shopping/components/HeaderButton/HeaderButton';
 
 async function ShoppingListsWithData() {
     const { data, errorMessage } = await fetchDataParallel<
@@ -27,18 +25,11 @@ async function ShoppingListsWithData() {
     const [items, categories] = data ?? [null, null];
 
     return (
-        <>
-            {errorMessage && (
-                <SnackbarHandler type="error" message={errorMessage} />
-            )}
-            <Header title="買い物リスト" rightContent={<HeaderButton />} />
-            <main>
-                <ShoppingListPage
-                    fetchItems={items?.data ?? []}
-                    fetchCategories={categories?.data ?? []}
-                />
-            </main>
-        </>
+        <ShoppingListPage
+            fetchItems={items?.data ?? []}
+            fetchCategories={categories?.data ?? []}
+            errorMessage={errorMessage}
+        />
     );
 }
 

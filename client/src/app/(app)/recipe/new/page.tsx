@@ -1,28 +1,30 @@
-import { Header, Loading } from '@/components/common';
-import { SnackbarHandler } from '@/components/handlers';
-import { fetchData } from '@/lib/apiClient';
-import RecipeDetailPage from '@/pages/recipe/RecipeDetailPage';
-import { IGetIngredientCategoryIndexResponse } from '@/types/api';
+import { Loading } from '@/components/common';
+import { apiClient, fetchDataParallel } from '@/lib/apiClient';
+import RecipeEditPage from '@/pages/recipe/edit/RecipeEditPage';
+import {
+    IGetGroupUserResponse,
+    IGetIngredientCategoryIndexResponse,
+} from '@/types/api';
 import { Suspense } from 'react';
 
 async function RecipeNewPageWithData() {
-    const { data: ingredientCategories, errorMessage } =
-        await fetchData<IGetIngredientCategoryIndexResponse>(
-            '/ingredient-categories',
-        );
+    const { data, errorMessage } = await fetchDataParallel<
+        [IGetIngredientCategoryIndexResponse, IGetGroupUserResponse]
+    >([
+        signal =>
+            apiClient<IGetIngredientCategoryIndexResponse>('/ingredient-categories', { signal },),
+        signal =>
+            apiClient<IGetGroupUserResponse>('/users', { signal }),
+    ]);
+
+    const [ingredientCategories, users] = data ?? [null, null];
 
     return (
-        <>
-            {errorMessage && (
-                <SnackbarHandler type="error" message={errorMessage} />
-            )}
-            <Header title="料理/レシピ追加" />
-            <main>
-                <RecipeDetailPage
-                    fetchIngredientCategories={ingredientCategories?.data}
-                />
-            </main>
-        </>
+        <RecipeEditPage
+            fetchIngredientCategories={ingredientCategories?.data}
+            fetchUsers={users?.data}
+            errorMessage={errorMessage}
+        />
     );
 }
 

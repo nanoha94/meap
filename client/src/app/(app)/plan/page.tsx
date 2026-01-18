@@ -1,5 +1,5 @@
-import { EmailVerifiedHandler, Header } from '@/components/common';
-import { CalendarHeader } from './_components';
+import PlanPage from '@/pages/plan/PlanPage';
+
 export const metadata = {
     title: 'Laravel - Plan',
 };
@@ -7,11 +7,7 @@ export const metadata = {
 const Plan = () => {
     return (
         <>
-            <EmailVerifiedHandler />
-            <Header title="Plan" />
-            <main>
-                <CalendarHeader />
-            </main>
+            <PlanPage />
         </>
     );
 };

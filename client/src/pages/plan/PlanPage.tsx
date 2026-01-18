@@ -1,9 +1,11 @@
 'use client';
+import { Header } from '@/components/common';
 import React from 'react';
-import { useSnackbars } from '@/hooks/useSnackbars';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useSnackbars } from '@/hooks/useSnackbars';
+import MonthlyCalendar from '@/models/plan/components/MonthlyCalendar';
 
-const EmailVerifiedHandler = () => {
+const PlanPage = () => {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -24,7 +26,14 @@ const EmailVerifiedHandler = () => {
         }
     }, []);
 
-    return <></>;
+    return (
+        <>
+            <Header title="献立表" />
+            <main>
+                <MonthlyCalendar />
+            </main>
+        </>
+    );
 };
 
-export default EmailVerifiedHandler;
+export default PlanPage;

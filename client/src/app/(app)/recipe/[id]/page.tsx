@@ -1,14 +1,12 @@
-import { Header, Loading } from '@/components/common';
-import { SnackbarHandler } from '@/components/handlers';
-import { Suspense } from 'react';
-import { HeaderRecipeDeleteButton } from '@/models/recipe/components';
+import { Loading } from '@/components/common';
 import { apiClient, fetchDataParallel } from '@/lib/apiClient';
 import {
     IGetRecipeShowResponse,
     IGetIngredientCategoryIndexResponse,
 } from '@/types/api';
 import { notFound } from 'next/navigation';
-import RecipeDetailPage from '@/pages/recipe/RecipeDetailPage';
+import RecipeDetailPage from '@/pages/recipe/detail/RecipeDetailPage';
+import { Suspense } from 'react';
 
 interface Props {
     params: Promise<{ id: string }>;
@@ -22,7 +20,9 @@ const PageWithData = async ({ id }: PageWithDataProps) => {
         [IGetRecipeShowResponse, IGetIngredientCategoryIndexResponse]
     >([
         signal =>
-            apiClient<IGetRecipeShowResponse>(`/recipes/${id}`, { signal }),
+            apiClient<IGetRecipeShowResponse>(`/recipes/${id}`, {
+                signal,
+            }),
         signal =>
             apiClient<IGetIngredientCategoryIndexResponse>(
                 '/ingredient-categories',
@@ -37,28 +37,11 @@ const PageWithData = async ({ id }: PageWithDataProps) => {
     const [recipe, ingredientCategories] = data;
 
     return (
-        <>
-            <Header
-                title="料理/レシピ"
-                rightContent={
-                    <div className="flex items-center gap-x-4">
-                        <HeaderRecipeDeleteButton
-                            id={id}
-                            name={recipe.data.name}
-                        />
-                    </div>
-                }
-            />
-            <main>
-                {errorMessage && (
-                    <SnackbarHandler type="error" message={errorMessage} />
-                )}
-                <RecipeDetailPage
-                    fetchRecipe={recipe.data}
-                    fetchIngredientCategories={ingredientCategories.data}
-                />
-            </main>
-        </>
+        <RecipeDetailPage
+            fetchRecipe={recipe.data}
+            fetchIngredientCategories={ingredientCategories.data}
+            errorMessage={errorMessage}
+        />
     );
 };
 

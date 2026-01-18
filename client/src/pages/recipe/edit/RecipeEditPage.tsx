@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { IRecipe, IIngredientCategory } from '@/types/api';
+import { IRecipe, IIngredientCategory, IUser } from '@/types/api';
 import { useIngredientStore } from '@/models/ingredient/hooks';
 import { useRecipeStore } from '@/models/recipe/hooks';
 import {
@@ -12,18 +12,28 @@ import {
     RecipeEditForm,
 } from '@/models/recipe/components';
 import { useGlobalStore } from '@/stores';
+import RecipeEditPageHeader from './RecipeEditPageHeader';
+import { useSnackbars } from '@/hooks/useSnackbars';
 
 interface Props {
     fetchRecipe?: IRecipe;
     fetchIngredientCategories?: IIngredientCategory[];
+    fetchUsers?: IUser[];
+    errorMessage?: string;
 }
 
-const RecipeEditPage = ({ fetchRecipe, fetchIngredientCategories }: Props) => {
+const RecipeEditPage = ({
+    fetchRecipe,
+    fetchIngredientCategories,
+    fetchUsers,
+    errorMessage,
+}: Props) => {
     const {
         categories: ingredientCategories,
         setCategories: setStoreCategories,
         isLoadings: isLoadingCategories,
     } = useIngredientStore();
+    const { addSnackbar } = useSnackbars();
     const { isLoadings: isLoadingRecipe } = useRecipeStore();
     const { setIsLoading } = useGlobalStore();
 
@@ -34,10 +44,20 @@ const RecipeEditPage = ({ fetchRecipe, fetchIngredientCategories }: Props) => {
     React.useEffect(() => {
         setIsLoading(
             isLoadingRecipe.recipe ||
-                isLoadingRecipe.recipeCategory ||
-                isLoadingCategories.ingredientCategory,
+            isLoadingRecipe.recipeCategory ||
+            isLoadingCategories.ingredientCategory,
         );
     }, [isLoadingRecipe, isLoadingCategories]);
+
+    /**
+     * エラーメッセージを表示
+     * @returns void
+     */
+    React.useEffect(() => {
+        if (errorMessage) {
+            addSnackbar('error', errorMessage);
+        }
+    }, [errorMessage]);
 
     /**
      * 食材カテゴリーをストアにセット
@@ -52,14 +72,20 @@ const RecipeEditPage = ({ fetchRecipe, fetchIngredientCategories }: Props) => {
 
     return (
         <>
-            <RecipeEditForm fetchRecipe={fetchRecipe} />
+            <RecipeEditPageHeader
+                initialUserId={fetchRecipe?.userId}
+                users={fetchUsers ?? []}
+            />
+            <main>
+                <RecipeEditForm fetchRecipe={fetchRecipe} />
 
-            {/* 食材編集ダイアログ */}
-            <IngredientEditDialog />
-            {/* 食材カテゴリー設定ダイアログ */}
-            <IngredientCategorySettingDialog />
-            {/* レシピカテゴリー設定ダイアログ */}
-            <RecipeCategorySettingDialog />
+                {/* 食材編集ダイアログ */}
+                <IngredientEditDialog />
+                {/* 食材カテゴリー設定ダイアログ */}
+                <IngredientCategorySettingDialog />
+                {/* レシピカテゴリー設定ダイアログ */}
+                <RecipeCategorySettingDialog />
+            </main>
         </>
     );
 };

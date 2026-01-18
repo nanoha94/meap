@@ -11,13 +11,16 @@ import { useGlobalStore } from '@/stores';
 import { IShoppingCategory, IShoppingItem } from '@/types/api';
 import { ChevronRight } from 'lucide-react';
 import React from 'react';
+import { useSnackbars } from '@/hooks/useSnackbars';
+import ShoppingListPageHeader from './ShoppingListPageHeader';
 
 interface Props {
     fetchItems?: IShoppingItem[];
     fetchCategories?: IShoppingCategory[];
+    errorMessage?: string;
 }
 
-const ShoppingListPage: React.FC<Props> = ({ fetchItems, fetchCategories }) => {
+const ShoppingListPage: React.FC<Props> = ({ fetchItems, fetchCategories, errorMessage }) => {
     const {
         setServerItems,
         setItems: setStoreItems,
@@ -26,6 +29,7 @@ const ShoppingListPage: React.FC<Props> = ({ fetchItems, fetchCategories }) => {
         isLoadingItems,
     } = useShoppingStore();
     const { setIsLoading } = useGlobalStore();
+    const { addSnackbar } = useSnackbars();
     const [isOpenCategorySettingDialog, setIsOpenCategorySettingDialog] =
         React.useState<boolean>(false);
 
@@ -56,33 +60,46 @@ const ShoppingListPage: React.FC<Props> = ({ fetchItems, fetchCategories }) => {
         setIsLoading(isLoadingCategories || isLoadingItems);
     }, [isLoadingCategories, isLoadingItems]);
 
+    /**
+     * エラーメッセージを表示
+     * @returns void
+     */
+    React.useEffect(() => {
+        if (errorMessage) {
+            addSnackbar('error', errorMessage);
+        }
+    }, [errorMessage]);
+
     return (
         <>
-            {/* メインコンテンツ */}
-            <div className="p-5 pb-[60px] md:px-10">
-                <div className="pb-12 flex flex-col gap-y-7">
-                    {/* 買い物リスト */}
-                    <ShoppingList />
-                    <TextButton
-                        colorVariant="secondary"
-                        onClick={handleOpenCategorySettingDialog}>
-                        カテゴリーの追加・編集
-                        <ChevronRight size={20} />
-                    </TextButton>
+            <ShoppingListPageHeader />
+            <main>
+                {/* メインコンテンツ */}
+                <div className="p-5 pb-[60px] md:px-10">
+                    <div className="pb-12 flex flex-col gap-y-7">
+                        {/* 買い物リスト */}
+                        <ShoppingList />
+                        <TextButton
+                            colorVariant="secondary"
+                            onClick={handleOpenCategorySettingDialog}>
+                            カテゴリーの追加・編集
+                            <ChevronRight size={20} />
+                        </TextButton>
+                    </div>
+                    <AddShoppingItemButton />
                 </div>
-                <AddShoppingItemButton />
-            </div>
-            {/* アイテム追加・編集ダイアログ */}
-            <ShoppingItemSettingDialog />
-            {/* カテゴリー設定ダイアログ */}
-            <Dialog
-                title="買い物カテゴリ―設定"
-                isOpen={isOpenCategorySettingDialog}
-                onClose={handleCloseCategorySettingDialog}>
-                <ShoppingCategorySettingForm
-                    onClose={handleCloseCategorySettingDialog}
-                />
-            </Dialog>
+                {/* アイテム追加・編集ダイアログ */}
+                <ShoppingItemSettingDialog />
+                {/* カテゴリー設定ダイアログ */}
+                <Dialog
+                    title="買い物カテゴリ―設定"
+                    isOpen={isOpenCategorySettingDialog}
+                    onClose={handleCloseCategorySettingDialog}>
+                    <ShoppingCategorySettingForm
+                        onClose={handleCloseCategorySettingDialog}
+                    />
+                </Dialog>
+            </main>
         </>
     );
 };

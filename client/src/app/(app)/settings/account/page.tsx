@@ -1,23 +1,11 @@
 import React, { Suspense } from 'react';
-import AccountTopPage from '@/pages/settings/AccountTopPage';
-import { Header, Loading } from '@/components/common';
+import AccountPage from '@/pages/settings/account/AccountPage';
+import { Loading } from '@/components/common';
 import {
     IGetGroupUserResponse,
     IGetInvitationDetailResponse,
-    IUser,
 } from '@/types/api';
 import { apiClient, fetchDataParallel } from '@/lib/apiClient';
-import { SnackbarHandler } from '@/components/handlers';
-import dynamic from 'next/dynamic';
-
-// 動的インポートでダイアログコンポーネントを遅延読み込み
-const JoinDialog = dynamic(
-    () => import('@/models/settings/components/JoinDialog/JoinDialog'),
-    {
-        ssr: false, // SSRでは読み込まない
-        loading: () => null, // ローディング中は何も表示しない
-    },
-);
 
 interface AccountWithDataProps {
     token: string;
@@ -51,18 +39,11 @@ const AccountWithData = async ({ token }: AccountWithDataProps) => {
     const [users, invitationDetail] = data ?? [{ data: [], total: 0 }, null];
 
     return (
-        <>
-            <Header title="アカウント設定" />
-            <main>
-                {errorMessage && (
-                    <SnackbarHandler type="error" message={errorMessage} />
-                )}
-                <AccountTopPage users={users?.data as IUser[]} />
-                {invitationDetail && token && (
-                    <JoinDialog invitationDetail={invitationDetail.data} />
-                )}
-            </main>
-        </>
+        <AccountPage
+            users={users?.data ?? []}
+            invitationDetail={invitationDetail?.data ?? null}
+            errorMessage={errorMessage}
+        />
     );
 };
 

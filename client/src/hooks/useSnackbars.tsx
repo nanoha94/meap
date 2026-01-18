@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { useGlobalStore } from '@/stores';
 
 export const useSnackbars = () => {
+    const previousMessageRef = React.useRef<string | null>(null);
     const snackbars = useGlobalStore(state => state.snackbars);
     const setSnackbars = useGlobalStore(state => state.setSnackbars);
 
@@ -19,6 +20,11 @@ export const useSnackbars = () => {
             // 100ms後に削除（アニメーション完了を待って削除）
             setTimeout(() => {
                 setSnackbars(prev => prev.filter(v => v.id !== id));
+
+                // スナックバーが空の場合、前回のメッセージをクリア
+                if(snackbars.length === 0) {
+                    previousMessageRef.current = null;
+                }
             }, 100);
         },
         [snackbars],
@@ -26,26 +32,31 @@ export const useSnackbars = () => {
 
     const addSnackbar = React.useCallback(
         (type: 'success' | 'error', message: string) => {
-            const id = uuidv4();
+            // メッセージが存在し、前回のメッセージと異なる場合のみ追加
+            if (message && message !== previousMessageRef.current) {
+                previousMessageRef.current = message;
 
-            // 非表示状態で追加
-            setSnackbars(prev => [
-                ...prev,
-                { id, message, type, isOpen: false },
-            ]);
+                const id = uuidv4();
 
-            // 追加後、100ms後に表示（ふわっとアニメーションのため）
-            setTimeout(() => {
-                setSnackbars(prev =>
-                    prev.map(v => (v.id === id ? { ...v, isOpen: true } : v)),
-                );
-            }, 100);
+                // 非表示状態で追加
+                setSnackbars(prev => [
+                    ...prev,
+                    { id, message, type, isOpen: false },
+                ]);
 
-            // 自動削除のタイマー設定
-            const timeout = type === 'success' ? 10000 : 60000;
-            setTimeout(() => {
-                removeSnackbar(id);
-            }, timeout);
+                // 追加後、100ms後に表示（ふわっとアニメーションのため）
+                setTimeout(() => {
+                    setSnackbars(prev =>
+                        prev.map(v => (v.id === id ? { ...v, isOpen: true } : v)),
+                    );
+                }, 100);
+
+                // 自動削除のタイマー設定
+                const timeout = type === 'success' ? 10000 : 60000;
+                setTimeout(() => {
+                    removeSnackbar(id);
+                }, timeout);
+            }
         },
         [snackbars],
     );
