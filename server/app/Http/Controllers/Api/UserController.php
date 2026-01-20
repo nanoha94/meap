@@ -63,11 +63,14 @@ class UserController extends ApiController
     public function show(Request $request): JsonResponse
     {
         $user = $request->user();
-        return response()->json([
+        $data = [
+            'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
             'email_verified_at' => $user->email_verified_at,
             'avatar_seed' => $user->avatar_seed,
-        ]);
+        ];
+        $message = __('api.retrieved', ['attribute' => __('api.attributes.user')]);
+        return $this->showResponse($data, $message);
     }
 }

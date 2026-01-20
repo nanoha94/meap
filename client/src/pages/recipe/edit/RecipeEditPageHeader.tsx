@@ -1,18 +1,23 @@
 'use client';
-
+import React from 'react';
 import { Header, HeaderTextButton } from '@/components/common';
 import StyledSelect from '@/components/common/StyledSelect';
-import { IUser } from '@/types/api';
+import { HeaderDeleteButton } from '@/models/recipe/components';
+import { useAccountStore } from '@/models/settings/hooks';
+import { IRecipe, IUser } from '@/types/api';
 import { Save } from 'lucide-react';
 
 interface Props {
     ownerUserId: string;
     users: IUser[];
+    fetchRecipe?: IRecipe;
     onChangeOwnerUserId: (userId: string) => void;
     onClickSaveButton: () => void;
 }
 
-const RecipeEditPageHeader = ({ ownerUserId, users, onChangeOwnerUserId, onClickSaveButton }: Props) => {
+const RecipeEditPageHeader = ({ ownerUserId, users, fetchRecipe, onChangeOwnerUserId, onClickSaveButton }: Props) => {
+    const { loginUser } = useAccountStore();
+
     return (
         <Header
             leftContent={
@@ -44,6 +49,11 @@ const RecipeEditPageHeader = ({ ownerUserId, users, onChangeOwnerUserId, onClick
                         <Earth size={20} strokeWidth={2} />
                         外部公開
                     </HeaderTextButton> */}
+                    {/* 編集責任者の場合のみ削除ボタンを表示 */}
+                    {fetchRecipe?.ownerUserId === loginUser?.id && <HeaderDeleteButton
+                        id={fetchRecipe?.id ?? ''}
+                        name={fetchRecipe?.name ?? ''}
+                    />}
                 </div>
             }
         />

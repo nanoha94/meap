@@ -15,6 +15,12 @@ use App\Http\Controllers\Api\RecipeCategoryController;
 use App\Http\Controllers\Api\RecipeController;
 use App\Http\Controllers\Api\ImageController;
 
+// 認証のみ必要（メール認証不要）
+Route::middleware(['auth:sanctum'])->group(function () {
+    // 認証ユーザー情報を取得（メール未認証でもアクセス可能）
+    Route::get('/user', [UserController::class, 'show']);
+});
+
 // メール認証済みユーザーのみアクセス可能
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // meal-plans
@@ -45,7 +51,6 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
     // users
     Route::get('/users', [UserController::class, 'index']);
-    Route::get('/user', [UserController::class, 'show']);
 
     // shopping
     Route::apiResource('/shopping-items', ShoppingItemController::class)->only(['index', 'store']);

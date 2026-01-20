@@ -5,10 +5,11 @@ import { useIngredientStore } from '@/models/ingredient/hooks';
 import { useRecipeStore } from '@/models/recipe/hooks';
 import { useGlobalStore } from '@/stores';
 import Image from 'next/image';
-import { Image as ImageIcon } from 'lucide-react';
+import { Image as ImageIcon, Pencil } from 'lucide-react';
 import { useSnackbars } from '@/hooks/useSnackbars';
-import { Header } from '@/components/common';
-import { HeaderRecipeDeleteButton } from '@/models/recipe/components';
+import { Header, HeaderTextButton } from '@/components/common';
+import { HeaderDeleteButton } from '@/models/recipe/components';
+import { useAccountStore } from '@/models/settings/hooks';
 
 interface Props {
     fetchRecipe?: IRecipe;
@@ -32,6 +33,7 @@ const RecipeDetailPage = ({
         isLoadings: isLoadingCategories,
     } = useIngredientStore();
     const { isLoadings: isLoadingRecipe } = useRecipeStore();
+    const { loginUser } = useAccountStore();
     const { setIsLoading } = useGlobalStore();
     const { addSnackbar } = useSnackbars();
 
@@ -73,10 +75,16 @@ const RecipeDetailPage = ({
             title="料理/レシピ"
             rightContent={
                 <div className="flex items-center gap-x-4">
-                    <HeaderRecipeDeleteButton
+                    <HeaderTextButton colorVariant="secondary"
+                        href={`/recipe/${fetchRecipe?.id}/edit`}>
+                        <Pencil size={20} strokeWidth={2} />
+                        編集
+                    </HeaderTextButton>
+                    {/* 編集責任者の場合のみ削除ボタンを表示 */}
+                    {fetchRecipe?.ownerUserId === loginUser?.id && <HeaderDeleteButton
                         id={fetchRecipe?.id ?? ''}
                         name={fetchRecipe?.name ?? ''}
-                    />
+                    />}
                 </div>
             }
         />

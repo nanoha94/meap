@@ -2,11 +2,11 @@
 import { useIngredientStore } from '@/models/ingredient/hooks';
 import { useRecipeStore } from '@/models/recipe/hooks/recipeStores';
 import { useAccountStore } from '@/models/settings/hooks';
-import { IGetUserResponse, IGetMasterResponse } from '@/types/api';
+import { IGetMasterResponse, ILoginUser } from '@/types/api';
 import React from 'react';
 
 interface Props {
-    user: IGetUserResponse;
+    user: ILoginUser;
     masterData: IGetMasterResponse;
 }
 

@@ -1,7 +1,7 @@
 'use client';
 import { Trash } from 'lucide-react';
 import React from 'react';
-import { useRecipeApi } from '../../hooks/useRecipeApi';
+import { useRecipeApi } from '@/models/recipe/hooks/useRecipeApi';
 import { AlertDialog, HeaderTextButton } from '@/components/common';
 import { AlertDialogData } from '@/types/dialog';
 import { ALERT_DIALOG_STATE_DEFAULT } from '@/constants';
@@ -11,7 +11,7 @@ interface Props {
     name: string;
 }
 
-const HeaderRecipeDeleteButton = ({ id, name }: Props) => {
+const HeaderDeleteButton = ({ id, name }: Props) => {
     const { deleteRecipe } = useRecipeApi();
     const [deleteCheckDialog, setDeleteCheckDialog] =
         React.useState<AlertDialogData>(ALERT_DIALOG_STATE_DEFAULT);
@@ -64,4 +64,4 @@ const HeaderRecipeDeleteButton = ({ id, name }: Props) => {
     );
 };
 
-export default HeaderRecipeDeleteButton;
+export default HeaderDeleteButton;

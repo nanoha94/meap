@@ -91,7 +91,6 @@ const EditForm = ({
      * フォームの送信
      */
     const onSubmit = (data: FormData) => {
-        console.log(data);
         onAction(data);
     };
 

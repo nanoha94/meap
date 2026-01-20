@@ -121,10 +121,7 @@ export async function fetchData<T>(
     // タイムアウトタイマー
     let timeoutId: NodeJS.Timeout | null = null;
 
-    try {
-
-
-        
+    try {       
         const controller = new AbortController();
         timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
 

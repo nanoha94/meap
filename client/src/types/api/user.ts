@@ -1,16 +1,10 @@
-import { IBaseApiIndexResponse } from './common';
+import {IBaseApiResponse, IBaseApiIndexResponse } from './common';
 
 //--------------------------------
 // レスポンス型
 //--------------------------------
 // ユーザー情報取得
-export interface IGetUserResponse {
-    name?: string;
-    email?: string;
-    email_verified_at?: string;
-    language?: string;
-    avatar_seed: string;
-}
+export type IGetUserResponse = IBaseApiResponse<ILoginUser>;
 
 // グループユーザー一覧取得
 export type IGetGroupUserResponse = IBaseApiIndexResponse<IUser[]>;
@@ -18,6 +12,15 @@ export type IGetGroupUserResponse = IBaseApiIndexResponse<IUser[]>;
 //--------------------------------
 // データ型
 //--------------------------------
+export interface ILoginUser {    
+    id: string;
+    name?: string;
+    email?: string;
+    email_verified_at?: string;
+    language?: string;
+    avatar_seed: string;
+}
+
 export interface IUser {
     id: string;
     name: string;
@@ -29,3 +32,4 @@ export interface IUser {
         height: number;
     };
 }
+

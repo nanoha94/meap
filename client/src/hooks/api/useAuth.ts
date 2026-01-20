@@ -66,7 +66,7 @@ export const useAuth = () => {
             .post('/login/', props)
             .then(() => {
                 // ログイン成功時にトップ画面にリダイレクト
-                router.push('/plan');
+                window.location.href = '/plan';
             })
             .catch(error => {
                 if (error.response.status === 422) {

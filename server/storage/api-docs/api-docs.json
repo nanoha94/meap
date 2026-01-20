@@ -3220,24 +3220,42 @@
                     "application/json": {
                         "schema": {
                             "properties": {
-                                "name": {
-                                    "type": "string",
-                                    "example": "山田太郎"
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
                                 },
-                                "email": {
+                                "message": {
                                     "type": "string",
-                                    "format": "email",
-                                    "example": "test@example.com"
+                                    "example": "ユーザーを取得しました。"
                                 },
-                                "email_verified_at": {
-                                    "type": "string",
-                                    "format": "date-time",
-                                    "example": "2024-01-01T00:00:00.000000Z",
-                                    "nullable": true
-                                },
-                                "avatar_seed": {
-                                    "type": "string",
-                                    "example": "1234567890"
+                                "data": {
+                                    "description": "認証ユーザー情報",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "example": "1234567890"
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "example": "山田太郎"
+                                        },
+                                        "email": {
+                                            "type": "string",
+                                            "format": "email",
+                                            "example": "test@example.com"
+                                        },
+                                        "email_verified_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2024-01-01T00:00:00.000000Z",
+                                            "nullable": true
+                                        },
+                                        "avatar_seed": {
+                                            "type": "string",
+                                            "example": "1234567890"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             },
                             "type": "object"

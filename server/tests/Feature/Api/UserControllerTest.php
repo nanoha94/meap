@@ -193,128 +193,7 @@ test('3-12-3: 【一覧取得】 ユーザー情報フォーマット確認', fu
     ]);
 });
 
-test('3-12-4: 【一覧取得】 未認証ユーザー', function () {
-    $response = $this->get('/users');
-
-    $response->assertStatus(401);
-    $response->assertJson([
-        'success' => false,
-        'message' => '認証が必要です。'
-    ]);
-
-    // レスポンス構造の確認
-    $response->assertJsonStructure([
-        'success',
-        'message'
-    ]);
-
-    // Content-Typeがapplication/jsonであることを確認
-    $response->assertHeader('Content-Type', 'application/json');
-});
-
-test('3-12-5: 【一覧取得】 グループが存在しない', function () {
-    $user = User::factory()->create([
-        'email_verified_at' => now()
-    ]);
-    // グループに所属させない
-
-    $response = $this->actingAs($user)->get('/users');
-
-    $response->assertStatus(422);
-    $response->assertJson([
-        'success' => false,
-        'message' => 'ユーザーはグループに所属していません。'
-    ]);
-
-    // レスポンス構造の確認
-    $response->assertJsonStructure([
-        'success',
-        'message'
-    ]);
-
-    // Content-Typeがapplication/jsonであることを確認
-    $response->assertHeader('Content-Type', 'application/json');
-});
-
-test('3-12-6: 【一覧取得】 データベース接続エラー', function () {
-    $user = User::factory()->create([
-        'email_verified_at' => now()
-    ]);
-
-    // 軽量なグループ作成（テスト用）
-    $group = Group::create([
-        'group_size' => 1
-    ]);
-
-    DB::table('group_user_mappings')->insert([
-        'user_id' => $user->id,
-        'group_id' => $group->id
-    ]);
-
-    // UserServiceのformatUserInfoメソッドで例外を発生させる
-    $this->mock(UserService::class, function ($mock) {
-        $mock->shouldReceive('formatUserInfo')
-            ->andThrow(new \Exception('UserService error'));
-    });
-
-    $response = $this->actingAs($user)->get('/users');
-
-    $response->assertStatus(500);
-    $response->assertJson([
-        'success' => false,
-        'message' => 'ユーザーの取得に失敗しました。'
-    ]);
-
-    // レスポンス構造の確認
-    $response->assertJsonStructure([
-        'success',
-        'message'
-    ]);
-
-    // Content-Typeがapplication/jsonであることを確認
-    $response->assertHeader('Content-Type', 'application/json');
-});
-
-test('3-12-7: 【一覧取得】 UserService 例外', function () {
-    $user = User::factory()->create([
-        'email_verified_at' => now()
-    ]);
-
-    // 軽量なグループ作成（テスト用）
-    $group = Group::create([
-        'group_size' => 1
-    ]);
-
-    DB::table('group_user_mappings')->insert([
-        'user_id' => $user->id,
-        'group_id' => $group->id
-    ]);
-
-    // UserServiceのformatUserInfoメソッドで例外を発生させる
-    $this->mock(\App\Services\UserService::class, function ($mock) {
-        $mock->shouldReceive('formatUserInfo')
-            ->andThrow(new \Exception('UserService error'));
-    });
-
-    $response = $this->actingAs($user)->get('/users');
-
-    $response->assertStatus(500);
-    $response->assertJson([
-        'success' => false,
-        'message' => 'ユーザーの取得に失敗しました。'
-    ]);
-
-    // レスポンス構造の確認
-    $response->assertJsonStructure([
-        'success',
-        'message'
-    ]);
-
-    // Content-Typeがapplication/jsonであることを確認
-    $response->assertHeader('Content-Type', 'application/json');
-});
-
-test('3-12-8: 【一覧取得】 グループに 1 人のみの場合', function () {
+test('3-12-4: 【一覧取得】 グループに 1 人のみの場合', function () {
     $user = User::factory()->create([
         'name' => 'Single User',
         'email_verified_at' => now()
@@ -365,4 +244,226 @@ test('3-12-8: 【一覧取得】 グループに 1 人のみの場合', function
         ],
         'total'
     ]);
+});
+
+test('3-12-5: 【一覧取得】 未認証ユーザー', function () {
+    $response = $this->get('/users');
+
+    $response->assertStatus(401);
+    $response->assertJson([
+        'success' => false,
+        'message' => '認証が必要です。'
+    ]);
+
+    // レスポンス構造の確認
+    $response->assertJsonStructure([
+        'success',
+        'message'
+    ]);
+
+    // Content-Typeがapplication/jsonであることを確認
+    $response->assertHeader('Content-Type', 'application/json');
+});
+
+test('3-12-6: 【一覧取得】 グループが存在しない', function () {
+    $user = User::factory()->create([
+        'email_verified_at' => now()
+    ]);
+    // グループに所属させない
+
+    $response = $this->actingAs($user)->get('/users');
+
+    $response->assertStatus(422);
+    $response->assertJson([
+        'success' => false,
+        'message' => 'ユーザーはグループに所属していません。'
+    ]);
+
+    // レスポンス構造の確認
+    $response->assertJsonStructure([
+        'success',
+        'message'
+    ]);
+
+    // Content-Typeがapplication/jsonであることを確認
+    $response->assertHeader('Content-Type', 'application/json');
+});
+
+test('3-12-7: 【一覧取得】 データベース接続エラー', function () {
+    $user = User::factory()->create([
+        'email_verified_at' => now()
+    ]);
+
+    // 軽量なグループ作成（テスト用）
+    $group = Group::create([
+        'group_size' => 1
+    ]);
+
+    DB::table('group_user_mappings')->insert([
+        'user_id' => $user->id,
+        'group_id' => $group->id
+    ]);
+
+    // UserServiceのindexメソッドでデータベース接続エラーを発生させる
+    $this->mock(\App\Services\UserService::class, function ($mock) {
+        $mock->shouldReceive('index')
+            ->once()
+            ->andThrow(new \Exception('Database connection failed'));
+    });
+
+    $response = $this->actingAs($user)->get('/users');
+
+    $response->assertStatus(500);
+    $response->assertJson([
+        'success' => false,
+        'message' => 'ユーザーの取得に失敗しました。'
+    ]);
+
+    // レスポンス構造の確認
+    $response->assertJsonStructure([
+        'success',
+        'message'
+    ]);
+
+    // Content-Typeがapplication/jsonであることを確認
+    $response->assertHeader('Content-Type', 'application/json');
+});
+
+test('3-12-8: 【一覧取得】 UserService 例外', function () {
+    $user = User::factory()->create([
+        'email_verified_at' => now()
+    ]);
+
+    // 軽量なグループ作成（テスト用）
+    $group = Group::create([
+        'group_size' => 1
+    ]);
+
+    DB::table('group_user_mappings')->insert([
+        'user_id' => $user->id,
+        'group_id' => $group->id
+    ]);
+
+    // UserServiceのindexメソッドで例外を発生させる
+    $this->mock(\App\Services\UserService::class, function ($mock) {
+        $mock->shouldReceive('index')
+            ->once()
+            ->andThrow(new \Exception('Service exception'));
+    });
+
+    $response = $this->actingAs($user)->get('/users');
+
+    $response->assertStatus(500);
+    $response->assertJson([
+        'success' => false,
+        'message' => 'ユーザーの取得に失敗しました。'
+    ]);
+
+    // レスポンス構造の確認
+    $response->assertJsonStructure([
+        'success',
+        'message'
+    ]);
+
+    // Content-Typeがapplication/jsonであることを確認
+    $response->assertHeader('Content-Type', 'application/json');
+});
+
+test('3-12-9: 【詳細取得】 正常なユーザー情報取得', function () {
+    // ユーザーを作成（メール認証済み）
+    $user = User::factory()->create([
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+        'email_verified_at' => now(),
+        'avatar_seed' => 'testseed123'
+    ]);
+
+    $response = $this->actingAs($user)->get('/user');
+
+    $response->assertStatus(200);
+    $response->assertJson([
+        'success' => true,
+        'message' => 'ユーザーを取得しました。',
+        'data' => [
+            'id' => $user->id,
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'avatar_seed' => 'testseed123'
+        ]
+    ]);
+
+    // email_verified_at は日付形式で返されるため、個別に確認
+    $responseData = $response->json('data');
+    expect($responseData['email_verified_at'])->not->toBeNull();
+    expect($responseData['email_verified_at'])->toBeString();
+
+    // レスポンス構造の確認
+    $response->assertJsonStructure([
+        'success',
+        'message',
+        'data' => [
+            'id',
+            'name',
+            'email',
+            'email_verified_at',
+            'avatar_seed'
+        ]
+    ]);
+
+    // Content-Typeがapplication/jsonであることを確認
+    $response->assertHeader('Content-Type', 'application/json');
+});
+
+test('3-12-10: 【詳細取得】 メール未認証ユーザー', function () {
+    // ユーザーを作成（メール未認証）
+    $user = User::factory()->create([
+        'email_verified_at' => null
+    ]);
+
+    $response = $this->actingAs($user)->get('/user');
+
+    $response->assertStatus(200);
+    $response->assertJson([
+        'success' => true,
+        'message' => 'ユーザーを取得しました。',
+        'data' => [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'email_verified_at' => null,
+            'avatar_seed' => $user->avatar_seed
+        ]
+    ]);
+
+    // レスポンス構造の確認
+    $response->assertJsonStructure([
+        'success',
+        'message',
+        'data' => [
+            'id',
+            'name',
+            'email',
+            'email_verified_at',
+            'avatar_seed'
+        ]
+    ]);
+});
+
+test('3-12-11: 【詳細取得】 未認証ユーザー', function () {
+    $response = $this->get('/user');
+
+    $response->assertStatus(401);
+    $response->assertJson([
+        'success' => false,
+        'message' => '認証が必要です。'
+    ]);
+
+    // レスポンス構造の確認
+    $response->assertJsonStructure([
+        'success',
+        'message'
+    ]);
+
+    // Content-Typeがapplication/jsonであることを確認
+    $response->assertHeader('Content-Type', 'application/json');
 });

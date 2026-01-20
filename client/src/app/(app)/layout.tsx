@@ -20,11 +20,11 @@ const AppLayout = async ({ children }: Props) => {
     const { data: userData, errorMessage: userError } =
         await fetchData<IGetUserResponse>('/user');
 
-    if (userError || !userData) {
+    if (userError || !userData?.success) {
         handleAuthRedirect(null, false);
     } else {
         user = userData;
-        handleAuthRedirect(user, false);
+        handleAuthRedirect(user.data, false);
 
         // 認証が成功した場合のみmasterDataを取得
         const { data: masterDataResult } =
@@ -41,7 +41,7 @@ const AppLayout = async ({ children }: Props) => {
     return (
         <div className="min-h-screen h-full flex flex-col">
             {redirectPath && <RedirectHandler redirectPath={redirectPath} />}
-            <DataHandler user={user!} masterData={masterData} />
+            <DataHandler user={user!.data} masterData={masterData} />
             <div className="flex h-full mb-20 md:mb-0">
                 <SideNavigation user={user!} className="z-10 hidden md:block" />
                 <div className="flex-1 min-h-screen h-full bg-primary-background md:ml-[160px]">

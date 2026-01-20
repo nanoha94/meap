@@ -80,6 +80,7 @@ const RecipeEditPage = ({
             <RecipeEditPageHeader
                 ownerUserId={ownerUserId}
                 users={fetchUsers ?? []}
+                fetchRecipe={fetchRecipe}
                 onChangeOwnerUserId={(userId) => {
                     setOwnerUserId(userId);
                 }}

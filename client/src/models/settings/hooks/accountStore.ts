@@ -1,4 +1,4 @@
-import { IGetUserResponse, IUser } from '@/types/api';
+import {  ILoginUser, IUser } from '@/types/api';
 import { create } from 'zustand';
 
 type DialogPayload = {
@@ -16,11 +16,11 @@ type DialogsState = {
 interface AccountState {
     // state
     dialogs: DialogsState; // ダイアログの状態
-    loginUser: IGetUserResponse; // ログインユーザー
+    loginUser: ILoginUser; // ログインユーザー
     users: IUser[]; // グループ内ユーザー一覧
 
     // setter func
-    setLoginUser: (loginUser: IGetUserResponse) => void;
+    setLoginUser: (loginUser: ILoginUser) => void;
     setUsers: (users: IUser[]) => void;
 
     // action func
@@ -38,23 +38,26 @@ const initialDialogsState: DialogsState = {
 
 export const useAccountStore = create<AccountState>(set => ({
     // initial state
-    dialogs: initialDialogsState,
-    loginUser: {} as IGetUserResponse,
+    dialogs: initialDialogsState,    
+    loginUser: {} as ILoginUser,
     users: [] as IUser[],
 
     // setter func
-    setLoginUser: loginUser => set({ loginUser }),
-    setUsers: users => set({ users }),
+    setLoginUser: (loginUser:ILoginUser) => set({ loginUser }),
+    setUsers: (users: IUser[]) => set({ users }),
 
     // action func
-    openDialog: (dialogName, payload) =>
+    openDialog: <K extends keyof DialogPayload>(
+        dialogName: K,
+        payload: DialogPayload[K],
+    ) =>
         set(state => ({
             dialogs: {
                 ...state.dialogs,
                 [dialogName]: { isOpen: true, payload },
             },
         })),
-    closeDialog: dialogName =>
+    closeDialog: (dialogName: keyof DialogPayload) =>
         set(state => ({
             dialogs: {
                 ...state.dialogs,
