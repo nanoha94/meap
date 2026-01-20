@@ -3792,6 +3792,11 @@
                                     "minimum": 1,
                                     "example": 4,
                                     "nullable": true
+                                },
+                                "ownerUserId": {
+                                    "description": "編集責任者のユーザーID",
+                                    "type": "string",
+                                    "example": "00000000-0000-0000-0000-000000000000"
                                 }
                             },
                             "type": "object"

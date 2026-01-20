@@ -178,6 +178,7 @@ test('3-12-3: 【一覧取得】 ユーザー情報フォーマット確認', fu
         'message',
         'data' => [
             '*' => [
+                'id',
                 'name',
                 'language',
                 'avatar' => [

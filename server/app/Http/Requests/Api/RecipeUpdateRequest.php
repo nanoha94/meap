@@ -9,35 +9,6 @@ use App\Models\Recipe;
 class RecipeUpdateRequest extends BaseApiRequest
 {
     /**
-     * Determine if the user is authorized to make this request.
-     *
-     * @return bool
-     */
-    public function authorize(): bool
-    {
-        // ユーザーがグループに所属しているかの基本チェック
-        if (!parent::authorize()) {
-            return false;
-        }
-
-        // ルートパラメータからレシピIDを取得
-        $recipeId = $this->route('recipe');
-
-        // レシピを検索
-        $recipe = Recipe::find($recipeId);
-
-        // レシピが存在しない場合、または自分のグループのレシピではない場合は、
-        // 既存の挙動（404エラー）を優先させるため認可をパスさせる
-        $userGroup = $this->user()->groups()->first();
-        if (!$recipe || $recipe->group_id !== $userGroup->id) {
-            return true;
-        }
-
-        // 同じグループ内の他人のレシピを更新しようとした場合のみ403を返す
-        return $recipe->owner_user_id === $this->user()->id;
-    }
-
-    /**
      * Get the validation rules that apply to the request.
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
@@ -64,6 +35,7 @@ class RecipeUpdateRequest extends BaseApiRequest
             'steps.*.order' => 'integer|min:0|required',
             'memo' => 'string|max:255|nullable',
             'servingCount' => 'integer|min:1|nullable',
+            'ownerUserId' => 'uuid|required',
         ];
     }
 
@@ -109,6 +81,8 @@ class RecipeUpdateRequest extends BaseApiRequest
             'memo.max' => __('validation.max.string', ['attribute' => 'memo', 'max' => 255]),
             'servingCount.integer' => __('validation.integer', ['attribute' => 'servingCount']),
             'servingCount.min' => __('validation.min.numeric', ['attribute' => 'servingCount', 'min' => 1]),
+            'ownerUserId.uuid' => __('validation.uuid', ['attribute' => 'ownerUserId']),
+            'ownerUserId.required' => __('validation.required', ['attribute' => 'ownerUserId']),
         ];
     }
 

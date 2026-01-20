@@ -32,6 +32,7 @@ export interface IPostPutRecipeRequest {
     servingCount?: number | null;
     thumbnailId?: string;
     categoryIds: string[];
+    ownerUserId: string;
     ingredients?: {
         id?: string;
         name: string;
@@ -72,7 +73,7 @@ export interface IRecipeStep {
 // レシピ
 export interface IRecipe {
     id: string;
-    userId: string;
+    ownerUserId: string; // 編集責任者のユーザーID
     name: string;
     url: string;
     memo: string;

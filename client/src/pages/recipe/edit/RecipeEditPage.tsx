@@ -38,6 +38,9 @@ const RecipeEditPage = ({
     const { isLoadings: isLoadingRecipe } = useRecipeStore();
     const { setIsLoading } = useGlobalStore();
     const formRef = React.useRef<RecipeEditFormRef>(null);
+    const [ownerUserId, setOwnerUserId] = React.useState<string>(
+        (fetchRecipe as IRecipe)?.ownerUserId ?? '',
+    );
 
     /**
      * ローディング状態を更新
@@ -75,14 +78,17 @@ const RecipeEditPage = ({
     return (
         <>
             <RecipeEditPageHeader
-                initialUserId={fetchRecipe?.userId}
+                ownerUserId={ownerUserId}
                 users={fetchUsers ?? []}
+                onChangeOwnerUserId={(userId) => {
+                    setOwnerUserId(userId);
+                }}
                 onClickSaveButton={() => {
                     formRef.current?.submit();
                 }}
             />
             <main>
-                <RecipeEditForm ref={formRef} fetchRecipe={fetchRecipe} />
+                <RecipeEditForm ref={formRef} fetchRecipe={fetchRecipe} ownerUserId={ownerUserId} />
 
                 {/* 食材編集ダイアログ */}
                 <IngredientEditDialog />

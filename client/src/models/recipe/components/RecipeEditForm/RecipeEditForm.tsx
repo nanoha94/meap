@@ -14,6 +14,7 @@ import { useTextCopy } from '@/hooks/useTextCopy';
 
 interface Props {
     fetchRecipe?: IRecipe;
+    ownerUserId: string;
 }
 
 export interface RecipeEditFormRef {
@@ -26,13 +27,13 @@ const lineTitleWrapperStyle =
 const lineTitleStyle = 'z-10 px-5 text-2xl bg-primary-background';
 
 const RecipeEditForm = React.forwardRef<RecipeEditFormRef, Props>(
-    ({ fetchRecipe }, ref) => {
+    ({ fetchRecipe, ownerUserId }, ref) => {
         const {
             control,
             methods,
             onSubmit,
             errors,
-        } = useRecipeEditForm(fetchRecipe);
+        } = useRecipeEditForm(fetchRecipe, ownerUserId);
         const { isTextCopied, copyToClipboard } = useTextCopy();
 
         /**

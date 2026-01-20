@@ -33,7 +33,8 @@ namespace App\Swagger;
  *                @OA\Property(property="order", type="integer", description="並び順", example=1)
  *            )),
  *         @OA\Property(property="memo", type="string", description="メモ", example="ハンバーグは美味しい"),
- *         @OA\Property(property="servingCount", type="integer", nullable=true, description="分量（○○人分）", example=4, minimum=1)
+ *         @OA\Property(property="servingCount", type="integer", nullable=true, description="分量（○○人分）", example=4, minimum=1),
+ *         @OA\Property(property="ownerUserId", type="string", description="編集責任者のユーザーID", example="00000000-0000-0000-0000-000000000000")
  *     )
  * )
  * @OA\RequestBody(

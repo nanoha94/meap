@@ -55,12 +55,12 @@ class RecipeService extends AbstractDomainService
 
     protected function getCreateFields(): array
     {
-        return ['name' => 'name', 'url' => 'url', 'memo' => 'memo', 'serving_count' => 'servingCount'];
+        return ['name' => 'name', 'url' => 'url', 'memo' => 'memo', 'serving_count' => 'servingCount', 'owner_user_id' => 'ownerUserId'];
     }
 
     protected function getUpdateFields(): array
     {
-        return ['name' => 'name', 'url' => 'url', 'memo' => 'memo', 'serving_count' => 'servingCount'];
+        return ['name' => 'name', 'url' => 'url', 'memo' => 'memo', 'serving_count' => 'servingCount', 'owner_user_id' => 'ownerUserId'];
     }
 
 
@@ -166,8 +166,6 @@ class RecipeService extends AbstractDomainService
                 $createData[$field] = $data[$dataKey] ?? null;
             }
 
-            // owner_user_idを追加（現在のユーザーIDを設定）
-            $createData['owner_user_id'] = auth()->id();
             // TODO: published_recipe_idはセカンドリリースで設定するため、ファーストリリースではnullを設定
             $createData['published_recipe_id'] = null;
 

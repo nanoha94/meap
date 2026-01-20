@@ -35,6 +35,7 @@ class RecipeStoreRequest extends BaseApiRequest
             'steps.*.order' => 'integer|min:0|required',
             'memo' => 'string|max:255|nullable',
             'servingCount' => 'integer|min:1|nullable',
+            'ownerUserId' => 'uuid|required',
         ];
     }
 
@@ -80,6 +81,8 @@ class RecipeStoreRequest extends BaseApiRequest
             'memo.max' => __('validation.max.string', ['attribute' => 'memo', 'max' => 255]),
             'servingCount.integer' => __('validation.integer', ['attribute' => 'servingCount']),
             'servingCount.min' => __('validation.min.numeric', ['attribute' => 'servingCount', 'min' => 1]),
+            'ownerUserId.uuid' => __('validation.uuid', ['attribute' => 'ownerUserId']),
+            'ownerUserId.required' => __('validation.required', ['attribute' => 'ownerUserId']),
         ];
     }
 

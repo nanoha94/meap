@@ -13,7 +13,7 @@ class UserService extends AbstractDomainService
 {
     protected function getSelectColumns(): array
     {
-        return ['name', 'language', 'avatar_seed', 'avatar_image_url', 'avatar_image_width', 'avatar_image_height'];
+        return ['id', 'name', 'language', 'avatar_seed', 'avatar_image_url', 'avatar_image_width', 'avatar_image_height'];
     }
 
     protected function getResourceName(): string
@@ -32,6 +32,7 @@ class UserService extends AbstractDomainService
         $this->typeCheck($item, User::class);
 
         return [
+            'id' => $item->id,
             'name' => $item->name,
             'language' => $item->language,
             'avatar' => $this->formatUserAvatar($item),
