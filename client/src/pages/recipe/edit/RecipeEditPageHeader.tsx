@@ -20,8 +20,9 @@ const RecipeEditPageHeader = ({ ownerUserId, users, fetchRecipe, onChangeOwnerUs
 
     return (
         <Header
+            hasBackButton={true}
             leftContent={
-                <div className="flex items-center gap-x-4 whitespace-nowrap w-[300px]">
+                <div className="items-center gap-x-4 whitespace-nowrap w-[300px] hidden md:flex">
                     <span>編集責任者</span>
                     <StyledSelect
                         value={ownerUserId}

@@ -64,12 +64,12 @@ const StepEditItem = ({
                                 data-item-id={item.id}
                                 value={(value as string) ?? ''}
                                 rows={4}
-                                placeholder="説明文を入力"
+                                placeholder="手順を入力"
                                 onChange={e => {
                                     onChange(e);
                                     adjustTextareaHeight(e.target);
                                 }}
-                                className="flex-1 py-2 px-4  border rounded-lg resize-none overflow-hidden"
+                                className="flex-1 py-2 px-4  border rounded-lg resize-none overflow-hidden outline-black"
                             />
                         )}
                     />

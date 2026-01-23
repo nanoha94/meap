@@ -10,6 +10,7 @@ interface Props<T extends FieldValues> {
     control: Control<T>;
     name: Path<T>;
     size?: (typeof STYLE_SIZE)[keyof typeof STYLE_SIZE];
+    className?: string;
 }
 
 const sizeConfigs = {
@@ -19,6 +20,7 @@ const sizeConfigs = {
         iconSmPadding: 'p-1.5',
         iconsGapX: 'gap-x-2.5',
         iconTextGapY: 'gap-y-1',
+        imageRounded: 'rounded-lg',
     },
     [STYLE_SIZE.LG]: {
         iconSmSize: 32,
@@ -26,6 +28,7 @@ const sizeConfigs = {
         iconSmPadding: 'p-4',
         iconsGapX: 'gap-x-6',
         iconTextGapY: 'gap-y-4',
+        imageRounded: 'rounded-none md:rounded-lg',
     },
 };
 
@@ -33,6 +36,7 @@ const ImageEditField = <T extends FieldValues>({
     control,
     name,
     size = STYLE_SIZE.LG,
+    className,
 }: Props<T>) => {
     const fileInputRef = React.useRef<HTMLInputElement>(null);
     // nameプロパティから一意のIDを生成（配列のインデックスやネストされたパスに対応）
@@ -104,12 +108,12 @@ const ImageEditField = <T extends FieldValues>({
     };
 
     return (
-        <div className="flex flex-col gap-y-1 w-full">
+        <div className={`flex flex-col gap-y-1 w-full ${className}`}>
             <Controller
                 control={control}
                 name={name}
                 render={({ field: { onChange, value } }) => (
-                    <div className="relative w-full h-auto aspect-[4/3] bg-gray-light rounded-lg transition-opcity">
+                    <div className={`relative w-full h-auto aspect-[4/3] bg-gray-light rounded-lg transition-opcity ${sizeConfigs[size].imageRounded}`}>
                         {/* サムネイルが設定されている場合 */}
                         {value?.src && value?.src?.length > 0 ? (
                             <>
