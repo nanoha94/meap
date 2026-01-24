@@ -7,7 +7,7 @@ import StyledSelect from '@/components/common/StyledSelect';
 import { defaultIngredientItem } from '@/models/ingredient/constants';
 import { IIngredientItem } from '@/types/api';
 import { useIngredientStore } from '@/models/ingredient/hooks';
-import { TMP_ID_PREFIX } from '@/constants';
+import { BUTTON_TYPE, BUTTON_VARIANT, COLOR_VARIANT, TMP_ID_PREFIX } from '@/constants';
 
 interface Props {
     editingItem: IIngredientItem | undefined;
@@ -165,13 +165,13 @@ const EditForm = ({
             </div>
             <div className="mx-auto max-w-[320px] w-full flex gap-x-6">
                 <Button
-                    type="button"
-                    colorVariant="gray"
-                    variant="outlined"
+                    type={BUTTON_TYPE.BUTTON}
+                    colorVariant={COLOR_VARIANT.GRAY}
+                    variant={BUTTON_VARIANT.OUTLINED}
                     onClick={onClose}>
                     戻る
                 </Button>
-                <Button type="submit" disabled={isDisabledSendButton}>
+                <Button type={BUTTON_TYPE.SUBMIT} disabled={isDisabledSendButton}>
                     {actionButtonText}
                 </Button>
             </div>

@@ -16,10 +16,10 @@ interface Props {
 }
 
 const positionClass: Record<Placement, string> = {
-    'top-right': '-top-1 right-1',
-    'top-left': '-top-1 left-1',
-    'bottom-right': '-bottom-1 right-1',
-    'bottom-left': '-bottom-1 left-1',
+    'top-right': 'top-full right-1',
+    'top-left': 'top-full left-1',
+    'bottom-right': 'bottom-full right-1',
+    'bottom-left': 'bottom-full left-1',
 };
 
 const MenuButton = ({
@@ -71,7 +71,7 @@ const MenuButton = ({
                     onClick: () => setIsOpen(true),
                 })
             ) : (
-                <button onClick={() => setIsOpen(true)}>
+                <button onClick={() => setIsOpen(true)} className="p-1 appearance-none rounded-full transition-colors hover:bg-gray-light">
                     <EllipsisVertical
                         color={colors.gray.main}
                         className={className}
@@ -88,10 +88,10 @@ const MenuButton = ({
                             v.onClick();
                             setIsOpen(false);
                         }}
-                        className="px-3 py-1 w-full flex items-center gap-x-2 whitespace-nowrap transition-colors hover:bg-gray-light">
+                        className={`px-3 py-1 w-full flex items-center gap-x-2 whitespace-nowrap transition-colors hover:bg-gray-light ${v.color ? 'text-' + v.color + '-main' : 'text-black'}`}>
                         <LucideIconWrapper
                             strokeWidth={1.5}
-                            color={colors.black}
+                            color={v.color ? colors[v.color].main : colors.black}
                             size={20}>
                             {v.icon}
                         </LucideIconWrapper>

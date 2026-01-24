@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { Button, AuthLoading } from '@/components/common';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { VerticalRowField } from '@/components/react-hook-form';
+import { BUTTON_TYPE, BUTTON_VARIANT, COLOR_VARIANT } from '@/constants';
 
 interface FormInputs {
     email: string;
@@ -93,9 +94,9 @@ const LoginForm = () => {
                             errorMessage={
                                 isErrorVisible.email
                                     ? ([
-                                          errors.email?.message,
-                                          ...(apiErrors?.email || []),
-                                      ].filter(Boolean) as string[])
+                                        errors.email?.message,
+                                        ...(apiErrors?.email || []),
+                                    ].filter(Boolean) as string[])
                                     : []
                             }
                             rules={{
@@ -131,9 +132,9 @@ const LoginForm = () => {
                             errorMessage={
                                 isErrorVisible.password
                                     ? ([
-                                          errors.password?.message,
-                                          ...(apiErrors?.password || []),
-                                      ].filter(Boolean) as string[])
+                                        errors.password?.message,
+                                        ...(apiErrors?.password || []),
+                                    ].filter(Boolean) as string[])
                                     : []
                             }
                             rules={{ required: '必須項目です' }}>
@@ -177,7 +178,7 @@ const LoginForm = () => {
                     </div>
                     <div className="flex flex-col gap-y-4">
                         <Button
-                            type="submit"
+                            type={BUTTON_TYPE.SUBMIT}
                             onClick={() =>
                                 setIsErrorVisible({
                                     email: true,
@@ -212,7 +213,7 @@ const LoginForm = () => {
                     </h1>
                 </div>
                 {/* TODO: リンク？ */}
-                <Button type="button" variant="outlined" colorVariant="gray">
+                <Button type={BUTTON_TYPE.BUTTON} variant={BUTTON_VARIANT.OUTLINED} colorVariant={COLOR_VARIANT.GRAY}>
                     Googleアカウントでログイン
                 </Button>
             </div>

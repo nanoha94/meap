@@ -1,9 +1,10 @@
+import { BUTTON_TYPE, BUTTON_VARIANT, COLOR_VARIANT } from '@/constants';
 import React from 'react';
 
 interface Props extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-    type?: 'submit' | 'button' | 'reset';
-    variant?: 'filled' | 'outlined';
-    colorVariant?: 'primary' | 'gray' | 'alert';
+    type?: BUTTON_TYPE;
+    variant?: BUTTON_VARIANT;
+    colorVariant?: COLOR_VARIANT.PRIMARY | COLOR_VARIANT.GRAY | COLOR_VARIANT.ALERT;
     disabled?: boolean;
     className?: string;
 }
@@ -13,23 +14,23 @@ const colorClass: Record<
     Record<NonNullable<Props['colorVariant']>, string>
 > = {
     filled: {
-        primary:
+        [COLOR_VARIANT.PRIMARY]:
             'text-white bg-primary-main hover:text-primary-main hover:bg-primary-light',
-        gray: 'text-white bg-gray-main hover:text-gray-main hover:bg-gray-light',
-        alert: 'text-white bg-alert-main hover:text-alert-main hover:bg-alert-light',
+        [COLOR_VARIANT.GRAY]: 'text-white bg-gray-main hover:text-gray-main hover:bg-gray-light',
+        [COLOR_VARIANT.ALERT]: 'text-white bg-alert-main hover:text-alert-main hover:bg-alert-light',
     },
     outlined: {
-        primary:
+        [COLOR_VARIANT.PRIMARY]:
             'text-primary-main border-2 border-primary-main hover:bg-primary-light',
-        gray: 'text-gray-main border-2 border-gray-main hover:bg-gray-light',
-        alert: 'text-alert-main border-2 border-alert-main hover:bg-alert-light',
+        [COLOR_VARIANT.GRAY]: 'text-gray-main border-2 border-gray-main hover:bg-gray-light',
+        [COLOR_VARIANT.ALERT]: 'text-alert-main border-2 border-alert-main hover:bg-alert-light',
     },
 };
 
 const Button = ({
-    type = 'submit',
-    variant = 'filled',
-    colorVariant = 'primary',
+    type = BUTTON_TYPE.SUBMIT,
+    variant = BUTTON_VARIANT.FILLED,
+    colorVariant = COLOR_VARIANT.PRIMARY,
     disabled = false,
     className,
     ...props

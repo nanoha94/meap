@@ -10,7 +10,7 @@ import {
 import { SHOPPING_ITEM_SETTING_DIALOG_CONFIGS } from '../../constants';
 import StyledSelect from '@/components/common/StyledSelect';
 import { VerticalRowField } from '@/components/react-hook-form';
-import { EDIT_MODE, DIALOG_NAME } from '@/constants';
+import { EDIT_MODE, DIALOG_NAME, BUTTON_TYPE, COLOR_VARIANT, BUTTON_VARIANT } from '@/constants';
 
 interface Props {
     onClose: () => void;
@@ -113,13 +113,12 @@ const EditForm: React.FC<Props> = ({ onClose }) => {
             </div>
             <div className="mx-auto max-w-[320px] w-full flex gap-x-6">
                 <Button
-                    type="button"
-                    colorVariant="gray"
-                    variant="outlined"
+                    type={BUTTON_TYPE.BUTTON} colorVariant={COLOR_VARIANT.GRAY}
+                    variant={BUTTON_VARIANT.OUTLINED}
                     onClick={onClose}>
                     戻る
                 </Button>
-                <Button type="submit" disabled={watchName.length <= 0}>
+                <Button type={BUTTON_TYPE.SUBMIT} disabled={watchName.length <= 0}>
                     {SHOPPING_ITEM_SETTING_DIALOG_CONFIGS[editMode].buttonText}
                 </Button>
             </div>

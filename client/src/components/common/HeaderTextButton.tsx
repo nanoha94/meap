@@ -1,19 +1,20 @@
 'use client';
 import React from 'react';
 import Link from 'next/link';
+import { COLOR_VARIANT } from '@/constants';
 
 type Props = {
     disabled?: boolean;
-    colorVariant?: 'secondary' | 'gray' | 'accent' | 'alert';
+    colorVariant?: COLOR_VARIANT.SECONDARY | COLOR_VARIANT.GRAY | COLOR_VARIANT.ACCENT | COLOR_VARIANT.ALERT;
     children: React.ReactNode;
 } & ({ href: string; onClick?: never } | { onClick: () => void; href?: never }); // hrefとonClickのどちらかを必須とする
 
 const getHeaderTextButtonClassName = ({
     disabled = false,
-    colorVariant = 'secondary',
+    colorVariant = COLOR_VARIANT.SECONDARY,
 }: {
     disabled?: boolean;
-    colorVariant?: 'secondary' | 'gray' | 'accent' | 'alert';
+    colorVariant?: Props['colorVariant'];
 }) => {
     const colorMappings = {
         secondary:
@@ -22,9 +23,8 @@ const getHeaderTextButtonClassName = ({
         accent: 'text-accent-main border-accent-main bg-accent-background hover:bg-accent-main',
         alert: 'text-alert-main border-alert-main bg-alert-background hover:bg-alert-main',
     };
-    return `py-1 px-2 w-fit flex items-center gap-x-1 font-bold rounded border-2 transition-colors hover:text-white shadow-card ${
-        colorMappings[colorVariant]
-    } ${disabled ? 'opacity-50 pointer-events-none' : ''}`;
+    return `py-1 px-2 w-fit flex items-center gap-x-1 font-bold rounded border-2 transition-colors hover:text-white shadow-card ${colorMappings[colorVariant]
+        } ${disabled ? 'opacity-50 pointer-events-none' : ''}`;
 };
 
 const HeaderTextButton = ({

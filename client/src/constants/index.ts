@@ -1,4 +1,5 @@
 export * from './api';
+export * from './button';
 export * from './calendar';
 export * from './colors';
 export * from './dialog';

@@ -1,7 +1,7 @@
 import React from 'react';
 import { IIngredientCategory, IIngredientItem } from '@/types/api';
 import { Control } from 'react-hook-form';
-import { EDIT_MODE, DIALOG_NAME } from '@/constants';
+import { EDIT_MODE, DIALOG_NAME, BUTTON_TYPE } from '@/constants';
 import Sortable from '@/components/dnd/Sortable';
 import { TextButton } from '@/components/common';
 import { CirclePlus } from 'lucide-react';
@@ -100,7 +100,7 @@ const IngredientItemList = ({
                 </div>
             </SortableContext>
             <TextButton
-                type="button"
+                type={BUTTON_TYPE.BUTTON}
                 onClick={openEditDialog}
                 className="!border-none !bg-transparent hover:!bg-gray-light">
                 <CirclePlus size={20} />

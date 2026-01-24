@@ -3,7 +3,7 @@ import React from 'react';
 import { TextButton } from '@/components/common';
 import { Control, useFieldArray, useFormContext } from 'react-hook-form';
 import { ChevronRight } from 'lucide-react';
-import { DIALOG_NAME, TMP_ID_PREFIX } from '@/constants';
+import { COLOR_VARIANT, DIALOG_NAME, TMP_ID_PREFIX } from '@/constants';
 import { useIngredientStore } from '@/models/ingredient/hooks';
 import { closestCenter, DndContext, DragOverlay } from '@dnd-kit/core';
 import IngredientItemList from './IngredientItemList';
@@ -63,9 +63,9 @@ const IngredientEditFields = ({ control }: Props) => {
                     updatedItems.map(v =>
                         v.id === activeId
                             ? {
-                                  ...activeItem,
-                                  categoryId: overCategoryId,
-                              }
+                                ...activeItem,
+                                categoryId: overCategoryId,
+                            }
                             : v,
                     ),
                 );
@@ -267,7 +267,7 @@ const IngredientEditFields = ({ control }: Props) => {
                                     item={activeItem}
                                     isDisabled={true}
                                     placeholder={`${activeCategory?.name}を設定`}
-                                    onDelete={() => {}}
+                                    onDelete={() => { }}
                                 />
                             )}
                         </DragOverlay>
@@ -275,10 +275,10 @@ const IngredientEditFields = ({ control }: Props) => {
                 )}
             </div>
             <TextButton
-                colorVariant="secondary"
+                colorVariant={COLOR_VARIANT.SECONDARY}
                 onClick={() =>
                     openDialog(DIALOG_NAME.INGREDIENT_CATEGORY_SETTING, {
-                        onAction: () => {},
+                        onAction: () => { },
                     })
                 }>
                 材料カテゴリーの追加・編集

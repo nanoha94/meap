@@ -4,6 +4,7 @@ import React from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { Button } from '@/components/common';
 import { VerticalRowField } from '@/components/react-hook-form';
+import { BUTTON_TYPE } from '@/constants';
 
 interface FormInputs {
     password: string;
@@ -75,9 +76,9 @@ const PasswordReset = () => {
                         errorMessage={
                             isErrorVisible.password
                                 ? ([
-                                      errors.password?.message,
-                                      ...(apiErrors?.password || []),
-                                  ].filter(Boolean) as string[])
+                                    errors.password?.message,
+                                    ...(apiErrors?.password || []),
+                                ].filter(Boolean) as string[])
                                 : []
                         }
                         rules={{
@@ -112,10 +113,10 @@ const PasswordReset = () => {
                         errorMessage={
                             isErrorVisible.passwordConfirmation
                                 ? ([
-                                      errors.passwordConfirmation?.message,
-                                      ...(apiErrors?.passwordConfirmation ||
-                                          []),
-                                  ].filter(Boolean) as string[])
+                                    errors.passwordConfirmation?.message,
+                                    ...(apiErrors?.passwordConfirmation ||
+                                        []),
+                                ].filter(Boolean) as string[])
                                 : []
                         }
                         rules={{
@@ -152,7 +153,7 @@ const PasswordReset = () => {
                 </div>
                 <div className="flex flex-col gap-y-4">
                     <Button
-                        type="submit"
+                        type={BUTTON_TYPE.SUBMIT}
                         onClick={() =>
                             setIsErrorVisible({
                                 password: true,

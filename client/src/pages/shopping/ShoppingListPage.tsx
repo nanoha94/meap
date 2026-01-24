@@ -13,6 +13,7 @@ import { ChevronRight } from 'lucide-react';
 import React from 'react';
 import { useSnackbars } from '@/hooks/useSnackbars';
 import ShoppingListPageHeader from './ShoppingListPageHeader';
+import { COLOR_VARIANT } from '@/constants';
 
 interface Props {
     fetchItems?: IShoppingItem[];
@@ -80,7 +81,7 @@ const ShoppingListPage: React.FC<Props> = ({ fetchItems, fetchCategories, errorM
                         {/* 買い物リスト */}
                         <ShoppingList />
                         <TextButton
-                            colorVariant="secondary"
+                            colorVariant={COLOR_VARIANT.SECONDARY}
                             onClick={handleOpenCategorySettingDialog}>
                             カテゴリーの追加・編集
                             <ChevronRight size={20} />

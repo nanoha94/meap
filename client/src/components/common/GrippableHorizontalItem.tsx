@@ -24,7 +24,7 @@ const GrippableHorizontalItem: React.FC<Props> = ({
             {hasDeleteButton && (
                 <button
                     type="button"
-                    onClick={isDisabledDeleteButton ? () => {} : onDelete}
+                    onClick={isDisabledDeleteButton ? () => { } : onDelete}
                     className="p-1 w-fit h-fit rounded-full hover:bg-gray-light transition-colors disabled:opacity-0  disabled:cursor-default"
                     disabled={isDisabledDeleteButton}>
                     <Trash color={colors.alert.main} size={28} />

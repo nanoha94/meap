@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 import { MenuButton, Header, HeaderTextButton } from '@/components/common';
-import { DIALOG_NAME, EDIT_MODE } from '@/constants';
+import { COLOR_VARIANT, DIALOG_NAME, EDIT_MODE } from '@/constants';
 import { useShoppingStore } from '@/models/shopping/hooks';
 import { CalendarDays, CirclePlus, Pencil } from 'lucide-react';
 import { ActionButton } from '@/types';
@@ -60,7 +60,7 @@ const ShoppingListPageHeader = () => {
             <MenuButton
                 customButton={<HeaderTextButton
                     disabled={isOpen}
-                    colorVariant="secondary"
+                    colorVariant={COLOR_VARIANT.SECONDARY}
                     onClick={() => setIsOpen(true)}>
                     <CirclePlus size={20} strokeWidth={2} />
                     アイテムを追加

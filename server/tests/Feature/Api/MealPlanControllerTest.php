@@ -122,7 +122,8 @@ beforeEach(function () {
                 'memo' => $memo,
                 'servingCount' => $servingCount,
                 'thumbnailId' => $thumbnailId,
-                'categoryIds' => $categoryIds
+                'categoryIds' => $categoryIds,
+                'ownerUserId' => $user->id
             ];
 
             $response = $testInstance->actingAs($user)->post('/recipes', $requestData);

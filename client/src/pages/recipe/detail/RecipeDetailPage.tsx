@@ -2,14 +2,15 @@
 import React from 'react';
 import { IRecipe, IIngredientCategory, IImage } from '@/types/api';
 import { useIngredientStore } from '@/models/ingredient/hooks';
-import { useRecipeStore } from '@/models/recipe/hooks';
+import { useRecipeApi, useRecipeStore } from '@/models/recipe/hooks';
 import { useGlobalStore } from '@/stores';
 import Image from 'next/image';
-import { Image as ImageIcon, Pencil } from 'lucide-react';
+import { Image as ImageIcon, Pencil, Trash } from 'lucide-react';
 import { useSnackbars } from '@/hooks/useSnackbars';
-import { Header, HeaderTextButton } from '@/components/common';
-import { HeaderDeleteButton } from '@/models/recipe/components';
+import { AlertDialog, Header, HeaderTextButton } from '@/components/common';
 import { useAccountStore } from '@/models/settings/hooks';
+import { ActionButton, AlertDialogData } from '@/types';
+import { ALERT_DIALOG_STATE_DEFAULT, COLOR_VARIANT } from '@/constants';
 
 interface Props {
     fetchRecipe?: IRecipe;
@@ -36,6 +37,52 @@ const RecipeDetailPage = ({
     const { loginUser } = useAccountStore();
     const { setIsLoading } = useGlobalStore();
     const { addSnackbar } = useSnackbars();
+    const { deleteRecipe } = useRecipeApi();
+    const [deleteCheckDialog, setDeleteCheckDialog] =
+        React.useState<AlertDialogData>(ALERT_DIALOG_STATE_DEFAULT);
+
+
+    /**
+    * 削除確認ダイアログを閉じる
+    */
+    const closeDeleteCheckDialog = () => {
+        setDeleteCheckDialog(ALERT_DIALOG_STATE_DEFAULT);
+    };
+
+    /**
+     * 削除確認ダイアログを開く
+     * @param config ダイアログの設定
+     */
+    const openDeleteCheckDialog = () => {
+        if (!fetchRecipe) {
+            return;
+        }
+        setDeleteCheckDialog({
+            isOpen: true,
+            config: {
+                title: '削除',
+                message: [`${name}を削除しますか？`],
+                alertMessage: '',
+                actionButtonText: '削除',
+            },
+            onCancel: closeDeleteCheckDialog,
+            onAction: () => {
+                closeDeleteCheckDialog();
+                deleteRecipe(fetchRecipe.id, fetchRecipe.name);
+            },
+            isLoading: false,
+        });
+    };
+
+    const actionButtons: ActionButton[] = fetchRecipe?.ownerUserId === loginUser?.id ? [
+        // 削除できるのは、編集責任者のみ
+        {
+            label: '削除する',
+            icon: <Trash size={20} strokeWidth={2} />,
+            onClick: openDeleteCheckDialog,
+            color: COLOR_VARIANT.ALERT,
+        },
+    ] : [];
 
     /**
      * ローディング状態を更新
@@ -72,22 +119,17 @@ const RecipeDetailPage = ({
 
     return (
         <><Header
-            title="料理/レシピ"
             hasBackButton={true}
             rightContent={
                 <div className="flex items-center gap-x-4">
-                    <HeaderTextButton colorVariant="secondary"
+                    <HeaderTextButton colorVariant={COLOR_VARIANT.SECONDARY}
                         href={`/recipe/${fetchRecipe?.id}/edit`}>
                         <Pencil size={20} strokeWidth={2} />
                         編集
                     </HeaderTextButton>
-                    {/* 編集責任者の場合のみ削除ボタンを表示 */}
-                    {fetchRecipe?.ownerUserId === loginUser?.id && <HeaderDeleteButton
-                        id={fetchRecipe?.id ?? ''}
-                        name={fetchRecipe?.name ?? ''}
-                    />}
                 </div>
             }
+            actionButtons={actionButtons}
         />
             <main>
                 {/* サムネイル画像 */}
@@ -229,7 +271,13 @@ const RecipeDetailPage = ({
                         )}
                     </div>
                 </div>
-            </main>
+            </main><AlertDialog
+                isOpen={deleteCheckDialog.isOpen}
+                config={deleteCheckDialog.config}
+                onCancel={deleteCheckDialog.onCancel}
+                onAction={deleteCheckDialog.onAction}
+                isLoading={deleteCheckDialog.isLoading}
+            />
         </>
     );
 };

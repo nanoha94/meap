@@ -1,6 +1,6 @@
 'use client';
 import { Dialog, Button, AlertDialog } from '@/components/common';
-import { colors } from '@/constants/colors';
+import { COLOR_VARIANT, colors } from '@/constants/colors';
 import dayjs from 'dayjs';
 import { LoaderCircle } from 'lucide-react';
 import React from 'react';
@@ -14,6 +14,7 @@ import {
 } from '../../constants';
 import { AlertDialogConfig, AlertDialogData } from '@/types';
 import { ALERT_DIALOG_STATE_DEFAULT } from '@/constants/dialog';
+import { BUTTON_VARIANT } from '@/constants';
 
 interface Props {
     invitationDetail: IInvitation | null;
@@ -139,8 +140,8 @@ const JoinDialog = ({ invitationDetail }: Props) => {
                         <div className="flex flex-col gap-y-5">
                             <div className="max-w-[320px] w-full flex gap-x-6">
                                 <Button
-                                    colorVariant="gray"
-                                    variant="outlined"
+                                    colorVariant={COLOR_VARIANT.GRAY}
+                                    variant={BUTTON_VARIANT.OUTLINED}
                                     onClick={handleClose}>
                                     キャンセル
                                 </Button>

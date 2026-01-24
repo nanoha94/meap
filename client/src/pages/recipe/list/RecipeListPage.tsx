@@ -7,6 +7,7 @@ import { useSnackbars } from '@/hooks/useSnackbars';
 import React from 'react';
 import { Header, HeaderTextButton } from '@/components/common';
 import { CirclePlus } from 'lucide-react';
+import { COLOR_VARIANT } from '@/constants';
 
 interface Props {
     fetchRecipes: IRecipe[];
@@ -51,7 +52,7 @@ const RecipeListPage = ({
                     <div className="hidden md:flex">
                         <HeaderTextButton
                             href="/recipe/new"
-                            colorVariant="secondary">
+                            colorVariant={COLOR_VARIANT.SECONDARY}>
                             <CirclePlus size={20} />
                             料理/レシピを追加
                         </HeaderTextButton>

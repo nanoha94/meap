@@ -1,9 +1,10 @@
 'use client';
 import { LoaderCircle } from 'lucide-react';
 import Button from './Button';
-import { colors } from '@/constants/colors';
+import { COLOR_VARIANT, colors } from '@/constants/colors';
 import React from 'react';
-import { AlertDialogData } from '@/types/dialog';
+import { AlertDialogData } from '@/types';
+import { BUTTON_VARIANT } from '@/constants';
 
 const AlertDialog = ({
     isOpen,
@@ -51,12 +52,12 @@ const AlertDialog = ({
                             </div>
                             <div className="mx-auto max-w-[320px] w-full flex gap-x-6">
                                 <Button
-                                    colorVariant="gray"
-                                    variant="outlined"
+                                    colorVariant={COLOR_VARIANT.GRAY}
+                                    variant={BUTTON_VARIANT.OUTLINED}
                                     onClick={onCancel}>
                                     キャンセル
                                 </Button>
-                                <Button onClick={onAction} colorVariant="alert">
+                                <Button onClick={onAction} colorVariant={COLOR_VARIANT.ALERT}>
                                     {config.actionButtonText}
                                 </Button>
                             </div>

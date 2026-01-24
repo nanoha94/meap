@@ -5,6 +5,7 @@ import { Button } from '@/components/common';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import Link from 'next/link';
 import { VerticalRowField } from '@/components/react-hook-form';
+import { BUTTON_TYPE, BUTTON_VARIANT, COLOR_VARIANT } from '@/constants';
 
 interface FormInputs {
     email: string;
@@ -72,9 +73,9 @@ const Page = () => {
                         errorMessage={
                             isErrorVisible.email
                                 ? ([
-                                      errors.email?.message,
-                                      ...(apiErrors?.email || []),
-                                  ].filter(Boolean) as string[])
+                                    errors.email?.message,
+                                    ...(apiErrors?.email || []),
+                                ].filter(Boolean) as string[])
                                 : []
                         }
                         rules={{
@@ -105,7 +106,7 @@ const Page = () => {
 
                     <div className="flex flex-col gap-y-4">
                         <Button
-                            type="submit"
+                            type={BUTTON_TYPE.SUBMIT}
                             onClick={() => setIsErrorVisible({ email: true })}>
                             送信
                         </Button>
@@ -135,7 +136,7 @@ const Page = () => {
                     </h1>
                 </div>
                 {/* TODO: リンク？ */}
-                <Button type="button" variant="outlined" colorVariant="gray">
+                <Button type={BUTTON_TYPE.BUTTON} variant={BUTTON_VARIANT.OUTLINED} colorVariant={COLOR_VARIANT.GRAY}>
                     Googleアカウントでログイン
                 </Button>
             </div>

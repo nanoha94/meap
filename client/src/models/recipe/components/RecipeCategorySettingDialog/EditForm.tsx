@@ -11,7 +11,7 @@ import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { defaultRecipeCategory } from '../../constants';
 import { useRecipeCategoryApi } from '../../hooks';
 import { IRecipeCategory } from '@/types/api';
-import { DND_SORTABLE_LIST_TYPE, TMP_ID_PREFIX } from '@/constants';
+import { BUTTON_TYPE, BUTTON_VARIANT, COLOR_VARIANT, DND_SORTABLE_LIST_TYPE, TMP_ID_PREFIX } from '@/constants';
 
 interface FormData {
     categories: IRecipeCategory[];
@@ -154,7 +154,7 @@ const EditForm: React.FC<Props> = ({ onClose }) => {
                     />
                 </div>
                 <TextButton
-                    type="button"
+                    type={BUTTON_TYPE.BUTTON}
                     onClick={addEmptyCategory}
                     className="!border-none !bg-transparent hover:!bg-gray-light">
                     <CirclePlus size={20} />
@@ -163,13 +163,13 @@ const EditForm: React.FC<Props> = ({ onClose }) => {
             </div>
             <div className="mx-auto max-w-[320px] w-full flex gap-x-6">
                 <Button
-                    type="button"
-                    colorVariant="gray"
-                    variant="outlined"
+                    type={BUTTON_TYPE.BUTTON}
+                    colorVariant={COLOR_VARIANT.GRAY}
+                    variant={BUTTON_VARIANT.OUTLINED}
                     onClick={onClose}>
                     戻る
                 </Button>
-                <Button type="submit">設定</Button>
+                <Button type={BUTTON_TYPE.SUBMIT}>設定</Button>
             </div>
         </form>
     );

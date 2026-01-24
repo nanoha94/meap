@@ -2,15 +2,18 @@
 import { colors } from "@/constants";
 import { ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
+import MenuButton from "./MenuButton";
+import { ActionButton } from "@/types";
 
 interface Props {
     title?: string;
     leftContent?: React.ReactNode;
     rightContent?: React.ReactNode;
     hasBackButton?: boolean;
+    actionButtons?: ActionButton[];
 }
 
-const Header = ({ title, leftContent, rightContent, hasBackButton = false }: Props) => {
+const Header = ({ title, leftContent, rightContent, hasBackButton = false, actionButtons }: Props) => {
     const router = useRouter();
     return (
         <header
@@ -28,7 +31,13 @@ const Header = ({ title, leftContent, rightContent, hasBackButton = false }: Pro
                     </h2>
                     {leftContent}
                 </div>
-                {rightContent}
+                <div className='flex items-center gap-x-4'>
+                    {rightContent}
+                    {actionButtons && actionButtons.length > 0 && <MenuButton
+                        actionButtons={actionButtons}
+                        placement="top-right"
+                    />}
+                </div>
             </div>
         </header>
     );

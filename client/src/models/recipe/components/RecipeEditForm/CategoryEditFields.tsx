@@ -5,7 +5,7 @@ import { IRecipeCategory } from '@/types/api';
 import { Check, ChevronRight } from 'lucide-react';
 import React from 'react';
 import { useRecipeStore } from '../../hooks/recipeStores';
-import { colors, DIALOG_NAME } from '@/constants';
+import { COLOR_VARIANT, colors, DIALOG_NAME } from '@/constants';
 import { RecipeEditFormData } from '../../types';
 
 interface Props {
@@ -136,10 +136,10 @@ const CategoryEditFields = ({ control }: Props) => {
                     )}
                 </div>
                 <TextButton
-                    colorVariant="secondary"
+                    colorVariant={COLOR_VARIANT.SECONDARY}
                     onClick={() =>
                         openDialog(DIALOG_NAME.RECIPE_CATEGORY_SETTING, {
-                            onAction: () => {},
+                            onAction: () => { },
                         })
                     }>
                     カテゴリーの追加・編集
