@@ -1,12 +1,12 @@
 'use client';
 import React from 'react';
-import { ActionMenu, AlertDialog } from '@/components/common';
+import { MenuButton, AlertDialog } from '@/components/common';
 import { colors } from '@/constants/colors';
 import { Check, GripVertical, Pencil, Pin, PinOff, Trash } from 'lucide-react';
 import { IShoppingItem } from '@/types/api';
 import { useShoppingItemApi, useShoppingStore } from '../../hooks';
 import { SHOPPING_ALERT_DIALOG_CONFIGS } from '../../constants';
-import { AlertDialogData } from '@/types/dialog';
+import { AlertDialogData } from '@/types';
 import { ALERT_DIALOG_STATE_DEFAULT, DIALOG_NAME } from '@/constants/dialog';
 import { EDIT_MODE } from '@/constants';
 
@@ -114,11 +114,10 @@ const ShoppingItemCard = ({ item }: Props) => {
                             htmlFor={`checkbox-${id}`}
                             className="relative pl-7 w-full h-full whitespace-nowrap cursor-pointer">
                             <div
-                                className={`absolute top-1/2 -translate-y-1/2 left-0 w-5 h-5 rounded border-[1.5px] transition-colors ${
-                                    isChecked
-                                        ? 'bg-primary-main border-[transparent]'
-                                        : 'bg-white border-gray-main'
-                                }`}>
+                                className={`absolute top-1/2 -translate-y-1/2 left-0 w-5 h-5 rounded border-[1.5px] transition-colors ${isChecked
+                                    ? 'bg-primary-main border-[transparent]'
+                                    : 'bg-white border-gray-main'
+                                    }`}>
                                 {isChecked && (
                                     <Check
                                         strokeWidth={3.5}
@@ -131,7 +130,7 @@ const ShoppingItemCard = ({ item }: Props) => {
                             {name}
                         </label>
                     </div>
-                    <ActionMenu
+                    <MenuButton
                         actionButtons={actionButtons}
                         placement="top-right"
                     />

@@ -12,7 +12,7 @@ import {
     DELETE_CHECK_FOR_JOIN_GROUP_DIALOG_CONFIGS,
     JOIN_ERROR_TYPE,
 } from '../../constants';
-import { AlertDialogConfig, AlertDialogData } from '@/types/dialog';
+import { AlertDialogConfig, AlertDialogData } from '@/types';
 import { ALERT_DIALOG_STATE_DEFAULT } from '@/constants/dialog';
 
 interface Props {

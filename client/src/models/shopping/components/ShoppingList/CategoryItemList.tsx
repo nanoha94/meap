@@ -4,12 +4,13 @@ import { rectSortingStrategy, SortableContext } from '@dnd-kit/sortable';
 import { useDroppable } from '@dnd-kit/core';
 import Sortable from '@/components/dnd/Sortable';
 import ShoppingItemCard from './ShoppingItemCard';
-import { ActionMenu, AlertDialog } from '@/components/common';
+import { MenuButton, AlertDialog } from '@/components/common';
 import { useShoppingItemApi, useShoppingStore } from '../../hooks';
 import { SHOPPING_ALERT_DIALOG_CONFIGS } from '../../constants';
-import { AlertDialogData } from '@/types/dialog';
+import { AlertDialogData } from '@/types';
 import { ALERT_DIALOG_STATE_DEFAULT } from '@/constants/dialog';
 import { IShoppingCategory, IShoppingItem } from '@/types/api';
+import { ActionButton } from '@/types';
 
 interface Props {
     category: IShoppingCategory;
@@ -21,7 +22,6 @@ const CategoryItemList: React.FC<Props> = ({ category, items }) => {
     const { items: storeItems, setItems: setStoreItems } = useShoppingStore();
     const [deleteCheckDialog, setDeleteCheckDialog] =
         React.useState<AlertDialogData>(ALERT_DIALOG_STATE_DEFAULT);
-
     const { setNodeRef: setDroppableNodeRef } = useDroppable({
         id: category.id,
     });
@@ -74,26 +74,29 @@ const CategoryItemList: React.FC<Props> = ({ category, items }) => {
         [storeItems],
     );
 
+    const actionButtons: ActionButton[] =
+        [
+            {
+                label: 'チェック解除',
+                icon: <X />,
+                onClick: () => {
+                    handleAllClearChecked(items);
+                },
+            },
+            {
+                label: 'チェック済みを削除',
+                icon: <Trash />,
+                onClick: openDeleteCheckDialog,
+            },
+        ];
+
     return (
         <>
             <div className="flex flex-col gap-y-4">
                 <div className="flex gap-x-4 items-center text-gray-main">
                     {category.name}
-                    <ActionMenu
-                        actionButtons={[
-                            {
-                                label: 'チェック解除',
-                                icon: <X />,
-                                onClick: () => {
-                                    handleAllClearChecked(items);
-                                },
-                            },
-                            {
-                                label: 'チェック済みを削除',
-                                icon: <Trash />,
-                                onClick: openDeleteCheckDialog,
-                            },
-                        ]}
+                    <MenuButton
+                        actionButtons={actionButtons}
                         placement="top-left"
                         className="w-5 h-5"
                     />

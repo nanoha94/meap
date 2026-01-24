@@ -3,12 +3,7 @@ import { CalendarDays, LucideProps, Minus, Pencil, Plus } from 'lucide-react';
 import React from 'react';
 import itemOpenStyles from '@/styles/itemOpen.module.css';
 import { useShoppingStore } from '../../hooks';
-
-interface ActionButton {
-    label: string;
-    icon: React.ReactElement<LucideProps>;
-    onClick: () => void;
-}
+import { ActionButton } from '@/types';
 
 const AddShoppingItemButton = () => {
     const [isOpen, setIsOpen] = React.useState<boolean>(false);
@@ -20,7 +15,7 @@ const AddShoppingItemButton = () => {
             label: '献立から追加',
             icon: <CalendarDays />,
             // TODO: 実装
-            onClick: () => {},
+            onClick: () => { },
         },
         {
             label: 'テキストから追加',
@@ -77,9 +72,8 @@ const AddShoppingItemButton = () => {
                 />
             )}
             <div
-                className={`z-[100] absolute flex flex-col items-end gap-y-2.5 text-xl text-white bottom-[160px] right-6 ${
-                    isOpen ? itemOpenStyles.open : itemOpenStyles.close
-                }`}>
+                className={`z-[100] absolute flex flex-col items-end gap-y-2.5 text-xl text-white bottom-[160px] right-6 ${isOpen ? itemOpenStyles.open : itemOpenStyles.close
+                    }`}>
                 {actionButtons.map((v, idx) => (
                     <button
                         key={idx}

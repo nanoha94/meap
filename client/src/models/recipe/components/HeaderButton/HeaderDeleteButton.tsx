@@ -3,7 +3,7 @@ import { Trash } from 'lucide-react';
 import React from 'react';
 import { useRecipeApi } from '@/models/recipe/hooks/useRecipeApi';
 import { AlertDialog, HeaderTextButton } from '@/components/common';
-import { AlertDialogData } from '@/types/dialog';
+import { AlertDialogData } from '@/types';
 import { ALERT_DIALOG_STATE_DEFAULT } from '@/constants';
 
 interface Props {

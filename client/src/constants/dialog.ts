@@ -1,4 +1,4 @@
-import { AlertDialogConfig, AlertDialogData } from '@/types/dialog';
+import { AlertDialogConfig, AlertDialogData } from '@/types';
 
 export const ALERT_DIALOG_CONFIG_DEFAULT: AlertDialogConfig = {
     title: '',

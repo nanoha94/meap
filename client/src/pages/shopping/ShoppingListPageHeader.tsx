@@ -1,17 +1,17 @@
 'use client';
 import React from 'react';
-import itemOpenStyles from '@/styles/itemOpen.module.css';
-import { Header, HeaderTextButton, LucideIconWrapper } from '@/components/common';
-import { colors, DIALOG_NAME, EDIT_MODE } from '@/constants';
+import { MenuButton, Header, HeaderTextButton } from '@/components/common';
+import { DIALOG_NAME, EDIT_MODE } from '@/constants';
 import { useShoppingStore } from '@/models/shopping/hooks';
 import { CalendarDays, CirclePlus, Pencil } from 'lucide-react';
+import { ActionButton } from '@/types';
 
 const ShoppingListPageHeader = () => {
     const { openDialog } = useShoppingStore();
     const [isOpen, setIsOpen] = React.useState<boolean>(false);
     const containerRef = React.useRef<HTMLDivElement>(null);
 
-    const actionButtons = [
+    const actionButtons: ActionButton[] = [
         {
             label: '献立から追加',
             icon: <CalendarDays />,
@@ -57,35 +57,17 @@ const ShoppingListPageHeader = () => {
 
     return (
         <Header title="買い物リスト" rightContent={<div className="relative leading-none">
-            <HeaderTextButton
-                disabled={isOpen}
-                colorVariant="secondary"
-                onClick={() => setIsOpen(true)}>
-                <CirclePlus size={20} strokeWidth={2} />
-                アイテムを追加
-            </HeaderTextButton>
-            <div
-                ref={containerRef}
-                className={`z-10 absolute top-10 right-0 py-1 flex flex-col items-start bg-white rounded border border-gray-main shadow-lg  ${isOpen ? itemOpenStyles.open : itemOpenStyles.close
-                    }`}>
-                {actionButtons.map((v, idx) => (
-                    <button
-                        key={idx}
-                        onClick={() => {
-                            v.onClick();
-                            setIsOpen(false);
-                        }}
-                        className="px-3 py-1 w-full flex items-center gap-x-2 whitespace-nowrap transition-colors hover:bg-gray-light">
-                        <LucideIconWrapper
-                            strokeWidth={1.5}
-                            color={colors.black}
-                            size={20}>
-                            {v.icon}
-                        </LucideIconWrapper>
-                        {v.label}
-                    </button>
-                ))}
-            </div>
+            <MenuButton
+                customButton={<HeaderTextButton
+                    disabled={isOpen}
+                    colorVariant="secondary"
+                    onClick={() => setIsOpen(true)}>
+                    <CirclePlus size={20} strokeWidth={2} />
+                    アイテムを追加
+                </HeaderTextButton>}
+                actionButtons={actionButtons}
+                placement="top-10 right-0"
+            />
         </div>} />
 
     );

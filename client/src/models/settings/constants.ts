@@ -1,4 +1,4 @@
-import { AlertDialogConfig } from '@/types/dialog';
+import { AlertDialogConfig } from '@/types';
 
 // joinリクエストをしたときのエラー種別
 export const JOIN_ERROR_TYPE = {
