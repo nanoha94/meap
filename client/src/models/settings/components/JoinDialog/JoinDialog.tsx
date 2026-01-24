@@ -1,5 +1,5 @@
 'use client';
-import { Dialog, Button, AlertDialog } from '@/components/common';
+import { Dialog, Button } from '@/components/common';
 import { COLOR_VARIANT, colors } from '@/constants/colors';
 import dayjs from 'dayjs';
 import { LoaderCircle } from 'lucide-react';
@@ -12,9 +12,8 @@ import {
     DELETE_CHECK_FOR_JOIN_GROUP_DIALOG_CONFIGS,
     JOIN_ERROR_TYPE,
 } from '../../constants';
-import { AlertDialogConfig, AlertDialogData } from '@/types';
-import { ALERT_DIALOG_STATE_DEFAULT } from '@/constants/dialog';
 import { BUTTON_VARIANT } from '@/constants';
+import { useAlertDialog } from '@/hooks/useAlertDialog';
 
 interface Props {
     invitationDetail: IInvitation | null;
@@ -26,10 +25,8 @@ const JoinDialog = ({ invitationDetail }: Props) => {
     const { dialogs, openDialog, closeDialog } = useAccountStore();
     const { isOpen } = dialogs.join;
     const { iconAvatar, removeTokenFromPath } = useAccountHandlers();
+    const { openAlertDialog, closeAlertDialog, setAlertDialogLoading } = useAlertDialog();
     const token = invitationDetail?.token ?? '';
-
-    const [deleteCheckDialog, setDeleteCheckDialog] =
-        React.useState<AlertDialogData>(ALERT_DIALOG_STATE_DEFAULT);
 
     /**
      * 招待期限が切れているかどうか
@@ -49,28 +46,6 @@ const JoinDialog = ({ invitationDetail }: Props) => {
     };
 
     /**
-     * 削除確認ダイアログを閉じる
-     */
-    const closeDeleteCheckDialog = () => {
-        setDeleteCheckDialog(ALERT_DIALOG_STATE_DEFAULT);
-        removeTokenFromPath();
-    };
-
-    /**
-     * 削除確認ダイアログを開く
-     * @param config ダイアログの設定
-     */
-    const openDeleteCheckDialog = (config: AlertDialogConfig) => {
-        setDeleteCheckDialog({
-            isOpen: true,
-            config,
-            onCancel: closeDeleteCheckDialog,
-            onAction: () => handleJoinGroup(true),
-            isLoading,
-        });
-    };
-
-    /**
      * グループに参加する
      * @param isDelete 削除するかどうか
      * @returns
@@ -78,24 +53,28 @@ const JoinDialog = ({ invitationDetail }: Props) => {
     const handleJoinGroup = async (isDelete: boolean) => {
         if (!token) return;
 
+        setAlertDialogLoading(true);
         const result = await joinGroup(token, isDelete);
+        setAlertDialogLoading(false);
 
         if (result.success) {
             // 成功した場合
-            closeDialog('join');
-            closeDeleteCheckDialog();
+            closeAlertDialog();
+            handleClose();
             router.refresh();
         } else if (result.errorStatus === 409 && result.errorType) {
             // 409エラーの場合、削除確認ダイアログを表示
             const errorType = result.errorType as keyof typeof JOIN_ERROR_TYPE;
             const config =
                 DELETE_CHECK_FOR_JOIN_GROUP_DIALOG_CONFIGS[errorType];
-            openDeleteCheckDialog(config);
+            openAlertDialog(config, () => {
+                handleJoinGroup(true);
+            });
             closeDialog('join');
         } else {
             // その他のエラーの場合
-            closeDialog('join');
-            closeDeleteCheckDialog();
+            closeAlertDialog();
+            handleClose();
         }
     };
 
@@ -174,13 +153,6 @@ const JoinDialog = ({ invitationDetail }: Props) => {
                     </div>
                 )}
             </Dialog>
-            <AlertDialog
-                isOpen={deleteCheckDialog.isOpen}
-                config={deleteCheckDialog.config}
-                onCancel={deleteCheckDialog.onCancel}
-                onAction={deleteCheckDialog.onAction}
-                isLoading={isLoading}
-            />
         </>
     );
 };

@@ -7,10 +7,11 @@ import { useGlobalStore } from '@/stores';
 import Image from 'next/image';
 import { Image as ImageIcon, Pencil, Trash } from 'lucide-react';
 import { useSnackbars } from '@/hooks/useSnackbars';
-import { AlertDialog, Header, HeaderTextButton } from '@/components/common';
+import { Header, HeaderTextButton } from '@/components/common';
 import { useAccountStore } from '@/models/settings/hooks';
-import { ActionButton, AlertDialogData } from '@/types';
-import { ALERT_DIALOG_STATE_DEFAULT, COLOR_VARIANT } from '@/constants';
+import { ActionButton } from '@/types';
+import { COLOR_VARIANT } from '@/constants';
+import { useAlertDialog } from '@/hooks/useAlertDialog';
 
 interface Props {
     fetchRecipe?: IRecipe;
@@ -38,40 +39,26 @@ const RecipeDetailPage = ({
     const { setIsLoading } = useGlobalStore();
     const { addSnackbar } = useSnackbars();
     const { deleteRecipe } = useRecipeApi();
-    const [deleteCheckDialog, setDeleteCheckDialog] =
-        React.useState<AlertDialogData>(ALERT_DIALOG_STATE_DEFAULT);
-
-
-    /**
-    * 削除確認ダイアログを閉じる
-    */
-    const closeDeleteCheckDialog = () => {
-        setDeleteCheckDialog(ALERT_DIALOG_STATE_DEFAULT);
-    };
+    const { openAlertDialog } = useAlertDialog();
 
     /**
      * 削除確認ダイアログを開く
-     * @param config ダイアログの設定
      */
     const openDeleteCheckDialog = () => {
         if (!fetchRecipe) {
             return;
         }
-        setDeleteCheckDialog({
-            isOpen: true,
-            config: {
+        openAlertDialog(
+            {
                 title: '削除',
-                message: [`${name}を削除しますか？`],
+                message: [`${fetchRecipe.name}を削除しますか？`],
                 alertMessage: '',
                 actionButtonText: '削除',
             },
-            onCancel: closeDeleteCheckDialog,
-            onAction: () => {
-                closeDeleteCheckDialog();
+            () => {
                 deleteRecipe(fetchRecipe.id, fetchRecipe.name);
             },
-            isLoading: false,
-        });
+        );
     };
 
     const actionButtons: ActionButton[] = fetchRecipe?.ownerUserId === loginUser?.id ? [
@@ -271,13 +258,7 @@ const RecipeDetailPage = ({
                         )}
                     </div>
                 </div>
-            </main><AlertDialog
-                isOpen={deleteCheckDialog.isOpen}
-                config={deleteCheckDialog.config}
-                onCancel={deleteCheckDialog.onCancel}
-                onAction={deleteCheckDialog.onAction}
-                isLoading={deleteCheckDialog.isLoading}
-            />
+            </main>
         </>
     );
 };

@@ -3,7 +3,7 @@ import { IPostPutRecipeRequest, IRecipe, IIngredientItem } from '@/types/api';
 import { RecipeEditFormData } from '../types';
 import { useRecipeApi } from './useRecipeApi';
 import { useForm, useWatch } from 'react-hook-form';
-import { defaultPostData } from '../constants';
+import { DEFAULT_POST_DATA } from '../constants';
 import { EDIT_MODE, TMP_ID_PREFIX } from '@/constants';
 
 /**
@@ -35,7 +35,7 @@ export const useRecipeEditForm = (fetchRecipe?: IRecipe, ownerUserId?: string) =
     );
     const methods = useForm<RecipeEditFormData>({
         defaultValues: { 
-            ...defaultPostData, 
+            ...DEFAULT_POST_DATA, 
             ...fetchRecipe,
             ownerUserId: fetchRecipe?.ownerUserId ?? '',
         },

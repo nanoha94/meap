@@ -1,14 +1,15 @@
 'use client';
 import React from 'react';
-import { MenuButton, AlertDialog } from '@/components/common';
+import { MenuButton } from '@/components/common';
 import { colors } from '@/constants/colors';
 import { Check, GripVertical, Pencil, Pin, PinOff, Trash } from 'lucide-react';
 import { IShoppingItem } from '@/types/api';
 import { useShoppingItemApi, useShoppingStore } from '../../hooks';
 import { SHOPPING_ALERT_DIALOG_CONFIGS } from '../../constants';
-import { AlertDialogData } from '@/types';
-import { ALERT_DIALOG_STATE_DEFAULT, DIALOG_NAME } from '@/constants/dialog';
+import { DIALOG_NAME } from '@/constants/dialog';
 import { EDIT_MODE } from '@/constants';
+import { useAlertDialog } from '@/hooks/useAlertDialog';
+import { ActionButton } from '@/types';
 
 interface Props {
     item: IShoppingItem;
@@ -19,33 +20,7 @@ const ShoppingItemCard = ({ item }: Props) => {
     const { items: storeItems, setItems: setStoreItems } = useShoppingStore();
     const { deleteShoppingItems } = useShoppingItemApi();
     const { openDialog } = useShoppingStore();
-    const [deleteCheckDialog, setDeleteCheckDialog] =
-        React.useState<AlertDialogData>(ALERT_DIALOG_STATE_DEFAULT);
-
-    /**
-     * 削除確認ダイアログを閉じる
-     */
-    const closeDeleteCheckDialog = () => {
-        setDeleteCheckDialog(ALERT_DIALOG_STATE_DEFAULT);
-    };
-
-    /**
-     * 削除確認ダイアログを開く
-     * @param config ダイアログの設定
-     */
-    const openDeleteCheckDialog = () => {
-        const config = SHOPPING_ALERT_DIALOG_CONFIGS.deleteItem(name);
-        setDeleteCheckDialog({
-            isOpen: true,
-            config,
-            onCancel: closeDeleteCheckDialog,
-            onAction: () => {
-                deleteShoppingItems([id]);
-                closeDeleteCheckDialog();
-            },
-            isLoading: false,
-        });
-    };
+    const { openAlertDialog } = useAlertDialog();
 
     /**
      * アイテムのプロパティを切り替えてストアにセットする
@@ -67,7 +42,10 @@ const ShoppingItemCard = ({ item }: Props) => {
         [storeItems],
     );
 
-    const actionButtons = [
+    /**
+     * アイテムのアクションボタン
+     */
+    const actionButtons: ActionButton[] = [
         {
             label: '編集する',
             icon: <Pencil />,
@@ -81,7 +59,11 @@ const ShoppingItemCard = ({ item }: Props) => {
         {
             label: '削除する',
             icon: <Trash />,
-            onClick: openDeleteCheckDialog,
+            onClick: () => {
+                openAlertDialog(SHOPPING_ALERT_DIALOG_CONFIGS.deleteItem(name), () => {
+                    deleteShoppingItems([id]);
+                });
+            },
         },
         {
             label: isPinned ? '固定解除する' : '固定する',
@@ -136,14 +118,6 @@ const ShoppingItemCard = ({ item }: Props) => {
                     />
                 </div>
             </div>
-
-            <AlertDialog
-                isOpen={deleteCheckDialog.isOpen}
-                config={deleteCheckDialog.config}
-                onCancel={deleteCheckDialog.onCancel}
-                onAction={deleteCheckDialog.onAction}
-                isLoading={deleteCheckDialog.isLoading}
-            />
         </>
     );
 };

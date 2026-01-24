@@ -7,8 +7,8 @@ export type AlertDialogConfig = {
 
 export type AlertDialogData = {
     isOpen: boolean;
+    isLoading: boolean;
     config: AlertDialogConfig;
     onCancel: () => void;
     onAction: () => void;
-    isLoading: boolean;
 };

@@ -18,7 +18,7 @@ export const SHOPPING_ITEM_SETTING_DIALOG_CONFIGS: Record<
     },
 };
 
-// ダイアログ設定を生成する関数群
+// アラートダイアログの設定
 export const SHOPPING_ALERT_DIALOG_CONFIGS = {
     // カテゴリーからアイテムを削除
     deleteItemsFromCategory: (categoryName: string): AlertDialogConfig => ({

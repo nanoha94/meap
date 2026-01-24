@@ -4,11 +4,10 @@ import { rectSortingStrategy, SortableContext } from '@dnd-kit/sortable';
 import { useDroppable } from '@dnd-kit/core';
 import Sortable from '@/components/dnd/Sortable';
 import ShoppingItemCard from './ShoppingItemCard';
-import { MenuButton, AlertDialog } from '@/components/common';
+import { MenuButton } from '@/components/common';
 import { useShoppingItemApi, useShoppingStore } from '../../hooks';
 import { SHOPPING_ALERT_DIALOG_CONFIGS } from '../../constants';
-import { AlertDialogData } from '@/types';
-import { ALERT_DIALOG_STATE_DEFAULT } from '@/constants/dialog';
+import { useAlertDialog } from '@/hooks/useAlertDialog';
 import { IShoppingCategory, IShoppingItem } from '@/types/api';
 import { ActionButton } from '@/types';
 
@@ -20,41 +19,25 @@ interface Props {
 const CategoryItemList: React.FC<Props> = ({ category, items }) => {
     const { deleteShoppingItems } = useShoppingItemApi();
     const { items: storeItems, setItems: setStoreItems } = useShoppingStore();
-    const [deleteCheckDialog, setDeleteCheckDialog] =
-        React.useState<AlertDialogData>(ALERT_DIALOG_STATE_DEFAULT);
+    const { openAlertDialog } = useAlertDialog();
     const { setNodeRef: setDroppableNodeRef } = useDroppable({
         id: category.id,
     });
 
     /**
-     * 削除確認ダイアログを閉じる
-     */
-    const closeDeleteCheckDialog = () => {
-        setDeleteCheckDialog(ALERT_DIALOG_STATE_DEFAULT);
-    };
-
-    /**
      * 削除確認ダイアログを開く
-     * @param config ダイアログの設定
      */
     const openDeleteCheckDialog = () => {
         const config = SHOPPING_ALERT_DIALOG_CONFIGS.deleteItemsFromCategory(
             category.name,
         );
-        setDeleteCheckDialog({
-            isOpen: true,
-            config,
-            onCancel: closeDeleteCheckDialog,
-            onAction: () => {
-                // TODO: 削除可能なものが含まれているかチェックする
-                deleteShoppingItems(
-                    items
-                        .filter(v => !v.isPinned && v.isChecked)
-                        .map(v => v.id),
-                );
-                closeDeleteCheckDialog();
-            },
-            isLoading: false,
+        openAlertDialog(config, () => {
+            // TODO: 削除可能なものが含まれているかチェックする
+            deleteShoppingItems(
+                items
+                    .filter(v => !v.isPinned && v.isChecked)
+                    .map(v => v.id),
+            );
         });
     };
 
@@ -123,13 +106,6 @@ const CategoryItemList: React.FC<Props> = ({ category, items }) => {
                     </div>
                 </SortableContext>
             </div>
-            <AlertDialog
-                isOpen={deleteCheckDialog.isOpen}
-                config={deleteCheckDialog.config}
-                onCancel={deleteCheckDialog.onCancel}
-                onAction={deleteCheckDialog.onAction}
-                isLoading={deleteCheckDialog.isLoading}
-            />
         </>
     );
 };

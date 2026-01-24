@@ -77,6 +77,7 @@ export const useAuth = () => {
                     'error',
                     error.response.data.message || 'エラーが発生しました',
                 );
+                setIsLoading(false);
             });
     };
 
@@ -109,6 +110,7 @@ export const useAuth = () => {
                 }
                 console.error(error);
                 addSnackbar('error', error.response.data.message);
+                setIsLoading(false);
             });
     };
 
@@ -144,6 +146,7 @@ export const useAuth = () => {
                 }
                 console.error(error);
                 addSnackbar('error', error.response.data.message);
+                setIsLoading(false);
             });
     };
 
@@ -165,6 +168,7 @@ export const useAuth = () => {
             .catch(error => {
                 console.error(error);
                 addSnackbar('error', error.response.data.message);
+                setIsLoading(false);
             });
     };
 

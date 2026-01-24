@@ -1,13 +1,15 @@
 'use client';
 import React from 'react';
-import { AlertDialog, Header, HeaderTextButton } from '@/components/common';
+import { Header, HeaderTextButton } from '@/components/common';
 import StyledSelect from '@/components/common/StyledSelect';
 import { useAccountStore } from '@/models/settings/hooks';
 import { IRecipe, IUser } from '@/types/api';
 import { Save, Trash } from 'lucide-react';
 import { useRecipeApi } from '@/models/recipe/hooks';
-import { ActionButton, AlertDialogData } from '@/types';
-import { ALERT_DIALOG_STATE_DEFAULT, COLOR_VARIANT } from '@/constants';
+import { ActionButton } from '@/types';
+import { COLOR_VARIANT } from '@/constants';
+import { useAlertDialog } from '@/hooks/useAlertDialog';
+import { RECIPE_ALERT_DIALOG_CONFIGS } from '@/models/recipe/constants';
 
 interface Props {
     ownerUserId: string;
@@ -20,47 +22,22 @@ interface Props {
 const RecipeEditPageHeader = ({ ownerUserId, users, fetchRecipe, onChangeOwnerUserId, onClickSaveButton }: Props) => {
     const { loginUser } = useAccountStore();
     const { deleteRecipe } = useRecipeApi();
-    const [deleteCheckDialog, setDeleteCheckDialog] =
-        React.useState<AlertDialogData>(ALERT_DIALOG_STATE_DEFAULT);
+    const { openAlertDialog } = useAlertDialog();
 
     /**
-    * 削除確認ダイアログを閉じる
-    */
-    const closeDeleteCheckDialog = () => {
-        setDeleteCheckDialog(ALERT_DIALOG_STATE_DEFAULT);
-    };
-
-    /**
-     * 削除確認ダイアログを開く
-     * @param config ダイアログの設定
+     * メニューボタン押下時に開くアクションボタン設定
      */
-    const openDeleteCheckDialog = () => {
-        if (!fetchRecipe) {
-            return;
-        }
-        setDeleteCheckDialog({
-            isOpen: true,
-            config: {
-                title: '削除',
-                message: [`${name}を削除しますか？`],
-                alertMessage: '',
-                actionButtonText: '削除',
-            },
-            onCancel: closeDeleteCheckDialog,
-            onAction: () => {
-                closeDeleteCheckDialog();
-                deleteRecipe(fetchRecipe.id, fetchRecipe.name);
-            },
-            isLoading: false,
-        });
-    };
-
     const actionButtons: ActionButton[] = fetchRecipe?.ownerUserId === loginUser?.id ? [
         // 削除できるのは、編集責任者のみ
         {
             label: '削除する',
             icon: <Trash size={20} strokeWidth={2} />,
-            onClick: openDeleteCheckDialog,
+            onClick: () => openAlertDialog(
+                RECIPE_ALERT_DIALOG_CONFIGS.deleteItem(fetchRecipe.name),
+                () => {
+                    deleteRecipe(fetchRecipe.id, fetchRecipe.name);
+                }
+            ),
             color: COLOR_VARIANT.ALERT,
         },
     ] : [];
@@ -101,13 +78,8 @@ const RecipeEditPageHeader = ({ ownerUserId, users, fetchRecipe, onChangeOwnerUs
                     </>
                 }
                 actionButtons={actionButtons}
-            /> <AlertDialog
-                isOpen={deleteCheckDialog.isOpen}
-                config={deleteCheckDialog.config}
-                onCancel={deleteCheckDialog.onCancel}
-                onAction={deleteCheckDialog.onAction}
-                isLoading={deleteCheckDialog.isLoading}
-            /></>
+            />
+        </>
     );
 };
 

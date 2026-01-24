@@ -8,7 +8,7 @@ import {
 import { DndSortableList } from '@/components/dnd';
 import { CirclePlus } from 'lucide-react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
-import { defaultRecipeCategory } from '../../constants';
+import { DEFAULT_RECIPE_CATEGORY } from '../../constants';
 import { useRecipeCategoryApi } from '../../hooks';
 import { IRecipeCategory } from '@/types/api';
 import { BUTTON_TYPE, BUTTON_VARIANT, COLOR_VARIANT, DND_SORTABLE_LIST_TYPE, TMP_ID_PREFIX } from '@/constants';
@@ -27,7 +27,7 @@ const EditForm: React.FC<Props> = ({ onClose }) => {
 
     const { control, handleSubmit, watch, reset } = useForm<FormData>({
         defaultValues: {
-            categories: [defaultRecipeCategory],
+            categories: [DEFAULT_RECIPE_CATEGORY],
         },
     });
 
@@ -62,7 +62,7 @@ const EditForm: React.FC<Props> = ({ onClose }) => {
         }
 
         const newItem = {
-            ...defaultRecipeCategory,
+            ...DEFAULT_RECIPE_CATEGORY,
             id: `${prefix}${Date.now()}`,
         };
 
