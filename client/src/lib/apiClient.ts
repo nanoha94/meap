@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 import { Agent } from 'undici';
-import { TIMEOUT_MS } from '@/constants';
+import { API_STATUS_CODE, TIMEOUT_MS } from '@/constants';
 
 type ApiClientOptions = Omit<RequestInit, 'body'> & {
     body?: Record<string, unknown> | BodyInit | null;
@@ -80,7 +80,7 @@ export async function apiClient<T>(
         );
 
         // 認証関連のエラーを統一
-        if (response.status === 401 || response.status === 409) {
+        if (response.status == API_STATUS_CODE.UNAUTHORIZED || response.status === API_STATUS_CODE.CONFLICT) {
             throw new Error('AUTHENTICATION_REQUIRED');
         }
 
@@ -89,7 +89,7 @@ export async function apiClient<T>(
 
     // No Contentの場合は空のオブジェクトを返す
     if (
-        response.status === 204 ||
+        response.status === API_STATUS_CODE.NO_CONTENT ||
         response.headers.get('Content-Length') === '0'
     ) {
         return {} as T;

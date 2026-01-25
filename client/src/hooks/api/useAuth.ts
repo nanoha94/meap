@@ -4,6 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useGlobalStore } from '@/stores';
 import { useSnackbars } from '../useSnackbars';
 import { useApiErrorHandler } from './useApiErrorHandler';
+import { API_STATUS_CODE } from '@/constants';
 
 export const useAuth = () => {
     const router = useRouter();
@@ -49,7 +50,7 @@ export const useAuth = () => {
             // ユーザー登録成功時にメール認証ページにリダイレクト
             router.push('/email/verify');
         } catch (error) {
-            if (error.response?.status === 422) {
+            if (error.response?.status === API_STATUS_CODE.UNPROCESSABLE_ENTITY) {
                 setErrors(error.response.data.errors);
             } else {
                 handleApiError(error);
@@ -92,7 +93,7 @@ export const useAuth = () => {
             // ログイン成功時にトップ画面にリダイレクト
             window.location.href = '/plan';
         } catch (error) {
-            if (error.response?.status === 422) {
+            if (error.response?.status === API_STATUS_CODE.UNPROCESSABLE_ENTITY) {
                 setErrors(error.response.data.errors);
             } else {
                 handleApiError(error);
@@ -135,7 +136,7 @@ export const useAuth = () => {
             const response = await axios.post('/password/reset/request', { email });
             setStatus(response.data.message);
         } catch (error) {
-            if (error.response?.status === 422) {
+            if (error.response?.status === API_STATUS_CODE.UNPROCESSABLE_ENTITY) {
                 setErrors(error.response.data.errors);
             } else {
                 setStatus(error.response?.data?.message);
@@ -181,7 +182,7 @@ export const useAuth = () => {
             // パスワードリセット成功時にリセットトークンをクエリパラメータに追加してログインページにリダイレクト
             router.push('/login?reset=' + btoa(response.data.message));
         } catch (error) {
-            if (error.response?.status === 422) {
+            if (error.response?.status === API_STATUS_CODE.UNPROCESSABLE_ENTITY) {
                 setErrors(error.response.data.errors);
             } else {
                 setStatus(error.response?.data?.message);

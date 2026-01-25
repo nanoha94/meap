@@ -1,4 +1,4 @@
-import { TIMEOUT_MS } from '@/constants';
+import { API_STATUS_CODE, TIMEOUT_MS } from '@/constants';
 import { useSnackbars } from '@/hooks/useSnackbars';
 import { useApiErrorHandler } from '@/hooks/api';
 import axios from '@/lib/axios';
@@ -115,7 +115,7 @@ export const useInvitationApi = () => {
                 addSnackbar('error', 'リクエストがタイムアウトしました');
             }
             // 409エラーの場合は、その後データ消去確認ダイアログを表示する（スナックバーは表示しない）
-            if (error.response.status === 409 && error.response?.data?.error_type) {
+            if (error.response.status === API_STATUS_CODE.CONFLICT && error.response?.data?.error_type) {
                 console.error(error.response?.data?.message);
 
                 const errorType = error.response?.data?.error_type as keyof typeof JOIN_ERROR_TYPE;

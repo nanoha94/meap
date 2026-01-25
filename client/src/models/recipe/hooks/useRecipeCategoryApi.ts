@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation';
 import { useRecipeStore } from './recipeStores';
 import { IPostRecipeCategoryRequest, IRecipeCategory } from '@/types/api';
 import axios from '@/lib/axios';
-import { TIMEOUT_MS, TMP_ID_PREFIX } from '@/constants';
+import { API_STATUS_CODE, TIMEOUT_MS, TMP_ID_PREFIX } from '@/constants';
 import React from 'react';
 import { useApiErrorHandler } from '@/hooks/api';
 import { useGlobalStore } from '@/stores';
@@ -109,7 +109,7 @@ export const useRecipeCategoryApi = () => {
                         data: updateCategories,
                         timeout: TIMEOUT_MS,
                     });
-                    if (res.status === 200) {
+                    if (res.status === API_STATUS_CODE.OK) {
                         router.refresh();
                     }
                 } catch (error) {
