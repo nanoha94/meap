@@ -3,21 +3,30 @@ import { useSnackbars } from '@/hooks/useSnackbars';
 import { useApiErrorHandler } from '@/hooks/api';
 import axios from '@/lib/axios';
 import {
+    IInvitation,
     IPostInvitaionResponse,
     IPostInvitationJoinResponse,
 } from '@/types/api';
 import React from 'react';
+import { DELETE_CHECK_FOR_JOIN_GROUP_DIALOG_CONFIGS, JOIN_ERROR_TYPE } from '../constants';
+import { useAlertDialog } from '@/hooks/useAlertDialog';
+import { useAccountHandlers } from './useAccountHandlers';
+import { useGlobalStore } from '@/stores';
 
 export const useInvitationApi = () => {
     const { addSnackbar } = useSnackbars();
+    const { openAlertDialog } = useAlertDialog();
+    const { removeTokenFromPath } = useAccountHandlers();
     const { handleApiError } = useApiErrorHandler();
-    const [isLoading, setIsLoading] = React.useState(false);
-    const [invitationLink, setInvitationLink] = React.useState<string | null>(
-        null,
-    );
-    const [tokenExpiresAt, setTokenExpiresAt] = React.useState<string | null>(
-        null,
-    );
+    const { incrementLoadingCount, decrementLoadingCount } = useGlobalStore();
+    // fetchInvitationTokenのローディング状態（画面全体のローディングアニメーションは動作させたくないためローカル管理）
+    const [isFetching, setIsFetching] = React.useState<boolean>(false);
+    const [invitationLink, setInvitationLink] = React.useState<string | null>(null);
+    const [tokenExpiresAt, setTokenExpiresAt] = React.useState<string | null>(null);
+
+    // 重複リクエスト防止用のフラグ
+    const isFetchRequestRef = React.useRef(false);
+    const isJoinRequestRef = React.useRef(false);
 
     /**
      * 招待トークンを取得する
@@ -28,8 +37,14 @@ export const useInvitationApi = () => {
     ): Promise<{
         success: boolean;
     }> => {
+        // 重複リクエスト防止
+        if (isFetchRequestRef.current) {
+            return { success: false };
+        }
+
         try {
-            setIsLoading(true);
+            isFetchRequestRef.current = true;
+            setIsFetching(true);
 
             // 招待トークン発行
             const res = await axios.post<IPostInvitaionResponse>(
@@ -54,7 +69,8 @@ export const useInvitationApi = () => {
             onError?.();
             return { success: false };
         } finally {
-            setIsLoading(false);
+            isFetchRequestRef.current = false;
+            setIsFetching(false);
         }
     };
 
@@ -65,22 +81,27 @@ export const useInvitationApi = () => {
      * @returns {Promise<{success: boolean, errorStatus: number, errorType?: string}>} 成功/失敗の情報
      */
     const joinGroup = async (
-        token: string,
+        invitationDetail: IInvitation,
         isDelete: boolean,
-    ): Promise<{
-        success: boolean;
-        errorStatus?: number;
-        errorType?: string;
-    }> => {
-        setIsLoading(true);
+    ): Promise<void> => {
+        // 重複リクエスト防止
+        if (isJoinRequestRef.current) {
+            return;
+        }
+
         try {
+            isJoinRequestRef.current = true;
+            incrementLoadingCount();
+
             const res = await axios.post<IPostInvitationJoinResponse>(
-                `/invitations/${token}/join`,
+                `/invitations/${invitationDetail.token}/join`,
                 {
                     isDelete,
                     timeout: TIMEOUT_MS,
                 },
             );
+            // URLからトークンを削除
+            removeTokenFromPath();
 
             // レスポンスデータ
             const responseData: IPostInvitationJoinResponse = res.data;
@@ -88,37 +109,34 @@ export const useInvitationApi = () => {
             if (responseData.success) {
                 addSnackbar('success', responseData.message);
             }
-            return { success: true };
         } catch (error) {
             // TODO: 見直し（handleApiErrorは使用できないのか？）
             if (error.code === 'ECONNABORTED') {
                 addSnackbar('error', 'リクエストがタイムアウトしました');
-                return { success: false, errorStatus: 408 };
             }
-            // 409エラーの場合は、その後データ消去確認ダイアログを表示するので、スナックバーは表示しない
-            else if (error.response.status === 409 && error.response?.data.error_type) {
-                console.error(error.response?.data.message);
-                return {
-                    success: false,
-                    errorStatus: error.response.status,
-                    errorType: error.response?.data.error_type,
-                };
+            // 409エラーの場合は、その後データ消去確認ダイアログを表示する（スナックバーは表示しない）
+            if (error.response.status === 409 && error.response?.data?.error_type) {
+                console.error(error.response?.data?.message);
+
+                const errorType = error.response?.data?.error_type as keyof typeof JOIN_ERROR_TYPE;
+                openAlertDialog(DELETE_CHECK_FOR_JOIN_GROUP_DIALOG_CONFIGS[errorType], () => {
+                    joinGroup(invitationDetail, true);
+                });
+
             } else {
-                console.error(error.response?.data.message);
-                addSnackbar('error', error.response?.data.message);
-                return {
-                    success: false,
-                    errorStatus: error.response.status,
-                    errorType: error.response?.data.error_type,
-                };
+                console.error(error.response?.data?.message);
+                addSnackbar('error', error.response?.data?.message || 'エラーが発生しました');
+
             }
         } finally {
-            setIsLoading(false);
+            // ローディングアニメーションを終了
+            isJoinRequestRef.current = false;
+            decrementLoadingCount();
         }
     };
 
     return {
-        isLoading,
+        isFetching,
         invitationLink,
         tokenExpiresAt,
         fetchInvitationToken,

@@ -1,7 +1,6 @@
 'use client';
-import { LoaderCircle } from 'lucide-react';
 import Button from './Button';
-import { COLOR_VARIANT, colors } from '@/constants/colors';
+import { COLOR_VARIANT } from '@/constants/colors';
 import React from 'react';
 import { BUTTON_VARIANT } from '@/constants';
 import { useGlobalStore } from '@/stores';
@@ -23,43 +22,35 @@ const AlertDialog = () => {
                     <div className="mb-7 px-5 py-2 w-full text-2xl font-bold text-center">
                         {currentDialog.config.title}
                     </div>
-                    {currentDialog.isLoading ? (
-                        <div className="py-5">
-                            <LoaderCircle
-                                size={40}
-                                color={colors.primary.main}
-                                className="animate-spin mx-auto"
-                            />
+
+                    <div className="flex flex-col gap-y-7">
+                        <div className="flex flex-col gap-y-4">
+                            {currentDialog.config.message.map((v, idx) => (
+                                <p
+                                    key={idx}
+                                    className="text-center whitespace-pre-wrap">
+                                    {v}
+                                </p>
+                            ))}
+                            {currentDialog.config.alertMessage && (
+                                <span className="text-center text-alert-main">
+                                    {currentDialog.config.alertMessage}
+                                </span>
+                            )}
                         </div>
-                    ) : (
-                        <div className="flex flex-col gap-y-7">
-                            <div className="flex flex-col gap-y-4">
-                                {currentDialog.config.message.map((v, idx) => (
-                                    <p
-                                        key={idx}
-                                        className="text-center whitespace-pre-wrap">
-                                        {v}
-                                    </p>
-                                ))}
-                                {currentDialog.config.alertMessage && (
-                                    <span className="text-center text-alert-main">
-                                        {currentDialog.config.alertMessage}
-                                    </span>
-                                )}
-                            </div>
-                            <div className="mx-auto max-w-[320px] w-full flex gap-x-6">
-                                <Button
-                                    colorVariant={COLOR_VARIANT.GRAY}
-                                    variant={BUTTON_VARIANT.OUTLINED}
-                                    onClick={currentDialog.onCancel}>
-                                    キャンセル
-                                </Button>
-                                <Button onClick={currentDialog.onAction} colorVariant={COLOR_VARIANT.ALERT}>
-                                    {currentDialog.config.actionButtonText}
-                                </Button>
-                            </div>
+                        <div className="mx-auto max-w-[320px] w-full flex gap-x-6">
+                            <Button
+                                colorVariant={COLOR_VARIANT.GRAY}
+                                variant={BUTTON_VARIANT.OUTLINED}
+                                onClick={currentDialog.onCancel}>
+                                キャンセル
+                            </Button>
+                            <Button onClick={currentDialog.onAction} colorVariant={COLOR_VARIANT.ALERT}>
+                                {currentDialog.config.actionButtonText}
+                            </Button>
                         </div>
-                    )}
+                    </div>
+
                 </div>
             </div>
         </div>

@@ -42,6 +42,7 @@ const AccountPage = ({ users, invitationDetail, errorMessage }: Props) => {
      * クライアントサイドでのみ実行するため、マウント済みかどうかをチェック
      */
     const [isMounted, setIsMounted] = React.useState(false);
+
     React.useEffect(() => {
         setIsMounted(true);
     }, []);

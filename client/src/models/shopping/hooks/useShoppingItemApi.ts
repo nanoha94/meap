@@ -8,26 +8,39 @@ import {
 } from '@/types/api';
 import { TIMEOUT_MS } from '@/constants';
 import { useApiErrorHandler } from '@/hooks/api';
+import { useGlobalStore } from '@/stores';
 
 export const useShoppingItemApi = () => {
     const { addSnackbar } = useSnackbars();
     const { handleApiError } = useApiErrorHandler();
+    const { incrementLoadingCount, decrementLoadingCount } = useGlobalStore();
     const {
         items: storeItems,
         serverItems,
         setServerItems,
         setItems: setStoreItems,
-        isLoadingItems: isLoading,
-        setIsLoadingItems: setIsLoading,
     } = useShoppingStore();
 
+        // 重複リクエスト防止用のフラグ
+        const isFetchRequestRef = React.useRef(false);
+        const isStoreRequestRef = React.useRef(false);
+        const isUpdateRequestRef = React.useRef(false);
+        const isDeleteRequestRef = React.useRef(false);
     /**
      * 取得処理（更新処理の後に呼び出す）
      */
     const fetchShoppingItems = React.useCallback(
         async (serverOnly = false) => {
+            // 重複リクエスト防止
+            if (isFetchRequestRef.current) {
+                return;
+            }
+
             try {
-                setIsLoading(true);
+                // ローディング状態をセット
+                isFetchRequestRef.current = true;
+                incrementLoadingCount();
+          
                 const res = await axios.get('/shopping-items', {
                     timeout: TIMEOUT_MS,
                 });
@@ -41,10 +54,11 @@ export const useShoppingItemApi = () => {
             } catch (error) {
                 handleApiError(error);
             } finally {
-                setIsLoading(false);
+                isFetchRequestRef.current = false;
+                decrementLoadingCount();
             }
         },
-        [isLoading],
+        [ setServerItems, setStoreItems, handleApiError],
     );
 
     /**
@@ -53,12 +67,15 @@ export const useShoppingItemApi = () => {
      * @returns 作成結果
      */
     const storeShoppingItem = async (item: IPostShoppingItemRequestData) => {
-        if (isLoading) {
+        // 重複リクエスト防止
+        if (isStoreRequestRef.current) {
             return;
         }
 
         try {
-            setIsLoading(true);
+            isStoreRequestRef.current = true;
+            incrementLoadingCount();
+
             const res = await axios.post(`/shopping-items`, {
                 ...item,
                 timeout: TIMEOUT_MS,
@@ -68,12 +85,13 @@ export const useShoppingItemApi = () => {
                     'success',
                     `買い物リストに${item.name}を追加しました`,
                 );
-                fetchShoppingItems();
+               await fetchShoppingItems();
             }
         } catch (error) {
             handleApiError(error);
         } finally {
-            setIsLoading(false);
+            isStoreRequestRef.current = false;
+            decrementLoadingCount();
         }
     };
 
@@ -85,30 +103,34 @@ export const useShoppingItemApi = () => {
     const updateShoppingItems = React.useCallback(
         async (items: IPutShoppingItemRequestData[]) => {
             if (
-                isLoading ||
-                items.length === 0 ||
-                JSON.stringify(items) === JSON.stringify(serverItems)
+                isUpdateRequestRef.current ||
+                items.length <= 0 ||
+                JSON.stringify(items) === JSON.stringify(serverItems)                
             ) {
                 return;
             }
 
             try {
-                setIsLoading(true);
+                isUpdateRequestRef.current = true;
+                incrementLoadingCount();
+
                 const res = await axios.put(`/shopping-items/bulk`, {
                     data: items.filter(v => v.name && v.name.length > 0),
                     timeout: TIMEOUT_MS,
                 });
                 if (res.data) {
-                    await fetchShoppingItems(true); // サーバーデータのみ更新
+                    // await fetchShoppingItems(true); // サーバーデータのみ更新
+                    await fetchShoppingItems();
                     addSnackbar('success', '買い物リストを更新しました');
                 }
             } catch (error) {
                 handleApiError(error);
             } finally {
-                setIsLoading(false);
+                isUpdateRequestRef.current = false;
+                decrementLoadingCount();
             }
         },
-        [serverItems],
+        [ serverItems, incrementLoadingCount, decrementLoadingCount, fetchShoppingItems, addSnackbar, handleApiError],
     );
 
     /**
@@ -116,13 +138,16 @@ export const useShoppingItemApi = () => {
      * @param id 削除するアイテムのID
      * @returns 削除結果
      */
-    const deleteShoppingItems = async (ids: string[]) => {
-        if (isLoading) {
+    const deleteShoppingItems = React.useCallback(async (ids: string[]) => {
+        // 重複リクエスト防止
+        if (isDeleteRequestRef.current) {
             return;
         }
 
         try {
-            setIsLoading(true);
+            isDeleteRequestRef.current = true;
+            incrementLoadingCount();
+
             const res = await axios.delete('/shopping-items/bulk', {
                 data: { ids },
                 timeout: TIMEOUT_MS,
@@ -136,12 +161,13 @@ export const useShoppingItemApi = () => {
             // エラーが発生した場合は再取得して状態を復元
             await fetchShoppingItems();
         } finally {
-            setIsLoading(false);
+            isDeleteRequestRef.current = false;
+            decrementLoadingCount();
         }
-    };
+    }, [incrementLoadingCount, decrementLoadingCount, fetchShoppingItems, addSnackbar, handleApiError]);
 
     return {
-        storeData: { isLoading, items: storeItems },
+        storeData: { items: storeItems },
         fetchShoppingItems,
         storeShoppingItem,
         updateShoppingItems,

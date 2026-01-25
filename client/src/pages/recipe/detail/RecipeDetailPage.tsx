@@ -2,8 +2,7 @@
 import React from 'react';
 import { IRecipe, IIngredientCategory, IImage } from '@/types/api';
 import { useIngredientStore } from '@/models/ingredient/hooks';
-import { useRecipeApi, useRecipeStore } from '@/models/recipe/hooks';
-import { useGlobalStore } from '@/stores';
+import { useRecipeApi } from '@/models/recipe/hooks';
 import Image from 'next/image';
 import { Image as ImageIcon, Pencil, Trash } from 'lucide-react';
 import { useSnackbars } from '@/hooks/useSnackbars';
@@ -32,11 +31,8 @@ const RecipeDetailPage = ({
     const {
         categories: ingredientCategories,
         setCategories: setStoreCategories,
-        isLoadings: isLoadingCategories,
     } = useIngredientStore();
-    const { isLoadings: isLoadingRecipe } = useRecipeStore();
     const { loginUser } = useAccountStore();
-    const { setIsLoading } = useGlobalStore();
     const { addSnackbar } = useSnackbars();
     const { deleteRecipe } = useRecipeApi();
     const { openAlertDialog } = useAlertDialog();
@@ -70,18 +66,6 @@ const RecipeDetailPage = ({
             color: COLOR_VARIANT.ALERT,
         },
     ] : [];
-
-    /**
-     * ローディング状態を更新
-     * @returns void
-     */
-    React.useEffect(() => {
-        setIsLoading(
-            isLoadingRecipe.recipe ||
-            isLoadingRecipe.recipeCategory ||
-            isLoadingCategories.ingredientCategory,
-        );
-    }, [isLoadingRecipe, isLoadingCategories]);
 
     /**
      * 食材カテゴリーをストアにセット

@@ -6,7 +6,7 @@ import { AlertDialogConfig, AlertDialogData } from '@/types';
 /**
  * AlertDialogを管理するカスタムフック
  * 複数のダイアログが順番に表示される
- * @returns { openAlertDialog, closeAlertDialog, setAlertDialogLoading }
+ * @returns { openAlertDialog, closeAlertDialog }
  */
 export const useAlertDialog = () => {
     const alertDialogs = useGlobalStore(state => state.alertDialogs);
@@ -24,7 +24,6 @@ export const useAlertDialog = () => {
         (config: AlertDialogConfig, onAction: () => void) => {
             const newDialog: AlertDialogData = {
                 isOpen: true,
-                isLoading: false,
                 config,
                 onCancel: () => {
                     closeAlertDialog();
@@ -60,26 +59,9 @@ export const useAlertDialog = () => {
         });
     }, [alertDialogs.length]);
 
-    /**
-     * 現在のダイアログのローディング状態を更新
-     * @param isLoading ローディング状態
-     */
-    const setAlertDialogLoading = React.useCallback(
-        (isLoading: boolean) => {
-            if (currentDialog) {
-                setAlertDialogs(prev => {
-                    const newDialogs = [...prev];
-                    newDialogs[0] = { ...newDialogs[0], isLoading };
-                    return newDialogs;
-                });
-            }
-        },
-        [currentDialog, setAlertDialogs],
-    );
 
     return {
         openAlertDialog,
         closeAlertDialog,
-        setAlertDialogLoading,
     };
 };

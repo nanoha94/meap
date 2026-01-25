@@ -2,12 +2,10 @@
 import React from 'react';
 import { IRecipe, IIngredientCategory, IUser } from '@/types/api';
 import { useIngredientStore } from '@/models/ingredient/hooks';
-import { useRecipeStore } from '@/models/recipe/hooks';
 import {
     RecipeEditForm,
 } from '@/models/recipe/components';
 import type { RecipeEditFormRef } from '@/models/recipe/components/RecipeEditForm/RecipeEditForm';
-import { useGlobalStore } from '@/stores';
 import RecipeEditPageHeader from './RecipeEditPageHeader';
 import { useSnackbars } from '@/hooks/useSnackbars';
 
@@ -27,27 +25,12 @@ const RecipeEditPage = ({
     const {
         categories: ingredientCategories,
         setCategories: setStoreCategories,
-        isLoadings: isLoadingCategories,
     } = useIngredientStore();
     const { addSnackbar } = useSnackbars();
-    const { isLoadings: isLoadingRecipe } = useRecipeStore();
-    const { setIsLoading } = useGlobalStore();
     const formRef = React.useRef<RecipeEditFormRef>(null);
     const [ownerUserId, setOwnerUserId] = React.useState<string>(
         (fetchRecipe as IRecipe)?.ownerUserId ?? '',
     );
-
-    /**
-     * ローディング状態を更新
-     * @returns void
-     */
-    React.useEffect(() => {
-        setIsLoading(
-            isLoadingRecipe.recipe ||
-            isLoadingRecipe.recipeCategory ||
-            isLoadingCategories.ingredientCategory,
-        );
-    }, [isLoadingRecipe, isLoadingCategories]);
 
     /**
      * エラーメッセージを表示

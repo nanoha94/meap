@@ -18,7 +18,6 @@ const ShoppingList = () => {
         items: storeItems,
         serverItems,
         categories,
-        isLoadingItems,
     } = useShoppingStore();
     const { updateShoppingItems } = useShoppingItemApi();
     const [tmpItems, setTmpItems] = React.useState<IShoppingItem[]>([]);
@@ -45,9 +44,9 @@ const ShoppingList = () => {
                     tmpItems.map(v =>
                         v.id === activeId
                             ? {
-                                  ...activeItem,
-                                  categoryId: overCategoryId,
-                              }
+                                ...activeItem,
+                                categoryId: overCategoryId,
+                            }
                             : v,
                     ),
                 );
@@ -98,7 +97,6 @@ const ShoppingList = () => {
             // アイテムの比較と更新処理を直接実行
             if (
                 debouncedItems.length > 0 &&
-                !isLoadingItems &&
                 currentItemsStr !== serverItemsStr &&
                 currentItemsStr !== lastSentItemsRef.current // 重複送信防止
             ) {
@@ -117,17 +115,12 @@ const ShoppingList = () => {
      */
     React.useEffect(() => {
         const handleBeforeUnload = () => {
-            if (
-                storeItems.length > 0 &&
-                !isLoadingItems &&
-                JSON.stringify(storeItems) !== JSON.stringify(serverItems)
-            ) {
-                const updateItems = storeItems.map((item, idx) => ({
-                    ...item,
-                    order: idx,
-                }));
-                updateShoppingItems(updateItems);
-            }
+            const updateItems = storeItems.map((item, idx) => ({
+                ...item,
+                order: idx,
+            }));
+            updateShoppingItems(updateItems);
+
         };
 
         window.addEventListener('beforeunload', handleBeforeUnload);
@@ -135,17 +128,11 @@ const ShoppingList = () => {
         return () => {
             window.removeEventListener('beforeunload', handleBeforeUnload);
             // アンマウント時の保存処理
-            if (
-                storeItems.length > 0 &&
-                !isLoadingItems &&
-                JSON.stringify(storeItems) !== JSON.stringify(serverItems)
-            ) {
-                const updateItems = storeItems.map((item, idx) => ({
-                    ...item,
-                    order: idx,
-                }));
-                updateShoppingItems(updateItems);
-            }
+            const updateItems = storeItems.map((item, idx) => ({
+                ...item,
+                order: idx,
+            }));
+            updateShoppingItems(updateItems);
         };
     }, []); // 依存配列を空にして、マウント時に一度だけ実行
 

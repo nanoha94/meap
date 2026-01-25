@@ -2,7 +2,7 @@ import { AlertDialogConfig } from '@/types';
 
 // joinリクエストをしたときのエラー種別
 export const JOIN_ERROR_TYPE = {
-    ALREADY_IN_GROUP: 'already_in_group',
+    ALREADY_IN_ANOTHER_GROUP: 'already_in_another_group',
     HAS_EXISTING_DATA: 'has_existing_data',
 } as const;
 
@@ -11,7 +11,7 @@ export const DELETE_CHECK_FOR_JOIN_GROUP_DIALOG_CONFIGS: Record<
     (typeof JOIN_ERROR_TYPE)[keyof typeof JOIN_ERROR_TYPE],
     AlertDialogConfig
 > = {
-    [JOIN_ERROR_TYPE.ALREADY_IN_GROUP]: {
+    [JOIN_ERROR_TYPE.ALREADY_IN_ANOTHER_GROUP]: {
         title: 'データ削除',
         message: ['現在のグループを退出して\n新しいグループに参加しますか？'],
         alertMessage: '',

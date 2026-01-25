@@ -1,6 +1,5 @@
 import { useSnackbars } from '@/hooks/useSnackbars';
 import { useRouter } from 'next/navigation';
-import { useRecipeStore } from './recipeStores';
 import axios from '@/lib/axios';
 import { TIMEOUT_MS, TMP_ID_PREFIX } from '@/constants';
 import React from 'react';
@@ -12,6 +11,7 @@ import {
 import { useImageApi } from '@/models/image/hooks/useImageApi';
 import { RecipeStepEditFormData } from '../types';
 import { useApiErrorHandler } from '@/hooks/api';
+import { useGlobalStore } from '@/stores';
 
 /**
  * 手順をフォーマット
@@ -35,11 +35,16 @@ export const formatStepItems = (
 };
 
 export const useRecipeApi = () => {
-    const { isLoadings, setIsLoadings } = useRecipeStore();
+    const { incrementLoadingCount, decrementLoadingCount } = useGlobalStore();
     const { bulkUploadImage } = useImageApi();
     const router = useRouter();
     const { addSnackbar } = useSnackbars();
     const { handleApiError } = useApiErrorHandler();
+    
+    // 重複リクエスト防止用のフラグ
+    const isStoreRequestRef = React.useRef(false);
+    const isUpdateRequestRef = React.useRef(false);
+    const isDeleteRequestRef = React.useRef(false);
 
     /**
      * 手順画像のアップロード
@@ -91,7 +96,7 @@ export const useRecipeApi = () => {
 
             return stepsWithImageIds;
         },
-        [],
+        [bulkUploadImage],
     );
 
     const storeRecipe = React.useCallback(
@@ -100,14 +105,16 @@ export const useRecipeApi = () => {
             thumbnail: File | null,
             steps: RecipeStepEditFormData[],
         ) => {
-            const sendData: IPostPutRecipeRequest = data;
-
-            if (isLoadings.recipe) {
+            // 重複リクエスト防止
+            if (isStoreRequestRef.current) {
                 return;
             }
 
+            const sendData: IPostPutRecipeRequest = data;
+
             try {
-                setIsLoadings('recipe', true);
+                isStoreRequestRef.current = true;
+                incrementLoadingCount();
 
                 // サムネイル画像のアップロード
                 if (thumbnail) {
@@ -145,10 +152,11 @@ export const useRecipeApi = () => {
             } catch (error) {
                 handleApiError(error);
             } finally {
-                setIsLoadings('recipe', false);
+                isStoreRequestRef.current = false;
+                decrementLoadingCount();
             }
         },
-        [],
+        [incrementLoadingCount, decrementLoadingCount, bulkUploadImage, uploadStepImages, router, addSnackbar, handleApiError],
     );
 
     const updateRecipe = React.useCallback(
@@ -157,13 +165,16 @@ export const useRecipeApi = () => {
             thumbnail: File | null,
             steps: RecipeStepEditFormData[],
         ) => {
-            const sendData: IPostPutRecipeRequest = data;
-            if (isLoadings.recipe) {
+            // 重複リクエスト防止
+            if (isUpdateRequestRef.current) {
                 return;
             }
 
+            const sendData: IPostPutRecipeRequest = data;
+
             try {
-                setIsLoadings('recipe', true);
+                isUpdateRequestRef.current = true;
+                incrementLoadingCount();
 
                 // サムネイル画像のアップロード
                 if (thumbnail) {
@@ -197,19 +208,22 @@ export const useRecipeApi = () => {
             } catch (error) {
                 handleApiError(error);
             } finally {
-                setIsLoadings('recipe', false);
+                isUpdateRequestRef.current = false;
+                decrementLoadingCount();
             }
         },
-        [],
+        [incrementLoadingCount, decrementLoadingCount, bulkUploadImage, uploadStepImages, router, addSnackbar, handleApiError],
     );
 
     const deleteRecipe = React.useCallback(async (id: string, name: string) => {
-        if (isLoadings.recipe) {
+        // 重複リクエスト防止
+        if (isDeleteRequestRef.current) {
             return;
         }
 
         try {
-            setIsLoadings('recipe', true);
+            isDeleteRequestRef.current = true;
+            incrementLoadingCount();
             const res = await axios.delete(`/recipes/${id}`);
             if (res.data) {
                 addSnackbar('success', `${name}を削除しました`);
@@ -218,9 +232,10 @@ export const useRecipeApi = () => {
         } catch (error) {
             handleApiError(error);
         } finally {
-            setIsLoadings('recipe', false);
+            isDeleteRequestRef.current = false;
+            decrementLoadingCount();
         }
-    }, []);
+    }, [incrementLoadingCount, decrementLoadingCount, router, addSnackbar, handleApiError]);
 
     return {
         storeRecipe,

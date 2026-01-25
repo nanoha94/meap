@@ -7,7 +7,7 @@ import React from 'react';
 
 const Page = () => {
     const { resendEmailVerification } = useAuth();
-    const { isLoading } = useGlobalStore();
+    const { loadingCount } = useGlobalStore();
     const [message, setMessage] = React.useState<string | null>(null);
     const [isInitialSent, setIsInitialSent] = React.useState(false);
     const hasInitialSent = React.useRef(false);
@@ -17,7 +17,7 @@ const Page = () => {
      */
     const sendInitialEmail = async () => {
         await resendEmailVerification({
-            setMessage: () => {}, // 初回は状態を設定しない
+            setMessage: () => { }, // 初回は状態を設定しない
         });
         setIsInitialSent(true);
     };
@@ -66,7 +66,7 @@ const Page = () => {
                 </p>
                 <Button
                     onClick={handleResendEmail}
-                    disabled={isLoading && isInitialSent}>
+                    disabled={loadingCount > 0 && isInitialSent}>
                     認証メールを再送する
                 </Button>
                 {/* TODO: useAuthでスナックバーでメッセージ表示しているので、不要なら削除（要検討） */}

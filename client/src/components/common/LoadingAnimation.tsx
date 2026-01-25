@@ -6,20 +6,21 @@ import { usePathname } from 'next/navigation';
 import React from 'react';
 
 const LoadingAnimation = () => {
-    const { isLoading, visibleLoadingAnimation, setIsLoading } =
+    const { loadingCount, visibleLoadingAnimation, resetLoadingCount } =
         useGlobalStore();
     const pathname = usePathname();
     const prevPath = React.useRef<string>(pathname);
 
     React.useEffect(() => {
         if (prevPath.current !== pathname) {
-            setIsLoading(false);
+            // ページ遷移時にローディング状態をリセット
+            resetLoadingCount();
         }
         prevPath.current = pathname;
-    }, [pathname]);
+    }, [pathname, resetLoadingCount]);
 
-    // isLoadingがtrueかつloadingConditionがtrueの時のみ表示
-    return isLoading && visibleLoadingAnimation ? (
+    // ローディング中かつ表示条件がtrueの時のみ表示
+    return loadingCount > 0 && visibleLoadingAnimation ? (
         <div className="fixed z-50 top-0 left-0 w-full h-screen flex justify-center items-center bg-black/50">
             <div className="py-10 px-20 bg-white rounded-xl flex flex-col items-center gap-y-5">
                 <LoaderCircle

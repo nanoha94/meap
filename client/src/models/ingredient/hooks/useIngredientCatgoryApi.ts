@@ -7,16 +7,20 @@ import React from 'react';
 import { useIngredientStore } from './ingredientStores';
 import { useSnackbars } from '@/hooks/useSnackbars';
 import { useApiErrorHandler } from '@/hooks/api/useApiErrorHandler';
-import { LOADING_STATE_KEYS } from '../constants';
 import axios from '@/lib/axios';
 import { TIMEOUT_MS, TMP_ID_PREFIX } from '@/constants';
 import { useRouter } from 'next/navigation';
+import { useGlobalStore } from '@/stores';
 
 export const useIngredientCatgoryApi = () => {
     const router = useRouter();
     const { addSnackbar } = useSnackbars();
     const { handleApiError } = useApiErrorHandler();
-    const { categories: storeCategories, setIsLoadings } = useIngredientStore();
+    const { categories: storeCategories } = useIngredientStore();
+    const { incrementLoadingCount, decrementLoadingCount } = useGlobalStore();
+
+    // 重複リクエスト防止用のフラグ
+    const isBulkUpdateRequestRef = React.useRef(false);
 
     /**
      * 食材カテゴリーを一括削除用リクエストを生成
@@ -110,15 +114,18 @@ export const useIngredientCatgoryApi = () => {
 
     const bulkUpdateIngredientCategories = React.useCallback(
         async (categories: IIngredientCategory[]) => {
+            // 重複リクエスト防止
             // 更新データがない場合は処理を終了
             if (
+                isBulkUpdateRequestRef.current ||
                 JSON.stringify(categories) === JSON.stringify(storeCategories)
             ) {
                 return;
             }
-
+            // 重複リクエスト防止用のフラグをセット
+            isBulkUpdateRequestRef.current = true;
             // ローディング状態をセット
-            setIsLoadings(LOADING_STATE_KEYS.INGREDIENT_CATEGORY, true);
+            incrementLoadingCount();
 
             // 並列実行するリクエストを準備
             const requests: Promise<unknown>[] = [];
@@ -162,10 +169,20 @@ export const useIngredientCatgoryApi = () => {
             } catch (error) {
                 handleApiError(error);
             } finally {
-                setIsLoadings(LOADING_STATE_KEYS.INGREDIENT_CATEGORY, false);
+                isBulkUpdateRequestRef.current = false; 
+                decrementLoadingCount();
             }
         },
-        [storeCategories],
+        [
+            storeCategories,
+            incrementLoadingCount,
+            decrementLoadingCount,
+            generateDeleteRequest,
+            generateCreateUpdateRequest,
+            handleApiError,
+            router,
+            addSnackbar,
+        ],
     );
 
     return {

@@ -3,14 +3,16 @@ import { create } from 'zustand';
 
 interface GlobalState {
     // state
-    isLoading: boolean; // ローディング状態
+    loadingCount: number; // ローディング中のリクエスト数
     visibleLoadingAnimation: boolean; // ローディングアニメーションの表示条件（カスタム条件）
     snackbars: Snackbar[]; // スナックバー
     alertDialogs: AlertDialogData[]; // ダイアログのキュー（先頭が現在表示中、それ以降が待機中）
     dialogs: DialogData[]; // ダイアログのキュー（先頭が現在表示中、それ以降が待機中）
 
     // setter func
-    setIsLoading: (isLoading: boolean) => void;
+    incrementLoadingCount: () => void; // ローディングカウンターを増やす
+    decrementLoadingCount: () => void; // ローディングカウンターを減らす
+    resetLoadingCount: () => void; // ローディングカウンターをリセット（ページ遷移時など）
     setLoadingCondition: (visible: boolean) => void;
     setSnackbars: (
         snackbars: Snackbar[] | ((prev: Snackbar[]) => Snackbar[]),
@@ -28,14 +30,35 @@ interface GlobalState {
 export const useGlobalStore = create<GlobalState>(set => ({
     // initial state
     isLoading: false,
+    loadingCount: 0,
     visibleLoadingAnimation: true, // デフォルトは表示可能
     snackbars: [],
     alertDialogs: [],
     dialogs: [],
 
     // setter func
-    setIsLoading: (isLoading: boolean) => {
-        set({ isLoading: isLoading });
+    incrementLoadingCount: () => {
+        set(state => {
+            const newCount = state.loadingCount + 1;
+            return {
+                loadingCount: newCount,
+                isLoading: newCount > 0,
+            };
+        });
+    },
+    decrementLoadingCount: () => {
+        set(state => {
+            const newCount = Math.max(0, state.loadingCount - 1);
+            return {
+                loadingCount: newCount,
+                isLoading: newCount > 0,
+            };
+        });
+    },
+    resetLoadingCount: () => {
+        set({
+            loadingCount: 0,
+        });
     },
     setLoadingCondition: (visible: boolean) => {
         set({ visibleLoadingAnimation: visible });

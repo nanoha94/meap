@@ -1,15 +1,26 @@
+import React from 'react';
 import axios from '@/lib/axios';
 import { useParams, useRouter } from 'next/navigation';
 import { useGlobalStore } from '@/stores';
 import { useSnackbars } from '../useSnackbars';
+import { useApiErrorHandler } from './useApiErrorHandler';
 
 export const useAuth = () => {
     const router = useRouter();
     const params = useParams();
-    const { addSnackbar, clearAllSnackbars } = useSnackbars();
-    const { setIsLoading } = useGlobalStore();
+    const { clearAllSnackbars } = useSnackbars();
+    const { incrementLoadingCount, decrementLoadingCount } = useGlobalStore();
+    const { handleApiError } = useApiErrorHandler();
 
     const csrf = () => axios.get('/sanctum/csrf-cookie');
+
+    // 重複リクエスト防止用のフラグ
+    const isRegisterRequestRef = React.useRef(false);
+    const isLoginRequestRef = React.useRef(false);
+    const isPasswordResetRequestRef = React.useRef(false);
+    const isResetPasswordRequestRef = React.useRef(false);
+    const isResendEmailVerificationRequestRef = React.useRef(false);
+    const isLogoutRequestRef = React.useRef(false);
 
     /**
      * ユーザー登録リクエスト
@@ -17,31 +28,39 @@ export const useAuth = () => {
      * @param props ユーザー登録フォームの入力値
      */
     const register = async ({ setErrors, ...props }) => {
-        // ローディングアニメーションを開始
-        setIsLoading(true);
-        // スナックバーをすべて削除
-        clearAllSnackbars();
-        // エラーをクリア
-        setErrors([]);
-        // CSRFトークンを取得
-        await csrf();
+        // 重複リクエスト防止
+        if (isRegisterRequestRef.current) {
+            return;
+        }
 
-        await axios
-            .post('/register', props)
-            .then(() => {
-                // ユーザー登録成功時にメール認証ページにリダイレクト
-                router.push('/email/verify');
-            })
-            .catch(error => {
-                if (error.response.status === 422) {
-                    setErrors(error.response.data.errors);
-                }
-                console.error(error);
-                addSnackbar(
-                    'error',
-                    error.response.data.message || 'エラーが発生しました',
-                );
-            });
+        try {
+            // 重複リクエスト防止用のフラグをセット
+            isRegisterRequestRef.current = true;
+            // ローディングカウントを増やす
+            incrementLoadingCount();
+            // スナックバーをすべて削除
+            clearAllSnackbars();
+            // エラーをクリア
+            setErrors([]);
+            // CSRFトークンを取得
+            await csrf();
+
+            await axios.post('/register', props);
+            // ユーザー登録成功時にメール認証ページにリダイレクト
+            router.push('/email/verify');
+        } catch (error) {
+            if (error.response?.status === 422) {
+                setErrors(error.response.data.errors);
+            } else {
+                handleApiError(error);
+            }
+            // エラーの時は画面遷移がないのでローディングカウントを減らす
+            decrementLoadingCount();
+        } finally {
+            // 重複リクエスト防止用のフラグをリセット
+            isRegisterRequestRef.current = false;
+            // 画面遷移後にローディングカウントをリセットするので、ここでは減らさない
+        }
     };
 
     /**
@@ -51,34 +70,40 @@ export const useAuth = () => {
      * @param props ログインフォームの入力値
      */
     const login = async ({ setErrors, setStatus, ...props }) => {
-        // ローディングアニメーションを開始
-        setIsLoading(true);
-        // スナックバーをすべて削除
-        clearAllSnackbars();
-        // エラーをクリア
-        setErrors([]);
-        // ステータスをクリア
-        setStatus(null);
-        // CSRFトークンを取得
-        await csrf();
+        // 重複リクエスト防止
+        if (isLoginRequestRef.current) {
+            return;
+        }
 
-        axios
-            .post('/login/', props)
-            .then(() => {
-                // ログイン成功時にトップ画面にリダイレクト
-                window.location.href = '/plan';
-            })
-            .catch(error => {
-                if (error.response.status === 422) {
-                    setErrors(error.response.data.errors);
-                }
-                console.error(error);
-                addSnackbar(
-                    'error',
-                    error.response.data.message || 'エラーが発生しました',
-                );
-                setIsLoading(false);
-            });
+        try {
+            isLoginRequestRef.current = true;
+            // ローディングアニメーションを開始
+            incrementLoadingCount();
+            // スナックバーをすべて削除
+            clearAllSnackbars();
+            // エラーをクリア
+            setErrors([]);
+            // ステータスをクリア
+            setStatus(null);
+            // CSRFトークンを取得
+            await csrf();
+
+            await axios.post('/login/', props);
+            // ログイン成功時にトップ画面にリダイレクト
+            window.location.href = '/plan';
+        } catch (error) {
+            if (error.response?.status === 422) {
+                setErrors(error.response.data.errors);
+            } else {
+                handleApiError(error);
+            }
+            // エラーの時は画面遷移がないのでローディングカウントを減らす
+            decrementLoadingCount();
+        } finally {
+            // 重複リクエスト防止用のフラグをリセット
+            isLoginRequestRef.current = false;
+            // 画面遷移後にローディングカウントをリセットするので、ここでは減らさない
+        }
     };
 
     /**
@@ -88,30 +113,42 @@ export const useAuth = () => {
      * @param email メールアドレス
      */
     const passwordResetRequest = async ({ setErrors, setStatus, email }) => {
-        // ローディングアニメーションを開始
-        setIsLoading(true);
-        // スナックバーをすべて削除
-        clearAllSnackbars();
-        // エラーをクリア
-        setErrors([]);
-        // ステータスをクリア
-        setStatus(null);
-        // CSRFトークンを取得
-        await csrf();
+        // 重複リクエスト防止
+        if (isPasswordResetRequestRef.current) {
+            return;
+        }
 
-        await axios
-            .post('/password/reset/request', { email })
-            .then(response => setStatus(response.data.status))
-            .catch(error => {
-                if (error.response.status !== 422) {
-                    setStatus(error.response.data.message);
-                } else {
-                    setErrors(error.response.data.errors);
-                }
-                console.error(error);
-                addSnackbar('error', error.response.data.message);
-                setIsLoading(false);
-            });
+        try {
+            // 重複リクエスト防止用のフラグをセット
+            isPasswordResetRequestRef.current = true;
+            // ローディングカウントを増やす
+            incrementLoadingCount();
+            // スナックバーをすべて削除
+            clearAllSnackbars();
+            // エラーをクリア
+            setErrors([]);
+            // ステータスをクリア
+            setStatus(null);
+            // CSRFトークンを取得
+            await csrf();
+
+            const response = await axios.post('/password/reset/request', { email });
+            setStatus(response.data.message);
+        } catch (error) {
+            if (error.response?.status === 422) {
+                setErrors(error.response.data.errors);
+            } else {
+                setStatus(error.response?.data?.message);
+            }
+            console.error(error.response?.data?.message);
+            // エラーの時は画面遷移がないのでローディングカウントを減らす
+            decrementLoadingCount();
+        } finally {
+            // 重複リクエスト防止用のフラグをリセット
+            isPasswordResetRequestRef.current = false;
+            // ローディングカウントを減らす
+            decrementLoadingCount();
+        }
     };
 
     /**
@@ -121,76 +158,109 @@ export const useAuth = () => {
      * @param props パスワードリセットフォームの入力値
      */
     const resetPassword = async ({ setErrors, setStatus, ...props }) => {
-        // ローディングアニメーションを開始
-        setIsLoading(true);
-        // スナックバーをすべて削除
-        clearAllSnackbars();
-        // エラーをクリア
-        setErrors([]);
-        // ステータスをクリア
-        setStatus(null);
-        // CSRFトークンを取得
-        await csrf();
+        // 重複リクエスト防止
+        if (isResetPasswordRequestRef.current) {
+            return;
+        }
 
-        await axios
-            .post('/password/reset', { token: params?.token, ...props })
-            .then(response => {
-                // パスワードリセット成功時にリセットトークンをクエリパラメータに追加してログインページにリダイレクト
-                router.push('/login?reset=' + btoa(response.data.status));
-            })
-            .catch(error => {
-                if (error.response.status !== 422) {
-                    setStatus(error.response.data.message);
-                } else {
-                    setErrors(error.response.data.errors);
-                }
-                console.error(error);
-                addSnackbar('error', error.response.data.message);
-                setIsLoading(false);
-            });
+        try {
+            // 重複リクエスト防止用のフラグをセット
+            isResetPasswordRequestRef.current = true;
+            // ローディングカウントを増やす
+            incrementLoadingCount();
+            // スナックバーをすべて削除
+            clearAllSnackbars();
+            // エラーをクリア
+            setErrors([]);
+            // ステータスをクリア
+            setStatus(null);
+            // CSRFトークンを取得
+            await csrf();
+
+            const response = await axios.post('/password/reset', { token: params?.token, ...props });
+            // パスワードリセット成功時にリセットトークンをクエリパラメータに追加してログインページにリダイレクト
+            router.push('/login?reset=' + btoa(response.data.message));
+        } catch (error) {
+            if (error.response?.status === 422) {
+                setErrors(error.response.data.errors);
+            } else {
+                setStatus(error.response?.data?.message);
+            }
+            console.error(error.response?.data?.message);
+            // エラーの時は画面遷移がないのでローディングカウントを減らす
+            decrementLoadingCount();
+        } finally {
+            // 重複リクエスト防止用のフラグをリセット
+            isResetPasswordRequestRef.current = false;
+            // 画面遷移後にローディングカウントをリセットするので、ここでは減らさない
+        }
     };
 
     /**
      * メールアドレス再送信リクエスト
-     * @param setStatus ステータスを設定する関数
+     * @param setMessage メッセージを設定する関数
      */
     const resendEmailVerification = async ({ setMessage }) => {
-        // ローディングアニメーションを開始
-        setIsLoading(true);
-        // スナックバーをすべて削除
-        clearAllSnackbars();
-        // CSRFトークンを取得
-        await csrf();
+        // 重複リクエスト防止
+        if (isResendEmailVerificationRequestRef.current) {
+            return;
+        }
 
-        await axios
-            .post('/email/verification-notification')
-            .then(response => setMessage(response.data.message))
-            .catch(error => {
-                console.error(error);
-                addSnackbar('error', error.response.data.message);
-                setIsLoading(false);
-            });
+        try {
+            // 重複リクエスト防止用のフラグをセット
+            isResendEmailVerificationRequestRef.current = true;
+            // ローディングカウントを増やす
+            incrementLoadingCount();
+            // スナックバーをすべて削除
+            clearAllSnackbars();
+            // CSRFトークンを取得
+            await csrf();
+
+            const response = await axios.post('/email/verification-notification');
+            setMessage(response.data.message);
+        } catch (error) {
+            handleApiError(error);
+        } finally {
+            // 重複リクエスト防止用のフラグをリセット
+            isResendEmailVerificationRequestRef.current = false;
+            // ローディングカウントを減らす
+            decrementLoadingCount();
+        }
     };
 
     const logout = async () => {
-        // ローディングアニメーションを開始
-        setIsLoading(true);
-        // スナックバーをすべて削除
-        clearAllSnackbars();
-
-        await axios.post('/logout');
-
-        // セッションストレージをクリア
-        if (typeof window !== 'undefined') {
-            sessionStorage.removeItem('redirectAfterLogin');
-            // 他のセッション関連データも必要に応じてクリア
+        // 重複リクエスト防止
+        if (isLogoutRequestRef.current) {
+            return;
         }
 
-        // Laravel側でCookieは削除されるので、ページをリロード
-        window.location.href = '/login';
+        try {
+            // 重複リクエスト防止用のフラグをセット
+            isLogoutRequestRef.current = true;
+            // ローディングカウントを増やす
+            incrementLoadingCount();
+            // スナックバーをすべて削除
+            clearAllSnackbars();
 
-        // ログインページにリダイレクト
-        router.push('/login');
+            await axios.post('/logout');
+
+            // セッションストレージをクリア
+            if (typeof window !== 'undefined') {
+                sessionStorage.removeItem('redirectAfterLogin');
+                // 他のセッション関連データも必要に応じてクリア
+            }
+
+            // ログインページへ遷移（Laravel側でCookieは削除される）
+            window.location.href = '/login';
+        } catch (error) {
+            handleApiError(error);
+            // エラーが発生してもログインページへ遷移
+            window.location.href = '/login';
+        } finally {
+            // 重複リクエスト防止用のフラグをリセット
+            isLogoutRequestRef.current = false;
+            // 画面遷移後にローディングカウントをリセットするので、ここでは減らさない
+        }
     };
 
     return {

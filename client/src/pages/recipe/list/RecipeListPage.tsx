@@ -1,7 +1,6 @@
 'use client';
 import { RecipeList } from '@/models/recipe/components';
 import { useRecipeStore } from '@/models/recipe/hooks/recipeStores';
-import { useGlobalStore } from '@/stores';
 import { IRecipe } from '@/types/api';
 import { useSnackbars } from '@/hooks/useSnackbars';
 import React from 'react';
@@ -20,13 +19,8 @@ const RecipeListPage = ({
     total = 0,
     errorMessage,
 }: Props) => {
-    const { setRecipes: setStoreRecipes, isLoadings } = useRecipeStore();
-    const { setIsLoading } = useGlobalStore();
+    const { setRecipes: setStoreRecipes } = useRecipeStore();
     const { addSnackbar } = useSnackbars();
-
-    React.useEffect(() => {
-        setIsLoading(isLoadings.recipe || isLoadings.recipeCategory);
-    }, [isLoadings]);
 
     React.useEffect(() => {
         if (fetchRecipes) {

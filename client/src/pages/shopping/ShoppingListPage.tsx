@@ -5,7 +5,6 @@ import {
     ShoppingList,
 } from '@/models/shopping/components';
 import { useShoppingStore } from '@/models/shopping/hooks';
-import { useGlobalStore } from '@/stores';
 import { IShoppingCategory, IShoppingItem } from '@/types/api';
 import { ChevronRight } from 'lucide-react';
 import React from 'react';
@@ -26,10 +25,7 @@ const ShoppingListPage: React.FC<Props> = ({ fetchItems, fetchCategories, errorM
         setServerItems,
         setItems: setStoreItems,
         setCategories: setStoreCategories,
-        isLoadingCategories,
-        isLoadingItems,
     } = useShoppingStore();
-    const { setIsLoading } = useGlobalStore();
     const { addSnackbar } = useSnackbars();
     const { openDialog } = useDialog();
 
@@ -54,10 +50,6 @@ const ShoppingListPage: React.FC<Props> = ({ fetchItems, fetchCategories, errorM
             setStoreCategories(fetchCategories);
         }
     }, [fetchCategories]);
-
-    React.useEffect(() => {
-        setIsLoading(isLoadingCategories || isLoadingItems);
-    }, [isLoadingCategories, isLoadingItems]);
 
     /**
      * エラーメッセージを表示

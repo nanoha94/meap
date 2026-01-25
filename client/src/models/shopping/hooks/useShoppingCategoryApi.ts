@@ -10,16 +10,17 @@ import axios from '@/lib/axios';
 import { TIMEOUT_MS, TMP_ID_PREFIX } from '@/constants';
 import { useRouter } from 'next/navigation';
 import { useApiErrorHandler } from '@/hooks/api/useApiErrorHandler';
+import { useGlobalStore } from '@/stores';
 
 export const useShoppingCategoryApi = () => {
     const router = useRouter();
     const { addSnackbar } = useSnackbars();
     const { handleApiError } = useApiErrorHandler();
-    const {
-        categories: storeCategories,
-        isLoadingCategories: isLoading,
-        setIsLoadingCategories: setIsLoading,
-    } = useShoppingStore();
+    const { incrementLoadingCount, decrementLoadingCount } = useGlobalStore();
+    const { categories: storeCategories } = useShoppingStore();
+
+    // 重複リクエスト防止用のフラグ
+    const isBulkUpdateRequestRef = React.useRef(false);
 
     /**
      * 買い物カテゴリーを一括削除用リクエストを生成
@@ -118,15 +119,15 @@ export const useShoppingCategoryApi = () => {
      */
     const bulkUpdateShoppingCategories = React.useCallback(
         async (categories: IShoppingCategory[]) => {
+            // 重複リクエスト防止
             // 更新データがない場合は処理を終了
-            if (
-                JSON.stringify(categories) === JSON.stringify(storeCategories)
-            ) {
+            if (isBulkUpdateRequestRef.current ||
+                JSON.stringify(categories) === JSON.stringify(storeCategories)) {
                 return;
             }
 
             // ローディング状態をセット
-            setIsLoading(true);
+            incrementLoadingCount();
 
             // 並列実行するリクエストを準備
             const requests: Promise<unknown>[] = [];
@@ -170,14 +171,24 @@ export const useShoppingCategoryApi = () => {
             } catch (error) {
                 handleApiError(error);
             } finally {
-                setIsLoading(false);
+                isBulkUpdateRequestRef.current = false;
+                decrementLoadingCount();
             }
         },
-        [storeCategories],
+        [
+            storeCategories,
+            incrementLoadingCount,
+            decrementLoadingCount,
+            generateDeleteRequest,
+            generateCreateUpdateRequest,
+            handleApiError,
+            router,
+            addSnackbar,
+        ],
     );
 
     return {
-        storeData: { isLoading, categories: storeCategories },
+        storeData: { categories: storeCategories },
         bulkUpdateShoppingCategories,
     };
 };

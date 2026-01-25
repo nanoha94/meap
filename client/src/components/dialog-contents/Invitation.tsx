@@ -12,7 +12,7 @@ import { useDialog } from '@/hooks/useDialog';
 const Invitation: React.FC = () => {
     const { closeDialog } = useDialog();
     const { isTextCopied, copyToClipboard } = useTextCopy();
-    const { isLoading, invitationLink, tokenExpiresAt, fetchInvitationToken } =
+    const { isFetching, invitationLink, tokenExpiresAt, fetchInvitationToken } =
         useInvitationApi();
 
     // ダイアログが開いたら招待リンクを取得
@@ -26,7 +26,7 @@ const Invitation: React.FC = () => {
     return (
         <div className="flex flex-col gap-y-5">
             <p>QRコードやリンクを共有して、メンバーを招待しましょう</p>
-            {isLoading || !invitationLink ? (
+            {isFetching || !invitationLink ? (
                 <div className="py-5">
                     <LoaderCircle
                         size={40}

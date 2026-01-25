@@ -40,11 +40,14 @@ trait ExceptionHandlerTrait
         if ($e instanceof HttpException) {
             $message = $e->getMessage() ?? $defaultMessage;
             $errorCode = $e->getStatusCode();
+            $headers = $e->getHeaders();
+            $errorType = $headers['X-Error-Type'] ?? ($additionalContext['error_type'] ?? null);
+
             $this->logError($errorCode ?? HttpStatusCode::INTERNAL_SERVER_ERROR, $operation, $e, $request, [
                 'message' => $message,
                 ...$additionalContext,
             ]);
-            return $this->errorResponse($message,  $errorCode ?? HttpStatusCode::INTERNAL_SERVER_ERROR);
+            return $this->errorResponse($message,  $errorCode ?? HttpStatusCode::INTERNAL_SERVER_ERROR, [], $errorType);
         }
 
         // モデル未発見例外

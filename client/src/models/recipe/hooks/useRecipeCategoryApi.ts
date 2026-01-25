@@ -6,20 +6,22 @@ import axios from '@/lib/axios';
 import { TIMEOUT_MS, TMP_ID_PREFIX } from '@/constants';
 import React from 'react';
 import { useApiErrorHandler } from '@/hooks/api';
+import { useGlobalStore } from '@/stores';
 
 export const useRecipeCategoryApi = () => {
-    const {
-        categories: storeCategories,
-        isLoadings,
-        setIsLoadings,
-    } = useRecipeStore();
+    const { categories: storeCategories } = useRecipeStore();
+    const { incrementLoadingCount, decrementLoadingCount } = useGlobalStore();
     const router = useRouter();
     const { addSnackbar } = useSnackbars();
     const { handleApiError } = useApiErrorHandler();
 
+    // 重複リクエスト防止用のフラグ
+    const isBulkUpdateRequestRef = React.useRef(false);
+
     const bulkUpdateRecipeCategories = React.useCallback(
         async (categories: IRecipeCategory[]) => {
-            if (isLoadings.recipeCategory) {
+            // 重複リクエスト防止
+            if (isBulkUpdateRequestRef.current) {
                 return;
             }
 
@@ -31,7 +33,8 @@ export const useRecipeCategoryApi = () => {
             }
 
             let hasError = false;
-            setIsLoadings('recipeCategory', true);
+            isBulkUpdateRequestRef.current = true;
+            incrementLoadingCount();
 
             // 削除するカテゴリーを取得
             const deleteCategoryIds = storeCategories
@@ -121,11 +124,13 @@ export const useRecipeCategoryApi = () => {
                 router.refresh();
             }
 
-            setIsLoadings('recipeCategory', false);
+            isBulkUpdateRequestRef.current = false;
+            decrementLoadingCount();
         },
         [
             storeCategories,
-            isLoadings.recipeCategory,
+            incrementLoadingCount,
+            decrementLoadingCount,
             addSnackbar,
             handleApiError,
             router,

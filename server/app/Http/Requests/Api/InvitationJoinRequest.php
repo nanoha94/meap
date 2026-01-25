@@ -68,7 +68,9 @@ class InvitationJoinRequest extends BaseApiRequest
             if ($currentGroup->group_size > 1) {
                 throw new HttpException(
                     HttpStatusCode::CONFLICT->value,
-                    __('api.invitation.already_in_another_group')
+                    __('api.invitation.already_in_another_group'),
+                    null,
+                    ['X-Error-Type' => 'already_in_another_group']
                 );
             }
 
@@ -80,7 +82,9 @@ class InvitationJoinRequest extends BaseApiRequest
             ) {
                 throw new HttpException(
                     HttpStatusCode::CONFLICT->value,
-                    __('api.invitation.has_existing_data')
+                    __('api.invitation.has_existing_data'),
+                    null,
+                    ['X-Error-Type' => 'has_existing_data']
                 );
             }
         }
