@@ -11,17 +11,15 @@ import { DndSortableList } from '@/components/dnd';
 import { BUTTON_TYPE, BUTTON_VARIANT, COLOR_VARIANT, DND_SORTABLE_LIST_TYPE, TMP_ID_PREFIX } from '@/constants';
 import { defaultIngredientCategory } from '@/models/ingredient/constants';
 import { IIngredientCategory } from '@/types/api';
-import { useIngredientCatgoryApi } from '../../hooks';
-
-interface Props {
-    onClose: () => void;
-}
+import { useIngredientCatgoryApi } from '@/models/ingredient/hooks';
+import { useDialog } from '@/hooks/useDialog';
 
 interface FormData {
     categories: IIngredientCategory[];
 }
 
-const EditForm: React.FC<Props> = ({ onClose }) => {
+const IngredientCategoryEditForm: React.FC = () => {
+    const { closeDialog } = useDialog();
     const { storeData, bulkUpdateIngredientCategories } =
         useIngredientCatgoryApi();
     const prefix = TMP_ID_PREFIX.INGREDIENT_CATEGORY;
@@ -88,7 +86,7 @@ const EditForm: React.FC<Props> = ({ onClose }) => {
                     order: idx,
                 })),
             );
-            onClose();
+            closeDialog();
         } catch {
             // エラーの場合はダイアログを閉じない
             // エラーハンドリングはbulkUpdateIngredientCategoriesで行う
@@ -150,7 +148,7 @@ const EditForm: React.FC<Props> = ({ onClose }) => {
                     type={BUTTON_TYPE.BUTTON}
                     colorVariant={COLOR_VARIANT.GRAY}
                     variant={BUTTON_VARIANT.OUTLINED}
-                    onClick={onClose}>
+                    onClick={closeDialog}>
                     戻る
                 </Button>
                 <Button type={BUTTON_TYPE.SUBMIT}>設定</Button>
@@ -159,4 +157,4 @@ const EditForm: React.FC<Props> = ({ onClose }) => {
     );
 };
 
-export default EditForm;
+export default IngredientCategoryEditForm;

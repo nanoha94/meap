@@ -1,4 +1,4 @@
-import { AlertDialogData, Snackbar } from '@/types';
+import { AlertDialogData, DialogData, Snackbar } from '@/types';
 import { create } from 'zustand';
 
 interface GlobalState {
@@ -7,6 +7,7 @@ interface GlobalState {
     visibleLoadingAnimation: boolean; // ローディングアニメーションの表示条件（カスタム条件）
     snackbars: Snackbar[]; // スナックバー
     alertDialogs: AlertDialogData[]; // ダイアログのキュー（先頭が現在表示中、それ以降が待機中）
+    dialogs: DialogData[]; // ダイアログのキュー（先頭が現在表示中、それ以降が待機中）
 
     // setter func
     setIsLoading: (isLoading: boolean) => void;
@@ -19,6 +20,9 @@ interface GlobalState {
             | AlertDialogData[]
             | ((prev: AlertDialogData[]) => AlertDialogData[]),
     ) => void;
+    setDialogs: (
+        dialogs: DialogData[] | ((prev: DialogData[]) => DialogData[]),
+    ) => void;
 }
 
 export const useGlobalStore = create<GlobalState>(set => ({
@@ -27,6 +31,7 @@ export const useGlobalStore = create<GlobalState>(set => ({
     visibleLoadingAnimation: true, // デフォルトは表示可能
     snackbars: [],
     alertDialogs: [],
+    dialogs: [],
 
     // setter func
     setIsLoading: (isLoading: boolean) => {
@@ -50,13 +55,22 @@ export const useGlobalStore = create<GlobalState>(set => ({
         if (typeof dialogsOrUpdater === 'function') {
             set(state => ({
                 alertDialogs: (
-                    dialogsOrUpdater as (
-                        prev: AlertDialogData[],
-                    ) => AlertDialogData[]
+                    dialogsOrUpdater as (prev: AlertDialogData[]) => AlertDialogData[]
                 )(state.alertDialogs),
             }));
         } else {
             set({ alertDialogs: dialogsOrUpdater });
+        }
+    },
+    setDialogs: dialogsOrUpdater => {
+        if (typeof dialogsOrUpdater === 'function') {
+            set(state => ({
+                dialogs: (
+                    dialogsOrUpdater as (prev: DialogData[]) => DialogData[]
+                )(state.dialogs),
+            }));
+        } else {
+            set({ dialogs: dialogsOrUpdater });
         }
     },
 }));

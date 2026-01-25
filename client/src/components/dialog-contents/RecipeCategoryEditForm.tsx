@@ -1,4 +1,5 @@
 'use client';
+import React from 'react';
 import {
     Button,
     TextButton,
@@ -6,32 +7,29 @@ import {
 } from '@/components/common';
 import { DndSortableList } from '@/components/dnd';
 import { CirclePlus } from 'lucide-react';
-import React from 'react';
-import { IShoppingCategory } from '@/types/api';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
-import { useShoppingCategoryApi } from '../../hooks';
+import { DEFAULT_RECIPE_CATEGORY } from '@/models/recipe/constants';
+import { useRecipeCategoryApi } from '@/models/recipe/hooks';
+import { IRecipeCategory } from '@/types/api';
+import { useDialog } from '@/hooks/useDialog';
 import { BUTTON_TYPE, BUTTON_VARIANT, COLOR_VARIANT, DND_SORTABLE_LIST_TYPE, TMP_ID_PREFIX } from '@/constants';
 
 interface FormData {
-    categories: IShoppingCategory[];
+    categories: IRecipeCategory[];
 }
 
-interface Props {
-    onClose: () => void;
-}
-
-const ShoppingCategorySettingForm: React.FC<Props> = ({ onClose }) => {
-    const { storeData, bulkUpdateShoppingCategories } =
-        useShoppingCategoryApi();
-    const prefix = TMP_ID_PREFIX.SHOPPING_CATEGORY;
+const RecipeCategoryEditForm: React.FC = () => {
+    const { closeDialog } = useDialog();
+    const { storeData, bulkUpdateRecipeCategories } = useRecipeCategoryApi();
+    const prefix = TMP_ID_PREFIX.RECIPE_CATEGORY;
 
     const { control, handleSubmit, watch, reset } = useForm<FormData>({
         defaultValues: {
-            categories: [],
+            categories: [DEFAULT_RECIPE_CATEGORY],
         },
     });
 
-    const { fields, append, remove, move } = useFieldArray({
+    const { fields, append, remove, move } = useFieldArray<FormData>({
         control,
         name: 'categories',
     });
@@ -62,15 +60,23 @@ const ShoppingCategorySettingForm: React.FC<Props> = ({ onClose }) => {
         }
 
         const newItem = {
+            ...DEFAULT_RECIPE_CATEGORY,
             id: `${prefix}${Date.now()}`,
-            name: '',
-            isDefault: false,
-            order: watchedCategories.length,
         };
 
         // 末尾に追加
         append(newItem);
     };
+
+    const removeCategory = React.useCallback(
+        (index: number) => {
+            if (fields.length <= 1) {
+                addEmptyCategory();
+            }
+            remove(index);
+        },
+        [fields],
+    );
 
     /**
      * フォームの送信
@@ -80,19 +86,21 @@ const ShoppingCategorySettingForm: React.FC<Props> = ({ onClose }) => {
             // 空のアイテムを除いてデータ更新
             const filteredItems = data.categories.filter(
                 v =>
-                    (v.id?.startsWith(prefix) && v.name.length > 0) ||
+                    (v.id?.startsWith(prefix) &&
+                        v.name &&
+                        v.name?.length > 0) ||
                     !v.id?.startsWith(prefix),
             );
-            bulkUpdateShoppingCategories(
+            bulkUpdateRecipeCategories(
                 filteredItems.map((v, idx) => ({
                     ...v,
                     order: idx,
                 })),
             );
-            onClose();
+            closeDialog();
         } catch {
             // エラーの場合はダイアログを閉じない
-            // エラーハンドリングはbulkUpdateShoppingCategoriesで行う
+            // エラーハンドリングはbulkUpdateRecipeCategoriesで行う
         }
     };
 
@@ -113,23 +121,28 @@ const ShoppingCategorySettingForm: React.FC<Props> = ({ onClose }) => {
                         type={DND_SORTABLE_LIST_TYPE.LIST}
                         items={fields}
                         prefix={prefix}
-                        onDragEnd={(oldIndex, newIndex) =>
-                            move(oldIndex, newIndex)
-                        }
+                        onDragEnd={(oldIndex, newIndex) => {
+                            move(oldIndex, newIndex);
+                        }}
                         renderItem={(item, index) => (
                             <GrippableHorizontalItem
                                 hasDeleteButton={true}
-                                isDisabledDeleteButton={item.isDefault}
-                                onDelete={() => remove(index)}>
+                                isDisabledDeleteButton={
+                                    index === 0 &&
+                                    watchedCategories?.length === 1 &&
+                                    watchedCategories[0].name === ''
+                                }
+                                onDelete={() => removeCategory(index)}>
                                 <Controller
                                     control={control}
                                     name={`categories.${index}.name`}
                                     render={({ field }) => (
                                         <input
                                             {...field}
-                                            data-item-id={`${TMP_ID_PREFIX.SHOPPING_CATEGORY}${index}`}
+                                            data-item-id={`${prefix}${index}`}
                                             type="text"
                                             placeholder="カテゴリー名を入力"
+                                            autoFocus
                                             className="py-2 px-4 flex-1 outline-none bg-white rounded-lg border border-gray-main"
                                         />
                                     )}
@@ -151,7 +164,7 @@ const ShoppingCategorySettingForm: React.FC<Props> = ({ onClose }) => {
                     type={BUTTON_TYPE.BUTTON}
                     colorVariant={COLOR_VARIANT.GRAY}
                     variant={BUTTON_VARIANT.OUTLINED}
-                    onClick={onClose}>
+                    onClick={closeDialog}>
                     戻る
                 </Button>
                 <Button type={BUTTON_TYPE.SUBMIT}>設定</Button>
@@ -160,4 +173,4 @@ const ShoppingCategorySettingForm: React.FC<Props> = ({ onClose }) => {
     );
 };
 
-export default ShoppingCategorySettingForm;
+export default RecipeCategoryEditForm;

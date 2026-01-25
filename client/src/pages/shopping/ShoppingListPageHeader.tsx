@@ -1,13 +1,15 @@
 'use client';
 import React from 'react';
 import { MenuButton, Header, HeaderTextButton } from '@/components/common';
-import { COLOR_VARIANT, DIALOG_NAME, EDIT_MODE } from '@/constants';
-import { useShoppingStore } from '@/models/shopping/hooks';
+import { COLOR_VARIANT, EDIT_MODE } from '@/constants';
 import { CalendarDays, CirclePlus, Pencil } from 'lucide-react';
 import { ActionButton } from '@/types';
+import { useDialog } from '@/hooks/useDialog';
+import { SHOPPING_ITEM_SETTING_DIALOG_CONFIGS } from '@/models/shopping/constants';
+import { ShoppingItemEditForm } from '@/components/dialog-contents';
 
 const ShoppingListPageHeader = () => {
-    const { openDialog } = useShoppingStore();
+    const { openDialog } = useDialog();
     const [isOpen, setIsOpen] = React.useState<boolean>(false);
 
     const actionButtons: ActionButton[] = [
@@ -20,11 +22,16 @@ const ShoppingListPageHeader = () => {
         {
             label: 'テキストで追加',
             icon: <Pencil />,
-            onClick: () =>
-                openDialog(DIALOG_NAME.SHOPPING_ITEM_ADD_EDIT, {
-                    item: undefined,
-                    editMode: EDIT_MODE.CREATE,
-                }),
+            onClick: () => {
+                openDialog({
+                    title: SHOPPING_ITEM_SETTING_DIALOG_CONFIGS[EDIT_MODE.CREATE].title,
+                    children: () =>
+                        <ShoppingItemEditForm
+                            editingItem={undefined}
+                            editMode={EDIT_MODE.CREATE}
+                        />
+                });
+            },
         },
     ];
 

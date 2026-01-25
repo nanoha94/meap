@@ -1,9 +1,7 @@
 'use client';
-import { Dialog, TextButton } from '@/components/common';
+import { TextButton } from '@/components/common';
 import {
     AddShoppingItemButton,
-    ShoppingCategorySettingForm,
-    ShoppingItemSettingDialog,
     ShoppingList,
 } from '@/models/shopping/components';
 import { useShoppingStore } from '@/models/shopping/hooks';
@@ -12,8 +10,10 @@ import { IShoppingCategory, IShoppingItem } from '@/types/api';
 import { ChevronRight } from 'lucide-react';
 import React from 'react';
 import { useSnackbars } from '@/hooks/useSnackbars';
+import { useDialog } from '@/hooks/useDialog';
 import ShoppingListPageHeader from './ShoppingListPageHeader';
 import { COLOR_VARIANT } from '@/constants';
+import { ShoppingCategoryEditForm } from '@/components/dialog-contents';
 
 interface Props {
     fetchItems?: IShoppingItem[];
@@ -31,15 +31,13 @@ const ShoppingListPage: React.FC<Props> = ({ fetchItems, fetchCategories, errorM
     } = useShoppingStore();
     const { setIsLoading } = useGlobalStore();
     const { addSnackbar } = useSnackbars();
-    const [isOpenCategorySettingDialog, setIsOpenCategorySettingDialog] =
-        React.useState<boolean>(false);
+    const { openDialog } = useDialog();
 
     const handleOpenCategorySettingDialog = () => {
-        setIsOpenCategorySettingDialog(true);
-    };
-
-    const handleCloseCategorySettingDialog = () => {
-        setIsOpenCategorySettingDialog(false);
+        openDialog({
+            title: '買い物カテゴリ―設定',
+            children: () => <ShoppingCategoryEditForm />,
+        });
     };
 
     // アイテムをストアにセット
@@ -89,17 +87,6 @@ const ShoppingListPage: React.FC<Props> = ({ fetchItems, fetchCategories, errorM
                     </div>
                     <AddShoppingItemButton />
                 </div>
-                {/* アイテム追加・編集ダイアログ */}
-                <ShoppingItemSettingDialog />
-                {/* カテゴリー設定ダイアログ */}
-                <Dialog
-                    title="買い物カテゴリ―設定"
-                    isOpen={isOpenCategorySettingDialog}
-                    onClose={handleCloseCategorySettingDialog}>
-                    <ShoppingCategorySettingForm
-                        onClose={handleCloseCategorySettingDialog}
-                    />
-                </Dialog>
             </main>
         </>
     );

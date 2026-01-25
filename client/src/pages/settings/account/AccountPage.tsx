@@ -3,7 +3,8 @@ import React from 'react';
 import { Header, TextButton } from '@/components/common';
 import { IUser, IInvitation } from '@/types/api';
 import { useSnackbars } from '@/hooks/useSnackbars';
-import { InvitationDialog, JoinDialog } from '@/models/settings/components';
+import { useDialog } from '@/hooks/useDialog';
+import { Invitation, JoinGroup } from '@/components/dialog-contents';
 import { useAccountHandlers, useAccountStore } from '@/models/settings/hooks';
 import { ChevronRight } from 'lucide-react';
 
@@ -15,8 +16,9 @@ interface Props {
 
 const AccountPage = ({ users, invitationDetail, errorMessage }: Props) => {
     const { addSnackbar } = useSnackbars();
-    const { openDialog, loginUser, setUsers } = useAccountStore();
+    const { loginUser, setUsers } = useAccountStore();
     const { iconAvatar } = useAccountHandlers();
+    const { openDialog } = useDialog();
 
     /**
      * ユーザー一覧を設定
@@ -34,6 +36,29 @@ const AccountPage = ({ users, invitationDetail, errorMessage }: Props) => {
             addSnackbar('error', errorMessage);
         }
     }, [errorMessage]);
+
+    /**
+     * 招待トークンがある場合、グループに参加するダイアログを表示
+     * クライアントサイドでのみ実行するため、マウント済みかどうかをチェック
+     */
+    const [isMounted, setIsMounted] = React.useState(false);
+    React.useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
+    React.useEffect(() => {
+        // クライアントサイドでのみ実行（Suspenseのハイドレーション後に実行）
+        if (!isMounted) return;
+
+        if (invitationDetail) {
+            openDialog({
+                title: 'グループに参加',
+                children: () => (
+                    <JoinGroup invitationDetail={invitationDetail} />
+                ),
+            });
+        }
+    }, [invitationDetail, isMounted]);
 
     return (
         <>
@@ -93,7 +118,10 @@ const AccountPage = ({ users, invitationDetail, errorMessage }: Props) => {
                                 </div>
                                 <TextButton
                                     onClick={() => {
-                                        openDialog('invitation', undefined);
+                                        openDialog({
+                                            title: 'メンバー招待',
+                                            children: () => <Invitation />,
+                                        });
                                     }}>
                                     メンバーを招待
                                     <ChevronRight />
@@ -104,7 +132,10 @@ const AccountPage = ({ users, invitationDetail, errorMessage }: Props) => {
                                 <p>共有メンバーはまだいません。</p>
                                 <TextButton
                                     onClick={() => {
-                                        openDialog('invitation', undefined);
+                                        openDialog({
+                                            title: 'メンバー招待',
+                                            children: () => <Invitation />
+                                        });
                                     }}>
                                     メンバーを招待
                                     <ChevronRight />
@@ -112,12 +143,7 @@ const AccountPage = ({ users, invitationDetail, errorMessage }: Props) => {
                             </div>
                         )}
                     </div>
-                    {/* 招待ダイアログ */}
-                    <InvitationDialog />
                 </div>
-                {invitationDetail && (
-                    <JoinDialog invitationDetail={invitationDetail} />
-                )}
             </main>
         </>
     );

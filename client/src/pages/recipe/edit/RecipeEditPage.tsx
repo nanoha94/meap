@@ -4,11 +4,6 @@ import { IRecipe, IIngredientCategory, IUser } from '@/types/api';
 import { useIngredientStore } from '@/models/ingredient/hooks';
 import { useRecipeStore } from '@/models/recipe/hooks';
 import {
-    IngredientCategorySettingDialog,
-    IngredientEditDialog,
-} from '@/models/ingredient/components';
-import {
-    RecipeCategorySettingDialog,
     RecipeEditForm,
 } from '@/models/recipe/components';
 import type { RecipeEditFormRef } from '@/models/recipe/components/RecipeEditForm/RecipeEditForm';
@@ -90,13 +85,6 @@ const RecipeEditPage = ({
             />
             <main>
                 <RecipeEditForm ref={formRef} fetchRecipe={fetchRecipe} ownerUserId={ownerUserId} />
-
-                {/* 食材編集ダイアログ */}
-                <IngredientEditDialog />
-                {/* 食材カテゴリー設定ダイアログ */}
-                <IngredientCategorySettingDialog />
-                {/* レシピカテゴリー設定ダイアログ */}
-                <RecipeCategorySettingDialog />
             </main>
         </>
     );

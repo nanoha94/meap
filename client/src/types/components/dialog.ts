@@ -12,3 +12,14 @@ export type AlertDialogData = {
     onCancel: () => void;
     onAction: () => void;
 };
+
+export type DialogConfig = {
+    title: string;
+    children: () => React.ReactNode;
+};
+
+export type DialogData = {
+    isOpen: boolean;
+    config: DialogConfig;
+    onClose: () => void;
+};

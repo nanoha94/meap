@@ -1,14 +1,16 @@
-import { colors, EDIT_MODE, DIALOG_NAME } from '@/constants';
+import { colors, EDIT_MODE } from '@/constants';
 import { CalendarDays, LucideProps, Minus, Pencil, Plus } from 'lucide-react';
 import React from 'react';
 import itemOpenStyles from '@/styles/itemOpen.module.css';
-import { useShoppingStore } from '../../hooks';
 import { ActionButton } from '@/types';
+import { useDialog } from '@/hooks/useDialog';
+import { SHOPPING_ITEM_SETTING_DIALOG_CONFIGS } from '@/models/shopping/constants';
+import { ShoppingItemEditForm } from '@/components/dialog-contents';
 
 const AddShoppingItemButton = () => {
     const [isOpen, setIsOpen] = React.useState<boolean>(false);
     const containerRef = React.useRef<HTMLDivElement>(null);
-    const { openDialog } = useShoppingStore();
+    const { openDialog } = useDialog();
 
     const actionButtons: ActionButton[] = [
         {
@@ -20,11 +22,17 @@ const AddShoppingItemButton = () => {
         {
             label: 'テキストから追加',
             icon: <Pencil />,
-            onClick: () =>
-                openDialog(DIALOG_NAME.SHOPPING_ITEM_ADD_EDIT, {
-                    item: undefined,
-                    editMode: EDIT_MODE.CREATE,
-                }),
+            onClick: () => {
+                openDialog({
+                    title: SHOPPING_ITEM_SETTING_DIALOG_CONFIGS[EDIT_MODE.CREATE].title,
+                    children: () => (
+                        <ShoppingItemEditForm
+                            editingItem={undefined}
+                            editMode={EDIT_MODE.CREATE}
+                        />
+                    ),
+                });
+            },
         },
     ];
 

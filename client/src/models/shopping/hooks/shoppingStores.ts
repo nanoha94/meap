@@ -1,20 +1,5 @@
 import { create } from 'zustand';
 import { IShoppingCategory, IShoppingItem } from '@/types/api';
-import { EDIT_MODE, DIALOG_NAME } from '@/constants';
-
-type DialogPayload = {
-    [DIALOG_NAME.SHOPPING_ITEM_ADD_EDIT]: {
-        item: IShoppingItem | undefined;
-        editMode: (typeof EDIT_MODE)[keyof typeof EDIT_MODE];
-    };
-};
-
-type DialogsState = {
-    [K in keyof DialogPayload]: {
-        isOpen: boolean;
-        payload: DialogPayload[K];
-    };
-};
 
 interface ShoppingState {
     // state
@@ -23,7 +8,6 @@ interface ShoppingState {
     categories: IShoppingCategory[]; // ローカルのカテゴリー一覧
     isLoadingCategories: boolean; // カテゴリーのローディング状態
     isLoadingItems: boolean; // アイテムのローディング状態
-    dialogs: DialogsState; // ダイアログの状態
 
     // setter func
     setServerItems: (items: IShoppingItem[]) => void;
@@ -31,21 +15,7 @@ interface ShoppingState {
     setCategories: (categories: IShoppingCategory[]) => void;
     setIsLoadingCategories: (isLoading: boolean) => void;
     setIsLoadingItems: (isLoading: boolean) => void;
-
-    // action func
-    openDialog: <K extends keyof DialogPayload>(
-        dialogName: K,
-        payload: DialogPayload[K],
-    ) => void;
-    closeDialog: (dialogName: keyof DialogPayload) => void;
 }
-
-const initialDialogsState: DialogsState = {
-    [DIALOG_NAME.SHOPPING_ITEM_ADD_EDIT]: {
-        isOpen: false,
-        payload: { item: undefined, editMode: EDIT_MODE.CREATE },
-    },
-};
 
 export const useShoppingStore = create<ShoppingState>(set => ({
     // initial state
@@ -54,7 +24,6 @@ export const useShoppingStore = create<ShoppingState>(set => ({
     categories: [],
     isLoadingCategories: false,
     isLoadingItems: false,
-    dialogs: initialDialogsState,
 
     // setter func
     setServerItems: (items: IShoppingItem[]) => {
@@ -76,26 +45,4 @@ export const useShoppingStore = create<ShoppingState>(set => ({
     setIsLoadingItems: (isLoading: boolean) => {
         set({ isLoadingItems: isLoading });
     },
-
-    // action func
-    openDialog: <K extends keyof DialogPayload>(
-        dialogName: K,
-        payload: DialogPayload[K],
-    ) =>
-        set(state => ({
-            dialogs: {
-                ...state.dialogs,
-                [dialogName]: { isOpen: true, payload },
-            },
-        })),
-    closeDialog: (dialogName: keyof DialogPayload) =>
-        set(state => ({
-            dialogs: {
-                ...state.dialogs,
-                [dialogName]: {
-                    ...state.dialogs[dialogName],
-                    isOpen: false,
-                },
-            },
-        })),
 }));

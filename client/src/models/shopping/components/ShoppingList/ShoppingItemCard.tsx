@@ -5,11 +5,12 @@ import { colors } from '@/constants/colors';
 import { Check, GripVertical, Pencil, Pin, PinOff, Trash } from 'lucide-react';
 import { IShoppingItem } from '@/types/api';
 import { useShoppingItemApi, useShoppingStore } from '../../hooks';
-import { SHOPPING_ALERT_DIALOG_CONFIGS } from '../../constants';
-import { DIALOG_NAME } from '@/constants/dialog';
+import { SHOPPING_ALERT_DIALOG_CONFIGS, SHOPPING_ITEM_SETTING_DIALOG_CONFIGS } from '../../constants';
 import { EDIT_MODE } from '@/constants';
 import { useAlertDialog } from '@/hooks/useAlertDialog';
 import { ActionButton } from '@/types';
+import { useDialog } from '@/hooks/useDialog';
+import { ShoppingItemEditForm } from '@/components/dialog-contents';
 
 interface Props {
     item: IShoppingItem;
@@ -19,7 +20,7 @@ const ShoppingItemCard = ({ item }: Props) => {
     const { id, name, isPinned = false, isChecked = false } = item;
     const { items: storeItems, setItems: setStoreItems } = useShoppingStore();
     const { deleteShoppingItems } = useShoppingItemApi();
-    const { openDialog } = useShoppingStore();
+    const { openDialog } = useDialog();
     const { openAlertDialog } = useAlertDialog();
 
     /**
@@ -50,9 +51,13 @@ const ShoppingItemCard = ({ item }: Props) => {
             label: '編集する',
             icon: <Pencil />,
             onClick: () => {
-                openDialog(DIALOG_NAME.SHOPPING_ITEM_ADD_EDIT, {
-                    item,
-                    editMode: EDIT_MODE.UPDATE,
+                openDialog({
+                    title: SHOPPING_ITEM_SETTING_DIALOG_CONFIGS[EDIT_MODE.UPDATE].title,
+                    children: () =>
+                        <ShoppingItemEditForm
+                            editingItem={item}
+                            editMode={EDIT_MODE.UPDATE}
+                        />
                 });
             },
         },

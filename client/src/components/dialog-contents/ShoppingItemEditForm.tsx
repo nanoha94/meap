@@ -5,15 +5,17 @@ import { Button } from '@/components/common';
 import {
     useShoppingCategoryApi,
     useShoppingItemApi,
-    useShoppingStore,
-} from '../../hooks';
-import { SHOPPING_ITEM_SETTING_DIALOG_CONFIGS } from '../../constants';
+} from '@/models/shopping/hooks';
+import { SHOPPING_ITEM_SETTING_DIALOG_CONFIGS } from '@/models/shopping/constants';
 import StyledSelect from '@/components/common/StyledSelect';
 import { VerticalRowField } from '@/components/react-hook-form';
-import { EDIT_MODE, DIALOG_NAME, BUTTON_TYPE, COLOR_VARIANT, BUTTON_VARIANT } from '@/constants';
+import { EDIT_MODE, BUTTON_TYPE, COLOR_VARIANT, BUTTON_VARIANT } from '@/constants';
+import { IShoppingItem } from '@/types/api';
+import { useDialog } from '@/hooks/useDialog';
 
 interface Props {
-    onClose: () => void;
+    editingItem: IShoppingItem | undefined;
+    editMode: EDIT_MODE;
 }
 
 interface FormData {
@@ -22,12 +24,10 @@ interface FormData {
     tags: { id?: string; name: string }[];
 }
 
-const EditForm: React.FC<Props> = ({ onClose }) => {
+const ShoppingItemEditForm: React.FC<Props> = ({ editingItem, editMode }) => {
+    const { closeDialog } = useDialog();
     const { storeShoppingItem, updateShoppingItems } = useShoppingItemApi();
     const { storeData } = useShoppingCategoryApi();
-    const { dialogs } = useShoppingStore();
-    const { item: editingItem, editMode } =
-        dialogs[DIALOG_NAME.SHOPPING_ITEM_ADD_EDIT].payload;
 
     const defaultValues = {
         name: '',
@@ -55,7 +55,7 @@ const EditForm: React.FC<Props> = ({ onClose }) => {
                 editingItem?.categoryId ||
                 storeData.categories.find(v => v.isDefault)?.id,
         });
-    }, [storeData.categories]);
+    }, [editingItem, storeData.categories, reset]);
 
     /**
      * フォームの送信処理
@@ -72,7 +72,7 @@ const EditForm: React.FC<Props> = ({ onClose }) => {
                 },
             ]);
         }
-        onClose();
+        closeDialog();
     };
 
     return (
@@ -115,7 +115,7 @@ const EditForm: React.FC<Props> = ({ onClose }) => {
                 <Button
                     type={BUTTON_TYPE.BUTTON} colorVariant={COLOR_VARIANT.GRAY}
                     variant={BUTTON_VARIANT.OUTLINED}
-                    onClick={onClose}>
+                    onClick={closeDialog}>
                     戻る
                 </Button>
                 <Button type={BUTTON_TYPE.SUBMIT} disabled={watchName.length <= 0}>
@@ -126,4 +126,4 @@ const EditForm: React.FC<Props> = ({ onClose }) => {
     );
 };
 
-export default EditForm;
+export default ShoppingItemEditForm;

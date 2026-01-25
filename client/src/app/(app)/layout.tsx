@@ -1,4 +1,4 @@
-import { AlertDialog, FooterNavigation, SideNavigation } from '@/components/common';
+import { AlertDialog, Dialog, FooterNavigation, SideNavigation } from '@/components/common';
 import { IGetUserResponse, IGetMasterResponse } from '@/types/api';
 import { fetchData } from '@/lib/apiClient';
 import { DataHandler, RedirectHandler } from '@/components/handlers';
@@ -50,6 +50,7 @@ const AppLayout = async ({ children }: Props) => {
             </div>
             <FooterNavigation className="md:hidden" />
             <AlertDialog />
+            <Dialog />
         </div>
     );
 };

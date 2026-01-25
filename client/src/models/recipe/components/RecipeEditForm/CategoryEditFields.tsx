@@ -4,17 +4,21 @@ import { Control, Controller, useFormContext } from 'react-hook-form';
 import { IRecipeCategory } from '@/types/api';
 import { Check, ChevronRight } from 'lucide-react';
 import React from 'react';
-import { useRecipeStore } from '../../hooks/recipeStores';
+import { useRecipeStore } from '@/models/recipe/hooks';
 import { COLOR_VARIANT, colors, DIALOG_NAME } from '@/constants';
-import { RecipeEditFormData } from '../../types';
+import { RecipeEditFormData } from '@/models/recipe/types';
+import { useDialog } from '@/hooks/useDialog';
+import { RECIPE_SETTING_DIALOG_CONFIGS } from '@/models/recipe/constants';
+import RecipeCategoryEditForm from '@/components/dialog-contents/RecipeCategoryEditForm';
 
 interface Props {
     control: Control<RecipeEditFormData>;
 }
 
 const CategoryEditFields = ({ control }: Props) => {
-    const { categories, openDialog } = useRecipeStore();
+    const { categories } = useRecipeStore();
     const { setValue } = useFormContext<RecipeEditFormData>();
+    const { openDialog } = useDialog();
 
     /**
      * カテゴリーのチェック状態を変更
@@ -137,11 +141,14 @@ const CategoryEditFields = ({ control }: Props) => {
                 </div>
                 <TextButton
                     colorVariant={COLOR_VARIANT.SECONDARY}
-                    onClick={() =>
-                        openDialog(DIALOG_NAME.RECIPE_CATEGORY_SETTING, {
-                            onAction: () => { },
-                        })
-                    }>
+                    onClick={() => {
+                        const dialogName = DIALOG_NAME.RECIPE_CATEGORY_SETTING;
+                        const dialogConfig = RECIPE_SETTING_DIALOG_CONFIGS[dialogName];
+                        openDialog({
+                            title: dialogConfig.title,
+                            children: () => <RecipeCategoryEditForm />
+                        });
+                    }}>
                     カテゴリーの追加・編集
                     <ChevronRight size={20} />
                 </TextButton>

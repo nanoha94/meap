@@ -3,9 +3,11 @@ import React from 'react';
 import { colors } from '@/constants/colors';
 import { Pencil } from 'lucide-react';
 import { IIngredientItem } from '@/types/api';
-import { EDIT_MODE, DIALOG_NAME } from '@/constants';
-import { useIngredientStore } from '@/models/ingredient/hooks/ingredientStores';
+import { EDIT_MODE } from '@/constants';
+import { useDialog } from '@/hooks/useDialog';
+import { useIngredientStore } from '@/models/ingredient/hooks';
 import { GrippableHorizontalItem } from '@/components/common';
+import { IngredientEditForm } from '@/components/dialog-contents';
 
 interface Props {
     item: IIngredientItem;
@@ -22,7 +24,8 @@ function IngredientEditDialogButton({
     onDelete,
     onChange,
 }: Props) {
-    const { openDialog } = useIngredientStore();
+    const { openDialog, closeDialog } = useDialog();
+    const { categories } = useIngredientStore();
 
     /**
      * 材料のフォーマット
@@ -42,10 +45,28 @@ function IngredientEditDialogButton({
     };
 
     const handleOpenDialog = () => {
-        openDialog(DIALOG_NAME.INGREDIENT_ADD_EDIT, {
-            item,
-            editMode: item.name === '' ? EDIT_MODE.CREATE : EDIT_MODE.UPDATE,
-            onAction: (value: IIngredientItem) => onChange?.(value),
+        const editMode = item.name === '' ? EDIT_MODE.CREATE : EDIT_MODE.UPDATE;
+        const category = categories.find(
+            category => category.id === item?.categoryId,
+        );
+        const title =
+            editMode === EDIT_MODE.CREATE
+                ? `${category?.name ?? '材料'}を追加`
+                : `${category?.name ?? '材料'}を編集`;
+        const actionButtonText = editMode === EDIT_MODE.CREATE ? '追加' : '保存';
+
+        openDialog({
+            title,
+            children: () => (
+                <IngredientEditForm
+                    editingItem={item}
+                    actionButtonText={actionButtonText}
+                    onAction={(value: IIngredientItem) => {
+                        onChange?.(value);
+                        closeDialog();
+                    }}
+                />
+            ),
         });
     };
 

@@ -96,7 +96,7 @@ export const useInvitationApi = () => {
                 return { success: false, errorStatus: 408 };
             }
             // 409エラーの場合は、その後データ消去確認ダイアログを表示するので、スナックバーは表示しない
-            else if (error.response.status === 409) {
+            else if (error.response.status === 409 && error.response?.data.error_type) {
                 console.error(error.response?.data.message);
                 return {
                     success: false,

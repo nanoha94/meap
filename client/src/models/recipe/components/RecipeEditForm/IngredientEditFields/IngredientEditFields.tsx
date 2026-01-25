@@ -3,8 +3,10 @@ import React from 'react';
 import { TextButton } from '@/components/common';
 import { Control, useFieldArray, useFormContext } from 'react-hook-form';
 import { ChevronRight } from 'lucide-react';
-import { COLOR_VARIANT, DIALOG_NAME, TMP_ID_PREFIX } from '@/constants';
+import { COLOR_VARIANT, TMP_ID_PREFIX } from '@/constants';
 import { useIngredientStore } from '@/models/ingredient/hooks';
+import { useDialog } from '@/hooks/useDialog';
+import { IngredientCategoryEditForm } from '@/components/dialog-contents';
 import { closestCenter, DndContext, DragOverlay } from '@dnd-kit/core';
 import IngredientItemList from './IngredientItemList';
 import { defaultIngredientItem } from '@/models/ingredient/constants';
@@ -22,7 +24,8 @@ interface Props {
 
 const IngredientEditFields = ({ control }: Props) => {
     const prefix = TMP_ID_PREFIX.INGREDIENT_ITEM;
-    const { categories, openDialog } = useIngredientStore();
+    const { categories } = useIngredientStore();
+    const { openDialog } = useDialog();
     const [tmpItems, setTmpItems] = React.useState<IIngredientItem[]>([]);
     const dndContextId = React.useId();
     const { getValues, watch } = useFormContext<RecipeEditFormData>();
@@ -276,11 +279,12 @@ const IngredientEditFields = ({ control }: Props) => {
             </div>
             <TextButton
                 colorVariant={COLOR_VARIANT.SECONDARY}
-                onClick={() =>
-                    openDialog(DIALOG_NAME.INGREDIENT_CATEGORY_SETTING, {
-                        onAction: () => { },
-                    })
-                }>
+                onClick={() => {
+                    openDialog({
+                        title: '材料カテゴリーを設定',
+                        children: () => <IngredientCategoryEditForm />
+                    });
+                }}>
                 材料カテゴリーの追加・編集
                 <ChevronRight size={20} />
             </TextButton>

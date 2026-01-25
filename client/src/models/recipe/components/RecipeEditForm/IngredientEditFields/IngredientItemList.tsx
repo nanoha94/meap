@@ -1,11 +1,11 @@
 import React from 'react';
 import { IIngredientCategory, IIngredientItem } from '@/types/api';
 import { Control } from 'react-hook-form';
-import { EDIT_MODE, DIALOG_NAME, BUTTON_TYPE } from '@/constants';
+import { BUTTON_TYPE } from '@/constants';
 import Sortable from '@/components/dnd/Sortable';
 import { TextButton } from '@/components/common';
 import { CirclePlus } from 'lucide-react';
-import { useIngredientStore } from '@/models/ingredient/hooks';
+import { useDialog } from '@/hooks/useDialog';
 import {
     SortableContext,
     verticalListSortingStrategy,
@@ -13,6 +13,7 @@ import {
 import IngredientEditDialogButton from './IngredientEditDialogButton';
 import { useDroppable } from '@dnd-kit/core';
 import { RecipeEditFormData } from '@/models/recipe/types';
+import { IngredientEditForm } from '@/components/dialog-contents';
 
 interface Props {
     control: Control<RecipeEditFormData>;
@@ -31,7 +32,7 @@ const IngredientItemList = ({
     updateItem,
     removeItem,
 }: Props) => {
-    const { openDialog } = useIngredientStore();
+    const { openDialog, closeDialog } = useDialog();
     const { setNodeRef: setDroppableNodeRef } = useDroppable({
         id: category.id,
     });
@@ -59,15 +60,24 @@ const IngredientItemList = ({
 
         // 食材の編集ダイアログを開く
         if (item) {
-            openDialog(DIALOG_NAME.INGREDIENT_ADD_EDIT, {
-                item: item,
-                editMode: EDIT_MODE.CREATE,
-                onAction: (value: IIngredientItem) => {
-                    updateItem(lastIndex, value);
-                },
+            const title = `${category.name}を追加`;
+            const actionButtonText = '追加';
+
+            openDialog({
+                title,
+                children: () => (
+                    <IngredientEditForm
+                        editingItem={item}
+                        actionButtonText={actionButtonText}
+                        onAction={(value: IIngredientItem) => {
+                            updateItem(lastIndex, value);
+                            closeDialog();
+                        }}
+                    />
+                ),
             });
         }
-    }, [items]);
+    }, [items, category, addEmptyItem, updateItem, openDialog, closeDialog]);
 
     return (
         <>

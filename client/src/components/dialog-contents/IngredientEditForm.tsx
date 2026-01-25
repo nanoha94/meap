@@ -7,22 +7,22 @@ import StyledSelect from '@/components/common/StyledSelect';
 import { defaultIngredientItem } from '@/models/ingredient/constants';
 import { IIngredientItem } from '@/types/api';
 import { useIngredientStore } from '@/models/ingredient/hooks';
+import { useDialog } from '@/hooks/useDialog';
 import { BUTTON_TYPE, BUTTON_VARIANT, COLOR_VARIANT, TMP_ID_PREFIX } from '@/constants';
 
 interface Props {
     editingItem: IIngredientItem | undefined;
     actionButtonText: string;
-    onClose: () => void;
     onAction: (value: IIngredientItem) => void;
 }
 type FormData = IIngredientItem;
 
-const EditForm = ({
+const IngredientEditForm = ({
     editingItem,
     actionButtonText,
-    onClose,
     onAction,
 }: Props) => {
+    const { closeDialog } = useDialog();
     const prefix: string = TMP_ID_PREFIX.INGREDIENT_ITEM;
     const { units } = useIngredientStore();
     const { control, handleSubmit, reset, watch, setValue } = useForm<FormData>(
@@ -168,7 +168,7 @@ const EditForm = ({
                     type={BUTTON_TYPE.BUTTON}
                     colorVariant={COLOR_VARIANT.GRAY}
                     variant={BUTTON_VARIANT.OUTLINED}
-                    onClick={onClose}>
+                    onClick={closeDialog}>
                     戻る
                 </Button>
                 <Button type={BUTTON_TYPE.SUBMIT} disabled={isDisabledSendButton}>
@@ -179,4 +179,4 @@ const EditForm = ({
     );
 };
 
-export default EditForm;
+export default IngredientEditForm;
