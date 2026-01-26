@@ -3,7 +3,7 @@ import React from 'react';
 import { Header, HeaderTextButton } from '@/components/common';
 import StyledSelect from '@/components/common/StyledSelect';
 import { useAccountStore } from '@/models/settings/hooks';
-import { IRecipe, IUser } from '@/types/api';
+import { IRecipe } from '@/types/api';
 import { Save, Trash } from 'lucide-react';
 import { useRecipeApi } from '@/models/recipe/hooks';
 import { ActionButton } from '@/types';
@@ -13,14 +13,13 @@ import { RECIPE_ALERT_DIALOG_CONFIGS } from '@/models/recipe/constants';
 
 interface Props {
     ownerUserId: string;
-    users: IUser[];
     fetchRecipe?: IRecipe;
     onChangeOwnerUserId: (userId: string) => void;
     onClickSaveButton: () => void;
 }
 
-const RecipeEditPageHeader = ({ ownerUserId, users, fetchRecipe, onChangeOwnerUserId, onClickSaveButton }: Props) => {
-    const { loginUser } = useAccountStore();
+const RecipeEditPageHeader = ({ ownerUserId, fetchRecipe, onChangeOwnerUserId, onClickSaveButton }: Props) => {
+    const { loginUser, users } = useAccountStore();
     const { deleteRecipe } = useRecipeApi();
     const { openAlertDialog } = useAlertDialog();
 

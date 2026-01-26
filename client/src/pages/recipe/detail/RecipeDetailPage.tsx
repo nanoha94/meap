@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { IRecipe, IIngredientCategory, IImage } from '@/types/api';
+import { IRecipe, IImage } from '@/types/api';
 import { useIngredientStore } from '@/models/ingredient/hooks';
 import { useRecipeApi } from '@/models/recipe/hooks';
 import Image from 'next/image';
@@ -14,7 +14,6 @@ import { useAlertDialog } from '@/hooks/useAlertDialog';
 
 interface Props {
     fetchRecipe?: IRecipe;
-    fetchIngredientCategories?: IIngredientCategory[];
     errorMessage?: string;
 }
 
@@ -25,17 +24,13 @@ const lineTitleStyle = 'z-10 px-5 text-xl md:text-2xl bg-primary-background';
 
 const RecipeDetailPage = ({
     fetchRecipe,
-    fetchIngredientCategories,
     errorMessage,
 }: Props) => {
-    const {
-        categories: ingredientCategories,
-        setCategories: setStoreCategories,
-    } = useIngredientStore();
     const { loginUser } = useAccountStore();
     const { addSnackbar } = useSnackbars();
     const { deleteRecipe } = useRecipeApi();
     const { openAlertDialog } = useAlertDialog();
+    const { categories: ingredientCategories } = useIngredientStore();
 
     /**
      * 削除確認ダイアログを開く
@@ -66,17 +61,6 @@ const RecipeDetailPage = ({
             color: COLOR_VARIANT.ALERT,
         },
     ] : [];
-
-    /**
-     * 食材カテゴリーをストアにセット
-     * @param fetchCategories 食材カテゴリー
-     * @returns void
-     */
-    React.useEffect(() => {
-        if (fetchIngredientCategories && ingredientCategories.length <= 0) {
-            setStoreCategories(fetchIngredientCategories);
-        }
-    }, [fetchIngredientCategories]);
 
     /**
     * エラーメッセージを表示
@@ -145,7 +129,7 @@ const RecipeDetailPage = ({
                         {fetchRecipe?.ingredients &&
                             fetchRecipe?.ingredients.length > 0 ? (
                             <div className="flex flex-col gap-y-5">
-                                {fetchIngredientCategories?.map(
+                                {ingredientCategories?.map(
                                     category =>
                                         fetchRecipe.ingredients.some(
                                             ingredient =>

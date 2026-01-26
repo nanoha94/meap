@@ -26,6 +26,27 @@ namespace App\Swagger;
  *     )
  * )
  * @OA\Response(
+ *     response="IngredientUnitIndexSuccess",
+ *     description="食材単位を5件取得しました。",
+ *     @OA\JsonContent(
+ *         type="object",
+ *         @OA\Property(property="success", type="boolean", example=true),
+ *         @OA\Property(property="message", type="string", example="食材単位を5件取得しました。"),
+ *         @OA\Property(
+ *             property="data",
+ *             type="array",
+ *             description="食材単位一覧",
+ *             @OA\Items(ref="#/components/schemas/IngredientUnit")
+ *         ),
+ *         @OA\Property(
+ *             property="total",
+ *             type="integer",
+ *             description="食材単位総数",
+ *             example=5
+ *         )
+ *     )
+ * )
+ * @OA\Response(
  *     response="IngredientCategoryBulkStoreSuccess",
  *     description="3件の食材カテゴリーを一括作成しました。",
  *     @OA\JsonContent(

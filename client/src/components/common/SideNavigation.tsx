@@ -7,15 +7,15 @@ import NavigationIcon from './NavigationIcon';
 import { useAuth } from '@/hooks/api';
 import { LogOut } from 'lucide-react';
 import ApplicationLogo from '../ApplicationLogo';
-import { IGetUserResponse } from '@/types/api';
 import { useAccountHandlers } from '@/models/settings/hooks/useAccountHandlers';
+import { useAccountStore } from '@/models/settings/hooks';
 
 interface Props {
-    user: IGetUserResponse;
     className?: string;
 }
 
-const SideNavigation = ({ user, className }: Props) => {
+const SideNavigation = ({ className }: Props) => {
+    const { loginUser } = useAccountStore();
     const { logout } = useAuth();
     const { iconAvatar } = useAccountHandlers();
     const pathname = usePathname();
@@ -34,21 +34,21 @@ const SideNavigation = ({ user, className }: Props) => {
                 </Link>
             </div>
             <div className="py-3 flex flex-col border-b border-gray-border">
-                {user && (
+                {loginUser && (
                     <Link
                         href="/settings/account"
-                        key={user.avatar_seed}
+                        key={loginUser.avatar_seed}
                         className="py-2 px-3 w-full mx-auto flex flex-col items-center gap-y-1 transition-colors hover:bg-gray-light ">
                         {/* TODO: アイコンの指定がある場合はアイコン、指定がない場合はiconsを使用する */}
                         <div
                             className="w-14 h-auto aspect-square rounded-full overflow-hidden"
                             dangerouslySetInnerHTML={{
                                 __html: iconAvatar(
-                                    user.avatar_seed ?? '',
+                                    loginUser.avatar_seed ?? '',
                                 ).toString(),
                             }}
                         />
-                        <div className="text-sm">{user.name}</div>
+                        <div className="text-sm">{loginUser.name}</div>
                     </Link>
                 )}
                 <button

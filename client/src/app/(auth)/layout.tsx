@@ -20,7 +20,7 @@ const AuthLayout = async ({ children }: Props) => {
     const { data: user, errorMessage } =
         await fetchData<IGetUserResponse>('/user');
     if (user) {
-        handleAuthRedirect(user, true);
+        handleAuthRedirect(user.data, true);
     }
 
     // 認証エラー（AUTHENTICATION_REQUIRED）はログインページでは表示しない

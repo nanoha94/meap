@@ -50,7 +50,6 @@ export interface IPutShoppingCategoryRequestData {
 //--------------------------------
 // データ型
 //--------------------------------
-// 買い物アイテム
 export interface IShoppingItem {
     id: string;
     name: string;
@@ -61,7 +60,6 @@ export interface IShoppingItem {
     order: number;
 }
 
-// 買い物カテゴリー
 export interface IShoppingCategory {
     id: string;
     name: string;
@@ -69,7 +67,6 @@ export interface IShoppingCategory {
     order: number;
 }
 
-// 買い物タグ
 export interface IShoppingTag {
     id: string;
     name: string;

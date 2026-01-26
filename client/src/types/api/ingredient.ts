@@ -4,9 +4,10 @@ import { IBaseApiIndexResponse } from './common';
 // レスポンス型
 //--------------------------------
 // 食材カテゴリー一覧取得
-export type IGetIngredientCategoryIndexResponse = IBaseApiIndexResponse<
-    IIngredientCategory[]
->;
+export type IGetIngredientCategoryIndexResponse = IBaseApiIndexResponse<IIngredientCategory[]>;
+
+// 食材単位一覧取得
+export type IGetIngredientUnitIndexResponse = IBaseApiIndexResponse<IIngredientUnit[]>;
 
 //--------------------------------
 // リクエストデータ型

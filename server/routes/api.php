@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\IngredientCategoryController;
+use App\Http\Controllers\Api\IngredientUnitController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\InvitationController;
@@ -43,6 +44,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::post('/ingredient-categories/bulk', [IngredientCategoryController::class, 'bulkStore']);
     Route::put('/ingredient-categories/bulk', [IngredientCategoryController::class, 'bulkUpdate']);
     Route::delete('/ingredient-categories/bulk', [IngredientCategoryController::class, 'bulkDestroy']);
+    Route::get('/ingredient-units', [IngredientUnitController::class, 'index']);
 
     // invitations
     Route::post('invitations', [InvitationController::class, 'store']);

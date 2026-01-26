@@ -1,9 +1,7 @@
 import { Loading } from '@/components/common';
-import { apiClient, fetchDataParallel } from '@/lib/apiClient';
+import { fetchData } from '@/lib/apiClient';
 import RecipeEditPage from '@/pages/recipe/edit/RecipeEditPage';
 import {
-    IGetGroupUserResponse,
-    IGetIngredientCategoryIndexResponse,
     IGetRecipeShowResponse,
 } from '@/types/api';
 import { Suspense } from 'react';
@@ -16,38 +14,13 @@ interface PageWithDataProps {
     id: string;
 }
 const PageWithData = async ({ id }: PageWithDataProps) => {
-    const { data, errorMessage } = await fetchDataParallel<
-        [
-            IGetRecipeShowResponse,
-            IGetIngredientCategoryIndexResponse,
-            IGetGroupUserResponse,
-        ]
-    >([
-        signal =>
-            apiClient<IGetRecipeShowResponse>(`/recipes/${id}`, { signal }),
-        signal =>
-            apiClient<IGetIngredientCategoryIndexResponse>('/ingredient-categories', { signal },),
-        signal =>
-            apiClient<IGetGroupUserResponse>('/users', { signal },),
-
-    ]);
-
-    const [recipe, ingredientCategories, users] = data ?? [
-        null,
-        null,
-        null,
-    ];
+    const { data: recipe, errorMessage } = await fetchData<IGetRecipeShowResponse>(`/recipes/${id}`);
 
     return (
-        <>
-            <RecipeEditPage
-                fetchRecipe={recipe?.data}
-                fetchIngredientCategories={ingredientCategories?.data}
-                fetchUsers={users?.data}
-                errorMessage={errorMessage}
-            />
-
-        </>
+        <RecipeEditPage
+            fetchRecipe={recipe?.data}
+            errorMessage={errorMessage}
+        />
     );
 };
 

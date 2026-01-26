@@ -5,8 +5,8 @@ import { IGetRecipeIndexResponse } from '@/types/api';
 import { Suspense } from 'react';
 
 const RecipePageWithData = async () => {
-    const { data: recipes, errorMessage } =
-        await fetchData<IGetRecipeIndexResponse>('/recipes');
+    const { data: recipes, errorMessage } = await fetchData<IGetRecipeIndexResponse>('/recipes');
+
     return (
         <RecipeListPage
             fetchRecipes={recipes?.data ?? []}

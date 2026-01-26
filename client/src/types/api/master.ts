@@ -1,13 +1,19 @@
+import { IBaseApiResponse } from './common';
 import { ICourseType } from './course';
-import { IIngredientUnit } from './ingredient';
+import { IIngredientCategory, IIngredientUnit } from './ingredient';
 import { IRecipeCategory } from './recipe';
-import { IShoppingTag } from './shopping';
+import { IShoppingCategory, IShoppingTag } from './shopping';
+import { IUser } from './user';
 
-export interface IGetMasterResponse {
-    data: {
-        recipeCategories: IRecipeCategory[];
-        ingredientUnits: IIngredientUnit[];
-        courseTypes: ICourseType[];
-        shoppingTags: IShoppingTag[];
-    };
+export type IGetMasterResponse = IBaseApiResponse<IMaster>;
+
+export interface IMaster {
+    users: IUser[];
+    recipeCategories: IRecipeCategory[];
+    ingredientCategories: IIngredientCategory[];
+    ingredientUnits: IIngredientUnit[];
+    courseTypes: ICourseType[];
+    shoppingCategories: IShoppingCategory[];
+    shoppingTags: IShoppingTag[];
 }
+

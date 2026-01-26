@@ -172,6 +172,31 @@
                 ]
             }
         },
+        "/ingredient-units": {
+            "get": {
+                "tags": [
+                    "Ingredients"
+                ],
+                "summary": "食材単位一覧を取得",
+                "operationId": "159b18602c3dd01713353690e7f4bef6",
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/IngredientUnitIndexSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/invitations": {
             "post": {
                 "tags": [
@@ -1989,6 +2014,38 @@
                     }
                 }
             },
+            "IngredientUnitIndexSuccess": {
+                "description": "食材単位を5件取得しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "食材単位を5件取得しました。"
+                                },
+                                "data": {
+                                    "description": "食材単位一覧",
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/IngredientUnit"
+                                    }
+                                },
+                                "total": {
+                                    "description": "食材単位総数",
+                                    "type": "integer",
+                                    "example": 5
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
             "IngredientCategoryBulkStoreSuccess": {
                 "description": "3件の食材カテゴリーを一括作成しました。",
                 "content": {
@@ -2205,6 +2262,49 @@
                                 },
                                 "data": {
                                     "properties": {
+                                        "users": {
+                                            "description": "ユーザー一覧",
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string",
+                                                        "example": "1234567890"
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "山田太郎"
+                                                    },
+                                                    "language": {
+                                                        "description": "ユーザーの言語設定",
+                                                        "type": "string",
+                                                        "example": "ja"
+                                                    },
+                                                    "avatar": {
+                                                        "properties": {
+                                                            "seed": {
+                                                                "type": "string",
+                                                                "example": "1234567890"
+                                                            },
+                                                            "url": {
+                                                                "type": "string",
+                                                                "example": "https://example.com/avatar.jpg"
+                                                            },
+                                                            "width": {
+                                                                "type": "integer",
+                                                                "example": 300
+                                                            },
+                                                            "height": {
+                                                                "type": "integer",
+                                                                "example": 300
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
                                         "recipeCategories": {
                                             "description": "料理カテゴリ一覧",
                                             "type": "array",

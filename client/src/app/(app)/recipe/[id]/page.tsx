@@ -1,8 +1,7 @@
 import { Loading } from '@/components/common';
-import { apiClient, fetchDataParallel } from '@/lib/apiClient';
+import { fetchData } from '@/lib/apiClient';
 import {
     IGetRecipeShowResponse,
-    IGetIngredientCategoryIndexResponse,
 } from '@/types/api';
 import { notFound } from 'next/navigation';
 import RecipeDetailPage from '@/pages/recipe/detail/RecipeDetailPage';
@@ -16,30 +15,15 @@ interface PageWithDataProps {
     id: string;
 }
 const PageWithData = async ({ id }: PageWithDataProps) => {
-    const { data, errorMessage } = await fetchDataParallel<
-        [IGetRecipeShowResponse, IGetIngredientCategoryIndexResponse]
-    >([
-        signal =>
-            apiClient<IGetRecipeShowResponse>(`/recipes/${id}`, {
-                signal,
-            }),
-        signal =>
-            apiClient<IGetIngredientCategoryIndexResponse>(
-                '/ingredient-categories',
-                { signal },
-            ),
-    ]);
+    const { data: recipe, errorMessage } = await fetchData<IGetRecipeShowResponse>(`/recipes/${id}`);
 
-    if (errorMessage || !data) {
+    if (errorMessage || !recipe) {
         notFound();
     }
-
-    const [recipe, ingredientCategories] = data;
 
     return (
         <RecipeDetailPage
             fetchRecipe={recipe.data}
-            fetchIngredientCategories={ingredientCategories.data}
             errorMessage={errorMessage}
         />
     );

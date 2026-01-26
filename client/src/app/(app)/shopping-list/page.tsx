@@ -1,33 +1,15 @@
 import ShoppingListPage from '@/pages/shopping/ShoppingListPage';
 import { Suspense } from 'react';
-import {
-    IGetShoppingCategoryIndexResponse,
-    IGetShoppingItemIndexResponse,
-} from '@/types/api';
+import { IGetShoppingItemIndexResponse, } from '@/types/api';
 import { Loading } from '@/components/common';
-import { apiClient, fetchDataParallel } from '@/lib/apiClient';
+import { fetchData } from '@/lib/apiClient';
 
 async function ShoppingListsWithData() {
-    const { data, errorMessage } = await fetchDataParallel<
-        [IGetShoppingItemIndexResponse, IGetShoppingCategoryIndexResponse]
-    >([
-        signal =>
-            apiClient<IGetShoppingItemIndexResponse>('/shopping-items', {
-                signal,
-            }),
-        signal =>
-            apiClient<IGetShoppingCategoryIndexResponse>(
-                '/shopping-categories',
-                { signal },
-            ),
-    ]);
-
-    const [items, categories] = data ?? [null, null];
+    const { data: items, errorMessage } = await fetchData<IGetShoppingItemIndexResponse>('/shopping-items');
 
     return (
         <ShoppingListPage
             fetchItems={items?.data ?? []}
-            fetchCategories={categories?.data ?? []}
             errorMessage={errorMessage}
         />
     );

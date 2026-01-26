@@ -1,4 +1,4 @@
-import { IRecipe, IRecipeCategory, IGetMasterResponse } from '@/types/api';
+import { IRecipe, IRecipeCategory } from '@/types/api';
 import { create } from 'zustand';
 
 interface RecipeState {
@@ -8,9 +8,7 @@ interface RecipeState {
 
     // setter func
     setRecipes: (recipes: IRecipe[]) => void;
-    setCategories: (
-        categories: IGetMasterResponse['data']['recipeCategories'],
-    ) => void;
+    setCategories: (categories: IRecipeCategory[]) => void;
 }
 
 export const useRecipeStore = create<RecipeState>(set => ({
@@ -19,10 +17,6 @@ export const useRecipeStore = create<RecipeState>(set => ({
     categories: [],
 
     // setter func
-    setRecipes: recipes => {
-        set({ recipes });
-    },
-    setCategories: categories => {
-        set({ categories });
-    },
+    setRecipes: recipes => set({ recipes }),
+    setCategories: categories => set({ categories }),
 }));

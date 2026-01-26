@@ -5,7 +5,7 @@ import {
     ShoppingList,
 } from '@/models/shopping/components';
 import { useShoppingStore } from '@/models/shopping/hooks';
-import { IShoppingCategory, IShoppingItem } from '@/types/api';
+import { IShoppingItem } from '@/types/api';
 import { ChevronRight } from 'lucide-react';
 import React from 'react';
 import { useSnackbars } from '@/hooks/useSnackbars';
@@ -16,15 +16,13 @@ import { ShoppingCategoryEditForm } from '@/components/dialog-contents';
 
 interface Props {
     fetchItems?: IShoppingItem[];
-    fetchCategories?: IShoppingCategory[];
     errorMessage?: string;
 }
 
-const ShoppingListPage: React.FC<Props> = ({ fetchItems, fetchCategories, errorMessage }) => {
+const ShoppingListPage: React.FC<Props> = ({ fetchItems, errorMessage }) => {
     const {
         setServerItems,
         setItems: setStoreItems,
-        setCategories: setStoreCategories,
     } = useShoppingStore();
     const { addSnackbar } = useSnackbars();
     const { openDialog } = useDialog();
@@ -44,12 +42,6 @@ const ShoppingListPage: React.FC<Props> = ({ fetchItems, fetchCategories, errorM
         }
     }, [fetchItems]);
 
-    // カテゴリーをストアにセット
-    React.useEffect(() => {
-        if (fetchCategories) {
-            setStoreCategories(fetchCategories);
-        }
-    }, [fetchCategories]);
 
     /**
      * エラーメッセージを表示

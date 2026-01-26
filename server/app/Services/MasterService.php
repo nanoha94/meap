@@ -6,28 +6,26 @@ use App\Models\Group;
 
 class MasterService
 {
+    public function __construct(
+        private UserService $userService,
+        private RecipeCategoryService $recipeCategoryService,
+        private IngredientCategoryService $ingredientCategoryService,
+        private IngredientUnitService $ingredientUnitService,
+        private MenuCategoryService $menuCategoryService,
+        private ShoppingCategoryService $shoppingCategoryService,
+        private ShoppingTagService $shoppingTagService
+    ) {}
+
     public function index(Group $group): array
     {
-        $recipeCategories = $group->recipeCategories()->select('id', 'name', 'order')->orderBy('order', 'asc')->get();
-        $ingredientCategories = $group->ingredientCategories()->select('id', 'name', 'order')->orderBy('order', 'asc')->get();
-        $ingredientUnits = $group->ingredientUnits()->select('id', 'name', 'position', 'requires_quantity', 'order')->orderBy('order', 'asc')->get()->map(function ($unit) {
-            return [
-                'id' => $unit->id,
-                'name' => $unit->name,
-                'position' => $unit->position,
-                'requiresQuantity' => $unit->requires_quantity,
-                'order' => $unit->order,
-            ];
-        });
-        $menuCategories = $group->menuCategories()->select('id', 'name', 'order')->get();
-        $shopping_tags = $group->shoppingTags()->select('id', 'name')->get();
-
         return [
-            'recipeCategories' => $recipeCategories,
-            'ingredientCategories' => $ingredientCategories,
-            'ingredientUnits' => $ingredientUnits,
-            'menuCategories' => $menuCategories,
-            'shoppingTags' => $shopping_tags,
+            'users' => $this->userService->index($group),
+            'recipeCategories' => $this->recipeCategoryService->index($group),
+            'ingredientCategories' => $this->ingredientCategoryService->index($group),
+            'ingredientUnits' => $this->ingredientUnitService->index($group),
+            'menuCategories' => $this->menuCategoryService->index($group),
+            'shoppingCategories' => $this->shoppingCategoryService->index($group),
+            'shoppingTags' => $this->shoppingTagService->index($group),
         ];
     }
 }

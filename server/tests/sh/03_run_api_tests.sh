@@ -89,6 +89,12 @@ echo ""
 echo "実行中: UserControllerTest.php"
 ./vendor/bin/sail test tests/Feature/Api/UserControllerTest.php --stop-on-failure
 
+echo ""
+echo "=========================================="
+echo "📖 詳細ドキュメント: tests/docs/03_Api/13_IngredientUnitController_TEST_SPECIFICATIONS.md"
+echo ""
+echo "実行中: IngredientUnitControllerTest.php"
+./vendor/bin/sail test tests/Feature/Api/IngredientUnitControllerTest.php --stop-on-failure
 
 echo ""
 echo "=========================================="

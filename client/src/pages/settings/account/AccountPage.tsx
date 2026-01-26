@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 import { Header, TextButton } from '@/components/common';
-import { IUser, IInvitation } from '@/types/api';
+import { IInvitation } from '@/types/api';
 import { useSnackbars } from '@/hooks/useSnackbars';
 import { useDialog } from '@/hooks/useDialog';
 import { Invitation, JoinGroup } from '@/components/dialog-contents';
@@ -9,23 +9,17 @@ import { useAccountHandlers, useAccountStore } from '@/models/settings/hooks';
 import { ChevronRight } from 'lucide-react';
 
 interface Props {
-    users: IUser[];
     invitationDetail?: IInvitation | null;
     errorMessage?: string;
 }
 
-const AccountPage = ({ users, invitationDetail, errorMessage }: Props) => {
+const AccountPage = ({ invitationDetail, errorMessage }: Props) => {
     const { addSnackbar } = useSnackbars();
-    const { loginUser, setUsers } = useAccountStore();
+    const { loginUser, users } = useAccountStore();
     const { iconAvatar } = useAccountHandlers();
     const { openDialog } = useDialog();
 
-    /**
-     * ユーザー一覧を設定
-     */
-    React.useEffect(() => {
-        setUsers(users);
-    }, [users]);
+
 
     /**
      * エラーメッセージを表示
