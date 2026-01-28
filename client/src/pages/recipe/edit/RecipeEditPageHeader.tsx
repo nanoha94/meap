@@ -44,6 +44,7 @@ const RecipeEditPageHeader = ({ ownerUserId, fetchRecipe, onChangeOwnerUserId, o
     return (
         <>
             <Header
+                maxWidth="1200px"
                 hasBackButton={true}
                 leftContent={
                     <div className="items-center gap-x-4 whitespace-nowrap w-[300px] hidden md:flex">

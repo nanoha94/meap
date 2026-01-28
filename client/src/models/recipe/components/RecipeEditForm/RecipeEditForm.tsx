@@ -50,7 +50,7 @@ const RecipeEditForm = React.forwardRef<RecipeEditFormRef, Props>(
                 >
                     {/* サムネイル画像 */}
                     <ImageEditField control={control} name="thumbnail" className=' md:hidden' />
-                    <div className="p-5 pb-[60px] md:px-10 max-w-[1000px] mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-14">
+                    <div className="pt-5 px-5 md:px-10 grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-14">
                         {/* サムネイル画像 */}
                         <ImageEditField control={control} name="thumbnail" className='hidden md:block' />
                         <div className="flex-1 flex flex-col gap-y-8">

@@ -1,5 +1,5 @@
 import '@/styles/global.css';
-import { LoadingAnimation, Snackbars } from '@/components/common';
+import { AlertDialog, Dialog, LoadingAnimation, Snackbars } from '@/components/common';
 import { notoSansJp } from '@/constants';
 
 const RootLayout = ({ children }) => {
@@ -9,6 +9,8 @@ const RootLayout = ({ children }) => {
                 {children}
                 <Snackbars />
                 <LoadingAnimation />
+                <AlertDialog />
+                <Dialog />
             </body>
         </html>
     );

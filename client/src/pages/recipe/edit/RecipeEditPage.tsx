@@ -45,7 +45,7 @@ const RecipeEditPage = ({
                     formRef.current?.submit();
                 }}
             />
-            <main>
+            <main className="pb-[60px] max-w-[1200px] mx-auto">
                 <RecipeEditForm ref={formRef} fetchRecipe={fetchRecipe} ownerUserId={ownerUserId} />
             </main>
         </>

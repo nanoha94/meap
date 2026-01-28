@@ -56,21 +56,18 @@ const ShoppingListPage: React.FC<Props> = ({ fetchItems, errorMessage }) => {
     return (
         <>
             <ShoppingListPageHeader />
-            <main>
-                {/* メインコンテンツ */}
-                <div className="p-5 pb-[60px] md:px-10">
-                    <div className="pb-12 flex flex-col gap-y-7">
-                        {/* 買い物リスト */}
-                        <ShoppingList />
-                        <TextButton
-                            colorVariant={COLOR_VARIANT.SECONDARY}
-                            onClick={handleOpenCategorySettingDialog}>
-                            カテゴリーの追加・編集
-                            <ChevronRight size={20} />
-                        </TextButton>
-                    </div>
-                    <AddShoppingItemButton />
+            <main className="p-5 pb-[60px] md:px-10 max-w-[1000px] mx-auto">
+                <div className="pb-12 flex flex-col gap-y-7">
+                    {/* 買い物リスト */}
+                    <ShoppingList />
+                    <TextButton
+                        colorVariant={COLOR_VARIANT.SECONDARY}
+                        onClick={handleOpenCategorySettingDialog}>
+                        カテゴリーの追加・編集
+                        <ChevronRight size={20} />
+                    </TextButton>
                 </div>
+                <AddShoppingItemButton />
             </main>
         </>
     );

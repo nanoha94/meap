@@ -53,14 +53,12 @@ const RecipeListPage = ({
                     </div>
                 }
             />
-            <main>
-                <div className="p-5 pb-[60px] md:px-10">
-                    {total > 0 ? (
-                        <RecipeList />
-                    ) : (
-                        <p>まだ料理/レシピが登録されていません。</p>
-                    )}
-                </div>
+            <main className='p-5 pb-[60px] md:px-10 max-w-[1000px] mx-auto'>
+                {total > 0 ? (
+                    <RecipeList />
+                ) : (
+                    <p>まだ料理/レシピが登録されていません。</p>
+                )}
             </main>
         </>
     );

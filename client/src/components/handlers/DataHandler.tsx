@@ -40,9 +40,10 @@ const DataHandler = ({ user, masterData }: Props) => {
      * @returns void
      */
     React.useEffect(() => {
-        if (masterData?.users && masterData.users.length <= 0) {
+        if (masterData?.users && masterData.users.length > 0) {
             setUsers(masterData.users);
         }
+        console.log(masterData?.users);
     }, [masterData?.users]);
 
     /**
@@ -51,7 +52,7 @@ const DataHandler = ({ user, masterData }: Props) => {
      * @returns void
      */
     React.useEffect(() => {
-        if (masterData?.recipeCategories && masterData.recipeCategories.length <= 0) {
+        if (masterData?.recipeCategories && masterData.recipeCategories.length > 0) {
             setRecipeCategories(masterData.recipeCategories);
         }
     }, [masterData?.recipeCategories]);
@@ -63,7 +64,7 @@ const DataHandler = ({ user, masterData }: Props) => {
      * @returns void
      */
     React.useEffect(() => {
-        if (masterData?.ingredientCategories && masterData.ingredientCategories.length <= 0) {
+        if (masterData?.ingredientCategories && masterData.ingredientCategories.length > 0) {
             setIngredientCategories(masterData.ingredientCategories);
         }
     }, [masterData?.ingredientCategories]);
@@ -74,7 +75,7 @@ const DataHandler = ({ user, masterData }: Props) => {
      * @returns void
      */
     React.useEffect(() => {
-        if (masterData?.ingredientUnits && masterData.ingredientUnits.length <= 0) {
+        if (masterData?.ingredientUnits && masterData.ingredientUnits.length > 0) {
             setIngredientUnits(masterData.ingredientUnits);
         }
     }, [masterData?.ingredientUnits]);
@@ -85,7 +86,7 @@ const DataHandler = ({ user, masterData }: Props) => {
      * @returns void
      */
     React.useEffect(() => {
-        if (masterData?.shoppingCategories && masterData.shoppingCategories.length <= 0) {
+        if (masterData?.shoppingCategories && masterData.shoppingCategories.length > 0) {
             setShoppingCategories(masterData.shoppingCategories);
         }
     }, [masterData?.shoppingCategories]);

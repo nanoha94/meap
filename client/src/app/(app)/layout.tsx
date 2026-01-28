@@ -1,7 +1,7 @@
-import { AlertDialog, Dialog, FooterNavigation, SideNavigation } from '@/components/common';
+import { FooterNavigation, SideNavigation } from '@/components/common';
 import { IGetUserResponse, IGetMasterResponse } from '@/types/api';
 import { fetchData } from '@/lib/apiClient';
-import { DataHandler, RedirectHandler } from '@/components/handlers';
+import { DataHandler, RedirectHandler, VerifiedHandler } from '@/components/handlers';
 import { cookies } from 'next/headers';
 import { handleAuthRedirect } from '@/utils';
 
@@ -39,8 +39,6 @@ const AppLayout = async ({ children }: Props) => {
 
     return (
         <div className="min-h-screen h-full flex flex-col">
-            {redirectPath && <RedirectHandler redirectPath={redirectPath} />}
-            <DataHandler user={user!.data} masterData={masterData?.data ?? null} />
             <div className="flex h-full mb-20 md:mb-0">
                 <SideNavigation className="z-10 hidden md:block" />
                 <div className="flex-1 min-h-screen h-full bg-primary-background md:ml-[160px]">
@@ -48,8 +46,9 @@ const AppLayout = async ({ children }: Props) => {
                 </div>
             </div>
             <FooterNavigation className="md:hidden" />
-            <AlertDialog />
-            <Dialog />
+            {redirectPath && <RedirectHandler redirectPath={redirectPath} />}
+            <VerifiedHandler />
+            <DataHandler user={user!.data} masterData={masterData?.data ?? null} />
         </div>
     );
 };

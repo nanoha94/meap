@@ -74,6 +74,7 @@ const RecipeDetailPage = ({
 
     return (
         <><Header
+            maxWidth="1200px"
             hasBackButton={true}
             rightContent={
                 <div className="flex items-center gap-x-4">
@@ -86,10 +87,10 @@ const RecipeDetailPage = ({
             }
             actionButtons={actionButtons}
         />
-            <main>
+            <main className="pb-[60px] max-w-[1200px] mx-auto">
                 {/* サムネイル画像 */}
                 <RecipeThumbnail thumbnail={fetchRecipe?.thumbnail ?? null} className="md:hidden" />
-                <div className="p-5 pb-[60px] md:px-10 max-w-[1000px] mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-14">
+                <div className="p-5 md:px-10 grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-14">
                     {/* サムネイル画像 */}
                     <RecipeThumbnail thumbnail={fetchRecipe?.thumbnail ?? null} className="hidden md:block" />
                     <div className="flex-1 flex flex-col gap-y-8">

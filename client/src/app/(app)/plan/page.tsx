@@ -1,4 +1,4 @@
-import PlanPage from '@/pages/plan/PlanPage';
+import PlanCalendarPage from '@/pages/plan/calendar/PlanCalendarPage';
 
 export const metadata = {
     title: 'Laravel - Plan',
@@ -7,7 +7,7 @@ export const metadata = {
 const Plan = () => {
     return (
         <>
-            <PlanPage />
+            <PlanCalendarPage />
         </>
     );
 };
