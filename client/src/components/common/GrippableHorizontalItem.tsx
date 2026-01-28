@@ -1,6 +1,6 @@
 'use client';
 import { colors } from '@/constants';
-import { GripVertical, Trash } from 'lucide-react';
+import { GripVertical, Trash2 } from 'lucide-react';
 
 interface Props {
     hasDeleteButton?: boolean;
@@ -24,10 +24,10 @@ const GrippableHorizontalItem: React.FC<Props> = ({
             {hasDeleteButton && (
                 <button
                     type="button"
-                    onClick={isDisabledDeleteButton ? () => { } : onDelete}
-                    className="p-1 w-fit h-fit rounded-full hover:bg-gray-light transition-colors disabled:opacity-0  disabled:cursor-default"
+                    onClick={isDisabledDeleteButton ? undefined : onDelete}
+                    className="p-1 w-fit h-fit rounded-full hover:bg-gray-light transition-colors disabled:opacity-0 disabled:cursor-default"
                     disabled={isDisabledDeleteButton}>
-                    <Trash color={colors.alert.main} size={28} />
+                    <Trash2 color={colors.alert.main} size={28} />
                 </button>
             )}
         </div>

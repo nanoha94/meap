@@ -7,6 +7,13 @@ interface Props {
     onOpenDialog: () => void;
 }
 
+/**
+ * ダイアログを開いてフィールドを編集するボタン
+ * @param value - フィールドの値
+ * @param placeholder - プレースホルダー
+ * @param onOpenDialog - ダイアログを開く関数
+ * @returns 
+ */
 const DialogField = ({ value, placeholder, onOpenDialog }: Props) => {
     return (
         <button

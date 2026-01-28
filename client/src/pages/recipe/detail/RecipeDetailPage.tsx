@@ -4,7 +4,7 @@ import { IRecipe, IImage } from '@/types/api';
 import { useIngredientStore } from '@/models/ingredient/hooks';
 import { useRecipeApi } from '@/models/recipe/hooks';
 import Image from 'next/image';
-import { Image as ImageIcon, Pencil, Trash } from 'lucide-react';
+import { Image as ImageIcon, Pencil, Trash2 } from 'lucide-react';
 import { useSnackbars } from '@/hooks/useSnackbars';
 import { Header, HeaderTextButton } from '@/components/common';
 import { useAccountStore } from '@/models/settings/hooks';
@@ -56,7 +56,7 @@ const RecipeDetailPage = ({
         // 削除できるのは、編集責任者のみ
         {
             label: '削除する',
-            icon: <Trash size={20} strokeWidth={2} />,
+            icon: <Trash2 size={20} strokeWidth={2} />,
             onClick: openDeleteCheckDialog,
             color: COLOR_VARIANT.ALERT,
         },

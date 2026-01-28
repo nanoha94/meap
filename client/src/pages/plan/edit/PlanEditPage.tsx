@@ -2,7 +2,7 @@
 import { Header, HeaderTextButton } from "@/components/common";
 import { COLOR_VARIANT } from "@/constants";
 import { ActionButton } from "@/types";
-import { Save, Trash } from "lucide-react";
+import { Save, Trash2 } from "lucide-react";
 
 
 const PlanEditPage = () => {
@@ -13,7 +13,7 @@ const PlanEditPage = () => {
     const actionButtons: ActionButton[] = [
         {
             label: '削除する',
-            icon: <Trash size={20} strokeWidth={2} />,
+            icon: <Trash2 size={20} strokeWidth={2} />,
             onClick: () => {
                 // TODO: 削除ダイアログ実装
             },

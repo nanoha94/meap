@@ -2,7 +2,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { Control, Controller, FieldValues, Path } from 'react-hook-form';
-import { ImagePlus, Trash } from 'lucide-react';
+import { ImagePlus, Trash2 } from 'lucide-react';
 import { MAX_IMAGE_SIZE, STYLE_SIZE } from '@/constants';
 import { IImageWithFile } from '@/types';
 
@@ -151,7 +151,7 @@ const ImageEditField = <T extends FieldValues>({
                                                 )
                                             }
                                             className={`${sizeConfigs[size].iconSmPadding} cursor-pointer text-white rounded-full bg-gray-main/80 transition-opacity hover:opacity-70`}>
-                                            <Trash
+                                            <Trash2
                                                 size={
                                                     sizeConfigs[size].iconSmSize
                                                 }

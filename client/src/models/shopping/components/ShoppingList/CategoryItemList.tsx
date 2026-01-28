@@ -1,5 +1,5 @@
 import React from 'react';
-import { Trash, X } from 'lucide-react';
+import { Trash2, X } from 'lucide-react';
 import { rectSortingStrategy, SortableContext } from '@dnd-kit/sortable';
 import { useDroppable } from '@dnd-kit/core';
 import Sortable from '@/components/dnd/Sortable';
@@ -68,7 +68,7 @@ const CategoryItemList: React.FC<Props> = ({ category, items }) => {
             },
             {
                 label: 'チェック済みを削除',
-                icon: <Trash />,
+                icon: <Trash2 />,
                 onClick: openDeleteCheckDialog,
             },
         ];

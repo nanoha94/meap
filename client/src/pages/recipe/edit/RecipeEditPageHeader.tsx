@@ -4,7 +4,7 @@ import { Header, HeaderTextButton } from '@/components/common';
 import StyledSelect from '@/components/common/StyledSelect';
 import { useAccountStore } from '@/models/settings/hooks';
 import { IRecipe } from '@/types/api';
-import { Save, Trash } from 'lucide-react';
+import { Save, Trash2 } from 'lucide-react';
 import { useRecipeApi } from '@/models/recipe/hooks';
 import { ActionButton } from '@/types';
 import { COLOR_VARIANT } from '@/constants';
@@ -30,7 +30,7 @@ const RecipeEditPageHeader = ({ ownerUserId, fetchRecipe, onChangeOwnerUserId, o
         // 削除できるのは、編集責任者のみ
         {
             label: '削除する',
-            icon: <Trash size={20} strokeWidth={2} />,
+            icon: <Trash2 size={20} strokeWidth={2} />,
             onClick: () => openAlertDialog(
                 RECIPE_ALERT_DIALOG_CONFIGS.deleteItem(fetchRecipe.name),
                 () => {

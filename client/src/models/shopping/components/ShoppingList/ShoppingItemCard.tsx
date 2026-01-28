@@ -2,7 +2,7 @@
 import React from 'react';
 import { MenuButton } from '@/components/common';
 import { colors } from '@/constants/colors';
-import { Check, GripVertical, Pencil, Pin, PinOff, Trash } from 'lucide-react';
+import { Check, GripVertical, Pencil, Pin, PinOff, Trash2 } from 'lucide-react';
 import { IShoppingItem } from '@/types/api';
 import { useShoppingItemApi, useShoppingStore } from '../../hooks';
 import { SHOPPING_ALERT_DIALOG_CONFIGS, SHOPPING_ITEM_SETTING_DIALOG_CONFIGS } from '../../constants';
@@ -63,7 +63,7 @@ const ShoppingItemCard = ({ item }: Props) => {
         },
         {
             label: '削除する',
-            icon: <Trash />,
+            icon: <Trash2 />,
             onClick: () => {
                 openAlertDialog(SHOPPING_ALERT_DIALOG_CONFIGS.deleteItem(name), () => {
                     deleteShoppingItems([id]);
