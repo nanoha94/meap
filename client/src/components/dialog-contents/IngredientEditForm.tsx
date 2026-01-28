@@ -44,7 +44,7 @@ const IngredientEditForm = ({
      * 数量の入力可/不可
      */
     const isDisabledQuantity: boolean = React.useMemo(() => {
-        return !(watchedUnit?.requiresQuantity ?? false);
+        return !(watchedUnit?.requiresQuantity ?? true);
     }, [watchedUnit]);
 
     /**

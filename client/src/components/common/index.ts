@@ -1,7 +1,6 @@
 export { default as AlertDialog } from './AlertDialog';
 export { default as Button } from './Button';
 export { default as Dialog } from './Dialog';
-export { default as EmptyButton } from './EmptyButton';
 export { default as GrippableVerticalItem } from './GrippableVerticalItem';
 export { default as GrippableHorizontalItem } from './GrippableHorizontalItem';
 export { default as FooterNavigation } from './FooterNavigation';

@@ -43,7 +43,6 @@ const DataHandler = ({ user, masterData }: Props) => {
         if (masterData?.users && masterData.users.length > 0) {
             setUsers(masterData.users);
         }
-        console.log(masterData?.users);
     }, [masterData?.users]);
 
     /**

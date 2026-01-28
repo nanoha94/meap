@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { TextButton } from '@/components/common';
+import { GrippableHorizontalItem, TextButton } from '@/components/common';
 import { Control, useFieldArray, useFormContext } from 'react-hook-form';
 import { ChevronRight } from 'lucide-react';
 import { COLOR_VARIANT, TMP_ID_PREFIX } from '@/constants';
@@ -12,11 +12,12 @@ import IngredientItemList from './IngredientItemList';
 import { defaultIngredientItem } from '@/models/ingredient/constants';
 import { createDefaultData } from '@/utils';
 import { IIngredientItem } from '@/types/api';
-import IngredientEditDialogButton from './IngredientEditDialogButton';
 import { arrayMove } from '@dnd-kit/sortable';
 import { getItemsInCategory } from '@/utils';
 import { useItemAndCategoryDnd } from '@/hooks/useItemAndCategoryDnd';
 import { RecipeEditFormData } from '@/models/recipe/types';
+import { DialogField } from '@/components/form';
+import { formatIngredient } from '@/utils/format';
 
 interface Props {
     control: Control<RecipeEditFormData>;
@@ -247,10 +248,8 @@ const IngredientEditFields = ({ control }: Props) => {
                             return (
                                 <IngredientItemList
                                     key={`${category.id}-${itemsKey}`}
-                                    control={control}
                                     category={category}
                                     items={items}
-                                    offsetIndex={offsetIndex}
                                     addEmptyItem={() =>
                                         addEmptyItem(category.id)
                                     }
@@ -266,12 +265,16 @@ const IngredientEditFields = ({ control }: Props) => {
                         })}
                         <DragOverlay>
                             {activeItem && (
-                                <IngredientEditDialogButton
-                                    item={activeItem}
-                                    isDisabled={true}
-                                    placeholder={`${activeCategory?.name}を設定`}
-                                    onDelete={() => { }}
-                                />
+                                <GrippableHorizontalItem
+                                    hasDeleteButton={true}
+                                    isDisabledDeleteButton={true}
+                                    onDelete={() => { }}>
+                                    <DialogField
+                                        value={formatIngredient(activeItem)}
+                                        placeholder={`${activeCategory?.name}を設定`}
+                                        onOpenDialog={() => { }}
+                                    />
+                                </GrippableHorizontalItem>
                             )}
                         </DragOverlay>
                     </DndContext>
