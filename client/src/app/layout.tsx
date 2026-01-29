@@ -1,10 +1,15 @@
+import React from 'react';
 import '@/styles/global.css';
 import { AlertDialog, Dialog, LoadingAnimation, Snackbars } from '@/components/common';
-import { notoSansJp } from '@/constants';
+import { NOTO_SANS_JP } from '@/constants';
 
-const RootLayout = ({ children }) => {
+interface RootLayoutProps {
+    children: React.ReactNode;
+}
+
+const RootLayout = ({ children }: RootLayoutProps) => {
     return (
-        <html lang="en" className={notoSansJp.variable}>
+        <html lang="en" className={NOTO_SANS_JP.variable}>
             <body className="text-base text-black">
                 {children}
                 <Snackbars />

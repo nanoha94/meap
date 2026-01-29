@@ -6,7 +6,7 @@ import { useRecipeApi } from '@/models/recipe/hooks';
 import Image from 'next/image';
 import { Image as ImageIcon, Pencil, Trash2 } from 'lucide-react';
 import { useSnackbars } from '@/hooks/useSnackbars';
-import { Header, HeaderTextButton } from '@/components/common';
+import { Header, HeaderTextButton } from '@/components';
 import { useAccountStore } from '@/models/settings/hooks';
 import { ActionButton } from '@/types';
 import { COLOR_VARIANT } from '@/constants';

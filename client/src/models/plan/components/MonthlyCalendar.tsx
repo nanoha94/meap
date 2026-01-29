@@ -1,5 +1,5 @@
 'use client';
-import { DAY_OF_WEEK_LIST, DayOfWeek } from '@/constants';
+import { DAY_OF_WEEK, DAY_OF_WEEK_LIST } from '@/constants';
 import { colors } from '@/constants/colors';
 import dayjs, { Dayjs } from 'dayjs';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -11,10 +11,10 @@ import React from 'react';
  * @returns 曜日の色
  */
 const dayColor = (day: number) => {
-    if (day === DayOfWeek.SUNDAY) {
+    if (day === DAY_OF_WEEK.SUNDAY) {
         return 'text-red';
     }
-    if (day === DayOfWeek.SATURDAY) {
+    if (day === DAY_OF_WEEK.SATURDAY) {
         return 'text-blue';
     }
     return 'text-black';
@@ -36,7 +36,7 @@ const dateStyle = (isToday: boolean, day: number) => {
 const MonthlyCalendar = () => {
     const [selectedDate, setSelectedDate] = React.useState<Dayjs>(dayjs());
     // TODO: 月曜始まりに対応する場合、ここを変更する
-    const startOfWeek = DayOfWeek.MONDAY;
+    const startOfWeek = DAY_OF_WEEK.MONDAY;
 
     // 曜日のリスト
     const dayOfWeeks = React.useMemo(

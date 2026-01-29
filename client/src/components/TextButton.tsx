@@ -1,15 +1,15 @@
 'use client';
-import { BUTTON_SIZE, BUTTON_TYPE, COLOR_VARIANT } from '@/constants';
+import { BUTTON_SIZE, BUTTON_TYPE, ButtonSize, ButtonType, COLOR_VARIANT } from '@/constants';
 import React from 'react';
 
 interface Props {
     className?: string;
-    size?: BUTTON_SIZE;
+    size?: ButtonSize;
     disabled?: boolean;
-    colorVariant?: COLOR_VARIANT.PRIMARY | COLOR_VARIANT.SECONDARY | COLOR_VARIANT.GRAY | COLOR_VARIANT.ACCENT;
+    colorVariant?: (typeof COLOR_VARIANT)['PRIMARY'] | (typeof COLOR_VARIANT)['SECONDARY'] | (typeof COLOR_VARIANT)['GRAY'] | (typeof COLOR_VARIANT)['ACCENT'];
     children: React.ReactNode;
     onClick: () => void;
-    type?: BUTTON_TYPE;
+    type?: ButtonType;
 }
 
 const TextButton = ({

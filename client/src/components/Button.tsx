@@ -1,10 +1,10 @@
-import { BUTTON_TYPE, BUTTON_VARIANT, COLOR_VARIANT } from '@/constants';
+import { BUTTON_TYPE, BUTTON_VARIANT, ButtonType, ButtonVariant, COLOR_VARIANT } from '@/constants';
 import React from 'react';
 
 interface Props extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-    type?: BUTTON_TYPE;
-    variant?: BUTTON_VARIANT;
-    colorVariant?: COLOR_VARIANT.PRIMARY | COLOR_VARIANT.GRAY | COLOR_VARIANT.ALERT;
+    type?: ButtonType;
+    variant?: ButtonVariant;
+    colorVariant?: (typeof COLOR_VARIANT)['PRIMARY'] | (typeof COLOR_VARIANT)['GRAY'] | (typeof COLOR_VARIANT)['ALERT'];
     disabled?: boolean;
     className?: string;
 }

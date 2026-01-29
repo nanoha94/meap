@@ -1,5 +1,5 @@
 'use client';
-import { TextButton } from '@/components/common';
+import { TextButton } from '@/components';
 import { Control, Controller, useFormContext } from 'react-hook-form';
 import { IRecipeCategory } from '@/types/api';
 import { Check, ChevronRight } from 'lucide-react';

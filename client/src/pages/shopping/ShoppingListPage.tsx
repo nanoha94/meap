@@ -1,5 +1,5 @@
 'use client';
-import { TextButton } from '@/components/common';
+import { TextButton } from '@/components';
 import {
     AddShoppingItemButton,
     ShoppingList,

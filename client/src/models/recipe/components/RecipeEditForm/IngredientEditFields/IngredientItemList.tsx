@@ -2,7 +2,7 @@ import React from 'react';
 import { IIngredientCategory, IIngredientItem } from '@/types/api';
 import { BUTTON_TYPE, EDIT_MODE } from '@/constants';
 import Sortable from '@/components/dnd/Sortable';
-import { GrippableHorizontalItem, TextButton } from '@/components/common';
+import { GrippableHorizontalItem, TextButton } from '@/components';
 import { CirclePlus } from 'lucide-react';
 import { useDialog } from '@/hooks/useDialog';
 import {
@@ -12,7 +12,7 @@ import {
 import { useDroppable } from '@dnd-kit/core';
 import { IngredientEditForm } from '@/components/dialog-contents';
 import { useIngredientStore } from '@/models/ingredient/hooks';
-import { DialogField } from '@/components/form';
+import { DialogField } from '@/components/form-fields';
 import { formatIngredient } from '@/utils/format';
 
 interface Props {

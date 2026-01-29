@@ -5,7 +5,7 @@ import {
     Button,
     TextButton,
     GrippableHorizontalItem,
-} from '@/components/common';
+} from '@/components';
 import { CirclePlus } from 'lucide-react';
 import { DndSortableList } from '@/components/dnd';
 import { BUTTON_TYPE, BUTTON_VARIANT, COLOR_VARIANT, DND_SORTABLE_LIST_TYPE, TMP_ID_PREFIX } from '@/constants';

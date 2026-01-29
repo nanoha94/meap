@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { Header, TextButton } from '@/components/common';
+import { Header, TextButton } from '@/components';
 import { IInvitation } from '@/types/api';
 import { useSnackbars } from '@/hooks/useSnackbars';
 import { useDialog } from '@/hooks/useDialog';

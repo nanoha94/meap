@@ -4,7 +4,7 @@ import { RecipeEditFormData } from '../types';
 import { useRecipeApi } from './useRecipeApi';
 import { useForm, useWatch } from 'react-hook-form';
 import { DEFAULT_POST_DATA } from '../constants';
-import { EDIT_MODE, TMP_ID_PREFIX } from '@/constants';
+import { EDIT_MODE, EditMode, TMP_ID_PREFIX } from '@/constants';
 
 /**
  * 食材をフォーマット
@@ -44,7 +44,7 @@ export const useRecipeEditForm = (fetchRecipe?: IRecipe, ownerUserId?: string) =
     const { storeRecipe, updateRecipe } = useRecipeApi();
     const watchedName = useWatch({ control, name: 'name' });
     const watchedSteps = useWatch({ control, name: 'steps' });
-    const editMode: (typeof EDIT_MODE)[keyof typeof EDIT_MODE] = fetchRecipe
+    const editMode: EditMode = fetchRecipe
         ? EDIT_MODE.UPDATE
         : EDIT_MODE.CREATE;
 

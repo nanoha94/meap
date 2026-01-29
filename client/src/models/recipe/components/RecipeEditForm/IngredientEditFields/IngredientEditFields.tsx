@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { GrippableHorizontalItem, TextButton } from '@/components/common';
+import { GrippableHorizontalItem, TextButton } from '@/components';
 import { Control, useFieldArray, useFormContext } from 'react-hook-form';
 import { ChevronRight } from 'lucide-react';
 import { COLOR_VARIANT, TMP_ID_PREFIX } from '@/constants';
@@ -16,7 +16,7 @@ import { arrayMove } from '@dnd-kit/sortable';
 import { getItemsInCategory } from '@/utils';
 import { useItemAndCategoryDnd } from '@/hooks/useItemAndCategoryDnd';
 import { RecipeEditFormData } from '@/models/recipe/types';
-import { DialogField } from '@/components/form';
+import { DialogField } from '@/components/form-fields';
 import { formatIngredient } from '@/utils/format';
 
 interface Props {

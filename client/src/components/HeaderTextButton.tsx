@@ -5,7 +5,7 @@ import { COLOR_VARIANT } from '@/constants';
 
 type Props = {
     disabled?: boolean;
-    colorVariant?: COLOR_VARIANT.SECONDARY | COLOR_VARIANT.GRAY | COLOR_VARIANT.ACCENT | COLOR_VARIANT.ALERT;
+    colorVariant?: (typeof COLOR_VARIANT)['SECONDARY'] | (typeof COLOR_VARIANT)['GRAY'] | (typeof COLOR_VARIANT)['ACCENT'] | (typeof COLOR_VARIANT)['ALERT'];
     children: React.ReactNode;
 } & ({ href: string; onClick?: never } | { onClick: () => void; href?: never }); // hrefとonClickのどちらかを必須とする
 

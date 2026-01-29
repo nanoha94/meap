@@ -2,6 +2,7 @@
 import {
     DND_SORTABLE_LIST_TYPE,
     DRAG_ACTIVATION_DISTANCE,
+    DndSortableListType,
     TOUCH_ACTIVATION_DELAY,
     TOUCH_ACTIVATION_TOLERANCE,
 } from '@/constants';
@@ -22,7 +23,7 @@ import Sortable from '../dnd/Sortable';
 import React from 'react';
 
 interface Props<T extends { id: string }> {
-    type: DND_SORTABLE_LIST_TYPE;
+    type: DndSortableListType;
     items: T[];
     prefix: string;
     onDragEnd: (oldIndex: number, newIndex: number) => void;

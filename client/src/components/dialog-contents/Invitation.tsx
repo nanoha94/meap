@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { TextButton } from '@/components/common';
+import { TextButton } from '@/components';
 import { colors } from '@/constants/colors';
 import dayjs from 'dayjs';
 import { Copy, LoaderCircle, RotateCw } from 'lucide-react';

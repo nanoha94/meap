@@ -1,5 +1,5 @@
 'use client';
-import { Header } from '@/components/common';
+import { Header } from '@/components';
 import MonthlyCalendar from '@/models/plan/components/MonthlyCalendar';
 
 const PlanCalendarPage = () => {

@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { useAuth } from '@/hooks/api';
 import React from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import { Button } from '@/components/common';
+import { Button } from '@/components';
 import { VerticalRowField } from '@/components/react-hook-form';
 import { BUTTON_TYPE, BUTTON_VARIANT, COLOR_VARIANT } from '@/constants';
 

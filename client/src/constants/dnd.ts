@@ -20,7 +20,9 @@ export const TOUCH_ACTIVATION_DELAY = 250;
  */
 export const TOUCH_ACTIVATION_TOLERANCE = 5;
 
-export enum DND_SORTABLE_LIST_TYPE {
-    GRID = 'grid',
-    LIST = 'list',
-}
+export const DND_SORTABLE_LIST_TYPE = {
+    GRID: 'grid',
+    LIST: 'list',
+} as const;
+export type DndSortableListType =
+    (typeof DND_SORTABLE_LIST_TYPE)[keyof typeof DND_SORTABLE_LIST_TYPE];

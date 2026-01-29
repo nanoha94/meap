@@ -1,9 +1,9 @@
 'use client';
 import React from 'react';
-import { Button } from '@/components/common';
+import { Button } from '@/components';
 import { HorizontalRowField } from '@/components/react-hook-form';
 import { useForm } from 'react-hook-form';
-import StyledSelect from '@/components/common/StyledSelect';
+import { StyledSelect } from '@/components/form-fields';
 import { defaultIngredientItem } from '@/models/ingredient/constants';
 import { IIngredientItem } from '@/types/api';
 import { useIngredientStore } from '@/models/ingredient/hooks';

@@ -7,7 +7,7 @@ import { createDefaultData, focusItemById } from '@/utils';
 import { useFocusItem } from '@/hooks/useFocusItem';
 import { Control, useFieldArray, useWatch } from 'react-hook-form';
 import StepEditItem from './StepEditItem';
-import { TextButton } from '@/components/common';
+import { TextButton } from '@/components';
 import { CirclePlus } from 'lucide-react';
 import { RecipeEditFormData } from '@/models/recipe/types';
 

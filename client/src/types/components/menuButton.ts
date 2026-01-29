@@ -5,5 +5,5 @@ export interface ActionButton {
     label: string;
     icon: React.ReactElement<LucideProps>;
     onClick: () => void;
-    color?: COLOR_VARIANT.ALERT;
+    color?: (typeof COLOR_VARIANT)['ALERT'];
 }

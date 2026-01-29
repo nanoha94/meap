@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { Button } from '@/components/common';
+import { Button } from '@/components';
 import { COLOR_VARIANT } from '@/constants/colors';
 import { BUTTON_VARIANT } from '@/constants';
 import dayjs from 'dayjs';

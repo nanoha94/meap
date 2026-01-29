@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { MenuButton, Header, HeaderTextButton } from '@/components/common';
+import { MenuButton, Header, HeaderTextButton } from '@/components';
 import { COLOR_VARIANT, EDIT_MODE } from '@/constants';
 import { CalendarDays, CirclePlus, Pencil } from 'lucide-react';
 import { ActionButton } from '@/types';

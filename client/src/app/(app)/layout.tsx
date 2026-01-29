@@ -1,4 +1,4 @@
-import { FooterNavigation, SideNavigation } from '@/components/common';
+import { FooterNavigation, SideNavigation } from '@/components/navigation';
 import { IGetUserResponse, IGetMasterResponse } from '@/types/api';
 import { fetchData } from '@/lib/apiClient';
 import { DataHandler, RedirectHandler, VerifiedHandler } from '@/components/handlers';

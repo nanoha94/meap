@@ -1,10 +1,10 @@
 'use client';
+import React from 'react';
 import { RecipeList } from '@/models/recipe/components';
 import { useRecipeStore } from '@/models/recipe/hooks/recipeStores';
 import { IRecipe } from '@/types/api';
 import { useSnackbars } from '@/hooks/useSnackbars';
-import React from 'react';
-import { Header, HeaderTextButton } from '@/components/common';
+import { Header, HeaderTextButton } from '@/components';
 import { CirclePlus } from 'lucide-react';
 import { COLOR_VARIANT } from '@/constants';
 

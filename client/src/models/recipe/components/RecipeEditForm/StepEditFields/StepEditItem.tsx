@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { GrippableVerticalItem } from '@/components/common';
+import { GrippableVerticalItem } from '@/components';
 import { IRecipeStep } from '@/types/api';
 import { Control, Controller } from 'react-hook-form';
 import ImageEditField from '@/components/react-hook-form/ImageEditField';

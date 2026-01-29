@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import React from 'react';
 import { navigationItems } from '@/constants';
-import NavigationIcon from './NavigationIcon';
+import { NavigationIcon } from '.';
 import { useAuth } from '@/hooks/api';
 import { LogOut } from 'lucide-react';
 import ApplicationLogo from '../ApplicationLogo';

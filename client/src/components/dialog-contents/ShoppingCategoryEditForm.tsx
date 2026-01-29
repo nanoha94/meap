@@ -3,7 +3,7 @@ import {
     Button,
     TextButton,
     GrippableHorizontalItem,
-} from '@/components/common';
+} from '@/components';
 import { DndSortableList } from '@/components/dnd';
 import { CirclePlus } from 'lucide-react';
 import React from 'react';

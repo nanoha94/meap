@@ -1,5 +1,5 @@
 'use client';
-import Button from './Button';
+import { Button } from '@/components';
 import { COLOR_VARIANT } from '@/constants/colors';
 import React from 'react';
 import { BUTTON_VARIANT } from '@/constants';

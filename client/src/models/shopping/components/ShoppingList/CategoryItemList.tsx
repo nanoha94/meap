@@ -4,7 +4,7 @@ import { rectSortingStrategy, SortableContext } from '@dnd-kit/sortable';
 import { useDroppable } from '@dnd-kit/core';
 import Sortable from '@/components/dnd/Sortable';
 import ShoppingItemCard from './ShoppingItemCard';
-import { MenuButton } from '@/components/common';
+import { MenuButton } from '@/components';
 import { useShoppingItemApi, useShoppingStore } from '../../hooks';
 import { SHOPPING_ALERT_DIALOG_CONFIGS } from '../../constants';
 import { useAlertDialog } from '@/hooks/useAlertDialog';

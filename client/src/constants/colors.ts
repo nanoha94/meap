@@ -6,12 +6,14 @@ const config = resolveConfig(tailwindConfig);
 
 export const colors = config.theme?.colors;
 
-export enum COLOR_VARIANT {
-    PRIMARY = 'primary',
-    SECONDARY = 'secondary',
-    ACCENT = 'accent',
-    GRAY = 'gray',
-    CATEGORY = 'category',
-    ALERT = 'alert',
-    SUCCESS = 'success',
-}
+export const COLOR_VARIANT = {
+    PRIMARY: 'primary',
+    SECONDARY: 'secondary',
+    ACCENT: 'accent',
+    GRAY: 'gray',
+    CATEGORY: 'category',
+    ALERT: 'alert',
+    SUCCESS: 'success',
+} as const;
+export type ColorVariant =
+    (typeof COLOR_VARIANT)[keyof typeof COLOR_VARIANT];

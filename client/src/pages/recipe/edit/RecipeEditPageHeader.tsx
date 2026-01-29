@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
-import { Header, HeaderTextButton } from '@/components/common';
-import StyledSelect from '@/components/common/StyledSelect';
+import { Header, HeaderTextButton } from '@/components';
+import { StyledSelect } from '@/components/form-fields';
 import { useAccountStore } from '@/models/settings/hooks';
 import { IRecipe } from '@/types/api';
 import { Save, Trash2 } from 'lucide-react';

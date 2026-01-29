@@ -1,4 +1,4 @@
-import { Header } from '@/components/common';
+import { Header } from '@/components';
 import { colors } from '@/constants/colors';
 import { LoaderCircle } from 'lucide-react';
 

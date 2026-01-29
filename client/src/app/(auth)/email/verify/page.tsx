@@ -1,5 +1,5 @@
 'use client';
-import { Button } from '@/components/common';
+import { Button } from '@/components';
 import { useAuth } from '@/hooks/api';
 import { useLoadingAnimation } from '@/hooks/useLoadingAnimation';
 import { useGlobalStore } from '@/stores';

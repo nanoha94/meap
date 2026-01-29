@@ -1,5 +1,5 @@
 "use client";
-import { Header, HeaderTextButton } from "@/components/common";
+import { Header, HeaderTextButton } from "@/components";
 import { COLOR_VARIANT } from "@/constants";
 import { ActionButton } from "@/types";
 import { Save, Trash2 } from "lucide-react";

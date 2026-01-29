@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { MenuButton } from '@/components/common';
+import { MenuButton } from '@/components';
 import { colors } from '@/constants/colors';
 import { Check, GripVertical, Pencil, Pin, PinOff, Trash2 } from 'lucide-react';
 import { IShoppingItem } from '@/types/api';
