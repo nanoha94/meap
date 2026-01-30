@@ -50,7 +50,7 @@ const RecipeEditPageHeader = ({ ownerUserId, fetchRecipe, onChangeOwnerUserId, o
                     <div className="items-center gap-x-4 whitespace-nowrap w-[300px] hidden md:flex">
                         <span>編集責任者</span>
                         <StyledSelect
-                            value={ownerUserId}
+                            value={ownerUserId || loginUser?.id}
                             name="userId"
                             options={users}
                             isShowPlaceholder={false}
