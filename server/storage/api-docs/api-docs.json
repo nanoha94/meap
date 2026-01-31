@@ -2333,6 +2333,13 @@
                                                 "$ref": "#/components/schemas/MenuCategory"
                                             }
                                         },
+                                        "shoppingCategories": {
+                                            "description": "買い物カテゴリ一覧",
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ShoppingCategory"
+                                            }
+                                        },
                                         "shoppingTags": {
                                             "description": "買い物タグ一覧",
                                             "type": "array",

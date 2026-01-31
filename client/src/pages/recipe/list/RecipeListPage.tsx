@@ -1,12 +1,13 @@
 'use client';
 import React from 'react';
-import { RecipeList } from '@/models/recipe/components';
-import { useRecipeStore } from '@/models/recipe/hooks/recipeStores';
-import { IRecipe } from '@/types/api';
-import { useSnackbars } from '@/hooks/useSnackbars';
-import { Header, HeaderTextButton } from '@/components';
+import Link from 'next/link';
+import Image from 'next/image';
 import { CirclePlus } from 'lucide-react';
+import { Header, HeaderTextButton } from '@/components';
 import { COLOR_VARIANT } from '@/constants';
+import { useSnackbars } from '@/hooks/useSnackbars';
+import { IRecipe } from '@/types/api';
+import { useRecipeStore } from '@/models/recipe/hooks/recipeStores';
 
 interface Props {
     fetchRecipes: IRecipe[];
@@ -55,7 +56,36 @@ const RecipeListPage = ({
             />
             <main className='p-5 pb-[60px] md:px-10 max-w-[1000px] mx-auto'>
                 {total > 0 ? (
-                    <RecipeList />
+                    <div className="grid grid-cols-[repeat(auto-fill,_minmax(150px,_1fr))] gap-3 ">
+                        {fetchRecipes.map(v => (
+                            <Link
+                                href={`/recipe/${v.id}`}
+                                key={v.id}
+                                className="relative w-full text-left flex flex-col bg-white rounded transition-transform duration-500 cursor-pointer hover:-translate-y-2"
+                                style={{ boxShadow: '1px 1px 5px rgba(0, 0, 0, 15%)' }}>
+                                <div className="w-full h-auto aspect-video object-cover bg-gray-background">
+                                    {v.thumbnail && v.thumbnail.src && (
+                                        <Image
+                                            src={v.thumbnail.src}
+                                            alt={v.name}
+                                            width={v.thumbnail.width}
+                                            height={v.thumbnail.height}
+                                            className="w-full h-auto aspect-video object-cover rounded-t"
+                                        />
+                                    )}
+                                </div>
+                                <div className="p-2 flex flex-col gap-y-1">
+                                    <div>{v.name}</div>
+                                    <div className="text-xs text-black">
+                                        {v.categories
+                                            .map(category => category.name)
+                                            .join('/')}
+                                    </div>
+                                    <div className="text-xs text-black">前回作った日：</div>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
                 ) : (
                     <p>まだ料理/レシピが登録されていません。</p>
                 )}

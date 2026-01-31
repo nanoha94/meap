@@ -1,15 +1,15 @@
 'use client';
 import React from 'react';
+import { Save, Trash2 } from 'lucide-react';
+import { COLOR_VARIANT } from '@/constants';
 import { Header, HeaderTextButton } from '@/components';
 import { StyledSelect } from '@/components/form-fields';
-import { useAccountStore } from '@/models/settings/hooks';
-import { IRecipe } from '@/types/api';
-import { Save, Trash2 } from 'lucide-react';
-import { useRecipeApi } from '@/models/recipe/hooks';
-import { ActionButton } from '@/types';
-import { COLOR_VARIANT } from '@/constants';
 import { useAlertDialog } from '@/hooks/useAlertDialog';
+import { ActionButton } from '@/types';
+import { IRecipe } from '@/types/api';
 import { RECIPE_ALERT_DIALOG_CONFIGS } from '@/models/recipe/constants';
+import { useRecipeApi } from '@/models/recipe/hooks';
+import { useAccountStore } from '@/models/settings/hooks';
 
 interface Props {
     ownerUserId: string;
@@ -50,7 +50,7 @@ const RecipeEditPageHeader = ({ ownerUserId, fetchRecipe, onChangeOwnerUserId, o
                     <div className="items-center gap-x-4 whitespace-nowrap w-[300px] hidden md:flex">
                         <span>編集責任者</span>
                         <StyledSelect
-                            value={ownerUserId || loginUser?.id}
+                            value={ownerUserId}
                             name="userId"
                             options={users}
                             isShowPlaceholder={false}
