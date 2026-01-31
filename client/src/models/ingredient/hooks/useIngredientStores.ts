@@ -1,8 +1,7 @@
+"use client";
 import { create } from 'zustand';
-import {
-    IIngredientCategory,
-    IIngredientUnit,
-} from '@/types/api';
+
+import { IIngredientCategory, IIngredientUnit } from '@/types';
 
 interface IngredientState {
    // state

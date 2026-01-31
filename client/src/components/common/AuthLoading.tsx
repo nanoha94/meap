@@ -1,5 +1,7 @@
-import { colors } from '@/constants/colors';
+import React from 'react';
 import { LoaderCircle } from 'lucide-react';
+
+import { colors } from '@/constants';
 
 /**
  * 認証ページ用のローディングコンポーネント

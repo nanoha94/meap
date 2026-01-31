@@ -1,18 +1,19 @@
+"use client";
+import React from 'react';
+import { useRouter } from 'next/navigation';
+
+import { TIMEOUT_MS, TMP_ID_PREFIX } from '@/constants';
+import { useApiErrorHandler, useSnackbars } from '@/hooks';
+import axios from '@/lib/axios';
+import { useGlobalStore } from '@/stores';
 import {
     IIngredientCategory,
     IPostIngredientCategoryRequestData,
     IPutIngredientCategoryRequestData,
-} from '@/types/api';
-import React from 'react';
-import { useIngredientStore } from './ingredientStores';
-import { useSnackbars } from '@/hooks/useSnackbars';
-import { useApiErrorHandler } from '@/hooks/api/useApiErrorHandler';
-import axios from '@/lib/axios';
-import { TIMEOUT_MS, TMP_ID_PREFIX } from '@/constants';
-import { useRouter } from 'next/navigation';
-import { useGlobalStore } from '@/stores';
+} from '@/types';
+import { useIngredientStore } from '../hooks';
 
-export const useIngredientCatgoryApi = () => {
+export const useIngredientCategoryApi = () => {
     const router = useRouter();
     const { addSnackbar } = useSnackbars();
     const { handleApiError } = useApiErrorHandler();

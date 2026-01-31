@@ -1,11 +1,11 @@
 'use client';
-import { useAuth } from '@/hooks/api';
 import React from 'react';
-import { Button } from '@/components';
-import { SubmitHandler, useForm } from 'react-hook-form';
 import Link from 'next/link';
-import { VerticalRowField } from '@/components/react-hook-form';
+import { SubmitHandler, useForm } from 'react-hook-form';
+
+import { Button, VerticalRowField } from '@/components';
 import { BUTTON_TYPE, BUTTON_VARIANT, COLOR_VARIANT } from '@/constants';
+import { useAuth } from '@/hooks';
 
 interface FormInputs {
     email: string;

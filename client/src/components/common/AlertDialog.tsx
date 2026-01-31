@@ -1,8 +1,8 @@
 'use client';
-import { Button } from '@/components';
-import { COLOR_VARIANT } from '@/constants/colors';
 import React from 'react';
-import { BUTTON_VARIANT } from '@/constants';
+
+import { Button } from '@/components';
+import { BUTTON_VARIANT, COLOR_VARIANT } from '@/constants';
 import { useGlobalStore } from '@/stores';
 
 const AlertDialog = () => {

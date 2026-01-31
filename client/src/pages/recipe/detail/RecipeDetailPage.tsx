@@ -1,16 +1,15 @@
 'use client';
 import React from 'react';
-import { IRecipe, IImage } from '@/types/api';
-import { useIngredientStore } from '@/models/ingredient/hooks';
-import { useRecipeApi } from '@/models/recipe/hooks';
 import Image from 'next/image';
 import { Image as ImageIcon, Pencil, Trash2 } from 'lucide-react';
-import { useSnackbars } from '@/hooks/useSnackbars';
+
 import { Header, HeaderTextButton } from '@/components';
-import { useAccountStore } from '@/models/settings/hooks';
-import { ActionButton } from '@/types';
 import { COLOR_VARIANT } from '@/constants';
-import { useAlertDialog } from '@/hooks/useAlertDialog';
+import { useAlertDialog, useSnackbars } from '@/hooks';
+import { useIngredientStore } from '@/models/ingredient';
+import { useRecipeApi } from '@/models/recipe';
+import { useAccountStore } from '@/models/settings';
+import { ActionButton, IImage, IRecipe } from '@/types';
 
 interface Props {
     fetchRecipe?: IRecipe;

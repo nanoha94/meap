@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { IShoppingCategory, IShoppingItem } from '@/types/api';
+
+import { IShoppingCategory, IShoppingItem } from '@/types';
 
 interface ShoppingState {
     // state

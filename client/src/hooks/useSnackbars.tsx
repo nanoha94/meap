@@ -1,7 +1,7 @@
 'use client';
-
 import React from 'react';
 import { v4 as uuidv4 } from 'uuid';
+
 import { useGlobalStore } from '@/stores';
 
 export const useSnackbars = () => {

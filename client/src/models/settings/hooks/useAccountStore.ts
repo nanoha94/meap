@@ -1,5 +1,6 @@
-import {  ILoginUser, IUser } from '@/types/api';
 import { create } from 'zustand';
+
+import { ILoginUser, IUser } from '@/types';
 
 interface AccountState {
     // state

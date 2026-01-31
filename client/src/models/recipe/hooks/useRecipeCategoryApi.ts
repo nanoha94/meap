@@ -1,12 +1,13 @@
-import { useSnackbars } from '@/hooks/useSnackbars';
-import { useRouter } from 'next/navigation';
-import { useRecipeStore } from './recipeStores';
-import { IPostRecipeCategoryRequest, IRecipeCategory } from '@/types/api';
-import axios from '@/lib/axios';
-import { API_STATUS_CODE, TIMEOUT_MS, TMP_ID_PREFIX } from '@/constants';
+"use client";
 import React from 'react';
-import { useApiErrorHandler } from '@/hooks/api';
+import { useRouter } from 'next/navigation';
+
+import { API_STATUS_CODE, TIMEOUT_MS, TMP_ID_PREFIX } from '@/constants';
+import { useApiErrorHandler, useSnackbars } from '@/hooks';
+import axios from '@/lib/axios';
 import { useGlobalStore } from '@/stores';
+import { IPostRecipeCategoryRequest, IRecipeCategory } from '@/types';
+import { useRecipeStore } from '../hooks';
 
 export const useRecipeCategoryApi = () => {
     const { categories: storeCategories } = useRecipeStore();

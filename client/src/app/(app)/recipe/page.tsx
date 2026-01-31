@@ -1,8 +1,10 @@
-import { Loading } from '@/components/common';
-import { fetchData } from '@/lib/apiClient';
-import RecipeListPage from '@/pages/recipe/list/RecipeListPage';
-import { IGetRecipeIndexResponse } from '@/types/api';
+import React from 'react';
 import { Suspense } from 'react';
+import RecipeListPage from '@/pages/recipe/list/RecipeListPage';
+
+import { Loading } from '@/components';
+import { fetchData } from '@/lib/apiClient';
+import { IGetRecipeIndexResponse } from '@/types';
 
 const RecipePageWithData = async () => {
     const { data: recipes, errorMessage } = await fetchData<IGetRecipeIndexResponse>('/recipes');

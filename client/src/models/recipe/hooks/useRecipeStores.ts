@@ -1,5 +1,6 @@
-import { IRecipe, IRecipeCategory } from '@/types/api';
 import { create } from 'zustand';
+
+import { IRecipe, IRecipeCategory } from '@/types';
 
 interface RecipeState {
     // state

@@ -1,6 +1,8 @@
 'use client';
+import React from 'react';
 import Link from 'next/link';
-import { useAccountStore } from '@/models/settings/hooks';
+
+import { useAccountStore } from '@/models/settings';
 
 const LoginLinks = () => {
     const { loginUser } = useAccountStore();

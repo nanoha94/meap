@@ -1,16 +1,15 @@
 'use client';
 import React from 'react';
 import { DndContext, DragOverlay, rectIntersection } from '@dnd-kit/core';
+import { arrayMove } from '@dnd-kit/sortable';
 import CategoryItemList from './CategoryItemList';
 import ShoppingItemCard from './ShoppingItemCard';
-import { useDebounce } from '@/hooks/useDebounce';
-import { useShoppingStore, useShoppingItemApi } from '../../hooks';
 
-import { DEBOUNCE_DELAY } from '../../constants';
-import { IShoppingItem } from '@/types/api';
-import { arrayMove } from '@dnd-kit/sortable';
+import { useDebounce, useItemAndCategoryDnd } from '@/hooks';
+import { IShoppingItem } from '@/types';
 import { getItemsInCategory } from '@/utils';
-import { useItemAndCategoryDnd } from '@/hooks/useItemAndCategoryDnd';
+import { DEBOUNCE_DELAY } from '../../constants';
+import { useShoppingItemApi, useShoppingStore } from '../../hooks';
 
 const ShoppingList = () => {
     const {

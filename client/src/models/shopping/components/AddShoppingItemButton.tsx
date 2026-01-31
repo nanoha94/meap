@@ -1,11 +1,14 @@
-import { colors, EDIT_MODE } from '@/constants';
-import { CalendarDays, LucideProps, Minus, Pencil, Plus } from 'lucide-react';
+'use client';
+
 import React from 'react';
+import { CalendarDays, LucideProps, Minus, Pencil, Plus } from 'lucide-react';
+
+import { ShoppingItemEditForm } from '@/components';
+import { colors, EDIT_MODE } from '@/constants';
+import { useDialog } from '@/hooks';
+import { SHOPPING_ITEM_SETTING_DIALOG_CONFIGS } from '@/models/shopping';
 import itemOpenStyles from '@/styles/itemOpen.module.css';
 import { ActionButton } from '@/types';
-import { useDialog } from '@/hooks/useDialog';
-import { SHOPPING_ITEM_SETTING_DIALOG_CONFIGS } from '@/models/shopping/constants';
-import { ShoppingItemEditForm } from '@/components/dialog-contents';
 
 const AddShoppingItemButton = () => {
     const [isOpen, setIsOpen] = React.useState<boolean>(false);

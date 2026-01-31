@@ -1,13 +1,12 @@
 'use client';
 import React from 'react';
-import { Button } from '@/components';
-import { COLOR_VARIANT } from '@/constants/colors';
-import { BUTTON_VARIANT } from '@/constants';
 import dayjs from 'dayjs';
-import { IInvitation } from '@/types/api';
-import { useInvitationApi } from '@/models/settings/hooks';
-import { useAccountHandlers } from '@/models/settings/hooks/useAccountHandlers';
-import { useDialog } from '@/hooks/useDialog';
+
+import { Button } from '@/components';
+import { BUTTON_VARIANT, COLOR_VARIANT } from '@/constants';
+import { useDialog } from '@/hooks';
+import { useAccountHandlers, useInvitationApi } from '@/models/settings';
+import { IInvitation } from '@/types';
 
 interface Props {
     invitationDetail: IInvitation | null;

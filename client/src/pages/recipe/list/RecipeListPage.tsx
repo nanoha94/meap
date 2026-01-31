@@ -1,13 +1,14 @@
 'use client';
 import React from 'react';
-import Link from 'next/link';
 import Image from 'next/image';
+import Link from 'next/link';
 import { CirclePlus } from 'lucide-react';
+
 import { Header, HeaderTextButton } from '@/components';
 import { COLOR_VARIANT } from '@/constants';
-import { useSnackbars } from '@/hooks/useSnackbars';
-import { IRecipe } from '@/types/api';
-import { useRecipeStore } from '@/models/recipe/hooks/recipeStores';
+import { useSnackbars } from '@/hooks';
+import { useRecipeStore } from '@/models/recipe';
+import { IRecipe } from '@/types';
 
 interface Props {
     fetchRecipes: IRecipe[];

@@ -1,7 +1,8 @@
 'use client';
 import React from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useSnackbars } from '@/hooks/useSnackbars';
+
+import { useSnackbars } from '@/hooks';
 
 const VerifiedHandler = () => {
     const router = useRouter();

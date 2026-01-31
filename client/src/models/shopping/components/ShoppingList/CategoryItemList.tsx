@@ -1,15 +1,16 @@
+'use client';
+
 import React from 'react';
-import { Trash2, X } from 'lucide-react';
-import { rectSortingStrategy, SortableContext } from '@dnd-kit/sortable';
 import { useDroppable } from '@dnd-kit/core';
-import Sortable from '@/components/dnd/Sortable';
-import ShoppingItemCard from './ShoppingItemCard';
-import { MenuButton } from '@/components';
-import { useShoppingItemApi, useShoppingStore } from '../../hooks';
+import { rectSortingStrategy, SortableContext } from '@dnd-kit/sortable';
+import { Trash2, X } from 'lucide-react';
+
+import { MenuButton, Sortable } from '@/components';
+import { useAlertDialog } from '@/hooks';
+import { ActionButton, IShoppingCategory, IShoppingItem } from '@/types';
 import { SHOPPING_ALERT_DIALOG_CONFIGS } from '../../constants';
-import { useAlertDialog } from '@/hooks/useAlertDialog';
-import { IShoppingCategory, IShoppingItem } from '@/types/api';
-import { ActionButton } from '@/types';
+import { useShoppingItemApi, useShoppingStore } from '../../hooks';
+import ShoppingItemCard from './ShoppingItemCard';
 
 interface Props {
     category: IShoppingCategory;

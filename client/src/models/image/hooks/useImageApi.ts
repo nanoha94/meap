@@ -1,9 +1,10 @@
-import { TIMEOUT_MS } from '@/constants';
-import { useSnackbars } from '@/hooks/useSnackbars';
-import { useApiErrorHandler } from '@/hooks/api';
-import axios from '@/lib/axios';
-import { IUploadRecipeResponse } from '@/types/api';
+"use client";
 import React from 'react';
+
+import { TIMEOUT_MS } from '@/constants';
+import { useApiErrorHandler, useSnackbars } from '@/hooks';
+import axios from '@/lib/axios';
+import { IUploadRecipeResponse } from '@/types';
 
 export const useImageApi = () => {
     const { addSnackbar } = useSnackbars();

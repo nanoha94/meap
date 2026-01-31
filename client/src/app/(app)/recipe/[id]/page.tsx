@@ -1,11 +1,11 @@
-import { Loading } from '@/components/common';
-import { fetchData } from '@/lib/apiClient';
-import {
-    IGetRecipeShowResponse,
-} from '@/types/api';
+import React from 'react';
 import { notFound } from 'next/navigation';
-import RecipeDetailPage from '@/pages/recipe/detail/RecipeDetailPage';
 import { Suspense } from 'react';
+import RecipeDetailPage from '@/pages/recipe/detail/RecipeDetailPage';
+
+import { Loading } from '@/components';
+import { fetchData } from '@/lib/apiClient';
+import { IGetRecipeShowResponse } from '@/types';
 
 interface Props {
     params: Promise<{ id: string }>;

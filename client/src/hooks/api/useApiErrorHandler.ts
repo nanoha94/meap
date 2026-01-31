@@ -1,7 +1,7 @@
 // client/src/hooks/api/useApiErrorHandler.ts
-
 import { AxiosError } from 'axios';
-import { useSnackbars } from '@/hooks/useSnackbars';
+
+import { useSnackbars } from '../useSnackbars';
 
 export const useApiErrorHandler = () => {
     const { addSnackbar } = useSnackbars();

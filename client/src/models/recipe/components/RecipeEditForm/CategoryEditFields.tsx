@@ -1,15 +1,15 @@
 'use client';
-import { TextButton } from '@/components';
-import { Control, Controller, useFormContext } from 'react-hook-form';
-import { IRecipeCategory } from '@/types/api';
-import { Check, ChevronRight } from 'lucide-react';
 import React from 'react';
-import { useRecipeStore } from '@/models/recipe/hooks';
-import { COLOR_VARIANT, colors, DIALOG_NAME } from '@/constants';
-import { RecipeEditFormData } from '@/models/recipe/types';
-import { useDialog } from '@/hooks/useDialog';
+import { Check, ChevronRight } from 'lucide-react';
+import { Control, Controller, useFormContext } from 'react-hook-form';
+
+import { RecipeCategoryEditForm, TextButton } from '@/components';
+import { COLOR_VARIANT, DIALOG_NAME, colors } from '@/constants';
+import { useDialog } from '@/hooks';
 import { RECIPE_SETTING_DIALOG_CONFIGS } from '@/models/recipe/constants';
-import RecipeCategoryEditForm from '@/components/dialog-contents/RecipeCategoryEditForm';
+import { useRecipeStore } from '@/models/recipe/hooks';
+import { RecipeEditFormData } from '@/models/recipe/types';
+import { IRecipeCategory } from '@/types';
 
 interface Props {
     control: Control<RecipeEditFormData>;

@@ -1,6 +1,7 @@
 'use client';
-import { BUTTON_SIZE, BUTTON_TYPE, ButtonSize, ButtonType, COLOR_VARIANT } from '@/constants';
 import React from 'react';
+
+import { BUTTON_SIZE, BUTTON_TYPE, ButtonSize, ButtonType, COLOR_VARIANT } from '@/constants';
 
 interface Props {
     className?: string;

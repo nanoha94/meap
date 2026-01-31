@@ -1,8 +1,9 @@
 import React, { Suspense } from 'react';
 import AccountPage from '@/pages/settings/account/AccountPage';
-import { Loading } from '@/components/common';
-import { IGetInvitationDetailResponse } from '@/types/api';
+
+import { Loading } from '@/components';
 import { fetchData } from '@/lib/apiClient';
+import { IGetInvitationDetailResponse } from '@/types';
 
 interface AccountWithDataProps {
     token: string;

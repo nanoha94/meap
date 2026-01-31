@@ -1,6 +1,6 @@
 import { EDIT_MODE } from '@/constants';
-import { ShoppingItemSettingDialogConfig } from './types';
 import { AlertDialogConfig } from '@/types';
+import { ShoppingItemSettingDialogConfig } from './types';
 
 export const DEBOUNCE_DELAY = 5000;
 

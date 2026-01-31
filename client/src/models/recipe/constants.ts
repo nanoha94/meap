@@ -1,7 +1,6 @@
-import { IRecipe, IRecipeCategory } from '@/types/api';
-import { RecipeSettingDialogConfigs, RecipeStepEditFormData } from './types';
 import { DIALOG_NAME, TMP_ID_PREFIX } from '@/constants';
-import { AlertDialogConfig } from '@/types';
+import { AlertDialogConfig, IRecipe, IRecipeCategory } from '@/types';
+import { RecipeSettingDialogConfigs, RecipeStepEditFormData } from './types';
 
 /* ダイアログ設定 */
 export const RECIPE_SETTING_DIALOG_CONFIGS: RecipeSettingDialogConfigs = {

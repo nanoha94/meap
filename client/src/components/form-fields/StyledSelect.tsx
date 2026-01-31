@@ -1,5 +1,7 @@
-import { colors } from '@/constants';
+import React from 'react';
 import { ChevronDown } from 'lucide-react';
+
+import { colors } from '@/constants';
 
 interface Props {
     value: string;

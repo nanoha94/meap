@@ -1,18 +1,18 @@
 'use client';
 import React from 'react';
+import { CirclePlus } from 'lucide-react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
+
 import {
     Button,
-    TextButton,
+    DndSortableList,
     GrippableHorizontalItem,
+    TextButton,
 } from '@/components';
-import { CirclePlus } from 'lucide-react';
-import { DndSortableList } from '@/components/dnd';
 import { BUTTON_TYPE, BUTTON_VARIANT, COLOR_VARIANT, DND_SORTABLE_LIST_TYPE, TMP_ID_PREFIX } from '@/constants';
-import { defaultIngredientCategory } from '@/models/ingredient/constants';
-import { IIngredientCategory } from '@/types/api';
-import { useIngredientCatgoryApi } from '@/models/ingredient/hooks';
-import { useDialog } from '@/hooks/useDialog';
+import { useDialog } from '@/hooks';
+import { defaultIngredientCategory, useIngredientCategoryApi } from '@/models/ingredient';
+import { IIngredientCategory } from '@/types';
 
 interface FormData {
     categories: IIngredientCategory[];
@@ -21,7 +21,7 @@ interface FormData {
 const IngredientCategoryEditForm: React.FC = () => {
     const { closeDialog } = useDialog();
     const { storeData, bulkUpdateIngredientCategories } =
-        useIngredientCatgoryApi();
+        useIngredientCategoryApi();
     const prefix = TMP_ID_PREFIX.INGREDIENT_CATEGORY;
 
     const { control, handleSubmit, watch, reset } = useForm<FormData>({

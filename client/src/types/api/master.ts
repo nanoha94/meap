@@ -1,9 +1,4 @@
-import { IBaseApiResponse } from './common';
-import { ICourseType } from './course';
-import { IIngredientCategory, IIngredientUnit } from './ingredient';
-import { IRecipeCategory } from './recipe';
-import { IShoppingCategory, IShoppingTag } from './shopping';
-import { IUser } from './user';
+import { IBaseApiResponse , IMealCategory, IIngredientCategory, IIngredientUnit,IRecipeCategory,IShoppingCategory, IShoppingTag,IUser } from '../api';
 
 export type IGetMasterResponse = IBaseApiResponse<IMaster>;
 

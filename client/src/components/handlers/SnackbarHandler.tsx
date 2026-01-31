@@ -1,7 +1,8 @@
 'use client';
 import React from 'react';
+
+import { useSnackbars } from '@/hooks';
 import { Snackbar } from '@/types';
-import { useSnackbars } from '@/hooks/useSnackbars';
 
 interface Props {
     type: Snackbar['type'];

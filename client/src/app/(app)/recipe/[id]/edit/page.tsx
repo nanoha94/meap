@@ -1,10 +1,10 @@
-import { Loading } from '@/components/common';
-import { fetchData } from '@/lib/apiClient';
-import RecipeEditPage from '@/pages/recipe/edit/RecipeEditPage';
-import {
-    IGetRecipeShowResponse,
-} from '@/types/api';
+import React from 'react';
 import { Suspense } from 'react';
+import RecipeEditPage from '@/pages/recipe/edit/RecipeEditPage';
+
+import { Loading } from '@/components';
+import { fetchData } from '@/lib/apiClient';
+import { IGetRecipeShowResponse } from '@/types';
 
 interface Props {
     params: Promise<{ id: string }>;

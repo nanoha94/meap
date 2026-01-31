@@ -1,7 +1,8 @@
 'use client';
-import { colors } from '@/constants';
-import { LucideProps } from 'lucide-react';
 import React from 'react';
+import { LucideProps } from 'lucide-react';
+
+import { colors } from '@/constants';
 
 interface Props {
     strokeWidth?: number;

@@ -1,11 +1,11 @@
 'use client';
 import React from 'react';
-import { GrippableVerticalItem } from '@/components';
-import { IRecipeStep } from '@/types/api';
 import { Control, Controller } from 'react-hook-form';
-import ImageEditField from '@/components/react-hook-form/ImageEditField';
+
+import { GrippableVerticalItem, ImageEditField } from '@/components';
 import { STYLE_SIZE } from '@/constants';
 import { RecipeEditFormData } from '@/models/recipe/types';
+import { IRecipeStep } from '@/types';
 
 interface Props {
     control: Control<RecipeEditFormData>;

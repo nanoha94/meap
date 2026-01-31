@@ -1,10 +1,11 @@
 'use client';
-import { useIngredientStore } from '@/models/ingredient/hooks';
-import { useRecipeStore } from '@/models/recipe/hooks';
-import { useAccountStore } from '@/models/settings/hooks';
-import { useShoppingStore } from '@/models/shopping/hooks';
-import { ILoginUser, IMaster } from '@/types/api';
 import React from 'react';
+
+import { useIngredientStore } from '@/models/ingredient';
+import { useRecipeStore } from '@/models/recipe';
+import { useAccountStore } from '@/models/settings';
+import { useShoppingStore } from '@/models/shopping';
+import { ILoginUser, IMaster } from '@/types';
 
 interface Props {
     user: ILoginUser;

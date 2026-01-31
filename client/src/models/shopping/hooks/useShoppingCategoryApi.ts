@@ -1,16 +1,17 @@
+"use client";
 import React from 'react';
-import { useSnackbars } from '@/hooks/useSnackbars';
-import { useShoppingStore } from './shoppingStores';
+import { useRouter } from 'next/navigation';
+
+import { TIMEOUT_MS, TMP_ID_PREFIX } from '@/constants';
+import { useApiErrorHandler, useSnackbars } from '@/hooks';
+import axios from '@/lib/axios';
+import { useGlobalStore } from '@/stores';
 import {
     IPostShoppingCategoryRequestData,
     IPutShoppingCategoryRequestData,
     IShoppingCategory,
-} from '@/types/api';
-import axios from '@/lib/axios';
-import { TIMEOUT_MS, TMP_ID_PREFIX } from '@/constants';
-import { useRouter } from 'next/navigation';
-import { useApiErrorHandler } from '@/hooks/api/useApiErrorHandler';
-import { useGlobalStore } from '@/stores';
+} from '@/types';
+import { useShoppingStore } from '../hooks';
 
 export const useShoppingCategoryApi = () => {
     const router = useRouter();

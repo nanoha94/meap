@@ -1,12 +1,11 @@
 'use client';
 import React from 'react';
-import { Header, TextButton } from '@/components';
-import { IInvitation } from '@/types/api';
-import { useSnackbars } from '@/hooks/useSnackbars';
-import { useDialog } from '@/hooks/useDialog';
-import { Invitation, JoinGroup } from '@/components/dialog-contents';
-import { useAccountHandlers, useAccountStore } from '@/models/settings/hooks';
 import { ChevronRight } from 'lucide-react';
+
+import { Header, Invitation, JoinGroup, TextButton } from '@/components';
+import { useDialog, useSnackbars } from '@/hooks';
+import { useAccountHandlers, useAccountStore } from '@/models/settings';
+import { IInvitation } from '@/types';
 
 interface Props {
     invitationDetail?: IInvitation | null;

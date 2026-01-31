@@ -1,8 +1,14 @@
-import { FooterNavigation, SideNavigation } from '@/components/navigation';
-import { IGetUserResponse, IGetMasterResponse } from '@/types/api';
-import { fetchData } from '@/lib/apiClient';
-import { DataHandler, RedirectHandler, VerifiedHandler } from '@/components/handlers';
 import { cookies } from 'next/headers';
+
+import {
+    DataHandler,
+    FooterNavigation,
+    RedirectHandler,
+    SideNavigation,
+    VerifiedHandler,
+} from '@/components';
+import { fetchData } from '@/lib/apiClient';
+import { IGetMasterResponse, IGetUserResponse } from '@/types';
 import { handleAuthRedirect } from '@/utils';
 
 export const dynamic = 'force-dynamic';

@@ -1,6 +1,7 @@
 import React from 'react';
-import { NavigationItemType, NAVIGATION_ICON_TYPES, colors } from '@/constants';
 import { BookOpenCheck, CalendarDate, CookingPot, Settings } from '../svg';
+
+import { NAVIGATION_ICON_TYPES, NavigationItemType, colors } from '@/constants';
 
 interface NavigationIconProps {
     className?: string;

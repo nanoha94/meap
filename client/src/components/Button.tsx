@@ -1,5 +1,6 @@
-import { BUTTON_TYPE, BUTTON_VARIANT, ButtonType, ButtonVariant, COLOR_VARIANT } from '@/constants';
 import React from 'react';
+
+import { BUTTON_TYPE, BUTTON_VARIANT, ButtonType, ButtonVariant, COLOR_VARIANT } from '@/constants';
 
 interface Props extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     type?: ButtonType;

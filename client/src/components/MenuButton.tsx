@@ -1,9 +1,12 @@
+'use client';
+
 import React from 'react';
-import { colors } from '@/constants/colors';
-import itemOpenStyles from '@/styles/itemOpen.module.css';
-import LucideIconWrapper from './LucideIconWrapper';
-import { ActionButton } from '@/types';
 import { EllipsisVertical } from 'lucide-react';
+import LucideIconWrapper from './LucideIconWrapper';
+
+import { colors } from '@/constants';
+import itemOpenStyles from '@/styles/itemOpen.module.css';
+import { ActionButton } from '@/types';
 
 
 type Placement = 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';

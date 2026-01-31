@@ -1,5 +1,6 @@
-import {  ILoginUser } from '@/types/api';
 import { redirect } from 'next/navigation';
+
+import { ILoginUser } from '@/types';
 
 /**
  * 認証状態に基づいてリダイレクト

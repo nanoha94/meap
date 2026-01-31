@@ -1,15 +1,16 @@
 'use client';
 import React from 'react';
 import { Save, Trash2 } from 'lucide-react';
+
+import { Header, HeaderTextButton, StyledSelect } from '@/components';
 import { COLOR_VARIANT } from '@/constants';
-import { Header, HeaderTextButton } from '@/components';
-import { StyledSelect } from '@/components/form-fields';
-import { useAlertDialog } from '@/hooks/useAlertDialog';
-import { ActionButton } from '@/types';
-import { IRecipe } from '@/types/api';
-import { RECIPE_ALERT_DIALOG_CONFIGS } from '@/models/recipe/constants';
-import { useRecipeApi } from '@/models/recipe/hooks';
-import { useAccountStore } from '@/models/settings/hooks';
+import { useAlertDialog } from '@/hooks';
+import {
+    RECIPE_ALERT_DIALOG_CONFIGS,
+    useRecipeApi,
+} from '@/models/recipe';
+import { useAccountStore } from '@/models/settings';
+import { ActionButton, IRecipe } from '@/types';
 
 interface Props {
     ownerUserId: string;

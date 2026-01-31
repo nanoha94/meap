@@ -1,18 +1,20 @@
 'use client';
-import { TextButton } from '@/components';
+import React from 'react';
+import { ChevronRight } from 'lucide-react';
+
+import {
+    ShoppingCategoryEditForm,
+    TextButton,
+} from '@/components';
+import { COLOR_VARIANT } from '@/constants';
+import { useDialog, useSnackbars } from '@/hooks';
 import {
     AddShoppingItemButton,
     ShoppingList,
-} from '@/models/shopping/components';
-import { useShoppingStore } from '@/models/shopping/hooks';
-import { IShoppingItem } from '@/types/api';
-import { ChevronRight } from 'lucide-react';
-import React from 'react';
-import { useSnackbars } from '@/hooks/useSnackbars';
-import { useDialog } from '@/hooks/useDialog';
+    useShoppingStore,
+} from '@/models/shopping';
+import { IShoppingItem } from '@/types';
 import ShoppingListPageHeader from './ShoppingListPageHeader';
-import { COLOR_VARIANT } from '@/constants';
-import { ShoppingCategoryEditForm } from '@/components/dialog-contents';
 
 interface Props {
     fetchItems?: IShoppingItem[];

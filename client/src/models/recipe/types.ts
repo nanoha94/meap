@@ -1,5 +1,5 @@
 import { DIALOG_NAME } from '@/constants';
-import { IRecipe, IRecipeStep, IImageWithFile } from '@/types/api';
+import { IImageWithFile, IRecipe, IRecipeStep } from '@/types';
 
 export type RecipeSettingDialogConfig = {
     title: string;

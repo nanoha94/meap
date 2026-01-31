@@ -1,2 +1,2 @@
-export { useIngredientStore } from './ingredientStores';
-export { useIngredientCatgoryApi } from './useIngredientCatgoryApi';
+export { useIngredientCategoryApi } from './useIngredientCategoryApi';
+export { useIngredientStore } from './useIngredientStores';

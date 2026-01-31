@@ -1,4 +1,4 @@
-import { IIngredientItem } from "@/types";
+import { IIngredientItem } from '@/types';
 
 /**
  * 材料をフォーマット

@@ -1,10 +1,10 @@
 'use client';
-import { useAuth } from '@/hooks/api';
 import React from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import { Button } from '@/components';
-import { VerticalRowField } from '@/components/react-hook-form';
+
+import { Button, VerticalRowField } from '@/components';
 import { BUTTON_TYPE } from '@/constants';
+import { useAuth } from '@/hooks';
 
 interface FormInputs {
     password: string;

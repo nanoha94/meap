@@ -1,5 +1,6 @@
-import { useGlobalStore } from '@/stores';
 import React from 'react';
+
+import { useGlobalStore } from '@/stores';
 
 /**
  * ローディングアニメーションの表示条件を制御するフック

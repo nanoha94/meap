@@ -1,13 +1,13 @@
 'use client';
 import React from 'react';
-import { TextButton } from '@/components';
-import { colors } from '@/constants/colors';
 import dayjs from 'dayjs';
 import { Copy, LoaderCircle, RotateCw } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
-import { useInvitationApi } from '@/models/settings/hooks';
-import { useTextCopy } from '@/hooks/useTextCopy';
-import { useDialog } from '@/hooks/useDialog';
+
+import { TextButton } from '@/components';
+import { colors } from '@/constants';
+import { useDialog, useTextCopy } from '@/hooks';
+import { useInvitationApi } from '@/models/settings';
 
 const Invitation: React.FC = () => {
     const { closeDialog } = useDialog();

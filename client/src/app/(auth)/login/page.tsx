@@ -1,13 +1,12 @@
 'use client';
 import Link from 'next/link';
-import { useAuth } from '@/hooks/api';
-import React, { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Button } from '@/components';
-import { AuthLoading } from '@/components/common';
+import React from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
-import { VerticalRowField } from '@/components/react-hook-form';
+
+import { AuthLoading, Button, VerticalRowField } from '@/components';
 import { BUTTON_TYPE, BUTTON_VARIANT, COLOR_VARIANT } from '@/constants';
+import { useAuth } from '@/hooks';
 
 interface FormInputs {
     email: string;
@@ -224,9 +223,9 @@ const LoginForm = () => {
 
 const Login = () => {
     return (
-        <Suspense fallback={<AuthLoading />}>
+        <React.Suspense fallback={<AuthLoading />}>
             <LoginForm />
-        </Suspense>
+        </React.Suspense>
     );
 };
 

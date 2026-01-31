@@ -1,9 +1,10 @@
 'use client';
+import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import React from 'react';
-import { navigationItems } from '@/constants';
 import { NavigationIcon } from '.';
+
+import { navigationItems } from '@/constants';
 
 interface Props {
     className?: string;

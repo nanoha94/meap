@@ -3,6 +3,7 @@ import React from 'react';
 import Image from 'next/image';
 import { Control, Controller, FieldValues, Path } from 'react-hook-form';
 import { ImagePlus, Trash2 } from 'lucide-react';
+
 import { MAX_IMAGE_SIZE, STYLE_SIZE } from '@/constants';
 import { IImageWithFile } from '@/types';
 

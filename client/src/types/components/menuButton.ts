@@ -1,5 +1,7 @@
-import { COLOR_VARIANT } from "@/constants";
-import { LucideProps } from "lucide-react";
+import React from 'react';
+import { LucideProps } from 'lucide-react';
+
+import { COLOR_VARIANT } from '@/constants';
 
 export interface ActionButton {
     label: string;

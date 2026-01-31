@@ -1,7 +1,8 @@
 import React from 'react';
-import '@/styles/global.css';
-import { AlertDialog, Dialog, LoadingAnimation, Snackbars } from '@/components/common';
+
+import { AlertDialog, Dialog, LoadingAnimation, Snackbars } from '@/components';
 import { NOTO_SANS_JP } from '@/constants';
+import '@/styles/global.css';
 
 interface RootLayoutProps {
     children: React.ReactNode;

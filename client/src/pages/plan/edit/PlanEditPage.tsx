@@ -1,16 +1,16 @@
 "use client";
-import React from "react";
-import { Header, HeaderTextButton } from "@/components";
-import { COLOR_VARIANT } from "@/constants";
-import { ActionButton } from "@/types";
-import { Save, Trash2 } from "lucide-react";
-import "react-datepicker/dist/react-datepicker.css";
-import { StyledDatePicker } from "@/components/form-fields";
+import React from 'react';
+import { Save, Trash2 } from 'lucide-react';
+import 'react-datepicker/dist/react-datepicker.css';
+
+import { Header, HeaderTextButton, StyledDatePicker } from '@/components';
+import { COLOR_VARIANT } from '@/constants';
+import { PlanEditCard } from '@/models/meal';
+import { ActionButton } from '@/types';
 
 
 const PlanEditPage = () => {
     const [selectedDate, setSelectedDate] = React.useState(new Date());
-
 
     /**
          * メニューボタン押下時に開くアクションボタン設定
@@ -33,14 +33,14 @@ const PlanEditPage = () => {
                 </div>
             } rightContent={
                 <HeaderTextButton colorVariant={COLOR_VARIANT.SECONDARY}
-                    onClick={() => { console.log('save'); }}>
+                    onClick={() => { /* TODO: 保存処理 */ }}>
                     <Save size={20} strokeWidth={2} />
                     保存
                 </HeaderTextButton>}
                 actionButtons={actionButtons}
             />
             <main className="p-5 pb-[60px] md:px-10 max-w-[1000px] mx-auto">
-                aaa
+                <PlanEditCard />
             </main>
         </>
     );

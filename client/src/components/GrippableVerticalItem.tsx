@@ -1,6 +1,8 @@
 'use client';
-import { colors } from '@/constants';
+import React from 'react';
 import { GripVertical, Trash2 } from 'lucide-react';
+
+import { colors } from '@/constants';
 
 interface Props {
     order?: number;

@@ -1,6 +1,8 @@
 'use client';
-import { colors } from '@/constants/colors';
+import React from 'react';
 import { X } from 'lucide-react';
+
+import { colors } from '@/constants';
 import { useGlobalStore } from '@/stores';
 
 const Dialog = () => {

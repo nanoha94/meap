@@ -1,9 +1,9 @@
 'use client';
-import { Button } from '@/components';
-import { useAuth } from '@/hooks/api';
-import { useLoadingAnimation } from '@/hooks/useLoadingAnimation';
-import { useGlobalStore } from '@/stores';
 import React from 'react';
+
+import { Button } from '@/components';
+import { useAuth, useLoadingAnimation } from '@/hooks';
+import { useGlobalStore } from '@/stores';
 
 const Page = () => {
     const { resendEmailVerification } = useAuth();

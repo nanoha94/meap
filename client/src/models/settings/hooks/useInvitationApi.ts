@@ -1,17 +1,16 @@
+import React from 'react';
+
 import { API_STATUS_CODE, TIMEOUT_MS } from '@/constants';
-import { useSnackbars } from '@/hooks/useSnackbars';
-import { useApiErrorHandler } from '@/hooks/api';
+import { useAlertDialog, useApiErrorHandler, useSnackbars } from '@/hooks';
 import axios from '@/lib/axios';
+import { useGlobalStore } from '@/stores';
 import {
     IInvitation,
     IPostInvitaionResponse,
     IPostInvitationJoinResponse,
-} from '@/types/api';
-import React from 'react';
+} from '@/types';
 import { DELETE_CHECK_FOR_JOIN_GROUP_DIALOG_CONFIGS, JOIN_ERROR_TYPE } from '../constants';
-import { useAlertDialog } from '@/hooks/useAlertDialog';
 import { useAccountHandlers } from './useAccountHandlers';
-import { useGlobalStore } from '@/stores';
 
 export const useInvitationApi = () => {
     const { addSnackbar } = useSnackbars();

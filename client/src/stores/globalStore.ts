@@ -1,5 +1,6 @@
-import { AlertDialogData, DialogData, Snackbar } from '@/types';
 import { create } from 'zustand';
+
+import { AlertDialogData, DialogData, Snackbar } from '@/types';
 
 interface GlobalState {
     // state

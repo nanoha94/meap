@@ -1,14 +1,14 @@
 'use client';
+import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import React from 'react';
-import { navigationItems } from '@/constants';
-import { NavigationIcon } from '.';
-import { useAuth } from '@/hooks/api';
 import { LogOut } from 'lucide-react';
+import { NavigationIcon } from '.';
 import ApplicationLogo from '../ApplicationLogo';
-import { useAccountHandlers } from '@/models/settings/hooks/useAccountHandlers';
-import { useAccountStore } from '@/models/settings/hooks';
+
+import { navigationItems } from '@/constants';
+import { useAuth } from '@/hooks';
+import { useAccountHandlers, useAccountStore } from '@/models/settings';
 
 interface Props {
     className?: string;

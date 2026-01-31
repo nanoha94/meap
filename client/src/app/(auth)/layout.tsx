@@ -1,9 +1,9 @@
 import Link from 'next/link';
-import ApplicationLogo from '@/components/ApplicationLogo';
-import { IGetUserResponse } from '@/types/api';
+
+import { ApplicationLogo, SnackbarHandler } from '@/components';
 import { fetchData } from '@/lib/apiClient';
+import { IGetUserResponse } from '@/types';
 import { handleAuthRedirect } from '@/utils';
-import { SnackbarHandler } from '@/components/handlers';
 
 // 動的レンダリングを強制（クッキーを使用するため）
 export const dynamic = 'force-dynamic';

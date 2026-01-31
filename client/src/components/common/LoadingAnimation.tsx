@@ -1,9 +1,10 @@
 'use client';
-import { colors } from '@/constants/colors';
-import { useGlobalStore } from '@/stores';
+import React from 'react';
 import { LoaderCircle } from 'lucide-react';
 import { usePathname } from 'next/navigation';
-import React from 'react';
+
+import { colors } from '@/constants';
+import { useGlobalStore } from '@/stores';
 
 const LoadingAnimation = () => {
     const { loadingCount, visibleLoadingAnimation, resetLoadingCount } =

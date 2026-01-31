@@ -1,10 +1,12 @@
+"use client";
 import React from 'react';
-import { IPostPutRecipeRequest, IRecipe, IIngredientItem } from '@/types/api';
+import { useForm, useWatch } from 'react-hook-form';
+
+import { EDIT_MODE, EditMode, TMP_ID_PREFIX } from '@/constants';
+import { IPostPutRecipeRequest, IRecipe, IIngredientItem } from '@/types';
+import { DEFAULT_POST_DATA } from '../constants';
 import { RecipeEditFormData } from '../types';
 import { useRecipeApi } from './useRecipeApi';
-import { useForm, useWatch } from 'react-hook-form';
-import { DEFAULT_POST_DATA } from '../constants';
-import { EDIT_MODE, EditMode, TMP_ID_PREFIX } from '@/constants';
 
 /**
  * 食材をフォーマット

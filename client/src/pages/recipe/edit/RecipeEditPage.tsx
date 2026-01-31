@@ -1,17 +1,24 @@
-'use client';
+"use client";
 import React from 'react';
 import { FormProvider } from 'react-hook-form';
 import { Copy } from 'lucide-react';
-import { IRecipe } from '@/types/api';
+
+import {
+    ImageEditField,
+    VerticalRowField,
+} from '@/components';
 import { colors } from '@/constants';
-import { useSnackbars } from '@/hooks/useSnackbars';
-import { useTextCopy } from '@/hooks/useTextCopy';
-import { ImageEditField } from '@/components/react-hook-form';
-import { VerticalRowField } from '@/components/react-hook-form';
-import { IngredientEditFields, StepEditFields, CategoryEditFields } from '@/models/recipe/components';
-import { useRecipeEditForm } from '@/models/recipe/hooks';
-import { useAccountStore } from '@/models/settings/hooks';
+import { useSnackbars, useTextCopy } from '@/hooks';
+import {
+    CategoryEditFields,
+    IngredientEditFields,
+    StepEditFields,
+    useRecipeEditForm,
+} from '@/models/recipe';
+import { useAccountStore } from '@/models/settings';
+import { IRecipe } from '@/types';
 import RecipeEditPageHeader from './RecipeEditPageHeader';
+
 
 interface Props {
     fetchRecipe?: IRecipe;

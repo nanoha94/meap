@@ -1,4 +1,4 @@
-import LoginLinks from '@/components/xxx/LoginLinks';
+import { LoginLinks } from '@/components';
 
 export const metadata = {
     title: 'Laravel',

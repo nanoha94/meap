@@ -1,10 +1,11 @@
 import React from 'react';
-import axios from '@/lib/axios';
 import { useParams, useRouter } from 'next/navigation';
-import { useGlobalStore } from '@/stores';
-import { useSnackbars } from '../useSnackbars';
-import { useApiErrorHandler } from './useApiErrorHandler';
+import axios from '@/lib/axios';
+
 import { API_STATUS_CODE } from '@/constants';
+import { useGlobalStore } from '@/stores';
+import { useApiErrorHandler } from './useApiErrorHandler';
+import { useSnackbars } from '../useSnackbars';
 
 export const useAuth = () => {
     const router = useRouter();

@@ -1,5 +1,7 @@
-import { colors } from "@/constants";
-import { Pencil } from "lucide-react";
+import React from 'react';
+import { Pencil } from 'lucide-react';
+
+import { colors } from '@/constants';
 
 interface Props {
     value: string;

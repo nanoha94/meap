@@ -1,19 +1,25 @@
+'use client';
+
 import React from 'react';
-import { IIngredientCategory, IIngredientItem } from '@/types/api';
-import { BUTTON_TYPE, EDIT_MODE } from '@/constants';
-import Sortable from '@/components/dnd/Sortable';
-import { GrippableHorizontalItem, TextButton } from '@/components';
-import { CirclePlus } from 'lucide-react';
-import { useDialog } from '@/hooks/useDialog';
+import { useDroppable } from '@dnd-kit/core';
 import {
     SortableContext,
     verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { useDroppable } from '@dnd-kit/core';
-import { IngredientEditForm } from '@/components/dialog-contents';
-import { useIngredientStore } from '@/models/ingredient/hooks';
-import { DialogField } from '@/components/form-fields';
-import { formatIngredient } from '@/utils/format';
+import { CirclePlus } from 'lucide-react';
+
+import {
+    DialogField,
+    GrippableHorizontalItem,
+    IngredientEditForm,
+    Sortable,
+    TextButton,
+} from '@/components';
+import { BUTTON_TYPE, EDIT_MODE } from '@/constants';
+import { useDialog } from '@/hooks';
+import { useIngredientStore } from '@/models/ingredient';
+import { IIngredientCategory, IIngredientItem } from '@/types';
+import { formatIngredient } from '@/utils';
 
 interface Props {
     category: IIngredientCategory;

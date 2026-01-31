@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers';
 import { Agent } from 'undici';
+
 import { API_STATUS_CODE, TIMEOUT_MS } from '@/constants';
 
 type ApiClientOptions = Omit<RequestInit, 'body'> & {

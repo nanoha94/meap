@@ -1,23 +1,16 @@
 'use client';
 import React from 'react';
 import { useForm } from 'react-hook-form';
-import { Button } from '@/components';
+
+import { Button, StyledSelect, VerticalRowField } from '@/components';
+import { BUTTON_TYPE, BUTTON_VARIANT, COLOR_VARIANT, EDIT_MODE, EditMode } from '@/constants';
+import { useDialog } from '@/hooks';
 import {
+    SHOPPING_ITEM_SETTING_DIALOG_CONFIGS,
     useShoppingCategoryApi,
     useShoppingItemApi,
-} from '@/models/shopping/hooks';
-import { SHOPPING_ITEM_SETTING_DIALOG_CONFIGS } from '@/models/shopping/constants';
-import { StyledSelect } from '@/components/form-fields';
-import { VerticalRowField } from '@/components/react-hook-form';
-import {
-    EDIT_MODE,
-    EditMode,
-    BUTTON_TYPE,
-    COLOR_VARIANT,
-    BUTTON_VARIANT,
-} from '@/constants';
-import { IShoppingItem } from '@/types/api';
-import { useDialog } from '@/hooks/useDialog';
+} from '@/models/shopping';
+import { IShoppingItem } from '@/types';
 
 interface Props {
     editingItem: IShoppingItem | undefined;
