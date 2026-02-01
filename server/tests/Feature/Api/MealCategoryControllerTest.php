@@ -49,19 +49,19 @@ beforeEach(function () {
 
 test('3-5-1: 【一覧取得】 正常な献立カテゴリ一覧取得', function () {
     // テスト用の献立カテゴリをAPIで作成
-    $response1 = $this->actingAs($this->user)->post('/meal-categories', [
+    $this->actingAs($this->user)->post('/meal-categories', [
         'name' => '朝食',
         'colorId' => $this->yellowColorId,
         'order' => 0
     ]);
-    $mealCategory1Id = $response1->json('data.id');
+    $mealCategory1Id = \App\Models\MealCategory::where('group_id', $this->group->id)->where('name', '朝食')->first()->id;
 
-    $response2 = $this->actingAs($this->user)->post('/meal-categories', [
+    $this->actingAs($this->user)->post('/meal-categories', [
         'name' => '昼食',
         'colorId' => $this->redColorId,
         'order' => 1
     ]);
-    $mealCategory2Id = $response2->json('data.id');
+    $mealCategory2Id = \App\Models\MealCategory::where('group_id', $this->group->id)->where('name', '昼食')->first()->id;
 
     $response = $this->actingAs($this->user)->get('/meal-categories');
 
@@ -73,13 +73,13 @@ test('3-5-1: 【一覧取得】 正常な献立カテゴリ一覧取得', functi
             [
                 'id' => $mealCategory1Id,
                 'name' => '朝食',
-                'colorId' => $this->yellowColorId,
+                'colorCodeHex' => '#F5B12E',
                 'order' => 0
             ],
             [
                 'id' => $mealCategory2Id,
                 'name' => '昼食',
-                'colorId' => $this->redColorId,
+                'colorCodeHex' => '#EC3D33',
                 'order' => 1
             ]
         ],
@@ -94,7 +94,7 @@ test('3-5-1: 【一覧取得】 正常な献立カテゴリ一覧取得', functi
             '*' => [
                 'id',
                 'name',
-                'colorId',
+                'colorCodeHex',
                 'order'
             ]
         ],
@@ -125,7 +125,7 @@ test('3-5-2: 【一覧取得】 レスポンス形式確認', function () {
             '*' => [
                 'id',
                 'name',
-                'colorId',
+                'colorCodeHex',
                 'order'
             ]
         ],
@@ -308,13 +308,9 @@ test('3-5-9: 【新規作成】 正常な献立カテゴリ作成', function () 
     $response->assertStatus(201);
     $response->assertJson([
         'success' => true,
-        'message' => '献立カテゴリ(朝食)を作成しました。',
-        'data' => [
-            'name' => '朝食',
-            'colorId' => $this->yellowColorId,
-            'order' => 0
-        ]
+        'message' => '献立カテゴリ(朝食)を作成しました。'
     ]);
+    $response->assertJsonPath('data', null);
 
     // データベースに保存されていることを確認
     $this->assertDatabaseHas('meal_categories', [
@@ -324,16 +320,11 @@ test('3-5-9: 【新規作成】 正常な献立カテゴリ作成', function () 
         'order' => 0
     ]);
 
-    // レスポンス構造の確認
+    // レスポンス構造の確認（success + message + data(null)）
     $response->assertJsonStructure([
         'success',
         'message',
-        'data' => [
-            'id',
-            'name',
-            'colorId',
-            'order'
-        ]
+        'data'
     ]);
 
     // Content-Typeがapplication/jsonであることを確認
@@ -351,24 +342,13 @@ test('3-5-10: 【新規作成】 レスポンス形式確認', function () {
 
     $response->assertStatus(201);
 
-    // レスポンス構造の確認
+    // レスポンス構造の確認（success + message + data(null)）
     $response->assertJsonStructure([
         'success',
         'message',
-        'data' => [
-            'id',
-            'name',
-            'colorId',
-            'order'
-        ]
+        'data'
     ]);
-
-    // データ型の確認
-    $data = $response->json('data');
-    expect($data['id'])->toBeString();
-    expect($data['name'])->toBeString();
-    expect($data['colorId'])->toBeString();
-    expect($data['order'])->toBeInt();
+    $response->assertJsonPath('data', null);
 
     // Content-Typeがapplication/jsonであることを確認
     $response->assertHeader('Content-Type', 'application/json');
@@ -752,20 +732,19 @@ test('3-5-23: 【新規作成】 献立カテゴリ作成失敗', function () {
 // ===== bulkUpdate() メソッドのテストケース =====
 
 test('3-5-24: 【一括更新】 正常な献立カテゴリ一括更新', function () {
-    // テスト用の献立カテゴリをAPIで作成
-    $response1 = $this->actingAs($this->user)->post('/meal-categories', [
+    // テスト用の献立カテゴリをAPIで作成（store は data を返さないため DB から ID 取得）
+    $this->actingAs($this->user)->post('/meal-categories', [
         'name' => '朝食',
         'colorId' => $this->yellowColorId,
         'order' => 0
     ]);
-    $mealCategory1Id = $response1->json('data.id');
-
-    $response2 = $this->actingAs($this->user)->post('/meal-categories', [
+    $this->actingAs($this->user)->post('/meal-categories', [
         'name' => '昼食',
         'colorId' => $this->redColorId,
         'order' => 1
     ]);
-    $mealCategory2Id = $response2->json('data.id');
+    $mealCategory1Id = \App\Models\MealCategory::where('group_id', $this->group->id)->where('name', '朝食')->first()->id;
+    $mealCategory2Id = \App\Models\MealCategory::where('group_id', $this->group->id)->where('name', '昼食')->first()->id;
 
     $data = [
         'data' => [
@@ -810,35 +789,28 @@ test('3-5-24: 【一括更新】 正常な献立カテゴリ一括更新', funct
     $response->assertJsonStructure([
         'success',
         'message',
-        'data' => [
-            '*' => [
-                'id',
-                'name',
-                'colorId',
-                'order'
-            ]
-        ]
+        'data'
     ]);
+    $response->assertJsonPath('data', null);
 
     // Content-Typeがapplication/jsonであることを確認
     $response->assertHeader('Content-Type', 'application/json');
 });
 
 test('3-5-25: 【一括更新】 一括更新成功メッセージの確認', function () {
-    // テスト用の献立カテゴリをAPIで作成
-    $response1 = $this->actingAs($this->user)->post('/meal-categories', [
+    // テスト用の献立カテゴリをAPIで作成（store は data を返さないため DB から ID 取得）
+    $this->actingAs($this->user)->post('/meal-categories', [
         'name' => '朝食',
         'colorId' => $this->yellowColorId,
         'order' => 0
     ]);
-    $mealCategory1Id = $response1->json('data.id');
-
-    $response2 = $this->actingAs($this->user)->post('/meal-categories', [
+    $this->actingAs($this->user)->post('/meal-categories', [
         'name' => '昼食',
         'colorId' => $this->redColorId,
         'order' => 1
     ]);
-    $mealCategory2Id = $response2->json('data.id');
+    $mealCategory1Id = \App\Models\MealCategory::where('group_id', $this->group->id)->where('name', '朝食')->first()->id;
+    $mealCategory2Id = \App\Models\MealCategory::where('group_id', $this->group->id)->where('name', '昼食')->first()->id;
 
     $data = [
         'data' => [
@@ -868,12 +840,12 @@ test('3-5-25: 【一括更新】 一括更新成功メッセージの確認', fu
 
 test('3-5-26: 【一括更新】 一括更新後のデータ取得確認', function () {
     // テスト用の献立カテゴリをAPIで作成
-    $response1 = $this->actingAs($this->user)->post('/meal-categories', [
+    $this->actingAs($this->user)->post('/meal-categories', [
         'name' => '朝食',
         'colorId' => $this->yellowColorId,
         'order' => 0
     ]);
-    $mealCategory1Id = $response1->json('data.id');
+    $mealCategory1Id = \App\Models\MealCategory::where('group_id', $this->group->id)->where('name', '朝食')->first()->id;
 
     $data = [
         'data' => [
@@ -889,13 +861,17 @@ test('3-5-26: 【一括更新】 一括更新後のデータ取得確認', funct
     $response = $this->actingAs($this->user)->put('/meal-categories/bulk', $data);
 
     $response->assertStatus(200);
+    $response->assertJson(['success' => true]);
+    $response->assertJsonPath('data', null);
 
-    // 更新後のデータが正しく返されていることを確認
-    $responseData = $response->json('data');
+    // 一覧取得で更新後のデータを確認
+    $indexResponse = $this->actingAs($this->user)->get('/meal-categories');
+    $indexResponse->assertStatus(200);
+    $responseData = $indexResponse->json('data');
     expect($responseData)->toHaveCount(1);
     expect($responseData[0]['id'])->toBe($mealCategory1Id);
     expect($responseData[0]['name'])->toBe('モーニング');
-    expect($responseData[0]['colorId'])->toBe($this->blueColorId);
+    expect($responseData[0]['colorCodeHex'])->toBe('#2673B8');
     expect($responseData[0]['order'])->toBe(0);
 });
 
@@ -1387,12 +1363,12 @@ test('3-5-42: 【一括更新】 他グループの献立カテゴリ更新', fu
         'group_id' => $otherGroup->id
     ]);
 
-    $otherResponse = $this->actingAs($otherUser)->post('/meal-categories', [
+    $this->actingAs($otherUser)->post('/meal-categories', [
         'name' => '他のグループの献立カテゴリ',
         'colorId' => $this->yellowColorId,
         'order' => 0
     ]);
-    $othermealCategoryId = $otherResponse->json('data.id');
+    $othermealCategoryId = \App\Models\MealCategory::where('group_id', $otherGroup->id)->where('name', '他のグループの献立カテゴリ')->first()->id;
 
     $data = [
         'data' => [
@@ -1489,13 +1465,13 @@ test('3-5-44: 【一括更新】 グループが存在しない', function () {
 });
 
 test('3-5-45: 【一括更新】 データベース接続エラー', function () {
-    // テスト用の献立カテゴリをAPIで作成
-    $response1 = $this->actingAs($this->user)->post('/meal-categories', [
+    // テスト用の献立カテゴリをAPIで作成（store は data を返さないため DB から ID 取得）
+    $this->actingAs($this->user)->post('/meal-categories', [
         'name' => '朝食',
         'colorId' => $this->yellowColorId,
         'order' => 0
     ]);
-    $mealCategory1Id = $response1->json('data.id');
+    $mealCategory1Id = \App\Models\MealCategory::where('group_id', $this->group->id)->where('name', '朝食')->first()->id;
 
     // mealCategoryServiceをモックして例外を発生させる
     $this->mock(MealCategoryService::class, function ($mock) {
@@ -1533,13 +1509,13 @@ test('3-5-45: 【一括更新】 データベース接続エラー', function ()
 });
 
 test('3-5-46: 【一括更新】 献立カテゴリ更新失敗', function () {
-    // テスト用の献立カテゴリをAPIで作成
-    $response1 = $this->actingAs($this->user)->post('/meal-categories', [
+    // テスト用の献立カテゴリをAPIで作成（store は data を返さないため DB から ID 取得）
+    $this->actingAs($this->user)->post('/meal-categories', [
         'name' => '朝食',
         'colorId' => $this->yellowColorId,
         'order' => 0
     ]);
-    $mealCategory1Id = $response1->json('data.id');
+    $mealCategory1Id = \App\Models\MealCategory::where('group_id', $this->group->id)->where('name', '朝食')->first()->id;
 
     // mealCategoryServiceをモックして例外を発生させる
     $this->mock(MealCategoryService::class, function ($mock) {
@@ -1580,12 +1556,12 @@ test('3-5-46: 【一括更新】 献立カテゴリ更新失敗', function () {
 
 test('3-5-47: 【削除】 正常な献立カテゴリ削除', function () {
     // テスト用の献立カテゴリをAPIで作成
-    $response1 = $this->actingAs($this->user)->post('/meal-categories', [
+    $this->actingAs($this->user)->post('/meal-categories', [
         'name' => '朝食',
         'colorId' => $this->yellowColorId,
         'order' => 0
     ]);
-    $mealCategory1Id = $response1->json('data.id');
+    $mealCategory1Id = \App\Models\MealCategory::where('group_id', $this->group->id)->where('name', '朝食')->first()->id;
 
     $response = $this->actingAs($this->user)->delete("/meal-categories/{$mealCategory1Id}");
 
@@ -1612,26 +1588,26 @@ test('3-5-47: 【削除】 正常な献立カテゴリ削除', function () {
 
 test('3-5-48: 【削除】 削除後の order 整理確認', function () {
     // テスト用の献立カテゴリをAPIで作成
-    $response1 = $this->actingAs($this->user)->post('/meal-categories', [
+    $this->actingAs($this->user)->post('/meal-categories', [
         'name' => '朝食',
         'colorId' => $this->yellowColorId,
         'order' => 0
     ]);
-    $mealCategory1Id = $response1->json('data.id');
+    $mealCategory1Id = \App\Models\MealCategory::where('group_id', $this->group->id)->where('name', '朝食')->first()->id;
 
-    $response2 = $this->actingAs($this->user)->post('/meal-categories', [
+    $this->actingAs($this->user)->post('/meal-categories', [
         'name' => '昼食',
         'colorId' => $this->redColorId,
         'order' => 1
     ]);
-    $mealCategory2Id = $response2->json('data.id');
+    $mealCategory2Id = \App\Models\MealCategory::where('group_id', $this->group->id)->where('name', '昼食')->first()->id;
 
-    $response3 = $this->actingAs($this->user)->post('/meal-categories', [
+    $this->actingAs($this->user)->post('/meal-categories', [
         'name' => '夕食',
         'colorId' => $this->blueColorId,
         'order' => 2
     ]);
-    $mealCategory3Id = $response3->json('data.id');
+    $mealCategory3Id = \App\Models\MealCategory::where('group_id', $this->group->id)->where('name', '夕食')->first()->id;
 
     // 中間の献立カテゴリを削除
     $response = $this->actingAs($this->user)->delete("/meal-categories/{$mealCategory2Id}");
@@ -1660,12 +1636,12 @@ test('3-5-48: 【削除】 削除後の order 整理確認', function () {
 
 test('3-5-49: 【削除】 削除成功メッセージの確認', function () {
     // テスト用の献立カテゴリをAPIで作成
-    $response1 = $this->actingAs($this->user)->post('/meal-categories', [
+    $this->actingAs($this->user)->post('/meal-categories', [
         'name' => '朝食',
         'colorId' => $this->yellowColorId,
         'order' => 0
     ]);
-    $mealCategory1Id = $response1->json('data.id');
+    $mealCategory1Id = \App\Models\MealCategory::where('group_id', $this->group->id)->where('name', '朝食')->first()->id;
 
     $response = $this->actingAs($this->user)->delete("/meal-categories/{$mealCategory1Id}");
 
@@ -1704,12 +1680,12 @@ test('3-5-51: 【削除】 他グループの献立カテゴリ削除', function
         'group_id' => $otherGroup->id
     ]);
 
-    $otherResponse = $this->actingAs($otherUser)->post('/meal-categories', [
+    $this->actingAs($otherUser)->post('/meal-categories', [
         'name' => '他のグループの献立カテゴリ',
         'colorId' => $this->yellowColorId,
         'order' => 0
     ]);
-    $othermealCategoryId = $otherResponse->json('data.id');
+    $othermealCategoryId = \App\Models\MealCategory::where('group_id', $otherGroup->id)->where('name', '他のグループの献立カテゴリ')->first()->id;
 
     $response = $this->actingAs($this->user)->delete("/meal-categories/{$othermealCategoryId}");
 
@@ -1774,12 +1750,12 @@ test('3-5-53: 【削除】 グループが存在しない', function () {
 
 test('3-5-54: 【削除】 データベース接続エラー', function () {
     // テスト用の献立カテゴリをAPIで作成
-    $response1 = $this->actingAs($this->user)->post('/meal-categories', [
+    $this->actingAs($this->user)->post('/meal-categories', [
         'name' => '朝食',
         'colorId' => $this->yellowColorId,
         'order' => 0
     ]);
-    $mealCategory1Id = $response1->json('data.id');
+    $mealCategory1Id = \App\Models\MealCategory::where('group_id', $this->group->id)->where('name', '朝食')->first()->id;
 
     // mealCategoryServiceをモックして例外を発生させる
     $this->mock(MealCategoryService::class, function ($mock) {
@@ -1807,12 +1783,12 @@ test('3-5-54: 【削除】 データベース接続エラー', function () {
 
 test('3-5-55: 【削除】 献立カテゴリ削除失敗', function () {
     // テスト用の献立カテゴリをAPIで作成
-    $response1 = $this->actingAs($this->user)->post('/meal-categories', [
+    $this->actingAs($this->user)->post('/meal-categories', [
         'name' => '朝食',
         'colorId' => $this->yellowColorId,
         'order' => 0
     ]);
-    $mealCategory1Id = $response1->json('data.id');
+    $mealCategory1Id = \App\Models\MealCategory::where('group_id', $this->group->id)->where('name', '朝食')->first()->id;
 
     // mealCategoryServiceをモックして例外を発生させる
     $this->mock(MealCategoryService::class, function ($mock) {

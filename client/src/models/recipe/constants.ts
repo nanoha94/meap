@@ -1,6 +1,6 @@
 import { DIALOG_NAME, TMP_ID_PREFIX } from '@/constants';
-import { AlertDialogConfig, IRecipe, IRecipeCategory } from '@/types';
-import { RecipeSettingDialogConfigs, RecipeStepEditFormData } from './types';
+import { AlertDialogConfig,  IRecipeCategory } from '@/types';
+import { RecipeEditFormData, RecipeSettingDialogConfigs, RecipeStepEditFormData } from './types';
 
 /* ダイアログ設定 */
 export const RECIPE_SETTING_DIALOG_CONFIGS: RecipeSettingDialogConfigs = {
@@ -40,7 +40,7 @@ export const DEFAULT_RECIPE_STEP: RecipeStepEditFormData = {
     order: 0,
 };
 
-export const DEFAULT_POST_DATA: IRecipe = {
+export const DEFAULT_RECIPE_EDIT_FORM_DATA: RecipeEditFormData = {
     id: '',
     ownerUserId: '',
     name: '',

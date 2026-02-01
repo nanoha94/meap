@@ -67,13 +67,13 @@ class ShoppingItemController extends ApiController
 
         return $this->executeWithExceptionHandling(
             function () use ($request) {
-                $res = $this->shoppingItemService->create(
+                $this->shoppingItemService->create(
                     $request->validated(),
                     $this->getUserGroup($request)
                 );
 
                 $message = __('api.created', ['attribute' => __('api.attributes.shopping.item'), 'name' => $request->name]);
-                return $this->createdResponse($res, $message);
+                return $this->createdResponse(null, $message);
             },
             $request,
             $failedMessage,
@@ -107,7 +107,7 @@ class ShoppingItemController extends ApiController
                 );
                 $total = count($res);
                 $message = __('api.bulk_updated', ['attribute' => __('api.attributes.shopping.item'), 'count' => $total]);
-                return $this->updatedResponse($res, $message);
+                return $this->updatedResponse(null, $message);
             },
             $request,
             $failedMessage,

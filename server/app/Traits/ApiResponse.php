@@ -33,7 +33,6 @@ trait ApiResponse
             'message' => $message,
             'data' => $data,
         ];
-
         if ($warning) {
             $response['warning'] = $warning;
         }

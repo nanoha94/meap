@@ -45,30 +45,13 @@ class Group extends Model
             $ingredientCategory->order = 0;
             $ingredientCategory->save();
 
-            // デフォルトの料理分類を追加
-            $menuCategories = [
-                ['name' => '主食', 'order' => 0],
-                ['name' => '主菜', 'order' => 1],
-                ['name' => '副菜', 'order' => 2],
-                ['name' => '汁物', 'order' => 3],
-                ['name' => 'その他', 'order' => 4],
-            ];
-
-            foreach ($menuCategories as $menuCategory) {
-                $menuCategoryObj = new MenuCategory();
-                $menuCategoryObj->group_id = $group->id;
-                $menuCategoryObj->name = $menuCategory['name'];
-                $menuCategoryObj->order = $menuCategory['order'];
-                $menuCategoryObj->save();
-            }
-
             // デフォルトの献立カテゴリを追加
             $yellow = Color::where('name', 'イエロー')->first();
             $red = Color::where('name', 'レッド')->first();
             $blue = Color::where('name', 'ブルー')->first();
             $categories = [
-                ['name' => '朝食', 'color_id' => $yellow->id, 'order' => 0],
-                ['name' => '昼食', 'color_id' => $red->id, 'order' => 1],
+                ['name' => '朝食', 'color_id' => $red->id, 'order' => 0],
+                ['name' => '昼食', 'color_id' => $yellow->id, 'order' => 1],
                 ['name' => '夕食', 'color_id' => $blue->id, 'order' => 2],
             ];
 
@@ -193,14 +176,6 @@ class Group extends Model
     public function recipeCategories(): HasMany
     {
         return $this->hasMany(RecipeCategory::class);
-    }
-
-    /**
-     * 献立カテゴリを取得する
-     */
-    public function menuCategories(): HasMany
-    {
-        return $this->hasMany(MenuCategory::class);
     }
 
     /**

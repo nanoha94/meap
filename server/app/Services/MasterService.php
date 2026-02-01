@@ -11,7 +11,7 @@ class MasterService
         private RecipeCategoryService $recipeCategoryService,
         private IngredientCategoryService $ingredientCategoryService,
         private IngredientUnitService $ingredientUnitService,
-        private MenuCategoryService $menuCategoryService,
+        private MealCategoryService $mealCategoryService,
         private ShoppingCategoryService $shoppingCategoryService,
         private ShoppingTagService $shoppingTagService
     ) {}
@@ -23,7 +23,7 @@ class MasterService
             'recipeCategories' => $this->recipeCategoryService->index($group),
             'ingredientCategories' => $this->ingredientCategoryService->index($group),
             'ingredientUnits' => $this->ingredientUnitService->index($group),
-            'menuCategories' => $this->menuCategoryService->index($group),
+            'mealCategories' => $this->mealCategoryService->index($group),
             'shoppingCategories' => $this->shoppingCategoryService->index($group),
             'shoppingTags' => $this->shoppingTagService->index($group),
         ];

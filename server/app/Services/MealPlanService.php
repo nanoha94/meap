@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\MenuCategory;
 use App\Models\Group;
 use App\Models\MealPlan;
 use Illuminate\Database\Eloquent\Collection;
@@ -14,14 +13,12 @@ class MealPlanService extends AbstractDomainService
 {
     protected MealCategoryService $mealCategoryService;
     protected RecipeService $recipeService;
-    protected MenuCategoryService $menuCategoryService;
     protected ImageService $imageService;
 
-    public function __construct(MealCategoryService $mealCategoryService, RecipeService $recipeService, MenuCategoryService $menuCategoryService, ImageService $imageService)
+    public function __construct(MealCategoryService $mealCategoryService, RecipeService $recipeService, ImageService $imageService)
     {
         $this->mealCategoryService = $mealCategoryService;
         $this->recipeService = $recipeService;
-        $this->menuCategoryService = $menuCategoryService;
         $this->imageService = $imageService;
     }
 
@@ -42,7 +39,7 @@ class MealPlanService extends AbstractDomainService
 
     protected function getWithColumns(): array
     {
-        return ['mealCategory', 'recipes.menuCategories', 'recipes.categories', 'recipes.ingredients'];
+        return ['mealCategory.color', 'recipes.categories', 'recipes.ingredients'];
     }
 
     protected function getGroupBy(): string | null
@@ -62,12 +59,8 @@ class MealPlanService extends AbstractDomainService
                 return [
                     'id' => $mealPlan->id,
                     'date' => $mealPlan->date,
-                    'category' => [
-                        'id' => $mealPlan->mealCategory->id,
-                        'name' => $mealPlan->mealCategory->name,
-                        'colorId' => $mealPlan->mealCategory->color_id,
-                    ],
-                    'menu' => $this->formatMenu($mealPlan->recipes)
+                    'category' => $this->formatCategory($mealPlan->mealCategory),
+                    'recipes' => $this->formatRecipes($mealPlan->recipes),
                 ];
             })
         ];
@@ -81,12 +74,8 @@ class MealPlanService extends AbstractDomainService
         return [
             'id' => $item->id,
             'date' => $item->date,
-            'category' => [
-                'id' => $item->mealCategory->id,
-                'name' => $item->mealCategory->name,
-                'colorId' => $item->mealCategory->color_id,
-            ],
-            'menu' => $this->formatMenu($item->recipes)
+            'category' => $this->formatCategory($item->mealCategory),
+            'recipes' => $this->formatRecipes($item->recipes)
         ];
     }
 
@@ -98,12 +87,8 @@ class MealPlanService extends AbstractDomainService
         return [
             'id' => $item->id,
             'date' => $item->date,
-            'category' => [
-                'id' => $item->mealCategory->id,
-                'name' => $item->mealCategory->name,
-                'colorId' => $item->mealCategory->color_id,
-            ],
-            'menu' => $this->formatMenu($item->recipes)
+            'category' => $this->formatCategory($item->mealCategory),
+            'recipes' => $this->formatRecipes($item->recipes)
         ];
     }
 
@@ -115,18 +100,14 @@ class MealPlanService extends AbstractDomainService
         return [
             'id' => $item->id,
             'date' => $item->date,
-            'category' => [
-                'id' => $item->mealCategory->id,
-                'name' => $item->mealCategory->name,
-                'colorId' => $item->mealCategory->color_id,
-            ],
-            'menu' => $this->formatMenu($item->recipes)
+            'category' => $this->formatCategory($item->mealCategory),
+            'recipes' => $this->formatRecipes($item->recipes)
         ];
     }
 
-    public function create(array $data, Group $group): array
+    public function create(array $data, Group $group): void
     {
-        return DB::transaction(function () use ($data, $group) {
+        DB::transaction(function () use ($data, $group) {
             // 献立カテゴリの存在チェック
             $mealCategory = $this->mealCategoryService->findItemsByIds([$data['mealCategoryId']], $group);
 
@@ -137,18 +118,16 @@ class MealPlanService extends AbstractDomainService
                 'date' => $data['date'],
             ]);
 
-            // 献立・料理・コース種別を紐づけ
-            if (!empty($data['menu'])) {
-                $this->syncRecipes($mealPlan, $data['menu'], $group);
+            // 献立・料理を紐づけ
+            if (!empty($data['recipeIds'])) {
+                $this->syncRecipes($mealPlan, $data['recipeIds'], $group);
             }
-
-            return $this->formatStoreResponse($mealPlan);
         });
     }
 
-    public function update(string $id, array $data, Group $group): array
+    public function update(string $id, array $data, Group $group): void
     {
-        return DB::transaction(function () use ($id, $data, $group) {
+        DB::transaction(function () use ($id, $data, $group) {
             //更新対象を取得
             $mealPlan = $this->findItemsByIds([$id], $group)->first();
 
@@ -162,58 +141,52 @@ class MealPlanService extends AbstractDomainService
                 'date' => $data['date'],
             ]);
 
-            // 献立・料理・コース種別を紐づけ
-            if (!empty($data['menu'])) {
-                $this->syncRecipes($mealPlan, $data['menu'], $group);
+            // 献立・料理を紐づけ
+            if (!empty($data['recipeIds'])) {
+                $this->syncRecipes($mealPlan, $data['recipeIds'], $group);
             }
-
-            $item = $mealPlan->fresh(['mealCategory', 'recipes.menuCategories', 'recipes.categories', 'recipes.ingredients']);
-
-            return $this->formatUpdateResponse($item);
         });
     }
 
-    /**
-     * 献立のメニュー情報をフォーマット
-     */
-    private function formatMenu($recipes): array
+    private function formatCategory($category): array
     {
-        return $recipes->groupBy('pivot.menu_category_id')->map(function ($recipes, $menuCategoryId) {
-            $menuCategory = MenuCategory::find($menuCategoryId);
+        return [
+            'id' => $category->id,
+            'name' => $category->name,
+            'colorCodeHex' => $category->color->color_code_hex,
+            'order' => $category->order,
+        ];
+    }
+
+    /**
+     * 献立の料理情報をフォーマット
+     */
+    private function formatRecipes($recipes): array
+    {
+        return  $recipes->map(function ($recipe) {
             return [
-                'category' => [
-                    'id' => $menuCategory->id,
-                    'name' => $menuCategory->name
-                ],
-                'recipes' => $recipes->map(function ($recipe) {
-                    return [
-                        'id' => $recipe->id,
-                        'name' => $recipe->name,
-                        'categories' => $this->recipeService->formatRecipeCategories($recipe->categories),
-                        'thumbnail' => $this->imageService->formatImage($recipe->thumbnails->first()),
-                    ];
-                })
+                'id' => $recipe->id,
+                'name' => $recipe->name,
+                'categories' => $this->recipeService->formatRecipeCategories($recipe->categories),
+                'thumbnail' => $this->imageService->formatImage($recipe->thumbnails->first()),
             ];
         })->values()->toArray();
     }
 
-    private function syncRecipes(MealPlan $mealPlan, array $menu, Group $group): void
+    private function syncRecipes(MealPlan $mealPlan, array $recipeIds, Group $group): void
     {
-        foreach ($menu as $item) {
-            // レシピの存在チェック
-            $recipes = $this->recipeService->findItemsByIds($item['recipeIds'], $group);
-            // メニューカテゴリの存在チェック
-            $menuCategories = $this->menuCategoryService->findItemsByIds([$item['categoryId']], $group);
+        // recipeIds をユニークに整形
+        $recipeIds = array_values(array_unique($recipeIds));
 
-            // 紐づけ更新
-            $attachData = collect($item['recipeIds'])->unique()->map(function ($recipeId) use ($mealPlan, $item) {
-                return [
-                    'meal_plan_id' => $mealPlan->id,
-                    'recipe_id' => $recipeId,
-                    'menu_category_id' => $item['categoryId']
-                ];
-            });
-            $mealPlan->recipes()->sync($attachData);
+        if (empty($recipeIds)) {
+            $mealPlan->recipes()->sync([]);
+            return;
         }
+
+        // レシピの存在チェック（グループに属するもののみ）
+        $this->recipeService->findItemsByIds($recipeIds, $group);
+
+        // (meal_plan_id, recipe_id) のみで sync
+        $mealPlan->recipes()->sync($recipeIds);
     }
 }

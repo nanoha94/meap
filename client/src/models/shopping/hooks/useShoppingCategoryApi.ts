@@ -7,8 +7,8 @@ import { useApiErrorHandler, useSnackbars } from '@/hooks';
 import axios from '@/lib/axios';
 import { useGlobalStore } from '@/stores';
 import {
-    IPostShoppingCategoryRequestData,
-    IPutShoppingCategoryRequestData,
+    IPostShoppingCategoryRequest,
+    IPutShoppingCategoryRequest,
     IShoppingCategory,
 } from '@/types';
 import { useShoppingStore } from '../hooks';
@@ -55,9 +55,9 @@ export const useShoppingCategoryApi = () => {
     const generateCreateUpdateRequest = React.useCallback(
         (categories: IShoppingCategory[]) => {
             // 更新するものを配列にセット
-            const updateCategories: IPutShoppingCategoryRequestData[] = [];
+            const updateCategories: IPutShoppingCategoryRequest[] = [];
             // 作成するものを配列にセット
-            const createCategories: IPostShoppingCategoryRequestData[] = [];
+            const createCategories: IPostShoppingCategoryRequest[] = [];
 
             for (let i = 0; i < categories.length; i++) {
                 // 既存のカテゴリーかどうかを判断
@@ -76,7 +76,7 @@ export const useShoppingCategoryApi = () => {
                         )
                     ) {
                         updateCategories.push(
-                            categories[i] as IPutShoppingCategoryRequestData,
+                            categories[i] as IPutShoppingCategoryRequest,
                         );
                     }
                 }
@@ -86,7 +86,7 @@ export const useShoppingCategoryApi = () => {
                         continue;
                     }
                     createCategories.push(
-                        categories[i] as IPostShoppingCategoryRequestData,
+                        categories[i] as IPostShoppingCategoryRequest,
                     );
                 }
             }

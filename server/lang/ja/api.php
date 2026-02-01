@@ -61,7 +61,6 @@ return [
         'user' => 'ユーザー',
         'meal_plan' => '献立',
         'meal_category' => '献立カテゴリ',
-        'menu_category' => 'メニューカテゴリー',
         'recipe' => '料理/レシピ',
         'recipe_category' => '料理カテゴリー',
         'ingredient' => '食材',

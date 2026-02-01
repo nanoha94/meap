@@ -3,7 +3,7 @@ import { IIngredientItem } from './ingredient';
 import {
     IBaseApiIndexResponse,
     IBaseApiResponse,
-    IBaseApiDeleteResponse,
+    IBaseApiResponseWithData,
 } from './common';
 
 //--------------------------------
@@ -13,16 +13,16 @@ import {
 export type IGetRecipeIndexResponse = IBaseApiIndexResponse<IRecipe[]>;
 
 // レシピ詳細取得
-export type IGetRecipeShowResponse = IBaseApiResponse<IRecipe>;
+export type IGetRecipeShowResponse = IBaseApiResponseWithData<IRecipe>;
 
 // レシピ作成
-export type IPostRecipeResponse = IBaseApiResponse<IRecipe>;
+export type IPostRecipeResponse = IBaseApiResponse;
 
 // レシピ更新
-export type IPutRecipeResponse = IBaseApiResponse<IRecipe>;
+export type IPutRecipeResponse = IBaseApiResponse;
 
 // レシピ削除
-export type IDeleteRecipeResponse = IBaseApiDeleteResponse;
+export type IDeleteRecipeResponse = IBaseApiResponse;
 
 // レシピカテゴリ一覧取得
 export type IGetRecipeCategoryIndexResponse = IBaseApiIndexResponse<IRecipeCategory[]>;
@@ -90,3 +90,6 @@ export interface IRecipe {
     ingredients: IIngredientItem[];
     steps: IRecipeStep[];
 }
+
+// 一覧用
+export type IRecipeListItem = Pick<IRecipe, 'id' | 'name' | 'categories' | 'thumbnail'>;

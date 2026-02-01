@@ -4,7 +4,7 @@ import { IBaseApiIndexResponse } from './common';
 // レスポンス型
 //--------------------------------
 // 画像アップロード
-export type IUploadRecipeResponse = IBaseApiIndexResponse<IImage>;
+export type IUploadImageResponse = IBaseApiIndexResponse<IImage>;
 
 //--------------------------------
 // データ型

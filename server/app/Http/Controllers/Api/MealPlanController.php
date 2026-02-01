@@ -69,9 +69,9 @@ class MealPlanController extends ApiController
 
         return $this->executeWithExceptionHandling(
             function () use ($request) {
-                $res = $this->mealPlanService->create($request->validated(), $this->getUserGroup($request));
+                $this->mealPlanService->create($request->validated(), $this->getUserGroup($request));
                 $message = __('api.created', ['attribute' => __('api.attributes.meal_plan'), 'name' => $request->input('date')]);
-                return $this->createdResponse($res, $message);
+                return $this->createdResponse(null, $message);
             },
             $request,
             $failedMessage,
@@ -128,9 +128,9 @@ class MealPlanController extends ApiController
 
         return $this->executeWithExceptionHandling(
             function () use ($request, $id) {
-                $res = $this->mealPlanService->update($id, $request->validated(), $this->getUserGroup($request));
+                $this->mealPlanService->update($id, $request->validated(), $this->getUserGroup($request));
                 $message = __('api.updated', ['attribute' => __('api.attributes.meal_plan'), 'name' => $request->input('date')]);
-                return $this->updatedResponse($res, $message);
+                return $this->updatedResponse(null, $message);
             },
             $request,
             $failedMessage,

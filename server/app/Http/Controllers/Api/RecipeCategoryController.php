@@ -67,12 +67,12 @@ class RecipeCategoryController extends ApiController
 
         return $this->executeWithExceptionHandling(
             function () use ($request) {
-                $res = $this->recipeCategoryService->create(
+                $this->recipeCategoryService->create(
                     $request->validated(),
                     $this->getUserGroup($request)
                 );
                 $message = __('api.created', ['attribute' => __('api.attributes.recipe_category'), 'name' => $request->name]);
-                return $this->createdResponse($res, $message);
+                return $this->createdResponse(null, $message);
             },
             $request,
             $failedMessage,
@@ -105,7 +105,7 @@ class RecipeCategoryController extends ApiController
                 );
                 $total = count($res);
                 $message = __('api.bulk_updated', ['attribute' => __('api.attributes.recipe_category'), 'count' => $total]);
-                return $this->updatedResponse($res, $message);
+                return $this->updatedResponse(null, $message);
             },
             $request,
             $failedMessage,

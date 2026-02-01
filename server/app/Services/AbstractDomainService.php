@@ -153,19 +153,16 @@ abstract class AbstractDomainService
      *
      * @param array $data 作成データ
      * @param Group $group グループモデル
-     * @return array 作成されたアイテムのレスポンスデータ
      */
-    public function create(array $data, Group $group): array
+    public function create(array $data, Group $group): void
     {
-        return DB::transaction(function () use ($data, $group) {
+        DB::transaction(function () use ($data, $group) {
             $createData = [];
             foreach ($this->getCreateFields() as $field => $dataKey) {
                 $createData[$field] = $data[$dataKey];
             }
 
-            $item = $this->getGroupRelation($group)->create($createData);
-
-            return $this->formatStoreResponse($item);
+            $this->getGroupRelation($group)->create($createData);
         });
     }
 
@@ -246,9 +243,7 @@ abstract class AbstractDomainService
                 }
                 $items[$item['id']]->update($updateData);
 
-                // 更新後のデータを取得してフォーマット
-                $freshItem = $items[$item['id']]->fresh($this->getWithColumns());
-                $result[] = $this->formatUpdateResponse($freshItem);
+                $result[] = [];
             }
 
             return $result;

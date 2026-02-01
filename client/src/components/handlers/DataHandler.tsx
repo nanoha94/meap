@@ -6,6 +6,7 @@ import { useRecipeStore } from '@/models/recipe';
 import { useAccountStore } from '@/models/settings';
 import { useShoppingStore } from '@/models/shopping';
 import { ILoginUser, IMaster } from '@/types';
+import { useMealStore } from '@/models/meal';
 
 interface Props {
     user: ILoginUser;
@@ -22,12 +23,11 @@ const DataHandler = ({ user, masterData }: Props) => {
     const { setLoginUser, setUsers } = useAccountStore();
     const { setCategories: setIngredientCategories, setUnits: setIngredientUnits } = useIngredientStore();
     const { setCategories: setRecipeCategories } = useRecipeStore();
+    const { setMealCategories } = useMealStore();
     const { setCategories: setShoppingCategories } = useShoppingStore();
 
     /**
      * ユーザー情報をストアにセット
-     * @param user ユーザー情報
-     * @returns void
      */
     React.useEffect(() => {
         if (user) {
@@ -37,8 +37,6 @@ const DataHandler = ({ user, masterData }: Props) => {
 
     /**
      * ユーザー一覧をストアにセット
-     * @param users ユーザー一覧
-     * @returns void
      */
     React.useEffect(() => {
         if (masterData?.users && masterData.users.length > 0) {
@@ -48,8 +46,6 @@ const DataHandler = ({ user, masterData }: Props) => {
 
     /**
      * レシピカテゴリーをストアにセット
-     * @param fetchCategories レシピカテゴリー
-     * @returns void
      */
     React.useEffect(() => {
         if (masterData?.recipeCategories && masterData.recipeCategories.length > 0) {
@@ -60,8 +56,6 @@ const DataHandler = ({ user, masterData }: Props) => {
 
     /**
      * 食材カテゴリーをストアにセット
-     * @param fetchCategories 食材カテゴリー
-     * @returns void
      */
     React.useEffect(() => {
         if (masterData?.ingredientCategories && masterData.ingredientCategories.length > 0) {
@@ -71,8 +65,6 @@ const DataHandler = ({ user, masterData }: Props) => {
 
     /**
      * 食材単位をストアにセット
-     * @param fetchUnits 食材単位
-     * @returns void
      */
     React.useEffect(() => {
         if (masterData?.ingredientUnits && masterData.ingredientUnits.length > 0) {
@@ -81,9 +73,16 @@ const DataHandler = ({ user, masterData }: Props) => {
     }, [masterData?.ingredientUnits]);
 
     /**
+     * 献立カテゴリ―をストアにセット
+     */
+    React.useEffect(() => {
+        if (masterData?.mealCategories && masterData.mealCategories.length > 0) {
+            setMealCategories(masterData.mealCategories);
+        }
+    }, [masterData?.mealCategories]);
+
+    /**
      * 買い物カテゴリーをストアにセット
-     * @param fetchCategories 買い物カテゴリー
-     * @returns void
      */
     React.useEffect(() => {
         if (masterData?.shoppingCategories && masterData.shoppingCategories.length > 0) {

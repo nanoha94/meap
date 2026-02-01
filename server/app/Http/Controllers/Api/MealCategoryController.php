@@ -67,9 +67,9 @@ class MealCategoryController extends ApiController
 
         return $this->executeWithExceptionHandling(
             function () use ($request) {
-                $res = $this->mealCategoryService->create($request->validated(), $this->getUserGroup($request));
-                $message = __('api.created', ['attribute' => __('api.attributes.meal_category'), 'name' => $res['name']]);
-                return $this->createdResponse($res, $message);
+                $this->mealCategoryService->create($request->validated(), $this->getUserGroup($request));
+                $message = __('api.created', ['attribute' => __('api.attributes.meal_category'), 'name' => $request->name]);
+                return $this->createdResponse(null, $message);
             },
             $request,
             $failedMessage,
@@ -102,7 +102,7 @@ class MealCategoryController extends ApiController
                 );
                 $total = count($updatedData);
                 $message = __('api.bulk_updated', ['attribute' => __('api.attributes.meal_category'), 'count' => $total]);
-                return $this->updatedResponse($updatedData, $message);
+                return $this->updatedResponse(null, $message);
             },
             $request,
             $failedMessage,

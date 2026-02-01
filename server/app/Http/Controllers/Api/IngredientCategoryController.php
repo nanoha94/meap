@@ -69,7 +69,7 @@ class IngredientCategoryController extends ApiController
                 );
 
                 $message = __('api.bulk_created', ['attribute' => __('api.attributes.ingredient_category'), 'count' => count($res)]);
-                return $this->createdResponse($res, $message);
+                return $this->createdResponse(null, $message);
             },
             $request,
             $failedMessage,
@@ -103,7 +103,7 @@ class IngredientCategoryController extends ApiController
 
                 $total = count($updatedData);
                 $message = __('api.bulk_updated', ['attribute' => __('api.attributes.ingredient_category'), 'count' => $total]);
-                return $this->updatedResponse($updatedData, $message);
+                return $this->updatedResponse(null, $message);
             },
             $request,
             $failedMessage,

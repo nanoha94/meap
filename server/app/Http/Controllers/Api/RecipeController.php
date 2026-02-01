@@ -84,9 +84,9 @@ class RecipeController extends ApiController
 
         return $this->executeWithExceptionHandling(
             function () use ($request) {
-                $res = $this->recipeService->create($request->validated(), $this->getUserGroup($request));
+                $this->recipeService->create($request->validated(), $this->getUserGroup($request));
                 $message = __('api.created', ['attribute' => __('api.attributes.recipe'), 'name' => $request->name]);
-                return $this->createdResponse($res, $message);
+                return $this->createdResponse(null, $message);
             },
             $request,
             $failedMessage,
@@ -143,13 +143,13 @@ class RecipeController extends ApiController
 
         return $this->executeWithExceptionHandling(
             function () use ($request, $id) {
-                $res = $this->recipeService->update(
+                $this->recipeService->update(
                     $id,
                     $request->validated(),
                     $this->getUserGroup($request)
                 );
-                $message = __('api.updated', ['attribute' => __('api.attributes.recipe'), 'name' => $res['name']]);
-                return $this->updatedResponse($res, $message);
+                $message = __('api.updated', ['attribute' => __('api.attributes.recipe'), 'name' => $request->name]);
+                return $this->updatedResponse(null, $message);
             },
             $request,
             $failedMessage,

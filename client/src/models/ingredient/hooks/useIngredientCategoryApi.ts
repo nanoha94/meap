@@ -8,8 +8,8 @@ import axios from '@/lib/axios';
 import { useGlobalStore } from '@/stores';
 import {
     IIngredientCategory,
-    IPostIngredientCategoryRequestData,
-    IPutIngredientCategoryRequestData,
+    IPostIngredientCategoryRequest,
+    IPutIngredientCategoryRequest,
 } from '@/types';
 import { useIngredientStore } from '../hooks';
 
@@ -55,9 +55,9 @@ export const useIngredientCategoryApi = () => {
     const generateCreateUpdateRequest = React.useCallback(
         (categories: IIngredientCategory[]) => {
             // 更新するものを配列にセット
-            const updateCategories: IPutIngredientCategoryRequestData[] = [];
+            const updateCategories: IPutIngredientCategoryRequest[] = [];
             // 作成するものを配列にセット
-            const createCategories: IPostIngredientCategoryRequestData[] = [];
+            const createCategories: IPostIngredientCategoryRequest[] = [];
 
             for (let i = 0; i < categories.length; i++) {
                 // 既存のカテゴリーかどうかを判断
@@ -76,7 +76,7 @@ export const useIngredientCategoryApi = () => {
                         )
                     ) {
                         updateCategories.push(
-                            categories[i] as IPutIngredientCategoryRequestData,
+                            categories[i] as IPutIngredientCategoryRequest,
                         );
                     }
                 }
@@ -86,7 +86,7 @@ export const useIngredientCategoryApi = () => {
                         continue;
                     }
                     createCategories.push(
-                        categories[i] as IPostIngredientCategoryRequestData,
+                        categories[i] as IPostIngredientCategoryRequest,
                     );
                 }
             }

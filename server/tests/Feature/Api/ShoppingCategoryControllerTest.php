@@ -29,17 +29,14 @@ beforeEach(function () {
 
 // ===== index() メソッドのテストケース =====
 
-test('3-9-1: 【一覧取得】 正常な買い物カテゴリ一覧取得', function () {
+test('3-8-1: 【一覧取得】 正常な買い物カテゴリ一覧取得', function () {
     // テスト用のカテゴリをAPIで作成
-    $response1 = $this->actingAs($this->user)->postJson('/shopping-categories/bulk', [
+    $this->actingAs($this->user)->postJson('/shopping-categories/bulk', [
         'data' => [['name' => '野菜', 'order' => 0]]
     ]);
-    $category1Id = $response1->json('data.0.id');
-
-    $response2 = $this->actingAs($this->user)->postJson('/shopping-categories/bulk', [
+    $this->actingAs($this->user)->postJson('/shopping-categories/bulk', [
         'data' => [['name' => '肉類', 'order' => 1]]
     ]);
-    $category2Id = $response2->json('data.0.id');
 
     $response = $this->actingAs($this->user)->get('/shopping-categories');
 
@@ -73,7 +70,7 @@ test('3-9-1: 【一覧取得】 正常な買い物カテゴリ一覧取得', fun
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-2: 【一覧取得】 カテゴリ情報の並び順確認', function () {
+test('3-8-2: 【一覧取得】 カテゴリ情報の並び順確認', function () {
     // 異なるorder順でカテゴリをAPIで作成
     $this->actingAs($this->user)->postJson('/shopping-categories/bulk', [
         'data' => [['name' => '野菜', 'order' => 2]]
@@ -99,7 +96,7 @@ test('3-9-2: 【一覧取得】 カテゴリ情報の並び順確認', function 
     expect($responseData[2]['order'])->toBe(2);
 });
 
-test('3-9-3: 【一覧取得】 デフォルトカテゴリの確認', function () {
+test('3-8-3: 【一覧取得】 デフォルトカテゴリの確認', function () {
     // テスト用のカテゴリをAPIで作成（デフォルトカテゴリは自動作成される想定）
     $this->actingAs($this->user)->postJson('/shopping-categories/bulk', [
         'data' => [['name' => '野菜', 'order' => 0]]
@@ -115,7 +112,7 @@ test('3-9-3: 【一覧取得】 デフォルトカテゴリの確認', function 
     expect($responseData[0]['isDefault'])->toBeIn([true, false]);
 });
 
-test('3-9-4: 【一覧取得】 レスポンス形式確認', function () {
+test('3-8-4: 【一覧取得】 レスポンス形式確認', function () {
     // テスト用のカテゴリをAPIで作成
     $this->actingAs($this->user)->postJson('/shopping-categories/bulk', [
         'data' => [['name' => '野菜', 'order' => 0]]
@@ -142,7 +139,7 @@ test('3-9-4: 【一覧取得】 レスポンス形式確認', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-5: 【一覧取得】 未認証ユーザー', function () {
+test('3-8-5: 【一覧取得】 未認証ユーザー', function () {
     $response = $this->get('/shopping-categories');
 
     $response->assertStatus(401);
@@ -161,7 +158,7 @@ test('3-9-5: 【一覧取得】 未認証ユーザー', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-6: 【一覧取得】 グループが存在しない', function () {
+test('3-8-6: 【一覧取得】 グループが存在しない', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -185,7 +182,7 @@ test('3-9-6: 【一覧取得】 グループが存在しない', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-7: 【一覧取得】 データベース接続エラー', function () {
+test('3-8-7: 【一覧取得】 データベース接続エラー', function () {
     DB::shouldReceive('connection')->andThrow(new \Exception('Database connection failed'));
 
     $response = $this->actingAs($this->user)->get('/shopping-categories');
@@ -205,7 +202,7 @@ test('3-9-7: 【一覧取得】 データベース接続エラー', function () 
 
 // ===== bulkStore() メソッドのテストケース =====
 
-test('3-9-8: 【一括作成】 正常な買い物カテゴリ一括作成', function () {
+test('3-8-8: 【一括作成】 正常な買い物カテゴリ一括作成', function () {
     $data = [
         'data' => [
             ['name' => '野菜', 'order' => 0],
@@ -219,12 +216,7 @@ test('3-9-8: 【一括作成】 正常な買い物カテゴリ一括作成', fun
     $response->assertStatus(201);
     $response->assertJson([
         'success' => true,
-        'message' => '買い物カテゴリーを3件作成しました。',
-        'data' => [
-            ['name' => '野菜', 'order' => 0],
-            ['name' => '肉類', 'order' => 1],
-            ['name' => '魚介類', 'order' => 2],
-        ]
+        'message' => '買い物カテゴリーを3件作成しました。'
     ]);
 
     // データベースに保存されていることを確認
@@ -232,23 +224,15 @@ test('3-9-8: 【一括作成】 正常な買い物カテゴリ一括作成', fun
     $this->assertDatabaseHas('shopping_categories', ['group_id' => $this->group->id, 'name' => '肉類', 'order' => 1]);
     $this->assertDatabaseHas('shopping_categories', ['group_id' => $this->group->id, 'name' => '魚介類', 'order' => 2]);
 
-    // レスポンス構造の確認
+    // レスポンス構造の確認（success + message のみ）
     $response->assertJsonStructure([
         'success',
-        'message',
-        'data' => [
-            '*' => [
-                'id',
-                'name',
-                'isDefault',
-                'order',
-            ]
-        ]
+        'message'
     ]);
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-9: 【一括作成】 バリデーションエラー（data 未入力）', function () {
+test('3-8-9: 【一括作成】 バリデーションエラー（data 未入力）', function () {
     $data = [];
 
     $response = $this->actingAs($this->user)->postJson('/shopping-categories/bulk', $data);
@@ -267,7 +251,7 @@ test('3-9-9: 【一括作成】 バリデーションエラー（data 未入力�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-10: 【一括作成】 バリデーションエラー（data が配列でない）', function () {
+test('3-8-10: 【一括作成】 バリデーションエラー（data が配列でない）', function () {
     $data = ['data' => 'not_array'];
 
     $response = $this->actingAs($this->user)->postJson('/shopping-categories/bulk', $data);
@@ -286,7 +270,7 @@ test('3-9-10: 【一括作成】 バリデーションエラー（data が配列
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-11: 【一括作成】 バリデーションエラー（data が空配列）', function () {
+test('3-8-11: 【一括作成】 バリデーションエラー（data が空配列）', function () {
     $data = ['data' => []];
 
     $response = $this->actingAs($this->user)->postJson('/shopping-categories/bulk', $data);
@@ -305,7 +289,7 @@ test('3-9-11: 【一括作成】 バリデーションエラー（data が空配
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-12: 【一括作成】 バリデーションエラー（data.*.name 未入力）', function () {
+test('3-8-12: 【一括作成】 バリデーションエラー（data.*.name 未入力）', function () {
     $data = ['data' => [
         ['order' => 0]
     ]];
@@ -326,7 +310,7 @@ test('3-9-12: 【一括作成】 バリデーションエラー（data.*.name �
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-13: 【一括作成】 バリデーションエラー（data.*.name が文字列でない）', function () {
+test('3-8-13: 【一括作成】 バリデーションエラー（data.*.name が文字列でない）', function () {
     $data = ['data' => [
         ['name' => 123, 'order' => 0]
     ]];
@@ -347,7 +331,7 @@ test('3-9-13: 【一括作成】 バリデーションエラー（data.*.name �
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-14: 【一括作成】 バリデーションエラー（data.*.name が 255 文字超過）', function () {
+test('3-8-14: 【一括作成】 バリデーションエラー（data.*.name が 255 文字超過）', function () {
     $data = ['data' => [
         ['name' => str_repeat('a', 256), 'order' => 0]
     ]];
@@ -368,7 +352,7 @@ test('3-9-14: 【一括作成】 バリデーションエラー（data.*.name �
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-15: 【一括作成】 バリデーションエラー（data.*.order 未入力）', function () {
+test('3-8-15: 【一括作成】 バリデーションエラー（data.*.order 未入力）', function () {
     $data = ['data' => [
         ['name' => '野菜']
     ]];
@@ -389,7 +373,7 @@ test('3-9-15: 【一括作成】 バリデーションエラー（data.*.order �
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-16: 【一括作成】 バリデーションエラー（data.*.order が整数でない）', function () {
+test('3-8-16: 【一括作成】 バリデーションエラー（data.*.order が整数でない）', function () {
     $data = ['data' => [
         ['name' => '野菜', 'order' => 'abc']
     ]];
@@ -410,7 +394,7 @@ test('3-9-16: 【一括作成】 バリデーションエラー（data.*.order �
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-17: 【一括作成】 バリデーションエラー（data.*.order が負の値）', function () {
+test('3-8-17: 【一括作成】 バリデーションエラー（data.*.order が負の値）', function () {
     $data = ['data' => [
         ['name' => '野菜', 'order' => -1]
     ]];
@@ -431,7 +415,7 @@ test('3-9-17: 【一括作成】 バリデーションエラー（data.*.order �
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-18: 【一括作成】 未認証ユーザー', function () {
+test('3-8-18: 【一括作成】 未認証ユーザー', function () {
     $data = [
         'data' => [
             ['name' => '野菜', 'order' => 0]
@@ -452,7 +436,7 @@ test('3-9-18: 【一括作成】 未認証ユーザー', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-19: 【一括作成】 グループが存在しない', function () {
+test('3-8-19: 【一括作成】 グループが存在しない', function () {
     $user = User::factory()->create([
         'email_verified_at' => now(),
     ]);
@@ -478,7 +462,7 @@ test('3-9-19: 【一括作成】 グループが存在しない', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-20: 【一括作成】 データベース接続エラー', function () {
+test('3-8-20: 【一括作成】 データベース接続エラー', function () {
     DB::shouldReceive('connection')->andThrow(new \Exception('Database connection failed'));
 
     $data = [
@@ -501,7 +485,7 @@ test('3-9-20: 【一括作成】 データベース接続エラー', function ()
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-21: 【一括作成】 カテゴリ作成失敗', function () {
+test('3-8-21: 【一括作成】 カテゴリ作成失敗', function () {
     DB::shouldReceive('transaction')->andThrow(new \Exception('Create failed'));
 
     $data = [
@@ -526,17 +510,17 @@ test('3-9-21: 【一括作成】 カテゴリ作成失敗', function () {
 
 // ===== bulkUpdate() メソッドのテストケース =====
 
-test('3-9-22: 【一括更新】 正常な買い物カテゴリ一括更新', function () {
+test('3-8-22: 【一括更新】 正常な買い物カテゴリ一括更新', function () {
     // テスト用のカテゴリをAPIで作成
-    $response1 = $this->actingAs($this->user)->postJson('/shopping-categories/bulk', [
+    $this->actingAs($this->user)->postJson('/shopping-categories/bulk', [
         'data' => [['name' => '野菜', 'order' => 0]]
     ]);
-    $category1Id = $response1->json('data.0.id');
-
-    $response2 = $this->actingAs($this->user)->postJson('/shopping-categories/bulk', [
+    $this->actingAs($this->user)->postJson('/shopping-categories/bulk', [
         'data' => [['name' => '肉類', 'order' => 1]]
     ]);
-    $category2Id = $response2->json('data.0.id');
+    $indexResponse = $this->actingAs($this->user)->get('/shopping-categories');
+    $category1Id = collect($indexResponse->json('data'))->firstWhere('name', '野菜')['id'];
+    $category2Id = collect($indexResponse->json('data'))->firstWhere('name', '肉類')['id'];
 
     $data = [
         'data' => [
@@ -573,30 +557,23 @@ test('3-9-22: 【一括更新】 正常な買い物カテゴリ一括更新', fu
         'order' => 0
     ]);
 
-    // レスポンス構造の確認
+    // レスポンス構造の確認（success + message のみ）
     $response->assertJsonStructure([
         'success',
-        'message',
-        'data' => [
-            '*' => [
-                'id',
-                'name',
-                'isDefault',
-                'order'
-            ]
-        ]
+        'message'
     ]);
 
     // Content-Typeがapplication/jsonであることを確認
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-23: 【一括更新】 一括更新成功メッセージの確認', function () {
+test('3-8-23: 【一括更新】 一括更新成功メッセージの確認', function () {
     // テスト用のカテゴリをAPIで作成
-    $response1 = $this->actingAs($this->user)->postJson('/shopping-categories/bulk', [
+    $this->actingAs($this->user)->postJson('/shopping-categories/bulk', [
         'data' => [['name' => '野菜', 'order' => 0]]
     ]);
-    $category1Id = $response1->json('data.0.id');
+    $indexResponse = $this->actingAs($this->user)->get('/shopping-categories');
+    $category1Id = collect($indexResponse->json('data'))->firstWhere('name', '野菜')['id'];
 
     $data = [
         'data' => [
@@ -617,12 +594,13 @@ test('3-9-23: 【一括更新】 一括更新成功メッセージの確認', fu
     expect($message)->toBe('買い物カテゴリーを1件更新しました。');
 });
 
-test('3-9-24: 【一括更新】 存在しないカテゴリの更新', function () {
+test('3-8-24: 【一括更新】 存在しないカテゴリの更新', function () {
     // テスト用のカテゴリをAPIで作成（正常なカテゴリ）
-    $response1 = $this->actingAs($this->user)->postJson('/shopping-categories/bulk', [
+    $this->actingAs($this->user)->postJson('/shopping-categories/bulk', [
         'data' => [['name' => '野菜', 'order' => 0]]
     ]);
-    $category1Id = $response1->json('data.0.id');
+    $indexResponse = $this->actingAs($this->user)->get('/shopping-categories');
+    $category1Id = collect($indexResponse->json('data'))->firstWhere('name', '野菜')['id'];
 
     // 正常なIDと存在しないIDを混在させる
     $data = [
@@ -665,7 +643,7 @@ test('3-9-24: 【一括更新】 存在しないカテゴリの更新', function
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-25: 【一括更新】 他グループのカテゴリ更新', function () {
+test('3-8-25: 【一括更新】 他グループのカテゴリ更新', function () {
     // 他グループのユーザーとカテゴリをAPIで作成
     $otherUser = User::factory()->create(['email_verified_at' => now()]);
     $otherGroup = Group::create(['group_size' => 1]);
@@ -674,10 +652,11 @@ test('3-9-25: 【一括更新】 他グループのカテゴリ更新', function
         'group_id' => $otherGroup->id
     ]);
 
-    $otherResponse = $this->actingAs($otherUser)->postJson('/shopping-categories/bulk', [
+    $this->actingAs($otherUser)->postJson('/shopping-categories/bulk', [
         'data' => [['name' => '他のグループのカテゴリ', 'order' => 0]]
     ]);
-    $otherCategoryId = $otherResponse->json('data.0.id');
+    $otherIndexResponse = $this->actingAs($otherUser)->get('/shopping-categories');
+    $otherCategoryId = collect($otherIndexResponse->json('data'))->firstWhere('name', '他のグループのカテゴリ')['id'];
 
     $data = [
         'data' => [
@@ -707,7 +686,7 @@ test('3-9-25: 【一括更新】 他グループのカテゴリ更新', function
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-26: 【一括更新】 バリデーションエラー（data 未入力）', function () {
+test('3-8-26: 【一括更新】 バリデーションエラー（data 未入力）', function () {
     $data = [];
 
     $response = $this->actingAs($this->user)->put('/shopping-categories/bulk', $data);
@@ -732,7 +711,7 @@ test('3-9-26: 【一括更新】 バリデーションエラー（data 未入力
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-27: 【一括更新】 バリデーションエラー（data が配列でない）', function () {
+test('3-8-27: 【一括更新】 バリデーションエラー（data が配列でない）', function () {
     $data = [
         'data' => 'not_array'
     ];
@@ -759,7 +738,7 @@ test('3-9-27: 【一括更新】 バリデーションエラー（data が配列
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-28: 【一括更新】 バリデーションエラー（data が空配列）', function () {
+test('3-8-28: 【一括更新】 バリデーションエラー（data が空配列）', function () {
     $data = [
         'data' => []
     ];
@@ -786,7 +765,7 @@ test('3-9-28: 【一括更新】 バリデーションエラー（data が空配
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-29: 【一括更新】 バリデーションエラー（id が未入力）', function () {
+test('3-8-29: 【一括更新】 バリデーションエラー（id が未入力）', function () {
     $data = [
         'data' => [
             [
@@ -818,7 +797,7 @@ test('3-9-29: 【一括更新】 バリデーションエラー（id が未入�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-30: 【一括更新】 バリデーションエラー（id が UUID 形式でない）', function () {
+test('3-8-30: 【一括更新】 バリデーションエラー（id が UUID 形式でない）', function () {
     $data = [
         'data' => [
             [
@@ -851,7 +830,7 @@ test('3-9-30: 【一括更新】 バリデーションエラー（id が UUID �
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-31: 【一括更新】 バリデーションエラー（name が未入力）', function () {
+test('3-8-31: 【一括更新】 バリデーションエラー（name が未入力）', function () {
     $data = [
         'data' => [
             [
@@ -883,7 +862,7 @@ test('3-9-31: 【一括更新】 バリデーションエラー（name が未入
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-32: 【一括更新】 バリデーションエラー（name が文字列でない）', function () {
+test('3-8-32: 【一括更新】 バリデーションエラー（name が文字列でない）', function () {
     $data = [
         'data' => [
             [
@@ -916,7 +895,7 @@ test('3-9-32: 【一括更新】 バリデーションエラー（name が文字
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-33: 【一括更新】 バリデーションエラー（name が 255 文字超過）', function () {
+test('3-8-33: 【一括更新】 バリデーションエラー（name が 255 文字超過）', function () {
     $data = [
         'data' => [
             [
@@ -949,7 +928,7 @@ test('3-9-33: 【一括更新】 バリデーションエラー（name が 255 �
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-34: 【一括更新】 バリデーションエラー（order が未入力）', function () {
+test('3-8-34: 【一括更新】 バリデーションエラー（order が未入力）', function () {
     $data = [
         'data' => [
             [
@@ -981,7 +960,7 @@ test('3-9-34: 【一括更新】 バリデーションエラー（order が未�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-35: 【一括更新】 バリデーションエラー（order が数値でない）', function () {
+test('3-8-35: 【一括更新】 バリデーションエラー（order が数値でない）', function () {
     $data = [
         'data' => [
             [
@@ -1014,7 +993,7 @@ test('3-9-35: 【一括更新】 バリデーションエラー（order が数�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-36: 【一括更新】 バリデーションエラー（order が負の値）', function () {
+test('3-8-36: 【一括更新】 バリデーションエラー（order が負の値）', function () {
     $data = [
         'data' => [
             [
@@ -1047,7 +1026,7 @@ test('3-9-36: 【一括更新】 バリデーションエラー（order が負�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-37: 【一括更新】 未認証ユーザー', function () {
+test('3-8-37: 【一括更新】 未認証ユーザー', function () {
     $data = [
         'data' => [
             [
@@ -1076,7 +1055,7 @@ test('3-9-37: 【一括更新】 未認証ユーザー', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-38: 【一括更新】 グループが存在しない', function () {
+test('3-8-38: 【一括更新】 グループが存在しない', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -1110,7 +1089,7 @@ test('3-9-38: 【一括更新】 グループが存在しない', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-39: 【一括更新】 データベース接続エラー', function () {
+test('3-8-39: 【一括更新】 データベース接続エラー', function () {
     DB::shouldReceive('connection')->andThrow(new \Exception('Database connection failed'));
 
     $data = [
@@ -1141,7 +1120,7 @@ test('3-9-39: 【一括更新】 データベース接続エラー', function ()
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-40: 【一括更新】 カテゴリ更新失敗', function () {
+test('3-8-40: 【一括更新】 カテゴリ更新失敗', function () {
     DB::shouldReceive('transaction')->andThrow(new \Exception('Update failed'));
 
     $data = [
@@ -1171,17 +1150,17 @@ test('3-9-40: 【一括更新】 カテゴリ更新失敗', function () {
 
 // ===== bulkDestroy() メソッドのテストケース =====
 
-test('3-9-41: 【一括削除】 正常な買い物カテゴリ一括削除', function () {
+test('3-8-41: 【一括削除】 正常な買い物カテゴリ一括削除', function () {
     // テスト用のカテゴリをAPIで作成
-    $response1 = $this->actingAs($this->user)->postJson('/shopping-categories/bulk', [
+    $this->actingAs($this->user)->postJson('/shopping-categories/bulk', [
         'data' => [['name' => '野菜', 'order' => 0]]
     ]);
-    $category1Id = $response1->json('data.0.id');
-
-    $response2 = $this->actingAs($this->user)->postJson('/shopping-categories/bulk', [
+    $this->actingAs($this->user)->postJson('/shopping-categories/bulk', [
         'data' => [['name' => '肉類', 'order' => 1]]
     ]);
-    $category2Id = $response2->json('data.0.id');
+    $indexResponse = $this->actingAs($this->user)->get('/shopping-categories');
+    $category1Id = collect($indexResponse->json('data'))->firstWhere('name', '野菜')['id'];
+    $category2Id = collect($indexResponse->json('data'))->firstWhere('name', '肉類')['id'];
 
     $data = [
         'ids' => [$category1Id, $category2Id]
@@ -1213,22 +1192,21 @@ test('3-9-41: 【一括削除】 正常な買い物カテゴリ一括削除', fu
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-42: 【一括削除】 削除後の order 整理確認', function () {
+test('3-8-42: 【一括削除】 削除後の order 整理確認', function () {
     // テスト用のカテゴリをAPIで作成
-    $response1 = $this->actingAs($this->user)->postJson('/shopping-categories/bulk', [
+    $this->actingAs($this->user)->postJson('/shopping-categories/bulk', [
         'data' => [['name' => '野菜', 'order' => 0]]
     ]);
-    $category1Id = $response1->json('data.0.id');
-
-    $response2 = $this->actingAs($this->user)->postJson('/shopping-categories/bulk', [
+    $this->actingAs($this->user)->postJson('/shopping-categories/bulk', [
         'data' => [['name' => '肉類', 'order' => 1]]
     ]);
-    $category2Id = $response2->json('data.0.id');
-
-    $response3 = $this->actingAs($this->user)->postJson('/shopping-categories/bulk', [
+    $this->actingAs($this->user)->postJson('/shopping-categories/bulk', [
         'data' => [['name' => '魚類', 'order' => 2]]
     ]);
-    $category3Id = $response3->json('data.0.id');
+    $indexResponse = $this->actingAs($this->user)->get('/shopping-categories');
+    $category1Id = collect($indexResponse->json('data'))->firstWhere('name', '野菜')['id'];
+    $category2Id = collect($indexResponse->json('data'))->firstWhere('name', '肉類')['id'];
+    $category3Id = collect($indexResponse->json('data'))->firstWhere('name', '魚類')['id'];
 
     $data = [
         'ids' => [$category2Id] // 中間のカテゴリを削除
@@ -1258,12 +1236,13 @@ test('3-9-42: 【一括削除】 削除後の order 整理確認', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-43: 【一括削除】 一括削除成功メッセージの確認', function () {
+test('3-8-43: 【一括削除】 一括削除成功メッセージの確認', function () {
     // テスト用のカテゴリをAPIで作成
-    $response1 = $this->actingAs($this->user)->postJson('/shopping-categories/bulk', [
+    $this->actingAs($this->user)->postJson('/shopping-categories/bulk', [
         'data' => [['name' => '野菜', 'order' => 0]]
     ]);
-    $category1Id = $response1->json('data.0.id');
+    $indexResponse = $this->actingAs($this->user)->get('/shopping-categories');
+    $category1Id = collect($indexResponse->json('data'))->firstWhere('name', '野菜')['id'];
 
     $data = [
         'ids' => [$category1Id]
@@ -1278,7 +1257,7 @@ test('3-9-43: 【一括削除】 一括削除成功メッセージの確認', fu
     expect($message)->toBe('買い物カテゴリーを1件削除しました。');
 });
 
-test('3-9-44: 【一括削除】 デフォルトカテゴリの保護確認', function () {
+test('3-8-44: 【一括削除】 デフォルトカテゴリの保護確認', function () {
     // デフォルトカテゴリを取得（存在する場合）
     $response = $this->actingAs($this->user)->get('/shopping-categories');
     $categories = $response->json('data');
@@ -1307,12 +1286,13 @@ test('3-9-44: 【一括削除】 デフォルトカテゴリの保護確認', fu
     }
 });
 
-test('3-9-45: 【一括削除】 存在しないカテゴリの削除', function () {
+test('3-8-45: 【一括削除】 存在しないカテゴリの削除', function () {
     // テスト用のカテゴリをAPIで作成（正常なカテゴリ）
-    $response1 = $this->actingAs($this->user)->postJson('/shopping-categories/bulk', [
+    $this->actingAs($this->user)->postJson('/shopping-categories/bulk', [
         'data' => [['name' => '野菜', 'order' => 0]]
     ]);
-    $category1Id = $response1->json('data.0.id');
+    $indexResponse = $this->actingAs($this->user)->get('/shopping-categories');
+    $category1Id = collect($indexResponse->json('data'))->firstWhere('name', '野菜')['id'];
 
     // 正常なIDと存在しないIDを混在させる
     $data = [
@@ -1343,7 +1323,7 @@ test('3-9-45: 【一括削除】 存在しないカテゴリの削除', function
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-46: 【一括削除】 他グループのカテゴリ削除', function () {
+test('3-8-46: 【一括削除】 他グループのカテゴリ削除', function () {
     // 他グループのユーザーとカテゴリをAPIで作成
     $otherUser = User::factory()->create(['email_verified_at' => now()]);
     $otherGroup = Group::create(['group_size' => 1]);
@@ -1352,10 +1332,11 @@ test('3-9-46: 【一括削除】 他グループのカテゴリ削除', function
         'group_id' => $otherGroup->id
     ]);
 
-    $otherResponse = $this->actingAs($otherUser)->postJson('/shopping-categories/bulk', [
+    $this->actingAs($otherUser)->postJson('/shopping-categories/bulk', [
         'data' => [['name' => '他のグループのカテゴリ', 'order' => 0]]
     ]);
-    $otherCategoryId = $otherResponse->json('data.0.id');
+    $otherIndexResponse = $this->actingAs($otherUser)->get('/shopping-categories');
+    $otherCategoryId = collect($otherIndexResponse->json('data'))->firstWhere('name', '他のグループのカテゴリ')['id'];
 
     $data = [
         'ids' => [$otherCategoryId]
@@ -1379,7 +1360,7 @@ test('3-9-46: 【一括削除】 他グループのカテゴリ削除', function
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-47: 【一括削除】 バリデーションエラー（IDs 未入力）', function () {
+test('3-8-47: 【一括削除】 バリデーションエラー（IDs 未入力）', function () {
     $data = [];
 
     $response = $this->actingAs($this->user)->delete('/shopping-categories/bulk', $data);
@@ -1404,7 +1385,7 @@ test('3-9-47: 【一括削除】 バリデーションエラー（IDs 未入力�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-48: 【一括削除】 バリデーションエラー（IDs が配列でない）', function () {
+test('3-8-48: 【一括削除】 バリデーションエラー（IDs が配列でない）', function () {
     $data = [
         'ids' => 'not_array'
     ];
@@ -1431,7 +1412,7 @@ test('3-9-48: 【一括削除】 バリデーションエラー（IDs が配列�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-49: 【一括削除】 バリデーションエラー（IDs が空配列）', function () {
+test('3-8-49: 【一括削除】 バリデーションエラー（IDs が空配列）', function () {
     $data = [
         'ids' => []
     ];
@@ -1458,7 +1439,7 @@ test('3-9-49: 【一括削除】 バリデーションエラー（IDs が空配�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-50: 【一括削除】 バリデーションエラー（ID が UUID 形式でない）', function () {
+test('3-8-50: 【一括削除】 バリデーションエラー（ID が UUID 形式でない）', function () {
     $data = [
         'ids' => ['invalid-uuid']
     ];
@@ -1485,7 +1466,7 @@ test('3-9-50: 【一括削除】 バリデーションエラー（ID が UUID �
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-51: 【一括削除】 未認証ユーザー', function () {
+test('3-8-51: 【一括削除】 未認証ユーザー', function () {
     $data = [
         'ids' => ['00000000-0000-0000-0000-000000000000']
     ];
@@ -1508,7 +1489,7 @@ test('3-9-51: 【一括削除】 未認証ユーザー', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-52: 【一括削除】 グループが存在しない', function () {
+test('3-8-52: 【一括削除】 グループが存在しない', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -1536,7 +1517,7 @@ test('3-9-52: 【一括削除】 グループが存在しない', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-53: 【一括削除】 データベース接続エラー', function () {
+test('3-8-53: 【一括削除】 データベース接続エラー', function () {
     DB::shouldReceive('connection')->andThrow(new \Exception('Database connection failed'));
 
     $data = [
@@ -1561,7 +1542,7 @@ test('3-9-53: 【一括削除】 データベース接続エラー', function ()
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-54: 【一括削除】 カテゴリ削除失敗', function () {
+test('3-8-54: 【一括削除】 カテゴリ削除失敗', function () {
     DB::shouldReceive('transaction')->andThrow(new \Exception('Delete failed'));
 
     $data = [

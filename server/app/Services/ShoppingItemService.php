@@ -143,16 +143,15 @@ class ShoppingItemService extends AbstractDomainService
      *
      * @param array $data 作成データ（categoryId, name, tags）
      * @param Group $group グループモデル
-     * @return array 作成されたアイテムのレスポンスデータ
      * @throws HttpException カテゴリが見つからない場合
      */
-    public function create(array $data, Group $group): array
+    public function create(array $data, Group $group): void
     {
         $data['is_pinned'] = false;
         $data['is_checked'] = false;
         $data['order'] = $group->shoppingItems()->where('category_id', $data['categoryId'])->count() + 1;
 
-        return DB::transaction(function () use ($data, $group) {
+        DB::transaction(function () use ($data, $group) {
             // 1. カテゴリの存在確認とグループIDチェック
             $this->shoppingCategoryService->findItemsByIds([$data['categoryId']], $group)->first();
 
@@ -170,11 +169,6 @@ class ShoppingItemService extends AbstractDomainService
                     $item->tags()->attach($tagIds);
                 }
             }
-
-            // 4. タグとカテゴリを含めて再取得
-            $item = $item->fresh(['tags:id,name', 'category:id,name,is_default,order']);
-
-            return $this->formatStoreResponse($item);
         });
     }
 
@@ -217,9 +211,7 @@ class ShoppingItemService extends AbstractDomainService
                     $item->tags()->sync($tagIds);
                 }
 
-                // タグとカテゴリを含めて再取得
-                $item = $item->fresh(['tags:id,name', 'category:id,name,is_default,order']);
-                $updatedItems[] = $this->formatUpdateResponse($item);
+                $updatedItems[] = [];
             }
 
             return $updatedItems;

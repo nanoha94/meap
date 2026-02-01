@@ -72,7 +72,7 @@ class ShoppingCategoryController extends ApiController
                     $this->getUserGroup($request)
                 );
                 $message = __('api.bulk_created', ['attribute' => __('api.attributes.shopping.category'), 'count' => count($res)]);
-                return $this->createdResponse($res, $message);
+                return $this->createdResponse(null, $message);
             },
             $request,
             $failedMessage,
@@ -105,7 +105,7 @@ class ShoppingCategoryController extends ApiController
                 );
                 $total = count($res);
                 $message = __('api.bulk_updated', ['attribute' => __('api.attributes.shopping.category'), 'count' => $total]);
-                return $this->updatedResponse($res, $message);
+                return $this->updatedResponse(null, $message);
             },
             $request,
             $failedMessage,

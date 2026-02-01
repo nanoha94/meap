@@ -30,6 +30,11 @@ class MealCategoryService extends AbstractDomainService
         return 'order';
     }
 
+    protected function getWithColumns(): array
+    {
+        return ['color'];
+    }
+
     protected function getResourceName(): string
     {
         return __('api.attributes.meal_category');
@@ -57,7 +62,7 @@ class MealCategoryService extends AbstractDomainService
         return [
             'id' => $item->id,
             'name' => $item->name,
-            'colorId' => $item->color_id,
+            'colorCodeHex' => $item->color->color_code_hex,
             'order' => $item->order,
         ];
     }
@@ -70,7 +75,7 @@ class MealCategoryService extends AbstractDomainService
         return [
             'id' => $item->id,
             'name' => $item->name,
-            'colorId' => $item->color_id,
+            'colorCodeHex' => $item->color->color_code_hex,
             'order' => $item->order,
         ];
     }
@@ -83,7 +88,7 @@ class MealCategoryService extends AbstractDomainService
         return [
             'id' => $item->id,
             'name' => $item->name,
-            'colorId' => $item->color_id,
+            'colorCodeHex' => $item->color->color_code_hex,
             'order' => $item->order,
         ];
     }

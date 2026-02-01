@@ -17,7 +17,7 @@ export type IGetShoppingCategoryIndexResponse = IBaseApiIndexResponse<
 // リクエストデータ型
 //--------------------------------
 // 買い物アイテム更新
-export interface IPutShoppingItemRequestData {
+export interface IPutShoppingItemRequest {
     id: string;
     name: string;
     isPinned: boolean;
@@ -28,20 +28,20 @@ export interface IPutShoppingItemRequestData {
 }
 
 // 買い物アイテム作成
-export interface IPostShoppingItemRequestData {
+export interface IPostShoppingItemRequest {
     name: string;
     categoryId: string;
     tags: { id?: string; name: string }[];
 }
 
 // 買い物カテゴリー作成
-export interface IPostShoppingCategoryRequestData {
+export interface IPostShoppingCategoryRequest {
     name: string;
     order: number;
 }
 
 // 買い物カテゴリー更新
-export interface IPutShoppingCategoryRequestData {
+export interface IPutShoppingCategoryRequest {
     id: string;
     name: string;
     order: number;

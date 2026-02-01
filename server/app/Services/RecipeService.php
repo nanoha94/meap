@@ -158,9 +158,9 @@ class RecipeService extends AbstractDomainService
     /**
      * レシピを作成（サムネイル、カテゴリ、食材、手順を含む）
      */
-    public function create(array $data, Group $group): array
+    public function create(array $data, Group $group): void
     {
-        return DB::transaction(function () use ($data, $group) {
+        DB::transaction(function () use ($data, $group) {
             $createData = [];
             foreach ($this->getCreateFields() as $field => $dataKey) {
                 $createData[$field] = $data[$dataKey] ?? null;
@@ -190,16 +190,12 @@ class RecipeService extends AbstractDomainService
             if (!empty($data['steps'])) {
                 $this->updateSteps($item, $data['steps'], $group);
             }
-
-            $item = $item->fresh(['categories', 'ingredients', 'thumbnails', 'steps.images', 'group']);
-
-            return $this->formatStoreResponse($item);
         });
     }
 
-    public function update(string $id, array $data, Group $group): array
+    public function update(string $id, array $data, Group $group): void
     {
-        return DB::transaction(function () use ($id, $data, $group) {
+        DB::transaction(function () use ($id, $data, $group) {
             // 更新対象を取得
             $currentItem = $this->findItemsByIds([$id], $group)->first();
             $updateData = [];
@@ -247,10 +243,6 @@ class RecipeService extends AbstractDomainService
             if (!empty($data['steps'])) {
                 $this->updateSteps($currentItem, $data['steps'], $group);
             }
-
-            $item = $currentItem->fresh(['categories', 'ingredients', 'thumbnails', 'steps.images', 'group']);
-
-            return $this->formatUpdateResponse($item);
         });
     }
 

@@ -11,37 +11,23 @@ namespace App\Swagger;
  *     @OA\Property(property="category", type="object",
  *         @OA\Property(property="id", type="string", description="ID", example="1"),
  *         @OA\Property(property="name", type="string", description="カテゴリ名", example="朝食"),
- *         @OA\Property(property="colorId", type="string", description="色ID", example="1")
+ *         @OA\Property(property="colorCodeHex", type="string", description="色コード（16進）", example="#F5B12E"),
+ *         @OA\Property(property="order", type="integer", description="ソート順", example=1)
  *     ),
- *     @OA\Property(property="menu", type="array", description="献立",
- *         @OA\Items(type="object",
- *             @OA\Property(property="category", type="object",
- *                 @OA\Property(property="id", type="string", description="ID", example="1"),
- *                 @OA\Property(property="name", type="string", description="分類名", example="主食")
- *             ),
- *             @OA\Property(property="recipes", type="array", description="料理",
- *                 @OA\Items(ref="#/components/schemas/Recipe")
- *             )
- *         )
+ *     @OA\Property(property="recipes", type="array", description="料理一覧",
+ *         @OA\Items(ref="#/components/schemas/RecipeListItem")
  *     )
  * )
  * 
  * @OA\Schema(
  *     schema="MealCategory",
- *     required={"id", "name", "colorId"},
+ *     required={"id", "name", "colorCodeHex"},
  *     @OA\Property(property="id", type="string", description="ID", example="1"),
  *     @OA\Property(property="name", type="string", description="カテゴリ名", example="朝食"),
- *     @OA\Property(property="colorId", type="string", description="色ID", example="1"),
+ *     @OA\Property(property="colorCodeHex", type="string", description="色コード（16進）", example="#F5B12E"),
  *     @OA\Property(property="order", type="integer", description="ソート順", example=1)
  * )
  * 
- * @OA\Schema(
- *     schema="MenuCategory",
- *     required={"id", "name", "order"},
- *     @OA\Property(property="id", type="string", description="ID", example="1"),
- *     @OA\Property(property="name", type="string", description="メニュー種別名", example="朝食"),
- *     @OA\Property(property="order", type="integer", description="ソート順", example=1)
- * )
  */
 
 class MealPlanSchemas {}

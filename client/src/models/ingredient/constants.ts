@@ -1,7 +1,7 @@
 import { TMP_ID_PREFIX } from '@/constants';
 import {
     IIngredientItem,
-    IPutIngredientCategoryRequestData,
+    IPutIngredientCategoryRequest,
 } from '@/types';
 
 // ローディング状態キー
@@ -14,7 +14,7 @@ export const LOADING_STATE_KEYS = {
 // デフォルト設定
 // ------------------------------------------------------------
 // 食材カテゴリ―
-export const defaultIngredientCategory: IPutIngredientCategoryRequestData = {
+export const defaultIngredientCategory: IPutIngredientCategoryRequest = {
     id: `${TMP_ID_PREFIX.INGREDIENT_CATEGORY}${Date.now()}`,
     name: '',
     order: 0,

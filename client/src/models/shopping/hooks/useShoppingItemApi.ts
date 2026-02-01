@@ -6,8 +6,8 @@ import { useApiErrorHandler, useSnackbars } from '@/hooks';
 import axios from '@/lib/axios';
 import { useGlobalStore } from '@/stores';
 import {
-    IPostShoppingItemRequestData,
-    IPutShoppingItemRequestData,
+    IPostShoppingItemRequest,
+    IPutShoppingItemRequest,
 } from '@/types';
 import { useShoppingStore } from '../hooks';
 
@@ -67,7 +67,7 @@ export const useShoppingItemApi = () => {
      * @param item 作成するアイテム
      * @returns 作成結果
      */
-    const storeShoppingItem = async (item: IPostShoppingItemRequestData) => {
+    const storeShoppingItem = async (item: IPostShoppingItemRequest) => {
         // 重複リクエスト防止
         if (isStoreRequestRef.current) {
             return;
@@ -102,7 +102,7 @@ export const useShoppingItemApi = () => {
      * @returns 更新結果
      */
     const updateShoppingItems = React.useCallback(
-        async (items: IPutShoppingItemRequestData[]) => {
+        async (items: IPutShoppingItemRequest[]) => {
             if (
                 isUpdateRequestRef.current ||
                 items.length <= 0 ||

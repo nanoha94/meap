@@ -10,13 +10,13 @@ export type RecipeSettingDialogConfigs = {
     [DIALOG_NAME.RECIPE_CATEGORY_SETTING]: RecipeSettingDialogConfig;
 };
 
-// レシピ編集画面のフォーム型
-// 画像ファイルを管理できるようにする
-export type RecipeEditFormData = IRecipe & {
+// レシピ編集画面のフォーム型（thumbnail/steps を編集用の型に差し替え）
+export type RecipeEditFormData = Omit<IRecipe, 'thumbnail' | 'steps'> & {
     thumbnail: IImageWithFile | null;
     steps: RecipeStepEditFormData[];
 };
 
-export type RecipeStepEditFormData = IRecipeStep & {
+// レシピ手順編集画面のフォーム型 (imageを編集用の型に差し替える)
+export type RecipeStepEditFormData = Omit<IRecipeStep, 'image'> & {
     image: IImageWithFile | null;
 };

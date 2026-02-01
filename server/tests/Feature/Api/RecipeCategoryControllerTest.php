@@ -29,19 +29,19 @@ beforeEach(function () {
 
 // ===== index() メソッドのテストケース =====
 
-test('3-7-1: 【一覧取得】 正常な料理カテゴリ一覧取得', function () {
+test('3-6-1: 【一覧取得】 正常な料理カテゴリ一覧取得', function () {
     // テスト用のカテゴリをAPIで作成
-    $response1 = $this->actingAs($this->user)->post('/recipe-categories', [
+    $this->actingAs($this->user)->post('/recipe-categories', [
         'name' => '和食',
         'order' => 0
     ]);
-    $category1Id = $response1->json('data.id');
+    $category1Id = \App\Models\RecipeCategory::where('group_id', $this->group->id)->where('name', '和食')->first()->id;
 
-    $response2 = $this->actingAs($this->user)->post('/recipe-categories', [
+    $this->actingAs($this->user)->post('/recipe-categories', [
         'name' => '洋食',
         'order' => 1
     ]);
-    $category2Id = $response2->json('data.id');
+    $category2Id = \App\Models\RecipeCategory::where('group_id', $this->group->id)->where('name', '洋食')->first()->id;
 
     $response = $this->actingAs($this->user)->get('/recipe-categories');
 
@@ -82,7 +82,7 @@ test('3-7-1: 【一覧取得】 正常な料理カテゴリ一覧取得', functi
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-7-2: 【一覧取得】 レスポンス形式確認', function () {
+test('3-6-2: 【一覧取得】 レスポンス形式確認', function () {
     // テスト用のカテゴリをAPIで作成
     $this->actingAs($this->user)->post('/recipe-categories', [
         'name' => '和食',
@@ -109,7 +109,7 @@ test('3-7-2: 【一覧取得】 レスポンス形式確認', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-7-3: 【一覧取得】 order 順での取得確認', function () {
+test('3-6-3: 【一覧取得】 order 順での取得確認', function () {
     // 異なるorder順でカテゴリをAPIで作成
     $this->actingAs($this->user)->post('/recipe-categories', [
         'name' => '和食',
@@ -138,7 +138,7 @@ test('3-7-3: 【一覧取得】 order 順での取得確認', function () {
     expect($responseData[2]['order'])->toBe(2);
 });
 
-test('3-7-4: 【一覧取得】 空のリスト取得', function () {
+test('3-6-4: 【一覧取得】 空のリスト取得', function () {
     // カテゴリが存在しない状態でテスト
     $response = $this->actingAs($this->user)->get('/recipe-categories');
 
@@ -162,7 +162,7 @@ test('3-7-4: 【一覧取得】 空のリスト取得', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-7-5: 【一覧取得】 他グループの料理カテゴリは取得されない', function () {
+test('3-6-5: 【一覧取得】 他グループの料理カテゴリは取得されない', function () {
     // 自グループのカテゴリを作成
     $this->actingAs($this->user)->post('/recipe-categories', [
         'name' => '和食',
@@ -192,7 +192,7 @@ test('3-7-5: 【一覧取得】 他グループの料理カテゴリは取得さ
     expect($responseData[0]['name'])->toBe('和食');
 });
 
-test('3-7-6: 【一覧取得】 未認証ユーザー', function () {
+test('3-6-6: 【一覧取得】 未認証ユーザー', function () {
     $response = $this->get('/recipe-categories');
 
     $response->assertStatus(401);
@@ -211,7 +211,7 @@ test('3-7-6: 【一覧取得】 未認証ユーザー', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-7-7: 【一覧取得】 グループが存在しない', function () {
+test('3-6-7: 【一覧取得】 グループが存在しない', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -235,7 +235,7 @@ test('3-7-7: 【一覧取得】 グループが存在しない', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-7-8: 【一覧取得】 データベース接続エラー', function () {
+test('3-6-8: 【一覧取得】 データベース接続エラー', function () {
     DB::shouldReceive('connection')->andThrow(new \Exception('Database connection failed'));
 
     $response = $this->actingAs($this->user)->get('/recipe-categories');
@@ -255,7 +255,7 @@ test('3-7-8: 【一覧取得】 データベース接続エラー', function () 
 
 // ===== store() メソッドのテストケース =====
 
-test('3-7-9: 【新規作成】 正常な料理カテゴリ作成', function () {
+test('3-6-9: 【新規作成】 正常な料理カテゴリ作成', function () {
     $data = [
         'name' => '和食',
         'order' => 0
@@ -266,12 +266,9 @@ test('3-7-9: 【新規作成】 正常な料理カテゴリ作成', function () 
     $response->assertStatus(201);
     $response->assertJson([
         'success' => true,
-        'message' => '料理カテゴリー(和食)を作成しました。',
-        'data' => [
-            'name' => '和食',
-            'order' => 0
-        ]
+        'message' => '料理カテゴリー(和食)を作成しました。'
     ]);
+    $response->assertJsonPath('data', null);
 
     // データベースに保存されていることを確認
     $this->assertDatabaseHas('recipe_categories', [
@@ -280,22 +277,18 @@ test('3-7-9: 【新規作成】 正常な料理カテゴリ作成', function () 
         'order' => 0
     ]);
 
-    // レスポンス構造の確認
+    // レスポンス構造の確認（success + message + data(null)）
     $response->assertJsonStructure([
         'success',
         'message',
-        'data' => [
-            'id',
-            'name',
-            'order'
-        ]
+        'data'
     ]);
 
     // Content-Typeがapplication/jsonであることを確認
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-7-10: 【新規作成】 レスポンス形式確認', function () {
+test('3-6-10: 【新規作成】 レスポンス形式確認', function () {
     $data = [
         'name' => '和食',
         'order' => 0
@@ -306,19 +299,15 @@ test('3-7-10: 【新規作成】 レスポンス形式確認', function () {
     $response->assertStatus(201);
     $response->assertJsonStructure([
         'success',
-        'message',
-        'data' => [
-            'id',
-            'name',
-            'order'
-        ]
+        'message'
     ]);
+    $response->assertJsonPath('data', null);
 
     // Content-Typeがapplication/jsonであることを確認
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-7-11: 【新規作成】 バリデーションエラー（料理カテゴリ名未入力）', function () {
+test('3-6-11: 【新規作成】 バリデーションエラー（料理カテゴリ名未入力）', function () {
     $data = [
         'order' => 0
     ];
@@ -345,7 +334,7 @@ test('3-7-11: 【新規作成】 バリデーションエラー（料理カテ�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-7-12: 【新規作成】 バリデーションエラー（料理カテゴリ名が 255 文字超過）', function () {
+test('3-6-12: 【新規作成】 バリデーションエラー（料理カテゴリ名が 255 文字超過）', function () {
     $data = [
         'name' => str_repeat('a', 256),
         'order' => 0
@@ -373,7 +362,7 @@ test('3-7-12: 【新規作成】 バリデーションエラー（料理カテ�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-7-13: 【新規作成】 バリデーションエラー（order 値が未入力）', function () {
+test('3-6-13: 【新規作成】 バリデーションエラー（order 値が未入力）', function () {
     $data = [
         'name' => '和食'
     ];
@@ -400,7 +389,7 @@ test('3-7-13: 【新規作成】 バリデーションエラー（order 値が�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-7-14: 【新規作成】 バリデーションエラー（order 値が数値以外）', function () {
+test('3-6-14: 【新規作成】 バリデーションエラー（order 値が数値以外）', function () {
     $data = [
         'name' => '和食',
         'order' => 'abc'
@@ -428,7 +417,7 @@ test('3-7-14: 【新規作成】 バリデーションエラー（order 値が�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-7-15: 【新規作成】 バリデーションエラー（order 値が負の値）', function () {
+test('3-6-15: 【新規作成】 バリデーションエラー（order 値が負の値）', function () {
     $data = [
         'name' => '和食',
         'order' => -1
@@ -456,7 +445,7 @@ test('3-7-15: 【新規作成】 バリデーションエラー（order 値が�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-7-16: 【新規作成】 未認証ユーザー', function () {
+test('3-6-16: 【新規作成】 未認証ユーザー', function () {
     $data = [
         'name' => '和食',
         'order' => 0
@@ -480,7 +469,7 @@ test('3-7-16: 【新規作成】 未認証ユーザー', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-7-17: 【新規作成】 グループが存在しない', function () {
+test('3-6-17: 【新規作成】 グループが存在しない', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -509,7 +498,7 @@ test('3-7-17: 【新規作成】 グループが存在しない', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-7-18: 【新規作成】 データベース接続エラー', function () {
+test('3-6-18: 【新規作成】 データベース接続エラー', function () {
     DB::shouldReceive('connection')->andThrow(new \Exception('Database connection failed'));
 
     $data = [
@@ -532,7 +521,7 @@ test('3-7-18: 【新規作成】 データベース接続エラー', function ()
     ]);
 });
 
-test('3-7-19: 【新規作成】 料理カテゴリ作成失敗', function () {
+test('3-6-19: 【新規作成】 料理カテゴリ作成失敗', function () {
     DB::shouldReceive('transaction')->andThrow(new \Exception('Create failed'));
 
     $data = [
@@ -557,19 +546,19 @@ test('3-7-19: 【新規作成】 料理カテゴリ作成失敗', function () {
 
 // ===== bulkUpdate() メソッドのテストケース =====
 
-test('3-7-20: 【一括更新】 正常な料理カテゴリ一括更新', function () {
+test('3-6-20: 【一括更新】 正常な料理カテゴリ一括更新', function () {
     // テスト用のカテゴリをAPIで作成
-    $response1 = $this->actingAs($this->user)->post('/recipe-categories', [
+    $this->actingAs($this->user)->post('/recipe-categories', [
         'name' => '和食',
         'order' => 0
     ]);
-    $category1Id = $response1->json('data.id');
+    $category1Id = \App\Models\RecipeCategory::where('group_id', $this->group->id)->where('name', '和食')->first()->id;
 
-    $response2 = $this->actingAs($this->user)->post('/recipe-categories', [
+    $this->actingAs($this->user)->post('/recipe-categories', [
         'name' => '洋食',
         'order' => 1
     ]);
-    $category2Id = $response2->json('data.id');
+    $category2Id = \App\Models\RecipeCategory::where('group_id', $this->group->id)->where('name', '洋食')->first()->id;
 
     $data = [
         'data' => [
@@ -593,6 +582,7 @@ test('3-7-20: 【一括更新】 正常な料理カテゴリ一括更新', funct
         'success' => true,
         'message' => '料理カテゴリーを2件更新しました。'
     ]);
+    $response->assertJsonPath('data', null);
 
     // データベースの更新を確認
     $this->assertDatabaseHas('recipe_categories', [
@@ -606,30 +596,24 @@ test('3-7-20: 【一括更新】 正常な料理カテゴリ一括更新', funct
         'order' => 0
     ]);
 
-    // レスポンス構造の確認
+    // レスポンス構造の確認（success + message + data(null)）
     $response->assertJsonStructure([
         'success',
         'message',
-        'data' => [
-            '*' => [
-                'id',
-                'name',
-                'order'
-            ]
-        ]
+        'data'
     ]);
 
     // Content-Typeがapplication/jsonであることを確認
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-7-21: 【一括更新】 一括更新成功メッセージの確認', function () {
+test('3-6-21: 【一括更新】 一括更新成功メッセージの確認', function () {
     // テスト用のカテゴリをAPIで作成
-    $response1 = $this->actingAs($this->user)->post('/recipe-categories', [
+    $this->actingAs($this->user)->post('/recipe-categories', [
         'name' => '和食',
         'order' => 0
     ]);
-    $category1Id = $response1->json('data.id');
+    $category1Id = \App\Models\RecipeCategory::where('group_id', $this->group->id)->where('name', '和食')->first()->id;
 
     $data = [
         'data' => [
@@ -650,13 +634,13 @@ test('3-7-21: 【一括更新】 一括更新成功メッセージの確認', fu
     expect($message)->toBe('料理カテゴリーを1件更新しました。');
 });
 
-test('3-7-22: 【一括更新】 一括更新後のデータ取得確認', function () {
+test('3-6-22: 【一括更新】 一括更新後のデータ取得確認', function () {
     // テスト用のカテゴリをAPIで作成
-    $response1 = $this->actingAs($this->user)->post('/recipe-categories', [
+    $this->actingAs($this->user)->post('/recipe-categories', [
         'name' => '和食',
         'order' => 0
     ]);
-    $category1Id = $response1->json('data.id');
+    $category1Id = \App\Models\RecipeCategory::where('group_id', $this->group->id)->where('name', '和食')->first()->id;
 
     $data = [
         'data' => [
@@ -679,7 +663,7 @@ test('3-7-22: 【一括更新】 一括更新後のデータ取得確認', funct
     expect($responseData[0]['name'])->toBe('日本料理');
 });
 
-test('3-7-23: 【一括更新】 存在しない料理カテゴリの更新', function () {
+test('3-6-23: 【一括更新】 存在しない料理カテゴリの更新', function () {
     $data = [
         'data' => [
             [
@@ -708,7 +692,7 @@ test('3-7-23: 【一括更新】 存在しない料理カテゴリの更新', fu
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-7-24: 【一括更新】 他グループの料理カテゴリ更新', function () {
+test('3-6-24: 【一括更新】 他グループの料理カテゴリ更新', function () {
     // 他グループのユーザーとカテゴリをAPIで作成
     $otherUser = User::factory()->create(['email_verified_at' => now()]);
     $otherGroup = Group::create(['group_size' => 1]);
@@ -717,11 +701,11 @@ test('3-7-24: 【一括更新】 他グループの料理カテゴリ更新', fu
         'group_id' => $otherGroup->id
     ]);
 
-    $otherResponse = $this->actingAs($otherUser)->post('/recipe-categories', [
+    $this->actingAs($otherUser)->post('/recipe-categories', [
         'name' => '他のグループのカテゴリ',
         'order' => 0
     ]);
-    $otherCategoryId = $otherResponse->json('data.id');
+    $otherCategoryId = \App\Models\RecipeCategory::where('group_id', $otherGroup->id)->where('name', '他のグループのカテゴリ')->first()->id;
 
     $data = [
         'data' => [
@@ -751,7 +735,7 @@ test('3-7-24: 【一括更新】 他グループの料理カテゴリ更新', fu
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-7-25: 【一括更新】 バリデーションエラー（data 未入力）', function () {
+test('3-6-25: 【一括更新】 バリデーションエラー（data 未入力）', function () {
     $data = [];
 
     $response = $this->actingAs($this->user)->put('/recipe-categories/bulk', $data);
@@ -776,7 +760,7 @@ test('3-7-25: 【一括更新】 バリデーションエラー（data 未入力
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-7-26: 【一括更新】 バリデーションエラー（data が配列でない）', function () {
+test('3-6-26: 【一括更新】 バリデーションエラー（data が配列でない）', function () {
     $data = [
         'data' => 'not_array'
     ];
@@ -803,7 +787,7 @@ test('3-7-26: 【一括更新】 バリデーションエラー（data が配列
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-7-27: 【一括更新】 バリデーションエラー（data が空配列）', function () {
+test('3-6-27: 【一括更新】 バリデーションエラー（data が空配列）', function () {
     $data = [
         'data' => []
     ];
@@ -830,7 +814,7 @@ test('3-7-27: 【一括更新】 バリデーションエラー（data が空配
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-7-28: 【一括更新】 バリデーションエラー（id が未入力）', function () {
+test('3-6-28: 【一括更新】 バリデーションエラー（id が未入力）', function () {
     $data = [
         'data' => [
             [
@@ -862,7 +846,7 @@ test('3-7-28: 【一括更新】 バリデーションエラー（id が未入�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-7-29: 【一括更新】 バリデーションエラー（id が UUID 形式でない）', function () {
+test('3-6-29: 【一括更新】 バリデーションエラー（id が UUID 形式でない）', function () {
     $data = [
         'data' => [
             [
@@ -895,7 +879,7 @@ test('3-7-29: 【一括更新】 バリデーションエラー（id が UUID �
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-7-30: 【一括更新】 バリデーションエラー（name が未入力）', function () {
+test('3-6-30: 【一括更新】 バリデーションエラー（name が未入力）', function () {
     $data = [
         'data' => [
             [
@@ -927,7 +911,7 @@ test('3-7-30: 【一括更新】 バリデーションエラー（name が未入
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-7-31: 【一括更新】 バリデーションエラー（name が文字列でない）', function () {
+test('3-6-31: 【一括更新】 バリデーションエラー（name が文字列でない）', function () {
     $data = [
         'data' => [
             [
@@ -960,7 +944,7 @@ test('3-7-31: 【一括更新】 バリデーションエラー（name が文字
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-7-32: 【一括更新】 バリデーションエラー（order が未入力）', function () {
+test('3-6-32: 【一括更新】 バリデーションエラー（order が未入力）', function () {
     $data = [
         'data' => [
             [
@@ -992,7 +976,7 @@ test('3-7-32: 【一括更新】 バリデーションエラー（order が未�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-7-33: 【一括更新】 バリデーションエラー（order が数値でない）', function () {
+test('3-6-33: 【一括更新】 バリデーションエラー（order が数値でない）', function () {
     $data = [
         'data' => [
             [
@@ -1025,7 +1009,7 @@ test('3-7-33: 【一括更新】 バリデーションエラー（order が数�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-7-34: 【一括更新】 バリデーションエラー（order が負の値）', function () {
+test('3-6-34: 【一括更新】 バリデーションエラー（order が負の値）', function () {
     $data = [
         'data' => [
             [
@@ -1058,7 +1042,7 @@ test('3-7-34: 【一括更新】 バリデーションエラー（order が負�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-7-35: 【一括更新】 未認証ユーザー', function () {
+test('3-6-35: 【一括更新】 未認証ユーザー', function () {
     $data = [
         'data' => [
             [
@@ -1087,7 +1071,7 @@ test('3-7-35: 【一括更新】 未認証ユーザー', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-7-36: 【一括更新】 グループが存在しない', function () {
+test('3-6-36: 【一括更新】 グループが存在しない', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -1121,7 +1105,7 @@ test('3-7-36: 【一括更新】 グループが存在しない', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-7-37: 【一括更新】 データベース接続エラー', function () {
+test('3-6-37: 【一括更新】 データベース接続エラー', function () {
     DB::shouldReceive('connection')->andThrow(new \Exception('Database connection failed'));
 
     $data = [
@@ -1152,7 +1136,7 @@ test('3-7-37: 【一括更新】 データベース接続エラー', function ()
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-7-38: 【一括更新】 料理カテゴリ更新失敗', function () {
+test('3-6-38: 【一括更新】 料理カテゴリ更新失敗', function () {
     DB::shouldReceive('transaction')->andThrow(new \Exception('Update failed'));
 
     $data = [
@@ -1182,19 +1166,19 @@ test('3-7-38: 【一括更新】 料理カテゴリ更新失敗', function () {
 
 // ===== bulkDestroy() メソッドのテストケース =====
 
-test('3-7-39: 【一括削除】 正常な料理カテゴリ一括削除', function () {
+test('3-6-39: 【一括削除】 正常な料理カテゴリ一括削除', function () {
     // テスト用のカテゴリをAPIで作成
-    $response1 = $this->actingAs($this->user)->post('/recipe-categories', [
+    $this->actingAs($this->user)->post('/recipe-categories', [
         'name' => '和食',
         'order' => 0
     ]);
-    $category1Id = $response1->json('data.id');
+    $category1Id = \App\Models\RecipeCategory::where('group_id', $this->group->id)->where('name', '和食')->first()->id;
 
-    $response2 = $this->actingAs($this->user)->post('/recipe-categories', [
+    $this->actingAs($this->user)->post('/recipe-categories', [
         'name' => '洋食',
         'order' => 1
     ]);
-    $category2Id = $response2->json('data.id');
+    $category2Id = \App\Models\RecipeCategory::where('group_id', $this->group->id)->where('name', '洋食')->first()->id;
 
     $data = [
         'ids' => [$category1Id, $category2Id]
@@ -1226,13 +1210,13 @@ test('3-7-39: 【一括削除】 正常な料理カテゴリ一括削除', funct
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-7-40: 【一括削除】 一括削除成功メッセージの確認', function () {
+test('3-6-40: 【一括削除】 一括削除成功メッセージの確認', function () {
     // テスト用のカテゴリをAPIで作成
-    $response1 = $this->actingAs($this->user)->post('/recipe-categories', [
+    $this->actingAs($this->user)->post('/recipe-categories', [
         'name' => '和食',
         'order' => 0
     ]);
-    $category1Id = $response1->json('data.id');
+    $category1Id = \App\Models\RecipeCategory::where('group_id', $this->group->id)->where('name', '和食')->first()->id;
 
     $data = [
         'ids' => [$category1Id]
@@ -1247,25 +1231,25 @@ test('3-7-40: 【一括削除】 一括削除成功メッセージの確認', fu
     expect($message)->toBe('料理カテゴリーを1件削除しました。');
 });
 
-test('3-7-41: 【一括削除】 削除後の order 整理確認', function () {
+test('3-6-41: 【一括削除】 削除後の order 整理確認', function () {
     // テスト用のカテゴリをAPIで作成
-    $response1 = $this->actingAs($this->user)->post('/recipe-categories', [
+    $this->actingAs($this->user)->post('/recipe-categories', [
         'name' => '和食',
         'order' => 0
     ]);
-    $category1Id = $response1->json('data.id');
+    $category1Id = \App\Models\RecipeCategory::where('group_id', $this->group->id)->where('name', '和食')->first()->id;
 
-    $response2 = $this->actingAs($this->user)->post('/recipe-categories', [
+    $this->actingAs($this->user)->post('/recipe-categories', [
         'name' => '洋食',
         'order' => 1
     ]);
-    $category2Id = $response2->json('data.id');
+    $category2Id = \App\Models\RecipeCategory::where('group_id', $this->group->id)->where('name', '洋食')->first()->id;
 
-    $response3 = $this->actingAs($this->user)->post('/recipe-categories', [
+    $this->actingAs($this->user)->post('/recipe-categories', [
         'name' => '中華',
         'order' => 2
     ]);
-    $category3Id = $response3->json('data.id');
+    $category3Id = \App\Models\RecipeCategory::where('group_id', $this->group->id)->where('name', '中華')->first()->id;
 
     $data = [
         'ids' => [$category2Id] // 中間のカテゴリを削除
@@ -1295,7 +1279,7 @@ test('3-7-41: 【一括削除】 削除後の order 整理確認', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-7-42: 【一括削除】 存在しない料理カテゴリの削除', function () {
+test('3-6-42: 【一括削除】 存在しない料理カテゴリの削除', function () {
     $data = [
         'ids' => ['00000000-0000-0000-0000-000000000000']
     ];
@@ -1318,7 +1302,7 @@ test('3-7-42: 【一括削除】 存在しない料理カテゴリの削除', fu
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-7-43: 【一括削除】 他グループの料理カテゴリ削除', function () {
+test('3-6-43: 【一括削除】 他グループの料理カテゴリ削除', function () {
     // 他グループのユーザーとカテゴリをAPIで作成
     $otherUser = User::factory()->create(['email_verified_at' => now()]);
     $otherGroup = Group::create(['group_size' => 1]);
@@ -1327,11 +1311,11 @@ test('3-7-43: 【一括削除】 他グループの料理カテゴリ削除', fu
         'group_id' => $otherGroup->id
     ]);
 
-    $otherResponse = $this->actingAs($otherUser)->post('/recipe-categories', [
+    $this->actingAs($otherUser)->post('/recipe-categories', [
         'name' => '他のグループのカテゴリ',
         'order' => 0
     ]);
-    $otherCategoryId = $otherResponse->json('data.id');
+    $otherCategoryId = \App\Models\RecipeCategory::where('group_id', $otherGroup->id)->where('name', '他のグループのカテゴリ')->first()->id;
 
     $data = [
         'ids' => [$otherCategoryId]
@@ -1355,7 +1339,7 @@ test('3-7-43: 【一括削除】 他グループの料理カテゴリ削除', fu
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-7-44: 【一括削除】 バリデーションエラー（IDs 未入力）', function () {
+test('3-6-44: 【一括削除】 バリデーションエラー（IDs 未入力）', function () {
     $data = [];
 
     $response = $this->actingAs($this->user)->delete('/recipe-categories/bulk', $data);
@@ -1380,7 +1364,7 @@ test('3-7-44: 【一括削除】 バリデーションエラー（IDs 未入力�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-7-45: 【一括削除】 バリデーションエラー（IDs が配列でない）', function () {
+test('3-6-45: 【一括削除】 バリデーションエラー（IDs が配列でない）', function () {
     $data = [
         'ids' => 'not_array'
     ];
@@ -1407,7 +1391,7 @@ test('3-7-45: 【一括削除】 バリデーションエラー（IDs が配列�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-7-46: 【一括削除】 バリデーションエラー（IDs が空配列）', function () {
+test('3-6-46: 【一括削除】 バリデーションエラー（IDs が空配列）', function () {
     $data = [
         'ids' => []
     ];
@@ -1434,7 +1418,7 @@ test('3-7-46: 【一括削除】 バリデーションエラー（IDs が空配�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-7-47: 【一括削除】 バリデーションエラー（ID が UUID 形式でない）', function () {
+test('3-6-47: 【一括削除】 バリデーションエラー（ID が UUID 形式でない）', function () {
     $data = [
         'ids' => ['invalid-uuid']
     ];
@@ -1461,7 +1445,7 @@ test('3-7-47: 【一括削除】 バリデーションエラー（ID が UUID �
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-7-48: 【一括削除】 未認証ユーザー', function () {
+test('3-6-48: 【一括削除】 未認証ユーザー', function () {
     $data = [
         'ids' => ['00000000-0000-0000-0000-000000000000']
     ];
@@ -1484,7 +1468,7 @@ test('3-7-48: 【一括削除】 未認証ユーザー', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-7-49: 【一括削除】 グループが存在しない', function () {
+test('3-6-49: 【一括削除】 グループが存在しない', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -1512,7 +1496,7 @@ test('3-7-49: 【一括削除】 グループが存在しない', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-7-50: 【一括削除】 データベース接続エラー', function () {
+test('3-6-50: 【一括削除】 データベース接続エラー', function () {
     DB::shouldReceive('connection')->andThrow(new \Exception('Database connection failed'));
 
     $data = [
@@ -1537,7 +1521,7 @@ test('3-7-50: 【一括削除】 データベース接続エラー', function ()
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-7-51: 【一括削除】 料理カテゴリ削除失敗', function () {
+test('3-6-51: 【一括削除】 料理カテゴリ削除失敗', function () {
     DB::shouldReceive('transaction')->andThrow(new \Exception('Delete failed'));
 
     $data = [

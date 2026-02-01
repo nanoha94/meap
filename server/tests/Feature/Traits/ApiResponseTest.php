@@ -194,6 +194,34 @@ test('1-1-8: データ一覧取得レスポンステスト（total なし）', f
     ], $response->getData(true));
 });
 
+test('1-1-8b: data が null のとき successResponse は data: null を返す', function () {
+    $message = 'OK';
+    $response = $this->dummy->testSuccessResponse(null, $message);
+
+    $this->assertInstanceOf(JsonResponse::class, $response);
+    $this->assertEquals(200, $response->getStatusCode());
+    $this->assertEquals([
+        'success' => true,
+        'message' => $message,
+        'data' => null,
+    ], $response->getData(true));
+});
+
+test('1-1-8c: data が null のとき successResponseWithWarning は data: null を返す', function () {
+    $message = 'OK';
+    $warning = 'Some warning';
+    $response = $this->dummy->testSuccessResponseWithWarning(null, $message, $warning);
+
+    $this->assertInstanceOf(JsonResponse::class, $response);
+    $this->assertEquals(200, $response->getStatusCode());
+    $this->assertEquals([
+        'success' => true,
+        'message' => $message,
+        'data' => null,
+        'warning' => $warning,
+    ], $response->getData(true));
+});
+
 test('1-1-9: データ詳細取得レスポンステスト', function () {
     $data = ['key' => 'value'];
     $message = 'Data retrieved successfully';

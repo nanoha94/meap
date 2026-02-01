@@ -4,7 +4,7 @@ import React from 'react';
 import { TIMEOUT_MS } from '@/constants';
 import { useApiErrorHandler, useSnackbars } from '@/hooks';
 import axios from '@/lib/axios';
-import { IUploadRecipeResponse } from '@/types';
+import { IUploadImageResponse } from '@/types';
 
 export const useImageApi = () => {
     const { addSnackbar } = useSnackbars();
@@ -21,7 +21,7 @@ export const useImageApi = () => {
                 }
             });
 
-            const res = await axios.post<IUploadRecipeResponse>(
+            const res = await axios.post<IUploadImageResponse>(
                 `/images/upload-bulk`,
                 formData,
                 {
@@ -31,7 +31,7 @@ export const useImageApi = () => {
                     },
                 },
             );
-            const responseData: IUploadRecipeResponse = res.data;
+            const responseData: IUploadImageResponse = res.data;
             if (responseData.success) {
                 addSnackbar(
                     'success',

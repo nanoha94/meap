@@ -1,10 +1,10 @@
-import {IBaseApiResponse, IBaseApiIndexResponse } from './common';
+import { IBaseApiResponseWithData, IBaseApiIndexResponse } from './common';
 
 //--------------------------------
 // レスポンス型
 //--------------------------------
 // ユーザー情報取得
-export type IGetUserResponse = IBaseApiResponse<ILoginUser>;
+export type IGetUserResponse = IBaseApiResponseWithData<ILoginUser>;
 
 // グループユーザー一覧取得
 export type IGetGroupUserResponse = IBaseApiIndexResponse<IUser[]>;

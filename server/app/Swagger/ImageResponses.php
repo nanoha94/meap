@@ -3,36 +3,33 @@
 namespace App\Swagger;
 
 /**
+ * 画像アップロードレスポンス（BaseApiIndexResponse + data: Image[]）
+ *
+ * @OA\Schema(
+ *     schema="UploadImageResponse",
+ *     allOf={
+ *         @OA\Schema(ref="#/components/schemas/BaseApiIndexResponse"),
+ *         @OA\Schema(
+ *             required={"data"},
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="array",
+ *                 description="アップロードされた画像一覧",
+ *                 @OA\Items(ref="#/components/schemas/Image")
+ *             )
+ *         )
+ *     }
+ * )
+ *
  * @OA\Response(
  *     response="ImageUploadBulkSuccess",
  *     description="複数画像アップロード成功",
- *     @OA\JsonContent(
- *         type="object",
- *         @OA\Property(property="success", type="boolean", example=true),
- *         @OA\Property(property="message", type="string", example="5枚の画像をアップロードしました。"),
- *         @OA\Property(
- *             property="data",
- *             type="array",
- *             @OA\Items(
- *                 type="object",
- *                 @OA\Property(property="id", type="string", example="1"),
- *                 @OA\Property(property="src", type="string", example="/storage/group_id/recipes/steps/filename.jpg"),
- *                 @OA\Property(property="width", type="integer", example=800),
- *                 @OA\Property(property="height", type="integer", example=600),
- *             )
- *         ),
- *         @OA\Property(property="total", type="integer", example=5, description="アップロードされた画像数")
- *     )
+ *     @OA\JsonContent(ref="#/components/schemas/UploadImageResponse")
  * )
  * @OA\Response(
  *     response="ImageDeleteBulkSuccess",
  *     description="画像一括削除成功",
- *     @OA\JsonContent(
- *         type="object",
- *         @OA\Property(property="success", type="boolean", example=true),
- *         @OA\Property(property="message", type="string", example="3件の画像を削除しました。"),
- *         @OA\Property(property="data", type="null", example=null)
- *     )
+ *     @OA\JsonContent(ref="#/components/schemas/BaseApiResponse")
  * )
  */
 

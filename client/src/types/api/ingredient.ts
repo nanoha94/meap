@@ -13,13 +13,13 @@ export type IGetIngredientUnitIndexResponse = IBaseApiIndexResponse<IIngredientU
 // リクエストデータ型
 //--------------------------------
 // 食材カテゴリー作成
-export interface IPostIngredientCategoryRequestData {
+export interface IPostIngredientCategoryRequest {
     name: string;
     order: number;
 }
 
 // 食材カテゴリー更新
-export interface IPutIngredientCategoryRequestData {
+export interface IPutIngredientCategoryRequest {
     id: string;
     name: string;
     order: number;

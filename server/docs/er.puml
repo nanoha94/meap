@@ -62,14 +62,6 @@ entity recipe_ingredient_mappings {
     * order : int / ソート順
 }
 
-entity menu_categories #LightBlue {
-    * id : string <<generated>>
-    ---
-    * name : string / 種別（主食、主菜、副菜、汁物、その他）
-    * group_id : string <<FK>>
-    * order : int / ソート順
-}
-
 entity recipe_categories #LightBlue {
     * id : string <<generated>>
     --
@@ -86,7 +78,6 @@ entity groups #LightBlue {
 entity meal_plan_recipe_mappings {
     * meal_plan_id : string <<FK>>
     * recipe_id : string <<FK>>
-    * menu_category_id : string <<FK>>
 }
 
 entity meal_plans #LightBlue {
@@ -268,9 +259,7 @@ colors ||--o| meal_categories : color_id
 meal_plans }o--|| groups : group_id
 meal_plans }o--|| meal_categories : meal_category_id
 recipes }o--|| groups : group_id
-menu_categories }o--|| groups : group_id    
 recipes ||--o{ meal_plan_recipe_mappings : recipe_id
-meal_plan_recipe_mappings }o--|| menu_categories : menu_category_id
 meal_plan_recipe_mappings }o--|| meal_plans : meal_plan_id
 
 recipes ||--o{ recipe_steps : recipe_id
@@ -322,10 +311,6 @@ end note
 
 note right of recipe_steps
   料理手順を管理する。
-end note
-
-note top of menu_categories
-  料理分類を管理する。（料理カテゴリとは別物）
 end note
 
 note top of recipe_categories

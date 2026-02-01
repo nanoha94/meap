@@ -208,9 +208,7 @@ return [
         'page' => 'page',
         'per_page' => 'items per page',
         'id' => 'ID',
-        'menu' => 'menu',
         'recipe_id' => 'recipe ID',
-        'menu_category_id' => 'menu category ID',
         'recipe' => [
             'name' => 'recipe name',
             'step_id' => 'step ID',

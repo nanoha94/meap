@@ -276,9 +276,7 @@ return [
         'page' => 'ページ',
         'per_page' => '1ページあたりの件数',
         'id' => 'ID',
-        'menu' => 'メニュー',
         'recipe_id' => 'レシピID',
-        'menu_category_id' => 'メニュー種別ID',
         'recipe' => [
             'name' => 'レシピ名',
             'step_id' => '手順ID',

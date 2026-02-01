@@ -41,16 +41,6 @@ class MealPlan extends Model
      */
     public function recipes(): BelongsToMany
     {
-        return $this->belongsToMany(Recipe::class, 'meal_plan_recipe_mappings', 'meal_plan_id', 'recipe_id')
-            ->withPivot('menu_category_id');
-    }
-
-    /**
-     * 献立カテゴリを取得する
-     */
-    public function menuCategories(): BelongsToMany
-    {
-        return $this->belongsToMany(MenuCategory::class, 'meal_plan_recipe_mappings', 'meal_plan_id', 'menu_category_id')
-            ->withPivot('recipe_id');
+        return $this->belongsToMany(Recipe::class, 'meal_plan_recipe_mappings', 'meal_plan_id', 'recipe_id');
     }
 }

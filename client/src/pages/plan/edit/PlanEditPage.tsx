@@ -5,16 +5,32 @@ import 'react-datepicker/dist/react-datepicker.css';
 
 import { Header, HeaderTextButton, StyledDatePicker } from '@/components';
 import { COLOR_VARIANT } from '@/constants';
-import { PlanEditCard } from '@/models/meal';
-import { ActionButton } from '@/types';
+import { PlanEditCard, useMealStore } from '@/models/meal';
+import { ActionButton, IMealPlan } from '@/types';
+import { FormProvider } from 'react-hook-form';
+import { useMealPlanEditForm } from '@/models/meal/hooks/useMealPlanEditForm';
+import { useSnackbars } from '@/hooks';
+
+interface Props {
+    fetchMealPlan?: IMealPlan;
+    errorMessage?: string;
+}
 
 
-const PlanEditPage = () => {
+const PlanEditPage = ({ fetchMealPlan, errorMessage }: Props) => {
+    const { mealCategories } = useMealStore();
+    const { addSnackbar } = useSnackbars();
     const [selectedDate, setSelectedDate] = React.useState(new Date());
+    const {
+        // control,
+        methods,
+        onSubmit
+    } = useMealPlanEditForm(fetchMealPlan);
+
 
     /**
-         * メニューボタン押下時に開くアクションボタン設定
-         */
+     * メニューボタン押下時に開くアクションボタン設定
+     */
     const actionButtons: ActionButton[] = [
         {
             label: '削除する',
@@ -25,6 +41,18 @@ const PlanEditPage = () => {
             color: COLOR_VARIANT.ALERT,
         },
     ];
+
+
+    /**
+     * エラーメッセージを表示
+     * @returns void
+     */
+    React.useEffect(() => {
+        if (errorMessage) {
+            addSnackbar('error', errorMessage);
+        }
+    }, [errorMessage]);
+
     return (
         <>
             <Header hasBackButton={true} leftContent={
@@ -40,7 +68,11 @@ const PlanEditPage = () => {
                 actionButtons={actionButtons}
             />
             <main className="p-5 pb-[60px] md:px-10 max-w-[1000px] mx-auto">
-                <PlanEditCard />
+                <FormProvider {...methods}>
+                    <form onSubmit={onSubmit} className="flex flex-col gap-y-5 md:gap-y-8">
+                        {mealCategories.map(v => <PlanEditCard key={v.id} mealCategory={v} recipes={[]} />)}
+                    </form>
+                </FormProvider>
             </main>
         </>
     );

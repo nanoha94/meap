@@ -100,12 +100,6 @@ test('2-5-3: デフォルトデータの自動作成確認', function () {
         'is_default' => true,
     ]);
 
-    // デフォルトの料理分類が作成されていることを確認
-    $this->assertDatabaseHas('menu_categories', [
-        'group_id' => $groupId,
-        'name' => '主食',
-    ]);
-
     // デフォルトの献立カテゴリが作成されていることを確認
     $this->assertDatabaseHas('meal_categories', [
         'group_id' => $groupId,

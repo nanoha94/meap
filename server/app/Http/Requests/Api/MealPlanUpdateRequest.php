@@ -17,10 +17,8 @@ class MealPlanUpdateRequest extends BaseApiRequest
         return [
             'date' => 'date_format:Y-m-d|required',
             'mealCategoryId' => 'uuid|required',
-            'menu' => 'array|min:1|required',
-            'menu.*.recipeIds' => 'array|min:1|required',
-            'menu.*.recipeIds.*' => 'uuid|required',
-            'menu.*.categoryId' => 'uuid|required',
+            'recipeIds' => 'array|min:1|required',
+            'recipeIds.*' => 'uuid|required',
         ];
     }
 
@@ -36,16 +34,11 @@ class MealPlanUpdateRequest extends BaseApiRequest
             'date.required' => __('validation.required', ['attribute' => 'date']),
             'mealCategoryId.uuid' => __('validation.uuid', ['attribute' => 'mealCategoryId']),
             'mealCategoryId.required' => __('validation.required', ['attribute' => 'mealCategoryId']),
-            'menu.array' => __('validation.array', ['attribute' => 'menu']),
-            'menu.min' => __('validation.min.array', ['attribute' => 'menu', 'min' => 1]),
-            'menu.required' => __('validation.required', ['attribute' => 'menu']),
-            'menu.*.recipeIds.array' => __('validation.array', ['attribute' => 'menu.*.recipeIds']),
-            'menu.*.recipeIds.min' => __('validation.min.array', ['attribute' => 'menu.*.recipeIds', 'min' => 1]),
-            'menu.*.recipeIds.required' => __('validation.required', ['attribute' => 'menu.*.recipeIds']),
-            'menu.*.recipeIds.*.uuid' => __('validation.uuid', ['attribute' => 'menu.*.recipeIds.*']),
-            'menu.*.recipeIds.*.required' => __('validation.required', ['attribute' => 'menu.*.recipeIds.*']),
-            'menu.*.categoryId.uuid' => __('validation.uuid', ['attribute' => 'menu.*.categoryId']),
-            'menu.*.categoryId.required' => __('validation.required', ['attribute' => 'menu.*.categoryId']),
+            'recipeIds.array' => __('validation.array', ['attribute' => 'recipeIds']),
+            'recipeIds.min' => __('validation.min.array', ['attribute' => 'recipeIds', 'min' => 1]),
+            'recipeIds.required' => __('validation.required', ['attribute' => 'recipeIds']),
+            'recipeIds.*.uuid' => __('validation.uuid', ['attribute' => 'recipeIds.*']),
+            'recipeIds.*.required' => __('validation.required', ['attribute' => 'recipeIds.*']),
         ];
     }
 
