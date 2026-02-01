@@ -41,7 +41,7 @@ export interface IMealCategory {
 export interface IMealPlan {
     id: string;
     date: string;
-    category: IMealCategory;
+    mealCategory: IMealCategory;
     recipes: IRecipeListItem[];
 }
 

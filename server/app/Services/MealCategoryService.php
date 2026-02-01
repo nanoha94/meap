@@ -66,30 +66,4 @@ class MealCategoryService extends AbstractDomainService
             'order' => $item->order,
         ];
     }
-
-    protected function formatStoreResponse(Model $item): array
-    {
-        // 型チェック
-        $this->typeCheck($item, MealCategory::class);
-
-        return [
-            'id' => $item->id,
-            'name' => $item->name,
-            'colorCodeHex' => $item->color->color_code_hex,
-            'order' => $item->order,
-        ];
-    }
-
-    protected function formatUpdateResponse(Model $item): array
-    {
-        // 型チェック
-        $this->typeCheck($item, MealCategory::class);
-
-        return [
-            'id' => $item->id,
-            'name' => $item->name,
-            'colorCodeHex' => $item->color->color_code_hex,
-            'order' => $item->order,
-        ];
-    }
 }

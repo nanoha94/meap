@@ -42,7 +42,6 @@ export const DEFAULT_RECIPE_STEP: RecipeStepEditFormData = {
 
 export const DEFAULT_RECIPE_EDIT_FORM_DATA: RecipeEditFormData = {
     id: '',
-    ownerUserId: '',
     name: '',
     url: '',
     memo: '',

@@ -58,23 +58,6 @@ class ShoppingCategoryService extends AbstractDomainService
         return ['name' => 'name', 'order' => 'order'];
     }
 
-    protected function formatStoreResponse(Model $item): array
-    {
-        // 型チェック
-        $this->typeCheck($item, ShoppingCategory::class);
-
-        return ['id' => $item->id, 'name' => $item->name, 'isDefault' => $item->is_default, 'order' => $item->order];
-    }
-
-
-    protected function formatUpdateResponse(Model $item): array
-    {
-        // 型チェック
-        $this->typeCheck($item, ShoppingCategory::class);
-
-        return ['id' => $item->id, 'name' => $item->name, 'isDefault' => $item->is_default, 'order' => $item->order];
-    }
-
     /**
      * 削除前の検証:デフォルトカテゴリは削除不可
      *

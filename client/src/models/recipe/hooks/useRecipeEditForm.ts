@@ -31,7 +31,7 @@ export const formatIngredientItems = (
         });
 };
 
-export const useRecipeEditForm = (fetchRecipe?: IRecipe, ownerUserId?: string) => {
+export const useRecipeEditForm = (ownerUserId: string, fetchRecipe?: IRecipe) => {
     const [errors, setErrors] = React.useState<Record<string, string> | null>(
         null,
     );
@@ -39,7 +39,6 @@ export const useRecipeEditForm = (fetchRecipe?: IRecipe, ownerUserId?: string) =
         defaultValues: { 
             ...DEFAULT_RECIPE_EDIT_FORM_DATA, 
             ...fetchRecipe,
-            ownerUserId: fetchRecipe?.ownerUserId ?? '',
         },
     });
     const { control, handleSubmit } = methods;
@@ -76,7 +75,7 @@ export const useRecipeEditForm = (fetchRecipe?: IRecipe, ownerUserId?: string) =
             servingCount: data.servingCount ?? null,
             thumbnailId: data.thumbnail?.id,
             categoryIds: data.categories.map(v => v.id),
-            ownerUserId: ownerUserId ?? data.ownerUserId ?? fetchRecipe?.ownerUserId,
+            ownerUserId: ownerUserId ?? fetchRecipe?.ownerUserId ?? '',
             ingredients: formatIngredientItems(data.ingredients),
             // stepsはstoreRecipe()/updateRecipe()でフォーマットする
         };

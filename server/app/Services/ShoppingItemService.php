@@ -100,44 +100,6 @@ class ShoppingItemService extends AbstractDomainService
         });
     }
 
-    protected function formatStoreResponse(Model $item): array
-    {
-        // 型チェック
-        $this->typeCheck($item, ShoppingItem::class);
-
-        return [
-            'id' => $item->id,
-            'name' => $item->name,
-            'isPinned' => $item->is_pinned,
-            'isChecked' => $item->is_checked,
-            'categoryId' => $item->category_id,
-            'tags' => $item->tags->map(fn($tag) => [
-                'id' => $tag->id,
-                'name' => $tag->name
-            ]),
-            'order' => $item->order
-        ];
-    }
-
-    protected function formatUpdateResponse(Model $item): array
-    {
-        // 型チェック
-        $this->typeCheck($item, ShoppingItem::class);
-
-        return [
-            'id' => $item->id,
-            'name' => $item->name,
-            'isPinned' => $item->is_pinned,
-            'isChecked' => $item->is_checked,
-            'categoryId' => $item->category_id,
-            'tags' => $item->tags->map(fn($tag) => [
-                'id' => $tag->id,
-                'name' => $tag->name
-            ]),
-            'order' => $item->order
-        ];
-    }
-
     /**
      * タグ付きでアイテムを作成
      *

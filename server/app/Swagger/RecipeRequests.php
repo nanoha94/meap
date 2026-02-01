@@ -14,7 +14,7 @@ namespace App\Swagger;
  *     @OA\Property(property="memo", type="string", nullable=true, description="メモ", example="ハンバーグは美味しい"),
  *     @OA\Property(property="servingCount", type="integer", nullable=true, description="分量（○○人分）", example=4, minimum=1),
  *     @OA\Property(property="thumbnailId", type="string", nullable=true, description="サムネイル画像ID", example="1"),
- *     @OA\Property(property="categoryIds", type="array", description="カテゴリID", @OA\Items(type="string", example="1")),
+ *     @OA\Property(property="categoryIds", type="array", description="料理カテゴリID", @OA\Items(type="string", example="1")),
  *     @OA\Property(property="ownerUserId", type="string", description="編集責任者のユーザーID", example="00000000-0000-0000-0000-000000000000"),
  *     @OA\Property(property="ingredients", type="array", description="食材",
  *         @OA\Items(

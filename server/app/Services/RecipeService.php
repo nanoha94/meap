@@ -82,62 +82,10 @@ class RecipeService extends AbstractDomainService
         ];
     }
 
-    protected function formatStoreResponse(Model $item): array
-    {
-        // 型チェック
-        $this->typeCheck($item, Recipe::class);
-
-        // groupが読み込まれていない場合は読み込む
-        if (!$item->relationLoaded('group')) {
-            $item->load('group');
-        }
-
-        return [
-            'id' => $item->id,
-            'name' => $item->name,
-            'thumbnail' => $this->imageService->formatImage($item->thumbnails->first()),
-            'url' => $item->url,
-            'steps' => $this->formatRecipeSteps($item->steps->sortBy('order')),
-            'memo' => $item->memo,
-            'servingCount' => $item->serving_count,
-            'categories' => $this->formatRecipeCategories($item->categories),
-            'ingredients' => $this->formatRecipeIngredients($item, $item->group),
-            'ownerUserId' => $item->owner_user_id,
-            'status' => $item->status,
-            'publishedRecipeId' => $item->published_recipe_id,
-        ];
-    }
-
     protected function formatShowResponse(Model $item): array
     {
         // 型チェック
         $this->typeCheck($item, Recipe::class);
-
-        return [
-            'id' => $item->id,
-            'name' => $item->name,
-            'thumbnail' => $this->imageService->formatImage($item->thumbnails->first()),
-            'url' => $item->url,
-            'steps' => $this->formatRecipeSteps($item->steps->sortBy('order')),
-            'memo' => $item->memo,
-            'servingCount' => $item->serving_count,
-            'categories' => $this->formatRecipeCategories($item->categories),
-            'ingredients' => $this->formatRecipeIngredients($item, $item->group),
-            'ownerUserId' => $item->owner_user_id,
-            'status' => $item->status,
-            'publishedRecipeId' => $item->published_recipe_id,
-        ];
-    }
-
-    protected function formatUpdateResponse(Model $item): array
-    {
-        // 型チェック
-        $this->typeCheck($item, Recipe::class);
-
-        // groupが読み込まれていない場合は読み込む
-        if (!$item->relationLoaded('group')) {
-            $item->load('group');
-        }
 
         return [
             'id' => $item->id,

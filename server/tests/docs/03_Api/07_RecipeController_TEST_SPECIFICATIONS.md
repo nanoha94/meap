@@ -85,7 +85,7 @@ RecipeController のテストケースの詳細仕様を示します。料理の
 | 3-7-75  | 【新規作成】 画像紐づけ失敗                                                       | 異常系 | 画像の紐づけ処理が失敗                                  | HTTP 500 Internal Server Error        | `RecipeController::store()`    |
 | 3-7-76  | 【新規作成】 ImageService 例外                                                    | 異常系 | ImageService で例外が発生                               | HTTP 500 Internal Server Error        | `RecipeController::store()`    |
 | 3-7-77  | 【詳細取得】 正常な料理詳細取得                                                   | 正常系 | 有効な料理 ID を提供                                    | HTTP 200 JSON success                 | `RecipeController::show()`     |
-| 3-7-78  | 【詳細取得】 すべての項目を含む料理詳細取得                                       | 正常系 | name/servingCount/url/memo/thumbnailId/categoryIds/ingredients/steps を含む料理を取得 | HTTP 200 JSON success、すべての項目が正しく取得される | `RecipeController::show()`     |
+| 3-7-78  | 【詳細取得】 すべての項目を含む料理詳細取得                                       | 正常系 | name/servingCount/url/memo/thumbnailId/categories/ingredients/steps を含む料理を取得 | HTTP 200 JSON success、すべての項目が正しく取得される | `RecipeController::show()`     |
 | 3-7-79  | 【詳細取得】 存在しない料理詳細取得                                               | 異常系 | 存在しない料理 ID を提供                                | HTTP 404 Not Found                    | `RecipeController::show()`     |
 | 3-7-80  | 【詳細取得】 他グループの料理詳細取得                                             | 異常系 | 他グループの料理 ID を提供                              | HTTP 404 Not Found                    | `RecipeController::show()`     |
 | 3-7-81  | 【詳細取得】 未認証ユーザー                                                       | 異常系 | 認証されていないユーザー                                | HTTP 401 Unauthorized                 | `RecipeController::show()`     |

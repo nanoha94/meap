@@ -234,7 +234,7 @@ test('3-6-1: 【一覧取得】 正常な献立一覧取得', function () {
                     '*' => [
                         'id',
                         'date',
-                        'category' => [
+                        'mealCategory' => [
                             'id',
                             'name',
                             'colorCodeHex'
@@ -949,7 +949,7 @@ test('3-6-31: 【詳細取得】 正常な献立詳細取得', function () {
         'data' => [
             'id',
             'date',
-            'category' => [
+            'mealCategory' => [
                 'id',
                 'name',
                 'colorCodeHex'

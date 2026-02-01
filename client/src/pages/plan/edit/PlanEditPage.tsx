@@ -12,12 +12,12 @@ import { useMealPlanEditForm } from '@/models/meal/hooks/useMealPlanEditForm';
 import { useSnackbars } from '@/hooks';
 
 interface Props {
-    fetchMealPlan?: IMealPlan;
+    fetchMealPlans?: IMealPlan[];
     errorMessage?: string;
 }
 
 
-const PlanEditPage = ({ fetchMealPlan, errorMessage }: Props) => {
+const PlanEditPage = ({ fetchMealPlans, errorMessage }: Props) => {
     const { mealCategories } = useMealStore();
     const { addSnackbar } = useSnackbars();
     const [selectedDate, setSelectedDate] = React.useState(new Date());
@@ -25,7 +25,7 @@ const PlanEditPage = ({ fetchMealPlan, errorMessage }: Props) => {
         // control,
         methods,
         onSubmit
-    } = useMealPlanEditForm(fetchMealPlan);
+    } = useMealPlanEditForm(selectedDate.toISOString(), fetchMealPlans);
 
 
     /**
@@ -41,7 +41,6 @@ const PlanEditPage = ({ fetchMealPlan, errorMessage }: Props) => {
             color: COLOR_VARIANT.ALERT,
         },
     ];
-
 
     /**
      * エラーメッセージを表示
@@ -70,7 +69,7 @@ const PlanEditPage = ({ fetchMealPlan, errorMessage }: Props) => {
             <main className="p-5 pb-[60px] md:px-10 max-w-[1000px] mx-auto">
                 <FormProvider {...methods}>
                     <form onSubmit={onSubmit} className="flex flex-col gap-y-5 md:gap-y-8">
-                        {mealCategories.map(v => <PlanEditCard key={v.id} mealCategory={v} recipes={[]} />)}
+                        {mealCategories.map(v => <PlanEditCard key={v.id} mealCategory={v} recipes={fetchMealPlans?.find(plan => plan.mealCategory.id === v.id)?.recipes ?? []} />)}
                     </form>
                 </FormProvider>
             </main>

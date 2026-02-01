@@ -1842,7 +1842,7 @@
             "MealPlan": {
                 "required": [
                     "date",
-                    "categoryId"
+                    "mealCategory"
                 ],
                 "properties": {
                     "id": {
@@ -1856,30 +1856,8 @@
                         "format": "date",
                         "example": "2023-10-05"
                     },
-                    "category": {
-                        "properties": {
-                            "id": {
-                                "description": "ID",
-                                "type": "string",
-                                "example": "1"
-                            },
-                            "name": {
-                                "description": "カテゴリ名",
-                                "type": "string",
-                                "example": "朝食"
-                            },
-                            "colorCodeHex": {
-                                "description": "色コード（16進）",
-                                "type": "string",
-                                "example": "#F5B12E"
-                            },
-                            "order": {
-                                "description": "ソート順",
-                                "type": "integer",
-                                "example": 1
-                            }
-                        },
-                        "type": "object"
+                    "mealCategory": {
+                        "$ref": "#/components/schemas/MealCategory"
                     },
                     "recipes": {
                         "description": "料理一覧",
@@ -1924,7 +1902,7 @@
             "RecipeRequest": {
                 "required": [
                     "name",
-                    "categoryIds",
+                    "recipeCategoryIds",
                     "ownerUserId"
                 ],
                 "properties": {
@@ -1964,8 +1942,8 @@
                         "example": "1",
                         "nullable": true
                     },
-                    "categoryIds": {
-                        "description": "カテゴリID",
+                    "recipeCategoryIds": {
+                        "description": "料理カテゴリID",
                         "type": "array",
                         "items": {
                             "type": "string",
@@ -2149,8 +2127,8 @@
                         "type": "string",
                         "example": "ハンバーグ"
                     },
-                    "categories": {
-                        "description": "カテゴリ",
+                    "recipeCategories": {
+                        "description": "料理カテゴリ",
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/RecipeCategory"
@@ -2230,8 +2208,8 @@
                         "type": "string",
                         "example": "ハンバーグ"
                     },
-                    "categories": {
-                        "description": "カテゴリ",
+                    "recipeCategories": {
+                        "description": "料理カテゴリ",
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/RecipeCategory"

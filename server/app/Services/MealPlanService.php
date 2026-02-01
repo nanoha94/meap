@@ -59,23 +59,10 @@ class MealPlanService extends AbstractDomainService
                 return [
                     'id' => $mealPlan->id,
                     'date' => $mealPlan->date,
-                    'category' => $this->formatCategory($mealPlan->mealCategory),
+                    'mealCategory' => $this->formatCategory($mealPlan->mealCategory),
                     'recipes' => $this->formatRecipes($mealPlan->recipes),
                 ];
             })
-        ];
-    }
-
-    protected function formatStoreResponse(Model $item): array
-    {
-        // 型チェック
-        $this->typeCheck($item, MealPlan::class);
-
-        return [
-            'id' => $item->id,
-            'date' => $item->date,
-            'category' => $this->formatCategory($item->mealCategory),
-            'recipes' => $this->formatRecipes($item->recipes)
         ];
     }
 
@@ -87,20 +74,7 @@ class MealPlanService extends AbstractDomainService
         return [
             'id' => $item->id,
             'date' => $item->date,
-            'category' => $this->formatCategory($item->mealCategory),
-            'recipes' => $this->formatRecipes($item->recipes)
-        ];
-    }
-
-    protected function formatUpdateResponse(Model $item): array
-    {
-        // 型チェック
-        $this->typeCheck($item, MealPlan::class);
-
-        return [
-            'id' => $item->id,
-            'date' => $item->date,
-            'category' => $this->formatCategory($item->mealCategory),
+            'mealCategory' => $this->formatCategory($item->mealCategory),
             'recipes' => $this->formatRecipes($item->recipes)
         ];
     }

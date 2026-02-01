@@ -44,7 +44,7 @@ const RecipeEditPage = ({
         methods,
         onSubmit,
         errors,
-    } = useRecipeEditForm(fetchRecipe, ownerUserId);
+    } = useRecipeEditForm(ownerUserId, fetchRecipe);
     const { isTextCopied, copyToClipboard } = useTextCopy();
 
 

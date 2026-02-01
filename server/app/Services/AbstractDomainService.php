@@ -101,26 +101,6 @@ abstract class AbstractDomainService
         return [];
     }
 
-    /**
-     * 作成レスポンスをフォーマット
-     * @param Model $item
-     * @return array
-     */
-    protected function formatStoreResponse(Model $item): array
-    {
-        return [];
-    }
-
-    /**
-     * 更新レスポンスをフォーマット
-     * @param Model $item
-     * @return array
-     */
-    protected function formatUpdateResponse(Model $item): array
-    {
-        return [];
-    }
-
     public function index(Group $group): array
     {
         return DB::transaction(function () use ($group) {
@@ -171,7 +151,7 @@ abstract class AbstractDomainService
      *
      * @param array $data 作成データの配列
      * @param Group $group グループモデル
-     * @return array 作成されたアイテムのレスポンスデータ
+     * @return array 作成されたアイテムの配列
      */
     public function bulkCreate(array $data, Group $group): array
     {
@@ -182,9 +162,7 @@ abstract class AbstractDomainService
                 foreach ($this->getCreateFields() as $field => $dataKey) {
                     $createData[$field] = $item[$dataKey];
                 }
-                $createdItem = $this->getGroupRelation($group)->create($createData);
-
-                $result[] = $this->formatStoreResponse($createdItem);
+                $result[] = $this->getGroupRelation($group)->create($createData);
             }
 
             return $result;
