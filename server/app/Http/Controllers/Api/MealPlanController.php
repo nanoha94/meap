@@ -57,7 +57,7 @@ class MealPlanController extends ApiController
      *     description="献立を作成します。",
      *     tags={"MealPlans"},
      *     security={{"sanctum":{}}},
-     *     @OA\RequestBody(ref="#/components/requestBodies/MealPlanRequest"),
+     *     @OA\RequestBody(ref="#/components/requestBodies/MealPlanStoreRequest"),
      *     @OA\Response(response=200, ref="#/components/responses/MealPlanStoreSuccess"),
      *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
@@ -116,7 +116,7 @@ class MealPlanController extends ApiController
      *     tags={"MealPlans"},
      *     security={{"sanctum":{}}},
      *     @OA\Parameter(ref="#/components/parameters/MealPlanIdParam"),
-     *     @OA\RequestBody(ref="#/components/requestBodies/MealPlanRequest"),
+     *     @OA\RequestBody(ref="#/components/requestBodies/MealPlanUpdateRequest"),
      *     @OA\Response(response=200, ref="#/components/responses/MealPlanUpdateSuccess"),
      *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")

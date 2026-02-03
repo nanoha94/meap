@@ -468,7 +468,7 @@
                 "description": "献立を作成します。",
                 "operationId": "8757b0ba77d78ebcf68636c44897a11c",
                 "requestBody": {
-                    "$ref": "#/components/requestBodies/MealPlanRequest"
+                    "$ref": "#/components/requestBodies/MealPlanStoreRequest"
                 },
                 "responses": {
                     "200": {
@@ -529,7 +529,7 @@
                     }
                 ],
                 "requestBody": {
-                    "$ref": "#/components/requestBodies/MealPlanRequest"
+                    "$ref": "#/components/requestBodies/MealPlanUpdateRequest"
                 },
                 "responses": {
                     "200": {
@@ -1740,32 +1740,92 @@
                 },
                 "type": "object"
             },
-            "MealPlanRequest": {
+            "MealPlanStoreRequest": {
+                "required": [
+                    "date",
+                    "data"
+                ],
                 "properties": {
+                    "date": {
+                        "description": "献立の日付（Y-m-d）",
+                        "type": "string",
+                        "format": "date",
+                        "example": "2025-02-03"
+                    },
                     "data": {
                         "description": "献立メニュー",
                         "type": "array",
                         "items": {
+                            "required": [
+                                "categoryId",
+                                "recipeIds"
+                            ],
                             "properties": {
                                 "id": {
-                                    "description": "ID",
+                                    "description": "メニューID（新規の場合は不要）",
                                     "type": "string",
-                                    "example": "1",
+                                    "format": "uuid",
+                                    "example": "a0fbbf74-1816-406e-99b7-7ef1e3e365f4",
                                     "nullable": true
                                 },
                                 "categoryId": {
                                     "description": "献立カテゴリID",
                                     "type": "string",
-                                    "example": "1"
+                                    "format": "uuid",
+                                    "example": "a0fbbf74-1816-406e-99b7-7ef1e3e365f4"
                                 },
                                 "recipeIds": {
-                                    "description": "料理IDの配列",
+                                    "description": "料理IDの配列（1件以上必須）",
                                     "type": "array",
                                     "items": {
                                         "description": "料理ID",
                                         "type": "string",
                                         "format": "uuid",
-                                        "example": "1"
+                                        "example": "a0fbbf74-1816-406e-99b7-7ef1e3e365f4"
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "MealPlanUpdateRequest": {
+                "required": [
+                    "data"
+                ],
+                "properties": {
+                    "data": {
+                        "description": "献立メニュー",
+                        "type": "array",
+                        "items": {
+                            "required": [
+                                "categoryId",
+                                "recipeIds"
+                            ],
+                            "properties": {
+                                "id": {
+                                    "description": "メニューID（新規の場合は不要）",
+                                    "type": "string",
+                                    "format": "uuid",
+                                    "example": "a0fbbf74-1816-406e-99b7-7ef1e3e365f4",
+                                    "nullable": true
+                                },
+                                "categoryId": {
+                                    "description": "献立カテゴリID",
+                                    "type": "string",
+                                    "format": "uuid",
+                                    "example": "a0fbbf74-1816-406e-99b7-7ef1e3e365f4"
+                                },
+                                "recipeIds": {
+                                    "description": "料理IDの配列（1件以上必須）",
+                                    "type": "array",
+                                    "items": {
+                                        "description": "料理ID",
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "example": "a0fbbf74-1816-406e-99b7-7ef1e3e365f4"
                                     }
                                 }
                             },
@@ -3666,13 +3726,24 @@
                     }
                 }
             },
-            "MealPlanRequest": {
-                "description": "※新規作成時はid不要",
+            "MealPlanStoreRequest": {
+                "description": "献立作成。date は必須。data は1件以上必須。",
                 "required": true,
                 "content": {
                     "application/json": {
                         "schema": {
-                            "$ref": "#/components/schemas/MealPlanRequest"
+                            "$ref": "#/components/schemas/MealPlanStoreRequest"
+                        }
+                    }
+                }
+            },
+            "MealPlanUpdateRequest": {
+                "description": "献立更新。data は1件以上必須。",
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/MealPlanUpdateRequest"
                         }
                     }
                 }
