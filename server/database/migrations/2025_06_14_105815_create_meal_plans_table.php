@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('meal_plans', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('group_id')->constrained('groups', 'id')->cascadeOnDelete();
-            $table->foreignUuid('meal_category_id')->constrained('meal_categories', 'id')->cascadeOnDelete();
             $table->date('date');
             $table->timestamps();
         });

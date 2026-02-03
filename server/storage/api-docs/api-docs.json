@@ -577,6 +577,39 @@
                 ]
             }
         },
+        "/meal-plans/{mealPlanId}/meals/{mealId}": {
+            "delete": {
+                "tags": [
+                    "MealPlans"
+                ],
+                "summary": "献立の1食を削除",
+                "operationId": "b792b9051c27e46abb92d04576fe4c78",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/MealPlanIdPathParam"
+                    },
+                    {
+                        "$ref": "#/components/parameters/MealIdParam"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/MealPlanMealDestroySuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/recipe-categories": {
             "get": {
                 "tags": [
@@ -1708,31 +1741,35 @@
                 "type": "object"
             },
             "MealPlanRequest": {
-                "required": [
-                    "date",
-                    "mealCategoryId",
-                    "recipeIds"
-                ],
                 "properties": {
-                    "date": {
-                        "description": "日付",
-                        "type": "string",
-                        "format": "date",
-                        "example": "2023-10-05"
-                    },
-                    "mealCategoryId": {
-                        "description": "種別ID",
-                        "type": "string",
-                        "example": "1"
-                    },
-                    "recipeIds": {
-                        "description": "料理IDの配列",
+                    "data": {
+                        "description": "献立メニュー",
                         "type": "array",
                         "items": {
-                            "description": "料理ID",
-                            "type": "string",
-                            "format": "uuid",
-                            "example": "1"
+                            "properties": {
+                                "id": {
+                                    "description": "ID",
+                                    "type": "string",
+                                    "example": "1",
+                                    "nullable": true
+                                },
+                                "categoryId": {
+                                    "description": "献立カテゴリID",
+                                    "type": "string",
+                                    "example": "1"
+                                },
+                                "recipeIds": {
+                                    "description": "料理IDの配列",
+                                    "type": "array",
+                                    "items": {
+                                        "description": "料理ID",
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "example": "1"
+                                    }
+                                }
+                            },
+                            "type": "object"
                         }
                     }
                 },
@@ -1774,22 +1811,10 @@
                         "properties": {
                             "data": {
                                 "description": "日付と献立メニュー",
-                                "properties": {
-                                    "date": {
-                                        "description": "日付",
-                                        "type": "string",
-                                        "format": "date",
-                                        "example": "2023-10-05"
-                                    },
-                                    "mealPlans": {
-                                        "description": "献立メニュー",
-                                        "type": "array",
-                                        "items": {
-                                            "$ref": "#/components/schemas/MealPlan"
-                                        }
-                                    }
-                                },
-                                "type": "object"
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/MealPlan"
+                                }
                             }
                         },
                         "type": "object"
@@ -1842,7 +1867,7 @@
             "MealPlan": {
                 "required": [
                     "date",
-                    "mealCategory"
+                    "meals"
                 ],
                 "properties": {
                     "id": {
@@ -1856,7 +1881,29 @@
                         "format": "date",
                         "example": "2023-10-05"
                     },
-                    "mealCategory": {
+                    "meals": {
+                        "description": "献立メニュー",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Meal"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "Meal": {
+                "required": [
+                    "date",
+                    "category",
+                    "recipes"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "ID",
+                        "type": "string",
+                        "example": "1"
+                    },
+                    "category": {
                         "$ref": "#/components/schemas/MealCategory"
                     },
                     "recipes": {
@@ -1902,7 +1949,7 @@
             "RecipeRequest": {
                 "required": [
                     "name",
-                    "recipeCategoryIds",
+                    "categoryIds",
                     "ownerUserId"
                 ],
                 "properties": {
@@ -1942,7 +1989,7 @@
                         "example": "1",
                         "nullable": true
                     },
-                    "recipeCategoryIds": {
+                    "categoryIds": {
                         "description": "料理カテゴリID",
                         "type": "array",
                         "items": {
@@ -2127,7 +2174,7 @@
                         "type": "string",
                         "example": "ハンバーグ"
                     },
-                    "recipeCategories": {
+                    "categories": {
                         "description": "料理カテゴリ",
                         "type": "array",
                         "items": {
@@ -2208,7 +2255,7 @@
                         "type": "string",
                         "example": "ハンバーグ"
                     },
-                    "recipeCategories": {
+                    "categories": {
                         "description": "料理カテゴリ",
                         "type": "array",
                         "items": {
@@ -3079,6 +3126,16 @@
                     }
                 }
             },
+            "MealPlanMealDestroySuccess": {
+                "description": "献立の1食を削除しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/BaseApiResponse"
+                        }
+                    }
+                }
+            },
             "MealCategoryIndexSuccess": {
                 "description": "献立カテゴリ―一覧を取得しました。",
                 "content": {
@@ -3368,6 +3425,26 @@
                 "schema": {
                     "type": "string",
                     "example": "1"
+                }
+            },
+            "MealPlanIdPathParam": {
+                "name": "mealPlanId",
+                "in": "path",
+                "description": "献立ID",
+                "required": true,
+                "schema": {
+                    "type": "string",
+                    "format": "uuid"
+                }
+            },
+            "MealIdParam": {
+                "name": "mealId",
+                "in": "path",
+                "description": "献立の1食ID",
+                "required": true,
+                "schema": {
+                    "type": "string",
+                    "format": "uuid"
                 }
             },
             "MealCategoryIdParam": {

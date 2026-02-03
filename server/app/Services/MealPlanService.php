@@ -2,24 +2,25 @@
 
 namespace App\Services;
 
+use App\Enums\HttpStatusCode;
 use App\Models\Group;
+use App\Models\Meal;
 use App\Models\MealPlan;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class MealPlanService extends AbstractDomainService
 {
     protected MealCategoryService $mealCategoryService;
     protected RecipeService $recipeService;
-    protected ImageService $imageService;
 
-    public function __construct(MealCategoryService $mealCategoryService, RecipeService $recipeService, ImageService $imageService)
+    public function __construct(MealCategoryService $mealCategoryService, RecipeService $recipeService)
     {
         $this->mealCategoryService = $mealCategoryService;
         $this->recipeService = $recipeService;
-        $this->imageService = $imageService;
     }
 
     protected function getResourceName(): string
@@ -34,12 +35,12 @@ class MealPlanService extends AbstractDomainService
 
     protected function getSelectColumns(): array
     {
-        return ['id', 'date', 'meal_category_id'];
+        return ['id', 'date'];
     }
 
     protected function getWithColumns(): array
     {
-        return ['mealCategory.color', 'recipes.categories', 'recipes.ingredients'];
+        return ['meals.mealCategory.color', 'meals.recipes.categories', 'meals.recipes.thumbnails'];
     }
 
     protected function getGroupBy(): string | null
@@ -49,20 +50,18 @@ class MealPlanService extends AbstractDomainService
 
     protected function formatIndexResponse(Model|Collection $items): array
     {
-        // 型チェック
+        // 型チェック（groupBy により 1 日分の MealPlan の Collection が渡る）
         $this->typeCheck($items, Collection::class);
         $this->typeCheckCollection($items, MealPlan::class);
 
+        $mealPlan = $items->first();
+        // 同一日付に複数献立がある場合はその日の全 meals をマージする
+        $allMeals = $items->flatMap(fn(MealPlan $mp) => $mp->meals);
+
         return [
-            'date' => $items->first()->date,
-            'mealPlans' => $items->map(function ($mealPlan) {
-                return [
-                    'id' => $mealPlan->id,
-                    'date' => $mealPlan->date,
-                    'mealCategory' => $this->formatCategory($mealPlan->mealCategory),
-                    'recipes' => $this->formatRecipes($mealPlan->recipes),
-                ];
-            })
+            'id' => $mealPlan->id,
+            'date' => $mealPlan->date,
+            'meals' => $this->formatMeals($allMeals),
         ];
     }
 
@@ -74,54 +73,127 @@ class MealPlanService extends AbstractDomainService
         return [
             'id' => $item->id,
             'date' => $item->date,
-            'mealCategory' => $this->formatCategory($item->mealCategory),
-            'recipes' => $this->formatRecipes($item->recipes)
+            'meals' => $this->formatMeals($item->meals),
         ];
     }
 
     public function create(array $data, Group $group): void
     {
         DB::transaction(function () use ($data, $group) {
-            // 献立カテゴリの存在チェック
-            $mealCategory = $this->mealCategoryService->findItemsByIds([$data['mealCategoryId']], $group);
+            // 献立カテゴリ・レシピの存在チェック
+            $categoryIds = array_unique(array_column($data['data'], 'categoryId'));
+            $this->mealCategoryService->findItemsByIds($categoryIds, $group);
 
-            // 献立を作成
+            $allRecipeIds = array_unique(array_merge(...array_column($data['data'], 'recipeIds')));
+            $this->recipeService->findItemsByIds($allRecipeIds, $group);
+
+            // 献立（1日）を作成
             $mealPlan = MealPlan::create([
                 'group_id' => $group->id,
-                'meal_category_id' => $mealCategory->first()->id,
                 'date' => $data['date'],
             ]);
 
-            // 献立・料理を紐づけ
-            if (!empty($data['recipeIds'])) {
-                $this->syncRecipes($mealPlan, $data['recipeIds'], $group);
+            foreach ($data['data'] as $mealData) {
+                $meal = Meal::create([
+                    'meal_plan_id' => $mealPlan->id,
+                    'category_id' => $mealData['categoryId'],
+                ]);
+                $this->syncRecipes($meal, $mealData['recipeIds'], $group);
             }
         });
     }
 
-    public function update(string $id, array $data, Group $group): void
+    public function update(string $id, array $data, Group $group): MealPlan
     {
-        DB::transaction(function () use ($id, $data, $group) {
-            //更新対象を取得
+        return DB::transaction(function () use ($id, $data, $group) {
             $mealPlan = $this->findItemsByIds([$id], $group)->first();
 
-            // 献立カテゴリの存在チェック
-            $mealCategory = $this->mealCategoryService->findItemsByIds([$data['mealCategoryId']], $group);
+            // 献立カテゴリ・レシピの存在チェック
+            $categoryIds = array_unique(array_column($data['data'], 'categoryId'));
+            $this->mealCategoryService->findItemsByIds($categoryIds, $group);
 
-            // 献立を更新
-            $mealPlan->update([
-                'group_id' => $group->id,
-                'meal_category_id' => $mealCategory->first()->id,
-                'date' => $data['date'],
-            ]);
+            $allRecipeIds = array_unique(array_merge(...array_column($data['data'], 'recipeIds')));
+            $this->recipeService->findItemsByIds($allRecipeIds, $group);
 
-            // 献立・料理を紐づけ
-            if (!empty($data['recipeIds'])) {
-                $this->syncRecipes($mealPlan, $data['recipeIds'], $group);
+            $existingMeals = $mealPlan->meals->keyBy('id');
+            $idsToKeep = [];
+
+            foreach ($data['data'] as $mealData) {
+                $mealId = $mealData['id'] ?? null;
+                $meal = $mealId && $existingMeals->has($mealId) ? $existingMeals->get($mealId) : null;
+
+                if ($meal) {
+                    $meal->update(['category_id' => $mealData['categoryId']]);
+                    $this->syncRecipes($meal, $mealData['recipeIds'], $group);
+                    $idsToKeep[] = $meal->id;
+                } else {
+                    $newMeal = Meal::create([
+                        'meal_plan_id' => $mealPlan->id,
+                        'category_id' => $mealData['categoryId'],
+                    ]);
+                    $this->syncRecipes($newMeal, $mealData['recipeIds'], $group);
+                    $idsToKeep[] = $newMeal->id;
+                }
             }
+
+            $mealPlan->meals()->whereNotIn('id', $idsToKeep)->delete();
+
+            return $mealPlan->fresh();
         });
     }
 
+    /**
+     * 献立に紐づく1食を削除する（献立は削除しない）
+     *
+     * @param string $mealPlanId 献立ID
+     * @param string $mealId 削除する食事ID
+     * @param Group $group グループ
+     * @return Meal 削除された食事
+     * @throws HttpException 献立または食事が見つからない場合
+     */
+    public function deleteMeal(string $mealPlanId, string $mealId, Group $group): Meal
+    {
+        return DB::transaction(function () use ($mealPlanId, $mealId, $group) {
+            $mealPlan = $this->findItemsByIds([$mealPlanId], $group)->first();
+
+            $meal = $mealPlan->meals()->where('id', $mealId)->first();
+
+            if (!$meal) {
+                throw new HttpException(
+                    HttpStatusCode::NOT_FOUND->value,
+                    __('api.not_found', ['attribute' => __('api.attributes.meal')])
+                );
+            }
+
+            // 削除メッセージ用に献立・カテゴリをロード
+            $meal->load(['mealPlan', 'mealCategory']);
+            $meal->delete();
+
+            return $meal;
+        });
+    }
+
+    /**
+     * 1食分の献立メニュー（meals）をフォーマット
+     * @param Collection
+     * @return array
+     */
+    private function formatMeals(Collection $meals): array
+    {
+        return $meals->map(function (Meal $meal) {
+            return [
+                'id' => $meal->id,
+                'category' => $this->formatCategory($meal->mealCategory),
+                'recipes' => $this->formatRecipes($meal->recipes),
+            ];
+        })->values()->toArray();
+    }
+
+    /**
+     * 献立カテゴリをフォーマット
+     * @param MealCategory $category
+     * @return array
+     */
     private function formatCategory($category): array
     {
         return [
@@ -131,36 +203,33 @@ class MealPlanService extends AbstractDomainService
             'order' => $category->order,
         ];
     }
-
     /**
-     * 献立の料理情報をフォーマット
+     * レシピ一覧をフォーマット
+     * @param Collection $recipes
+     * @return array
      */
-    private function formatRecipes($recipes): array
+    private function formatRecipes(Collection $recipes): array
     {
-        return  $recipes->map(function ($recipe) {
-            return [
-                'id' => $recipe->id,
-                'name' => $recipe->name,
-                'categories' => $this->recipeService->formatRecipeCategories($recipe->categories),
-                'thumbnail' => $this->imageService->formatImage($recipe->thumbnails->first()),
-            ];
-        })->values()->toArray();
+        return $recipes->map(fn($recipe) => $this->recipeService->formatRecipeListItem($recipe))->values()->toArray();
     }
 
-    private function syncRecipes(MealPlan $mealPlan, array $recipeIds, Group $group): void
+    /**
+     * 献立にレシピを同期
+     * @param Meal $meal
+     * @param array $recipeIds
+     * @param Group $group
+     * @return void
+     */
+    private function syncRecipes(Meal $meal, array $recipeIds, Group $group): void
     {
-        // recipeIds をユニークに整形
         $recipeIds = array_values(array_unique($recipeIds));
 
         if (empty($recipeIds)) {
-            $mealPlan->recipes()->sync([]);
+            $meal->recipes()->sync([]);
             return;
         }
 
-        // レシピの存在チェック（グループに属するもののみ）
         $this->recipeService->findItemsByIds($recipeIds, $group);
-
-        // (meal_plan_id, recipe_id) のみで sync
-        $mealPlan->recipes()->sync($recipeIds);
+        $meal->recipes()->sync($recipeIds);
     }
 }

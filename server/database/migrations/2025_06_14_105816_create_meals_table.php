@@ -11,10 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('meal_plan_recipe_mappings', function (Blueprint $table) {
+        Schema::create('meals', function (Blueprint $table) {
+            $table->uuid('id')->primary();
             $table->foreignUuid('meal_plan_id')->constrained('meal_plans', 'id')->cascadeOnDelete();
-            $table->foreignUuid('recipe_id')->constrained('recipes', 'id')->cascadeOnDelete();
-            $table->primary(['meal_plan_id', 'recipe_id']);
+            $table->foreignUuid('category_id')->constrained('meal_categories', 'id')->cascadeOnDelete();
+            $table->timestamps();
         });
     }
 
@@ -23,11 +24,11 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('meal_plan_recipe_mappings', function (Blueprint $table) {
+        Schema::table('meals', function (Blueprint $table) {
             $table->dropForeign(['meal_plan_id']);
-            $table->dropForeign(['recipe_id']);
+            $table->dropForeign(['category_id']);
         });
 
-        Schema::dropIfExists('meal_plan_recipe_mappings');
+        Schema::dropIfExists('meals');
     }
 };

@@ -23,6 +23,7 @@ return [
         'show' => '献立詳細取得',
         'update' => '献立更新',
         'destroy' => '献立削除',
+        'destroy_meal' => '献立の1食削除',
     ],
     'meal_category' => [
         'index' => '献立カテゴリ一覧取得',

@@ -23,6 +23,7 @@ return [
         'show' => 'Meal plan detail retrieval',
         'update' => 'Meal plan update',
         'destroy' => 'Meal plan deletion',
+        'destroy_meal' => 'Delete one meal from meal plan',
     ],
     'meal_category' => [
         'index' => 'Meal category list retrieval',

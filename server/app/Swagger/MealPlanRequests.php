@@ -7,14 +7,15 @@ namespace App\Swagger;
  *
  * @OA\Schema(
  *     schema="MealPlanRequest",
- *     required={"date", "mealCategoryId", "recipeIds"},
- *     @OA\Property(property="date", type="string", format="date", description="日付", example="2023-10-05"),
- *     @OA\Property(property="mealCategoryId", type="string", description="種別ID", example="1"),
- *     @OA\Property(
- *         property="recipeIds",
- *         type="array",
- *         description="料理IDの配列",
- *         @OA\Items(type="string", format="uuid", description="料理ID", example="1")
+ *     @OA\Property(property="data", type="array", description="献立メニュー",
+ *         @OA\Items(
+ *             type="object",
+ *             @OA\Property(property="id", type="string", description="ID", example="1", nullable=true),
+ *             @OA\Property(property="categoryId", type="string", description="献立カテゴリID", example="1"),
+ *             @OA\Property(property="recipeIds", type="array", description="料理IDの配列",
+ *                 @OA\Items(type="string", format="uuid", description="料理ID", example="1")
+ *             )
+ *         )
  *     )
  * )
  *

@@ -16,9 +16,11 @@ class MealPlanStoreRequest extends BaseApiRequest
     {
         return [
             'date' => 'date_format:Y-m-d|required',
-            'mealCategoryId' => 'uuid|required',
-            'recipeIds' => 'array|min:1|required',
-            'recipeIds.*' => 'uuid|required',
+            'data' => 'array|min:1|required',
+            'data.*.id' => 'uuid|nullable',
+            'data.*.categoryId' => 'uuid|required',
+            'data.*.recipeIds' => 'array|min:1|required',
+            'data.*.recipeIds.*' => 'uuid|required',
         ];
     }
 
@@ -32,13 +34,17 @@ class MealPlanStoreRequest extends BaseApiRequest
         return [
             'date.date_format' => __('validation.date_format', ['attribute' => 'date', 'format' => 'Y-m-d']),
             'date.required' => __('validation.required', ['attribute' => 'date']),
-            'mealCategoryId.uuid' => __('validation.uuid', ['attribute' => 'mealCategoryId']),
-            'mealCategoryId.required' => __('validation.required', ['attribute' => 'mealCategoryId']),
-            'recipeIds.array' => __('validation.array', ['attribute' => 'recipeIds']),
-            'recipeIds.min' => __('validation.min.array', ['attribute' => 'recipeIds', 'min' => 1]),
-            'recipeIds.required' => __('validation.required', ['attribute' => 'recipeIds']),
-            'recipeIds.*.uuid' => __('validation.uuid', ['attribute' => 'recipeIds.*']),
-            'recipeIds.*.required' => __('validation.required', ['attribute' => 'recipeIds.*']),
+            'data.array' => __('validation.array', ['attribute' => 'data']),
+            'data.min' => __('validation.min.array', ['attribute' => 'data', 'min' => 1]),
+            'data.required' => __('validation.required', ['attribute' => 'data']),
+            'data.*.id.uuid' => __('validation.uuid', ['attribute' => 'data.*.id']),
+            'data.*.categoryId.uuid' => __('validation.uuid', ['attribute' => 'data.*.categoryId']),
+            'data.*.categoryId.required' => __('validation.required', ['attribute' => 'data.*.categoryId']),
+            'data.*.recipeIds.array' => __('validation.array', ['attribute' => 'data.*.recipeIds']),
+            'data.*.recipeIds.min' => __('validation.min.array', ['attribute' => 'data.*.recipeIds', 'min' => 1]),
+            'data.*.recipeIds.required' => __('validation.required', ['attribute' => 'data.*.recipeIds']),
+            'data.*.recipeIds.*.uuid' => __('validation.uuid', ['attribute' => 'data.*.recipeIds.*']),
+            'data.*.recipeIds.*.required' => __('validation.required', ['attribute' => 'data.*.recipeIds.*']),
         ];
     }
 

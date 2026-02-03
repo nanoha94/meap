@@ -5,10 +5,19 @@ namespace App\Swagger;
 /**
  * @OA\Schema(
  *     schema="MealPlan",
- *     required={"date", "mealCategory"},
+ *     required={"date", "meals"},
  *     @OA\Property(property="id", type="string", description="ID", example="1"),
  *     @OA\Property(property="date", type="string", format="date", description="日付", example="2023-10-05"),
- *     @OA\Property(property="mealCategory", ref="#/components/schemas/MealCategory", description="献立カテゴリ"),
+ *     @OA\Property(property="meals", type="array", description="献立メニュー",
+ *         @OA\Items(ref="#/components/schemas/Meal")
+ *     )
+ * )
+ * 
+ * @OA\Schema(
+ *     schema="Meal",
+ *     required={"date", "category", "recipes"},
+ *     @OA\Property(property="id", type="string", description="ID", example="1"),
+ *     @OA\Property(property="category", ref="#/components/schemas/MealCategory", description="献立カテゴリ"),
  *     @OA\Property(property="recipes", type="array", description="料理一覧",
  *         @OA\Items(ref="#/components/schemas/RecipeListItem")
  *     )

@@ -61,6 +61,7 @@ return [
     'attributes' => [
         'user' => 'User',
         'meal_plan' => 'Meal plan',
+        'meal' => 'One meal (from meal plan)',
         'meal_category' => 'Meal category',
         'recipe' => 'Recipe',
         'recipe_category' => 'Recipe category',

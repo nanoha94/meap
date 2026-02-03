@@ -63,6 +63,20 @@ class RecipeService extends AbstractDomainService
         return ['name' => 'name', 'url' => 'url', 'memo' => 'memo', 'serving_count' => 'servingCount', 'owner_user_id' => 'ownerUserId'];
     }
 
+    /**
+     * レシピ一覧用フォーマット
+     * @param Recipe $recipe
+     * @return array
+     */
+    public function formatRecipeListItem(Recipe $recipe): array
+    {
+        return [
+            'id' => $recipe->id,
+            'name' => $recipe->name,
+            'categories' => $this->formatRecipeCategories($recipe->categories),
+            'thumbnail' => $this->imageService->formatImage($recipe->thumbnails->first()),
+        ];
+    }
 
     protected function formatIndexResponse(Model|Collection $item): array
     {
@@ -74,12 +88,7 @@ class RecipeService extends AbstractDomainService
             $item->load('group');
         }
 
-        return [
-            'id' => $item->id,
-            'name' => $item->name,
-            'categories' => $this->formatRecipeCategories($item->categories),
-            'thumbnail' => $this->imageService->formatImage($item->thumbnails->first()),
-        ];
+        return $this->formatRecipeListItem($item);
     }
 
     protected function formatShowResponse(Model $item): array

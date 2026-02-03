@@ -13,12 +13,9 @@ namespace App\Swagger;
  *             required={"data"},
  *             @OA\Property(
  *                 property="data",
- *                 type="object",
+ *                 type="array",
  *                 description="日付と献立メニュー",
- *                 @OA\Property(property="date", type="string", format="date", description="日付", example="2023-10-05"),
- *                 @OA\Property(property="mealPlans", type="array", description="献立メニュー",
- *                     @OA\Items(ref="#/components/schemas/MealPlan")
- *                 )
+ *                 @OA\Items( ref="#/components/schemas/MealPlan")
  *             )
  *         )
  *     }
@@ -58,6 +55,11 @@ namespace App\Swagger;
  * @OA\Response(
  *     response="MealPlanDestroySuccess",
  *     description="献立(2024-01-15)を削除しました。",
+ *     @OA\JsonContent(ref="#/components/schemas/BaseApiResponse")
+ * )
+ * @OA\Response(
+ *     response="MealPlanMealDestroySuccess",
+ *     description="献立の1食を削除しました。",
  *     @OA\JsonContent(ref="#/components/schemas/BaseApiResponse")
  * )
  *

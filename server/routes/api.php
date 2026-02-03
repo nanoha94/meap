@@ -26,6 +26,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // meal-plans
     Route::apiResource('/meal-plans', MealPlanController::class);
+    Route::delete('/meal-plans/{mealPlanId}/meals/{mealId}', [MealPlanController::class, 'destroyMeal'])
+        ->name('meal-plans.meals.destroy');
     Route::apiResource('/meal-categories', MealCategoryController::class)->only(['index', 'store', 'destroy']);
     Route::put('/meal-categories/bulk', [MealCategoryController::class, 'bulkUpdate']);
 

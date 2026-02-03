@@ -60,6 +60,7 @@ return [
     'attributes' => [
         'user' => 'ユーザー',
         'meal_plan' => '献立',
+        'meal' => '献立の1食',
         'meal_category' => '献立カテゴリ',
         'recipe' => '料理/レシピ',
         'recipe_category' => '料理カテゴリー',

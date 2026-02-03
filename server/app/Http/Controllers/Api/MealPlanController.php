@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\Api\MealPlanDestroyRequest;
 use App\Http\Requests\Api\MealPlanIndexRequest;
+use App\Http\Requests\Api\MealDestroyRequest;
 use App\Http\Requests\Api\MealPlanShowRequest;
 use App\Http\Requests\Api\MealPlanStoreRequest;
 use App\Http\Requests\Api\MealPlanUpdateRequest;
@@ -128,8 +129,8 @@ class MealPlanController extends ApiController
 
         return $this->executeWithExceptionHandling(
             function () use ($request, $id) {
-                $this->mealPlanService->update($id, $request->validated(), $this->getUserGroup($request));
-                $message = __('api.updated', ['attribute' => __('api.attributes.meal_plan'), 'name' => $request->input('date')]);
+                $mealPlan = $this->mealPlanService->update($id, $request->validated(), $this->getUserGroup($request));
+                $message = __('api.updated', ['attribute' => __('api.attributes.meal_plan'), 'name' => $mealPlan->date]);
                 return $this->updatedResponse(null, $message);
             },
             $request,
@@ -160,6 +161,36 @@ class MealPlanController extends ApiController
             function () use ($request, $id) {
                 $deletedMealPlan = $this->mealPlanService->delete($id, $this->getUserGroup($request));
                 $message = __('api.deleted', ['attribute' => __('api.attributes.meal_plan'), 'name' => $deletedMealPlan->date]);
+                return $this->deletedResponse($message);
+            },
+            $request,
+            $failedMessage,
+            $operation
+        );
+    }
+
+    /**
+     * @OA\Delete(
+     *     path="/meal-plans/{mealPlanId}/meals/{mealId}",
+     *     summary="献立の1食を削除",
+     *     tags={"MealPlans"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(ref="#/components/parameters/MealPlanIdPathParam"),
+     *     @OA\Parameter(ref="#/components/parameters/MealIdParam"),
+     *     @OA\Response(response=200, ref="#/components/responses/MealPlanMealDestroySuccess"),
+     *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
+     *     @OA\Response(response=404, ref="#/components/responses/NotFound")
+     * )
+     */
+    public function destroyMeal(MealDestroyRequest $request, string $mealPlanId, string $mealId): JsonResponse
+    {
+        $operation = __('operations.meal_plan.destroy_meal');
+        $failedMessage = __('api.deletion_failed', ['attribute' => __('api.attributes.meal')]);
+
+        return $this->executeWithExceptionHandling(
+            function () use ($request, $mealPlanId, $mealId) {
+                $deletedMeal = $this->mealPlanService->deleteMeal($mealPlanId, $mealId, $this->getUserGroup($request));
+                $message = __('api.deleted', ['attribute' => __('api.attributes.meal_plan'), 'name' => $deletedMeal->mealPlan->date . ' / ' . $deletedMeal->mealCategory->name]);
                 return $this->deletedResponse($message);
             },
             $request,

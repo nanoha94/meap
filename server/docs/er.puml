@@ -75,19 +75,17 @@ entity groups #LightBlue {
     * group_size : number / グループに属するユーザの数
 }
 
-entity meal_plan_recipe_mappings {
-    * meal_plan_id : string <<FK>>
+entity meal_recipe_mappings {
+    * meal_id : string <<FK>>
     * recipe_id : string <<FK>>
 }
 
-entity meal_plans #LightBlue {
+entity meals {
     * id : string <<generated>>
     ---
-    * date : date
-    * group_id : string <<FK>>
-    * meal_category_id : string <<FK>>
+    * meal_plan_id : string <<FK>>
+    * category_id : string <<FK>>
 }
-
 
 entity meal_categories #LightBlue {
     * id : string <<generated>>
@@ -96,6 +94,13 @@ entity meal_categories #LightBlue {
     * color_id : string <<FK>>
     * group_id : string <<FK>>
     * order : int / ソート順
+}
+
+entity meal_plans #LightBlue {
+    * id : string <<generated>>
+    --
+    * date : date
+    * group_id : string <<FK>>
 }
 
 entity colors {
@@ -257,10 +262,11 @@ meal_categories }o--|| groups : group_id
 colors ||--o| meal_categories : color_id
 
 meal_plans }o--|| groups : group_id
-meal_plans }o--|| meal_categories : meal_category_id
+meal_plans ||--o{ meals : meal_plan_id
+meals }o--|| meal_categories : category_id
 recipes }o--|| groups : group_id
-recipes ||--o{ meal_plan_recipe_mappings : recipe_id
-meal_plan_recipe_mappings }o--|| meal_plans : meal_plan_id
+recipes ||--o{ meal_recipe_mappings : recipe_id
+meal_recipe_mappings }o--|| meals : meal_id
 
 recipes ||--o{ recipe_steps : recipe_id
 users ||--o{ recipes : owner_user_id
@@ -293,12 +299,17 @@ note bottom of groups
   もしくは、すでに存在しているグループに招待してもらって所属する。
 end note
 
-note left of meal_plans
-  献立情報を管理する。
+note right of meal_plans
+  １日ごとの献立を管理する。
+end note
+
+note right of meals
+  １食ごとの献立を管理する。
 end note
 
 note right of meal_categories
-  献立カテゴリを管理する。（朝食、昼食、夕食など）
+  献立カテゴリを管理する。
+  （朝食、昼食、夕食など）
 end note
 
 note right of recipes
@@ -313,7 +324,7 @@ note right of recipe_steps
   料理手順を管理する。
 end note
 
-note top of recipe_categories
+note right of recipe_categories
   料理カテゴリを管理する。
 end note
 
