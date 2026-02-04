@@ -7,9 +7,9 @@ namespace App\Swagger;
  *
  * @OA\Schema(
  *     schema="MealPlanStoreRequest",
- *     required={"date", "data"},
+ *     required={"date", "meals"},
  *     @OA\Property(property="date", type="string", format="date", description="献立の日付（Y-m-d）", example="2025-02-03"),
- *     @OA\Property(property="data", type="array", description="献立メニュー",
+ *     @OA\Property(property="meals", type="array", description="献立メニュー",
  *         @OA\Items(
  *             type="object",
  *             required={"categoryId", "recipeIds"},
@@ -26,8 +26,8 @@ namespace App\Swagger;
  *
  * @OA\Schema(
  *     schema="MealPlanUpdateRequest",
- *     required={"data"},
- *     @OA\Property(property="data", type="array", description="献立メニュー",
+ *     required={"meals"},
+ *     @OA\Property(property="meals", type="array", description="献立メニュー",
  *         @OA\Items(
  *             type="object",
  *             required={"categoryId", "recipeIds"},
@@ -42,13 +42,13 @@ namespace App\Swagger;
  *
  * @OA\RequestBody(
  *     request="MealPlanStoreRequest",
- *     description="献立作成。date は必須。data は1件以上必須。",
+ *     description="献立作成。date は必須。meals は1件以上必須。",
  *     required=true,
  *     @OA\JsonContent(ref="#/components/schemas/MealPlanStoreRequest")
  * )
  * @OA\RequestBody(
  *     request="MealPlanUpdateRequest",
- *     description="献立更新。data は1件以上必須。",
+ *     description="献立更新。meals は1件以上必須。",
  *     required=true,
  *     @OA\JsonContent(ref="#/components/schemas/MealPlanUpdateRequest")
  * )

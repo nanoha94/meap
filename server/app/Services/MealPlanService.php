@@ -81,10 +81,10 @@ class MealPlanService extends AbstractDomainService
     {
         DB::transaction(function () use ($data, $group) {
             // 献立カテゴリ・レシピの存在チェック
-            $categoryIds = array_unique(array_column($data['data'], 'categoryId'));
+            $categoryIds = array_unique(array_column($data['meals'], 'categoryId'));
             $this->mealCategoryService->findItemsByIds($categoryIds, $group);
 
-            $allRecipeIds = array_unique(array_merge(...array_column($data['data'], 'recipeIds')));
+            $allRecipeIds = array_unique(array_merge(...array_column($data['meals'], 'recipeIds')));
             $this->recipeService->findItemsByIds($allRecipeIds, $group);
 
             // 献立（1日）を作成
@@ -93,7 +93,7 @@ class MealPlanService extends AbstractDomainService
                 'date' => $data['date'],
             ]);
 
-            foreach ($data['data'] as $mealData) {
+            foreach ($data['meals'] as $mealData) {
                 $meal = Meal::create([
                     'meal_plan_id' => $mealPlan->id,
                     'category_id' => $mealData['categoryId'],
@@ -109,16 +109,16 @@ class MealPlanService extends AbstractDomainService
             $mealPlan = $this->findItemsByIds([$id], $group)->first();
 
             // 献立カテゴリ・レシピの存在チェック
-            $categoryIds = array_unique(array_column($data['data'], 'categoryId'));
+            $categoryIds = array_unique(array_column($data['meals'], 'categoryId'));
             $this->mealCategoryService->findItemsByIds($categoryIds, $group);
 
-            $allRecipeIds = array_unique(array_merge(...array_column($data['data'], 'recipeIds')));
+            $allRecipeIds = array_unique(array_merge(...array_column($data['meals'], 'recipeIds')));
             $this->recipeService->findItemsByIds($allRecipeIds, $group);
 
             $existingMeals = $mealPlan->meals->keyBy('id');
             $idsToKeep = [];
 
-            foreach ($data['data'] as $mealData) {
+            foreach ($data['meals'] as $mealData) {
                 $mealId = $mealData['id'] ?? null;
                 $meal = $mealId && $existingMeals->has($mealId) ? $existingMeals->get($mealId) : null;
 

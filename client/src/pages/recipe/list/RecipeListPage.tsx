@@ -24,6 +24,10 @@ const RecipeListPage = ({
     const { setRecipes: setStoreRecipes } = useRecipeStore();
     const { addSnackbar } = useSnackbars();
 
+    /**
+     * 料理/レシピをストアにセット
+     * @returns void
+     */
     React.useEffect(() => {
         if (fetchRecipes) {
             setStoreRecipes(fetchRecipes);

@@ -16,11 +16,11 @@ class MealPlanStoreRequest extends BaseApiRequest
     {
         return [
             'date' => 'date_format:Y-m-d|required',
-            'data' => 'array|min:1|required',
-            'data.*.id' => 'uuid|nullable',
-            'data.*.categoryId' => 'uuid|required',
-            'data.*.recipeIds' => 'array|min:1|required',
-            'data.*.recipeIds.*' => 'uuid|required',
+            'meals' => 'array|min:1|required',
+            'meals.*.id' => 'uuid|nullable',
+            'meals.*.categoryId' => 'uuid|required',
+            'meals.*.recipeIds' => 'array|min:1|required',
+            'meals.*.recipeIds.*' => 'uuid|required',
         ];
     }
 
@@ -34,17 +34,17 @@ class MealPlanStoreRequest extends BaseApiRequest
         return [
             'date.date_format' => __('validation.date_format', ['attribute' => 'date', 'format' => 'Y-m-d']),
             'date.required' => __('validation.required', ['attribute' => 'date']),
-            'data.array' => __('validation.array', ['attribute' => 'data']),
-            'data.min' => __('validation.min.array', ['attribute' => 'data', 'min' => 1]),
-            'data.required' => __('validation.required', ['attribute' => 'data']),
-            'data.*.id.uuid' => __('validation.uuid', ['attribute' => 'data.*.id']),
-            'data.*.categoryId.uuid' => __('validation.uuid', ['attribute' => 'data.*.categoryId']),
-            'data.*.categoryId.required' => __('validation.required', ['attribute' => 'data.*.categoryId']),
-            'data.*.recipeIds.array' => __('validation.array', ['attribute' => 'data.*.recipeIds']),
-            'data.*.recipeIds.min' => __('validation.min.array', ['attribute' => 'data.*.recipeIds', 'min' => 1]),
-            'data.*.recipeIds.required' => __('validation.required', ['attribute' => 'data.*.recipeIds']),
-            'data.*.recipeIds.*.uuid' => __('validation.uuid', ['attribute' => 'data.*.recipeIds.*']),
-            'data.*.recipeIds.*.required' => __('validation.required', ['attribute' => 'data.*.recipeIds.*']),
+            'meals.array' => __('validation.array', ['attribute' => 'meals']),
+            'meals.min' => __('validation.min.array', ['attribute' => 'meals', 'min' => 1]),
+            'meals.required' => __('validation.required', ['attribute' => 'meals']),
+            'meals.*.id.uuid' => __('validation.uuid', ['attribute' => 'meals.*.id']),
+            'meals.*.categoryId.uuid' => __('validation.uuid', ['attribute' => 'meals.*.categoryId']),
+            'meals.*.categoryId.required' => __('validation.required', ['attribute' => 'meals.*.categoryId']),
+            'meals.*.recipeIds.array' => __('validation.array', ['attribute' => 'meals.*.recipeIds']),
+            'meals.*.recipeIds.min' => __('validation.min.array', ['attribute' => 'meals.*.recipeIds', 'min' => 1]),
+            'meals.*.recipeIds.required' => __('validation.required', ['attribute' => 'meals.*.recipeIds']),
+            'meals.*.recipeIds.*.uuid' => __('validation.uuid', ['attribute' => 'meals.*.recipeIds.*']),
+            'meals.*.recipeIds.*.required' => __('validation.required', ['attribute' => 'meals.*.recipeIds.*']),
         ];
     }
 

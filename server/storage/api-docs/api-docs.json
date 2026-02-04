@@ -1743,7 +1743,7 @@
             "MealPlanStoreRequest": {
                 "required": [
                     "date",
-                    "data"
+                    "meals"
                 ],
                 "properties": {
                     "date": {
@@ -1752,7 +1752,7 @@
                         "format": "date",
                         "example": "2025-02-03"
                     },
-                    "data": {
+                    "meals": {
                         "description": "献立メニュー",
                         "type": "array",
                         "items": {
@@ -1793,10 +1793,10 @@
             },
             "MealPlanUpdateRequest": {
                 "required": [
-                    "data"
+                    "meals"
                 ],
                 "properties": {
-                    "data": {
+                    "meals": {
                         "description": "献立メニュー",
                         "type": "array",
                         "items": {
@@ -3727,7 +3727,7 @@
                 }
             },
             "MealPlanStoreRequest": {
-                "description": "献立作成。date は必須。data は1件以上必須。",
+                "description": "献立作成。date は必須。meals は1件以上必須。",
                 "required": true,
                 "content": {
                     "application/json": {
@@ -3738,7 +3738,7 @@
                 }
             },
             "MealPlanUpdateRequest": {
-                "description": "献立更新。data は1件以上必須。",
+                "description": "献立更新。meals は1件以上必須。",
                 "required": true,
                 "content": {
                     "application/json": {

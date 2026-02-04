@@ -2,22 +2,22 @@
 import { useForm } from 'react-hook-form';
 
 import { EDIT_MODE, EditMode } from '@/constants';
-import { IMealPlan, IPostPutMealPlanRequest, IRecipeListItem } from '@/types';
+import { IMealPlan, IPostPutMealPlanRequest } from '@/types';
 import { MealPlanEditFormData } from '../types';
 import { DEFAULT_MEAL_PLAN_EDIT_FORM_DATA } from '../constants';
 import { useMealPlanApi } from './useMealPlanApi';
 
 
-export const useMealPlanEditForm = (date: string, fetchMealPlans?: IMealPlan[]) => {
+export const useMealPlanEditForm = (date: string, fetchMealPlan?: IMealPlan) => {
     const methods = useForm<MealPlanEditFormData>({
         defaultValues: { 
             ...DEFAULT_MEAL_PLAN_EDIT_FORM_DATA, 
-            ...fetchMealPlans,
+            ...fetchMealPlan,
         },
     });
     const { control, handleSubmit } = methods;
     const { storeMealPlan, updateMealPlan } = useMealPlanApi();
-    const editMode: EditMode = fetchMealPlans
+    const editMode: EditMode = fetchMealPlan
         ? EDIT_MODE.UPDATE
         : EDIT_MODE.CREATE;
 
@@ -28,8 +28,7 @@ export const useMealPlanEditForm = (date: string, fetchMealPlans?: IMealPlan[]) 
     const onSubmit = (data: MealPlanEditFormData) => {
         const sendData: IPostPutMealPlanRequest = {
             date: date,
-            mealCategoryId: data.mealCategory.id,
-            recipeIds: data.recipes.map((v: IRecipeListItem) => v.id),
+            meals: data.meals,
         };
 
         if (editMode === EDIT_MODE.CREATE) {

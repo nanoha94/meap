@@ -164,7 +164,7 @@ beforeEach(function () {
         {
             $requestData = [
                 'date' => $date,
-                'data' => [
+                'meals' => [
                     [
                         'categoryId' => $mealCategoryId,
                         'recipeIds' => [$recipeId],
@@ -427,7 +427,7 @@ test('3-5-8: 【新規作成】 正常な献立作成', function () {
 
     $requestData = [
         'date' => '2024-01-15',
-        'data' => [
+        'meals' => [
             [
                 'categoryId' => $mealCategory['id'],
                 'recipeIds' => [$recipe['id']],
@@ -471,7 +471,7 @@ test('3-5-9: 【新規作成】 献立に料理を紐づけ', function () {
 
     $requestData = [
         'date' => '2024-01-15',
-        'data' => [
+        'meals' => [
             [
                 'categoryId' => $mealCategory['id'],
                 'recipeIds' => [$recipe['id']],
@@ -497,7 +497,7 @@ test('3-5-9: 【新規作成】 献立に料理を紐づけ', function () {
 test('3-5-10: 【新規作成】 未認証ユーザー', function () {
     $requestData = [
         'date' => '2024-01-15',
-        'data' => [
+        'meals' => [
             [
                 'categoryId' => \Illuminate\Support\Str::uuid(),
                 'recipeIds' => [\Illuminate\Support\Str::uuid()],
@@ -531,7 +531,7 @@ test('3-5-11: 【新規作成】 グループが存在しない', function () {
 
     $requestData = [
         'date' => '2024-01-15',
-        'data' => [
+        'meals' => [
             [
                 'categoryId' => \Illuminate\Support\Str::uuid(),
                 'recipeIds' => [\Illuminate\Support\Str::uuid()],
@@ -567,7 +567,7 @@ test('3-5-12: 【新規作成】 データベース接続エラー', function ()
 
     $requestData = [
         'date' => '2024-01-15',
-        'data' => [
+        'meals' => [
             [
                 'categoryId' => $mealCategory['id'],
                 'recipeIds' => [$recipe['id']],
@@ -605,7 +605,7 @@ test('3-5-13: 【新規作成】 料理紐づけ失敗', function () {
 
     $requestData = [
         'date' => '2024-01-15',
-        'data' => [
+        'meals' => [
             [
                 'categoryId' => $mealCategory['id'],
                 'recipeIds' => [$recipe['id']],
@@ -639,7 +639,7 @@ test('3-5-14: 【新規作成】 バリデーションエラー（date 必須）
     $recipe = $this->testData->createRecipeViaApi($this, $user);
 
     $requestData = [
-        'data' => [
+        'meals' => [
             [
                 'categoryId' => $mealCategory['id'],
                 'recipeIds' => [$recipe['id']],
@@ -663,7 +663,7 @@ test('3-5-15: 【新規作成】 バリデーションエラー（date 形式）
 
     $requestData = [
         'date' => 'invalid-date-format',
-        'data' => [
+        'meals' => [
             [
                 'categoryId' => $mealCategory['id'],
                 'recipeIds' => [$recipe['id']],
@@ -680,7 +680,7 @@ test('3-5-15: 【新規作成】 バリデーションエラー（date 形式）
     $this->assertContains('dateはY-m-d形式で指定してください。', $responseData['errors']['date']);
 });
 
-test('3-5-19: 【新規作成】 バリデーションエラー（data 必須）', function () {
+test('3-5-19: 【新規作成】 バリデーションエラー（meals 必須）', function () {
     $user = $this->testData->createUserWithGroup();
 
     $requestData = [
@@ -690,55 +690,55 @@ test('3-5-19: 【新規作成】 バリデーションエラー（data 必須）
     $response = $this->actingAs($user)->post('/meal-plans', $requestData);
 
     $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['data']);
+    $response->assertJsonValidationErrors(['meals']);
     $response->assertJson(['success' => false]);
     $responseData = $response->json();
-    $this->assertContains('dataは必ず指定してください。', $responseData['errors']['data']);
+    $this->assertContains('mealsは必ず指定してください。', $responseData['errors']['meals']);
 });
 
-test('3-5-20: 【新規作成】 バリデーションエラー（data 配列形式）', function () {
+test('3-5-20: 【新規作成】 バリデーションエラー（meals 配列形式）', function () {
     $user = $this->testData->createUserWithGroup();
     $mealCategory = $this->testData->createmealCategoryViaApi($this, $user);
     $recipe = $this->testData->createRecipeViaApi($this, $user);
 
     $requestData = [
         'date' => '2024-01-15',
-        'data' => 'not_an_array',
+        'meals' => 'not_an_array',
     ];
 
     $response = $this->actingAs($user)->post('/meal-plans', $requestData);
 
     $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['data']);
+    $response->assertJsonValidationErrors(['meals']);
     $response->assertJson(['success' => false]);
     $responseData = $response->json();
-    $this->assertContains('dataは配列でなくてはなりません。', $responseData['errors']['data']);
+    $this->assertContains('mealsは配列でなくてはなりません。', $responseData['errors']['meals']);
 });
 
-test('3-5-21: 【新規作成】 バリデーションエラー（data 最小要素数）', function () {
+test('3-5-21: 【新規作成】 バリデーションエラー（meals 最小要素数）', function () {
     $user = $this->testData->createUserWithGroup();
 
     $requestData = [
         'date' => '2024-01-15',
-        'data' => [],
+        'meals' => [],
     ];
 
     $response = $this->actingAs($user)->post('/meal-plans', $requestData);
 
     $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['data']);
+    $response->assertJsonValidationErrors(['meals']);
     $response->assertJson(['success' => false]);
     $responseData = $response->json();
-    $this->assertContains('dataは1個以上指定してください。', $responseData['errors']['data']);
+    $this->assertContains('mealsは1個以上指定してください。', $responseData['errors']['meals']);
 });
 
-test('3-5-16: 【新規作成】 バリデーションエラー（data.*.categoryId 必須）', function () {
+test('3-5-16: 【新規作成】 バリデーションエラー（meals.*.categoryId 必須）', function () {
     $user = $this->testData->createUserWithGroup();
     $recipe = $this->testData->createRecipeViaApi($this, $user);
 
     $requestData = [
         'date' => '2024-01-15',
-        'data' => [
+        'meals' => [
             [
                 'recipeIds' => [$recipe['id']],
             ],
@@ -748,19 +748,19 @@ test('3-5-16: 【新規作成】 バリデーションエラー（data.*.categor
     $response = $this->actingAs($user)->post('/meal-plans', $requestData);
 
     $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['data.0.categoryId']);
+    $response->assertJsonValidationErrors(['meals.0.categoryId']);
     $response->assertJson(['success' => false]);
     $responseData = $response->json();
-    $this->assertContains('data.*.categoryIdは必ず指定してください。', $responseData['errors']['data.0.categoryId']);
+    $this->assertContains('meals.*.categoryIdは必ず指定してください。', $responseData['errors']['meals.0.categoryId']);
 });
 
-test('3-5-17: 【新規作成】 バリデーションエラー（data.*.categoryId 形式）', function () {
+test('3-5-17: 【新規作成】 バリデーションエラー（meals.*.categoryId 形式）', function () {
     $user = $this->testData->createUserWithGroup();
     $recipe = $this->testData->createRecipeViaApi($this, $user);
 
     $requestData = [
         'date' => '2024-01-15',
-        'data' => [
+        'meals' => [
             [
                 'categoryId' => 'invalid-uuid-format',
                 'recipeIds' => [$recipe['id']],
@@ -771,10 +771,10 @@ test('3-5-17: 【新規作成】 バリデーションエラー（data.*.categor
     $response = $this->actingAs($user)->post('/meal-plans', $requestData);
 
     $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['data.0.categoryId']);
+    $response->assertJsonValidationErrors(['meals.0.categoryId']);
     $response->assertJson(['success' => false]);
     $responseData = $response->json();
-    $this->assertContains('data.*.categoryIdに有効なUUIDを指定してください。', $responseData['errors']['data.0.categoryId']);
+    $this->assertContains('meals.*.categoryIdに有効なUUIDを指定してください。', $responseData['errors']['meals.0.categoryId']);
 });
 
 test('3-5-18: 【新規作成】 バリデーションエラー（categoryId 存在チェック）', function () {
@@ -784,7 +784,7 @@ test('3-5-18: 【新規作成】 バリデーションエラー（categoryId 存
 
     $requestData = [
         'date' => '2024-01-15',
-        'data' => [
+        'meals' => [
             [
                 'categoryId' => $nonExistentCategoryId,
                 'recipeIds' => [$recipe['id']],
@@ -801,13 +801,13 @@ test('3-5-18: 【新規作成】 バリデーションエラー（categoryId 存
     ]);
 });
 
-test('3-5-22: 【新規作成】 バリデーションエラー（data.*.recipeIds 必須）', function () {
+test('3-5-22: 【新規作成】 バリデーションエラー（meals.*.recipeIds 必須）', function () {
     $user = $this->testData->createUserWithGroup();
     $mealCategory = $this->testData->createmealCategoryViaApi($this, $user);
 
     $requestData = [
         'date' => '2024-01-15',
-        'data' => [
+        'meals' => [
             [
                 'categoryId' => $mealCategory['id'],
             ],
@@ -817,20 +817,20 @@ test('3-5-22: 【新規作成】 バリデーションエラー（data.*.recipeI
     $response = $this->actingAs($user)->post('/meal-plans', $requestData);
 
     $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['data.0.recipeIds']);
+    $response->assertJsonValidationErrors(['meals.0.recipeIds']);
     $response->assertJson(['success' => false]);
     $responseData = $response->json();
-    $this->assertContains('data.*.recipeIdsは必ず指定してください。', $responseData['errors']['data.0.recipeIds']);
+    $this->assertContains('meals.*.recipeIdsは必ず指定してください。', $responseData['errors']['meals.0.recipeIds']);
 });
 
-test('3-5-23: 【新規作成】 バリデーションエラー（data.*.recipeIds 配列形式）', function () {
+test('3-5-23: 【新規作成】 バリデーションエラー（meals.*.recipeIds 配列形式）', function () {
     $user = $this->testData->createUserWithGroup();
     $mealCategory = $this->testData->createmealCategoryViaApi($this, $user);
     $recipe = $this->testData->createRecipeViaApi($this, $user);
 
     $requestData = [
         'date' => '2024-01-15',
-        'data' => [
+        'meals' => [
             [
                 'categoryId' => $mealCategory['id'],
                 'recipeIds' => 'not_an_array',
@@ -841,19 +841,19 @@ test('3-5-23: 【新規作成】 バリデーションエラー（data.*.recipeI
     $response = $this->actingAs($user)->post('/meal-plans', $requestData);
 
     $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['data.0.recipeIds']);
+    $response->assertJsonValidationErrors(['meals.0.recipeIds']);
     $response->assertJson(['success' => false]);
     $responseData = $response->json();
-    $this->assertContains('data.*.recipeIdsは配列でなくてはなりません。', $responseData['errors']['data.0.recipeIds']);
+    $this->assertContains('meals.*.recipeIdsは配列でなくてはなりません。', $responseData['errors']['meals.0.recipeIds']);
 });
 
-test('3-5-24: 【新規作成】 バリデーションエラー（data.*.recipeIds 最小要素数）', function () {
+test('3-5-24: 【新規作成】 バリデーションエラー（meals.*.recipeIds 最小要素数）', function () {
     $user = $this->testData->createUserWithGroup();
     $mealCategory = $this->testData->createmealCategoryViaApi($this, $user);
 
     $requestData = [
         'date' => '2024-01-15',
-        'data' => [
+        'meals' => [
             [
                 'categoryId' => $mealCategory['id'],
                 'recipeIds' => [],
@@ -864,19 +864,19 @@ test('3-5-24: 【新規作成】 バリデーションエラー（data.*.recipeI
     $response = $this->actingAs($user)->post('/meal-plans', $requestData);
 
     $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['data.0.recipeIds']);
+    $response->assertJsonValidationErrors(['meals.0.recipeIds']);
     $response->assertJson(['success' => false]);
     $responseData = $response->json();
-    $this->assertContains('data.*.recipeIdsは1個以上指定してください。', $responseData['errors']['data.0.recipeIds']);
+    $this->assertContains('meals.*.recipeIdsは1個以上指定してください。', $responseData['errors']['meals.0.recipeIds']);
 });
 
-test('3-5-25: 【新規作成】 バリデーションエラー（data.*.recipeIds.* 必須）', function () {
+test('3-5-25: 【新規作成】 バリデーションエラー（meals.*.recipeIds.* 必須）', function () {
     $user = $this->testData->createUserWithGroup();
     $mealCategory = $this->testData->createmealCategoryViaApi($this, $user);
 
     $requestData = [
         'date' => '2024-01-15',
-        'data' => [
+        'meals' => [
             [
                 'categoryId' => $mealCategory['id'],
                 'recipeIds' => [null],
@@ -887,19 +887,19 @@ test('3-5-25: 【新規作成】 バリデーションエラー（data.*.recipeI
     $response = $this->actingAs($user)->post('/meal-plans', $requestData);
 
     $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['data.0.recipeIds.0']);
+    $response->assertJsonValidationErrors(['meals.0.recipeIds.0']);
     $response->assertJson(['success' => false]);
     $responseData = $response->json();
-    $this->assertContains('data.*.recipeIds.*は必ず指定してください。', $responseData['errors']['data.0.recipeIds.0']);
+    $this->assertContains('meals.*.recipeIds.*は必ず指定してください。', $responseData['errors']['meals.0.recipeIds.0']);
 });
 
-test('3-5-26: 【新規作成】 バリデーションエラー（data.*.recipeIds.* UUID形式）', function () {
+test('3-5-26: 【新規作成】 バリデーションエラー（meals.*.recipeIds.* UUID形式）', function () {
     $user = $this->testData->createUserWithGroup();
     $mealCategory = $this->testData->createmealCategoryViaApi($this, $user);
 
     $requestData = [
         'date' => '2024-01-15',
-        'data' => [
+        'meals' => [
             [
                 'categoryId' => $mealCategory['id'],
                 'recipeIds' => ['invalid-uuid-format'],
@@ -910,10 +910,10 @@ test('3-5-26: 【新規作成】 バリデーションエラー（data.*.recipeI
     $response = $this->actingAs($user)->post('/meal-plans', $requestData);
 
     $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['data.0.recipeIds.0']);
+    $response->assertJsonValidationErrors(['meals.0.recipeIds.0']);
     $response->assertJson(['success' => false]);
     $responseData = $response->json();
-    $this->assertContains('data.*.recipeIds.*に有効なUUIDを指定してください。', $responseData['errors']['data.0.recipeIds.0']);
+    $this->assertContains('meals.*.recipeIds.*に有効なUUIDを指定してください。', $responseData['errors']['meals.0.recipeIds.0']);
 });
 
 test('3-5-27: 【新規作成】 バリデーションエラー（recipeIds 存在チェック）', function () {
@@ -923,7 +923,7 @@ test('3-5-27: 【新規作成】 バリデーションエラー（recipeIds 存�
 
     $requestData = [
         'date' => '2024-01-15',
-        'data' => [
+        'meals' => [
             [
                 'categoryId' => $mealCategory['id'],
                 'recipeIds' => [$nonExistentRecipeId],
@@ -1122,7 +1122,7 @@ test('3-5-34: 【更新】 正常な献立更新', function () {
     $meal = $mealPlan->meals->first();
 
     $requestData = [
-        'data' => [
+        'meals' => [
             [
                 'id' => $meal->id,
                 'categoryId' => $mealCategory['id'],
@@ -1161,7 +1161,7 @@ test('3-5-35: 【更新】 献立の料理更新', function () {
     $meal = $mealPlan->meals->first();
 
     $requestData = [
-        'data' => [
+        'meals' => [
             [
                 'id' => $meal->id,
                 'categoryId' => $mealCategory['id'],
@@ -1189,7 +1189,7 @@ test('3-5-36: 【更新】 更新成功メッセージの確認', function () {
     $meal = $mealPlan->meals->first();
 
     $requestData = [
-        'data' => [
+        'meals' => [
             [
                 'id' => $meal->id,
                 'categoryId' => $mealCategory['id'],
@@ -1208,7 +1208,7 @@ test('3-5-36: 【更新】 更新成功メッセージの確認', function () {
 
 test('3-5-37: 【更新】 未認証ユーザー', function () {
     $requestData = [
-        'data' => [
+        'meals' => [
             [
                 'categoryId' => \Illuminate\Support\Str::uuid(),
                 'recipeIds' => [\Illuminate\Support\Str::uuid()],
@@ -1240,7 +1240,7 @@ test('3-5-38: 【更新】 グループが存在しない', function () {
     ]);
 
     $requestData = [
-        'data' => [
+        'meals' => [
             [
                 'categoryId' => \Illuminate\Support\Str::uuid(),
                 'recipeIds' => [\Illuminate\Support\Str::uuid()],
@@ -1281,7 +1281,7 @@ test('3-5-39: 【更新】 データベース接続エラー', function () {
     });
 
     $requestData = [
-        'data' => [
+        'meals' => [
             [
                 'id' => $meal->id,
                 'categoryId' => $mealCategory['id'],
@@ -1314,7 +1314,7 @@ test('3-5-40: 【更新】 存在しない献立更新', function () {
     $recipe = $this->testData->createRecipeViaApi($this, $user);
 
     $requestData = [
-        'data' => [
+        'meals' => [
             [
                 'categoryId' => $mealCategory['id'],
                 'recipeIds' => [$recipe['id']],
@@ -1353,7 +1353,7 @@ test('3-5-41: 【更新】 他グループの献立更新', function () {
     $recipe = $this->testData->createRecipeViaApi($this, $user);
 
     $requestData = [
-        'data' => [
+        'meals' => [
             [
                 'categoryId' => $mealCategory['id'],
                 'recipeIds' => [$recipe['id']],
@@ -1381,64 +1381,64 @@ test('3-5-41: 【更新】 他グループの献立更新', function () {
 
 // ==================== 更新バリデーションテストケース（FormRequest rules 順） ====================
 
-test('3-5-42: 【更新】 バリデーションエラー（data 必須）', function () {
+test('3-5-42: 【更新】 バリデーションエラー（meals 必須）', function () {
     $user = $this->testData->createUserWithGroup();
     $mealPlanData = $this->testData->createMealPlanViaApi($this, $user, $this->testData->createmealCategoryViaApi($this, $user)['id'], $this->testData->createRecipeViaApi($this, $user)['id']);
 
     $response = $this->actingAs($user)->put("/meal-plans/{$mealPlanData['id']}", []);
 
     $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['data']);
+    $response->assertJsonValidationErrors(['meals']);
     $response->assertJson(['success' => false]);
     $responseData = $response->json();
-    $this->assertContains('dataは必ず指定してください。', $responseData['errors']['data']);
+    $this->assertContains('mealsは必ず指定してください。', $responseData['errors']['meals']);
 });
 
-test('3-5-43: 【更新】 バリデーションエラー（data 配列形式）', function () {
+test('3-5-43: 【更新】 バリデーションエラー（meals 配列形式）', function () {
     $user = $this->testData->createUserWithGroup();
     $mealPlanData = $this->testData->createMealPlanViaApi($this, $user, $this->testData->createmealCategoryViaApi($this, $user)['id'], $this->testData->createRecipeViaApi($this, $user)['id']);
 
-    $response = $this->actingAs($user)->put("/meal-plans/{$mealPlanData['id']}", ['data' => 'not_an_array']);
+    $response = $this->actingAs($user)->put("/meal-plans/{$mealPlanData['id']}", ['meals' => 'not_an_array']);
 
     $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['data']);
+    $response->assertJsonValidationErrors(['meals']);
     $response->assertJson(['success' => false]);
     $responseData = $response->json();
-    $this->assertContains('dataは配列でなくてはなりません。', $responseData['errors']['data']);
+    $this->assertContains('mealsは配列でなくてはなりません。', $responseData['errors']['meals']);
 });
 
-test('3-5-47: 【更新】 バリデーションエラー（data 最小要素数）', function () {
+test('3-5-47: 【更新】 バリデーションエラー（meals 最小要素数）', function () {
     $user = $this->testData->createUserWithGroup();
     $mealPlanData = $this->testData->createMealPlanViaApi($this, $user, $this->testData->createmealCategoryViaApi($this, $user)['id'], $this->testData->createRecipeViaApi($this, $user)['id']);
 
-    $response = $this->actingAs($user)->put("/meal-plans/{$mealPlanData['id']}", ['data' => []]);
+    $response = $this->actingAs($user)->put("/meal-plans/{$mealPlanData['id']}", ['meals' => []]);
 
     $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['data']);
+    $response->assertJsonValidationErrors(['meals']);
     $response->assertJson(['success' => false]);
     $responseData = $response->json();
-    $this->assertContains('dataは1個以上指定してください。', $responseData['errors']['data']);
+    $this->assertContains('mealsは1個以上指定してください。', $responseData['errors']['meals']);
 });
 
-test('3-5-49: 【更新】 バリデーションエラー（data 最小要素数・空配列）', function () {
+test('3-5-49: 【更新】 バリデーションエラー（meals 最小要素数・空配列）', function () {
     $user = $this->testData->createUserWithGroup();
     $mealPlanData = $this->testData->createMealPlanViaApi($this, $user, $this->testData->createmealCategoryViaApi($this, $user)['id'], $this->testData->createRecipeViaApi($this, $user)['id']);
 
-    $response = $this->actingAs($user)->put("/meal-plans/{$mealPlanData['id']}", ['data' => []]);
+    $response = $this->actingAs($user)->put("/meal-plans/{$mealPlanData['id']}", ['meals' => []]);
 
     $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['data']);
+    $response->assertJsonValidationErrors(['meals']);
     $response->assertJson(['success' => false]);
 });
 
-test('3-5-48: 【更新】 バリデーションエラー（data.*.id 形式）', function () {
+test('3-5-48: 【更新】 バリデーションエラー（meals.*.id 形式）', function () {
     $user = $this->testData->createUserWithGroup();
     $mealCategory = $this->testData->createmealCategoryViaApi($this, $user);
     $recipe = $this->testData->createRecipeViaApi($this, $user);
     $mealPlanData = $this->testData->createMealPlanViaApi($this, $user, $mealCategory['id'], $recipe['id']);
 
     $requestData = [
-        'data' => [
+        'meals' => [
             [
                 'id' => 'invalid-uuid-format',
                 'categoryId' => $mealCategory['id'],
@@ -1450,19 +1450,19 @@ test('3-5-48: 【更新】 バリデーションエラー（data.*.id 形式）'
     $response = $this->actingAs($user)->put("/meal-plans/{$mealPlanData['id']}", $requestData);
 
     $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['data.0.id']);
+    $response->assertJsonValidationErrors(['meals.0.id']);
     $response->assertJson(['success' => false]);
     $responseData = $response->json();
-    $this->assertContains('data.*.idに有効なUUIDを指定してください。', $responseData['errors']['data.0.id']);
+    $this->assertContains('meals.*.idに有効なUUIDを指定してください。', $responseData['errors']['meals.0.id']);
 });
 
-test('3-5-44: 【更新】 バリデーションエラー（data.*.categoryId 必須）', function () {
+test('3-5-44: 【更新】 バリデーションエラー（meals.*.categoryId 必須）', function () {
     $user = $this->testData->createUserWithGroup();
     $recipe = $this->testData->createRecipeViaApi($this, $user);
     $mealPlanData = $this->testData->createMealPlanViaApi($this, $user, $this->testData->createmealCategoryViaApi($this, $user)['id'], $recipe['id']);
 
     $requestData = [
-        'data' => [
+        'meals' => [
             [
                 'recipeIds' => [$recipe['id']],
             ],
@@ -1472,19 +1472,19 @@ test('3-5-44: 【更新】 バリデーションエラー（data.*.categoryId �
     $response = $this->actingAs($user)->put("/meal-plans/{$mealPlanData['id']}", $requestData);
 
     $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['data.0.categoryId']);
+    $response->assertJsonValidationErrors(['meals.0.categoryId']);
     $response->assertJson(['success' => false]);
     $responseData = $response->json();
-    $this->assertContains('data.*.categoryIdは必ず指定してください。', $responseData['errors']['data.0.categoryId']);
+    $this->assertContains('meals.*.categoryIdは必ず指定してください。', $responseData['errors']['meals.0.categoryId']);
 });
 
-test('3-5-45: 【更新】 バリデーションエラー（data.*.categoryId 形式）', function () {
+test('3-5-45: 【更新】 バリデーションエラー（meals.*.categoryId 形式）', function () {
     $user = $this->testData->createUserWithGroup();
     $recipe = $this->testData->createRecipeViaApi($this, $user);
     $mealPlanData = $this->testData->createMealPlanViaApi($this, $user, $this->testData->createmealCategoryViaApi($this, $user)['id'], $recipe['id']);
 
     $requestData = [
-        'data' => [
+        'meals' => [
             [
                 'categoryId' => 'invalid-uuid-format',
                 'recipeIds' => [$recipe['id']],
@@ -1495,10 +1495,10 @@ test('3-5-45: 【更新】 バリデーションエラー（data.*.categoryId �
     $response = $this->actingAs($user)->put("/meal-plans/{$mealPlanData['id']}", $requestData);
 
     $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['data.0.categoryId']);
+    $response->assertJsonValidationErrors(['meals.0.categoryId']);
     $response->assertJson(['success' => false]);
     $responseData = $response->json();
-    $this->assertContains('data.*.categoryIdに有効なUUIDを指定してください。', $responseData['errors']['data.0.categoryId']);
+    $this->assertContains('meals.*.categoryIdに有効なUUIDを指定してください。', $responseData['errors']['meals.0.categoryId']);
 });
 
 test('3-5-46: 【更新】 バリデーションエラー（categoryId 存在チェック）', function () {
@@ -1508,7 +1508,7 @@ test('3-5-46: 【更新】 バリデーションエラー（categoryId 存在チ
     $nonExistentCategoryId = '12345678-1234-1234-1234-123456789012';
 
     $requestData = [
-        'data' => [
+        'meals' => [
             [
                 'categoryId' => $nonExistentCategoryId,
                 'recipeIds' => [$recipe['id']],
@@ -1525,13 +1525,13 @@ test('3-5-46: 【更新】 バリデーションエラー（categoryId 存在チ
     ]);
 });
 
-test('3-5-50: 【更新】 バリデーションエラー（data.*.recipeIds 必須）', function () {
+test('3-5-50: 【更新】 バリデーションエラー（meals.*.recipeIds 必須）', function () {
     $user = $this->testData->createUserWithGroup();
     $mealCategory = $this->testData->createmealCategoryViaApi($this, $user);
     $mealPlanData = $this->testData->createMealPlanViaApi($this, $user, $mealCategory['id'], $this->testData->createRecipeViaApi($this, $user)['id']);
 
     $requestData = [
-        'data' => [
+        'meals' => [
             [
                 'categoryId' => $mealCategory['id'],
             ],
@@ -1541,20 +1541,20 @@ test('3-5-50: 【更新】 バリデーションエラー（data.*.recipeIds 必
     $response = $this->actingAs($user)->put("/meal-plans/{$mealPlanData['id']}", $requestData);
 
     $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['data.0.recipeIds']);
+    $response->assertJsonValidationErrors(['meals.0.recipeIds']);
     $response->assertJson(['success' => false]);
     $responseData = $response->json();
-    $this->assertContains('data.*.recipeIdsは必ず指定してください。', $responseData['errors']['data.0.recipeIds']);
+    $this->assertContains('meals.*.recipeIdsは必ず指定してください。', $responseData['errors']['meals.0.recipeIds']);
 });
 
-test('3-5-51: 【更新】 バリデーションエラー（data.*.recipeIds 配列形式）', function () {
+test('3-5-51: 【更新】 バリデーションエラー（meals.*.recipeIds 配列形式）', function () {
     $user = $this->testData->createUserWithGroup();
     $mealCategory = $this->testData->createmealCategoryViaApi($this, $user);
     $recipe = $this->testData->createRecipeViaApi($this, $user);
     $mealPlanData = $this->testData->createMealPlanViaApi($this, $user, $mealCategory['id'], $recipe['id']);
 
     $requestData = [
-        'data' => [
+        'meals' => [
             [
                 'categoryId' => $mealCategory['id'],
                 'recipeIds' => 'not_an_array',
@@ -1565,19 +1565,19 @@ test('3-5-51: 【更新】 バリデーションエラー（data.*.recipeIds 配
     $response = $this->actingAs($user)->put("/meal-plans/{$mealPlanData['id']}", $requestData);
 
     $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['data.0.recipeIds']);
+    $response->assertJsonValidationErrors(['meals.0.recipeIds']);
     $response->assertJson(['success' => false]);
     $responseData = $response->json();
-    $this->assertContains('data.*.recipeIdsは配列でなくてはなりません。', $responseData['errors']['data.0.recipeIds']);
+    $this->assertContains('meals.*.recipeIdsは配列でなくてはなりません。', $responseData['errors']['meals.0.recipeIds']);
 });
 
-test('3-5-52: 【更新】 バリデーションエラー（data.*.recipeIds 最小要素数）', function () {
+test('3-5-52: 【更新】 バリデーションエラー（meals.*.recipeIds 最小要素数）', function () {
     $user = $this->testData->createUserWithGroup();
     $mealCategory = $this->testData->createmealCategoryViaApi($this, $user);
     $mealPlanData = $this->testData->createMealPlanViaApi($this, $user, $mealCategory['id'], $this->testData->createRecipeViaApi($this, $user)['id']);
 
     $requestData = [
-        'data' => [
+        'meals' => [
             [
                 'categoryId' => $mealCategory['id'],
                 'recipeIds' => [],
@@ -1588,19 +1588,19 @@ test('3-5-52: 【更新】 バリデーションエラー（data.*.recipeIds 最
     $response = $this->actingAs($user)->put("/meal-plans/{$mealPlanData['id']}", $requestData);
 
     $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['data.0.recipeIds']);
+    $response->assertJsonValidationErrors(['meals.0.recipeIds']);
     $response->assertJson(['success' => false]);
     $responseData = $response->json();
-    $this->assertContains('data.*.recipeIdsは1個以上指定してください。', $responseData['errors']['data.0.recipeIds']);
+    $this->assertContains('meals.*.recipeIdsは1個以上指定してください。', $responseData['errors']['meals.0.recipeIds']);
 });
 
-test('3-5-53: 【更新】 バリデーションエラー（data.*.recipeIds.* 必須）', function () {
+test('3-5-53: 【更新】 バリデーションエラー（meals.*.recipeIds.* 必須）', function () {
     $user = $this->testData->createUserWithGroup();
     $mealCategory = $this->testData->createmealCategoryViaApi($this, $user);
     $mealPlanData = $this->testData->createMealPlanViaApi($this, $user, $mealCategory['id'], $this->testData->createRecipeViaApi($this, $user)['id']);
 
     $requestData = [
-        'data' => [
+        'meals' => [
             [
                 'categoryId' => $mealCategory['id'],
                 'recipeIds' => [null],
@@ -1611,19 +1611,19 @@ test('3-5-53: 【更新】 バリデーションエラー（data.*.recipeIds.* �
     $response = $this->actingAs($user)->put("/meal-plans/{$mealPlanData['id']}", $requestData);
 
     $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['data.0.recipeIds.0']);
+    $response->assertJsonValidationErrors(['meals.0.recipeIds.0']);
     $response->assertJson(['success' => false]);
     $responseData = $response->json();
-    $this->assertContains('data.*.recipeIds.*は必ず指定してください。', $responseData['errors']['data.0.recipeIds.0']);
+    $this->assertContains('meals.*.recipeIds.*は必ず指定してください。', $responseData['errors']['meals.0.recipeIds.0']);
 });
 
-test('3-5-54: 【更新】 バリデーションエラー（data.*.recipeIds.* UUID形式）', function () {
+test('3-5-54: 【更新】 バリデーションエラー（meals.*.recipeIds.* UUID形式）', function () {
     $user = $this->testData->createUserWithGroup();
     $mealCategory = $this->testData->createmealCategoryViaApi($this, $user);
     $mealPlanData = $this->testData->createMealPlanViaApi($this, $user, $mealCategory['id'], $this->testData->createRecipeViaApi($this, $user)['id']);
 
     $requestData = [
-        'data' => [
+        'meals' => [
             [
                 'categoryId' => $mealCategory['id'],
                 'recipeIds' => ['invalid-uuid-format'],
@@ -1634,10 +1634,10 @@ test('3-5-54: 【更新】 バリデーションエラー（data.*.recipeIds.* U
     $response = $this->actingAs($user)->put("/meal-plans/{$mealPlanData['id']}", $requestData);
 
     $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['data.0.recipeIds.0']);
+    $response->assertJsonValidationErrors(['meals.0.recipeIds.0']);
     $response->assertJson(['success' => false]);
     $responseData = $response->json();
-    $this->assertContains('data.*.recipeIds.*に有効なUUIDを指定してください。', $responseData['errors']['data.0.recipeIds.0']);
+    $this->assertContains('meals.*.recipeIds.*に有効なUUIDを指定してください。', $responseData['errors']['meals.0.recipeIds.0']);
 });
 
 test('3-5-55: 【更新】 バリデーションエラー（recipeIds 存在チェック）', function () {
@@ -1647,7 +1647,7 @@ test('3-5-55: 【更新】 バリデーションエラー（recipeIds 存在チ�
     $nonExistentRecipeId = '12345678-1234-1234-1234-123456789012';
 
     $requestData = [
-        'data' => [
+        'meals' => [
             [
                 'categoryId' => $mealCategory['id'],
                 'recipeIds' => [$nonExistentRecipeId],

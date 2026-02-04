@@ -5,6 +5,10 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 import { DAY_OF_WEEK, DAY_OF_WEEK_LIST, colors } from '@/constants';
 
+interface Props {
+    dots: string[][];
+}
+
 /**
  * 曜日の色を返す
  * @param day 曜日（0:日曜日, 1:月曜日, 2:火曜日, 3:水曜日, 4:木曜日, 5:金曜日, 6:土曜日）
@@ -28,12 +32,12 @@ const dayColor = (day: number) => {
  */
 const dateStyle = (isToday: boolean, day: number) => {
     if (isToday) {
-        return 'min-w-6 h-6 flex justify-center items-center text-sm font-bold text-white bg-primary-main rounded-full';
+        return 'pr-[1px] pb-[2px] min-w-6 h-6 flex items-center justify-center text-sm font-bold text-white bg-primary-main rounded-full';
     }
     return dayColor(day);
 };
 
-const MonthlyCalendar = () => {
+const MonthlyCalendar = ({ dots }: Props) => {
     const [selectedDate, setSelectedDate] = React.useState<Dayjs>(dayjs());
     // TODO: 月曜始まりに対応する場合、ここを変更する
     const startOfWeek = DAY_OF_WEEK.MONDAY;
@@ -133,18 +137,22 @@ const MonthlyCalendar = () => {
                         {v.name}
                     </div>
                 ))}
-                {days.map((v, idx) => (
-                    <button
-                        key={idx}
-                        onClick={() => v && setSelectedDate(v)}
-                        disabled={!v}
-                        className={`py-1 min-h-[50px] flex justify-center border-b ${idx % 7 < 6 ? 'border-r' : ''} border-gray-light transition-colors ${!v ? 'bg-gray-background' : v?.isSame(selectedDate, 'day') ? 'bg-primary-light pointer-events-none' : 'bg-white hover:bg-primary-background'}`}>
-                        <div
-                            className={`min-h-6 w-fit ${dateStyle(v?.isSame(dayjs(), 'day') ?? false, v?.day() ?? -1)}`}>
-                            {v ? v.date() : ''}
-                        </div>
-                    </button>
-                ))}
+                {days.map((v, idx) => {
+                    const dotConfigs = v?.date() ? dots[v.date() - 1] : [];
+                    return (
+                        <button
+                            key={idx}
+                            onClick={() => v && setSelectedDate(v)}
+                            disabled={!v}
+                            className={`py-1 min-h-[50px] flex flex-col items-center gap-y-2.5 border-b ${idx % 7 < 6 ? 'border-r' : ''} border-gray-light transition-colors ${!v ? 'bg-gray-background' : v?.isSame(selectedDate, 'day') ? 'bg-primary-light pointer-events-none' : 'bg-white hover:bg-primary-background'}`}>
+                            <div
+                                className={`leading-none ${dateStyle(v?.isSame(dayjs(), 'day') ?? false, v?.day() ?? -1)}`}>
+                                {v ? v.date() : ''}
+                            </div>
+                            <div className='flex gap-1'>{dotConfigs?.map(v => <span key={v} className={`w-2 h-2 block rounded-full`} style={{ backgroundColor: v }} />)}</div>
+                        </button>
+                    );
+                })}
             </div>
         </>
     );

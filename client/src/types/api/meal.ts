@@ -1,12 +1,12 @@
 import { IBaseApiIndexResponse, IBaseApiResponse } from "./common";
-import { IRecipe, IRecipeListItem } from "./recipe";
+import { IRecipeListItem } from "./recipe";
 
 //--------------------------------
 // レスポンス型
 //--------------------------------
 
 // 献立プラン一覧取得
-export type IGetMealPlanIndexResponse = IBaseApiIndexResponse<IRecipe[]>;
+export type IGetMealPlanIndexResponse = IBaseApiIndexResponse<IMealPlan[]>;
 
 // 献立プラン作成
 export type IPostMealPlanResponse = IBaseApiResponse;
@@ -24,8 +24,7 @@ export type IDeleteMealPlanResponse = IBaseApiResponse;
 export interface IPostPutMealPlanRequest {
     id?: string;
     date: string;
-    mealCategoryId: string;
-    recipeIds: string[];
+    meals: IMeal[];
 }
 
 //--------------------------------
@@ -38,14 +37,14 @@ export interface IMealCategory {
     order: number;
 }
 
-export interface IMealPlan {
+export interface IMeal {
     id: string;
-    date: string;
-    mealCategory: IMealCategory;
+    category: IMealCategory;
     recipes: IRecipeListItem[];
 }
 
-export interface IMealPlans {
+export interface IMealPlan {
+    id: string;
     date: string;
-    mealPlans: IMealPlan[];
+    meals: IMeal[];
 }
