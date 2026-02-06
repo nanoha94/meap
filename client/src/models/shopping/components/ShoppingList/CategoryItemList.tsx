@@ -58,7 +58,10 @@ const CategoryItemList: React.FC<Props> = ({ category, items }) => {
         [storeItems],
     );
 
-    const actionButtons: ActionButton[] =
+    /**
+     * メニューボタン押下時に開くアクションボタン設定
+     */
+    const actionButtonConfigs: ActionButton[] =
         [
             {
                 label: 'チェック解除',
@@ -80,7 +83,7 @@ const CategoryItemList: React.FC<Props> = ({ category, items }) => {
                 <div className="flex gap-x-4 items-center text-gray-main">
                     {category.name}
                     <MenuButton
-                        actionButtons={actionButtons}
+                        actionButtons={actionButtonConfigs}
                         placement="top-left"
                         className="w-5 h-5"
                     />

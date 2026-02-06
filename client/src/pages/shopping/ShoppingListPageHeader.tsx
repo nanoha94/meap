@@ -12,7 +12,10 @@ const ShoppingListPageHeader = () => {
     const { openDialog } = useDialog();
     const [isOpen, setIsOpen] = React.useState<boolean>(false);
 
-    const actionButtons: ActionButton[] = [
+    /**
+     * メニューボタン押下時に開くアクションボタン設定
+     */
+    const actionButtonConfigs: ActionButton[] = [
         {
             label: '献立から追加',
             icon: <CalendarDays />,
@@ -46,7 +49,7 @@ const ShoppingListPageHeader = () => {
                         <CirclePlus size={20} strokeWidth={2} />
                         アイテムを追加
                     </HeaderTextButton>}
-                    actionButtons={actionButtons}
+                    actionButtons={actionButtonConfigs}
                     placement="top-10 right-0"
                 />
             </div>}

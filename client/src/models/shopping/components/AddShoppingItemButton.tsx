@@ -15,7 +15,7 @@ const AddShoppingItemButton = () => {
     const containerRef = React.useRef<HTMLDivElement>(null);
     const { openDialog } = useDialog();
 
-    const actionButtons: ActionButton[] = [
+    const actionButtonConfigs: ActionButton[] = [
         {
             label: '献立から追加',
             icon: <CalendarDays />,
@@ -85,7 +85,7 @@ const AddShoppingItemButton = () => {
             <div
                 className={`z-[100] absolute flex flex-col items-end gap-y-2.5 text-xl text-white bottom-[160px] right-6 ${isOpen ? itemOpenStyles.open : itemOpenStyles.close
                     }`}>
-                {actionButtons.map((v, idx) => (
+                {actionButtonConfigs.map((v, idx) => (
                     <button
                         key={idx}
                         onClick={() => {

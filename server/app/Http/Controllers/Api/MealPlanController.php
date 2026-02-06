@@ -24,11 +24,15 @@ class MealPlanController extends ApiController
     /**
      * @OA\Get(
      *     path="/meal-plans",
-     *     summary="献立一覧を取得",   
+     *     summary="献立一覧を取得",
+     *     description="指定した年・月の献立一覧を取得します。year と month は必須のクエリパラメータです。",
      *     tags={"MealPlans"},
      *     security={{"sanctum":{}}},
+     *     @OA\Parameter(ref="#/components/parameters/MealPlanIndexYearParam"),
+     *     @OA\Parameter(ref="#/components/parameters/MealPlanIndexMonthParam"),
      *     @OA\Response(response=200, ref="#/components/responses/MealPlanIndexSuccess"),
      *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
+     *     @OA\Response(response=422, ref="#/components/responses/ValidationErrors"),
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
@@ -39,7 +43,12 @@ class MealPlanController extends ApiController
 
         return $this->executeWithExceptionHandling(
             function () use ($request) {
-                $res = $this->mealPlanService->index($this->getUserGroup($request));
+                $validated = $request->validated();
+                $res = $this->mealPlanService->indexForMonth(
+                    $this->getUserGroup($request),
+                    (int) $validated['year'],
+                    (int) $validated['month'],
+                );
                 $total = count($res);
                 $message = __('api.list_retrieved', ['attribute' => __('api.attributes.meal_plan'), 'count' => $total]);
                 return $this->indexResponse($res, $total, $message);

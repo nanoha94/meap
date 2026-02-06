@@ -5,7 +5,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 
 import { Header, HeaderTextButton, StyledDatePicker } from '@/components';
 import { COLOR_VARIANT } from '@/constants';
-import { PlanEditCard, useMealStore } from '@/models/meal';
+import { MealCard, useMealStore } from '@/models/meal';
 import { ActionButton, IMealPlan } from '@/types';
 import { FormProvider } from 'react-hook-form';
 import { useMealPlanEditForm } from '@/models/meal/hooks/useMealPlanEditForm';
@@ -31,7 +31,7 @@ const PlanEditPage = ({ fetchMealPlan, errorMessage }: Props) => {
     /**
      * メニューボタン押下時に開くアクションボタン設定
      */
-    const actionButtons: ActionButton[] = [
+    const actionButtonConfigs: ActionButton[] = [
         {
             label: '削除する',
             icon: <Trash2 size={20} strokeWidth={2} />,
@@ -64,12 +64,12 @@ const PlanEditPage = ({ fetchMealPlan, errorMessage }: Props) => {
                     <Save size={20} strokeWidth={2} />
                     保存
                 </HeaderTextButton>}
-                actionButtons={actionButtons}
+                actionButtons={actionButtonConfigs}
             />
             <main className="p-5 pb-[60px] md:px-10 max-w-[1000px] mx-auto">
                 <FormProvider {...methods}>
                     <form onSubmit={onSubmit} className="flex flex-col gap-y-5 md:gap-y-8">
-                        {mealCategories.map(v => <PlanEditCard key={v.id} mealCategory={v} recipes={fetchMealPlan?.meals.find(plan => plan.category.id === v.id)?.recipes ?? []} />)}
+                        {mealCategories.map(v => <MealCard key={v.id} mealCategory={v} recipes={fetchMealPlan?.meals.find(plan => plan.category.id === v.id)?.recipes ?? []} />)}
                     </form>
                 </FormProvider>
             </main>

@@ -51,7 +51,10 @@ const RecipeDetailPage = ({
         );
     };
 
-    const actionButtons: ActionButton[] = fetchRecipe?.ownerUserId === loginUser?.id ? [
+    /**
+     * メニューボタン押下時に開くアクションボタン設定
+     */
+    const actionButtonConfigs: ActionButton[] = fetchRecipe?.ownerUserId === loginUser?.id ? [
         // 削除できるのは、編集責任者のみ
         {
             label: '削除する',
@@ -84,7 +87,7 @@ const RecipeDetailPage = ({
                     </HeaderTextButton>
                 </div>
             }
-            actionButtons={actionButtons}
+            actionButtons={actionButtonConfigs}
         />
             <main className="pb-[60px] max-w-[1200px] mx-auto">
                 {/* サムネイル画像 */}

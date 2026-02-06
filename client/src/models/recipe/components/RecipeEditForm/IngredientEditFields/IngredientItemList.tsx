@@ -17,9 +17,8 @@ import {
 } from '@/components';
 import { BUTTON_TYPE, EDIT_MODE } from '@/constants';
 import { useDialog } from '@/hooks';
-import { useIngredientStore } from '@/models/ingredient';
+import { useIngredientStore, formatIngredient } from '@/models/ingredient';
 import { IIngredientCategory, IIngredientItem } from '@/types';
-import { formatIngredient } from '@/utils';
 
 interface Props {
     category: IIngredientCategory;

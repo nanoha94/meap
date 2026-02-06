@@ -27,7 +27,7 @@ const RecipeEditPageHeader = ({ ownerUserId, fetchRecipe, onChangeOwnerUserId, o
     /**
      * メニューボタン押下時に開くアクションボタン設定
      */
-    const actionButtons: ActionButton[] = fetchRecipe?.ownerUserId === loginUser?.id ? [
+    const actionButtonConfigs: ActionButton[] = fetchRecipe?.ownerUserId === loginUser?.id ? [
         // 削除できるのは、編集責任者のみ
         {
             label: '削除する',
@@ -78,7 +78,7 @@ const RecipeEditPageHeader = ({ ownerUserId, fetchRecipe, onChangeOwnerUserId, o
                     </HeaderTextButton> */}
                     </>
                 }
-                actionButtons={actionButtons}
+                actionButtons={actionButtonConfigs}
             />
         </>
     );

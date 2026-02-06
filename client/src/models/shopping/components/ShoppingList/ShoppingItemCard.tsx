@@ -41,9 +41,9 @@ const ShoppingItemCard = ({ item }: Props) => {
     );
 
     /**
-     * アイテムのアクションボタン
+     * メニューボタン押下時に開くアクションボタン設定
      */
-    const actionButtons: ActionButton[] = [
+    const actionButtonConfigs: ActionButton[] = [
         {
             label: '編集する',
             icon: <Pencil />,
@@ -115,7 +115,7 @@ const ShoppingItemCard = ({ item }: Props) => {
                         </label>
                     </div>
                     <MenuButton
-                        actionButtons={actionButtons}
+                        actionButtons={actionButtonConfigs}
                         placement="top-right"
                     />
                 </div>

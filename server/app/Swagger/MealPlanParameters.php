@@ -4,6 +4,32 @@ namespace App\Swagger;
 
 /**
  * @OA\Parameter(
+ *     parameter="MealPlanIndexYearParam",
+ *     name="year",
+ *     in="query",
+ *     description="取得対象の年（1900〜2100）",
+ *     required=true,
+ *     @OA\Schema(
+ *         type="integer",
+ *         minimum=1900,
+ *         maximum=2100,
+ *         example=2024
+ *     )
+ * )
+ * @OA\Parameter(
+ *     parameter="MealPlanIndexMonthParam",
+ *     name="month",
+ *     in="query",
+ *     description="取得対象の月（1〜12）",
+ *     required=true,
+ *     @OA\Schema(
+ *         type="integer",
+ *         minimum=1,
+ *         maximum=12,
+ *         example=1
+ *     )
+ * )
+ * @OA\Parameter(
  *     parameter="MealPlanIdParam",
  *     name="id",
  *     in="path",

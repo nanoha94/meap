@@ -13,10 +13,10 @@ import {
 } from '@/components';
 import { COLOR_VARIANT, TMP_ID_PREFIX } from '@/constants';
 import { useDialog, useItemAndCategoryDnd } from '@/hooks';
-import { defaultIngredientItem, useIngredientStore } from '@/models/ingredient';
+import { defaultIngredientItem, useIngredientStore, formatIngredient } from '@/models/ingredient';
 import { RecipeEditFormData } from '@/models/recipe/types';
 import { IIngredientItem } from '@/types';
-import { createDefaultData, formatIngredient, getItemsInCategory } from '@/utils';
+import { createDefaultData, getItemsInCategory } from '@/utils';
 import IngredientItemList from './IngredientItemList';
 
 interface Props {

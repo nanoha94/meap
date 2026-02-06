@@ -442,13 +442,25 @@
                     "MealPlans"
                 ],
                 "summary": "献立一覧を取得",
+                "description": "指定した年・月の献立一覧を取得します。year と month は必須のクエリパラメータです。",
                 "operationId": "97ebdfd313f0459c06cf0a048ab8b1d3",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/MealPlanIndexYearParam"
+                    },
+                    {
+                        "$ref": "#/components/parameters/MealPlanIndexMonthParam"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "$ref": "#/components/responses/MealPlanIndexSuccess"
                     },
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationErrors"
                     },
                     "404": {
                         "$ref": "#/components/responses/NotFound"
@@ -3475,6 +3487,30 @@
                 "schema": {
                     "type": "string",
                     "example": "1234567890"
+                }
+            },
+            "MealPlanIndexYearParam": {
+                "name": "year",
+                "in": "query",
+                "description": "取得対象の年（1900〜2100）",
+                "required": true,
+                "schema": {
+                    "type": "integer",
+                    "maximum": 2100,
+                    "minimum": 1900,
+                    "example": 2024
+                }
+            },
+            "MealPlanIndexMonthParam": {
+                "name": "month",
+                "in": "query",
+                "description": "取得対象の月（1〜12）",
+                "required": true,
+                "schema": {
+                    "type": "integer",
+                    "maximum": 12,
+                    "minimum": 1,
+                    "example": 1
                 }
             },
             "MealPlanIdParam": {

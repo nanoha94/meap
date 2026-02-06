@@ -48,6 +48,44 @@ class MealPlanService extends AbstractDomainService
         return 'date';
     }
 
+    /**
+     * 献立一覧を取得（指定した年・月の date 範囲でフィルタ）
+     *
+     * @param Group $group グループ
+     * @param int $year 年
+     * @param int $month 月（1-12）
+     * @return array
+     */
+    public function indexForMonth(Group $group, int $year, int $month): array
+    {
+        return DB::transaction(function () use ($group, $year, $month) {
+            $start = sprintf('%04d-%02d-01', $year, $month);
+            $end = date('Y-m-t', strtotime($start));
+
+            $query = $this->getGroupRelation($group)
+                ->select($this->getSelectColumns())
+                ->whereBetween('date', [$start, $end]);
+
+            if ($this->getWithColumns()) {
+                $query->with($this->getWithColumns());
+            }
+
+            if ($this->getOrderBy()) {
+                $query->orderBy($this->getOrderBy());
+            }
+
+            $items = $query->get();
+
+            if ($this->getGroupBy()) {
+                $items = $items->groupBy($this->getGroupBy())->values();
+            }
+
+            return $items->map(function ($item) {
+                return $this->formatIndexResponse($item);
+            })->toArray();
+        });
+    }
+
     protected function formatIndexResponse(Model|Collection $items): array
     {
         // 型チェック（groupBy により 1 日分の MealPlan の Collection が渡る）
