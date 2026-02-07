@@ -209,7 +209,7 @@ const RecipeDetailPage = ({
                                         <div className="flex flex-col gap-y-1">
                                             <div>{index + 1}.&nbsp;</div>
                                             {step.image && (
-                                                <div className="relative w-full h-auto aspect-[5/3] bg-gray-light rounded-lg overflow-hidden">
+                                                <div className="relative w-full h-auto aspect-[4/3] bg-gray-light rounded-lg overflow-hidden">
                                                     <Image
                                                         src={step.image.src}
                                                         alt={step.instruction}

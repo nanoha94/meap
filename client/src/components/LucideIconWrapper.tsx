@@ -11,6 +11,14 @@ interface Props {
     children: React.ReactElement<LucideProps>;
 }
 
+/**
+ * LucideIconWrapper は LucideIcon の props をラップして、strokeWidth、color、size を指定できるようにしています。   
+ * @param strokeWidth LucideIcon の strokeWidth を指定します。  
+ * @param color LucideIcon の color を指定します。  colors の中から指定できます。
+ * @param size LucideIcon の size を指定します。
+ * @param children LucideIcon の children を指定します。
+ * @returns React.ReactElement<LucideProps>
+ */
 const LucideIconWrapper = ({
     strokeWidth = 2,
     color = colors.black,

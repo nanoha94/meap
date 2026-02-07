@@ -4,8 +4,8 @@ import { Suspense } from 'react';
 
 import { Loading } from '@/components';
 import { fetchData } from '@/lib/apiClient';
-import RecipeDetailPage from '@/pages/recipe/detail/RecipeDetailPage';
-import { IGetRecipeShowResponse } from '@/types';
+import PlanEditPage from '@/pages/plan/edit/PlanEditPage';
+import { IGetMealPlanShowResponse } from '@/types';
 
 interface Props {
     params: Promise<{ id: string }>;
@@ -15,15 +15,15 @@ interface PageWithDataProps {
     id: string;
 }
 const PageWithData = async ({ id }: PageWithDataProps) => {
-    const { data: recipe, errorMessage } = await fetchData<IGetRecipeShowResponse>(`/recipes/${id}`);
+    const { data: mealPlan, errorMessage } = await fetchData<IGetMealPlanShowResponse>(`/meal-plans/${id}`);
 
-    if (errorMessage || !recipe) {
+    if (errorMessage || !mealPlan) {
         notFound();
     }
 
     return (
-        <RecipeDetailPage
-            fetchRecipe={recipe.data}
+        <PlanEditPage
+            fetchMealPlan={mealPlan.data}
             errorMessage={errorMessage}
         />
     );

@@ -1,4 +1,4 @@
-import { IBaseApiIndexResponse, IBaseApiResponse } from "./common";
+import { IBaseApiIndexResponse, IBaseApiResponse, IBaseApiResponseWithData } from "./common";
 import { IRecipeListItem } from "./recipe";
 
 //--------------------------------
@@ -7,6 +7,9 @@ import { IRecipeListItem } from "./recipe";
 
 // 献立プラン一覧取得
 export type IGetMealPlanIndexResponse = IBaseApiIndexResponse<IMealPlan[]>;
+
+// 献立プラン詳細取得
+export type IGetMealPlanShowResponse = IBaseApiResponseWithData<IMealPlan>;
 
 // 献立プラン作成
 export type IPostMealPlanResponse = IBaseApiResponse;

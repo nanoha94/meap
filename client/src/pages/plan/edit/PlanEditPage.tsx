@@ -69,7 +69,7 @@ const PlanEditPage = ({ fetchMealPlan, errorMessage }: Props) => {
             <main className="p-5 pb-[60px] md:px-10 max-w-[1000px] mx-auto">
                 <FormProvider {...methods}>
                     <form onSubmit={onSubmit} className="flex flex-col gap-y-5 md:gap-y-8">
-                        {mealCategories.map(v => <MealCard key={v.id} mealCategory={v} recipes={fetchMealPlan?.meals.find(plan => plan.category.id === v.id)?.recipes ?? []} />)}
+                        {mealCategories.map(v => <MealCard key={v.id} mealCategory={v} recipes={fetchMealPlan?.meals.find(plan => plan.category.id === v.id)?.recipes ?? []} isEdit={true} />)}
                     </form>
                 </FormProvider>
             </main>

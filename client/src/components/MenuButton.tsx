@@ -1,12 +1,13 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { EllipsisVertical } from 'lucide-react';
 import LucideIconWrapper from './LucideIconWrapper';
 
 import { colors } from '@/constants';
 import itemOpenStyles from '@/styles/itemOpen.module.css';
-import { ActionButton } from '@/types';
+import { ActionButton, ActionButtonButton } from '@/types';
 
 
 type Placement = 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
@@ -84,23 +85,46 @@ const MenuButton = ({
             <div
                 className={`z-10 absolute py-1 flex flex-col items-start text-sm md:text-base bg-white rounded border border-gray-main shadow-lg ${getPositionClass(placement)} ${isOpen ? itemOpenStyles.open : itemOpenStyles.close
                     }`}>
-                {actionButtons.map((v, idx) => (
-                    <button
-                        key={idx}
-                        onClick={() => {
-                            v.onClick();
-                            setIsOpen(false);
-                        }}
-                        className={`px-3 py-1 w-full flex items-center gap-x-2 whitespace-nowrap transition-colors hover:bg-gray-light ${v.color ? 'text-' + v.color + '-main' : 'text-black'}`}>
-                        <LucideIconWrapper
-                            strokeWidth={1.5}
-                            color={v.color ? colors[v.color].main : colors.black}
-                            size={20}>
-                            {v.icon}
-                        </LucideIconWrapper>
-                        {v.label}
-                    </button>
-                ))}
+                {actionButtons.map((v, idx) => {
+                    const itemContent = (
+                        <>
+                            <LucideIconWrapper
+                                strokeWidth={1.5}
+                                color={v.color ? colors[v.color].main : colors.black}
+                                size={20}>
+                                {v.icon}
+                            </LucideIconWrapper>
+                            {v.label}
+                        </>
+                    );
+                    const itemClassName = `px-3 py-1 w-full flex items-center gap-x-2 whitespace-nowrap transition-colors hover:bg-gray-light ${v.color ? 'text-' + v.color + '-main' : 'text-black'}`;
+
+                    if (v.href) {
+                        return (
+                            <Link
+                                key={idx}
+                                href={v.href}
+                                onClick={() => {
+                                    setIsOpen(false);
+                                }}
+                                className={itemClassName}>
+                                {itemContent}
+                            </Link>
+                        );
+                    }
+                    const buttonAction = v as ActionButtonButton;
+                    return (
+                        <button
+                            key={idx}
+                            onClick={() => {
+                                buttonAction.onClick();
+                                setIsOpen(false);
+                            }}
+                            className={itemClassName}>
+                            {itemContent}
+                        </button>
+                    );
+                })}
             </div>
         </div>
     );

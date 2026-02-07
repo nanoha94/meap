@@ -42,6 +42,10 @@ const PlanCalendarPage = ({ fetchMealPlans, errorMessage, year, month }: Props) 
         return result;
     }, [fetchMealPlans]);
 
+    const mealPlan = React.useMemo(() => {
+        return fetchMealPlans.find(v => v.date === selectedDate.format('YYYY-MM-DD'));
+    }, [fetchMealPlans, selectedDate]);
+
     /**
         * 献立表をストアにセット
         * @returns void
@@ -69,9 +73,7 @@ const PlanCalendarPage = ({ fetchMealPlans, errorMessage, year, month }: Props) 
         {
             label: '編集する',
             icon: <Pencil />,
-            onClick: () => {
-                //   TODO: 実装
-            },
+            href: `/plan/${mealPlan?.id}/edit`,
         },
         {
             label: '削除する',
@@ -98,11 +100,10 @@ const PlanCalendarPage = ({ fetchMealPlans, errorMessage, year, month }: Props) 
                     onDateSelect={setSelectedDate}
                 />
                 <div className="py-5 flex flex-col gap-y-3">
-                    <div className={`px-3 text-base font-bold ${getDayOfWeekTextColor(selectedDate.day())}`}>
-                        {selectedDate.locale('ja').format('MM/DD')}<span className="ml-1 text-xs">{selectedDate.locale('ja').format('(ddd)')}</span>
+                    <div className={`px-3 text-base font-bold ${getDayOfWeekTextColor(selectedDate.day())}`}>                        {selectedDate.locale('ja').format('MM/DD')}<span className="ml-1 text-xs">{selectedDate.locale('ja').format('(ddd)')}</span>
                     </div>
-                    {fetchMealPlans.find(v => v.date === selectedDate.format('YYYY-MM-DD'))?.meals.map(v => <MealCard key={v.id} mealCategory={v.category} recipes={v.recipes} isEdit={false} actionButtonConfigs={actionButtonConfigs} />)}
-                    <div className="px-3 lg:px-0"><EmptyButton href="/plan/new" /></div>
+                    {mealPlan?.meals.map(v => <MealCard key={v.id} mealCategory={v.category} recipes={v.recipes} isEdit={false} actionButtonConfigs={actionButtonConfigs} />)}
+                    <div className="px-3 lg:px-0"><EmptyButton href={mealPlan?.id ? `/plan/${mealPlan.id}/edit` : "/plan/new"} /></div>
                 </div>
             </main>
         </>
