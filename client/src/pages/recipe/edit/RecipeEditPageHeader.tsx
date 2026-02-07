@@ -3,7 +3,7 @@ import React from 'react';
 import { Save, Trash2 } from 'lucide-react';
 
 import { Header, HeaderTextButton, StyledSelect } from '@/components';
-import { COLOR_VARIANT } from '@/constants';
+import { BUTTON_TYPE, COLOR_VARIANT } from '@/constants';
 import { useAlertDialog } from '@/hooks';
 import {
     RECIPE_ALERT_DIALOG_CONFIGS,
@@ -16,10 +16,9 @@ interface Props {
     ownerUserId: string;
     fetchRecipe?: IRecipe;
     onChangeOwnerUserId: (userId: string) => void;
-    onClickSaveButton: () => void;
 }
 
-const RecipeEditPageHeader = ({ ownerUserId, fetchRecipe, onChangeOwnerUserId, onClickSaveButton }: Props) => {
+const RecipeEditPageHeader = ({ ownerUserId, fetchRecipe, onChangeOwnerUserId }: Props) => {
     const { loginUser, users } = useAccountStore();
     const { deleteRecipe } = useRecipeApi();
     const { openAlertDialog } = useAlertDialog();
@@ -63,8 +62,7 @@ const RecipeEditPageHeader = ({ ownerUserId, fetchRecipe, onChangeOwnerUserId, o
                 }
                 rightContent={
                     <>
-                        <HeaderTextButton colorVariant={COLOR_VARIANT.SECONDARY}
-                            onClick={onClickSaveButton}>
+                        <HeaderTextButton type={BUTTON_TYPE.SUBMIT} form="recipe-edit-form" colorVariant={COLOR_VARIANT.SECONDARY}>
                             <Save size={20} strokeWidth={2} />
                             保存
                         </HeaderTextButton>

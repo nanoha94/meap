@@ -2,13 +2,16 @@
 import React from 'react';
 import Link from 'next/link';
 
-import { COLOR_VARIANT } from '@/constants';
+import { ButtonType, COLOR_VARIANT } from '@/constants';
 
 type Props = {
+    type?: ButtonType;
     disabled?: boolean;
     colorVariant?: (typeof COLOR_VARIANT)['SECONDARY'] | (typeof COLOR_VARIANT)['GRAY'] | (typeof COLOR_VARIANT)['ACCENT'] | (typeof COLOR_VARIANT)['ALERT'];
+    /** フォーム外の submit ボタンで、紐づける form の id */
+    form?: string;
     children: React.ReactNode;
-} & ({ href: string; onClick?: never } | { onClick: () => void; href?: never }); // hrefとonClickのどちらかを必須とする
+} & ({ href: string; onClick?: never } | { onClick?: () => void; href?: never });
 
 const getHeaderTextButtonClassName = ({
     disabled = false,
@@ -29,8 +32,10 @@ const getHeaderTextButtonClassName = ({
 };
 
 const HeaderTextButton = ({
+    type,
     disabled,
     colorVariant,
+    form,
     href,
     children,
     onClick,
@@ -47,7 +52,8 @@ const HeaderTextButton = ({
 
     return (
         <button
-            type="button"
+            type={type}
+            form={form}
             onClick={onClick}
             className={className}
             disabled={disabled}>

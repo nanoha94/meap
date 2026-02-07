@@ -100,9 +100,9 @@ const PlanCalendarPage = ({ fetchMealPlans, errorMessage, year, month }: Props) 
                     onDateSelect={setSelectedDate}
                 />
                 <div className="py-5 flex flex-col gap-y-3">
-                    <div className={`px-3 text-base font-bold ${getDayOfWeekTextColor(selectedDate.day())}`}>                        {selectedDate.locale('ja').format('MM/DD')}<span className="ml-1 text-xs">{selectedDate.locale('ja').format('(ddd)')}</span>
+                    <div className={`px-3 text-base font-bold ${getDayOfWeekTextColor(selectedDate.day())}`}>{selectedDate.locale('ja').format('MM/DD')}<span className="ml-1 text-xs">{selectedDate.locale('ja').format('(ddd)')}</span>
                     </div>
-                    {mealPlan?.meals.map(v => <MealCard key={v.id} mealCategory={v.category} recipes={v.recipes} isEdit={false} actionButtonConfigs={actionButtonConfigs} />)}
+                    {mealPlan?.meals.map(v => <MealCard key={v.id} mealCategory={v.category} recipes={v.recipes} actionButtonConfigs={actionButtonConfigs} />)}
                     <div className="px-3 lg:px-0"><EmptyButton href={mealPlan?.id ? `/plan/${mealPlan.id}/edit` : "/plan/new"} /></div>
                 </div>
             </main>

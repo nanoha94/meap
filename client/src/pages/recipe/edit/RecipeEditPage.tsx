@@ -66,11 +66,11 @@ const RecipeEditPage = ({
                 onChangeOwnerUserId={(userId) => {
                     setOwnerUserId(userId);
                 }}
-                onClickSaveButton={onSubmit}
             />
             <main className="pb-[60px] max-w-[1200px] mx-auto">
                 <FormProvider {...methods}>
                     <form
+                        id="recipe-edit-form"
                         onSubmit={onSubmit}
                     >
                         {/* サムネイル画像 */}
