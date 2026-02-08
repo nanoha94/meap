@@ -47,13 +47,18 @@ export const useMealPlanEditForm = (selectedDate: string, fetchMealPlan?: IMealP
      * @param data フォームのデータ
      */
     const onSubmit = (data: MealPlanEditFormData) => {
-        const sendData: IPostPutMealPlanRequest = {
-            date: selectedDate,
-            meals: data.meals.filter(meal => meal.recipes.length > 0),
+        const sendData: IPostPutMealPlanRequest = {          
+            meals: data.meals.filter(meal => meal.recipes.length > 0).map(
+                v => ({
+                        id: v.id, 
+                        categoryId: v.category.id, 
+                        recipeIds: v.recipes.map(recipe => recipe.id)
+                    })
+                ),
         };
 
         if (editMode === EDIT_MODE.CREATE) {
-            storeMealPlan(sendData);
+            storeMealPlan({...sendData, date: selectedDate});
         } else {
             updateMealPlan(
                 { ...sendData, id: data.id },

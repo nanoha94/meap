@@ -17,6 +17,10 @@ export const useMealPlanApi = () => {
      const isUpdateRequestRef = React.useRef(false);
     //  const isDeleteRequestRef = React.useRef(false);
 
+    /**
+     * 献立プラン作成
+     * @param data 作成する献立プランデータ
+     */
     const storeMealPlan = React.useCallback(
         async (
             data: IPostPutMealPlanRequest,
@@ -61,6 +65,10 @@ export const useMealPlanApi = () => {
         [incrementLoadingCount, decrementLoadingCount, router, addSnackbar, handleApiError],
     );
 
+    /**
+     * 献立プラン更新
+     * @param data 更新する献立プランデータ
+     */
     const updateMealPlan = React.useCallback(async (data: IPostPutMealPlanRequest) => {
             // 重複リクエスト防止
             if (isUpdateRequestRef.current) {
@@ -81,7 +89,10 @@ export const useMealPlanApi = () => {
                 // レスポンスデータ
                 const responseData: IPutMealPlanResponse = res.data;
                 if (responseData.success) {
-                    router.push(`/plan/${data.id}`);
+                    // TODO: プランページのクエリパラメータを変更するか検討（現状はyearとmonthを渡すことになっている）
+                    // 日付を変更してもリロード（再データフェッチ）しないようにする
+                    // planページでデータフェッチするのはyearかmonthが変更された場合のみ
+                    // router.push(`/plan?date=${date}`);
                     addSnackbar(
                         'success',
                         responseData.message ??

@@ -26,8 +26,8 @@ export type IDeleteMealPlanResponse = IBaseApiResponse;
 // 献立プラン作成/更新
 export interface IPostPutMealPlanRequest {
     id?: string;
-    date: string;
-    meals: IMeal[];
+    date?: string;
+    meals: {id?: string; categoryId: string; recipeIds: string[]}[];
 }
 
 //--------------------------------
