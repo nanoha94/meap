@@ -5,10 +5,11 @@ import { colors } from '@/constants';
 
 interface Props {
     value: string;
-    name: string;
+    name?: string;
     options: { id: string; name: string }[];
     isShowPlaceholder?: boolean;
     onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+    className?: string;
 }
 
 const StyledSelect = ({
@@ -17,9 +18,10 @@ const StyledSelect = ({
     options,
     onChange,
     isShowPlaceholder = true,
+    className,
 }: Props) => {
     return (
-        <div className="relative w-full">
+        <div className={`relative w-full ${className}`}>
             <select
                 value={value}
                 onChange={e => {

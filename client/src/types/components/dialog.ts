@@ -14,6 +14,7 @@ export type AlertDialogData = {
 
 export type DialogConfig = {
     title: string;
+    customButton?: React.ReactNode;
     children: () => React.ReactNode;
 };
 

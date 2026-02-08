@@ -61,7 +61,7 @@ const RecipeListPage = ({
             />
             <main className='p-5 pb-[60px] md:px-10 max-w-[1000px] mx-auto'>
                 {total > 0 ? (
-                    <div className="grid grid-cols-[repeat(auto-fill,_minmax(150px,_1fr))] gap-3 ">
+                    <div className="grid grid-cols-[repeat(auto-fill,_minmax(150px,_1fr))] gap-3">
                         {fetchRecipes.map(v => (
                             <Link
                                 href={`/recipe/${v.id}`}
@@ -80,13 +80,13 @@ const RecipeListPage = ({
                                     )}
                                 </div>
                                 <div className="p-2 flex flex-col gap-y-1">
-                                    <div>{v.name}</div>
-                                    <div className="text-xs text-black">
+                                    <div className="text-sm">{v.name}</div>
+                                    <div className="text-xs">
                                         {v.categories
                                             .map(category => category.name)
                                             .join('/')}
                                     </div>
-                                    <div className="text-xs text-black">前回作った日：</div>
+                                    <div className="text-xs text-black">前回献立日：</div>
                                 </div>
                             </Link>
                         ))}

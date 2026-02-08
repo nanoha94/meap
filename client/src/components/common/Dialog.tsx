@@ -20,13 +20,16 @@ const Dialog = () => {
                 className="absolute top-10 left-1/2 -translate-x-1/2 max-w-[500px] w-[calc(100%-40px)] bg-white rounded-xl">
                 <div className="px-5 py-3 flex justify-between items-center gap-x-5 text-xl border-b border-gray-border">
                     {currentDialog.config.title}
-                    <button
-                        onClick={currentDialog.onClose}
-                        className="p-1 appearance-none rounded-full transition-colors hover:bg-gray-light">
-                        <X size={32} color={colors.black} />
-                    </button>
+                    <div className="flex items-center gap-x-4">
+                        {currentDialog.config.customButton}
+                        <button
+                            onClick={currentDialog.onClose}
+                            className="p-1 appearance-none rounded-full transition-colors hover:bg-gray-light">
+                            <X size={32} color={colors.black} />
+                        </button>
+                    </div>
                 </div>
-                <div className="px-5 py-8">{currentDialog.config.children()}</div>
+                <div className="p-5">{currentDialog.config.children()}</div>
             </div>
         </div>
     );

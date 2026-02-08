@@ -13,6 +13,7 @@ import {
     IRecipeStep,
 } from '@/types';
 import { RecipeStepEditFormData } from '../types';
+import { useRecipeStore } from './useRecipeStores';
 
 /**
  * 手順をフォーマット
@@ -37,16 +38,18 @@ export const formatStepItems = (
 
 export const useRecipeApi = () => {
     const { incrementLoadingCount, decrementLoadingCount } = useGlobalStore();
+    const { setRecipes } = useRecipeStore();
     const { bulkUploadImage } = useImageApi();
     const router = useRouter();
     const { addSnackbar } = useSnackbars();
     const { handleApiError } = useApiErrorHandler();
     
     // 重複リクエスト防止用のフラグ
+    const isFetchRequestRef = React.useRef(false);
     const isStoreRequestRef = React.useRef(false);
     const isUpdateRequestRef = React.useRef(false);
     const isDeleteRequestRef = React.useRef(false);
-
+    
     /**
      * 手順画像のアップロード
      * @param steps 手順リスト
@@ -98,6 +101,33 @@ export const useRecipeApi = () => {
             return stepsWithImageIds;
         },
         [bulkUploadImage],
+    );
+
+    const fetchRecipes = React.useCallback(
+        async () => {
+            // 重複リクエスト防止
+            if (isFetchRequestRef.current) {
+                return;
+            }
+            
+            try {
+                isFetchRequestRef.current = true;
+                incrementLoadingCount();
+
+                const res = await axios.get('/recipes', {
+                    timeout: TIMEOUT_MS,
+                });
+                if (res.data) {
+                    setRecipes(res.data.data);
+                }
+            } catch (error) {
+                handleApiError(error);
+            } finally {
+                isFetchRequestRef.current = false;
+                decrementLoadingCount();
+            }
+        },
+        [incrementLoadingCount, decrementLoadingCount, setRecipes, handleApiError],
     );
 
     const storeRecipe = React.useCallback(
@@ -239,6 +269,7 @@ export const useRecipeApi = () => {
     }, [incrementLoadingCount, decrementLoadingCount, router, addSnackbar, handleApiError]);
 
     return {
+        fetchRecipes,
         storeRecipe,
         updateRecipe,
         deleteRecipe,

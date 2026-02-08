@@ -60,8 +60,29 @@ export const useDialog = () => {
         [closeDialog, setDialogs],
     );
 
+    /**
+     * 現在表示中のダイアログの config を部分的に更新する
+     * customButton など、開いた後に状態で変えたい項目の更新に使用する
+     */
+    const updateCurrentDialogConfig = React.useCallback(
+        (configPatch: Partial<DialogConfig>) => {
+            setDialogs(prev => {
+                if (prev.length === 0) return prev;
+                return [
+                    {
+                        ...prev[0],
+                        config: { ...prev[0].config, ...configPatch },
+                    },
+                    ...prev.slice(1),
+                ];
+            });
+        },
+        [setDialogs],
+    );
+
     return {
         openDialog,
         closeDialog,
+        updateCurrentDialogConfig,
     };
 };
