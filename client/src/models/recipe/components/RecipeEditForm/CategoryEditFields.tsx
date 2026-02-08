@@ -4,9 +4,8 @@ import { Check, ChevronRight } from 'lucide-react';
 import { Control, Controller, useFormContext } from 'react-hook-form';
 
 import { RecipeCategoryEditForm, TextButton } from '@/components';
-import { COLOR_VARIANT, DIALOG_NAME, colors } from '@/constants';
+import { COLOR_VARIANT, colors } from '@/constants';
 import { useDialog } from '@/hooks';
-import { RECIPE_SETTING_DIALOG_CONFIGS } from '@/models/recipe/constants';
 import { useRecipeStore } from '@/models/recipe/hooks';
 import { RecipeEditFormData } from '@/models/recipe/types';
 import { IRecipeCategory } from '@/types';
@@ -142,10 +141,8 @@ const CategoryEditFields = ({ control }: Props) => {
                 <TextButton
                     colorVariant={COLOR_VARIANT.SECONDARY}
                     onClick={() => {
-                        const dialogName = DIALOG_NAME.RECIPE_CATEGORY_SETTING;
-                        const dialogConfig = RECIPE_SETTING_DIALOG_CONFIGS[dialogName];
                         openDialog({
-                            title: dialogConfig.title,
+                            title: '料理カテゴリーを設定',
                             children: () => <RecipeCategoryEditForm />
                         });
                     }}>

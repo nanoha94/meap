@@ -6,7 +6,6 @@ import { CalendarDays, LucideProps, Minus, Pencil, Plus } from 'lucide-react';
 import { ShoppingItemEditForm } from '@/components';
 import { colors, EDIT_MODE } from '@/constants';
 import { useDialog } from '@/hooks';
-import { SHOPPING_ITEM_SETTING_DIALOG_CONFIGS } from '@/models/shopping';
 import itemOpenStyles from '@/styles/itemOpen.module.css';
 import { ActionButton } from '@/types';
 
@@ -27,7 +26,7 @@ const AddShoppingItemButton = () => {
             icon: <Pencil />,
             onClick: () => {
                 openDialog({
-                    title: SHOPPING_ITEM_SETTING_DIALOG_CONFIGS[EDIT_MODE.CREATE].title,
+                    title: '買い物アイテムを追加',
                     children: () => (
                         <ShoppingItemEditForm
                             editingItem={undefined}
@@ -89,7 +88,7 @@ const AddShoppingItemButton = () => {
                     <button
                         key={idx}
                         onClick={() => {
-                            v.onClick();
+                            v.onClick?.();
                             setIsOpen(false);
                         }}
                         className="z-[100] flex items-center gap-x-2 whitespace-nowrap rounded-full pl-4 transition-colors hover:text-primary-main hover:bg-gray-light">

@@ -7,7 +7,7 @@ import { Header, HeaderTextButton } from '@/components';
 import { COLOR_VARIANT } from '@/constants';
 import { useAlertDialog, useSnackbars } from '@/hooks';
 import { useIngredientStore } from '@/models/ingredient';
-import { useRecipeApi } from '@/models/recipe';
+import { RECIPE_ALERT_DIALOG_CONFIGS, useRecipeApi } from '@/models/recipe';
 import { useAccountStore } from '@/models/settings';
 import { ActionButton, IImage, IRecipe } from '@/types';
 
@@ -39,12 +39,7 @@ const RecipeDetailPage = ({
             return;
         }
         openAlertDialog(
-            {
-                title: '削除',
-                message: [`${fetchRecipe.name}を削除しますか？`],
-                alertMessage: '',
-                actionButtonText: '削除',
-            },
+            RECIPE_ALERT_DIALOG_CONFIGS.deleteItem(fetchRecipe.name),
             () => {
                 deleteRecipe(fetchRecipe.id, fetchRecipe.name);
             },

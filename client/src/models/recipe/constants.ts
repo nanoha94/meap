@@ -1,14 +1,6 @@
-import { DIALOG_NAME, TMP_ID_PREFIX } from '@/constants';
+import { TMP_ID_PREFIX } from '@/constants';
 import { AlertDialogConfig,  IRecipeCategory } from '@/types';
-import { RecipeEditFormData, RecipeSettingDialogConfigs, RecipeStepEditFormData } from './types';
-
-/* ダイアログ設定 */
-export const RECIPE_SETTING_DIALOG_CONFIGS: RecipeSettingDialogConfigs = {
-    [DIALOG_NAME.RECIPE_CATEGORY_SETTING]: {
-        title: '料理カテゴリーを設定',
-        actionButtonText: '設定',
-    },
-};
+import { RecipeEditFormData,  RecipeStepEditFormData } from './types';
 
 // アラートダイアログの設定
 export const RECIPE_ALERT_DIALOG_CONFIGS = {

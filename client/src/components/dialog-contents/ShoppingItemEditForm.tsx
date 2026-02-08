@@ -6,7 +6,6 @@ import { Button, StyledSelect, VerticalRowField } from '@/components';
 import { BUTTON_TYPE, BUTTON_VARIANT, COLOR_VARIANT, EDIT_MODE, EditMode } from '@/constants';
 import { useDialog } from '@/hooks';
 import {
-    SHOPPING_ITEM_SETTING_DIALOG_CONFIGS,
     useShoppingCategoryApi,
     useShoppingItemApi,
 } from '@/models/shopping';
@@ -118,7 +117,7 @@ const ShoppingItemEditForm: React.FC<Props> = ({ editingItem, editMode }) => {
                     戻る
                 </Button>
                 <Button type={BUTTON_TYPE.SUBMIT} disabled={watchName.length <= 0}>
-                    {SHOPPING_ITEM_SETTING_DIALOG_CONFIGS[editMode].buttonText}
+                    {editMode === EDIT_MODE.CREATE ? '追加' : '保存'}
                 </Button>
             </div>
         </form>

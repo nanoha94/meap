@@ -6,7 +6,7 @@ import { MenuButton, ShoppingItemEditForm } from '@/components';
 import { EDIT_MODE, colors } from '@/constants';
 import { useAlertDialog, useDialog } from '@/hooks';
 import { ActionButton, IShoppingItem } from '@/types';
-import { SHOPPING_ALERT_DIALOG_CONFIGS, SHOPPING_ITEM_SETTING_DIALOG_CONFIGS } from '../../constants';
+import { SHOPPING_ALERT_DIALOG_CONFIGS } from '../../constants';
 import { useShoppingItemApi, useShoppingStore } from '../../hooks';
 
 interface Props {
@@ -49,7 +49,7 @@ const ShoppingItemCard = ({ item }: Props) => {
             icon: <Pencil />,
             onClick: () => {
                 openDialog({
-                    title: SHOPPING_ITEM_SETTING_DIALOG_CONFIGS[EDIT_MODE.UPDATE].title,
+                    title: '買い物アイテムを編集',
                     children: () =>
                         <ShoppingItemEditForm
                             editingItem={item}

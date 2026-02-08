@@ -1,22 +1,7 @@
-import { EDIT_MODE } from '@/constants';
 import { AlertDialogConfig } from '@/types';
-import { ShoppingItemSettingDialogConfig } from './types';
 
 export const DEBOUNCE_DELAY = 5000;
 
-export const SHOPPING_ITEM_SETTING_DIALOG_CONFIGS: Record<
-    string,
-    ShoppingItemSettingDialogConfig
-> = {
-    [EDIT_MODE.CREATE]: {
-        title: '買い物アイテムを追加',
-        buttonText: '追加',
-    },
-    [EDIT_MODE.UPDATE]: {
-        title: '買い物アイテムを編集',
-        buttonText: '保存',
-    },
-};
 
 // アラートダイアログの設定
 export const SHOPPING_ALERT_DIALOG_CONFIGS = {

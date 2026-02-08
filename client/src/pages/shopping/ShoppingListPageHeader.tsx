@@ -5,7 +5,6 @@ import { CalendarDays, CirclePlus, Pencil } from 'lucide-react';
 import { Header, HeaderTextButton, MenuButton, ShoppingItemEditForm } from '@/components';
 import { COLOR_VARIANT, EDIT_MODE } from '@/constants';
 import { useDialog } from '@/hooks';
-import { SHOPPING_ITEM_SETTING_DIALOG_CONFIGS } from '@/models/shopping';
 import { ActionButton } from '@/types';
 
 const ShoppingListPageHeader = () => {
@@ -27,7 +26,7 @@ const ShoppingListPageHeader = () => {
             icon: <Pencil />,
             onClick: () => {
                 openDialog({
-                    title: SHOPPING_ITEM_SETTING_DIALOG_CONFIGS[EDIT_MODE.CREATE].title,
+                    title: '買い物アイテムを追加',
                     children: () =>
                         <ShoppingItemEditForm
                             editingItem={undefined}
