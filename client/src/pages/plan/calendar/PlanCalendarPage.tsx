@@ -42,9 +42,21 @@ const PlanCalendarPage = ({ fetchMealPlans, errorMessage, year, month }: Props) 
         return result;
     }, [fetchMealPlans]);
 
+    /**
+     * 選択された日付の献立表を取得
+     * @returns IMealPlan | undefined
+     */
     const mealPlan = React.useMemo(() => {
         return fetchMealPlans.find(v => v.date === selectedDate.format('YYYY-MM-DD'));
     }, [fetchMealPlans, selectedDate]);
+
+    /**
+     * 編集ページのパスを生成
+     * @returns string
+     */
+    const editPagePath = React.useMemo(() => {
+        return `/plan/edit?date=${selectedDate.format('YYYY-MM-DD')}`;
+    }, [selectedDate]);
 
     /**
         * 献立表をストアにセット
@@ -73,7 +85,7 @@ const PlanCalendarPage = ({ fetchMealPlans, errorMessage, year, month }: Props) 
         {
             label: '編集する',
             icon: <Pencil />,
-            href: `/plan/${mealPlan?.id}/edit`,
+            href: editPagePath,
         },
         {
             label: '削除する',
@@ -103,7 +115,7 @@ const PlanCalendarPage = ({ fetchMealPlans, errorMessage, year, month }: Props) 
                     <div className={`px-3 text-base font-bold ${getDayOfWeekTextColor(selectedDate.day())}`}>{selectedDate.locale('ja').format('MM/DD')}<span className="ml-1 text-xs">{selectedDate.locale('ja').format('(ddd)')}</span>
                     </div>
                     {mealPlan?.meals.map(v => <MealCard key={v.id} mealCategory={v.category} recipes={v.recipes} actionButtonConfigs={actionButtonConfigs} />)}
-                    <div className="px-3 lg:px-0"><EmptyButton href={mealPlan?.id ? `/plan/${mealPlan.id}/edit` : "/plan/new"} /></div>
+                    <div className="px-3 lg:px-0"><EmptyButton href={editPagePath} /></div>
                 </div>
             </main>
         </>

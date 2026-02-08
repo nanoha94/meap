@@ -30,6 +30,18 @@ namespace App\Swagger;
  *     )
  * )
  * @OA\Parameter(
+ *     parameter="MealPlanDateParam",
+ *     name="date",
+ *     in="path",
+ *     description="献立の日付（Y-m-d）",
+ *     required=true,
+ *     @OA\Schema(
+ *         type="string",
+ *         format="date",
+ *         example="2024-01-15"
+ *     )
+ * )
+ * @OA\Parameter(
  *     parameter="MealPlanIdParam",
  *     name="id",
  *     in="path",

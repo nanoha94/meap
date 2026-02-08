@@ -184,7 +184,7 @@ beforeEach(function () {
                 if (!$mealPlan) {
                     throw new \Exception('Created meal plan not found in DB');
                 }
-                $showResponse = $testInstance->actingAs($user)->get('/meal-plans/' . $mealPlan->id);
+                $showResponse = $testInstance->actingAs($user)->get('/meal-plans/' . $mealPlan->date);
                 if ($showResponse->status() !== 200) {
                     throw new \Exception('Failed to get created meal plan via show API');
                 }
@@ -1091,7 +1091,7 @@ test('3-5-34: 【詳細取得】 正常な献立詳細取得', function () {
 
     $mealPlanData = $this->testData->createMealPlanViaApi($this, $user, $mealCategory['id'], $recipe['id']);
 
-    $response = $this->actingAs($user)->get("/meal-plans/{$mealPlanData['id']}");
+    $response = $this->actingAs($user)->get("/meal-plans/{$mealPlanData['date']}");
 
     $response->assertStatus(200);
     $response->assertJson([
@@ -1134,7 +1134,7 @@ test('3-5-34: 【詳細取得】 正常な献立詳細取得', function () {
     ]);
 });
 test('3-5-35: 【詳細取得】 未認証ユーザー', function () {
-    $response = $this->get('/meal-plans/' . \Illuminate\Support\Str::uuid());
+    $response = $this->get('/meal-plans/2024-01-15');
 
     $response->assertStatus(401);
     $response->assertJson([
@@ -1158,7 +1158,7 @@ test('3-5-36: 【詳細取得】 グループが存在しない', function () {
     ]);
     // グループに所属させない
 
-    $response = $this->actingAs($user)->get('/meal-plans/' . \Illuminate\Support\Str::uuid());
+    $response = $this->actingAs($user)->get('/meal-plans/2024-01-15');
 
     $response->assertStatus(422);
     $response->assertJson([
@@ -1180,11 +1180,11 @@ test('3-5-37: 【詳細取得】 データベース接続エラー', function ()
     $user = $this->testData->createUserWithGroup();
     // MealPlanServiceをモックして例外を発生させる
     $this->mock(MealPlanService::class, function ($mock) {
-        $mock->shouldReceive('show')
+        $mock->shouldReceive('showByDate')
             ->once()->andThrow(new \Exception('Database connection error'));
     });
 
-    $response = $this->actingAs($user)->get("/meal-plans/" . \Illuminate\Support\Str::uuid());
+    $response = $this->actingAs($user)->get('/meal-plans/2024-01-15');
 
     $response->assertStatus(500);
     $response->assertJson([
@@ -1202,10 +1202,19 @@ test('3-5-37: 【詳細取得】 データベース接続エラー', function ()
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-5-37: 【詳細取得】 存在しない献立詳細取得', function () {
+test('3-5-37b: 【詳細取得】 日付形式不正で 422', function () {
     $user = $this->testData->createUserWithGroup();
 
-    $response = $this->actingAs($user)->get('/meal-plans/' . \Illuminate\Support\Str::uuid());
+    $response = $this->actingAs($user)->get('/meal-plans/invalid-date');
+
+    $response->assertStatus(422);
+    $response->assertJsonValidationErrors(['date']);
+});
+
+test('3-5-38: 【詳細取得】 存在しない献立詳細取得', function () {
+    $user = $this->testData->createUserWithGroup();
+
+    $response = $this->actingAs($user)->get('/meal-plans/2099-12-31');
 
     $response->assertStatus(404);
     $response->assertJson([
@@ -1231,10 +1240,10 @@ test('3-5-39: 【詳細取得】 他グループの献立詳細取得', function
     $this->testData->createIngredientUnits($otherGroup->id);
     $otherMealCategory = $this->testData->createmealCategoryViaApi($this, $otherUser, '朝食', null, 0);
     $otherRecipe = $this->testData->createRecipeViaApi($this, $otherUser);
-    $otherMealPlanData = $this->testData->createMealPlanViaApi($this, $otherUser, $otherMealCategory['id'], $otherRecipe['id'], '2024-01-20');
-    $otherMealPlanId = $otherMealPlanData['id'];
+    $this->testData->createMealPlanViaApi($this, $otherUser, $otherMealCategory['id'], $otherRecipe['id'], '2024-01-20');
 
-    $response = $this->actingAs($user)->get("/meal-plans/{$otherMealPlanId}");
+    // 自グループには 2024-01-20 の献立がないため 404
+    $response = $this->actingAs($user)->get('/meal-plans/2024-01-20');
 
     $response->assertStatus(404);
     $response->assertJson([

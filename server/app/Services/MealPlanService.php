@@ -86,6 +86,42 @@ class MealPlanService extends AbstractDomainService
         });
     }
 
+    /**
+     * 指定日付の献立を1件取得（同一日付に複数ある場合はマージして返す）
+     *
+     * @param Group $group グループ
+     * @param string $date 日付（Y-m-d）
+     * @return array show 形式（id, date, meals）
+     * @throws HttpException 献立が存在しない場合
+     */
+    public function showByDate(string $date, Group $group): array
+    {
+        return DB::transaction(function () use ($group, $date) {
+            $item = $this->getGroupRelation($group)
+                ->where('date', $date)
+                ->select($this->getSelectColumns());
+
+            if ($this->getWithColumns()) {
+                $item->with($this->getWithColumns());
+            }
+
+            if ($this->getOrderBy()) {
+                $item->orderBy($this->getOrderBy());
+            }
+
+            $result = $item->first();
+
+            if ($result === null) {
+                throw new HttpException(
+                    HttpStatusCode::NOT_FOUND->value,
+                    __('api.not_found', ['attribute' => $this->getResourceName()])
+                );
+            }
+
+            return $this->formatShowResponse($result);
+        });
+    }
+
     protected function formatIndexResponse(Model|Collection $items): array
     {
         // 型チェック（groupBy により 1 日分の MealPlan の Collection が渡る）

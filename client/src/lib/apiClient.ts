@@ -3,6 +3,19 @@ import { Agent } from 'undici';
 
 import { API_STATUS_CODE, TIMEOUT_MS } from '@/constants';
 
+/**
+ * APIエラー時にステータスコードを保持するためのエラークラス
+ */
+export class ApiClientError extends Error {
+    constructor(
+        message: string,
+        public readonly statusCode: number,
+    ) {
+        super(message);
+        this.name = 'ApiClientError';
+    }
+}
+
 type ApiClientOptions = Omit<RequestInit, 'body'> & {
     body?: Record<string, unknown> | BodyInit | null;
 };
@@ -82,10 +95,10 @@ export async function apiClient<T>(
 
         // 認証関連のエラーを統一
         if (response.status == API_STATUS_CODE.UNAUTHORIZED || response.status === API_STATUS_CODE.CONFLICT) {
-            throw new Error('AUTHENTICATION_REQUIRED');
+            throw new ApiClientError('AUTHENTICATION_REQUIRED', response.status);
         }
 
-        throw new Error(`Request failed with status ${response.status}`);
+        throw new ApiClientError(`Request failed with status ${response.status}`, response.status);
     }
 
     // No Contentの場合は空のオブジェクトを返す
@@ -110,6 +123,8 @@ export async function apiClient<T>(
 export type FetchDataResult<T> = {
     data: T | null;
     errorMessage: string;
+    /** APIがエラーレスポンスを返した場合のHTTPステータスコード */
+    statusCode?: number;
 };
 
 export async function fetchData<T>(
@@ -118,11 +133,12 @@ export async function fetchData<T>(
 ): Promise<FetchDataResult<T>> {
     let data: T | null = null;
     let errorMessage: string = '';
+    let statusCode: number | undefined;
 
     // タイムアウトタイマー
     let timeoutId: NodeJS.Timeout | null = null;
 
-    try {       
+    try {
         const controller = new AbortController();
         timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
@@ -132,8 +148,10 @@ export async function fetchData<T>(
         });
     } catch (error) {
         console.error(`[fetchData] エラー発生: ${path}`, error);
-        // エラーオブジェクトから安全に文字列を抽出
-        if (error instanceof Error && error.name === 'AbortError') {
+        if (error instanceof ApiClientError) {
+            errorMessage = error.message;
+            statusCode = error.statusCode;
+        } else if (error instanceof Error && error.name === 'AbortError') {
             errorMessage =
                 'リクエストがタイムアウトしました。再度お試しください。';
         } else {
@@ -151,7 +169,7 @@ export async function fetchData<T>(
         }
     }
 
-    return { data, errorMessage };
+    return { data, errorMessage, ...(statusCode !== undefined && { statusCode }) };
 }
 
 /**

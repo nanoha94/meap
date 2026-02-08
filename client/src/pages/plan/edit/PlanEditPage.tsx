@@ -10,22 +10,24 @@ import { ActionButton, IMealPlan } from '@/types';
 import { FormProvider } from 'react-hook-form';
 import { useMealPlanEditForm } from '@/models/meal/hooks/useMealPlanEditForm';
 import { useSnackbars } from '@/hooks';
+import { useRouter } from 'next/navigation';
+import dayjs from 'dayjs';
 
 interface Props {
+    selectedDate: string;
     fetchMealPlan?: IMealPlan;
     errorMessage?: string;
 }
 
-const PlanEditPage = ({ fetchMealPlan, errorMessage }: Props) => {
+const PlanEditPage = ({ selectedDate, fetchMealPlan, errorMessage }: Props) => {
+    const router = useRouter();
     const { mealCategories } = useMealStore();
     const { addSnackbar } = useSnackbars();
-    const [selectedDate, setSelectedDate] = React.useState(new Date());
     const {
         control,
         methods,
         onSubmit
-    } = useMealPlanEditForm(selectedDate.toISOString(), fetchMealPlan);
-
+    } = useMealPlanEditForm(selectedDate, fetchMealPlan);
 
     /**
      * メニューボタン押下時に開くアクションボタン設定
@@ -55,7 +57,7 @@ const PlanEditPage = ({ fetchMealPlan, errorMessage }: Props) => {
         <>
             <Header hasBackButton={true} leftContent={
                 <div className="items-center gap-x-4 whitespace-nowrap w-[300px] hidden md:flex">
-                    <StyledDatePicker value={fetchMealPlan?.date ? new Date(fetchMealPlan.date) : new Date()} onChange={(date) => setSelectedDate(date ?? new Date())} />
+                    <StyledDatePicker value={new Date(selectedDate)} onChange={(date) => router.push(`/plan/edit?date=${dayjs(date).format('YYYY-MM-DD')}`)} />
                 </div>
             } rightContent={
                 <HeaderTextButton type={BUTTON_TYPE.SUBMIT} form="plan-edit-form" colorVariant={COLOR_VARIANT.SECONDARY}>

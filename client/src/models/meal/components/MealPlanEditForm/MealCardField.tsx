@@ -45,7 +45,7 @@ const MealCardField = ({ control, mealCategory, mealIndex, actionButtonConfigs }
                         />
                     </div>
                 ))}
-                <EmptyButton type="button" className="ml-8 w-[calc(100%-32px)] !h-auto aspect-[4/3]" />
+                <EmptyButton type="button" className="ml-8 !w-[calc(100%-32px)] !h-auto aspect-[4/3]" />
             </div>
         </div>
     );

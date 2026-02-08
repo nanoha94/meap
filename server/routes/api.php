@@ -24,8 +24,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
 // メール認証済みユーザーのみアクセス可能
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
-    // meal-plans
-    Route::apiResource('/meal-plans', MealPlanController::class);
+    Route::get('/meal-plans/{date}', [MealPlanController::class, 'show']);
+    Route::apiResource('meal-plans', MealPlanController::class)->except(['show']);
     Route::delete('/meal-plans/{mealPlanId}/meals/{mealId}', [MealPlanController::class, 'destroyMeal'])
         ->name('meal-plans.meals.destroy');
     Route::apiResource('/meal-categories', MealCategoryController::class)->only(['index', 'store', 'destroy']);

@@ -91,7 +91,7 @@ const CalendarCustomHeader = ({
  */
 const StyuledDatePicker = ({ value, onChange }: Props) => {
     return (
-        <button type="button" className="relative cursor-pointer rounded-lg transition-colors group hover:bg-gray-light">
+        <div className="relative cursor-pointer rounded-lg transition-colors group hover:bg-gray-light">
             <DatePicker
                 selected={value}
                 onChange={onChange}
@@ -108,7 +108,7 @@ const StyuledDatePicker = ({ value, onChange }: Props) => {
                     size={24}
                     strokeWidth={1.5} />
             </div>
-        </button>
+        </div>
     );
 };
 

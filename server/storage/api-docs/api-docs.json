@@ -500,16 +500,17 @@
                 ]
             }
         },
-        "/meal-plans/{id}": {
+        "/meal-plans/{date}": {
             "get": {
                 "tags": [
                     "MealPlans"
                 ],
                 "summary": "献立の詳細を取得",
-                "operationId": "c5ba319a7da81610d3312fef1bd03388",
+                "description": "指定した日付（Y-m-d）の献立を1件取得します。",
+                "operationId": "361429cc34688cb6836990e2b072d43d",
                 "parameters": [
                     {
-                        "$ref": "#/components/parameters/MealPlanIdParam"
+                        "$ref": "#/components/parameters/MealPlanDateParam"
                     }
                 ],
                 "responses": {
@@ -521,6 +522,9 @@
                     },
                     "404": {
                         "$ref": "#/components/responses/NotFound"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationErrors"
                     }
                 },
                 "security": [
@@ -528,7 +532,9 @@
                         "sanctum": []
                     }
                 ]
-            },
+            }
+        },
+        "/meal-plans/{id}": {
             "put": {
                 "tags": [
                     "MealPlans"
@@ -3511,6 +3517,17 @@
                     "maximum": 12,
                     "minimum": 1,
                     "example": 1
+                }
+            },
+            "MealPlanDateParam": {
+                "name": "date",
+                "in": "path",
+                "description": "献立の日付（Y-m-d）",
+                "required": true,
+                "schema": {
+                    "type": "string",
+                    "format": "date",
+                    "example": "2024-01-15"
                 }
             },
             "MealPlanIdParam": {

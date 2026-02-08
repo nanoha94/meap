@@ -91,24 +91,26 @@ class MealPlanController extends ApiController
 
     /**
      * @OA\Get(
-     *     path="/meal-plans/{id}",
+     *     path="/meal-plans/{date}",
      *     summary="献立の詳細を取得",
+     *     description="指定した日付（Y-m-d）の献立を1件取得します。",
      *     tags={"MealPlans"},
      *     security={{"sanctum":{}}},
-     *     @OA\Parameter(ref="#/components/parameters/MealPlanIdParam"),
+     *     @OA\Parameter(ref="#/components/parameters/MealPlanDateParam"),
      *     @OA\Response(response=200, ref="#/components/responses/MealPlanShowSuccess"),
      *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
-     *     @OA\Response(response=404, ref="#/components/responses/NotFound")
+     *     @OA\Response(response=404, ref="#/components/responses/NotFound"),
+     *     @OA\Response(response=422, ref="#/components/responses/ValidationErrors")
      * )
      */
-    public function show(MealPlanShowRequest $request, string $id): JsonResponse
+    public function show(MealPlanShowRequest $request, string $date): JsonResponse
     {
         $operation = __('operations.meal_plan.show');
         $failedMessage = __('api.get_failed', ['attribute' => __('api.attributes.meal_plan')]);
 
         return $this->executeWithExceptionHandling(
-            function () use ($request, $id) {
-                $res = $this->mealPlanService->show($id, $this->getUserGroup($request));
+            function () use ($request, $date) {
+                $res = $this->mealPlanService->showByDate($date, $this->getUserGroup($request));
                 $message = __('api.retrieved', ['attribute' => __('api.attributes.meal_plan'), 'name' => $res['date']]);
                 return $this->showResponse($res, $message);
             },
