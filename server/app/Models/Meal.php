@@ -15,6 +15,7 @@ class Meal extends Model
     public $incrementing = false;
 
     protected $fillable = [
+        'order',
         'meal_plan_id',
         'category_id',
     ];

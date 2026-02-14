@@ -22,7 +22,7 @@ interface Props {
 const PlanCalendarPage = ({ fetchMealPlans, errorMessage, year, month }: Props) => {
     const router = useRouter();
     const { addSnackbar } = useSnackbars();
-    const { setMealPlans } = useMealStore();
+    const { mealCategories, setMealPlans } = useMealStore();
     const [selectedDate, setSelectedDate] = React.useState<Dayjs>(dayjs());
 
     /**
@@ -36,11 +36,12 @@ const PlanCalendarPage = ({ fetchMealPlans, errorMessage, year, month }: Props) 
             const day = dayjs(mealPlan.date).date();
             const index = day - 1;
             if (index >= 0 && index < daysInMonth) {
-                result[index] = mealPlan.meals.map(meal => meal.category.colorCodeHex);
+                const colors = mealPlan.meals.map(meal => mealCategories.find(c => c.id === meal.categoryId)?.colorCodeHex ?? '');
+                result[index] = Array.from(new Set(colors));
             }
         });
         return result;
-    }, [fetchMealPlans]);
+    }, [fetchMealPlans, mealCategories]);
 
     /**
      * 選択された日付の献立表を取得
@@ -59,9 +60,9 @@ const PlanCalendarPage = ({ fetchMealPlans, errorMessage, year, month }: Props) 
     }, [selectedDate]);
 
     /**
-        * 献立表をストアにセット
-        * @returns void
-        */
+     * 献立表をストアにセット
+     * @returns void
+     */
     React.useEffect(() => {
         if (fetchMealPlans) {
             setMealPlans(fetchMealPlans);
@@ -114,7 +115,11 @@ const PlanCalendarPage = ({ fetchMealPlans, errorMessage, year, month }: Props) 
                 <div className="py-5 flex flex-col gap-y-3">
                     <div className={`px-3 text-base font-bold ${getDayOfWeekTextColor(selectedDate.day())}`}>{selectedDate.locale('ja').format('MM/DD')}<span className="ml-1 text-xs">{selectedDate.locale('ja').format('(ddd)')}</span>
                     </div>
-                    {mealPlan?.meals.map(v => <MealCard key={v.id} mealCategory={v.category} recipes={v.recipes} actionButtonConfigs={actionButtonConfigs} />)}
+                    {mealCategories?.map(v => {
+                        const recipes = mealPlan?.meals.filter(m => m.categoryId === v.id);
+                        return recipes && recipes.length > 0 &&
+                            <MealCard key={v.id} mealCategory={v} recipes={recipes} actionButtonConfigs={actionButtonConfigs} />;
+                    })}
                     <div className="px-3 lg:px-0"><EmptyButton href={editPagePath} /></div>
                 </div>
             </main>

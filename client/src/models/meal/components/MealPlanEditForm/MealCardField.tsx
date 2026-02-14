@@ -1,41 +1,49 @@
 "use client";
 import React from "react";
-import { Check, GripVertical } from "lucide-react";
-import { Control, useFieldArray } from "react-hook-form";
+import { Check } from "lucide-react";
+import { rectSortingStrategy, SortableContext } from "@dnd-kit/sortable";
+import { useDroppable } from "@dnd-kit/core";
 
-import { HeaderTextButton, MenuButton, RecipeSelect, EmptyButton } from "@/components";
-import { BUTTON_TYPE, COLOR_VARIANT, colors } from "@/constants";
-import { MealPlanEditFormData } from "@/models/meal";
+import { HeaderTextButton, MenuButton, RecipeSelect, EmptyButton, Sortable } from "@/components";
+import { BUTTON_TYPE, COLOR_VARIANT } from "@/constants";
 import { useRecipeApi } from "@/models/recipe";
-import { ActionButton, IMealCategory, IRecipeListItem } from "@/types";
+import { ActionButton, IMealCategory, IMealPlanItem, IRecipeListItem } from "@/types";
 import { useDialog } from "@/hooks";
 import RecipeCard from "../RecipeCard";
 
-interface MealCardFieldProps {
-    control: Control<MealPlanEditFormData>;
+interface Props {
     mealCategory: IMealCategory;
-    mealIndex: number;
+    recipes: IMealPlanItem[];
     actionButtonConfigs: ActionButton[];
+    addItem: (item: IMealPlanItem) => void;
 }
 
 /**
  * 献立カードフィールド
  */
-const MealCardField = ({ control, mealCategory, mealIndex, actionButtonConfigs }: MealCardFieldProps) => {
+const MealCardField = ({ mealCategory, recipes, actionButtonConfigs, addItem }: Props) => {
     const { fetchRecipes } = useRecipeApi();
     const { openDialog, closeDialog, updateCurrentDialogConfig } = useDialog();
-    const { fields, update, remove } = useFieldArray({ control, name: `meals.${mealIndex}.recipes` });
     const [selectedRecipeInDialog, setSelectedRecipeInDialog] = React.useState<IRecipeListItem | null>(null);
     const dialogButtonDisabled = React.useMemo(() => selectedRecipeInDialog === null, [selectedRecipeInDialog]);
-
+    const { setNodeRef: setDroppableNodeRef } = useDroppable({
+        id: mealCategory.id,
+    });
     /**
      * 確定ボタン押下時の処理（ダイアログヘッダーボタン）
      */
     const handleConfirmDialog = React.useCallback(() => {
         if (selectedRecipeInDialog === null) return;
-        update(fields.length, selectedRecipeInDialog);
+        addItem({
+            id: '',
+            recipeId: selectedRecipeInDialog.id,
+            name: selectedRecipeInDialog.name,
+            thumbnail: selectedRecipeInDialog.thumbnail,
+            categoryId: mealCategory.id,
+            order: recipes.length,
+        });
         closeDialog();
-    }, [selectedRecipeInDialog, fields.length, update, closeDialog]);
+    }, [selectedRecipeInDialog, closeDialog]);
 
     // ダイアログ内の customButton / children は開いた時点の要素が store に保存されるため、
     // selectedRecipeInDialog が変わったら store の config を更新して Dialog を再レンダーさせる
@@ -69,35 +77,40 @@ const MealCardField = ({ control, mealCategory, mealIndex, actionButtonConfigs }
                     <MenuButton actionButtons={actionButtonConfigs} placement="top-right" />
                 )}
             </div>
-            <div className="grid grid-cols-[repeat(auto-fill,_minmax(150px,_1fr))] md:grid-cols-[repeat(auto-fill,_minmax(180px,_1fr))] gap-5">
-                {fields.map((field, index) => (
-                    <div key={field.id} className="flex gap-x-2">
-                        <GripVertical color={colors.gray.main} className="pt-1" />
-                        <RecipeCard
-                            recipe={field as IRecipeListItem}
-                            hasDeleteButton={true}
-                            onDelete={() => remove(index)}
-                        />
-                    </div>
-                ))}
-                <EmptyButton type="button" className="ml-8 !w-[calc(100%-32px)] !h-auto aspect-[4/3]" onClick={async () => {
-                    await fetchRecipes();
-                    setSelectedRecipeInDialog(null);
-                    openDialog({
-                        title: '料理を検索',
-                        customButton: <HeaderTextButton type={BUTTON_TYPE.BUTTON} colorVariant={COLOR_VARIANT.SECONDARY} disabled={dialogButtonDisabled} onClick={handleConfirmDialog}>
-                            <Check size={20} strokeWidth={2} />
-                            確定
-                        </HeaderTextButton>,
-                        children: () => (
-                            <RecipeSelect
-                                selectedRecipe={selectedRecipeInDialog}
-                                onSelectedRecipeChange={setSelectedRecipeInDialog}
+            <SortableContext
+                items={recipes.map(item => item.recipeId)}
+                id={mealCategory.id}
+                strategy={rectSortingStrategy}>
+                <div ref={setDroppableNodeRef} className="grid grid-cols-[repeat(auto-fill,_minmax(150px,_1fr))] md:grid-cols-[repeat(auto-fill,_minmax(180px,_1fr))] gap-5">
+                    {recipes.map((field) => (
+                        <Sortable key={field.recipeId} id={field.recipeId}>
+                            <RecipeCard
+                                recipe={field}
+                                isGrippable={true}
+                                hasDeleteButton={true}
+                                onDelete={() => { }}
                             />
-                        )
-                    });
-                }} />
-            </div>
+                        </Sortable>
+                    ))}
+                    <EmptyButton type="button" className="ml-8 !w-[calc(100%-32px)] !h-auto aspect-[4/3]" onClick={async () => {
+                        await fetchRecipes();
+                        setSelectedRecipeInDialog(null);
+                        openDialog({
+                            title: '料理を検索',
+                            customButton: <HeaderTextButton type={BUTTON_TYPE.BUTTON} colorVariant={COLOR_VARIANT.SECONDARY} disabled={dialogButtonDisabled} onClick={handleConfirmDialog}>
+                                <Check size={20} strokeWidth={2} />
+                                確定
+                            </HeaderTextButton>,
+                            children: () => (
+                                <RecipeSelect
+                                    selectedRecipe={selectedRecipeInDialog}
+                                    onSelectedRecipeChange={setSelectedRecipeInDialog}
+                                />
+                            )
+                        });
+                    }} />
+                </div>
+            </SortableContext>
         </div>
     );
 };

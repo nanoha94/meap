@@ -83,6 +83,7 @@ entity meal_recipe_mappings {
 entity meals {
     * id : string <<generated>>
     ---
+    * order : int / ソート順
     * meal_plan_id : string <<FK>>
     * category_id : string <<FK>>
 }

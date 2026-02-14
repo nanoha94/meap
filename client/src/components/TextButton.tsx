@@ -1,17 +1,17 @@
 'use client';
 import React from 'react';
+import Link from 'next/link';
 
 import { BUTTON_SIZE, BUTTON_TYPE, ButtonSize, ButtonType, COLOR_VARIANT } from '@/constants';
 
-interface Props {
+type Props = {
     className?: string;
     size?: ButtonSize;
     disabled?: boolean;
     colorVariant?: (typeof COLOR_VARIANT)['PRIMARY'] | (typeof COLOR_VARIANT)['SECONDARY'] | (typeof COLOR_VARIANT)['GRAY'] | (typeof COLOR_VARIANT)['ACCENT'];
     children: React.ReactNode;
-    onClick: () => void;
     type?: ButtonType;
-}
+} & ({ href: string; onClick?: never } | { onClick?: () => void; href?: never });
 
 const TextButton = ({
     className,
@@ -19,6 +19,7 @@ const TextButton = ({
     disabled = false,
     colorVariant = COLOR_VARIANT.PRIMARY,
     children,
+    href,
     onClick,
     type = BUTTON_TYPE.BUTTON,
 }: Props) => {
@@ -32,13 +33,21 @@ const TextButton = ({
         return colorMappings[colorVariant];
     }, [colorVariant]);
 
+    const buttonClassName = `py-1 px-2 w-fit flex items-center gap-x-1 ${size === BUTTON_SIZE.SMALL ? 'text-sm' : 'text-base'} font-bold bg-white rounded border transition-colors hover:bg-gray-light ${colorClasses} ${disabled ? 'opacity-50 pointer-events-none' : ''} ${className ?? ''}`;
+
+    if (href) {
+        return (
+            <Link href={href} className={buttonClassName}>
+                {children}
+            </Link>
+        );
+    }
+
     return (
         <button
             type={type}
             onClick={onClick}
-            className={`py-1 px-2 w-fit flex items-center gap-x-1 ${size === 'small' ? 'text-sm' : 'text-base'
-                } font-bold bg-white rounded border transition-colors hover:bg-gray-light ${colorClasses
-                } ${disabled ? 'opacity-50' : ''} ${className}`}
+            className={buttonClassName}
             disabled={disabled}>
             {children}
         </button>

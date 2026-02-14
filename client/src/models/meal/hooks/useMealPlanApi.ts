@@ -1,10 +1,14 @@
+"use client";
+import React from "react";
+import { useRouter } from "next/navigation";
+
 import { TIMEOUT_MS } from "@/constants";
 import { useApiErrorHandler, useSnackbars } from "@/hooks";
 import axios from "@/lib/axios";
 import { useGlobalStore } from "@/stores";
 import { IPostMealPlanResponse, IPostPutMealPlanRequest, IPutMealPlanResponse } from "@/types";
-import { useRouter } from "next/navigation";
-import React from "react";
+
+
 
 export const useMealPlanApi = () => {
     const { incrementLoadingCount, decrementLoadingCount } = useGlobalStore();
@@ -12,9 +16,9 @@ export const useMealPlanApi = () => {
     const { addSnackbar } = useSnackbars();
     const { handleApiError } = useApiErrorHandler();
 
-     // 重複リクエスト防止用のフラグ
-     const isStoreRequestRef = React.useRef(false);
-     const isUpdateRequestRef = React.useRef(false);
+    // 重複リクエスト防止用のフラグ
+    const isStoreRequestRef = React.useRef(false);
+    const isUpdateRequestRef = React.useRef(false);
     //  const isDeleteRequestRef = React.useRef(false);
 
     /**
@@ -52,7 +56,7 @@ export const useMealPlanApi = () => {
                     addSnackbar(
                         'success',
                         responseData.message ??
-                            'リクエストが正常に完了しました',
+                        'リクエストが正常に完了しました',
                     );
                 }
             } catch (error) {
@@ -70,46 +74,46 @@ export const useMealPlanApi = () => {
      * @param data 更新する献立プランデータ
      */
     const updateMealPlan = React.useCallback(async (data: IPostPutMealPlanRequest) => {
-            // 重複リクエスト防止
-            if (isUpdateRequestRef.current) {
-                return;
+        // 重複リクエスト防止
+        if (isUpdateRequestRef.current) {
+            return;
+        }
+
+        const sendData: IPostPutMealPlanRequest = data;
+
+        try {
+            isUpdateRequestRef.current = true;
+            incrementLoadingCount();
+
+            // APIリクエスト
+            const res = await axios.put(`/meal-plans/${data.id}`, sendData, {
+                timeout: TIMEOUT_MS,
+            });
+
+            // レスポンスデータ
+            const responseData: IPutMealPlanResponse = res.data;
+            if (responseData.success) {
+                // TODO: プランページのクエリパラメータを変更するか検討（現状はyearとmonthを渡すことになっている）
+                // 日付を変更してもリロード（再データフェッチ）しないようにする
+                // planページでデータフェッチするのはyearかmonthが変更された場合のみ
+                // router.push(`/plan?date=${date}`);
+                addSnackbar(
+                    'success',
+                    responseData.message ??
+                    'リクエストが正常に完了しました',
+                );
             }
-
-            const sendData: IPostPutMealPlanRequest = data;
-
-            try {
-                isUpdateRequestRef.current = true;
-                incrementLoadingCount();
-
-                // APIリクエスト
-                const res = await axios.put(`/meal-plans/${data.id}`, sendData, {
-                    timeout: TIMEOUT_MS,
-                });
-
-                // レスポンスデータ
-                const responseData: IPutMealPlanResponse = res.data;
-                if (responseData.success) {
-                    // TODO: プランページのクエリパラメータを変更するか検討（現状はyearとmonthを渡すことになっている）
-                    // 日付を変更してもリロード（再データフェッチ）しないようにする
-                    // planページでデータフェッチするのはyearかmonthが変更された場合のみ
-                    // router.push(`/plan?date=${date}`);
-                    addSnackbar(
-                        'success',
-                        responseData.message ??
-                            'リクエストが正常に完了しました',
-                    );
-                }
-            } catch (error) {
-                handleApiError(error);
-            } finally {
-                isUpdateRequestRef.current = false;
-                decrementLoadingCount();
-            }
-        },
+        } catch (error) {
+            handleApiError(error);
+        } finally {
+            isUpdateRequestRef.current = false;
+            decrementLoadingCount();
+        }
+    },
         [incrementLoadingCount, decrementLoadingCount, router, addSnackbar, handleApiError],
     );
-    
+
     return {
-        storeMealPlan,updateMealPlan,
+        storeMealPlan, updateMealPlan,
     };
 };

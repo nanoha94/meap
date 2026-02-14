@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('meals', function (Blueprint $table) {
             $table->uuid('id')->primary();
+            $table->unsignedInteger('order')->default(0);
             $table->foreignUuid('meal_plan_id')->constrained('meal_plans', 'id')->cascadeOnDelete();
             $table->foreignUuid('category_id')->constrained('meal_categories', 'id')->cascadeOnDelete();
             $table->timestamps();

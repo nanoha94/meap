@@ -34,7 +34,7 @@ const RecipeEditPageHeader = ({ ownerUserId, fetchRecipe, onChangeOwnerUserId }:
             onClick: () => openAlertDialog(
                 RECIPE_ALERT_DIALOG_CONFIGS.deleteItem(fetchRecipe.name),
                 () => {
-                    deleteRecipe(fetchRecipe.id, fetchRecipe.name);
+                    deleteRecipe(fetchRecipe.id);
                 }
             ),
             color: COLOR_VARIANT.ALERT,

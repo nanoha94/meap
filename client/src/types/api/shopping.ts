@@ -1,4 +1,4 @@
-import { IBaseApiIndexResponse } from './common';
+import { IBaseApiIndexResponse, IBaseApiResponse } from './common';
 
 //--------------------------------
 // レスポンス型
@@ -12,6 +12,9 @@ export type IGetShoppingItemIndexResponse = IBaseApiIndexResponse<
 export type IGetShoppingCategoryIndexResponse = IBaseApiIndexResponse<
     IShoppingCategory[]
 >;
+
+// 買い物アイテム作成
+export type IPostShoppingItemResponse = IBaseApiResponse;
 
 //--------------------------------
 // リクエストデータ型

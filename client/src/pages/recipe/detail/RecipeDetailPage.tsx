@@ -41,7 +41,7 @@ const RecipeDetailPage = ({
         openAlertDialog(
             RECIPE_ALERT_DIALOG_CONFIGS.deleteItem(fetchRecipe.name),
             () => {
-                deleteRecipe(fetchRecipe.id, fetchRecipe.name);
+                deleteRecipe(fetchRecipe.id);
             },
         );
     };

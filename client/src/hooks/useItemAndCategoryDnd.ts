@@ -26,6 +26,8 @@ interface IItemAndCategoryDndOptions<
 > {
     currentItems: TItem[];
     categories: TCategory[];
+    /** DnD の一意キーに使うプロパティ（省略時は 'id'） */
+    itemIdKey?: keyof TItem;
     onDragOver?: (
         activeId: string,
         activeItem: TItem,
@@ -43,6 +45,7 @@ export const useItemAndCategoryDnd = <
 >({
     currentItems,
     categories,
+    itemIdKey,
     onDragOver: customOnDragOver,
     onDragEnd: customOnDragEnd,
 }: IItemAndCategoryDndOptions<TItem, TCategory>) => {
@@ -52,16 +55,22 @@ export const useItemAndCategoryDnd = <
      * ドラッグ中アイテム
      */
     const activeItem = React.useMemo(
-        () => getItemById(currentItems, activeId as string),
-        [activeId, currentItems],
+        () => getItemById(currentItems, activeId as string, itemIdKey),
+        [activeId, currentItems, itemIdKey],
     );
 
     /**
      * ドラッグ中アイテムが属するカテゴリー
      */
     const activeCategory = React.useMemo(
-        () => getCategoryByItemId(currentItems, activeId as string, categories),
-        [activeId, currentItems, categories],
+        () =>
+            getCategoryByItemId(
+                currentItems,
+                activeId as string,
+                categories,
+                itemIdKey,
+            ),
+        [activeId, currentItems, categories, itemIdKey],
     );
 
     // ドラッグ&ドロップ設定
@@ -100,6 +109,7 @@ export const useItemAndCategoryDnd = <
             const { activeIndex, activeItem } = getDragActiveItem(
                 currentItems,
                 active.id as string,
+                itemIdKey,
             );
 
             // ドロップ先のアイテムのインデックスとカテゴリーIDを取得
@@ -107,6 +117,7 @@ export const useItemAndCategoryDnd = <
                 currentItems,
                 categories,
                 over.id as string,
+                itemIdKey,
             );
 
             // ドラッグ中のアイテムのインデックスまたはドロップ先のアイテムのインデックスが見つからない場合、処理を終了
@@ -121,7 +132,7 @@ export const useItemAndCategoryDnd = <
                 );
             }
         },
-        [currentItems, categories, customOnDragOver],
+        [currentItems, categories, itemIdKey, customOnDragOver],
     );
 
     /**
@@ -133,8 +144,11 @@ export const useItemAndCategoryDnd = <
 
             if (active && over && active.id !== over.id) {
                 // ドラッグ中のアイテムのインデックスを取得
+                const key = (itemIdKey ?? 'id') as keyof TItem;
                 const activeIndex = currentItems.findIndex(
-                    item => item.id === active.id,
+                    item =>
+                        (item as Record<string, unknown>)[key as string] ===
+                        active.id,
                 );
 
                 // ドロップ先のアイテムのインデックスを取得
@@ -142,6 +156,7 @@ export const useItemAndCategoryDnd = <
                     currentItems,
                     categories,
                     over.id as string,
+                    itemIdKey,
                 );
 
                 if (activeIndex !== -1 && overIndex !== -1) {
@@ -158,7 +173,7 @@ export const useItemAndCategoryDnd = <
             }
             setActiveId(null);
         },
-        [currentItems, categories, customOnDragEnd],
+        [currentItems, categories, itemIdKey, customOnDragEnd],
     );
 
     return {

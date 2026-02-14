@@ -136,7 +136,7 @@ const ShoppingList = () => {
     }, []); // 依存配列を空にして、マウント時に一度だけ実行
 
     /**
-     * ドラッグ中でない場合、tmpItemsをfieldsの内容で更新
+     * ドラッグ中でない場合、tmpItemsをstoreItemsの内容で更新
      * @returns void
      */
     React.useEffect(() => {

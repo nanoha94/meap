@@ -19,6 +19,7 @@ class MealPlanStoreRequest extends BaseApiRequest
             'meals' => 'array|min:1|required',
             'meals.*.id' => 'uuid|nullable',
             'meals.*.categoryId' => 'uuid|required',
+            'meals.*.order' => 'integer|min:0|required',
             'meals.*.recipeIds' => 'array|min:1|required',
             'meals.*.recipeIds.*' => 'uuid|required',
         ];
@@ -40,6 +41,9 @@ class MealPlanStoreRequest extends BaseApiRequest
             'meals.*.id.uuid' => __('validation.uuid', ['attribute' => 'meals.*.id']),
             'meals.*.categoryId.uuid' => __('validation.uuid', ['attribute' => 'meals.*.categoryId']),
             'meals.*.categoryId.required' => __('validation.required', ['attribute' => 'meals.*.categoryId']),
+            'meals.*.order.integer' => __('validation.integer', ['attribute' => 'meals.*.order']),
+            'meals.*.order.min' => __('validation.min.numeric', ['attribute' => 'meals.*.order', 'min' => 0]),
+            'meals.*.order.required' => __('validation.required', ['attribute' => 'meals.*.order']),
             'meals.*.recipeIds.array' => __('validation.array', ['attribute' => 'meals.*.recipeIds']),
             'meals.*.recipeIds.min' => __('validation.min.array', ['attribute' => 'meals.*.recipeIds', 'min' => 1]),
             'meals.*.recipeIds.required' => __('validation.required', ['attribute' => 'meals.*.recipeIds']),

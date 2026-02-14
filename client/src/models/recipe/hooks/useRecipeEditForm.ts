@@ -67,7 +67,7 @@ export const useRecipeEditForm = (ownerUserId: string, fetchRecipe?: IRecipe) =>
      * フォームの送信処理
      * @param data フォームのデータ
      */
-    const onSubmit = (data: RecipeEditFormData) => {
+    const onSubmit = async (data: RecipeEditFormData) => {
         const sendData: IPostPutRecipeRequest = {
             name: data.name,
             url: data.url,
@@ -81,9 +81,9 @@ export const useRecipeEditForm = (ownerUserId: string, fetchRecipe?: IRecipe) =>
         };
 
         if (editMode === EDIT_MODE.CREATE) {
-            storeRecipe(sendData, data.thumbnail?.file ?? null, data.steps);
+            await storeRecipe(sendData, data.thumbnail?.file ?? null, data.steps);
         } else {
-            updateRecipe(
+            await updateRecipe(
                 { ...sendData, id: data.id },
                 data.thumbnail?.file ?? null,
                 data.steps,

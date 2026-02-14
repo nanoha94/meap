@@ -12,9 +12,10 @@ namespace App\Swagger;
  *     @OA\Property(property="meals", type="array", description="献立メニュー",
  *         @OA\Items(
  *             type="object",
- *             required={"categoryId", "recipeIds"},
+ *             required={"categoryId", "recipeIds", "order"},
  *             @OA\Property(property="id", type="string", format="uuid", description="メニューID（新規の場合は不要）", example="a0fbbf74-1816-406e-99b7-7ef1e3e365f4", nullable=true),
  *             @OA\Property(property="categoryId", type="string", format="uuid", description="献立カテゴリID", example="a0fbbf74-1816-406e-99b7-7ef1e3e365f4"),
+ *             @OA\Property(property="order", type="integer", description="表示順（0以上）", example=0),
  *             @OA\Property(property="recipeIds", type="array", description="料理IDの配列（1件以上必須）",
  *                 @OA\Items(type="string", format="uuid", description="料理ID", example="a0fbbf74-1816-406e-99b7-7ef1e3e365f4")
  *             )
@@ -30,9 +31,10 @@ namespace App\Swagger;
  *     @OA\Property(property="meals", type="array", description="献立メニュー",
  *         @OA\Items(
  *             type="object",
- *             required={"categoryId", "recipeIds"},
+ *             required={"categoryId", "recipeIds", "order"},
  *             @OA\Property(property="id", type="string", format="uuid", description="メニューID（新規の場合は不要）", example="a0fbbf74-1816-406e-99b7-7ef1e3e365f4", nullable=true),
  *             @OA\Property(property="categoryId", type="string", format="uuid", description="献立カテゴリID", example="a0fbbf74-1816-406e-99b7-7ef1e3e365f4"),
+ *             @OA\Property(property="order", type="integer", description="表示順（0以上）", example=0),
  *             @OA\Property(property="recipeIds", type="array", description="料理IDの配列（1件以上必須）",
  *                 @OA\Items(type="string", format="uuid", description="料理ID", example="a0fbbf74-1816-406e-99b7-7ef1e3e365f4")
  *             )

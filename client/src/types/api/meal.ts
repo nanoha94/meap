@@ -1,5 +1,5 @@
 import { IBaseApiIndexResponse, IBaseApiResponse, IBaseApiResponseWithData } from "./common";
-import { IRecipeListItem } from "./recipe";
+import { IImage } from "./image";
 
 //--------------------------------
 // レスポンス型
@@ -27,7 +27,7 @@ export type IDeleteMealPlanResponse = IBaseApiResponse;
 export interface IPostPutMealPlanRequest {
     id?: string;
     date?: string;
-    meals: {id?: string; categoryId: string; recipeIds: string[]}[];
+    meals: { id?: string; categoryId: string; recipeIds: string[], order: number }[];
 }
 
 //--------------------------------
@@ -40,14 +40,17 @@ export interface IMealCategory {
     order: number;
 }
 
-export interface IMeal {
-    id: string;
-    category: IMealCategory;
-    recipes: IRecipeListItem[];
+export interface IMealPlanItem {
+    id: string;                  // 献立ID
+    recipeId: string;            // レシピID
+    name: string;                // レシピ/料理名
+    thumbnail: IImage | null;    // レシピ/料理サムネイル画像
+    categoryId: string;          // 献立カテゴリID
+    order: number;               // 表示順
 }
 
 export interface IMealPlan {
     id: string;
     date: string;
-    meals: IMeal[];
+    meals: IMealPlanItem[];
 }

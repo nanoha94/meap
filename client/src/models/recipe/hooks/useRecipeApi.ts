@@ -114,11 +114,11 @@ export const useRecipeApi = () => {
                 isFetchRequestRef.current = true;
                 incrementLoadingCount();
 
-                const res = await axios.get('/recipes', {
+                const  {data: responseData} = await axios.get('/recipes', {
                     timeout: TIMEOUT_MS,
                 });
-                if (res.data) {
-                    setRecipes(res.data.data);
+                if (responseData.success) {
+                    setRecipes(responseData.data);
                 }
             } catch (error) {
                 handleApiError(error);
@@ -162,16 +162,13 @@ export const useRecipeApi = () => {
                 }
 
                 // APIリクエスト
-                const res = await axios.post<IPostRecipeResponse>(
+                const {data: responseData} = await axios.post<IPostRecipeResponse>(
                     `/recipes`,
                     sendData,
                     {
                         timeout: TIMEOUT_MS,
                     },
                 );
-
-                // レスポンスデータ
-                const responseData: IPostRecipeResponse = res.data;
                 if (responseData.success) {
                     router.push('/recipe/');
                     addSnackbar(
@@ -179,6 +176,7 @@ export const useRecipeApi = () => {
                         responseData.message ??
                             'リクエストが正常に完了しました',
                     );
+                    await fetchRecipes();
                 }
             } catch (error) {
                 handleApiError(error);
@@ -222,12 +220,9 @@ export const useRecipeApi = () => {
                 }
 
                 // APIリクエスト
-                const res = await axios.put(`/recipes/${data.id}`, sendData, {
+                const {data: responseData} = await axios.put(`/recipes/${data.id}`, sendData, {
                     timeout: TIMEOUT_MS,
                 });
-
-                // レスポンスデータ
-                const responseData: IPostRecipeResponse = res.data;
                 if (responseData.success) {
                     router.push(`/recipe/${data.id}`);
                     addSnackbar(
@@ -235,6 +230,8 @@ export const useRecipeApi = () => {
                         responseData.message ??
                             'リクエストが正常に完了しました',
                     );
+                    
+                    await fetchRecipes();
                 }
             } catch (error) {
                 handleApiError(error);
@@ -246,7 +243,7 @@ export const useRecipeApi = () => {
         [incrementLoadingCount, decrementLoadingCount, bulkUploadImage, uploadStepImages, router, addSnackbar, handleApiError],
     );
 
-    const deleteRecipe = React.useCallback(async (id: string, name: string) => {
+    const deleteRecipe = React.useCallback(async (id: string) => {
         // 重複リクエスト防止
         if (isDeleteRequestRef.current) {
             return;
@@ -255,9 +252,9 @@ export const useRecipeApi = () => {
         try {
             isDeleteRequestRef.current = true;
             incrementLoadingCount();
-            const res = await axios.delete(`/recipes/${id}`);
-            if (res.data) {
-                addSnackbar('success', `${name}を削除しました`);
+            const {data: responseData} = await axios.delete(`/recipes/${id}`);
+            if (responseData.success) {
+                addSnackbar('success', responseData.message ?? 'リクエストが正常に完了しました');
                 router.push('/recipe/');
             }
         } catch (error) {

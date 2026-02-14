@@ -86,7 +86,7 @@ const RecipeListPage = ({
                                             .map(category => category.name)
                                             .join('/')}
                                     </div>
-                                    <div className="text-xs text-black">前回献立日：</div>
+                                    <div className="text-xs text-black">前回の献立日：</div>
                                 </div>
                             </Link>
                         ))}

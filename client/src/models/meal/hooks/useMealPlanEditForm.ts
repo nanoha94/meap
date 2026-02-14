@@ -1,6 +1,6 @@
 "use client";
 import React from 'react';
-import { useForm } from 'react-hook-form';
+import { useFieldArray, useForm } from 'react-hook-form';
 
 import { EDIT_MODE, EditMode } from '@/constants';
 import { IMealCategory, IMealPlan, IPostPutMealPlanRequest } from '@/types';
@@ -12,21 +12,22 @@ import { useMealStore } from './useMealStores';
  * デフォルト値を取得
  * @param fetchMealPlan 献立表
  * @param mealCategories 献立カテゴリ
- * @returns 
+ * @returns デフォルト値
  */
 const getDefaultValues = (
     fetchMealPlan: IMealPlan | undefined,
     mealCategories: IMealCategory[],
-): MealPlanEditFormData => ({
-    id: fetchMealPlan?.id ?? '',
-    meals: mealCategories.map((category) =>
-        fetchMealPlan?.meals.find((m) => m.category.id === category.id) ?? {
-            id: '',
-            category: category,
-            recipes: [],
-        },
-    ),
-});
+): MealPlanEditFormData => {
+    const meals = mealCategories.flatMap((category) => {
+        const categoryMeals = (fetchMealPlan?.meals ?? [])
+            .filter((m) => m.categoryId === category.id);
+        return categoryMeals;
+    });
+    return {
+        id: fetchMealPlan?.id ?? '',
+        meals,
+    };
+};
 
 export const useMealPlanEditForm = (selectedDate: string, fetchMealPlan?: IMealPlan) => {
     const { mealCategories } = useMealStore();
@@ -34,6 +35,7 @@ export const useMealPlanEditForm = (selectedDate: string, fetchMealPlan?: IMealP
         defaultValues: getDefaultValues(fetchMealPlan, mealCategories),
     });
     const { control, handleSubmit, reset } = methods;
+    const mealsFieldArray = useFieldArray({ control, name: 'meals' });
     const { storeMealPlan, updateMealPlan } = useMealPlanApi();
     const editMode: EditMode = fetchMealPlan ? EDIT_MODE.UPDATE : EDIT_MODE.CREATE;
 
@@ -47,22 +49,46 @@ export const useMealPlanEditForm = (selectedDate: string, fetchMealPlan?: IMealP
      * @param data フォームのデータ
      */
     const onSubmit = (data: MealPlanEditFormData) => {
-        const sendData: IPostPutMealPlanRequest = {          
-            meals: data.meals.filter(meal => meal.recipes.length > 0).map(
-                v => ({
-                        id: v.id, 
-                        categoryId: v.category.id, 
-                        recipeIds: v.recipes.map(recipe => recipe.id)
-                    })
-                ),
+        const filteredMeals = data.meals.filter(
+            (meal) => meal.recipeId && meal.recipeId.length > 0,
+        );
+
+        // categoryId でグループ化し、各グループの recipeId を recipeIds 配列に集約
+        const groupedByCategoryId = filteredMeals.reduce(
+            (acc, meal) => {
+                const key = meal.categoryId;
+                if (!acc[key]) {
+                    acc[key] = {
+                        id: meal.id,
+                        categoryId: meal.categoryId,
+                        order: meal.order,
+                        recipeIds: [],
+                    };
+                }
+                acc[key].recipeIds.push(meal.recipeId);
+                return acc;
+            },
+            {} as Record<
+                string,
+                { id: string; categoryId: string; order: number; recipeIds: string[] }
+            >,
+        );
+
+        // 送信データを作成（id, dateを除く）
+        // TODO: APIを修正しないとorderが反映されない
+        const sendData: IPostPutMealPlanRequest = {
+            meals: Object.values(groupedByCategoryId).map((v, idx) => ({
+                id: v.id,
+                categoryId: v.categoryId,
+                recipeIds: v.recipeIds,
+                order: idx,
+            })),
         };
 
         if (editMode === EDIT_MODE.CREATE) {
-            storeMealPlan({...sendData, date: selectedDate});
+            storeMealPlan({ ...sendData, date: selectedDate });
         } else {
-            updateMealPlan(
-                { ...sendData, id: data.id },
-            );
+            updateMealPlan({ ...sendData, id: data.id });
         }
     };
 
@@ -71,5 +97,6 @@ export const useMealPlanEditForm = (selectedDate: string, fetchMealPlan?: IMealP
         methods,
         editMode,
         onSubmit: handleSubmit(onSubmit),
+        ...mealsFieldArray,
     };
 };

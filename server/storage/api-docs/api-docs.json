@@ -1776,7 +1776,8 @@
                         "items": {
                             "required": [
                                 "categoryId",
-                                "recipeIds"
+                                "recipeIds",
+                                "order"
                             ],
                             "properties": {
                                 "id": {
@@ -1791,6 +1792,11 @@
                                     "type": "string",
                                     "format": "uuid",
                                     "example": "a0fbbf74-1816-406e-99b7-7ef1e3e365f4"
+                                },
+                                "order": {
+                                    "description": "表示順（0以上）",
+                                    "type": "integer",
+                                    "example": 0
                                 },
                                 "recipeIds": {
                                     "description": "料理IDの配列（1件以上必須）",
@@ -1820,7 +1826,8 @@
                         "items": {
                             "required": [
                                 "categoryId",
-                                "recipeIds"
+                                "recipeIds",
+                                "order"
                             ],
                             "properties": {
                                 "id": {
@@ -1835,6 +1842,11 @@
                                     "type": "string",
                                     "format": "uuid",
                                     "example": "a0fbbf74-1816-406e-99b7-7ef1e3e365f4"
+                                },
+                                "order": {
+                                    "description": "表示順（0以上）",
+                                    "type": "integer",
+                                    "example": 0
                                 },
                                 "recipeIds": {
                                     "description": "料理IDの配列（1件以上必須）",
@@ -1963,16 +1975,63 @@
                         "description": "献立メニュー",
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/Meal"
+                            "$ref": "#/components/schemas/MealPlanItem"
                         }
+                    }
+                },
+                "type": "object"
+            },
+            "MealPlanItem": {
+                "required": [
+                    "id",
+                    "recipeId",
+                    "name",
+                    "categoryId",
+                    "order"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "レシピID",
+                        "type": "string",
+                        "example": "1"
+                    },
+                    "recipeId": {
+                        "description": "レシピID",
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "name": {
+                        "description": "料理名",
+                        "type": "string",
+                        "example": "ハンバーグ"
+                    },
+                    "thumbnail": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/Image"
+                            }
+                        ],
+                        "nullable": true,
+                        "description": "サムネイル画像情報"
+                    },
+                    "categoryId": {
+                        "description": "献立カテゴリID",
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "order": {
+                        "description": "表示順",
+                        "type": "integer",
+                        "example": 0
                     }
                 },
                 "type": "object"
             },
             "Meal": {
                 "required": [
-                    "date",
-                    "category",
+                    "id",
+                    "categoryId",
+                    "order",
                     "recipes"
                 ],
                 "properties": {
@@ -1981,8 +2040,15 @@
                         "type": "string",
                         "example": "1"
                     },
-                    "category": {
-                        "$ref": "#/components/schemas/MealCategory"
+                    "categoryId": {
+                        "description": "献立カテゴリID",
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "order": {
+                        "description": "表示順",
+                        "type": "integer",
+                        "example": 0
                     },
                     "recipes": {
                         "description": "料理一覧",

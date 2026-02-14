@@ -1,10 +1,10 @@
 import { MenuButton } from "@/components";
-import { ActionButton, IMealCategory, IRecipeListItem } from "@/types";
+import { ActionButton, IMealCategory, IMealPlanItem } from "@/types";
 import RecipeCard from "./RecipeCard";
 
 interface Props {
     mealCategory: IMealCategory;
-    recipes?: IRecipeListItem[];
+    recipes?: IMealPlanItem[];
     actionButtonConfigs?: ActionButton[];
 }
 
@@ -27,7 +27,7 @@ const MealCard = ({ mealCategory, recipes = [], actionButtonConfigs = [] }: Prop
             </div>
             <div className="grid grid-cols-[repeat(auto-fill,_minmax(150px,_1fr))] md:grid-cols-[repeat(auto-fill,_minmax(180px,_1fr))] gap-5">
                 {recipes.map((v) => (
-                    <RecipeCard key={v.id} recipe={v} hasDeleteButton={false} />
+                    <RecipeCard key={v.recipeId} recipe={v} hasDeleteButton={false} />
                 ))}
             </div>
         </div>

@@ -7,6 +7,7 @@ import axios from '@/lib/axios';
 import { useGlobalStore } from '@/stores';
 import {
     IPostShoppingItemRequest,
+    IPostShoppingItemResponse,
     IPutShoppingItemRequest,
 } from '@/types';
 import { useShoppingStore } from '../hooks';
@@ -77,14 +78,14 @@ export const useShoppingItemApi = () => {
             isStoreRequestRef.current = true;
             incrementLoadingCount();
 
-            const res = await axios.post(`/shopping-items`, {
+            const {data: responseData} = await axios.post<IPostShoppingItemResponse>(`/shopping-items`, {
                 ...item,
                 timeout: TIMEOUT_MS,
             });
-            if (res.data) {
+            if (responseData.success) {
                 addSnackbar(
                     'success',
-                    `買い物リストに${item.name}を追加しました`,
+                    responseData.message ?? 'リクエストが正常に完了しました',
                 );
                await fetchShoppingItems();
             }
@@ -115,14 +116,14 @@ export const useShoppingItemApi = () => {
                 isUpdateRequestRef.current = true;
                 incrementLoadingCount();
 
-                const res = await axios.put(`/shopping-items/bulk`, {
+                const  {data: responseData}  = await axios.put(`/shopping-items/bulk`, {
                     data: items.filter(v => v.name && v.name.length > 0),
                     timeout: TIMEOUT_MS,
                 });
-                if (res.data) {
+                if (responseData.success) {
                     // await fetchShoppingItems(true); // サーバーデータのみ更新
                     await fetchShoppingItems();
-                    addSnackbar('success', '買い物リストを更新しました');
+                    addSnackbar('success', responseData.message ?? 'リクエストが正常に完了しました');
                 }
             } catch (error) {
                 handleApiError(error);
@@ -149,13 +150,13 @@ export const useShoppingItemApi = () => {
             isDeleteRequestRef.current = true;
             incrementLoadingCount();
 
-            const res = await axios.delete('/shopping-items/bulk', {
+            const {data: responseData} = await axios.delete('/shopping-items/bulk', {
                 data: { ids },
                 timeout: TIMEOUT_MS,
             });
-            if (res.data) {
+            if (responseData.success) {
                 await fetchShoppingItems();
-                addSnackbar('success', '買い物アイテムを削除しました');
+                addSnackbar('success', responseData.message ?? 'リクエストが正常に完了しました');
             }
         } catch (error) {
             handleApiError(error);
@@ -169,7 +170,6 @@ export const useShoppingItemApi = () => {
 
     return {
         storeData: { items: storeItems },
-        fetchShoppingItems,
         storeShoppingItem,
         updateShoppingItems,
         deleteShoppingItems,

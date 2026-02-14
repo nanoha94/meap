@@ -29,7 +29,7 @@ const PageWithData = async ({ date }: PageWithDataProps) => {
         <PlanEditPage
             selectedDate={date}
             fetchMealPlan={mealPlan?.data}
-            errorMessage={errorMessage}
+            errorMessage={isNotFound ? undefined : errorMessage}
         />
     );
 };
