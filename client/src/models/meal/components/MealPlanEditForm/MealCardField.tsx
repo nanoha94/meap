@@ -38,7 +38,7 @@ const MealCardField = ({ mealCategory, recipes, actionButtonConfigs, addItem }: 
     /**
      * 確定ボタン押下時の処理（ダイアログヘッダーボタン）
      */
-    const handleConfirmDialog = React.useCallback(() => {
+    const handleConfirm = React.useCallback(() => {
         if (selectedRecipeInDialog === null) return;
         addItem({
             id: `${prefix}${Date.now()}`,
@@ -56,7 +56,7 @@ const MealCardField = ({ mealCategory, recipes, actionButtonConfigs, addItem }: 
     React.useEffect(() => {
         updateCurrentDialogConfig({
             customButton: (
-                <HeaderTextButton type={BUTTON_TYPE.BUTTON} colorVariant={COLOR_VARIANT.SECONDARY} disabled={dialogButtonDisabled} onClick={handleConfirmDialog}>
+                <HeaderTextButton type={BUTTON_TYPE.BUTTON} colorVariant={COLOR_VARIANT.SECONDARY} disabled={dialogButtonDisabled} onClick={handleConfirm}>
                     <Check size={20} strokeWidth={2} />
                     確定
                 </HeaderTextButton>
@@ -66,10 +66,11 @@ const MealCardField = ({ mealCategory, recipes, actionButtonConfigs, addItem }: 
                     selectedRecipe={selectedRecipeInDialog}
                     disabledRecipes={recipes.map(item => item.recipeId)}
                     onSelectedRecipeChange={setSelectedRecipeInDialog}
+                    onConfirm={handleConfirm}
                 />
             ),
         });
-    }, [selectedRecipeInDialog, dialogButtonDisabled, updateCurrentDialogConfig, handleConfirmDialog]);
+    }, [selectedRecipeInDialog, dialogButtonDisabled, updateCurrentDialogConfig, handleConfirm]);
 
     return (
         <div className="pr-2 pl-3 pt-2 pb-4 md:px-5 md:py-4 flex flex-col gap-y-5 bg-white md:rounded shadow-card">
@@ -104,7 +105,7 @@ const MealCardField = ({ mealCategory, recipes, actionButtonConfigs, addItem }: 
                         setSelectedRecipeInDialog(null);
                         openDialog({
                             title: '料理を検索',
-                            customButton: <HeaderTextButton type={BUTTON_TYPE.BUTTON} colorVariant={COLOR_VARIANT.SECONDARY} disabled={dialogButtonDisabled} onClick={handleConfirmDialog}>
+                            customButton: <HeaderTextButton type={BUTTON_TYPE.BUTTON} colorVariant={COLOR_VARIANT.SECONDARY} disabled={dialogButtonDisabled} onClick={handleConfirm}>
                                 <Check size={20} strokeWidth={2} />
                                 確定
                             </HeaderTextButton>,
@@ -113,6 +114,7 @@ const MealCardField = ({ mealCategory, recipes, actionButtonConfigs, addItem }: 
                                     selectedRecipe={selectedRecipeInDialog}
                                     disabledRecipes={recipes.map(item => item.recipeId)}
                                     onSelectedRecipeChange={setSelectedRecipeInDialog}
+                                    onConfirm={handleConfirm}
                                 />
                             )
                         });

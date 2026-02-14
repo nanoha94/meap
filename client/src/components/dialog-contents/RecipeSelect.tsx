@@ -15,9 +15,10 @@ interface Props {
     selectedRecipe: IRecipeListItem | null;
     disabledRecipes: string[];
     onSelectedRecipeChange: (recipe: IRecipeListItem) => void;
+    onConfirm: () => void;
 }
 
-const RecipeSelect = ({ selectedRecipe, disabledRecipes, onSelectedRecipeChange }: Props) => {
+const RecipeSelect = ({ selectedRecipe, disabledRecipes, onSelectedRecipeChange, onConfirm }: Props) => {
     const router = useRouter();
     const { closeDialog } = useDialog();
     const { recipes } = useRecipeStore();
@@ -51,6 +52,7 @@ const RecipeSelect = ({ selectedRecipe, disabledRecipes, onSelectedRecipeChange 
                                 className={`relative w-full text-left flex flex-col bg-white rounded-md overflow-hidden transition-colors cursor-pointer hover:bg-gray-light border-2 disabled:opacity-50 disabled:pointer-events-none ${selectedRecipe?.id === v.id ? 'border-primary-main' : 'border-transparent'}`}
                                 style={{ boxShadow: '1px 1px 5px rgba(0, 0, 0, 15%)' }}
                                 onClick={() => onSelectedRecipeChange(v)}
+                                onDoubleClick={onConfirm}
                             >
                                 <div className="w-full h-auto aspect-video object-cover bg-gray-background">
                                     {v.thumbnail && v.thumbnail.src && (
