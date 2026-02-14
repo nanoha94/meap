@@ -3,6 +3,8 @@
  * （id不要でリクエストできる要素に対して使用）
  */
 export const TMP_ID_PREFIX = {
+    // 献立アイテム
+    MEAL_PLAN_ITEM: 'meap-meal-plan-item-',
     // レシピカテゴリー
     RECIPE_CATEGORY: 'meap-recipe-category-',
     // 手順
@@ -16,5 +18,3 @@ export const TMP_ID_PREFIX = {
     // 画像
     IMAGE: 'meap-image-',
 } as const;
-export type TmpIdPrefix =
-    (typeof TMP_ID_PREFIX)[keyof typeof TMP_ID_PREFIX];

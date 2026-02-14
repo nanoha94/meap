@@ -1,23 +1,27 @@
 "use client";
 import React from 'react';
 import { FormProvider } from 'react-hook-form';
-import { Copy } from 'lucide-react';
+import { Copy, Save, Trash2 } from 'lucide-react';
 
 import {
+    Header,
+    HeaderTextButton,
     ImageEditField,
+    StyledSelect,
     VerticalRowField,
 } from '@/components';
-import { colors } from '@/constants';
-import { useSnackbars, useTextCopy } from '@/hooks';
+import { BUTTON_TYPE, COLOR_VARIANT, colors } from '@/constants';
+import { useAlertDialog, useSnackbars, useTextCopy } from '@/hooks';
 import {
     CategoryEditFields,
     IngredientEditFields,
+    RECIPE_ALERT_DIALOG_CONFIGS,
     StepEditFields,
+    useRecipeApi,
     useRecipeEditForm,
 } from '@/models/recipe';
 import { useAccountStore } from '@/models/settings';
-import { IRecipe } from '@/types';
-import RecipeEditPageHeader from './RecipeEditPageHeader';
+import { ActionButton, IRecipe } from '@/types';
 
 
 interface Props {
@@ -35,7 +39,9 @@ const RecipeEditPage = ({
     errorMessage,
 }: Props) => {
     const { addSnackbar } = useSnackbars();
-    const { loginUser } = useAccountStore();
+    const { loginUser, users } = useAccountStore();
+    const { openAlertDialog } = useAlertDialog();
+    const { deleteRecipe } = useRecipeApi();
     const [ownerUserId, setOwnerUserId] = React.useState<string>(
         (fetchRecipe as IRecipe)?.ownerUserId || loginUser.id,
     );
@@ -44,8 +50,28 @@ const RecipeEditPage = ({
         methods,
         onSubmit,
         errors,
+        isDisabledSendButton,
     } = useRecipeEditForm(ownerUserId, fetchRecipe);
     const { isTextCopied, copyToClipboard } = useTextCopy();
+
+
+    /**
+     * ヘッダーのアクションボタン設定
+     */
+    const headerActionButtonConfigs: ActionButton[] = fetchRecipe?.ownerUserId === loginUser?.id ? [
+        // 削除できるのは、編集責任者のみ
+        {
+            label: '削除する',
+            icon: <Trash2 size={20} strokeWidth={2} />,
+            onClick: () => openAlertDialog(
+                RECIPE_ALERT_DIALOG_CONFIGS.deleteItem(fetchRecipe.name),
+                () => {
+                    deleteRecipe(fetchRecipe.id);
+                }
+            ),
+            color: COLOR_VARIANT.ALERT,
+        },
+    ] : [];
 
 
     /**
@@ -60,12 +86,40 @@ const RecipeEditPage = ({
 
     return (
         <>
-            <RecipeEditPageHeader
-                ownerUserId={ownerUserId}
-                fetchRecipe={fetchRecipe}
-                onChangeOwnerUserId={(userId) => {
-                    setOwnerUserId(userId);
-                }}
+            <Header
+                maxWidth="1200px"
+                hasBackButton={true}
+                leftContent={
+                    <div className="items-center gap-x-4 whitespace-nowrap w-[300px] hidden md:flex">
+                        <span>編集責任者</span>
+                        <StyledSelect
+                            value={ownerUserId}
+                            name="userId"
+                            options={users}
+                            isShowPlaceholder={false}
+                            onChange={e => {
+                                setOwnerUserId(e.target.value);
+                            }}
+                        />
+                    </div>
+                }
+                rightContent={
+                    <>
+                        <HeaderTextButton type={BUTTON_TYPE.SUBMIT} form="recipe-edit-form" colorVariant={COLOR_VARIANT.SECONDARY} disabled={isDisabledSendButton}>
+                            <Save size={20} strokeWidth={2} />
+                            保存
+                        </HeaderTextButton>
+                        {/* TODO: 外部公開 */}
+                        {/* <HeaderTextButton colorVariant="gray"
+                        onClick={() => {
+                            console.log('save');
+                        }}>
+                        <Earth size={20} strokeWidth={2} />
+                        外部公開
+                    </HeaderTextButton> */}
+                    </>
+                }
+                actionButtons={headerActionButtonConfigs}
             />
             <main className="pb-[60px] max-w-[1200px] mx-auto">
                 <FormProvider {...methods}>

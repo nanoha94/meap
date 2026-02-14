@@ -26,6 +26,36 @@ class MealPlanStoreRequest extends BaseApiRequest
     }
 
     /**
+     * Configure the validator (distinct per meal: 同一 meal 内の recipeIds のみ重複チェック).
+     */
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            $meals = $this->input('meals', []);
+            if (! is_array($meals)) {
+                return;
+            }
+            foreach ($meals as $mealIndex => $meal) {
+                $recipeIds = $meal['recipeIds'] ?? [];
+                if (! is_array($recipeIds)) {
+                    continue;
+                }
+                $seen = [];
+                foreach ($recipeIds as $idx => $id) {
+                    if (isset($seen[$id])) {
+                        $validator->errors()->add(
+                            "meals.{$mealIndex}.recipeIds.{$idx}",
+                            __('validation.distinct', ['attribute' => 'meals.*.recipeIds.*'])
+                        );
+                    } else {
+                        $seen[$id] = $idx;
+                    }
+                }
+            }
+        });
+    }
+
+    /**
      * Get custom messages for validator errors.
      *
      * @return array<string, string>
@@ -49,6 +79,7 @@ class MealPlanStoreRequest extends BaseApiRequest
             'meals.*.recipeIds.required' => __('validation.required', ['attribute' => 'meals.*.recipeIds']),
             'meals.*.recipeIds.*.uuid' => __('validation.uuid', ['attribute' => 'meals.*.recipeIds.*']),
             'meals.*.recipeIds.*.required' => __('validation.required', ['attribute' => 'meals.*.recipeIds.*']),
+            'meals.*.recipeIds.*.distinct' => __('validation.distinct', ['attribute' => 'meals.*.recipeIds.*']),
         ];
     }
 

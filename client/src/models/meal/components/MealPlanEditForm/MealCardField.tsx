@@ -5,7 +5,7 @@ import { rectSortingStrategy, SortableContext } from "@dnd-kit/sortable";
 import { useDroppable } from "@dnd-kit/core";
 
 import { HeaderTextButton, MenuButton, RecipeSelect, EmptyButton, Sortable } from "@/components";
-import { BUTTON_TYPE, COLOR_VARIANT } from "@/constants";
+import { BUTTON_TYPE, COLOR_VARIANT, TMP_ID_PREFIX } from "@/constants";
 import { useRecipeApi } from "@/models/recipe";
 import { ActionButton, IMealCategory, IMealPlanItem, IRecipeListItem } from "@/types";
 import { useDialog } from "@/hooks";
@@ -25,17 +25,23 @@ const MealCardField = ({ mealCategory, recipes, actionButtonConfigs, addItem }: 
     const { fetchRecipes } = useRecipeApi();
     const { openDialog, closeDialog, updateCurrentDialogConfig } = useDialog();
     const [selectedRecipeInDialog, setSelectedRecipeInDialog] = React.useState<IRecipeListItem | null>(null);
-    const dialogButtonDisabled = React.useMemo(() => selectedRecipeInDialog === null, [selectedRecipeInDialog]);
     const { setNodeRef: setDroppableNodeRef } = useDroppable({
         id: mealCategory.id,
     });
+    const prefix = TMP_ID_PREFIX.MEAL_PLAN_ITEM;
+
+    /**
+     * 確定ボタンの無効化判定
+     */
+    const dialogButtonDisabled = React.useMemo(() => selectedRecipeInDialog === null, [selectedRecipeInDialog]);
+
     /**
      * 確定ボタン押下時の処理（ダイアログヘッダーボタン）
      */
     const handleConfirmDialog = React.useCallback(() => {
         if (selectedRecipeInDialog === null) return;
         addItem({
-            id: '',
+            id: `${prefix}${Date.now()}`,
             recipeId: selectedRecipeInDialog.id,
             name: selectedRecipeInDialog.name,
             thumbnail: selectedRecipeInDialog.thumbnail,
@@ -58,6 +64,7 @@ const MealCardField = ({ mealCategory, recipes, actionButtonConfigs, addItem }: 
             children: () => (
                 <RecipeSelect
                     selectedRecipe={selectedRecipeInDialog}
+                    disabledRecipes={recipes.map(item => item.recipeId)}
                     onSelectedRecipeChange={setSelectedRecipeInDialog}
                 />
             ),
@@ -104,6 +111,7 @@ const MealCardField = ({ mealCategory, recipes, actionButtonConfigs, addItem }: 
                             children: () => (
                                 <RecipeSelect
                                     selectedRecipe={selectedRecipeInDialog}
+                                    disabledRecipes={recipes.map(item => item.recipeId)}
                                     onSelectedRecipeChange={setSelectedRecipeInDialog}
                                 />
                             )

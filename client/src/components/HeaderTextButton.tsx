@@ -13,13 +13,7 @@ type Props = {
     children: React.ReactNode;
 } & ({ href: string; onClick?: never } | { onClick?: () => void; href?: never });
 
-const getHeaderTextButtonClassName = ({
-    disabled = false,
-    colorVariant = COLOR_VARIANT.SECONDARY,
-}: {
-    disabled?: boolean;
-    colorVariant?: Props['colorVariant'];
-}) => {
+const getHeaderTextButtonClassName = (colorVariant: NonNullable<Props['colorVariant']>) => {
     const colorMappings = {
         secondary:
             'text-secondary-main border-secondary-main bg-secondary-background hover:bg-secondary-main',
@@ -28,7 +22,7 @@ const getHeaderTextButtonClassName = ({
         alert: 'text-alert-main border-alert-main bg-alert-background hover:bg-alert-main',
     };
     return `py-1 px-2 w-fit flex items-center gap-x-1 text-base font-bold rounded border-2 transition-colors hover:text-white shadow-card ${colorMappings[colorVariant]
-        } ${disabled ? 'opacity-50 pointer-events-none' : ''}`;
+        } disabled:opacity-50 disabled:pointer-events-none`;
 };
 
 const HeaderTextButton = ({
@@ -40,7 +34,7 @@ const HeaderTextButton = ({
     children,
     onClick,
 }: Props) => {
-    const className = getHeaderTextButtonClassName({ disabled, colorVariant });
+    const className = getHeaderTextButtonClassName(colorVariant ?? COLOR_VARIANT.SECONDARY);
 
     if (href) {
         return (
