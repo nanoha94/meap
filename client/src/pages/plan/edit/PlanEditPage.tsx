@@ -27,7 +27,7 @@ const PlanEditPage = ({ selectedDate, fetchMealPlan, errorMessage }: Props) => {
     const { incrementLoadingCount, resetLoadingCount } = useGlobalStore();
     const { mealCategories } = useMealStore();
     const { addSnackbar } = useSnackbars();
-    const { methods, onSubmit, fields, insert, replace } = useMealPlanEditForm(selectedDate, fetchMealPlan);
+    const { methods, onSubmit, fields, insert, replace, remove } = useMealPlanEditForm(selectedDate, fetchMealPlan);
     const [tmpItems, setTmpItems] = React.useState<IMealPlanItem[]>([]);
 
     /**
@@ -171,6 +171,7 @@ const PlanEditPage = ({ selectedDate, fetchMealPlan, errorMessage }: Props) => {
                                         recipes={items}
                                         actionButtonConfigs={actionButtonConfigs}
                                         addItem={(item: IMealPlanItem) => insert(getInsertIndexForCategory(tmpItems, mealCategories, category.id), item)}
+                                        deleteItem={(item: IMealPlanItem) => remove(tmpItems.indexOf(item))}
                                     />
                                 );
                             })}

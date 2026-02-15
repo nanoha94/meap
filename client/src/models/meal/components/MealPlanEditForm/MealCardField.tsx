@@ -16,12 +16,13 @@ interface Props {
     recipes: IMealPlanItem[];
     actionButtonConfigs: ActionButton[];
     addItem: (item: IMealPlanItem) => void;
+    deleteItem: (item: IMealPlanItem) => void;
 }
 
 /**
  * 献立カードフィールド
  */
-const MealCardField = ({ mealCategory, recipes, actionButtonConfigs, addItem }: Props) => {
+const MealCardField = ({ mealCategory, recipes, actionButtonConfigs, addItem, deleteItem }: Props) => {
     const { fetchRecipes } = useRecipeApi();
     const { openDialog, closeDialog, updateCurrentDialogConfig } = useDialog();
     const [selectedRecipeInDialog, setSelectedRecipeInDialog] = React.useState<IRecipeListItem | null>(null);
@@ -96,7 +97,7 @@ const MealCardField = ({ mealCategory, recipes, actionButtonConfigs, addItem }: 
                                 recipe={field}
                                 isGrippable={true}
                                 hasDeleteButton={true}
-                                onDelete={() => { }}
+                                onDelete={() => { deleteItem(field); }}
                             />
                         </Sortable>
                     ))}
