@@ -105,7 +105,7 @@ beforeEach(function () {
                 'order' => $order
             ];
 
-            $response = $testInstance->actingAs($user)->post('/meal-categories', $requestData);
+            $response = $testInstance->actingAs($user)->postJson('/meal-categories/bulk', ['data' => [$requestData]]);
 
             if ($response->status() === 201) {
                 $groupId = $user->groups()->first()->id;

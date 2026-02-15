@@ -85,6 +85,11 @@ namespace App\Swagger;
  *     @OA\JsonContent(ref="#/components/schemas/BaseApiResponse")
  * )
  * @OA\Response(
+ *     response="RecipeCategoryBulkStoreSuccess",
+ *     description="料理カテゴリーを○件作成しました。",
+ *     @OA\JsonContent(ref="#/components/schemas/BaseApiResponse")
+ * )
+ * @OA\Response(
  *     response="RecipeCategoryBulkUpdateSuccess",
  *     description="料理カテゴリーを3件更新しました。",
  *     @OA\JsonContent(ref="#/components/schemas/BaseApiResponse")

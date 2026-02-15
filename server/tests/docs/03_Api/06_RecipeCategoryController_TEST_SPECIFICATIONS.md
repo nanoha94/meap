@@ -2,7 +2,7 @@
 
 ## 概要
 
-RecipeCategoryController のテストケースの詳細仕様を示します。料理カテゴリの作成、一括更新、一括削除機能を検証し、システムの安定性と安全性を確保します。
+RecipeCategoryController のテストケースの詳細仕様を示します。料理カテゴリの一括作成、一括更新、一括削除機能を検証し、システムの安定性と安全性を確保します。
 
 ## テストケース一覧表
 
@@ -16,17 +16,17 @@ RecipeCategoryController のテストケースの詳細仕様を示します。�
 | 3-6-6  | 【一覧取得】 未認証ユーザー                                        | 異常系 | 認証されていないユーザー              | HTTP 401 Unauthorized                          | `RecipeCategoryController::index()`         |
 | 3-6-7  | 【一覧取得】 グループが存在しない                                  | 異常系 | ユーザーにグループが紐づいていない    | HTTP 422 Unprocessable Entity                  | `RecipeCategoryController::index()`         |
 | 3-6-8  | 【一覧取得】 データベース接続エラー                                | 異常系 | データベース接続が失敗                | HTTP 500 Internal Server Error                 | `RecipeCategoryController::index()`         |
-| 3-6-9  | 【新規作成】 正常な料理カテゴリ作成                                | 正常系 | 有効な料理カテゴリデータを提供        | HTTP 201 Created                               | `RecipeCategoryController::store()`         |
-| 3-6-10 | 【新規作成】 レスポンス形式確認                                    | 正常系 | 正常な料理カテゴリ作成後              | 正しい JSON 形式でレスポンスが返される         | `RecipeCategoryController::store()`         |
-| 3-6-11 | 【新規作成】 バリデーションエラー（料理カテゴリ名未入力）          | 異常系 | 料理カテゴリ名が未入力                | HTTP 422 Validation Error                      | `RecipeCategoryStoreRequest::rules()`       |
-| 3-6-12 | 【新規作成】 バリデーションエラー（料理カテゴリ名が 255 文字超過） | 異常系 | 256 文字以上の料理カテゴリ名を提供    | HTTP 422 Validation Error                      | `RecipeCategoryStoreRequest::rules()`       |
-| 3-6-13 | 【新規作成】 バリデーションエラー（order 値が未入力）              | 異常系 | order 値が未入力                      | HTTP 422 Validation Error                      | `RecipeCategoryStoreRequest::rules()`       |
-| 3-6-14 | 【新規作成】 バリデーションエラー（order 値が数値以外）            | 異常系 | order 値が数値以外                    | HTTP 422 Validation Error                      | `RecipeCategoryStoreRequest::rules()`       |
-| 3-6-15 | 【新規作成】 バリデーションエラー（order 値が負の値）              | 異常系 | order 値が 0 未満の負の値             | HTTP 422 Validation Error                      | `RecipeCategoryStoreRequest::rules()`       |
-| 3-6-16 | 【新規作成】 未認証ユーザー                                        | 異常系 | 認証されていないユーザー              | HTTP 401 Unauthorized                          | `RecipeCategoryController::store()`         |
-| 3-6-17 | 【新規作成】 グループが存在しない                                  | 異常系 | ユーザーにグループが紐づいていない    | HTTP 422 Unprocessable Entity                  | `RecipeCategoryController::store()`         |
-| 3-6-18 | 【新規作成】 データベース接続エラー                                | 異常系 | データベース接続が失敗                | HTTP 500 Internal Server Error                 | `RecipeCategoryController::store()`         |
-| 3-6-19 | 【新規作成】 料理カテゴリ作成失敗                                  | 異常系 | RecipeCategory::create() が失敗       | HTTP 500 Internal Server Error                 | `RecipeCategoryController::store()`         |
+| 3-6-9  | 【一括作成】 正常な料理カテゴリ一括作成                            | 正常系 | 有効な data 配列（name, order）を提供 | HTTP 201 Created                               | `RecipeCategoryController::bulkStore()`     |
+| 3-6-10 | 【一括作成】 レスポンス形式確認                                    | 正常系 | 正常な一括作成後                      | 正しい JSON 形式でレスポンスが返される         | `RecipeCategoryController::bulkStore()`     |
+| 3-6-11 | 【一括作成】 バリデーションエラー（料理カテゴリ名未入力）          | 異常系 | data.\*.name が未入力                 | HTTP 422 Validation Error                      | `RecipeCategoryBulkStoreRequest::rules()`   |
+| 3-6-12 | 【一括作成】 バリデーションエラー（料理カテゴリ名が 255 文字超過） | 異常系 | data.\*.name が 256 文字以上          | HTTP 422 Validation Error                      | `RecipeCategoryBulkStoreRequest::rules()`   |
+| 3-6-13 | 【一括作成】 バリデーションエラー（order 値が未入力）              | 異常系 | data.\*.order が未入力                | HTTP 422 Validation Error                      | `RecipeCategoryBulkStoreRequest::rules()`   |
+| 3-6-14 | 【一括作成】 バリデーションエラー（order 値が数値以外）            | 異常系 | data.\*.order が数値以外              | HTTP 422 Validation Error                      | `RecipeCategoryBulkStoreRequest::rules()`   |
+| 3-6-15 | 【一括作成】 バリデーションエラー（order 値が負の値）              | 異常系 | data.\*.order が 0 未満の負の値       | HTTP 422 Validation Error                      | `RecipeCategoryBulkStoreRequest::rules()`   |
+| 3-6-16 | 【一括作成】 未認証ユーザー                                        | 異常系 | 認証されていないユーザー              | HTTP 401 Unauthorized                          | `RecipeCategoryController::bulkStore()`     |
+| 3-6-17 | 【一括作成】 グループが存在しない                                  | 異常系 | ユーザーにグループが紐づいていない    | HTTP 422 Unprocessable Entity                  | `RecipeCategoryController::bulkStore()`     |
+| 3-6-18 | 【一括作成】 データベース接続エラー                                | 異常系 | データベース接続が失敗                | HTTP 500 Internal Server Error                 | `RecipeCategoryController::bulkStore()`     |
+| 3-6-19 | 【一括作成】 料理カテゴリ作成失敗                                  | 異常系 | 一括作成処理が失敗                    | HTTP 500 Internal Server Error                 | `RecipeCategoryController::bulkStore()`     |
 | 3-6-20 | 【一括更新】 正常な料理カテゴリ一括更新                            | 正常系 | 有効な料理カテゴリデータ配列を提供    | HTTP 200 JSON success                          | `RecipeCategoryController::bulkUpdate()`    |
 | 3-6-21 | 【一括更新】 一括更新成功メッセージの確認                          | 正常系 | 正常な一括更新後                      | 更新件数を含む適切なメッセージが返される       | `RecipeCategoryController::bulkUpdate()`    |
 | 3-6-22 | 【一括更新】 一括更新後のデータ取得確認                            | 正常系 | 正常な一括更新後                      | 更新された料理カテゴリデータが正しく取得される | `RecipeCategoryController::bulkUpdate()`    |

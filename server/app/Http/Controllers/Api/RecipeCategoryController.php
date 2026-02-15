@@ -7,7 +7,7 @@ use Illuminate\Http\JsonResponse;
 use App\Http\Requests\Api\RecipeCategoryBulkDestroyRequest;
 use App\Http\Requests\Api\RecipeCategoryBulkUpdateRequest;
 use App\Http\Requests\Api\RecipeCategoryIndexRequest;
-use App\Http\Requests\Api\RecipeCategoryStoreRequest;
+use App\Http\Requests\Api\RecipeCategoryBulkStoreRequest;
 use App\Services\RecipeCategoryService;
 
 class RecipeCategoryController extends ApiController
@@ -50,28 +50,28 @@ class RecipeCategoryController extends ApiController
 
     /**
      * @OA\Post(
-     *     path="/recipe-categories",
-     *     summary="料理カテゴリを作成",
+     *     path="/recipe-categories/bulk",
+     *     summary="料理カテゴリを一括作成",
      *     tags={"Recipes"},
      *     security={{"sanctum":{}}},
-     *     @OA\RequestBody(ref="#/components/requestBodies/RecipeCategoryRequest"),
-     *     @OA\Response(response=200, ref="#/components/responses/RecipeCategoryStoreSuccess"),
+     *     @OA\RequestBody(ref="#/components/requestBodies/RecipeCategoryBulkStoreRequest"),
+     *     @OA\Response(response=201, ref="#/components/responses/RecipeCategoryBulkStoreSuccess"),
      *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
-    public function store(RecipeCategoryStoreRequest $request): JsonResponse
+    public function bulkStore(RecipeCategoryBulkStoreRequest $request): JsonResponse
     {
-        $operation = __('operations.recipe_category.store');
-        $failedMessage = __('api.creation_failed', ['attribute' => __('api.attributes.recipe_category')]);
+        $operation = __('operations.recipe_category.bulk_store');
+        $failedMessage = __('api.bulk_creation_failed', ['attribute' => __('api.attributes.recipe_category')]);
 
         return $this->executeWithExceptionHandling(
             function () use ($request) {
-                $this->recipeCategoryService->create(
-                    $request->validated(),
+                $res = $this->recipeCategoryService->bulkCreate(
+                    $request->validated()['data'],
                     $this->getUserGroup($request)
                 );
-                $message = __('api.created', ['attribute' => __('api.attributes.recipe_category'), 'name' => $request->name]);
+                $message = __('api.bulk_created', ['attribute' => __('api.attributes.recipe_category'), 'count' => count($res)]);
                 return $this->createdResponse(null, $message);
             },
             $request,

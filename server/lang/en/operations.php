@@ -27,9 +27,9 @@ return [
     ],
     'meal_category' => [
         'index' => 'Meal category list retrieval',
-        'store' => 'Meal category creation',
+        'bulk_store' => 'Meal category bulk creation',
         'bulk_update' => 'Meal category bulk update',
-        'destroy' => 'Meal category deletion',
+        'bulk_destroy' => 'Meal category bulk deletion',
     ],
     'image' => [
         'bulk_upload' => 'Bulk image upload',
@@ -61,7 +61,7 @@ return [
     ],
     'recipe_category' => [
         'index' => 'Recipe category list retrieval',
-        'store' => 'Recipe category creation',
+        'bulk_store' => 'Recipe category bulk creation',
         'bulk_update' => 'Recipe category bulk update',
         'bulk_destroy' => 'Recipe category bulk deletion',
     ],

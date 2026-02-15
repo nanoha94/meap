@@ -28,12 +28,15 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::apiResource('meal-plans', MealPlanController::class)->except(['show']);
     Route::delete('/meal-plans/{mealPlanId}/meals/{mealId}', [MealPlanController::class, 'destroyMeal'])
         ->name('meal-plans.meals.destroy');
-    Route::apiResource('/meal-categories', MealCategoryController::class)->only(['index', 'store', 'destroy']);
+    Route::apiResource('/meal-categories', MealCategoryController::class)->only(['index']);
+    Route::post('/meal-categories/bulk', [MealCategoryController::class, 'bulkStore']);
     Route::put('/meal-categories/bulk', [MealCategoryController::class, 'bulkUpdate']);
+    Route::delete('/meal-categories/bulk', [MealCategoryController::class, 'bulkDestroy']);
 
     // recipes
     Route::apiResource('/recipes', RecipeController::class);
-    Route::apiResource('/recipe-categories', RecipeCategoryController::class)->only(['index', 'store']);
+    Route::apiResource('/recipe-categories', RecipeCategoryController::class)->only(['index']);
+    Route::post('/recipe-categories/bulk', [RecipeCategoryController::class, 'bulkStore']);
     Route::put('/recipe-categories/bulk', [RecipeCategoryController::class, 'bulkUpdate']);
     Route::delete('/recipe-categories/bulk', [RecipeCategoryController::class, 'bulkDestroy']);
 

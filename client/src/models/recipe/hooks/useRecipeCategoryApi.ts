@@ -2,11 +2,11 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 
-import { API_STATUS_CODE, TIMEOUT_MS, TMP_ID_PREFIX } from '@/constants';
+import { TIMEOUT_MS, TMP_ID_PREFIX } from '@/constants';
 import { useApiErrorHandler, useSnackbars } from '@/hooks';
 import axios from '@/lib/axios';
 import { useGlobalStore } from '@/stores';
-import { IPostRecipeCategoryRequest, IRecipeCategory } from '@/types';
+import { IPostRecipeCategoryRequest, IPutRecipeCategoryRequest, IRecipeCategory } from '@/types';
 import { useRecipeStore } from '../hooks';
 
 export const useRecipeCategoryApi = () => {
@@ -19,48 +19,32 @@ export const useRecipeCategoryApi = () => {
     // 重複リクエスト防止用のフラグ
     const isBulkUpdateRequestRef = React.useRef(false);
 
-    const bulkUpdateRecipeCategories = React.useCallback(
-        async (categories: IRecipeCategory[]) => {
-            // 重複リクエスト防止
-            if (isBulkUpdateRequestRef.current) {
-                return;
-            }
-
-            // 更新データがない場合は処理を終了
-            if (
-                JSON.stringify(categories) === JSON.stringify(storeCategories)
-            ) {
-                return;
-            }
-
-            let hasError = false;
-            isBulkUpdateRequestRef.current = true;
-            incrementLoadingCount();
-
-            // 削除するカテゴリーを取得
+    const generateDeleteRequest = React.useCallback(
+        (categories: IRecipeCategory[]) => {
+            // 削除するカテゴリーIDを取得
             const deleteCategoryIds = storeCategories
-                .filter(v => {
-                    const found = categories.find(c => c.id === v.id);
-                    return !found || !found.name;
-                })
+                .filter(v => !categories.some(c => c.id === v.id))
                 .map(v => v.id);
 
             // 削除リクエスト
             if (deleteCategoryIds.length > 0) {
-                try {
-                    await axios.delete(`/recipe-categories/bulk`, {
-                        data: { ids: deleteCategoryIds },
-                        timeout: TIMEOUT_MS,
-                    });
-                } catch (error) {
-                    hasError = true;
-                    handleApiError(error);
-                }
+                return axios.delete(`/recipe-categories/bulk`, {
+                    data: { ids: deleteCategoryIds },
+                    timeout: TIMEOUT_MS,
+                });
             }
+            return null;
+        },
+        [storeCategories],
+    );
 
-            const updateCategories: IRecipeCategory[] = [];
+    const generateCreateUpdateRequest = React.useCallback(
+        (categories: IRecipeCategory[]) => {
+            // 作成するカテゴリ―
+            const createCategories: IPostRecipeCategoryRequest[] = [];
+            // 更新するカテゴリー
+            const updateCategories: IPutRecipeCategoryRequest[] = [];
 
-            // 更新用配列を生成
             for (let i = 0; i < categories.length; i++) {
                 // 既存のカテゴリーかどうかを判断
                 const isStored = !categories[i].id?.startsWith(
@@ -77,56 +61,108 @@ export const useRecipeCategoryApi = () => {
                             ),
                         )
                     ) {
-                        updateCategories.push(categories[i] as IRecipeCategory);
+                        updateCategories.push(categories[i] as IPutRecipeCategoryRequest);
                     }
                 }
                 // まだDBにレコードがない場合は、作成リクエスト
                 else {
                     if (
-                        !categories[i] ||
-                        (categories[i].name ?? '').length <= 0
+                        categories[i] &&
+                        (categories[i].name ?? '').length > 0
                     ) {
-                        continue;
-                    }
-                    try {
-                        await axios.post(
-                            `/recipe-categories`,
-                            categories[i] as IPostRecipeCategoryRequest,
-                            {
-                                timeout: TIMEOUT_MS,
-                            },
-                        );
-                    } catch (error) {
-                        hasError = true;
-                        handleApiError(error);
+                        createCategories.push({
+                            name: categories[i].name!,
+                            order: categories[i].order,
+                        });
                     }
                 }
+            }
+
+            let createRequest: Promise<unknown> | null = null;
+            let updateRequest: Promise<unknown> | null = null;
+
+            // 新規作成リクエスト（一括）
+            if (createCategories.length > 0) {
+                createRequest = axios.post(
+                    `/recipe-categories/bulk`,
+                    { data: createCategories },
+                    { timeout: TIMEOUT_MS },
+                );
+
             }
 
             // 更新リクエスト
             if (updateCategories.length > 0) {
-                try {
-                    const res = await axios.put(`/recipe-categories/bulk`, {
-                        data: updateCategories,
-                        timeout: TIMEOUT_MS,
+                updateRequest = axios.put(`/recipe-categories/bulk`, {
+                    data: updateCategories,
+                    timeout: TIMEOUT_MS,
+                });
+            }
+
+            return { createRequest, updateRequest };
+
+        },
+        [storeCategories],
+    );
+
+    const bulkUpdateRecipeCategories = React.useCallback(
+        async (categories: IRecipeCategory[]) => {
+            // 重複リクエスト防止
+            // 更新データがない場合は処理を終了
+            if (isBulkUpdateRequestRef.current ||
+                JSON.stringify(categories) === JSON.stringify(storeCategories)) {
+                return;
+            }
+
+            // 重複リクエスト防止用のフラグをセット
+            isBulkUpdateRequestRef.current = true;
+            // ローディング状態をセット
+            incrementLoadingCount();
+
+            // 並列実行するリクエストを準備
+            const requests: Promise<unknown>[] = [];
+
+            // 削除リクエスト
+            const deleteRequest = generateDeleteRequest(categories);
+            if (deleteRequest) {
+                requests.push(deleteRequest);
+            }
+
+            // 作成・更新リクエスト
+            const { createRequest, updateRequest } = generateCreateUpdateRequest(categories);
+            if (createRequest) {
+                requests.push(createRequest);
+            }
+            if (updateRequest) {
+                requests.push(updateRequest);
+            }
+
+            // すべてのリクエストを並列実行
+            try {
+                const results = await Promise.allSettled(requests);
+
+                // エラーが発生したリクエストをチェック
+                const errors = results.filter(
+                    result => result.status === 'rejected',
+                ) as PromiseRejectedResult[];
+
+                if (errors.length > 0) {
+                    // エラーを処理
+                    errors.forEach(error => {
+                        handleApiError(error.reason);
                     });
-                    if (res.status === API_STATUS_CODE.OK) {
-                        router.refresh();
-                    }
-                } catch (error) {
-                    hasError = true;
-                    handleApiError(error);
+                    return;
                 }
-            }
 
-            // すべての処理がエラーなく完了した場合
-            if (!hasError) {
-                addSnackbar('success', 'レシピカテゴリーを更新しました');
+                // すべての処理がエラーなく完了した場合
                 router.refresh();
+                addSnackbar('success', 'レシピカテゴリーを更新しました');
+            } catch (error) {
+                handleApiError(error);
+            } finally {
+                isBulkUpdateRequestRef.current = false;
+                decrementLoadingCount();
             }
-
-            isBulkUpdateRequestRef.current = false;
-            decrementLoadingCount();
         },
         [
             storeCategories,

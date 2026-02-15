@@ -62,6 +62,13 @@ export interface IPostRecipeCategoryRequest {
     order: number;
 }
 
+// レシピカテゴリー更新
+export interface IPutRecipeCategoryRequest {
+    id: string;
+    name: string;
+    order: number;
+}
+
 //--------------------------------
 // データ型
 //--------------------------------

@@ -54,10 +54,10 @@ export const useShoppingCategoryApi = () => {
      */
     const generateCreateUpdateRequest = React.useCallback(
         (categories: IShoppingCategory[]) => {
-            // 更新するものを配列にセット
-            const updateCategories: IPutShoppingCategoryRequest[] = [];
             // 作成するものを配列にセット
             const createCategories: IPostShoppingCategoryRequest[] = [];
+            // 更新するものを配列にセット
+            const updateCategories: IPutShoppingCategoryRequest[] = [];
 
             for (let i = 0; i < categories.length; i++) {
                 // 既存のカテゴリーかどうかを判断
@@ -91,8 +91,16 @@ export const useShoppingCategoryApi = () => {
                 }
             }
 
-            let updateRequest: Promise<unknown> | null = null;
             let createRequest: Promise<unknown> | null = null;
+            let updateRequest: Promise<unknown> | null = null;
+
+            // 作成リクエスト
+            if (createCategories.length > 0) {
+                createRequest = axios.post(`/shopping-categories/bulk`, {
+                    data: createCategories,
+                    timeout: TIMEOUT_MS,
+                });
+            }
 
             // 更新リクエスト
             if (updateCategories.length > 0) {
@@ -101,14 +109,8 @@ export const useShoppingCategoryApi = () => {
                     timeout: TIMEOUT_MS,
                 });
             }
-            // 作成リクエスト
-            if (createCategories.length > 0) {
-                createRequest = axios.post(`/shopping-categories/bulk`, {
-                    data: createCategories,
-                    timeout: TIMEOUT_MS,
-                });
-            }
-            return { updateRequest, createRequest };
+
+            return { createRequest, updateRequest };
         },
         [storeCategories],
     );
@@ -127,6 +129,8 @@ export const useShoppingCategoryApi = () => {
                 return;
             }
 
+            // 重複リクエスト防止用のフラグをセット
+            isBulkUpdateRequestRef.current = true;
             // ローディング状態をセット
             incrementLoadingCount();
 
@@ -140,13 +144,13 @@ export const useShoppingCategoryApi = () => {
             }
 
             // 更新・作成リクエスト
-            const { updateRequest, createRequest } =
+            const { createRequest, updateRequest } =
                 generateCreateUpdateRequest(categories);
-            if (updateRequest) {
-                requests.push(updateRequest);
-            }
             if (createRequest) {
                 requests.push(createRequest);
+            }
+            if (updateRequest) {
+                requests.push(updateRequest);
             }
 
             // すべてのリクエストを並列実行

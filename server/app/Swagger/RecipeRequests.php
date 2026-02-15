@@ -59,6 +59,31 @@ namespace App\Swagger;
  *     required=true,
  *     @OA\JsonContent(ref="#/components/schemas/RecipeCategoryRequest")
  * )
+ *
+ * 料理カテゴリ一括作成リクエスト（POST /recipe-categories/bulk）
+ *
+ * @OA\Schema(
+ *     schema="RecipeCategoryBulkStoreRequest",
+ *     required={"data"},
+ *     @OA\Property(
+ *         property="data",
+ *         type="array",
+ *         description="作成する料理カテゴリの配列（1件以上）",
+ *         minItems=1,
+ *         @OA\Items(
+ *             type="object",
+ *             required={"name", "order"},
+ *             @OA\Property(property="name", type="string", description="カテゴリ名", example="和食"),
+ *             @OA\Property(property="order", type="integer", description="並び順（0以上）", example=0)
+ *         )
+ *     )
+ * )
+ * @OA\RequestBody(
+ *     request="RecipeCategoryBulkStoreRequest",
+ *     description="料理カテゴリ一括作成。data は1件以上必須。",
+ *     required=true,
+ *     @OA\JsonContent(ref="#/components/schemas/RecipeCategoryBulkStoreRequest")
+ * )
  * @OA\RequestBody(
  *     request="RecipeCategoryBulkUpdateRequest",
  *     description="一括更新する料理カテゴリデータ",

@@ -27,9 +27,9 @@ return [
     ],
     'meal_category' => [
         'index' => '献立カテゴリ一覧取得',
-        'store' => '献立カテゴリ作成',
+        'bulk_store' => '献立カテゴリ一括作成',
         'bulk_update' => '献立カテゴリ一括更新',
-        'destroy' => '献立カテゴリ削除',
+        'bulk_destroy' => '献立カテゴリ一括削除',
     ],
     'image' => [
         'bulk_upload' => '画像一括アップロード',
@@ -61,7 +61,7 @@ return [
     ],
     'recipe_category' => [
         'index' => '料理カテゴリー一覧取得',
-        'store' => '料理カテゴリー作成',
+        'bulk_store' => '料理カテゴリー一括作成',
         'bulk_update' => '料理カテゴリー一括更新',
         'bulk_destroy' => '料理カテゴリー一括削除',
     ],

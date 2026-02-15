@@ -30,17 +30,14 @@ beforeEach(function () {
 // ===== index() メソッドのテストケース =====
 
 test('3-6-1: 【一覧取得】 正常な料理カテゴリ一覧取得', function () {
-    // テスト用のカテゴリをAPIで作成
-    $this->actingAs($this->user)->post('/recipe-categories', [
-        'name' => '和食',
-        'order' => 0
+    // テスト用のカテゴリをAPIで一括作成
+    $this->actingAs($this->user)->post('/recipe-categories/bulk', [
+        'data' => [
+            ['name' => '和食', 'order' => 0],
+            ['name' => '洋食', 'order' => 1]
+        ]
     ]);
     $category1Id = \App\Models\RecipeCategory::where('group_id', $this->group->id)->where('name', '和食')->first()->id;
-
-    $this->actingAs($this->user)->post('/recipe-categories', [
-        'name' => '洋食',
-        'order' => 1
-    ]);
     $category2Id = \App\Models\RecipeCategory::where('group_id', $this->group->id)->where('name', '洋食')->first()->id;
 
     $response = $this->actingAs($this->user)->get('/recipe-categories');
@@ -83,10 +80,9 @@ test('3-6-1: 【一覧取得】 正常な料理カテゴリ一覧取得', functi
 });
 
 test('3-6-2: 【一覧取得】 レスポンス形式確認', function () {
-    // テスト用のカテゴリをAPIで作成
-    $this->actingAs($this->user)->post('/recipe-categories', [
-        'name' => '和食',
-        'order' => 0
+    // テスト用のカテゴリをAPIで一括作成
+    $this->actingAs($this->user)->post('/recipe-categories/bulk', [
+        'data' => [['name' => '和食', 'order' => 0]]
     ]);
 
     $response = $this->actingAs($this->user)->get('/recipe-categories');
@@ -110,18 +106,13 @@ test('3-6-2: 【一覧取得】 レスポンス形式確認', function () {
 });
 
 test('3-6-3: 【一覧取得】 order 順での取得確認', function () {
-    // 異なるorder順でカテゴリをAPIで作成
-    $this->actingAs($this->user)->post('/recipe-categories', [
-        'name' => '和食',
-        'order' => 2
-    ]);
-    $this->actingAs($this->user)->post('/recipe-categories', [
-        'name' => '洋食',
-        'order' => 0
-    ]);
-    $this->actingAs($this->user)->post('/recipe-categories', [
-        'name' => '中華',
-        'order' => 1
+    // 異なるorder順でカテゴリをAPIで一括作成
+    $this->actingAs($this->user)->post('/recipe-categories/bulk', [
+        'data' => [
+            ['name' => '和食', 'order' => 2],
+            ['name' => '洋食', 'order' => 0],
+            ['name' => '中華', 'order' => 1]
+        ]
     ]);
 
     $response = $this->actingAs($this->user)->get('/recipe-categories');
@@ -163,10 +154,9 @@ test('3-6-4: 【一覧取得】 空のリスト取得', function () {
 });
 
 test('3-6-5: 【一覧取得】 他グループの料理カテゴリは取得されない', function () {
-    // 自グループのカテゴリを作成
-    $this->actingAs($this->user)->post('/recipe-categories', [
-        'name' => '和食',
-        'order' => 0
+    // 自グループのカテゴリを一括作成
+    $this->actingAs($this->user)->post('/recipe-categories/bulk', [
+        'data' => [['name' => '和食', 'order' => 0]]
     ]);
 
     // 他グループのユーザーとカテゴリを作成
@@ -177,9 +167,8 @@ test('3-6-5: 【一覧取得】 他グループの料理カテゴリは取得さ
         'group_id' => $otherGroup->id
     ]);
 
-    $this->actingAs($otherUser)->post('/recipe-categories', [
-        'name' => '他のグループのカテゴリ',
-        'order' => 0
+    $this->actingAs($otherUser)->post('/recipe-categories/bulk', [
+        'data' => [['name' => '他のグループのカテゴリ', 'order' => 0]]
     ]);
 
     $response = $this->actingAs($this->user)->get('/recipe-categories');
@@ -253,20 +242,21 @@ test('3-6-8: 【一覧取得】 データベース接続エラー', function () 
     ]);
 });
 
-// ===== store() メソッドのテストケース =====
+// ===== bulkStore() メソッドのテストケース =====
 
-test('3-6-9: 【新規作成】 正常な料理カテゴリ作成', function () {
+test('3-6-9: 【一括作成】 正常な料理カテゴリ一括作成', function () {
     $data = [
-        'name' => '和食',
-        'order' => 0
+        'data' => [
+            ['name' => '和食', 'order' => 0]
+        ]
     ];
 
-    $response = $this->actingAs($this->user)->post('/recipe-categories', $data);
+    $response = $this->actingAs($this->user)->post('/recipe-categories/bulk', $data);
 
     $response->assertStatus(201);
     $response->assertJson([
         'success' => true,
-        'message' => '料理カテゴリー(和食)を作成しました。'
+        'message' => '料理カテゴリーを1件作成しました。'
     ]);
     $response->assertJsonPath('data', null);
 
@@ -288,13 +278,14 @@ test('3-6-9: 【新規作成】 正常な料理カテゴリ作成', function () 
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-6-10: 【新規作成】 レスポンス形式確認', function () {
+test('3-6-10: 【一括作成】 レスポンス形式確認', function () {
     $data = [
-        'name' => '和食',
-        'order' => 0
+        'data' => [
+            ['name' => '和食', 'order' => 0]
+        ]
     ];
 
-    $response = $this->actingAs($this->user)->post('/recipe-categories', $data);
+    $response = $this->actingAs($this->user)->post('/recipe-categories/bulk', $data);
 
     $response->assertStatus(201);
     $response->assertJsonStructure([
@@ -307,26 +298,28 @@ test('3-6-10: 【新規作成】 レスポンス形式確認', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-6-11: 【新規作成】 バリデーションエラー（料理カテゴリ名未入力）', function () {
+test('3-6-11: 【一括作成】 バリデーションエラー（料理カテゴリ名未入力）', function () {
     $data = [
-        'order' => 0
+        'data' => [
+            ['order' => 0]
+        ]
     ];
 
-    $response = $this->actingAs($this->user)->post('/recipe-categories', $data);
+    $response = $this->actingAs($this->user)->post('/recipe-categories/bulk', $data);
 
     $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['name']);
+    $response->assertJsonValidationErrors(['data.0.name']);
 
     // エラーメッセージの内容を検証
     $responseData = $response->json();
-    $this->assertContains('nameは必ず指定してください。', $responseData['errors']['name']);
+    $this->assertContains('data.*.nameは必ず指定してください。', $responseData['errors']['data.0.name']);
 
     // レスポンス構造の確認
     $response->assertJsonStructure([
         'success',
         'message',
         'errors' => [
-            'name'
+            'data.0.name'
         ]
     ]);
 
@@ -334,27 +327,28 @@ test('3-6-11: 【新規作成】 バリデーションエラー（料理カテ�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-6-12: 【新規作成】 バリデーションエラー（料理カテゴリ名が 255 文字超過）', function () {
+test('3-6-12: 【一括作成】 バリデーションエラー（料理カテゴリ名が 255 文字超過）', function () {
     $data = [
-        'name' => str_repeat('a', 256),
-        'order' => 0
+        'data' => [
+            ['name' => str_repeat('a', 256), 'order' => 0]
+        ]
     ];
 
-    $response = $this->actingAs($this->user)->post('/recipe-categories', $data);
+    $response = $this->actingAs($this->user)->post('/recipe-categories/bulk', $data);
 
     $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['name']);
+    $response->assertJsonValidationErrors(['data.0.name']);
 
     // エラーメッセージの内容を検証
     $responseData = $response->json();
-    $this->assertContains('nameは、255文字以内で指定してください。', $responseData['errors']['name']);
+    $this->assertContains('data.*.nameは、255文字以内で指定してください。', $responseData['errors']['data.0.name']);
 
     // レスポンス構造の確認
     $response->assertJsonStructure([
         'success',
         'message',
         'errors' => [
-            'name'
+            'data.0.name'
         ]
     ]);
 
@@ -362,26 +356,28 @@ test('3-6-12: 【新規作成】 バリデーションエラー（料理カテ�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-6-13: 【新規作成】 バリデーションエラー（order 値が未入力）', function () {
+test('3-6-13: 【一括作成】 バリデーションエラー（order 値が未入力）', function () {
     $data = [
-        'name' => '和食'
+        'data' => [
+            ['name' => '和食']
+        ]
     ];
 
-    $response = $this->actingAs($this->user)->post('/recipe-categories', $data);
+    $response = $this->actingAs($this->user)->post('/recipe-categories/bulk', $data);
 
     $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['order']);
+    $response->assertJsonValidationErrors(['data.0.order']);
 
     // エラーメッセージの内容を検証
     $responseData = $response->json();
-    $this->assertContains('orderは必ず指定してください。', $responseData['errors']['order']);
+    $this->assertContains('data.*.orderは必ず指定してください。', $responseData['errors']['data.0.order']);
 
     // レスポンス構造の確認
     $response->assertJsonStructure([
         'success',
         'message',
         'errors' => [
-            'order'
+            'data.0.order'
         ]
     ]);
 
@@ -389,27 +385,28 @@ test('3-6-13: 【新規作成】 バリデーションエラー（order 値が�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-6-14: 【新規作成】 バリデーションエラー（order 値が数値以外）', function () {
+test('3-6-14: 【一括作成】 バリデーションエラー（order 値が数値以外）', function () {
     $data = [
-        'name' => '和食',
-        'order' => 'abc'
+        'data' => [
+            ['name' => '和食', 'order' => 'abc']
+        ]
     ];
 
-    $response = $this->actingAs($this->user)->post('/recipe-categories', $data);
+    $response = $this->actingAs($this->user)->post('/recipe-categories/bulk', $data);
 
     $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['order']);
+    $response->assertJsonValidationErrors(['data.0.order']);
 
     // エラーメッセージの内容を検証
     $responseData = $response->json();
-    $this->assertContains('orderは整数で指定してください。', $responseData['errors']['order']);
+    $this->assertContains('data.*.orderは整数で指定してください。', $responseData['errors']['data.0.order']);
 
     // レスポンス構造の確認
     $response->assertJsonStructure([
         'success',
         'message',
         'errors' => [
-            'order'
+            'data.0.order'
         ]
     ]);
 
@@ -417,27 +414,28 @@ test('3-6-14: 【新規作成】 バリデーションエラー（order 値が�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-6-15: 【新規作成】 バリデーションエラー（order 値が負の値）', function () {
+test('3-6-15: 【一括作成】 バリデーションエラー（order 値が負の値）', function () {
     $data = [
-        'name' => '和食',
-        'order' => -1
+        'data' => [
+            ['name' => '和食', 'order' => -1]
+        ]
     ];
 
-    $response = $this->actingAs($this->user)->post('/recipe-categories', $data);
+    $response = $this->actingAs($this->user)->post('/recipe-categories/bulk', $data);
 
     $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['order']);
+    $response->assertJsonValidationErrors(['data.0.order']);
 
     // エラーメッセージの内容を検証
     $responseData = $response->json();
-    $this->assertContains('orderには、0以上の数字を指定してください。', $responseData['errors']['order']);
+    $this->assertContains('data.*.orderには、0以上の数字を指定してください。', $responseData['errors']['data.0.order']);
 
     // レスポンス構造の確認
     $response->assertJsonStructure([
         'success',
         'message',
         'errors' => [
-            'order'
+            'data.0.order'
         ]
     ]);
 
@@ -445,13 +443,14 @@ test('3-6-15: 【新規作成】 バリデーションエラー（order 値が�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-6-16: 【新規作成】 未認証ユーザー', function () {
+test('3-6-16: 【一括作成】 未認証ユーザー', function () {
     $data = [
-        'name' => '和食',
-        'order' => 0
+        'data' => [
+            ['name' => '和食', 'order' => 0]
+        ]
     ];
 
-    $response = $this->post('/recipe-categories', $data);
+    $response = $this->post('/recipe-categories/bulk', $data);
 
     $response->assertStatus(401);
     $response->assertJson([
@@ -469,18 +468,19 @@ test('3-6-16: 【新規作成】 未認証ユーザー', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-6-17: 【新規作成】 グループが存在しない', function () {
+test('3-6-17: 【一括作成】 グループが存在しない', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
     // グループに所属させない
 
     $data = [
-        'name' => '和食',
-        'order' => 0
+        'data' => [
+            ['name' => '和食', 'order' => 0]
+        ]
     ];
 
-    $response = $this->actingAs($user)->post('/recipe-categories', $data);
+    $response = $this->actingAs($user)->post('/recipe-categories/bulk', $data);
 
     $response->assertStatus(422);
     $response->assertJson([
@@ -498,20 +498,21 @@ test('3-6-17: 【新規作成】 グループが存在しない', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-6-18: 【新規作成】 データベース接続エラー', function () {
+test('3-6-18: 【一括作成】 データベース接続エラー', function () {
     DB::shouldReceive('connection')->andThrow(new \Exception('Database connection failed'));
 
     $data = [
-        'name' => '和食',
-        'order' => 0
+        'data' => [
+            ['name' => '和食', 'order' => 0]
+        ]
     ];
 
-    $response = $this->actingAs($this->user)->post('/recipe-categories', $data);
+    $response = $this->actingAs($this->user)->post('/recipe-categories/bulk', $data);
 
     $response->assertStatus(500);
     $response->assertJson([
         'success' => false,
-        'message' => '料理カテゴリーの作成に失敗しました。'
+        'message' => '料理カテゴリーの一括作成中にエラーが発生しました。'
     ]);
 
     // レスポンス構造の確認
@@ -521,20 +522,21 @@ test('3-6-18: 【新規作成】 データベース接続エラー', function ()
     ]);
 });
 
-test('3-6-19: 【新規作成】 料理カテゴリ作成失敗', function () {
+test('3-6-19: 【一括作成】 料理カテゴリ作成失敗', function () {
     DB::shouldReceive('transaction')->andThrow(new \Exception('Create failed'));
 
     $data = [
-        'name' => '和食',
-        'order' => 0
+        'data' => [
+            ['name' => '和食', 'order' => 0]
+        ]
     ];
 
-    $response = $this->actingAs($this->user)->post('/recipe-categories', $data);
+    $response = $this->actingAs($this->user)->post('/recipe-categories/bulk', $data);
 
     $response->assertStatus(500);
     $response->assertJson([
         'success' => false,
-        'message' => '料理カテゴリーの作成に失敗しました。'
+        'message' => '料理カテゴリーの一括作成中にエラーが発生しました。'
     ]);
 
     // レスポンス構造の確認
@@ -547,17 +549,14 @@ test('3-6-19: 【新規作成】 料理カテゴリ作成失敗', function () {
 // ===== bulkUpdate() メソッドのテストケース =====
 
 test('3-6-20: 【一括更新】 正常な料理カテゴリ一括更新', function () {
-    // テスト用のカテゴリをAPIで作成
-    $this->actingAs($this->user)->post('/recipe-categories', [
-        'name' => '和食',
-        'order' => 0
+    // テスト用のカテゴリをAPIで一括作成
+    $this->actingAs($this->user)->post('/recipe-categories/bulk', [
+        'data' => [
+            ['name' => '和食', 'order' => 0],
+            ['name' => '洋食', 'order' => 1]
+        ]
     ]);
     $category1Id = \App\Models\RecipeCategory::where('group_id', $this->group->id)->where('name', '和食')->first()->id;
-
-    $this->actingAs($this->user)->post('/recipe-categories', [
-        'name' => '洋食',
-        'order' => 1
-    ]);
     $category2Id = \App\Models\RecipeCategory::where('group_id', $this->group->id)->where('name', '洋食')->first()->id;
 
     $data = [
@@ -608,10 +607,9 @@ test('3-6-20: 【一括更新】 正常な料理カテゴリ一括更新', funct
 });
 
 test('3-6-21: 【一括更新】 一括更新成功メッセージの確認', function () {
-    // テスト用のカテゴリをAPIで作成
-    $this->actingAs($this->user)->post('/recipe-categories', [
-        'name' => '和食',
-        'order' => 0
+    // テスト用のカテゴリをAPIで一括作成
+    $this->actingAs($this->user)->post('/recipe-categories/bulk', [
+        'data' => [['name' => '和食', 'order' => 0]]
     ]);
     $category1Id = \App\Models\RecipeCategory::where('group_id', $this->group->id)->where('name', '和食')->first()->id;
 
@@ -635,10 +633,9 @@ test('3-6-21: 【一括更新】 一括更新成功メッセージの確認', fu
 });
 
 test('3-6-22: 【一括更新】 一括更新後のデータ取得確認', function () {
-    // テスト用のカテゴリをAPIで作成
-    $this->actingAs($this->user)->post('/recipe-categories', [
-        'name' => '和食',
-        'order' => 0
+    // テスト用のカテゴリをAPIで一括作成
+    $this->actingAs($this->user)->post('/recipe-categories/bulk', [
+        'data' => [['name' => '和食', 'order' => 0]]
     ]);
     $category1Id = \App\Models\RecipeCategory::where('group_id', $this->group->id)->where('name', '和食')->first()->id;
 
@@ -701,9 +698,8 @@ test('3-6-24: 【一括更新】 他グループの料理カテゴリ更新', fu
         'group_id' => $otherGroup->id
     ]);
 
-    $this->actingAs($otherUser)->post('/recipe-categories', [
-        'name' => '他のグループのカテゴリ',
-        'order' => 0
+    $this->actingAs($otherUser)->post('/recipe-categories/bulk', [
+        'data' => [['name' => '他のグループのカテゴリ', 'order' => 0]]
     ]);
     $otherCategoryId = \App\Models\RecipeCategory::where('group_id', $otherGroup->id)->where('name', '他のグループのカテゴリ')->first()->id;
 
@@ -1167,17 +1163,14 @@ test('3-6-38: 【一括更新】 料理カテゴリ更新失敗', function () {
 // ===== bulkDestroy() メソッドのテストケース =====
 
 test('3-6-39: 【一括削除】 正常な料理カテゴリ一括削除', function () {
-    // テスト用のカテゴリをAPIで作成
-    $this->actingAs($this->user)->post('/recipe-categories', [
-        'name' => '和食',
-        'order' => 0
+    // テスト用のカテゴリをAPIで一括作成
+    $this->actingAs($this->user)->post('/recipe-categories/bulk', [
+        'data' => [
+            ['name' => '和食', 'order' => 0],
+            ['name' => '洋食', 'order' => 1]
+        ]
     ]);
     $category1Id = \App\Models\RecipeCategory::where('group_id', $this->group->id)->where('name', '和食')->first()->id;
-
-    $this->actingAs($this->user)->post('/recipe-categories', [
-        'name' => '洋食',
-        'order' => 1
-    ]);
     $category2Id = \App\Models\RecipeCategory::where('group_id', $this->group->id)->where('name', '洋食')->first()->id;
 
     $data = [
@@ -1211,10 +1204,9 @@ test('3-6-39: 【一括削除】 正常な料理カテゴリ一括削除', funct
 });
 
 test('3-6-40: 【一括削除】 一括削除成功メッセージの確認', function () {
-    // テスト用のカテゴリをAPIで作成
-    $this->actingAs($this->user)->post('/recipe-categories', [
-        'name' => '和食',
-        'order' => 0
+    // テスト用のカテゴリをAPIで一括作成
+    $this->actingAs($this->user)->post('/recipe-categories/bulk', [
+        'data' => [['name' => '和食', 'order' => 0]]
     ]);
     $category1Id = \App\Models\RecipeCategory::where('group_id', $this->group->id)->where('name', '和食')->first()->id;
 
@@ -1232,23 +1224,16 @@ test('3-6-40: 【一括削除】 一括削除成功メッセージの確認', fu
 });
 
 test('3-6-41: 【一括削除】 削除後の order 整理確認', function () {
-    // テスト用のカテゴリをAPIで作成
-    $this->actingAs($this->user)->post('/recipe-categories', [
-        'name' => '和食',
-        'order' => 0
+    // テスト用のカテゴリをAPIで一括作成
+    $this->actingAs($this->user)->post('/recipe-categories/bulk', [
+        'data' => [
+            ['name' => '和食', 'order' => 0],
+            ['name' => '洋食', 'order' => 1],
+            ['name' => '中華', 'order' => 2]
+        ]
     ]);
     $category1Id = \App\Models\RecipeCategory::where('group_id', $this->group->id)->where('name', '和食')->first()->id;
-
-    $this->actingAs($this->user)->post('/recipe-categories', [
-        'name' => '洋食',
-        'order' => 1
-    ]);
     $category2Id = \App\Models\RecipeCategory::where('group_id', $this->group->id)->where('name', '洋食')->first()->id;
-
-    $this->actingAs($this->user)->post('/recipe-categories', [
-        'name' => '中華',
-        'order' => 2
-    ]);
     $category3Id = \App\Models\RecipeCategory::where('group_id', $this->group->id)->where('name', '中華')->first()->id;
 
     $data = [
@@ -1311,9 +1296,8 @@ test('3-6-43: 【一括削除】 他グループの料理カテゴリ削除', fu
         'group_id' => $otherGroup->id
     ]);
 
-    $this->actingAs($otherUser)->post('/recipe-categories', [
-        'name' => '他のグループのカテゴリ',
-        'order' => 0
+    $this->actingAs($otherUser)->post('/recipe-categories/bulk', [
+        'data' => [['name' => '他のグループのカテゴリ', 'order' => 0]]
     ]);
     $otherCategoryId = \App\Models\RecipeCategory::where('group_id', $otherGroup->id)->where('name', '他のグループのカテゴリ')->first()->id;
 

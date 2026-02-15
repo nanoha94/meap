@@ -71,6 +71,32 @@ namespace App\Swagger;
  *     required=true,
  *     @OA\JsonContent(ref="#/components/schemas/MealCategoryRequest")
  * )
+ *
+ * 献立カテゴリ一括作成リクエスト（POST /meal-categories/bulk）
+ *
+ * @OA\Schema(
+ *     schema="MealCategoryBulkStoreRequest",
+ *     required={"data"},
+ *     @OA\Property(
+ *         property="data",
+ *         type="array",
+ *         description="作成する献立カテゴリの配列（1件以上）",
+ *         minItems=1,
+ *         @OA\Items(
+ *             type="object",
+ *             required={"name", "colorId", "order"},
+ *             @OA\Property(property="name", type="string", description="カテゴリ名", example="朝食"),
+ *             @OA\Property(property="colorId", type="string", format="uuid", description="色ID", example="a0fbbf74-1816-406e-99b7-7ef1e3e365f4"),
+ *             @OA\Property(property="order", type="integer", description="ソート順（0以上）", example=1)
+ *         )
+ *     )
+ * )
+ * @OA\RequestBody(
+ *     request="MealCategoryBulkStoreRequest",
+ *     description="献立カテゴリ一括作成。data は1件以上必須。",
+ *     required=true,
+ *     @OA\JsonContent(ref="#/components/schemas/MealCategoryBulkStoreRequest")
+ * )
  * @OA\RequestBody(
  *     request="MealCategoryBulkUpdateRequest",
  *     required=true,
@@ -83,22 +109,25 @@ namespace App\Swagger;
  *         )
  *     )
  * )
+ *
+ * 献立カテゴリ一括削除リクエスト（DELETE /meal-categories/bulk）
+ *
+ * @OA\Schema(
+ *     schema="MealCategoryBulkDestroyRequest",
+ *     required={"ids"},
+ *     @OA\Property(
+ *         property="ids",
+ *         type="array",
+ *         description="削除する献立カテゴリのID配列（1件以上）",
+ *         minItems=1,
+ *         @OA\Items(type="string", format="uuid", description="献立カテゴリID", example="a0fbbf74-1816-406e-99b7-7ef1e3e365f4")
+ *     )
+ * )
  * @OA\RequestBody(
  *     request="MealCategoryBulkDestroyRequest",
+ *     description="献立カテゴリ一括削除。ids は1件以上必須。",
  *     required=true,
- *     @OA\JsonContent(
- *         type="object",
- *         @OA\Property(
- *             property="ids",
- *             type="array",
- *             description="削除する献立カテゴリのID配列",
- *             @OA\Items(
- *                 type="string",
- *                 description="献立カテゴリID",
- *                 example="2"
- *             )
- *         )
- *     )
+ *     @OA\JsonContent(ref="#/components/schemas/MealCategoryBulkDestroyRequest")
  * )
  */
 

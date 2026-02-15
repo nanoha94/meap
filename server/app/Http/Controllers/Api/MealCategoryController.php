@@ -4,10 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\ApiController;
 use Illuminate\Http\JsonResponse;
+use App\Http\Requests\Api\MealCategoryBulkStoreRequest;
 use App\Http\Requests\Api\MealCategoryBulkUpdateRequest;
-use App\Http\Requests\Api\MealCategoryDestroyRequest;
+use App\Http\Requests\Api\MealCategoryBulkDestroyRequest;
 use App\Http\Requests\Api\MealCategoryIndexRequest;
-use App\Http\Requests\Api\MealCategoryStoreRequest;
 use App\Services\MealCategoryService;
 
 class MealCategoryController extends ApiController
@@ -50,25 +50,28 @@ class MealCategoryController extends ApiController
 
     /**
      * @OA\Post(
-     *     path="/meal-categories",
-     *     summary="献立カテゴリを作成",
+     *     path="/meal-categories/bulk",
+     *     summary="献立カテゴリを一括作成",
      *     tags={"MealPlans"},
      *     security={{"sanctum":{}}},
-     *     @OA\RequestBody(ref="#/components/requestBodies/MealCategoryRequest"),
-     *     @OA\Response(response=200, ref="#/components/responses/MealCategoryStoreSuccess"),
+     *     @OA\RequestBody(ref="#/components/requestBodies/MealCategoryBulkStoreRequest"),
+     *     @OA\Response(response=201, ref="#/components/responses/MealCategoryBulkStoreSuccess"),
      *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
-    public function store(MealCategoryStoreRequest $request): JsonResponse
+    public function bulkStore(MealCategoryBulkStoreRequest $request): JsonResponse
     {
-        $operation = __('operations.meal_category.store');
-        $failedMessage = __('api.creation_failed', ['attribute' => __('api.attributes.meal_category')]);
+        $operation = __('operations.meal_category.bulk_store');
+        $failedMessage = __('api.bulk_creation_failed', ['attribute' => __('api.attributes.meal_category')]);
 
         return $this->executeWithExceptionHandling(
             function () use ($request) {
-                $this->mealCategoryService->create($request->validated(), $this->getUserGroup($request));
-                $message = __('api.created', ['attribute' => __('api.attributes.meal_category'), 'name' => $request->name]);
+                $res = $this->mealCategoryService->bulkCreate(
+                    $request->validated()['data'],
+                    $this->getUserGroup($request)
+                );
+                $message = __('api.bulk_created', ['attribute' => __('api.attributes.meal_category'), 'count' => count($res)]);
                 return $this->createdResponse(null, $message);
             },
             $request,
@@ -112,25 +115,28 @@ class MealCategoryController extends ApiController
 
     /**
      * @OA\Delete(
-     *     path="/meal-categories/{id}",
-     *     summary="献立カテゴリを削除",
+     *     path="/meal-categories/bulk",
+     *     summary="献立カテゴリを一括削除",
      *     tags={"MealPlans"},
      *     security={{"sanctum":{}}},
-     *     @OA\Parameter(ref="#/components/parameters/MealCategoryIdParam"),
-     *     @OA\Response(response=200, ref="#/components/responses/MealCategoryDestroySuccess"),
+     *     @OA\RequestBody(ref="#/components/requestBodies/MealCategoryBulkDestroyRequest"),
+     *     @OA\Response(response=200, ref="#/components/responses/MealCategoryBulkDestroySuccess"),
      *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
-    public function destroy(MealCategoryDestroyRequest $request, string $id): JsonResponse
+    public function bulkDestroy(MealCategoryBulkDestroyRequest $request): JsonResponse
     {
-        $operation = __('operations.meal_category.destroy');
+        $operation = __('operations.meal_category.bulk_destroy');
         $failedMessage = __('api.deletion_failed', ['attribute' => __('api.attributes.meal_category')]);
 
         return $this->executeWithExceptionHandling(
-            function () use ($request, $id) {
-                $deletedMealCategory = $this->mealCategoryService->delete($id, $this->getUserGroup($request));
-                $message = __('api.deleted', ['attribute' => __('api.attributes.meal_category'), 'name' => $deletedMealCategory->name]);
+            function () use ($request) {
+                $deletedCount = $this->mealCategoryService->bulkDelete(
+                    $request->validated()['ids'],
+                    $this->getUserGroup($request)
+                );
+                $message = __('api.bulk_deleted', ['attribute' => __('api.attributes.meal_category'), 'count' => $deletedCount]);
                 return $this->deletedResponse($message);
             },
             $request,

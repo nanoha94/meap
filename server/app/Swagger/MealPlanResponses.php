@@ -87,8 +87,8 @@ namespace App\Swagger;
  *     @OA\JsonContent(ref="#/components/schemas/MealCategoryIndexResponse")
  * )
  * @OA\Response(
- *     response="MealCategoryStoreSuccess",
- *     description="献立カテゴリ(朝食)を作成しました。",
+ *     response="MealCategoryBulkStoreSuccess",
+ *     description="献立カテゴリを3件作成しました。",
  *     @OA\JsonContent(ref="#/components/schemas/BaseApiResponse")
  * )
  * @OA\Response(
@@ -97,8 +97,8 @@ namespace App\Swagger;
  *     @OA\JsonContent(ref="#/components/schemas/BaseApiResponse")
  * )
  * @OA\Response(
- *     response="MealCategoryDestroySuccess",
- *     description="献立カテゴリ(昼食)を削除しました。",
+ *     response="MealCategoryBulkDestroySuccess",
+ *     description="献立カテゴリを2件削除しました。",
  *     @OA\JsonContent(ref="#/components/schemas/BaseApiResponse")
  * )
  */

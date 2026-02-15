@@ -49,17 +49,17 @@ beforeEach(function () {
 
 test('3-5-1: 【一覧取得】 正常な献立カテゴリ一覧取得', function () {
     // テスト用の献立カテゴリをAPIで作成
-    $this->actingAs($this->user)->post('/meal-categories', [
-        'name' => '朝食',
-        'colorId' => $this->yellowColorId,
-        'order' => 0
+    $this->actingAs($this->user)->postJson('/meal-categories/bulk', [
+        'data' => [
+            ['name' => '朝食', 'colorId' => $this->yellowColorId, 'order' => 0],
+        ]
     ]);
     $mealCategory1Id = \App\Models\MealCategory::where('group_id', $this->group->id)->where('name', '朝食')->first()->id;
 
-    $this->actingAs($this->user)->post('/meal-categories', [
-        'name' => '昼食',
-        'colorId' => $this->redColorId,
-        'order' => 1
+    $this->actingAs($this->user)->postJson('/meal-categories/bulk', [
+        'data' => [
+            ['name' => '昼食', 'colorId' => $this->redColorId, 'order' => 1],
+        ]
     ]);
     $mealCategory2Id = \App\Models\MealCategory::where('group_id', $this->group->id)->where('name', '昼食')->first()->id;
 
@@ -107,10 +107,10 @@ test('3-5-1: 【一覧取得】 正常な献立カテゴリ一覧取得', functi
 
 test('3-5-2: 【一覧取得】 レスポンス形式確認', function () {
     // テスト用の献立カテゴリをAPIで作成
-    $this->actingAs($this->user)->post('/meal-categories', [
-        'name' => '朝食',
-        'colorId' => $this->yellowColorId,
-        'order' => 0
+    $this->actingAs($this->user)->postJson('/meal-categories/bulk', [
+        'data' => [
+            ['name' => '朝食', 'colorId' => $this->yellowColorId, 'order' => 0],
+        ]
     ]);
 
     $response = $this->actingAs($this->user)->get('/meal-categories');
@@ -138,20 +138,20 @@ test('3-5-2: 【一覧取得】 レスポンス形式確認', function () {
 
 test('3-5-3: 【一覧取得】 order 順での取得確認', function () {
     // 異なるorder順で献立カテゴリをAPIで作成
-    $this->actingAs($this->user)->post('/meal-categories', [
-        'name' => '夕食',
-        'colorId' => $this->blueColorId,
-        'order' => 2
+    $this->actingAs($this->user)->postJson('/meal-categories/bulk', [
+        'data' => [
+            ['name' => '夕食', 'colorId' => $this->blueColorId, 'order' => 2],
+        ]
     ]);
-    $this->actingAs($this->user)->post('/meal-categories', [
-        'name' => '朝食',
-        'colorId' => $this->yellowColorId,
-        'order' => 0
+    $this->actingAs($this->user)->postJson('/meal-categories/bulk', [
+        'data' => [
+            ['name' => '朝食', 'colorId' => $this->yellowColorId, 'order' => 0],
+        ]
     ]);
-    $this->actingAs($this->user)->post('/meal-categories', [
-        'name' => '昼食',
-        'colorId' => $this->redColorId,
-        'order' => 1
+    $this->actingAs($this->user)->postJson('/meal-categories/bulk', [
+        'data' => [
+            ['name' => '昼食', 'colorId' => $this->redColorId, 'order' => 1],
+        ]
     ]);
 
     $response = $this->actingAs($this->user)->get('/meal-categories');
@@ -194,10 +194,10 @@ test('3-5-4: 【一覧取得】 空のリスト取得', function () {
 
 test('3-5-5: 【一覧取得】 他グループの献立カテゴリは取得されない', function () {
     // 自グループの献立カテゴリを作成
-    $this->actingAs($this->user)->post('/meal-categories', [
-        'name' => '朝食',
-        'colorId' => $this->yellowColorId,
-        'order' => 0
+    $this->actingAs($this->user)->postJson('/meal-categories/bulk', [
+        'data' => [
+            ['name' => '朝食', 'colorId' => $this->yellowColorId, 'order' => 0],
+        ]
     ]);
 
     // 他のグループのユーザーと献立カテゴリをAPIで作成
@@ -208,10 +208,10 @@ test('3-5-5: 【一覧取得】 他グループの献立カテゴリは取得さ
         'group_id' => $otherGroup->id
     ]);
 
-    $this->actingAs($otherUser)->post('/meal-categories', [
-        'name' => '他グループの献立カテゴリ',
-        'colorId' => $this->redColorId,
-        'order' => 0
+    $this->actingAs($otherUser)->postJson('/meal-categories/bulk', [
+        'data' => [
+            ['name' => '他グループの献立カテゴリ', 'colorId' => $this->redColorId, 'order' => 0],
+        ]
     ]);
 
     $response = $this->actingAs($this->user)->get('/meal-categories');
@@ -303,12 +303,12 @@ test('3-5-9: 【新規作成】 正常な献立カテゴリ作成', function () 
         'order' => 0
     ];
 
-    $response = $this->actingAs($this->user)->post('/meal-categories', $data);
+    $response = $this->actingAs($this->user)->postJson('/meal-categories/bulk', ['data' => [$data]]);
 
     $response->assertStatus(201);
     $response->assertJson([
         'success' => true,
-        'message' => '献立カテゴリ(朝食)を作成しました。'
+        'message' => '献立カテゴリを1件作成しました。'
     ]);
     $response->assertJsonPath('data', null);
 
@@ -338,7 +338,7 @@ test('3-5-10: 【新規作成】 レスポンス形式確認', function () {
         'order' => 0
     ];
 
-    $response = $this->actingAs($this->user)->post('/meal-categories', $data);
+    $response = $this->actingAs($this->user)->postJson('/meal-categories/bulk', ['data' => [$data]]);
 
     $response->assertStatus(201);
 
@@ -356,25 +356,29 @@ test('3-5-10: 【新規作成】 レスポンス形式確認', function () {
 
 test('3-5-11: 【新規作成】 バリデーションエラー（献立カテゴリ名未入力）', function () {
     $data = [
-        'colorId' => $this->yellowColorId,
-        'order' => 0
+        'data' => [
+            [
+                'colorId' => $this->yellowColorId,
+                'order' => 0
+            ]
+        ]
     ];
 
-    $response = $this->actingAs($this->user)->post('/meal-categories', $data);
+    $response = $this->actingAs($this->user)->postJson('/meal-categories/bulk', $data);
 
     $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['name']);
+    $response->assertJsonValidationErrors(['data.0.name']);
 
     // エラーメッセージの内容を検証
     $responseData = $response->json();
-    $this->assertContains('nameは必ず指定してください。', $responseData['errors']['name']);
+    $this->assertContains('data.*.nameは必ず指定してください。', $responseData['errors']['data.0.name']);
 
     // レスポンス構造の確認
     $response->assertJsonStructure([
         'success',
         'message',
         'errors' => [
-            'name'
+            'data.0.name'
         ]
     ]);
 
@@ -384,26 +388,30 @@ test('3-5-11: 【新規作成】 バリデーションエラー（献立カテ�
 
 test('3-5-12: 【新規作成】 バリデーションエラー（献立カテゴリ名が文字列以外）', function () {
     $data = [
-        'name' => 123,
-        'colorId' => $this->yellowColorId,
-        'order' => 0
+        'data' => [
+            [
+                'name' => 123,
+                'colorId' => $this->yellowColorId,
+                'order' => 0
+            ]
+        ]
     ];
 
-    $response = $this->actingAs($this->user)->post('/meal-categories', $data);
+    $response = $this->actingAs($this->user)->postJson('/meal-categories/bulk', $data);
 
     $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['name']);
+    $response->assertJsonValidationErrors(['data.0.name']);
 
     // エラーメッセージの内容を検証
     $responseData = $response->json();
-    $this->assertContains('nameは文字列を指定してください。', $responseData['errors']['name']);
+    $this->assertContains('data.*.nameは文字列を指定してください。', $responseData['errors']['data.0.name']);
 
     // レスポンス構造の確認
     $response->assertJsonStructure([
         'success',
         'message',
         'errors' => [
-            'name'
+            'data.0.name'
         ]
     ]);
 
@@ -413,26 +421,30 @@ test('3-5-12: 【新規作成】 バリデーションエラー（献立カテ�
 
 test('3-5-13: 【新規作成】 バリデーションエラー（献立カテゴリ名が 255 文字超過）', function () {
     $data = [
-        'name' => str_repeat('a', 256),
-        'colorId' => $this->yellowColorId,
-        'order' => 0
+        'data' => [
+            [
+                'name' => str_repeat('a', 256),
+                'colorId' => $this->yellowColorId,
+                'order' => 0
+            ]
+        ]
     ];
 
-    $response = $this->actingAs($this->user)->post('/meal-categories', $data);
+    $response = $this->actingAs($this->user)->postJson('/meal-categories/bulk', $data);
 
     $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['name']);
+    $response->assertJsonValidationErrors(['data.0.name']);
 
     // エラーメッセージの内容を検証
     $responseData = $response->json();
-    $this->assertContains('nameは、255文字以内で指定してください。', $responseData['errors']['name']);
+    $this->assertContains('data.*.nameは、255文字以内で指定してください。', $responseData['errors']['data.0.name']);
 
     // レスポンス構造の確認
     $response->assertJsonStructure([
         'success',
         'message',
         'errors' => [
-            'name'
+            'data.0.name'
         ]
     ]);
 
@@ -442,25 +454,29 @@ test('3-5-13: 【新規作成】 バリデーションエラー（献立カテ�
 
 test('3-5-14: 【新規作成】 バリデーションエラー（色 ID 未入力）', function () {
     $data = [
-        'name' => '朝食',
-        'order' => 0
+        'data' => [
+            [
+                'name' => '朝食',
+                'order' => 0
+            ]
+        ]
     ];
 
-    $response = $this->actingAs($this->user)->post('/meal-categories', $data);
+    $response = $this->actingAs($this->user)->postJson('/meal-categories/bulk', $data);
 
     $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['colorId']);
+    $response->assertJsonValidationErrors(['data.0.colorId']);
 
     // エラーメッセージの内容を検証
     $responseData = $response->json();
-    $this->assertContains('colorIdは必ず指定してください。', $responseData['errors']['colorId']);
+    $this->assertContains('data.*.colorIdは必ず指定してください。', $responseData['errors']['data.0.colorId']);
 
     // レスポンス構造の確認
     $response->assertJsonStructure([
         'success',
         'message',
         'errors' => [
-            'colorId'
+            'data.0.colorId'
         ]
     ]);
 
@@ -470,26 +486,30 @@ test('3-5-14: 【新規作成】 バリデーションエラー（色 ID 未入�
 
 test('3-5-15: 【新規作成】 バリデーションエラー（色 ID が UUID 形式でない）', function () {
     $data = [
-        'name' => '朝食',
-        'colorId' => 'invalid-uuid',
-        'order' => 0
+        'data' => [
+            [
+                'name' => '朝食',
+                'colorId' => 'invalid-uuid',
+                'order' => 0
+            ]
+        ]
     ];
 
-    $response = $this->actingAs($this->user)->post('/meal-categories', $data);
+    $response = $this->actingAs($this->user)->postJson('/meal-categories/bulk', $data);
 
     $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['colorId']);
+    $response->assertJsonValidationErrors(['data.0.colorId']);
 
     // エラーメッセージの内容を検証
     $responseData = $response->json();
-    $this->assertContains('colorIdに有効なUUIDを指定してください。', $responseData['errors']['colorId']);
+    $this->assertContains('data.*.colorIdに有効なUUIDを指定してください。', $responseData['errors']['data.0.colorId']);
 
     // レスポンス構造の確認
     $response->assertJsonStructure([
         'success',
         'message',
         'errors' => [
-            'colorId'
+            'data.0.colorId'
         ]
     ]);
 
@@ -499,26 +519,30 @@ test('3-5-15: 【新規作成】 バリデーションエラー（色 ID が UUI
 
 test('3-5-16: 【新規作成】 バリデーションエラー（色 ID が存在しない）', function () {
     $data = [
-        'name' => '朝食',
-        'colorId' => '00000000-0000-0000-0000-000000000000',
-        'order' => 0
+        'data' => [
+            [
+                'name' => '朝食',
+                'colorId' => '00000000-0000-0000-0000-000000000000',
+                'order' => 0
+            ]
+        ]
     ];
 
-    $response = $this->actingAs($this->user)->post('/meal-categories', $data);
+    $response = $this->actingAs($this->user)->postJson('/meal-categories/bulk', $data);
 
     $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['colorId']);
+    $response->assertJsonValidationErrors(['data.0.colorId']);
 
     // エラーメッセージの内容を検証
     $responseData = $response->json();
-    $this->assertContains('選択されたcolorIdは正しくありません。', $responseData['errors']['colorId']);
+    $this->assertContains('選択されたdata.*.colorIdは正しくありません。', $responseData['errors']['data.0.colorId']);
 
     // レスポンス構造の確認
     $response->assertJsonStructure([
         'success',
         'message',
         'errors' => [
-            'colorId'
+            'data.0.colorId'
         ]
     ]);
 
@@ -528,25 +552,29 @@ test('3-5-16: 【新規作成】 バリデーションエラー（色 ID が存�
 
 test('3-5-17: 【新規作成】 バリデーションエラー（order 値が未入力）', function () {
     $data = [
-        'name' => '朝食',
-        'colorId' => $this->yellowColorId
+        'data' => [
+            [
+                'name' => '朝食',
+                'colorId' => $this->yellowColorId
+            ]
+        ]
     ];
 
-    $response = $this->actingAs($this->user)->post('/meal-categories', $data);
+    $response = $this->actingAs($this->user)->postJson('/meal-categories/bulk', $data);
 
     $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['order']);
+    $response->assertJsonValidationErrors(['data.0.order']);
 
     // エラーメッセージの内容を検証
     $responseData = $response->json();
-    $this->assertContains('orderは必ず指定してください。', $responseData['errors']['order']);
+    $this->assertContains('data.*.orderは必ず指定してください。', $responseData['errors']['data.0.order']);
 
     // レスポンス構造の確認
     $response->assertJsonStructure([
         'success',
         'message',
         'errors' => [
-            'order'
+            'data.0.order'
         ]
     ]);
 
@@ -556,26 +584,30 @@ test('3-5-17: 【新規作成】 バリデーションエラー（order 値が�
 
 test('3-5-18: 【新規作成】 バリデーションエラー（order 値が数値以外）', function () {
     $data = [
-        'name' => '朝食',
-        'colorId' => $this->yellowColorId,
-        'order' => 'abc'
+        'data' => [
+            [
+                'name' => '朝食',
+                'colorId' => $this->yellowColorId,
+                'order' => 'abc'
+            ]
+        ]
     ];
 
-    $response = $this->actingAs($this->user)->post('/meal-categories', $data);
+    $response = $this->actingAs($this->user)->postJson('/meal-categories/bulk', $data);
 
     $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['order']);
+    $response->assertJsonValidationErrors(['data.0.order']);
 
     // エラーメッセージの内容を検証
     $responseData = $response->json();
-    $this->assertContains('orderは整数で指定してください。', $responseData['errors']['order']);
+    $this->assertContains('data.*.orderは整数で指定してください。', $responseData['errors']['data.0.order']);
 
     // レスポンス構造の確認
     $response->assertJsonStructure([
         'success',
         'message',
         'errors' => [
-            'order'
+            'data.0.order'
         ]
     ]);
 
@@ -585,26 +617,30 @@ test('3-5-18: 【新規作成】 バリデーションエラー（order 値が�
 
 test('3-5-19: 【新規作成】 バリデーションエラー（order 値が負の値）', function () {
     $data = [
-        'name' => '朝食',
-        'colorId' => $this->yellowColorId,
-        'order' => -1
+        'data' => [
+            [
+                'name' => '朝食',
+                'colorId' => $this->yellowColorId,
+                'order' => -1
+            ]
+        ]
     ];
 
-    $response = $this->actingAs($this->user)->post('/meal-categories', $data);
+    $response = $this->actingAs($this->user)->postJson('/meal-categories/bulk', $data);
 
     $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['order']);
+    $response->assertJsonValidationErrors(['data.0.order']);
 
     // エラーメッセージの内容を検証
     $responseData = $response->json();
-    $this->assertContains('orderには、0以上の数字を指定してください。', $responseData['errors']['order']);
+    $this->assertContains('data.*.orderには、0以上の数字を指定してください。', $responseData['errors']['data.0.order']);
 
     // レスポンス構造の確認
     $response->assertJsonStructure([
         'success',
         'message',
         'errors' => [
-            'order'
+            'data.0.order'
         ]
     ]);
 
@@ -614,12 +650,16 @@ test('3-5-19: 【新規作成】 バリデーションエラー（order 値が�
 
 test('3-5-20: 【新規作成】 未認証ユーザー', function () {
     $data = [
-        'name' => '朝食',
-        'colorId' => $this->yellowColorId,
-        'order' => 0
+        'data' => [
+            [
+                'name' => '朝食',
+                'colorId' => $this->yellowColorId,
+                'order' => 0
+            ]
+        ]
     ];
 
-    $response = $this->post('/meal-categories', $data);
+    $response = $this->postJson('/meal-categories/bulk', $data);
 
     $response->assertStatus(401);
     $response->assertJson([
@@ -644,12 +684,16 @@ test('3-5-21: 【新規作成】 グループが存在しない', function () {
     // グループに所属させない
 
     $data = [
-        'name' => '朝食',
-        'colorId' => $this->yellowColorId,
-        'order' => 0
+        'data' => [
+            [
+                'name' => '朝食',
+                'colorId' => $this->yellowColorId,
+                'order' => 0
+            ]
+        ]
     ];
 
-    $response = $this->actingAs($user)->post('/meal-categories', $data);
+    $response = $this->actingAs($user)->postJson('/meal-categories/bulk', $data);
 
     $response->assertStatus(422);
     $response->assertJson([
@@ -670,22 +714,26 @@ test('3-5-21: 【新規作成】 グループが存在しない', function () {
 test('3-5-22: 【新規作成】 データベース接続エラー', function () {
     // mealCategoryServiceをモックして例外を発生させる
     $this->mock(MealCategoryService::class, function ($mock) {
-        $mock->shouldReceive('create')
+        $mock->shouldReceive('bulkCreate')
             ->once()->andThrow(new \Exception('Database connection failed'));
     });
 
     $data = [
-        'name' => '朝食',
-        'colorId' => $this->yellowColorId,
-        'order' => 0
+        'data' => [
+            [
+                'name' => '朝食',
+                'colorId' => $this->yellowColorId,
+                'order' => 0
+            ]
+        ]
     ];
 
-    $response = $this->actingAs($this->user)->post('/meal-categories', $data);
+    $response = $this->actingAs($this->user)->postJson('/meal-categories/bulk', $data);
 
     $response->assertStatus(500);
     $response->assertJson([
         'success' => false,
-        'message' => '献立カテゴリの作成に失敗しました。'
+        'message' => '献立カテゴリの一括作成中にエラーが発生しました。'
     ]);
 
     // レスポンス構造の確認
@@ -701,22 +749,26 @@ test('3-5-22: 【新規作成】 データベース接続エラー', function ()
 test('3-5-23: 【新規作成】 献立カテゴリ作成失敗', function () {
     // mealCategoryServiceをモックして例外を発生させる
     $this->mock(MealCategoryService::class, function ($mock) {
-        $mock->shouldReceive('create')
+        $mock->shouldReceive('bulkCreate')
             ->once()->andThrow(new \Exception('mealCategory create failed'));
     });
 
     $data = [
-        'name' => '朝食',
-        'colorId' => $this->yellowColorId,
-        'order' => 0
+        'data' => [
+            [
+                'name' => '朝食',
+                'colorId' => $this->yellowColorId,
+                'order' => 0
+            ]
+        ]
     ];
 
-    $response = $this->actingAs($this->user)->post('/meal-categories', $data);
+    $response = $this->actingAs($this->user)->postJson('/meal-categories/bulk', $data);
 
     $response->assertStatus(500);
     $response->assertJson([
         'success' => false,
-        'message' => '献立カテゴリの作成に失敗しました。'
+        'message' => '献立カテゴリの一括作成中にエラーが発生しました。'
     ]);
 
     // レスポンス構造の確認
@@ -732,16 +784,16 @@ test('3-5-23: 【新規作成】 献立カテゴリ作成失敗', function () {
 // ===== bulkUpdate() メソッドのテストケース =====
 
 test('3-5-24: 【一括更新】 正常な献立カテゴリ一括更新', function () {
-    // テスト用の献立カテゴリをAPIで作成（store は data を返さないため DB から ID 取得）
-    $this->actingAs($this->user)->post('/meal-categories', [
-        'name' => '朝食',
-        'colorId' => $this->yellowColorId,
-        'order' => 0
+    // テスト用の献立カテゴリをAPIで作成（bulk は data を返さないため DB から ID 取得）
+    $this->actingAs($this->user)->postJson('/meal-categories/bulk', [
+        'data' => [
+            ['name' => '朝食', 'colorId' => $this->yellowColorId, 'order' => 0],
+        ]
     ]);
-    $this->actingAs($this->user)->post('/meal-categories', [
-        'name' => '昼食',
-        'colorId' => $this->redColorId,
-        'order' => 1
+    $this->actingAs($this->user)->postJson('/meal-categories/bulk', [
+        'data' => [
+            ['name' => '昼食', 'colorId' => $this->redColorId, 'order' => 1],
+        ]
     ]);
     $mealCategory1Id = \App\Models\MealCategory::where('group_id', $this->group->id)->where('name', '朝食')->first()->id;
     $mealCategory2Id = \App\Models\MealCategory::where('group_id', $this->group->id)->where('name', '昼食')->first()->id;
@@ -798,16 +850,16 @@ test('3-5-24: 【一括更新】 正常な献立カテゴリ一括更新', funct
 });
 
 test('3-5-25: 【一括更新】 一括更新成功メッセージの確認', function () {
-    // テスト用の献立カテゴリをAPIで作成（store は data を返さないため DB から ID 取得）
-    $this->actingAs($this->user)->post('/meal-categories', [
-        'name' => '朝食',
-        'colorId' => $this->yellowColorId,
-        'order' => 0
+    // テスト用の献立カテゴリをAPIで作成（bulk は data を返さないため DB から ID 取得）
+    $this->actingAs($this->user)->postJson('/meal-categories/bulk', [
+        'data' => [
+            ['name' => '朝食', 'colorId' => $this->yellowColorId, 'order' => 0],
+        ]
     ]);
-    $this->actingAs($this->user)->post('/meal-categories', [
-        'name' => '昼食',
-        'colorId' => $this->redColorId,
-        'order' => 1
+    $this->actingAs($this->user)->postJson('/meal-categories/bulk', [
+        'data' => [
+            ['name' => '昼食', 'colorId' => $this->redColorId, 'order' => 1],
+        ]
     ]);
     $mealCategory1Id = \App\Models\MealCategory::where('group_id', $this->group->id)->where('name', '朝食')->first()->id;
     $mealCategory2Id = \App\Models\MealCategory::where('group_id', $this->group->id)->where('name', '昼食')->first()->id;
@@ -840,10 +892,10 @@ test('3-5-25: 【一括更新】 一括更新成功メッセージの確認', fu
 
 test('3-5-26: 【一括更新】 一括更新後のデータ取得確認', function () {
     // テスト用の献立カテゴリをAPIで作成
-    $this->actingAs($this->user)->post('/meal-categories', [
-        'name' => '朝食',
-        'colorId' => $this->yellowColorId,
-        'order' => 0
+    $this->actingAs($this->user)->postJson('/meal-categories/bulk', [
+        'data' => [
+            ['name' => '朝食', 'colorId' => $this->yellowColorId, 'order' => 0],
+        ]
     ]);
     $mealCategory1Id = \App\Models\MealCategory::where('group_id', $this->group->id)->where('name', '朝食')->first()->id;
 
@@ -1363,10 +1415,10 @@ test('3-5-42: 【一括更新】 他グループの献立カテゴリ更新', fu
         'group_id' => $otherGroup->id
     ]);
 
-    $this->actingAs($otherUser)->post('/meal-categories', [
-        'name' => '他のグループの献立カテゴリ',
-        'colorId' => $this->yellowColorId,
-        'order' => 0
+    $this->actingAs($otherUser)->postJson('/meal-categories/bulk', [
+        'data' => [
+            ['name' => '他のグループの献立カテゴリ', 'colorId' => $this->yellowColorId, 'order' => 0],
+        ]
     ]);
     $othermealCategoryId = \App\Models\MealCategory::where('group_id', $otherGroup->id)->where('name', '他のグループの献立カテゴリ')->first()->id;
 
@@ -1465,11 +1517,11 @@ test('3-5-44: 【一括更新】 グループが存在しない', function () {
 });
 
 test('3-5-45: 【一括更新】 データベース接続エラー', function () {
-    // テスト用の献立カテゴリをAPIで作成（store は data を返さないため DB から ID 取得）
-    $this->actingAs($this->user)->post('/meal-categories', [
-        'name' => '朝食',
-        'colorId' => $this->yellowColorId,
-        'order' => 0
+    // テスト用の献立カテゴリをAPIで作成（bulk は data を返さないため DB から ID 取得）
+    $this->actingAs($this->user)->postJson('/meal-categories/bulk', [
+        'data' => [
+            ['name' => '朝食', 'colorId' => $this->yellowColorId, 'order' => 0],
+        ]
     ]);
     $mealCategory1Id = \App\Models\MealCategory::where('group_id', $this->group->id)->where('name', '朝食')->first()->id;
 
@@ -1509,11 +1561,11 @@ test('3-5-45: 【一括更新】 データベース接続エラー', function ()
 });
 
 test('3-5-46: 【一括更新】 献立カテゴリ更新失敗', function () {
-    // テスト用の献立カテゴリをAPIで作成（store は data を返さないため DB から ID 取得）
-    $this->actingAs($this->user)->post('/meal-categories', [
-        'name' => '朝食',
-        'colorId' => $this->yellowColorId,
-        'order' => 0
+    // テスト用の献立カテゴリをAPIで作成（bulk は data を返さないため DB から ID 取得）
+    $this->actingAs($this->user)->postJson('/meal-categories/bulk', [
+        'data' => [
+            ['name' => '朝食', 'colorId' => $this->yellowColorId, 'order' => 0],
+        ]
     ]);
     $mealCategory1Id = \App\Models\MealCategory::where('group_id', $this->group->id)->where('name', '朝食')->first()->id;
 
@@ -1552,23 +1604,23 @@ test('3-5-46: 【一括更新】 献立カテゴリ更新失敗', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-// ===== destroy() メソッドのテストケース =====
+// ===== bulkDestroy() メソッドのテストケース =====
 
 test('3-5-47: 【削除】 正常な献立カテゴリ削除', function () {
     // テスト用の献立カテゴリをAPIで作成
-    $this->actingAs($this->user)->post('/meal-categories', [
-        'name' => '朝食',
-        'colorId' => $this->yellowColorId,
-        'order' => 0
+    $this->actingAs($this->user)->postJson('/meal-categories/bulk', [
+        'data' => [
+            ['name' => '朝食', 'colorId' => $this->yellowColorId, 'order' => 0],
+        ]
     ]);
     $mealCategory1Id = \App\Models\MealCategory::where('group_id', $this->group->id)->where('name', '朝食')->first()->id;
 
-    $response = $this->actingAs($this->user)->delete("/meal-categories/{$mealCategory1Id}");
+    $response = $this->actingAs($this->user)->deleteJson('/meal-categories/bulk', ['ids' => [$mealCategory1Id]]);
 
     $response->assertStatus(200);
     $response->assertJson([
         'success' => true,
-        'message' => '献立カテゴリ(朝食)を削除しました。'
+        'message' => '献立カテゴリを1件削除しました。'
     ]);
 
     // データベースから削除されていることを確認
@@ -1588,29 +1640,29 @@ test('3-5-47: 【削除】 正常な献立カテゴリ削除', function () {
 
 test('3-5-48: 【削除】 削除後の order 整理確認', function () {
     // テスト用の献立カテゴリをAPIで作成
-    $this->actingAs($this->user)->post('/meal-categories', [
-        'name' => '朝食',
-        'colorId' => $this->yellowColorId,
-        'order' => 0
+    $this->actingAs($this->user)->postJson('/meal-categories/bulk', [
+        'data' => [
+            ['name' => '朝食', 'colorId' => $this->yellowColorId, 'order' => 0],
+        ]
     ]);
     $mealCategory1Id = \App\Models\MealCategory::where('group_id', $this->group->id)->where('name', '朝食')->first()->id;
 
-    $this->actingAs($this->user)->post('/meal-categories', [
-        'name' => '昼食',
-        'colorId' => $this->redColorId,
-        'order' => 1
+    $this->actingAs($this->user)->postJson('/meal-categories/bulk', [
+        'data' => [
+            ['name' => '昼食', 'colorId' => $this->redColorId, 'order' => 1],
+        ]
     ]);
     $mealCategory2Id = \App\Models\MealCategory::where('group_id', $this->group->id)->where('name', '昼食')->first()->id;
 
-    $this->actingAs($this->user)->post('/meal-categories', [
-        'name' => '夕食',
-        'colorId' => $this->blueColorId,
-        'order' => 2
+    $this->actingAs($this->user)->postJson('/meal-categories/bulk', [
+        'data' => [
+            ['name' => '夕食', 'colorId' => $this->blueColorId, 'order' => 2],
+        ]
     ]);
     $mealCategory3Id = \App\Models\MealCategory::where('group_id', $this->group->id)->where('name', '夕食')->first()->id;
 
     // 中間の献立カテゴリを削除
-    $response = $this->actingAs($this->user)->delete("/meal-categories/{$mealCategory2Id}");
+    $response = $this->actingAs($this->user)->deleteJson('/meal-categories/bulk', ['ids' => [$mealCategory2Id]]);
 
     $response->assertStatus(200);
 
@@ -1636,24 +1688,24 @@ test('3-5-48: 【削除】 削除後の order 整理確認', function () {
 
 test('3-5-49: 【削除】 削除成功メッセージの確認', function () {
     // テスト用の献立カテゴリをAPIで作成
-    $this->actingAs($this->user)->post('/meal-categories', [
-        'name' => '朝食',
-        'colorId' => $this->yellowColorId,
-        'order' => 0
+    $this->actingAs($this->user)->postJson('/meal-categories/bulk', [
+        'data' => [
+            ['name' => '朝食', 'colorId' => $this->yellowColorId, 'order' => 0],
+        ]
     ]);
     $mealCategory1Id = \App\Models\MealCategory::where('group_id', $this->group->id)->where('name', '朝食')->first()->id;
 
-    $response = $this->actingAs($this->user)->delete("/meal-categories/{$mealCategory1Id}");
+    $response = $this->actingAs($this->user)->deleteJson('/meal-categories/bulk', ['ids' => [$mealCategory1Id]]);
 
     $response->assertStatus(200);
 
     // メッセージが正しく設定されていることを確認
     $message = $response->json('message');
-    expect($message)->toBe('献立カテゴリ(朝食)を削除しました。');
+    expect($message)->toBe('献立カテゴリを1件削除しました。');
 });
 
 test('3-5-50: 【削除】 存在しない献立カテゴリ削除', function () {
-    $response = $this->actingAs($this->user)->delete('/meal-categories/00000000-0000-0000-0000-000000000000');
+    $response = $this->actingAs($this->user)->delete('/meal-categories/bulk', ['ids' => ['00000000-0000-0000-0000-000000000000']]);
 
     $response->assertStatus(404);
     $response->assertJson([
@@ -1680,14 +1732,14 @@ test('3-5-51: 【削除】 他グループの献立カテゴリ削除', function
         'group_id' => $otherGroup->id
     ]);
 
-    $this->actingAs($otherUser)->post('/meal-categories', [
-        'name' => '他のグループの献立カテゴリ',
-        'colorId' => $this->yellowColorId,
-        'order' => 0
+    $this->actingAs($otherUser)->postJson('/meal-categories/bulk', [
+        'data' => [
+            ['name' => '他のグループの献立カテゴリ', 'colorId' => $this->yellowColorId, 'order' => 0],
+        ]
     ]);
     $othermealCategoryId = \App\Models\MealCategory::where('group_id', $otherGroup->id)->where('name', '他のグループの献立カテゴリ')->first()->id;
 
-    $response = $this->actingAs($this->user)->delete("/meal-categories/{$othermealCategoryId}");
+    $response = $this->actingAs($this->user)->deleteJson('/meal-categories/bulk', ['ids' => [$othermealCategoryId]]);
 
     $response->assertStatus(404);
     $response->assertJson([
@@ -1706,7 +1758,7 @@ test('3-5-51: 【削除】 他グループの献立カテゴリ削除', function
 });
 
 test('3-5-52: 【削除】 未認証ユーザー', function () {
-    $response = $this->delete('/meal-categories/00000000-0000-0000-0000-000000000000');
+    $response = $this->deleteJson('/meal-categories/bulk', ['ids' => ['00000000-0000-0000-0000-000000000000']]);
 
     $response->assertStatus(401);
     $response->assertJson([
@@ -1730,7 +1782,7 @@ test('3-5-53: 【削除】 グループが存在しない', function () {
     ]);
     // グループに所属させない
 
-    $response = $this->actingAs($user)->delete('/meal-categories/00000000-0000-0000-0000-000000000000');
+    $response = $this->actingAs($user)->deleteJson('/meal-categories/bulk', ['ids' => ['00000000-0000-0000-0000-000000000000']]);
 
     $response->assertStatus(422);
     $response->assertJson([
@@ -1750,20 +1802,20 @@ test('3-5-53: 【削除】 グループが存在しない', function () {
 
 test('3-5-54: 【削除】 データベース接続エラー', function () {
     // テスト用の献立カテゴリをAPIで作成
-    $this->actingAs($this->user)->post('/meal-categories', [
-        'name' => '朝食',
-        'colorId' => $this->yellowColorId,
-        'order' => 0
+    $this->actingAs($this->user)->postJson('/meal-categories/bulk', [
+        'data' => [
+            ['name' => '朝食', 'colorId' => $this->yellowColorId, 'order' => 0],
+        ]
     ]);
     $mealCategory1Id = \App\Models\MealCategory::where('group_id', $this->group->id)->where('name', '朝食')->first()->id;
 
     // mealCategoryServiceをモックして例外を発生させる
     $this->mock(MealCategoryService::class, function ($mock) {
-        $mock->shouldReceive('delete')
+        $mock->shouldReceive('bulkDelete')
             ->once()->andThrow(new \Exception('Database connection failed'));
     });
 
-    $response = $this->actingAs($this->user)->delete("/meal-categories/{$mealCategory1Id}");
+    $response = $this->actingAs($this->user)->deleteJson('/meal-categories/bulk', ['ids' => [$mealCategory1Id]]);
 
     $response->assertStatus(500);
     $response->assertJson([
@@ -1783,20 +1835,20 @@ test('3-5-54: 【削除】 データベース接続エラー', function () {
 
 test('3-5-55: 【削除】 献立カテゴリ削除失敗', function () {
     // テスト用の献立カテゴリをAPIで作成
-    $this->actingAs($this->user)->post('/meal-categories', [
-        'name' => '朝食',
-        'colorId' => $this->yellowColorId,
-        'order' => 0
+    $this->actingAs($this->user)->postJson('/meal-categories/bulk', [
+        'data' => [
+            ['name' => '朝食', 'colorId' => $this->yellowColorId, 'order' => 0],
+        ]
     ]);
     $mealCategory1Id = \App\Models\MealCategory::where('group_id', $this->group->id)->where('name', '朝食')->first()->id;
 
     // mealCategoryServiceをモックして例外を発生させる
     $this->mock(MealCategoryService::class, function ($mock) {
-        $mock->shouldReceive('delete')
+        $mock->shouldReceive('bulkDelete')
             ->once()->andThrow(new \Exception('mealCategory delete failed'));
     });
 
-    $response = $this->actingAs($this->user)->delete("/meal-categories/{$mealCategory1Id}");
+    $response = $this->actingAs($this->user)->deleteJson('/meal-categories/bulk', ['ids' => [$mealCategory1Id]]);
 
     $response->assertStatus(500);
     $response->assertJson([

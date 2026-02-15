@@ -350,32 +350,6 @@
                         "sanctum": []
                     }
                 ]
-            },
-            "post": {
-                "tags": [
-                    "MealPlans"
-                ],
-                "summary": "献立カテゴリを作成",
-                "operationId": "5507f8d020066dacc5cd0de31893a88f",
-                "requestBody": {
-                    "$ref": "#/components/requestBodies/MealCategoryRequest"
-                },
-                "responses": {
-                    "200": {
-                        "$ref": "#/components/responses/MealCategoryStoreSuccess"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/NotFound"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
             }
         },
         "/meal-categories/bulk": {
@@ -404,23 +378,45 @@
                         "sanctum": []
                     }
                 ]
-            }
-        },
-        "/meal-categories/{id}": {
+            },
+            "post": {
+                "tags": [
+                    "MealPlans"
+                ],
+                "summary": "献立カテゴリを一括作成",
+                "operationId": "a855966bba37391811da98d7bf6e4a19",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/MealCategoryBulkStoreRequest"
+                },
+                "responses": {
+                    "201": {
+                        "$ref": "#/components/responses/MealCategoryBulkStoreSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
             "delete": {
                 "tags": [
                     "MealPlans"
                 ],
-                "summary": "献立カテゴリを削除",
-                "operationId": "a747cf41e12a8c3be60a81085a339829",
-                "parameters": [
-                    {
-                        "$ref": "#/components/parameters/MealCategoryIdParam"
-                    }
-                ],
+                "summary": "献立カテゴリを一括削除",
+                "operationId": "9f096e0f6e9ad75b542f604651f41814",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/MealCategoryBulkDestroyRequest"
+                },
                 "responses": {
                     "200": {
-                        "$ref": "#/components/responses/MealCategoryDestroySuccess"
+                        "$ref": "#/components/responses/MealCategoryBulkDestroySuccess"
                     },
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
@@ -651,32 +647,6 @@
                         "sanctum": []
                     }
                 ]
-            },
-            "post": {
-                "tags": [
-                    "Recipes"
-                ],
-                "summary": "料理カテゴリを作成",
-                "operationId": "7c0d5887e066bbbd483be977fde9190d",
-                "requestBody": {
-                    "$ref": "#/components/requestBodies/RecipeCategoryRequest"
-                },
-                "responses": {
-                    "200": {
-                        "$ref": "#/components/responses/RecipeCategoryStoreSuccess"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/NotFound"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
             }
         },
         "/recipe-categories/bulk": {
@@ -692,6 +662,32 @@
                 "responses": {
                     "200": {
                         "$ref": "#/components/responses/RecipeCategoryBulkUpdateSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Recipes"
+                ],
+                "summary": "料理カテゴリを一括作成",
+                "operationId": "928ac5db111be9ed03573e2c268fa5b8",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/RecipeCategoryBulkStoreRequest"
+                },
+                "responses": {
+                    "201": {
+                        "$ref": "#/components/responses/RecipeCategoryBulkStoreSuccess"
                     },
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
@@ -1889,6 +1885,64 @@
                 },
                 "type": "object"
             },
+            "MealCategoryBulkStoreRequest": {
+                "required": [
+                    "data"
+                ],
+                "properties": {
+                    "data": {
+                        "description": "作成する献立カテゴリの配列（1件以上）",
+                        "type": "array",
+                        "items": {
+                            "required": [
+                                "name",
+                                "colorId",
+                                "order"
+                            ],
+                            "properties": {
+                                "name": {
+                                    "description": "カテゴリ名",
+                                    "type": "string",
+                                    "example": "朝食"
+                                },
+                                "colorId": {
+                                    "description": "色ID",
+                                    "type": "string",
+                                    "format": "uuid",
+                                    "example": "a0fbbf74-1816-406e-99b7-7ef1e3e365f4"
+                                },
+                                "order": {
+                                    "description": "ソート順（0以上）",
+                                    "type": "integer",
+                                    "example": 1
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "minItems": 1
+                    }
+                },
+                "type": "object"
+            },
+            "MealCategoryBulkDestroyRequest": {
+                "required": [
+                    "ids"
+                ],
+                "properties": {
+                    "ids": {
+                        "description": "削除する献立カテゴリのID配列（1件以上）",
+                        "type": "array",
+                        "items": {
+                            "description": "献立カテゴリID",
+                            "type": "string",
+                            "format": "uuid",
+                            "example": "a0fbbf74-1816-406e-99b7-7ef1e3e365f4"
+                        },
+                        "minItems": 1
+                    }
+                },
+                "type": "object"
+            },
             "MealPlanIndexResponse": {
                 "allOf": [
                     {
@@ -2237,6 +2291,38 @@
                         "description": "並び順",
                         "type": "integer",
                         "example": 1
+                    }
+                },
+                "type": "object"
+            },
+            "RecipeCategoryBulkStoreRequest": {
+                "required": [
+                    "data"
+                ],
+                "properties": {
+                    "data": {
+                        "description": "作成する料理カテゴリの配列（1件以上）",
+                        "type": "array",
+                        "items": {
+                            "required": [
+                                "name",
+                                "order"
+                            ],
+                            "properties": {
+                                "name": {
+                                    "description": "カテゴリ名",
+                                    "type": "string",
+                                    "example": "和食"
+                                },
+                                "order": {
+                                    "description": "並び順（0以上）",
+                                    "type": "integer",
+                                    "example": 0
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "minItems": 1
                     }
                 },
                 "type": "object"
@@ -3290,8 +3376,8 @@
                     }
                 }
             },
-            "MealCategoryStoreSuccess": {
-                "description": "献立カテゴリ(朝食)を作成しました。",
+            "MealCategoryBulkStoreSuccess": {
+                "description": "献立カテゴリを3件作成しました。",
                 "content": {
                     "application/json": {
                         "schema": {
@@ -3310,8 +3396,8 @@
                     }
                 }
             },
-            "MealCategoryDestroySuccess": {
-                "description": "献立カテゴリ(昼食)を削除しました。",
+            "MealCategoryBulkDestroySuccess": {
+                "description": "献立カテゴリを2件削除しました。",
                 "content": {
                     "application/json": {
                         "schema": {
@@ -3382,6 +3468,16 @@
             },
             "RecipeCategoryStoreSuccess": {
                 "description": "料理カテゴリー(和食)を作成しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/BaseApiResponse"
+                        }
+                    }
+                }
+            },
+            "RecipeCategoryBulkStoreSuccess": {
+                "description": "料理カテゴリーを○件作成しました。",
                 "content": {
                     "application/json": {
                         "schema": {
@@ -3878,6 +3974,17 @@
                     }
                 }
             },
+            "MealCategoryBulkStoreRequest": {
+                "description": "献立カテゴリ一括作成。data は1件以上必須。",
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/MealCategoryBulkStoreRequest"
+                        }
+                    }
+                }
+            },
             "MealCategoryBulkUpdateRequest": {
                 "required": true,
                 "content": {
@@ -3897,22 +4004,12 @@
                 }
             },
             "MealCategoryBulkDestroyRequest": {
+                "description": "献立カテゴリ一括削除。ids は1件以上必須。",
                 "required": true,
                 "content": {
                     "application/json": {
                         "schema": {
-                            "properties": {
-                                "ids": {
-                                    "description": "削除する献立カテゴリのID配列",
-                                    "type": "array",
-                                    "items": {
-                                        "description": "献立カテゴリID",
-                                        "type": "string",
-                                        "example": "2"
-                                    }
-                                }
-                            },
-                            "type": "object"
+                            "$ref": "#/components/schemas/MealCategoryBulkDestroyRequest"
                         }
                     }
                 }
@@ -3935,6 +4032,17 @@
                     "application/json": {
                         "schema": {
                             "$ref": "#/components/schemas/RecipeCategoryRequest"
+                        }
+                    }
+                }
+            },
+            "RecipeCategoryBulkStoreRequest": {
+                "description": "料理カテゴリ一括作成。data は1件以上必須。",
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/RecipeCategoryBulkStoreRequest"
                         }
                     }
                 }
