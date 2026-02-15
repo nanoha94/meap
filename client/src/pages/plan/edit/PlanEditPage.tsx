@@ -144,7 +144,13 @@ const PlanEditPage = ({ selectedDate, fetchMealPlan, errorMessage }: Props) => {
         <>
             <Header hasBackButton={true} leftContent={
                 <div className="items-center gap-x-4 whitespace-nowrap w-[300px] hidden md:flex">
-                    <StyledDatePicker value={new Date(selectedDate)} onChange={handleChangeDate} />
+                    <StyledDatePicker
+                        value={(() => {
+                            const d = new Date(selectedDate);
+                            return Number.isNaN(d.getTime()) ? new Date() : d;
+                        })()}
+                        onChange={handleChangeDate}
+                    />
                 </div>
             } rightContent={
                 <HeaderTextButton type={BUTTON_TYPE.SUBMIT} form="plan-edit-form" colorVariant={COLOR_VARIANT.SECONDARY} disabled={isDisabledSendButton(tmpItems)}>

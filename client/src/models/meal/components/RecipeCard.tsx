@@ -21,12 +21,12 @@ const RecipeCard = ({ recipe, isGrippable = false, hasDeleteButton = false, onDe
             {isGrippable && <GripVertical color={colors.gray.main} className="pt-1" />}
             <div className="relative flex-1">
                 <div className="relative w-full h-auto aspect-[4/3] bg-gray-light rounded shadow-card md:rounded-lg overflow-hidden">
-                    {recipe.thumbnail ? (
+                    {recipe.recipeThumbnail ? (
                         <Image
-                            src={recipe.thumbnail.src}
-                            alt={recipe.name}
-                            width={recipe.thumbnail.width}
-                            height={recipe.thumbnail.height}
+                            src={recipe.recipeThumbnail.src}
+                            alt={recipe.recipeName}
+                            width={recipe.recipeThumbnail.width}
+                            height={recipe.recipeThumbnail.height}
                             className="absolute top-0 left-0 object-cover"
                         />
                     ) : (
@@ -38,7 +38,7 @@ const RecipeCard = ({ recipe, isGrippable = false, hasDeleteButton = false, onDe
                     )}
 
                     <div className="absolute bottom-0 left-0 px-2 pt-2 pb-1 w-full leading-none bg-gradient-to-b from-white/0 via-white/80 to-white">
-                        <span className="text-xs font-bold">{recipe.name}</span>
+                        <span className="text-xs font-bold">{recipe.recipeName}</span>
                     </div>
                 </div>
                 {hasDeleteButton && (

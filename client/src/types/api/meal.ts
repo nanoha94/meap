@@ -46,13 +46,13 @@ export interface IMealCategory {
 }
 
 export interface IMealPlanItem {
-    id: string;                  // 献立ID
-    recipeId: string;            // レシピID
-    name: string;                // レシピ/料理名
-    thumbnail: IImage | null;    // レシピ/料理サムネイル画像
-    categoryId: string;          // 献立カテゴリID
-    order: number;               // 表示順
-    recipeOrder: number;         // 1食内のレシピ並び順
+    id: string;                        // 献立1品のID（pivot）
+    categoryId: string;                // 献立カテゴリID
+    order: number;                     // 表示順
+    recipeId: string;                  // レシピID
+    recipeName: string;                // レシピ/料理名
+    recipeThumbnail: IImage | null;    // レシピ/料理サムネイル画像
+    recipeOrder: number;               // レシピ/料理並び順
 }
 
 export interface IMealPlan {

@@ -276,9 +276,9 @@ class MealPlanService extends AbstractDomainService
     {
         return $recipes->map(fn(Recipe $recipe) => [
             'recipeId' => $recipe->id,
+            'recipeName' => $recipe->name,
+            'recipeThumbnail' => $this->imageService->formatImage($recipe->thumbnails->first()),
             'recipeOrder' => (int) ($recipe->pivot->order ?? 0),
-            'name' => $recipe->name,
-            'thumbnail' => $this->imageService->formatImage($recipe->thumbnails->first()),
         ])->values()->toArray();
     }
 

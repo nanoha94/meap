@@ -60,11 +60,12 @@ const MealCardField = ({ mealCategory, mealPlanItems, addItem, deleteItem }: Pro
         if (selectedRecipeInDialog === null) return;
         addItem({
             id: `${prefix}${Date.now()}`,
-            recipeId: selectedRecipeInDialog.id,
-            name: selectedRecipeInDialog.name,
-            thumbnail: selectedRecipeInDialog.thumbnail,
             categoryId: mealCategory.id,
             order: mealPlanItems.length,
+            recipeId: selectedRecipeInDialog.id,
+            recipeName: selectedRecipeInDialog.name,
+            recipeThumbnail: selectedRecipeInDialog.thumbnail,
+            recipeOrder: mealPlanItems.length,
         });
         closeDialog();
     }, [selectedRecipeInDialog, closeDialog]);

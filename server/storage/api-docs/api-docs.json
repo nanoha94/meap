@@ -2070,7 +2070,7 @@
                     "id",
                     "recipeId",
                     "recipeOrder",
-                    "name",
+                    "recipeName",
                     "categoryId",
                     "order"
                 ],
@@ -2080,22 +2080,27 @@
                         "type": "string",
                         "example": "1"
                     },
+                    "categoryId": {
+                        "description": "献立カテゴリID",
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "order": {
+                        "description": "表示順",
+                        "type": "integer",
+                        "example": 0
+                    },
                     "recipeId": {
                         "description": "レシピID",
                         "type": "string",
                         "format": "uuid"
                     },
-                    "recipeOrder": {
-                        "description": "1食内のレシピ並び順（0始まり）",
-                        "type": "integer",
-                        "example": 0
-                    },
-                    "name": {
+                    "recipeName": {
                         "description": "料理名",
                         "type": "string",
                         "example": "ハンバーグ"
                     },
-                    "thumbnail": {
+                    "recipeThumbnail": {
                         "oneOf": [
                             {
                                 "$ref": "#/components/schemas/Image"
@@ -2104,13 +2109,8 @@
                         "nullable": true,
                         "description": "サムネイル画像情報"
                     },
-                    "categoryId": {
-                        "description": "献立カテゴリID",
-                        "type": "string",
-                        "format": "uuid"
-                    },
-                    "order": {
-                        "description": "表示順",
+                    "recipeOrder": {
+                        "description": "1食内のレシピ並び順（0始まり）",
                         "type": "integer",
                         "example": 0
                     }

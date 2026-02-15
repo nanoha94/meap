@@ -31,11 +31,11 @@ const PlanCalendarPage = ({ fetchMealPlans, errorMessage, year, month }: Props) 
     const dots = React.useMemo(() => {
         const daysInMonth = 31;
         const result: string[][] = Array.from({ length: daysInMonth }, () => []);
-        fetchMealPlans.forEach(mealPlan => {
+        (fetchMealPlans ?? []).forEach(mealPlan => {
             const day = dayjs(mealPlan.date).date();
             const index = day - 1;
             if (index >= 0 && index < daysInMonth) {
-                const colors = mealPlan.meals.map(meal => mealCategories.find(c => c.id === meal.categoryId)?.colorCodeHex ?? '');
+                const colors = mealPlan?.meals?.map(meal => mealCategories?.find(c => c.id === meal.categoryId)?.colorCodeHex ?? '');
                 result[index] = Array.from(new Set(colors));
             }
         });
@@ -47,7 +47,7 @@ const PlanCalendarPage = ({ fetchMealPlans, errorMessage, year, month }: Props) 
      * @returns IMealPlan | undefined
      */
     const mealPlan: IMealPlan | undefined = React.useMemo(() => {
-        return fetchMealPlans.find(v => v.date === selectedDate.format('YYYY-MM-DD'));
+        return fetchMealPlans?.find(v => v.date === selectedDate.format('YYYY-MM-DD'));
     }, [fetchMealPlans, selectedDate]);
 
     /**
@@ -93,7 +93,7 @@ const PlanCalendarPage = ({ fetchMealPlans, errorMessage, year, month }: Props) 
                 <div className="py-5 flex flex-col gap-y-3">
                     <div className={`px-3 text-base font-bold ${getDayOfWeekTextColor(selectedDate.day())}`}>{selectedDate.locale('ja').format('MM/DD')}<span className="ml-1 text-xs">{selectedDate.locale('ja').format('(ddd)')}</span>
                     </div>
-                    {mealPlan && mealCategories.map(v => {
+                    {mealPlan && mealCategories?.map(v => {
                         const mealPlanItems = mealPlan.meals.filter(m => m.categoryId === v.id);
                         return mealPlanItems && mealPlanItems.length > 0 &&
                             <MealCard key={v.id} mealPlanId={mealPlan.id} mealPlanItems={mealPlanItems} mealCategory={v} editPagePath={editPagePath} />;

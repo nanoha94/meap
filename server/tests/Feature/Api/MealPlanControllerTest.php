@@ -234,7 +234,7 @@ test('3-5-1: 【一覧取得】 正常な献立一覧取得', function () {
         'total' => 1
     ]);
 
-    // レスポンス構造の確認（meals は MealPlanItem のフラット配列: id, recipeId, name, thumbnail, categoryId, order, recipeOrder）
+    // レスポンス構造の確認（meals は MealPlanItem のフラット配列: id, recipeId, recipeName, recipeThumbnail, categoryId, order, recipeOrder）
     $response->assertJsonStructure([
         'success',
         'message',
@@ -246,8 +246,8 @@ test('3-5-1: 【一覧取得】 正常な献立一覧取得', function () {
                     '*' => [
                         'id',
                         'recipeId',
-                        'name',
-                        'thumbnail',
+                        'recipeName',
+                        'recipeThumbnail',
                         'categoryId',
                         'order',
                         'recipeOrder',
@@ -286,11 +286,11 @@ test('3-5-2: 【一覧取得】 献立データの日付別グループ化確認
     expect($dates)->toContain('2024-01-15');
     expect($dates)->toContain('2024-01-16');
 
-    // 2024-01-15 には2件の献立（meal plan）があり、フラット配列ではその日の全 MealPlanItem が2件（id, recipeId, name, thumbnail, categoryId, order）
+    // 2024-01-15 には2件の献立（meal plan）があり、フラット配列ではその日の全 MealPlanItem が2件（id, recipeId, recipeName, recipeThumbnail, categoryId, order, recipeOrder）
     $date20240115 = collect($responseData)->firstWhere('date', '2024-01-15');
     expect($date20240115['meals'])->toHaveCount(2);
     foreach ($date20240115['meals'] as $item) {
-        expect($item)->toHaveKeys(['id', 'recipeId', 'name', 'thumbnail', 'categoryId', 'order']);
+        expect($item)->toHaveKeys(['id', 'recipeId', 'recipeName', 'recipeThumbnail', 'categoryId', 'order', 'recipeOrder']);
     }
 });
 
@@ -1315,7 +1315,7 @@ test('3-5-39: 【詳細取得】 正常な献立詳細取得', function () {
         'message' => '献立を取得しました。'
     ]);
 
-    // data.meals は MealPlanItem のフラット配列（id, recipeId, name, thumbnail, categoryId, order, recipeOrder）
+    // data.meals は MealPlanItem のフラット配列（id, recipeId, recipeName, recipeThumbnail, categoryId, order, recipeOrder）
     $response->assertJsonStructure([
         'success',
         'message',
@@ -1326,8 +1326,8 @@ test('3-5-39: 【詳細取得】 正常な献立詳細取得', function () {
                 '*' => [
                     'id',
                     'recipeId',
-                    'name',
-                    'thumbnail',
+                    'recipeName',
+                    'recipeThumbnail',
                     'categoryId',
                     'order',
                     'recipeOrder',

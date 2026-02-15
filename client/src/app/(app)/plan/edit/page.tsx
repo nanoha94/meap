@@ -40,7 +40,8 @@ const Page = async ({ searchParams }: Props) => {
 
     return (
         <React.Suspense fallback={<Loading />}>
-            <PageWithData date={date} />
+            {/* // プリレンダ時や date 未指定時は今日の日付を使用（Invalid time value を防ぐ） */}
+            <PageWithData date={date ?? new Date().toISOString().slice(0, 10)} />
         </React.Suspense>
     );
 };
