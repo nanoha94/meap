@@ -27,7 +27,12 @@ export type IDeleteMealPlanResponse = IBaseApiResponse;
 export interface IPostPutMealPlanRequest {
     id?: string;
     date?: string;
-    meals: { id?: string; categoryId: string; recipeIds: string[], order: number }[];
+    meals: {
+        id?: string;
+        categoryId: string;
+        recipes: { id: string, order: number }[],
+        order: number
+    }[];
 }
 
 //--------------------------------
@@ -47,6 +52,7 @@ export interface IMealPlanItem {
     thumbnail: IImage | null;    // レシピ/料理サムネイル画像
     categoryId: string;          // 献立カテゴリID
     order: number;               // 表示順
+    recipeOrder: number;         // 1食内のレシピ並び順
 }
 
 export interface IMealPlan {
@@ -54,3 +60,4 @@ export interface IMealPlan {
     date: string;
     meals: IMealPlanItem[];
 }
+

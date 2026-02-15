@@ -1772,7 +1772,7 @@
                         "items": {
                             "required": [
                                 "categoryId",
-                                "recipeIds",
+                                "recipes",
                                 "order"
                             ],
                             "properties": {
@@ -1794,15 +1794,30 @@
                                     "type": "integer",
                                     "example": 0
                                 },
-                                "recipeIds": {
-                                    "description": "料理IDの配列（1件以上必須）",
+                                "recipes": {
+                                    "description": "料理一覧（1件以上必須）。各要素の order が1食内の並び順（0始まり）",
                                     "type": "array",
                                     "items": {
-                                        "description": "料理ID",
-                                        "type": "string",
-                                        "format": "uuid",
-                                        "example": "a0fbbf74-1816-406e-99b7-7ef1e3e365f4"
-                                    }
+                                        "required": [
+                                            "id",
+                                            "order"
+                                        ],
+                                        "properties": {
+                                            "id": {
+                                                "description": "レシピID",
+                                                "type": "string",
+                                                "format": "uuid",
+                                                "example": "a0fbbf74-1816-406e-99b7-7ef1e3e365f4"
+                                            },
+                                            "order": {
+                                                "description": "1食内の並び順（0以上）",
+                                                "type": "integer",
+                                                "example": 0
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "minItems": 1
                                 }
                             },
                             "type": "object"
@@ -1822,7 +1837,7 @@
                         "items": {
                             "required": [
                                 "categoryId",
-                                "recipeIds",
+                                "recipes",
                                 "order"
                             ],
                             "properties": {
@@ -1844,15 +1859,30 @@
                                     "type": "integer",
                                     "example": 0
                                 },
-                                "recipeIds": {
-                                    "description": "料理IDの配列（1件以上必須）",
+                                "recipes": {
+                                    "description": "料理一覧（1件以上必須）。各要素の order が1食内の並び順（0始まり）",
                                     "type": "array",
                                     "items": {
-                                        "description": "料理ID",
-                                        "type": "string",
-                                        "format": "uuid",
-                                        "example": "a0fbbf74-1816-406e-99b7-7ef1e3e365f4"
-                                    }
+                                        "required": [
+                                            "id",
+                                            "order"
+                                        ],
+                                        "properties": {
+                                            "id": {
+                                                "description": "レシピID",
+                                                "type": "string",
+                                                "format": "uuid",
+                                                "example": "a0fbbf74-1816-406e-99b7-7ef1e3e365f4"
+                                            },
+                                            "order": {
+                                                "description": "1食内の並び順（0以上）",
+                                                "type": "integer",
+                                                "example": 0
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "minItems": 1
                                 }
                             },
                             "type": "object"
@@ -2039,6 +2069,7 @@
                 "required": [
                     "id",
                     "recipeId",
+                    "recipeOrder",
                     "name",
                     "categoryId",
                     "order"
@@ -2053,6 +2084,11 @@
                         "description": "レシピID",
                         "type": "string",
                         "format": "uuid"
+                    },
+                    "recipeOrder": {
+                        "description": "1食内のレシピ並び順（0始まり）",
+                        "type": "integer",
+                        "example": 0
                     },
                     "name": {
                         "description": "料理名",

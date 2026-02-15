@@ -20,13 +20,14 @@ class MealPlanStoreRequest extends BaseApiRequest
             'meals.*.id' => 'uuid|nullable',
             'meals.*.categoryId' => 'uuid|required',
             'meals.*.order' => 'integer|min:0|required',
-            'meals.*.recipeIds' => 'array|min:1|required',
-            'meals.*.recipeIds.*' => 'uuid|required',
+            'meals.*.recipes' => 'array|min:1|required',
+            'meals.*.recipes.*.id' => 'uuid|required',
+            'meals.*.recipes.*.order' => 'integer|min:0|required',
         ];
     }
 
     /**
-     * Configure the validator (distinct per meal: 同一 meal 内の recipeIds のみ重複チェック).
+     * Configure the validator (distinct per meal: 同一 meal 内の recipes.*.id の重複チェック).
      */
     public function withValidator($validator): void
     {
@@ -36,16 +37,20 @@ class MealPlanStoreRequest extends BaseApiRequest
                 return;
             }
             foreach ($meals as $mealIndex => $meal) {
-                $recipeIds = $meal['recipeIds'] ?? [];
-                if (! is_array($recipeIds)) {
+                $recipes = $meal['recipes'] ?? [];
+                if (! is_array($recipes)) {
                     continue;
                 }
                 $seen = [];
-                foreach ($recipeIds as $idx => $id) {
+                foreach ($recipes as $idx => $item) {
+                    $id = is_array($item) ? ($item['id'] ?? null) : null;
+                    if ($id === null) {
+                        continue;
+                    }
                     if (isset($seen[$id])) {
                         $validator->errors()->add(
-                            "meals.{$mealIndex}.recipeIds.{$idx}",
-                            __('validation.distinct', ['attribute' => 'meals.*.recipeIds.*'])
+                            "meals.{$mealIndex}.recipes.{$idx}.id",
+                            __('validation.distinct', ['attribute' => 'meals.*.recipes.*.id'])
                         );
                     } else {
                         $seen[$id] = $idx;
@@ -74,12 +79,15 @@ class MealPlanStoreRequest extends BaseApiRequest
             'meals.*.order.integer' => __('validation.integer', ['attribute' => 'meals.*.order']),
             'meals.*.order.min' => __('validation.min.numeric', ['attribute' => 'meals.*.order', 'min' => 0]),
             'meals.*.order.required' => __('validation.required', ['attribute' => 'meals.*.order']),
-            'meals.*.recipeIds.array' => __('validation.array', ['attribute' => 'meals.*.recipeIds']),
-            'meals.*.recipeIds.min' => __('validation.min.array', ['attribute' => 'meals.*.recipeIds', 'min' => 1]),
-            'meals.*.recipeIds.required' => __('validation.required', ['attribute' => 'meals.*.recipeIds']),
-            'meals.*.recipeIds.*.uuid' => __('validation.uuid', ['attribute' => 'meals.*.recipeIds.*']),
-            'meals.*.recipeIds.*.required' => __('validation.required', ['attribute' => 'meals.*.recipeIds.*']),
-            'meals.*.recipeIds.*.distinct' => __('validation.distinct', ['attribute' => 'meals.*.recipeIds.*']),
+            'meals.*.recipes.array' => __('validation.array', ['attribute' => 'meals.*.recipes']),
+            'meals.*.recipes.min' => __('validation.min.array', ['attribute' => 'meals.*.recipes', 'min' => 1]),
+            'meals.*.recipes.required' => __('validation.required', ['attribute' => 'meals.*.recipes']),
+            'meals.*.recipes.*.id.uuid' => __('validation.uuid', ['attribute' => 'meals.*.recipes.*.id']),
+            'meals.*.recipes.*.id.required' => __('validation.required', ['attribute' => 'meals.*.recipes.*.id']),
+            'meals.*.recipes.*.order.integer' => __('validation.integer', ['attribute' => 'meals.*.recipes.*.order']),
+            'meals.*.recipes.*.order.min' => __('validation.min.numeric', ['attribute' => 'meals.*.recipes.*.order', 'min' => 0]),
+            'meals.*.recipes.*.order.required' => __('validation.required', ['attribute' => 'meals.*.recipes.*.order']),
+            'meals.*.recipes.*.id.distinct' => __('validation.distinct', ['attribute' => 'meals.*.recipes.*.id']),
         ];
     }
 

@@ -37,10 +37,12 @@ class Meal extends Model
     }
 
     /**
-     * レシピを取得する
+     * レシピを取得する（1食内の並び順は pivot の order で昇順）
      */
     public function recipes(): BelongsToMany
     {
-        return $this->belongsToMany(Recipe::class, 'meal_recipe_mappings', 'meal_id', 'recipe_id');
+        return $this->belongsToMany(Recipe::class, 'meal_recipe_mappings', 'meal_id', 'recipe_id')
+            ->withPivot('order')
+            ->orderByPivot('order');
     }
 }

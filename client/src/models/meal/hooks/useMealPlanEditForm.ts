@@ -74,25 +74,29 @@ export const useMealPlanEditForm = (selectedDate: string, fetchMealPlan?: IMealP
                         id: meal.id,
                         categoryId: meal.categoryId,
                         order: meal.order,
-                        recipeIds: [],
+                        recipes: [],
                     };
                 }
-                acc[key].recipeIds.push(meal.recipeId);
+                acc[key].recipes.push({ id: meal.recipeId, order: acc[key].recipes.length });
                 return acc;
             },
             {} as Record<
                 string,
-                { id: string; categoryId: string; order: number; recipeIds: string[] }
+                {
+                    id: string;
+                    categoryId: string;
+                    order: number;
+                    recipes: { id: string, order: number }[]
+                }
             >,
         );
 
         // 送信データを作成（id, dateを除く）
-        // TODO: APIを修正しないとorderが反映されない
         const sendData: IPostPutMealPlanRequest = {
             meals: Object.values(groupedByCategoryId).map((v, idx) => ({
                 id: v.id?.startsWith(TMP_ID_PREFIX.MEAL_PLAN_ITEM) ? '' : v.id,
                 categoryId: v.categoryId,
-                recipeIds: v.recipeIds,
+                recipes: v.recipes,
                 order: idx,
             })),
         };

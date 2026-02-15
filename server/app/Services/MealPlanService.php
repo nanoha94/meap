@@ -203,7 +203,7 @@ class MealPlanService extends AbstractDomainService
                         $updateData[$field] = $mealData[$dataKey];
                     }
                     $meal->update($updateData);
-                    $this->syncRecipes($meal, $mealData['recipeIds'], $group);
+                    $this->syncRecipes($meal, $mealData['recipes'], $group);
                     $idsToKeep[] = $meal->id;
                 }
                 // 既存の献立がない場合は作成
@@ -268,14 +268,15 @@ class MealPlanService extends AbstractDomainService
     }
 
     /**
-     * 献立用にレシピをフォーマット（MealPlanItem 形式: id, recipeId, name, thumbnail のみ）
-     * @param Collection $recipes
+     * 献立用にレシピをフォーマット（MealPlanItem 形式: id, recipeId, recipeOrder, name, thumbnail）
+     * @param Collection $recipes orderByPivot('order') 済みのコレクション
      * @return array
      */
     private function formatRecipes(Collection $recipes): array
     {
         return $recipes->map(fn(Recipe $recipe) => [
             'recipeId' => $recipe->id,
+            'recipeOrder' => (int) ($recipe->pivot->order ?? 0),
             'name' => $recipe->name,
             'thumbnail' => $this->imageService->formatImage($recipe->thumbnails->first()),
         ])->values()->toArray();
@@ -293,15 +294,16 @@ class MealPlanService extends AbstractDomainService
         $categoryIds = array_unique(array_column($meals, 'categoryId'));
         $this->mealCategoryService->findItemsByIds($categoryIds, $group);
 
-        // レシピの存在チェック
-        $allRecipeIds = array_unique(array_merge(...array_column($meals, 'recipeIds')));
+        // レシピの存在チェック（meals[].recipes[].id から集約）
+        $allRecipes = array_merge(...array_map(fn(array $m) => $m['recipes'] ?? [], $meals));
+        $allRecipeIds = array_unique(array_column($allRecipes, 'id'));
         $this->recipeService->findItemsByIds($allRecipeIds, $group);
     }
 
     /**
      * 献立に1食を追加して作成
      * @param MealPlan $mealPlan 献立
-     * @param array $mealData リクエストの1食分データ（categoryId, order, recipeIds）
+     * @param array $mealData リクエストの1食分データ（categoryId, order, recipes: [{ id, order }]）
      * @param Group $group グループ
      * @return Meal 作成した食事
      */
@@ -312,21 +314,21 @@ class MealPlanService extends AbstractDomainService
             $createData[$field] = $mealData[$dataKey];
         }
         $meal = Meal::create($createData);
-        $this->syncRecipes($meal, $mealData['recipeIds'], $group);
+        $this->syncRecipes($meal, $mealData['recipes'], $group);
 
         return $meal;
     }
 
     /**
-     * 献立にレシピを同期
+     * 献立にレシピを同期（pivot の order を保存）
      * @param Meal $meal
-     * @param array $recipeIds
+     * @param array $recipes 各要素は ['id' => string, 'order' => int]
      * @param Group $group
      * @return void
      */
-    private function syncRecipes(Meal $meal, array $recipeIds, Group $group): void
+    private function syncRecipes(Meal $meal, array $recipes, Group $group): void
     {
-        $recipeIds = array_values(array_unique($recipeIds));
+        $recipeIds = array_values(array_unique(array_column($recipes, 'id')));
 
         if (empty($recipeIds)) {
             $meal->recipes()->sync([]);
@@ -334,6 +336,11 @@ class MealPlanService extends AbstractDomainService
         }
 
         $this->recipeService->findItemsByIds($recipeIds, $group);
-        $meal->recipes()->sync($recipeIds);
+
+        $syncData = [];
+        foreach ($recipes as $item) {
+            $syncData[$item['id']] = ['order' => $item['order']];
+        }
+        $meal->recipes()->sync($syncData);
     }
 }

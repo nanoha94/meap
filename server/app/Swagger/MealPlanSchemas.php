@@ -17,9 +17,10 @@ namespace App\Swagger;
  *
  * @OA\Schema(
  *     schema="MealPlanItem",
- *     required={"id", "recipeId", "name", "categoryId", "order"},
+ *     required={"id", "recipeId", "recipeOrder", "name", "categoryId", "order"},
  *     @OA\Property(property="id", type="string", description="レシピID", example="1"),
  *     @OA\Property(property="recipeId", type="string", format="uuid", description="レシピID"),
+ *     @OA\Property(property="recipeOrder", type="integer", description="1食内のレシピ並び順（0始まり）", example=0),
  *     @OA\Property(property="name", type="string", description="料理名", example="ハンバーグ"),
  *     @OA\Property(property="thumbnail", ref="#/components/schemas/Image", nullable=true, description="サムネイル画像情報"),
  *     @OA\Property(property="categoryId", type="string", format="uuid", description="献立カテゴリID"),

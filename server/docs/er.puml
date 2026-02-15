@@ -76,6 +76,7 @@ entity groups #LightBlue {
 }
 
 entity meal_recipe_mappings {
+    * order : int / ソート順
     * meal_id : string <<FK>>
     * recipe_id : string <<FK>>
 }

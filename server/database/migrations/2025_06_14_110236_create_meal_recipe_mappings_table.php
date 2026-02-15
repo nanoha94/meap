@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('meal_recipe_mappings', function (Blueprint $table) {
+            $table->unsignedInteger('order')->default(0);
             $table->foreignUuid('meal_id')->constrained('meals', 'id')->cascadeOnDelete();
             $table->foreignUuid('recipe_id')->constrained('recipes', 'id')->cascadeOnDelete();
             $table->primary(['meal_id', 'recipe_id']);
