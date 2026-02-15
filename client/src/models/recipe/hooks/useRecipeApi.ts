@@ -43,13 +43,13 @@ export const useRecipeApi = () => {
     const router = useRouter();
     const { addSnackbar } = useSnackbars();
     const { handleApiError } = useApiErrorHandler();
-    
+
     // 重複リクエスト防止用のフラグ
     const isFetchRequestRef = React.useRef(false);
     const isStoreRequestRef = React.useRef(false);
     const isUpdateRequestRef = React.useRef(false);
     const isDeleteRequestRef = React.useRef(false);
-    
+
     /**
      * 手順画像のアップロード
      * @param steps 手順リスト
@@ -92,9 +92,9 @@ export const useRecipeApi = () => {
                 ...step,
                 image: step.image
                     ? {
-                          ...step.image,
-                          id: uploadedImageMap.get(index) ?? step.image.id,
-                      }
+                        ...step.image,
+                        id: uploadedImageMap.get(index) ?? step.image.id,
+                    }
                     : null,
             }));
 
@@ -109,12 +109,12 @@ export const useRecipeApi = () => {
             if (isFetchRequestRef.current) {
                 return;
             }
-            
+
             try {
                 isFetchRequestRef.current = true;
                 incrementLoadingCount();
 
-                const  {data: responseData} = await axios.get('/recipes', {
+                const { data: responseData } = await axios.get('/recipes', {
                     timeout: TIMEOUT_MS,
                 });
                 if (responseData.success) {
@@ -162,7 +162,7 @@ export const useRecipeApi = () => {
                 }
 
                 // APIリクエスト
-                const {data: responseData} = await axios.post<IPostRecipeResponse>(
+                const { data: responseData } = await axios.post<IPostRecipeResponse>(
                     `/recipes`,
                     sendData,
                     {
@@ -174,7 +174,7 @@ export const useRecipeApi = () => {
                     addSnackbar(
                         'success',
                         responseData.message ??
-                            'リクエストが正常に完了しました',
+                        'リクエストが正常に完了しました',
                     );
                     await fetchRecipes();
                 }
@@ -220,7 +220,7 @@ export const useRecipeApi = () => {
                 }
 
                 // APIリクエスト
-                const {data: responseData} = await axios.put(`/recipes/${data.id}`, sendData, {
+                const { data: responseData } = await axios.put(`/recipes/${data.id}`, sendData, {
                     timeout: TIMEOUT_MS,
                 });
                 if (responseData.success) {
@@ -228,9 +228,9 @@ export const useRecipeApi = () => {
                     addSnackbar(
                         'success',
                         responseData.message ??
-                            'リクエストが正常に完了しました',
+                        'リクエストが正常に完了しました',
                     );
-                    
+
                     await fetchRecipes();
                 }
             } catch (error) {
@@ -252,7 +252,9 @@ export const useRecipeApi = () => {
         try {
             isDeleteRequestRef.current = true;
             incrementLoadingCount();
-            const {data: responseData} = await axios.delete(`/recipes/${id}`);
+            const { data: responseData } = await axios.delete(`/recipes/${id}`, {
+                timeout: TIMEOUT_MS,
+            });
             if (responseData.success) {
                 addSnackbar('success', responseData.message ?? 'リクエストが正常に完了しました');
                 router.push('/recipe/');

@@ -8,9 +8,8 @@ import { Header, MonthlyCalendar } from '@/components';
 import EmptyButton from '@/components/EmptyButton';
 import { getDayOfWeekTextColor } from '@/constants/calendar';
 import { useSnackbars } from '@/hooks';
-import { ActionButton, IMealPlan } from '@/types';
+import { IMealPlan } from '@/types';
 import { MealCard, useMealStore } from '@/models/meal';
-import { Pencil, Trash2 } from 'lucide-react';
 
 interface Props {
     fetchMealPlans: IMealPlan[];
@@ -47,7 +46,7 @@ const PlanCalendarPage = ({ fetchMealPlans, errorMessage, year, month }: Props) 
      * 選択された日付の献立表を取得
      * @returns IMealPlan | undefined
      */
-    const mealPlan = React.useMemo(() => {
+    const mealPlan: IMealPlan | undefined = React.useMemo(() => {
         return fetchMealPlans.find(v => v.date === selectedDate.format('YYYY-MM-DD'));
     }, [fetchMealPlans, selectedDate]);
 
@@ -79,27 +78,6 @@ const PlanCalendarPage = ({ fetchMealPlans, errorMessage, year, month }: Props) 
         }
     }, [errorMessage]);
 
-    /**
- * メニューボタン押下時に開くアクションボタン設定
- */
-    const actionButtonConfigs: ActionButton[] = [
-        {
-            label: '編集する',
-            icon: <Pencil />,
-            href: editPagePath,
-        },
-        {
-            label: '削除する',
-            icon: <Trash2 />,
-            onClick: () => {
-                // openAlertDialog(SHOPPING_ALERT_DIALOG_CONFIGS.deleteItem(name), () => {
-                //     deleteShoppingItems([id]);
-                // });
-                // TODO: 実装
-            },
-        },
-    ];
-
     return (
         <>
             <Header title="献立表" />
@@ -115,10 +93,10 @@ const PlanCalendarPage = ({ fetchMealPlans, errorMessage, year, month }: Props) 
                 <div className="py-5 flex flex-col gap-y-3">
                     <div className={`px-3 text-base font-bold ${getDayOfWeekTextColor(selectedDate.day())}`}>{selectedDate.locale('ja').format('MM/DD')}<span className="ml-1 text-xs">{selectedDate.locale('ja').format('(ddd)')}</span>
                     </div>
-                    {mealCategories?.map(v => {
-                        const recipes = mealPlan?.meals.filter(m => m.categoryId === v.id);
-                        return recipes && recipes.length > 0 &&
-                            <MealCard key={v.id} mealCategory={v} recipes={recipes} actionButtonConfigs={actionButtonConfigs} />;
+                    {mealPlan && mealCategories.map(v => {
+                        const mealPlanItems = mealPlan.meals.filter(m => m.categoryId === v.id);
+                        return mealPlanItems && mealPlanItems.length > 0 &&
+                            <MealCard key={v.id} mealPlanId={mealPlan.id} mealPlanItems={mealPlanItems} mealCategory={v} editPagePath={editPagePath} />;
                     })}
                     <div className="px-3 lg:px-0"><EmptyButton href={editPagePath} /></div>
                 </div>
