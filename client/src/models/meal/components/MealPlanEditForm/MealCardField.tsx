@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { Check } from "lucide-react";
+import { Check, Trash2 } from "lucide-react";
 import { rectSortingStrategy, SortableContext } from "@dnd-kit/sortable";
 import { useDroppable } from "@dnd-kit/core";
 
@@ -13,8 +13,7 @@ import RecipeCard from "../RecipeCard";
 
 interface Props {
     mealCategory: IMealCategory;
-    recipes: IMealPlanItem[];
-    actionButtonConfigs: ActionButton[];
+    mealPlanItems: IMealPlanItem[];
     addItem: (item: IMealPlanItem) => void;
     deleteItem: (item: IMealPlanItem) => void;
 }
@@ -22,7 +21,7 @@ interface Props {
 /**
  * 献立カードフィールド
  */
-const MealCardField = ({ mealCategory, recipes, actionButtonConfigs, addItem, deleteItem }: Props) => {
+const MealCardField = ({ mealCategory, mealPlanItems, addItem, deleteItem }: Props) => {
     const { fetchRecipes } = useRecipeApi();
     const { openDialog, closeDialog, updateCurrentDialogConfig } = useDialog();
     const [selectedRecipeInDialog, setSelectedRecipeInDialog] = React.useState<IRecipeListItem | null>(null);
@@ -30,6 +29,24 @@ const MealCardField = ({ mealCategory, recipes, actionButtonConfigs, addItem, de
         id: mealCategory.id,
     });
     const prefix = TMP_ID_PREFIX.MEAL_PLAN_ITEM;
+
+
+    /**
+    * メニューボタン押下時に開くアクションボタン設定
+    */
+    const actionButtonConfigs: ActionButton[] = [
+        {
+            label: '削除する',
+            icon: <Trash2 size={20} strokeWidth={2} />,
+            onClick: () => {
+                // フォームから削除する
+                mealPlanItems.forEach(item => {
+                    deleteItem(item);
+                });
+            },
+            color: COLOR_VARIANT.ALERT,
+        },
+    ];
 
     /**
      * 確定ボタンの無効化判定
@@ -47,7 +64,7 @@ const MealCardField = ({ mealCategory, recipes, actionButtonConfigs, addItem, de
             name: selectedRecipeInDialog.name,
             thumbnail: selectedRecipeInDialog.thumbnail,
             categoryId: mealCategory.id,
-            order: recipes.length,
+            order: mealPlanItems.length,
         });
         closeDialog();
     }, [selectedRecipeInDialog, closeDialog]);
@@ -65,7 +82,7 @@ const MealCardField = ({ mealCategory, recipes, actionButtonConfigs, addItem, de
             children: () => (
                 <RecipeSelect
                     selectedRecipe={selectedRecipeInDialog}
-                    disabledRecipes={recipes.map(item => item.recipeId)}
+                    disabledRecipes={mealPlanItems.map(item => item.recipeId)}
                     onSelectedRecipeChange={setSelectedRecipeInDialog}
                     onConfirm={handleConfirm}
                 />
@@ -87,11 +104,11 @@ const MealCardField = ({ mealCategory, recipes, actionButtonConfigs, addItem, de
                 )}
             </div>
             <SortableContext
-                items={recipes.map(item => item.recipeId)}
+                items={mealPlanItems.map(item => item.recipeId)}
                 id={mealCategory.id}
                 strategy={rectSortingStrategy}>
                 <div ref={setDroppableNodeRef} className="grid grid-cols-[repeat(auto-fill,_minmax(150px,_1fr))] md:grid-cols-[repeat(auto-fill,_minmax(180px,_1fr))] gap-5">
-                    {recipes.map((field) => (
+                    {mealPlanItems.map((field) => (
                         <Sortable key={field.recipeId} id={field.recipeId}>
                             <RecipeCard
                                 recipe={field}
@@ -113,7 +130,7 @@ const MealCardField = ({ mealCategory, recipes, actionButtonConfigs, addItem, de
                             children: () => (
                                 <RecipeSelect
                                     selectedRecipe={selectedRecipeInDialog}
-                                    disabledRecipes={recipes.map(item => item.recipeId)}
+                                    disabledRecipes={mealPlanItems.map(item => item.recipeId)}
                                     onSelectedRecipeChange={setSelectedRecipeInDialog}
                                     onConfirm={handleConfirm}
                                 />

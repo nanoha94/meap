@@ -75,7 +75,7 @@ const MenuButton = ({
                     onClick: () => setIsOpen(true),
                 })
             ) : (
-                <button onClick={() => setIsOpen(true)} className="p-1 appearance-none rounded-full transition-colors hover:bg-gray-light">
+                <button type="button" onClick={() => setIsOpen(true)} className="p-1 appearance-none rounded-full transition-colors hover:bg-gray-light">
                     <EllipsisVertical
                         color={colors.gray.main}
                         className={className}
@@ -115,6 +115,7 @@ const MenuButton = ({
                     const buttonAction = v as ActionButtonButton;
                     return (
                         <button
+                            type="button"
                             key={idx}
                             onClick={() => {
                                 buttonAction.onClick();

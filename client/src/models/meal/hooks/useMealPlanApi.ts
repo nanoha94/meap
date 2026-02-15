@@ -8,8 +8,6 @@ import axios from "@/lib/axios";
 import { useGlobalStore } from "@/stores";
 import { IPostMealPlanResponse, IPostPutMealPlanRequest, IPutMealPlanResponse } from "@/types";
 
-
-
 export const useMealPlanApi = () => {
     const { incrementLoadingCount, decrementLoadingCount } = useGlobalStore();
     const router = useRouter();
@@ -52,7 +50,7 @@ export const useMealPlanApi = () => {
                 // レスポンスデータ
                 const responseData: IPostMealPlanResponse = res.data;
                 if (responseData.success) {
-                    router.push('/plan/');
+                    router.refresh();
                     addSnackbar(
                         'success',
                         responseData.message ??
@@ -97,6 +95,7 @@ export const useMealPlanApi = () => {
                 // 日付を変更してもリロード（再データフェッチ）しないようにする
                 // planページでデータフェッチするのはyearかmonthが変更された場合のみ
                 // router.push(`/plan?date=${date}`);
+                router.refresh();
                 addSnackbar(
                     'success',
                     responseData.message ??

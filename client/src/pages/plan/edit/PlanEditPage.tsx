@@ -27,13 +27,13 @@ const PlanEditPage = ({ selectedDate, fetchMealPlan, errorMessage }: Props) => {
     const { incrementLoadingCount, resetLoadingCount } = useGlobalStore();
     const { mealCategories } = useMealStore();
     const { addSnackbar } = useSnackbars();
-    const { methods, onSubmit, fields, insert, replace, remove } = useMealPlanEditForm(selectedDate, fetchMealPlan);
+    const { methods, isDisabledSendButton, onSubmit, fields, insert, replace, remove } = useMealPlanEditForm(selectedDate, fetchMealPlan);
     const [tmpItems, setTmpItems] = React.useState<IMealPlanItem[]>([]);
 
     /**
-     * メニューボタン押下時に開くアクションボタン設定
+     * ヘッダーメニューボタン押下時に開くアクションボタン設定
      */
-    const actionButtonConfigs: ActionButton[] = [
+    const headerActionButtonConfigs: ActionButton[] = [
         {
             label: '削除する',
             icon: <Trash2 size={20} strokeWidth={2} />,
@@ -43,6 +43,7 @@ const PlanEditPage = ({ selectedDate, fetchMealPlan, errorMessage }: Props) => {
             color: COLOR_VARIANT.ALERT,
         },
     ];
+
 
     /**
   * ドラッグオーバー
@@ -146,11 +147,11 @@ const PlanEditPage = ({ selectedDate, fetchMealPlan, errorMessage }: Props) => {
                     <StyledDatePicker value={new Date(selectedDate)} onChange={handleChangeDate} />
                 </div>
             } rightContent={
-                <HeaderTextButton type={BUTTON_TYPE.SUBMIT} form="plan-edit-form" colorVariant={COLOR_VARIANT.SECONDARY}>
+                <HeaderTextButton type={BUTTON_TYPE.SUBMIT} form="plan-edit-form" colorVariant={COLOR_VARIANT.SECONDARY} disabled={isDisabledSendButton(tmpItems)}>
                     <Save size={20} strokeWidth={2} />
                     保存
-                </HeaderTextButton>}
-                actionButtons={actionButtonConfigs}
+                </HeaderTextButton >}
+                actionButtons={headerActionButtonConfigs}
             />
             <main className="p-5 pb-[60px] md:px-10 max-w-[1000px] mx-auto">
                 <FormProvider {...methods}>
@@ -168,8 +169,7 @@ const PlanEditPage = ({ selectedDate, fetchMealPlan, errorMessage }: Props) => {
                                     <MealCardField
                                         key={`${category.id}-${itemsKey}`}
                                         mealCategory={category}
-                                        recipes={items}
-                                        actionButtonConfigs={actionButtonConfigs}
+                                        mealPlanItems={items}
                                         addItem={(item: IMealPlanItem) => insert(getInsertIndexForCategory(tmpItems, mealCategories, category.id), item)}
                                         deleteItem={(item: IMealPlanItem) => remove(tmpItems.indexOf(item))}
                                     />

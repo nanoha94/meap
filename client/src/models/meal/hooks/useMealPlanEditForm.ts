@@ -2,8 +2,8 @@
 import React from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 
-import { EDIT_MODE, EditMode } from '@/constants';
-import { IMealCategory, IMealPlan, IPostPutMealPlanRequest } from '@/types';
+import { EDIT_MODE, EditMode, TMP_ID_PREFIX } from '@/constants';
+import { IMealCategory, IMealPlan, IMealPlanItem, IPostPutMealPlanRequest } from '@/types';
 import { MealPlanEditFormData } from '../types';
 import { useMealPlanApi } from './useMealPlanApi';
 import { useMealStore } from './useMealStores';
@@ -29,6 +29,10 @@ const getDefaultValues = (
     };
 };
 
+const normalizeForCompare = (items: IMealPlanItem[]): Omit<IMealPlanItem, 'id'>[] =>
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    items.map(({ id, ...rest }) => rest);
+
 export const useMealPlanEditForm = (selectedDate: string, fetchMealPlan?: IMealPlan) => {
     const { mealCategories } = useMealStore();
     const methods = useForm<MealPlanEditFormData>({
@@ -43,6 +47,14 @@ export const useMealPlanEditForm = (selectedDate: string, fetchMealPlan?: IMealP
     React.useEffect(() => {
         reset(getDefaultValues(fetchMealPlan, mealCategories));
     }, [fetchMealPlan, mealCategories, reset]);
+
+    /**
+     * 送信ボタンの無効化判定
+     * 献立が変更されていない場合は送信ボタンを無効化
+     */
+    const isDisabledSendButton = React.useCallback((data: IMealPlanItem[]) => {
+        return JSON.stringify(normalizeForCompare(fetchMealPlan?.meals ?? [])) === JSON.stringify(normalizeForCompare(data));
+    }, [fetchMealPlan, mealsFieldArray.fields]);
 
     /**
      * フォームの送信処理
@@ -78,7 +90,7 @@ export const useMealPlanEditForm = (selectedDate: string, fetchMealPlan?: IMealP
         // TODO: APIを修正しないとorderが反映されない
         const sendData: IPostPutMealPlanRequest = {
             meals: Object.values(groupedByCategoryId).map((v, idx) => ({
-                id: v.id,
+                id: v.id?.startsWith(TMP_ID_PREFIX.MEAL_PLAN_ITEM) ? '' : v.id,
                 categoryId: v.categoryId,
                 recipeIds: v.recipeIds,
                 order: idx,
@@ -96,6 +108,7 @@ export const useMealPlanEditForm = (selectedDate: string, fetchMealPlan?: IMealP
         control,
         methods,
         editMode,
+        isDisabledSendButton,
         onSubmit: handleSubmit(onSubmit),
         ...mealsFieldArray,
     };
