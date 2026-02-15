@@ -45,6 +45,7 @@ const MealCardField = ({ mealCategory, mealPlanItems, addItem, deleteItem }: Pro
                 });
             },
             color: COLOR_VARIANT.ALERT,
+            disabled: mealPlanItems.length === 0,
         },
     ];
 

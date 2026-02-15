@@ -7,6 +7,7 @@ interface ActionButtonBase {
     label: string;
     icon: React.ReactElement<LucideProps>;
     color?: (typeof COLOR_VARIANT)['ALERT'];
+    disabled?: boolean;
 }
 
 /** href 指定時は <Link> として描画。このとき onClick は指定しない */

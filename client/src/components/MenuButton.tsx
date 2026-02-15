@@ -97,7 +97,7 @@ const MenuButton = ({
                             {v.label}
                         </>
                     );
-                    const itemClassName = `px-3 py-1 w-full flex items-center gap-x-2 whitespace-nowrap transition-colors hover:bg-gray-light ${v.color ? 'text-' + v.color + '-main' : 'text-black'}`;
+                    const itemClassName = `px-3 py-1 w-full flex items-center gap-x-2 whitespace-nowrap transition-colors hover:bg-gray-light disabled:opacity-50 disabled:pointer-events-none ${v.color ? 'text-' + v.color + '-main' : 'text-black'}`;
 
                     if (v.href) {
                         return (
@@ -107,7 +107,7 @@ const MenuButton = ({
                                 onClick={() => {
                                     setIsOpen(false);
                                 }}
-                                className={itemClassName}>
+                                className={`${itemClassName} ${v.disabled ? 'opacity-50 pointer-events-none' : ''}`}>
                                 {itemContent}
                             </Link>
                         );
@@ -121,6 +121,7 @@ const MenuButton = ({
                                 buttonAction.onClick();
                                 setIsOpen(false);
                             }}
+                            disabled={v.disabled}
                             className={itemClassName}>
                             {itemContent}
                         </button>

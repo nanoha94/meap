@@ -10,11 +10,12 @@ import { FormProvider } from 'react-hook-form';
 
 import { Header, HeaderTextButton, StyledDatePicker } from '@/components';
 import { BUTTON_TYPE, COLOR_VARIANT } from '@/constants';
-import { useItemAndCategoryDnd, useSnackbars } from '@/hooks';
-import { MealCardField, RecipeCard, useMealStore, useMealPlanEditForm } from '@/models/meal';
+import { useAlertDialog, useItemAndCategoryDnd, useSnackbars } from '@/hooks';
+import { MealCardField, RecipeCard, useMealStore, useMealPlanEditForm, useMealPlanApi } from '@/models/meal';
 import { useGlobalStore } from '@/stores';
 import { ActionButton, IMealPlan, IMealPlanItem } from '@/types';
 import { getInsertIndexForCategory, getItemsInCategory } from '@/utils';
+import { MEAL_ALERT_DIALOG_CONFIGS } from '@/models/meal/constants';
 
 interface Props {
     selectedDate: string;
@@ -24,7 +25,9 @@ interface Props {
 
 const PlanEditPage = ({ selectedDate, fetchMealPlan, errorMessage }: Props) => {
     const router = useRouter();
+    const { openAlertDialog } = useAlertDialog();
     const { incrementLoadingCount, resetLoadingCount } = useGlobalStore();
+    const { deleteMealPlan } = useMealPlanApi();
     const { mealCategories } = useMealStore();
     const { addSnackbar } = useSnackbars();
     const { methods, isDisabledSendButton, onSubmit, fields, insert, replace, remove } = useMealPlanEditForm(selectedDate, fetchMealPlan);
@@ -37,10 +40,12 @@ const PlanEditPage = ({ selectedDate, fetchMealPlan, errorMessage }: Props) => {
         {
             label: '削除する',
             icon: <Trash2 size={20} strokeWidth={2} />,
-            onClick: () => {
-                // TODO: 削除ダイアログ実装
-            },
+            onClick: () => openAlertDialog(MEAL_ALERT_DIALOG_CONFIGS.deleteItem(`${selectedDate}の献立すべて`), () => {
+                deleteMealPlan(fetchMealPlan?.id ?? '');
+            }),
             color: COLOR_VARIANT.ALERT,
+            disabled: !fetchMealPlan?.id,
+
         },
     ];
 

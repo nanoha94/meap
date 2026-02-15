@@ -17,7 +17,7 @@ export const useMealPlanApi = () => {
     // 重複リクエスト防止用のフラグ
     const isStoreRequestRef = React.useRef(false);
     const isUpdateRequestRef = React.useRef(false);
-    //  const isDeleteRequestRef = React.useRef(false);
+    const isDeleteRequestRef = React.useRef(false);
 
     /**
      * 献立プラン作成
@@ -112,7 +112,28 @@ export const useMealPlanApi = () => {
         [incrementLoadingCount, decrementLoadingCount, router, addSnackbar, handleApiError],
     );
 
+    const deleteMealPlan = React.useCallback(async (id: string) => {
+        try {
+            isDeleteRequestRef.current = true;
+            incrementLoadingCount();
+            const { data: responseData } = await axios.delete(`/meal-plans/${id}`, {
+                timeout: TIMEOUT_MS,
+            });
+            if (responseData.success) {
+                addSnackbar('success', responseData.message ?? 'リクエストが正常に完了しました');
+                router.push('/plan/');
+            }
+        }
+        catch (error) {
+            handleApiError(error);
+        }
+        finally {
+            isDeleteRequestRef.current = false;
+            decrementLoadingCount();
+        }
+    }, [incrementLoadingCount, decrementLoadingCount, router, addSnackbar, handleApiError]);
+
     return {
-        storeMealPlan, updateMealPlan,
+        storeMealPlan, updateMealPlan, deleteMealPlan
     };
 };
