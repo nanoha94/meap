@@ -77,7 +77,7 @@ echo "実行中: ShoppingTagControllerTest.php"
 
 # UserControllerテスト実行
 echo "=========================================="
-echo "📖 詳細ドキュメント: tests/docs/03_Api/11_UsersController_TEST_SPECIFICATIONS.md"
+echo "📖 詳細ドキュメント: tests/docs/03_Api/11_UserController_TEST_SPECIFICATIONS.md"
 echo ""
 echo "実行中: UserControllerTest.php"
 ./vendor/bin/sail test tests/Feature/Api/UserControllerTest.php --stop-on-failure

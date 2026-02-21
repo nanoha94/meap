@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Mail;
 
 uses(RefreshDatabase::class);
 
-test('2-2-1: 既にメールアドレスが確認済みの場合のリダイレクト', function () {
+test('2-2-1: 【store】 既にメールアドレスが確認済みの場合', function () {
     $user = User::factory()->create(['email_verified_at' => now()]);
 
     $response = $this->actingAs($user)->post('/email/verification-notification');
@@ -16,7 +16,7 @@ test('2-2-1: 既にメールアドレスが確認済みの場合のリダイレ�
     $response->assertRedirect(config('app.frontend_url') . '/plan');
 });
 
-test('2-2-2: 未確認の場合の確認メール再送信', function () {
+test('2-2-2: 【store】 メールアドレス確認通知の再送信', function () {
     $user = User::factory()->create(['email_verified_at' => null]);
 
     $response = $this->actingAs($user)->post('/email/verification-notification');
@@ -25,7 +25,7 @@ test('2-2-2: 未確認の場合の確認メール再送信', function () {
     $response->assertJson(['message' => '登録時に入力されたメールアドレス宛にメールアドレス確認リンクを再送しました。']);
 });
 
-test('2-2-3: メール送信失敗時のエラーハンドリング', function () {
+test('2-2-3: 【store】 メール送信失敗', function () {
     $user = User::factory()->create(['email_verified_at' => null]);
 
     // Simulate email sending failure

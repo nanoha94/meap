@@ -30,7 +30,7 @@ beforeEach(function () {
 
 // ===== index() メソッドのテストケース =====
 
-test('3-13-1: 【一覧取得】 正常な食材単位一覧取得', function () {
+test('3-12-1: 【一覧取得】 正常な食材単位一覧取得', function () {
     // テスト用の単位を作成
     $unit1 = IngredientUnit::create([
         'group_id' => $this->group->id,
@@ -93,7 +93,7 @@ test('3-13-1: 【一覧取得】 正常な食材単位一覧取得', function ()
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-13-2: 【一覧取得】 単位情報の並び順確認', function () {
+test('3-12-2: 【一覧取得】 単位情報の並び順確認', function () {
     // 異なるorder順で単位を作成
     $unit1 = IngredientUnit::create([
         'group_id' => $this->group->id,
@@ -133,7 +133,7 @@ test('3-13-2: 【一覧取得】 単位情報の並び順確認', function () {
     expect($responseData[2]['order'])->toBe(2);
 });
 
-test('3-13-3: 【一覧取得】 空の単位一覧', function () {
+test('3-12-3: 【一覧取得】 空の単位一覧', function () {
     // 単位が存在しない状態でテスト
     $response = $this->actingAs($this->user)->get('/ingredient-units');
 
@@ -157,7 +157,7 @@ test('3-13-3: 【一覧取得】 空の単位一覧', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-13-4: 【一覧取得】 レスポンス形式確認', function () {
+test('3-12-4: 【一覧取得】 レスポンス形式確認', function () {
     // テスト用の単位を作成
     IngredientUnit::create([
         'group_id' => $this->group->id,
@@ -191,7 +191,7 @@ test('3-13-4: 【一覧取得】 レスポンス形式確認', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-13-5: 【一覧取得】 各フィールドの確認', function () {
+test('3-12-5: 【一覧取得】 各フィールドの確認', function () {
     // テスト用の単位を作成
     $unit = IngredientUnit::create([
         'group_id' => $this->group->id,
@@ -220,7 +220,7 @@ test('3-13-5: 【一覧取得】 各フィールドの確認', function () {
     expect($responseData[0]['order'])->toBe(0);
 });
 
-test('3-13-6: 【一覧取得】 position フィールドの確認', function () {
+test('3-12-6: 【一覧取得】 position フィールドの確認', function () {
     // prefix と suffix の両方の単位を作成
     $unit1 = IngredientUnit::create([
         'group_id' => $this->group->id,
@@ -251,7 +251,7 @@ test('3-13-6: 【一覧取得】 position フィールドの確認', function ()
     expect($responseData[1]['position'])->toBe('suffix');
 });
 
-test('3-13-7: 【一覧取得】 requiresQuantity フィールドの確認', function () {
+test('3-12-7: 【一覧取得】 requiresQuantity フィールドの確認', function () {
     // requires_quantity が true と false の両方の単位を作成
     $unit1 = IngredientUnit::create([
         'group_id' => $this->group->id,
@@ -283,7 +283,7 @@ test('3-13-7: 【一覧取得】 requiresQuantity フィールドの確認', fun
     expect($responseData[1]['requiresQuantity'])->toBe(false);
 });
 
-test('3-13-8: 【一覧取得】 他グループの単位は取得されない', function () {
+test('3-12-8: 【一覧取得】 他グループの単位は取得されない', function () {
     // 自グループの単位を作成
     $ownUnit = IngredientUnit::create([
         'group_id' => $this->group->id,
@@ -321,7 +321,7 @@ test('3-13-8: 【一覧取得】 他グループの単位は取得されない',
     expect($responseData[0]['id'])->not->toBe($otherUnit->id);
 });
 
-test('3-13-9: 【一覧取得】 未認証ユーザー', function () {
+test('3-12-9: 【一覧取得】 未認証ユーザー', function () {
     $response = $this->get('/ingredient-units');
 
     $response->assertStatus(401);
@@ -340,7 +340,7 @@ test('3-13-9: 【一覧取得】 未認証ユーザー', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-13-10: 【一覧取得】 グループが存在しない', function () {
+test('3-12-10: 【一覧取得】 グループが存在しない', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -364,7 +364,7 @@ test('3-13-10: 【一覧取得】 グループが存在しない', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-13-11: 【一覧取得】 データベース接続エラー', function () {
+test('3-12-11: 【一覧取得】 データベース接続エラー', function () {
     // データベース接続を無効化してエラーを発生させる
     DB::shouldReceive('connection')->andThrow(new \Exception('Database connection failed'));
 

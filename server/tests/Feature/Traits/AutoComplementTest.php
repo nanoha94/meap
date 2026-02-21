@@ -4,8 +4,10 @@ namespace Tests\Feature\Traits;
 
 use App\Traits\AutoComplement;
 use App\Models\Group;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use InvalidArgumentException;
 
+uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->dummy = new class {
@@ -72,7 +74,7 @@ test('1-2-4: 空のアイテムリストテスト', function () {
     $this->assertEmpty($ids);
 });
 
-test('1-2-5: 無効なIDデータ型テスト', function () {
+test('1-2-5: 【findOrCreateIds】 無効な ID データ型テスト', function () {
     $group = Group::factory()->create();
     $modelClass = 'App\\Models\\Ingredient';
 

@@ -29,7 +29,7 @@ beforeEach(function () {
     Storage::fake('public');
 });
 
-// ==================== bulkUpload() テストケース ====================
+// ===== bulkUpload() メソッドのテストケース =====
 
 test('3-1-1: 【一括アップロード】 正常な画像アップロード（1 枚）', function () {
     $user = User::factory()->create([
@@ -156,7 +156,7 @@ test('3-1-3: 【一括アップロード】 グループID配下に直接保存�
     expect($image->src)->not->toContain("/storage/images/{$group->id}/recipes/");
 });
 
-test('3-1-5: 【一括アップロード】 未認証ユーザー', function () {
+test('3-1-4: 【一括アップロード】 未認証ユーザー', function () {
     $file = UploadedFile::fake()->image('test.jpg', 100, 100);
 
     $response = $this->post('/images/upload-bulk', [
@@ -170,7 +170,7 @@ test('3-1-5: 【一括アップロード】 未認証ユーザー', function () 
     ]);
 });
 
-test('3-1-6: 【一括アップロード】 グループが存在しない', function () {
+test('3-1-5: 【一括アップロード】 グループが存在しない', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -189,7 +189,7 @@ test('3-1-6: 【一括アップロード】 グループが存在しない', fun
     ]);
 });
 
-test('3-1-7: 【一括アップロード】 データベース接続エラー', function () {
+test('3-1-6: 【一括アップロード】 データベース接続エラー', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -218,7 +218,7 @@ test('3-1-7: 【一括アップロード】 データベース接続エラー', 
     ]);
 });
 
-test('3-1-8: 【一括アップロード】 ImageService 例外', function () {
+test('3-1-7: 【一括アップロード】 ImageService 例外', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -249,7 +249,7 @@ test('3-1-8: 【一括アップロード】 ImageService 例外', function () {
     ]);
 });
 
-test('3-1-9: 【一括アップロード】 ファイルアップロード失敗', function () {
+test('3-1-8: 【一括アップロード】 ファイルアップロード失敗', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -281,9 +281,9 @@ test('3-1-9: 【一括アップロード】 ファイルアップロード失敗
     ]);
 });
 
-// ==================== バリデーションテストケース ====================
+// ===== bulkUpload() メソッドのテストケース =====
 
-test('3-1-10: 【一括アップロード】 バリデーションエラー（ファイルサイズ制限）', function () {
+test('3-1-9: 【一括アップロード】 バリデーションエラー（ファイルサイズ制限）', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -311,7 +311,7 @@ test('3-1-10: 【一括アップロード】 バリデーションエラー（�
     $this->assertContains('images.*には、10240 kb以下のファイルを指定してください。', $responseData['errors']['images.0']);
 });
 
-test('3-1-11: 【一括アップロード】 バリデーションエラー（最大ファイル数制限）', function () {
+test('3-1-10: 【一括アップロード】 バリデーションエラー（最大ファイル数制限）', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -342,7 +342,7 @@ test('3-1-11: 【一括アップロード】 バリデーションエラー（�
     $this->assertContains('imagesは20個以下指定してください。', $responseData['errors']['images']);
 });
 
-test('3-1-12: 【一括アップロード】 バリデーションエラー（最小ファイル数制限）', function () {
+test('3-1-11: 【一括アップロード】 バリデーションエラー（最小ファイル数制限）', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -367,7 +367,7 @@ test('3-1-12: 【一括アップロード】 バリデーションエラー（�
     $this->assertContains('imagesは必ず指定してください。', $responseData['errors']['images']);
 });
 
-test('3-1-13: 【一括アップロード】 バリデーションエラー（ファイル配列バリデーション）', function () {
+test('3-1-12: 【一括アップロード】 バリデーションエラー（ファイル配列バリデーション）', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -392,7 +392,7 @@ test('3-1-13: 【一括アップロード】 バリデーションエラー（�
     $this->assertContains('imagesは配列でなくてはなりません。', $responseData['errors']['images']);
 });
 
-// ==================== bulkDestroy() テストケース ====================
+// ===== bulkDestroy() メソッドのテストケース =====
 
 test('3-1-13: 【一括削除】 正常な画像削除（1 枚）', function () {
     $user = User::factory()->create([
@@ -664,7 +664,7 @@ test('3-1-24: 【一括削除】 ファイル削除失敗', function () {
     ]);
 });
 
-// ==================== 削除バリデーションテストケース ====================
+// ===== bulkDestroy() メソッドのテストケース =====
 
 test('3-1-16: 【一括削除】 存在しない画像 ID の削除', function () {
     $user = User::factory()->create([
@@ -827,7 +827,7 @@ test('3-1-29: 【一括削除】 バリデーションエラー（related_id UUI
     $this->assertContains('related_idに有効なUUIDを指定してください。', $responseData['errors']['related_id']);
 });
 
-// ==================== 画像削除の紐づけ解除テストケース ====================
+// ===== bulkDestroy() メソッドのテストケース =====
 
 test('3-1-17: 【一括削除】 指定した related_id との紐づけのみを解除', function () {
     $user = User::factory()->create([

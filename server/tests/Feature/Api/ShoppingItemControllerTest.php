@@ -1332,7 +1332,7 @@ test('3-9-40: 【一括更新】 バリデーションエラー（data 未入力
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-37: 【一括更新】 バリデーションエラー（data が配列でない）', function () {
+test('3-9-41: 【一括更新】 バリデーションエラー（data が配列でない）', function () {
     $data = [
         'data' => 'not_array'
     ];
@@ -1359,7 +1359,7 @@ test('3-9-37: 【一括更新】 バリデーションエラー（data が配列
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-38: 【一括更新】 バリデーションエラー（data が空配列）', function () {
+test('3-9-42: 【一括更新】 バリデーションエラー（data が空配列）', function () {
     $data = [
         'data' => []
     ];
@@ -1386,7 +1386,7 @@ test('3-9-38: 【一括更新】 バリデーションエラー（data が空配
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-39: 【一括更新】 バリデーションエラー（id 未入力）', function () {
+test('3-9-43: 【一括更新】 バリデーションエラー（id 未入力）', function () {
     $data = [
         'data' => [
             [
@@ -1421,7 +1421,7 @@ test('3-9-39: 【一括更新】 バリデーションエラー（id 未入力�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-40: 【一括更新】 バリデーションエラー（id が UUID 形式でない）', function () {
+test('3-9-44: 【一括更新】 バリデーションエラー（id が UUID 形式でない）', function () {
     $data = [
         'data' => [
             [
@@ -1457,7 +1457,7 @@ test('3-9-40: 【一括更新】 バリデーションエラー（id が UUID �
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-41: 【一括更新】 バリデーションエラー（name 未入力）', function () {
+test('3-9-45: 【一括更新】 バリデーションエラー（name 未入力）', function () {
     $data = [
         'data' => [
             [
@@ -1492,7 +1492,7 @@ test('3-9-41: 【一括更新】 バリデーションエラー（name 未入力
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-42: 【一括更新】 バリデーションエラー（name が文字列でない）', function () {
+test('3-9-46: 【一括更新】 バリデーションエラー（name が文字列でない）', function () {
     $data = [
         'data' => [
             [
@@ -1528,7 +1528,7 @@ test('3-9-42: 【一括更新】 バリデーションエラー（name が文字
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-43: 【一括更新】 バリデーションエラー（name が 255 文字超過）', function () {
+test('3-9-47: 【一括更新】 バリデーションエラー（name が 255 文字超過）', function () {
     $data = [
         'data' => [
             [
@@ -1564,7 +1564,7 @@ test('3-9-43: 【一括更新】 バリデーションエラー（name が 255 �
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-44: 【一括更新】 バリデーションエラー（categoryId 未入力）', function () {
+test('3-9-48: 【一括更新】 バリデーションエラー（categoryId 未入力）', function () {
     $data = [
         'data' => [
             [
@@ -1599,7 +1599,7 @@ test('3-9-44: 【一括更新】 バリデーションエラー（categoryId 未
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-45: 【一括更新】 バリデーションエラー（categoryId が UUID 形式でない）', function () {
+test('3-9-49: 【一括更新】 バリデーションエラー（categoryId が UUID 形式でない）', function () {
     $data = [
         'data' => [
             [
@@ -1635,7 +1635,7 @@ test('3-9-45: 【一括更新】 バリデーションエラー（categoryId が
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-46: 【一括更新】 バリデーションエラー（isPinned 未入力）', function () {
+test('3-9-50: 【一括更新】 バリデーションエラー（isPinned 未入力）', function () {
     $data = [
         'data' => [
             [
@@ -1670,7 +1670,7 @@ test('3-9-46: 【一括更新】 バリデーションエラー（isPinned 未�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-47: 【一括更新】 バリデーションエラー（isPinned が boolean 型でない）', function () {
+test('3-9-51: 【一括更新】 バリデーションエラー（isPinned が boolean 型でない）', function () {
     $data = [
         'data' => [
             [
@@ -1706,7 +1706,7 @@ test('3-9-47: 【一括更新】 バリデーションエラー（isPinned が b
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-48: 【一括更新】 バリデーションエラー（isChecked 未入力）', function () {
+test('3-9-52: 【一括更新】 バリデーションエラー（isChecked 未入力）', function () {
     $data = [
         'data' => [
             [
@@ -1741,7 +1741,7 @@ test('3-9-48: 【一括更新】 バリデーションエラー（isChecked 未�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-49: 【一括更新】 バリデーションエラー（isChecked が boolean 型でない）', function () {
+test('3-9-53: 【一括更新】 バリデーションエラー（isChecked が boolean 型でない）', function () {
     $data = [
         'data' => [
             [
@@ -1777,7 +1777,7 @@ test('3-9-49: 【一括更新】 バリデーションエラー（isChecked が 
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-50: 【一括更新】 バリデーションエラー（order 未入力）', function () {
+test('3-9-54: 【一括更新】 バリデーションエラー（order 未入力）', function () {
     $data = [
         'data' => [
             [
@@ -1812,7 +1812,7 @@ test('3-9-50: 【一括更新】 バリデーションエラー（order 未入�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-51: 【一括更新】 バリデーションエラー（order が数値でない）', function () {
+test('3-9-55: 【一括更新】 バリデーションエラー（order が数値でない）', function () {
     $data = [
         'data' => [
             [
@@ -1848,7 +1848,7 @@ test('3-9-51: 【一括更新】 バリデーションエラー（order が数�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-52: 【一括更新】 バリデーションエラー（order が負の値）', function () {
+test('3-9-56: 【一括更新】 バリデーションエラー（order が負の値）', function () {
     $data = [
         'data' => [
             [
@@ -1884,7 +1884,7 @@ test('3-9-52: 【一括更新】 バリデーションエラー（order が負�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-53: 【一括更新】 バリデーションエラー（tags が配列でない）', function () {
+test('3-9-57: 【一括更新】 バリデーションエラー（tags が配列でない）', function () {
     $data = [
         'data' => [
             [
@@ -1921,7 +1921,7 @@ test('3-9-53: 【一括更新】 バリデーションエラー（tags が配列
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-54: 【一括更新】 バリデーションエラー（tags.id が UUID 形式でない）', function () {
+test('3-9-58: 【一括更新】 バリデーションエラー（tags.id が UUID 形式でない）', function () {
     $data = [
         'data' => [
             [
@@ -1963,7 +1963,7 @@ test('3-9-54: 【一括更新】 バリデーションエラー（tags.id が UU
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-55: 【一括更新】 バリデーションエラー（tags.name 未入力）', function () {
+test('3-9-59: 【一括更新】 バリデーションエラー（tags.name 未入力）', function () {
     $data = [
         'data' => [
             [
@@ -2004,7 +2004,7 @@ test('3-9-55: 【一括更新】 バリデーションエラー（tags.name 未�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-56: 【一括更新】 バリデーションエラー（tags.name が文字列でない）', function () {
+test('3-9-60: 【一括更新】 バリデーションエラー（tags.name が文字列でない）', function () {
     $data = [
         'data' => [
             [
@@ -2045,7 +2045,7 @@ test('3-9-56: 【一括更新】 バリデーションエラー（tags.name が�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-57: 【一括更新】 バリデーションエラー（tags.name が 255 文字超過）', function () {
+test('3-9-61: 【一括更新】 バリデーションエラー（tags.name が 255 文字超過）', function () {
     $data = [
         'data' => [
             [
@@ -2086,7 +2086,7 @@ test('3-9-57: 【一括更新】 バリデーションエラー（tags.name が 
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-58: 【一括更新】 未認証ユーザー', function () {
+test('3-9-62: 【一括更新】 未認証ユーザー', function () {
     $data = [
         'data' => [
             [
@@ -2118,7 +2118,7 @@ test('3-9-58: 【一括更新】 未認証ユーザー', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-59: 【一括更新】 グループが存在しない', function () {
+test('3-9-63: 【一括更新】 グループが存在しない', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -2155,7 +2155,7 @@ test('3-9-59: 【一括更新】 グループが存在しない', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-60: 【一括更新】 データベース接続エラー', function () {
+test('3-9-64: 【一括更新】 データベース接続エラー', function () {
     $this->mock(\App\Services\ShoppingItemService::class, function ($mock) {
         $mock->shouldReceive('bulkUpdate')
             ->once()
@@ -2190,7 +2190,7 @@ test('3-9-60: 【一括更新】 データベース接続エラー', function ()
     ]);
 });
 
-test('3-9-61: 【一括更新】 アイテム更新失敗', function () {
+test('3-9-65: 【一括更新】 アイテム更新失敗', function () {
     $this->mock(\App\Services\ShoppingItemService::class, function ($mock) {
         $mock->shouldReceive('bulkUpdate')
             ->once()
@@ -2227,7 +2227,7 @@ test('3-9-61: 【一括更新】 アイテム更新失敗', function () {
 
 // ===== bulkDestroy() メソッドのテストケース =====
 
-test('3-9-62: 【一括削除】 正常な買い物アイテム一括削除', function () {
+test('3-9-66: 【一括削除】 正常な買い物アイテム一括削除', function () {
     // テスト用のアイテムをAPIで作成
     $this->actingAs($this->user)->post('/shopping-items', [
         'name' => '牛乳',
@@ -2271,7 +2271,7 @@ test('3-9-62: 【一括削除】 正常な買い物アイテム一括削除', fu
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-63: 【一括削除】 一括削除成功メッセージの確認', function () {
+test('3-9-67: 【一括削除】 一括削除成功メッセージの確認', function () {
     // テスト用のアイテムをAPIで作成
     $this->actingAs($this->user)->post('/shopping-items', [
         'name' => '牛乳',
@@ -2293,7 +2293,7 @@ test('3-9-63: 【一括削除】 一括削除成功メッセージの確認', fu
     expect($message)->toBe('買い物アイテムを1件削除しました。');
 });
 
-test('3-9-64: 【一括削除】 存在しないアイテムの削除', function () {
+test('3-9-68: 【一括削除】 存在しないアイテムの削除', function () {
     $data = [
         'ids' => ['00000000-0000-0000-0000-000000000000']
     ];
@@ -2316,7 +2316,7 @@ test('3-9-64: 【一括削除】 存在しないアイテムの削除', function
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-65: 【一括削除】 他グループのアイテム削除', function () {
+test('3-9-69: 【一括削除】 他グループのアイテム削除', function () {
     // 他グループのユーザーを作成
     $otherUser = User::factory()->create(['email_verified_at' => now()]);
     $otherGroup = Group::create(['group_size' => 1]);
@@ -2364,7 +2364,7 @@ test('3-9-65: 【一括削除】 他グループのアイテム削除', function
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-66: 【一括削除】 バリデーションエラー（IDs 未入力）', function () {
+test('3-9-70: 【一括削除】 バリデーションエラー（IDs 未入力）', function () {
     $data = [];
 
     $response = $this->actingAs($this->user)->delete('/shopping-items/bulk', $data);
@@ -2389,7 +2389,7 @@ test('3-9-66: 【一括削除】 バリデーションエラー（IDs 未入力�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-67: 【一括削除】 バリデーションエラー（IDs が配列でない）', function () {
+test('3-9-71: 【一括削除】 バリデーションエラー（IDs が配列でない）', function () {
     $data = [
         'ids' => 'not_array'
     ];
@@ -2416,7 +2416,7 @@ test('3-9-67: 【一括削除】 バリデーションエラー（IDs が配列�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-68: 【一括削除】 バリデーションエラー（IDs が空配列）', function () {
+test('3-9-72: 【一括削除】 バリデーションエラー（IDs が空配列）', function () {
     $data = [
         'ids' => []
     ];
@@ -2443,7 +2443,7 @@ test('3-9-68: 【一括削除】 バリデーションエラー（IDs が空配�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-69: 【一括削除】 バリデーションエラー（ID が UUID 形式でない）', function () {
+test('3-9-73: 【一括削除】 バリデーションエラー（ID が UUID 形式でない）', function () {
     $data = [
         'ids' => ['invalid-uuid']
     ];
@@ -2470,7 +2470,7 @@ test('3-9-69: 【一括削除】 バリデーションエラー（ID が UUID �
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-70: 【一括削除】 未認証ユーザー', function () {
+test('3-9-74: 【一括削除】 未認証ユーザー', function () {
     $data = [
         'ids' => ['00000000-0000-0000-0000-000000000000']
     ];
@@ -2493,7 +2493,7 @@ test('3-9-70: 【一括削除】 未認証ユーザー', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-71: 【一括削除】 グループが存在しない', function () {
+test('3-9-75: 【一括削除】 グループが存在しない', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -2521,7 +2521,7 @@ test('3-9-71: 【一括削除】 グループが存在しない', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-72: 【一括削除】 データベース接続エラー', function () {
+test('3-9-76: 【一括削除】 データベース接続エラー', function () {
     $this->mock(\App\Services\ShoppingItemService::class, function ($mock) {
         $mock->shouldReceive('bulkDelete')
             ->once()
@@ -2550,7 +2550,7 @@ test('3-9-72: 【一括削除】 データベース接続エラー', function ()
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-73: 【一括削除】 アイテム削除失敗', function () {
+test('3-9-77: 【一括削除】 アイテム削除失敗', function () {
     $this->mock(\App\Services\ShoppingItemService::class, function ($mock) {
         $mock->shouldReceive('bulkDelete')
             ->once()

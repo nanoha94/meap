@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use App\Models\Group;
 use App\Models\Color;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
@@ -457,93 +458,10 @@ test('2-5-23: トランザクション処理中の例外', function () {
     $this->assertEquals(1, $userCount, '重複メールアドレスにより新しいユーザーは作成されない');
 });
 
-test('2-5-24: バリデーションエラー（パスワード不一致）', function () {
-    $response = $this->post('/register', [
-        'name' => 'Test User',
-        'email' => 'test@example.com',
-        'password' => 'Password1!',
-        'password_confirmation' => 'DifferentPassword!', // パスワード確認が一致しない
-    ]);
-
-    // バリデーションエラーが返されることを確認
-    $response->assertStatus(422);
-
-    // 認証されていないことを確認
-    $this->assertFalse(Auth::check());
-
-    // ユーザーが作成されていないことを確認
-    $user = User::where('email', 'test@example.com')->first();
-    $this->assertNull($user, 'バリデーションエラーによりユーザーは作成されない');
-});
-
-test('2-5-25: 無効な名前（空文字）', function () {
-    $response = $this->post('/register', [
-        'name' => '', // 空の名前（required制約違反）
-        'email' => 'test@example.com',
-        'password' => 'Password1!',
-        'password_confirmation' => 'Password1!',
-    ]);
-
-    // バリデーションエラーが返されることを確認
-    $response->assertStatus(422);
-
-    // 認証されていないことを確認
-    $this->assertFalse(Auth::check());
-
-    // ユーザーが作成されていないことを確認
-    $user = User::where('email', 'test@example.com')->first();
-    $this->assertNull($user, 'バリデーションエラーによりユーザーは作成されない');
-});
-
-test('2-5-26: 無効なメールアドレス形式', function () {
-    $response = $this->post('/register', [
-        'name' => 'Test User',
-        'email' => 'invalid-email-format', // 無効なメールアドレス形式
-        'password' => 'Password1!',
-        'password_confirmation' => 'Password1!',
-    ]);
-
-    // バリデーションエラーが返されることを確認
-    $response->assertStatus(422);
-
-    // 認証されていないことを確認
-    $this->assertFalse(Auth::check());
-
-    // ユーザーが作成されていないことを確認
-    $user = User::where('name', 'Test User')->first();
-    $this->assertNull($user, 'バリデーションエラーによりユーザーは作成されない');
-});
-
-test('2-5-27: 弱いパスワード', function () {
-    $response = $this->post('/register', [
-        'name' => 'Test User',
-        'email' => 'test@example.com',
-        'password' => '123', // 弱いパスワード（短すぎる）
-        'password_confirmation' => '123',
-    ]);
-
-    // バリデーションエラーが返されることを確認
-    $response->assertStatus(422);
-
-    // 認証されていないことを確認
-    $this->assertFalse(Auth::check());
-
-    // ユーザーが作成されていないことを確認
-    $user = User::where('email', 'test@example.com')->first();
-    $this->assertNull($user, 'バリデーションエラーによりユーザーは作成されない');
-});
-
-test('2-5-28: 既にログイン済みユーザーの登録試行', function () {
-    // 事前にユーザーを作成してログイン
-    $existingUser = User::create([
-        'name' => 'Existing User',
-        'email' => 'existing@example.com',
-        'password' => Hash::make('password'),
-        'avatar_seed' => User::generateUniqueCustomId(),
-    ]);
-
-    // ユーザーをログイン状態にする
-    $this->actingAs($existingUser);
+test('2-5-24: 【store】 グループ作成失敗', function () {
+    // 2-5-22 と同様: Group::createGroup() 内で呼ばれる DB::transaction() で例外を発生させる
+    DB::shouldReceive('transaction')
+        ->andThrow(new \Exception('Group creation failed'));
 
     $response = $this->post('/register', [
         'name' => 'Test User',
@@ -552,12 +470,85 @@ test('2-5-28: 既にログイン済みユーザーの登録試行', function () 
         'password_confirmation' => 'Password1!',
     ]);
 
-    // 409 Conflict（既にログイン済み）が返されることを確認
-    $response->assertStatus(409);
+    $response->assertStatus(500);
+    $this->assertGuest();
+    \Mockery::close();
+});
 
-    // 新しいユーザーが作成されていないことを確認
-    $user = User::where('email', 'test@example.com')->first();
-    $this->assertNull($user, '既にログイン済みのため新しいユーザーは作成されない');
+test('2-5-25: 【store】 GroupUserMapping 作成失敗', function () {
+    // InvitationControllerTest 3-3-29 と同様: commit 時に例外で「マッピング永続化失敗」を再現
+    DB::shouldReceive('commit')->andThrow(new \Exception('Attach failed'));
+
+    $response = $this->post('/register', [
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+        'password' => 'Password1!',
+        'password_confirmation' => 'Password1!',
+    ]);
+
+    $response->assertStatus(500);
+    $this->assertGuest();
+    \Mockery::close();
+});
+
+test('2-5-26: 【store】 アバターシード生成失敗', function () {
+    // generateUniqueCustomId() 内の User::where()->exists() が DB select を発行するため、
+    // 実接続を partial で select のみ例外にし「アバターシード生成失敗」を再現
+    $connection = \Mockery::mock($this->app['db']->connection())->makePartial();
+    $connection->shouldReceive('select')->andThrow(new \Exception('Avatar seed generation failed'));
+    DB::shouldReceive('connection')->andReturn($connection);
+
+    $response = $this->post('/register', [
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+        'password' => 'Password1!',
+        'password_confirmation' => 'Password1!',
+    ]);
+
+    $response->assertStatus(500);
+    $this->assertGuest();
+    \Mockery::close();
+});
+
+test('2-5-27: 【store】 メール認証イベント発火失敗', function () {
+    Event::listen(Registered::class, function () {
+        throw new \Exception('Event dispatch failed');
+    });
+
+    $response = $this->post('/register', [
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+        'password' => 'Password1!',
+        'password_confirmation' => 'Password1!',
+    ]);
+
+    $response->assertStatus(500);
+    $this->assertGuest();
+
+    // 後続テストへ影響しないようリスナーを解除
+    Event::forget(Registered::class);
+});
+
+test('2-5-28: 【store】 自動ログイン失敗', function () {
+    $guard = \Mockery::mock();
+    $guard->shouldReceive('check')->andReturn(false);
+    $guard->shouldReceive('user')->andReturn(null);
+
+    Auth::shouldReceive('login')
+        ->andThrow(new \Exception('Login failed'));
+    Auth::shouldReceive('userResolver')->andReturn(fn ($guard = null) => null);
+    Auth::shouldReceive('guard')->andReturn($guard);
+
+    $response = $this->post('/register', [
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+        'password' => 'Password1!',
+        'password_confirmation' => 'Password1!',
+    ]);
+
+    $response->assertStatus(500);
+    $this->assertGuest();
+    \Mockery::close();
 });
 
 test('2-5-29: レスポンス形式確認', function () {
