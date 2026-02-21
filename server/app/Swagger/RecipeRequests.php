@@ -13,6 +13,7 @@ namespace App\Swagger;
  *     @OA\Property(property="url", type="string", nullable=true, description="レシピURL", example="https://www.google.com"),
  *     @OA\Property(property="memo", type="string", nullable=true, description="メモ", example="ハンバーグは美味しい"),
  *     @OA\Property(property="servingCount", type="integer", nullable=true, description="分量（○○人分）", example=4, minimum=1),
+ *     @OA\Property(property="cookingTime", type="integer", nullable=true, description="調理時間（分）", example=30, minimum=0),
  *     @OA\Property(property="thumbnailId", type="string", nullable=true, description="サムネイル画像ID", example="1"),
  *     @OA\Property(property="categoryIds", type="array", description="料理カテゴリID", @OA\Items(type="string", example="1")),
  *     @OA\Property(property="ownerUserId", type="string", description="編集責任者のユーザーID", example="00000000-0000-0000-0000-000000000000"),

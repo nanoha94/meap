@@ -1,6 +1,6 @@
 import { TMP_ID_PREFIX } from '@/constants';
-import { AlertDialogConfig,  IRecipeCategory } from '@/types';
-import { RecipeEditFormData,  RecipeStepEditFormData } from './types';
+import { AlertDialogConfig, IRecipeCategory } from '@/types';
+import { RecipeEditFormData, RecipeStepEditFormData } from './types';
 
 // アラートダイアログの設定
 export const RECIPE_ALERT_DIALOG_CONFIGS = {
@@ -8,9 +8,9 @@ export const RECIPE_ALERT_DIALOG_CONFIGS = {
     deleteItem: (name: string): AlertDialogConfig => ({
         title: '削除',
         message: [`${name}を削除しますか？`],
-                alertMessage: '',
-                actionButtonText: '削除',
-    }),   
+        alertMessage: '',
+        actionButtonText: '削除',
+    }),
 };
 
 /** デフォルト設定 */
@@ -42,5 +42,17 @@ export const DEFAULT_RECIPE_EDIT_FORM_DATA: RecipeEditFormData = {
     categories: [],
     ingredients: [],
     steps: [],
+    cookingTime: null,
 };
+
+/**
+ * 並び替えオプション
+ */
+export const sortOptions: { id: string; name: string, sort: string, order: string }[] = [
+    { id: 'created_at_newest', name: '作成日が新しい順', sort: 'created_at', order: 'desc' },
+    { id: 'created_at_oldest', name: '作成日が古い順', sort: 'created_at', order: 'asc' },
+    { id: 'meal_plan_date_newest', name: '前回の献立日が新しい順', sort: 'last_planned_date', order: 'desc' },
+    { id: 'meal_plan_date_oldest', name: '前回の献立日が古い順', sort: 'last_planned_date', order: 'asc ' },
+    { id: 'name_asc', name: '名前順', sort: 'name', order: 'asc' },
+];
 

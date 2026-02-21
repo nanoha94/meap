@@ -2,37 +2,51 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { CirclePlus } from 'lucide-react';
+import { CirclePlus, SlidersHorizontal } from 'lucide-react';
 
-import { Header, HeaderTextButton } from '@/components';
-import { COLOR_VARIANT } from '@/constants';
+import { Header, HeaderTextButton, StyledSelect } from '@/components';
+import { COLOR_VARIANT, colors } from '@/constants';
 import { useSnackbars } from '@/hooks';
-import { useRecipeStore } from '@/models/recipe';
+import { sortOptions, useRecipeApi, useRecipeStore } from '@/models/recipe';
 import { IRecipe } from '@/types';
+import dayjs from 'dayjs';
 
 interface Props {
-    fetchRecipes: IRecipe[];
+    fetchedRecipes: IRecipe[];
     total: number;
     errorMessage?: string;
 }
 
 const RecipeListPage = ({
-    fetchRecipes = [],
+    fetchedRecipes = [],
     total = 0,
     errorMessage,
 }: Props) => {
-    const { setRecipes: setStoreRecipes } = useRecipeStore();
+    const setStoreRecipes = useRecipeStore(state => state.setRecipes);
+    const setSortOption = useRecipeStore(state => state.setSortOption);
+    const { recipes, sortOption } = useRecipeStore();
+    const { fetchRecipes } = useRecipeApi();
     const { addSnackbar } = useSnackbars();
+
+    /**
+     * 並び替え処理
+     * @param e SelectChangeEvent
+     */
+    const handleChangeSortOption = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const selected = e.target.value;
+        setSortOption(selected);
+        await fetchRecipes(selected);
+    };
 
     /**
      * 料理/レシピをストアにセット
      * @returns void
      */
     React.useEffect(() => {
-        if (fetchRecipes) {
-            setStoreRecipes(fetchRecipes);
+        if (fetchedRecipes) {
+            setStoreRecipes(fetchedRecipes);
         }
-    }, [fetchRecipes]);
+    }, [fetchedRecipes, setStoreRecipes]);
 
     /**
      * エラーメッセージを表示
@@ -59,10 +73,15 @@ const RecipeListPage = ({
                     </div>
                 }
             />
-            <main className='p-5 pb-[60px] md:px-10 max-w-[1000px] mx-auto'>
+            <main className='p-5 pb-[60px] md:px-10 max-w-[1000px] mx-auto flex flex-col gap-y-5'>
+                <div className="flex justify-between gap-x-5">
+                    {/* TODO: 絞り込み・並び替え実装 */}
+                    <button type="button" onClick={() => { }} className="flex items-center gap-x-2"><SlidersHorizontal color={colors.black} strokeWidth={1.5} />絞り込み</button>
+                    <StyledSelect value={sortOption} options={sortOptions} onChange={handleChangeSortOption} isShowPlaceholder={false} className="!w-auto" />
+                </div>
                 {total > 0 ? (
-                    <div className="grid grid-cols-[repeat(auto-fill,_minmax(150px,_1fr))] gap-3">
-                        {fetchRecipes.map(v => (
+                    <div className="grid grid-cols-[repeat(auto-fill,_minmax(160px,_1fr))] gap-3">
+                        {recipes.map(v => (
                             <Link
                                 href={`/recipe/${v.id}`}
                                 key={v.id}
@@ -86,7 +105,7 @@ const RecipeListPage = ({
                                             .map(category => category.name)
                                             .join('/')}
                                     </div>
-                                    <div className="text-xs text-black">前回の献立日：</div>
+                                    <div className="text-xs text-black">前回の献立日：{v.lastPlannedDate ? dayjs(v.lastPlannedDate).format('YYYY/MM/DD') : '-'}</div>
                                 </div>
                             </Link>
                         ))}

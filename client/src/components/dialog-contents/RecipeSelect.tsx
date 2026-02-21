@@ -4,12 +4,13 @@ import { CirclePlus, SlidersHorizontal } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
-import { useRecipeStore } from "@/models/recipe";
+import { sortOptions, useRecipeApi, useRecipeStore } from "@/models/recipe";
 import { IRecipeListItem } from "@/types";
 import { BUTTON_TYPE, colors } from "@/constants";
 import { TextButton } from "@/components";
 import { useDialog } from "@/hooks";
 import { StyledSelect } from "../form-fields";
+import dayjs from "dayjs";
 
 interface Props {
     selectedRecipe: IRecipeListItem | null;
@@ -22,28 +23,30 @@ const RecipeSelect = ({ selectedRecipe, disabledRecipes, onSelectedRecipeChange,
     const router = useRouter();
     const { closeDialog } = useDialog();
     const { recipes } = useRecipeStore();
-    const [sortOption, setSortOption] = React.useState<string>('newest');
+    const { fetchRecipes } = useRecipeApi();
+    const [sortOption, setSortOption] = React.useState<string>(sortOptions[0].id);
 
     /**
-     * 並び替えオプション
+     * 並び替え処理
+     * @param e SelectChangeEvent
      */
-    const sortOptions = [
-        { id: 'created_at_newest', name: '作成日が新しい順' },
-        { id: 'created_at_oldest', name: '作成日が古い順' },
-        { id: 'meal_plan_date_newest', name: '前回の献立日が新しい順' },
-        { id: 'meal_plan_date_oldest', name: '前回の献立日が古い順' },
-        { id: 'name_asc', name: '名前順' },
-    ];
+    const handleChangeSortOption = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const selected = e.target.value;
+        setSortOption(selected);
+        await fetchRecipes(selected);
+    };
 
     return (
         <div className="flex flex-col gap-y-5">
             <div className="flex justify-between gap-x-5">
                 {/* TODO: 絞り込み・並び替え実装 */}
-                <button type="button" onClick={() => { }} className="flex items-center gap-x-2"><SlidersHorizontal color={colors.black} strokeWidth={1.5} />絞り込み</button><StyledSelect value={sortOption} options={sortOptions} onChange={e => setSortOption(e.target.value)} isShowPlaceholder={false} className="!w-auto" />
+                <button type="button" onClick={() => { }} className="flex items-center gap-x-2">
+                    <SlidersHorizontal color={colors.black} strokeWidth={1.5} />絞り込み</button>
+                <StyledSelect value={sortOption} options={sortOptions} onChange={handleChangeSortOption} isShowPlaceholder={false} className="!w-auto" />
             </div>
             {recipes.length > 0 ? (
                 <>
-                    <div className="grid grid-cols-[repeat(auto-fill,_minmax(150px,_1fr))] gap-3">
+                    <div className="grid grid-cols-[repeat(auto-fill,_minmax(160px,_1fr))] gap-3">
                         {recipes.map((v) => (
                             <button
                                 key={v.id}
@@ -67,7 +70,7 @@ const RecipeSelect = ({ selectedRecipe, disabledRecipes, onSelectedRecipeChange,
                                 </div>
                                 <div className="p-2 flex flex-col gap-y-1">
                                     <div className="text-sm">{v.name}</div>
-                                    <div className="text-xs">前回の献立日：</div>
+                                    <div className="text-xs">前回の献立日：{v.lastPlannedDate ? dayjs(v.lastPlannedDate).format('YYYY/MM/DD') : '-'}</div>
                                 </div>
                             </button>
                         ))}

@@ -45,7 +45,22 @@ class RecipeService extends AbstractDomainService
 
     protected function getSelectColumns(): array
     {
-        return ['id', 'group_id', 'owner_user_id', 'name', 'url', 'memo', 'serving_count', 'status'];
+        $lastPlannedDateSubquery = '(SELECT MAX(mp.date) FROM meal_recipe_mappings mrm ' .
+            'JOIN meals m ON mrm.meal_id = m.id JOIN meal_plans mp ON m.meal_plan_id = mp.id ' .
+            'WHERE mrm.recipe_id = recipes.id) as last_planned_date';
+
+        return [
+            'id',
+            'group_id',
+            'owner_user_id',
+            'name',
+            'url',
+            'memo',
+            'serving_count',
+            'cooking_time',
+            DB::raw($lastPlannedDateSubquery),
+            'status',
+        ];
     }
 
     protected function getWithColumns(): array
@@ -53,14 +68,66 @@ class RecipeService extends AbstractDomainService
         return ['categories', 'ingredients', 'ingredientCategories', 'ingredientUnits', 'steps.images', 'thumbnails', 'group'];
     }
 
+    /**
+     * レシピ一覧取得（並び替え対応）
+     *
+     * @param Group $group
+     * @param string|null $sort
+     * @param string|null $order
+     * @return array
+     */
+    public function index(Group $group, ?string $sort = 'created_at', ?string $order = 'desc'): array
+    {
+        $query = $this->getGroupRelation($group)
+            ->select($this->getSelectColumns())
+            ->with($this->getWithColumns());
+
+        // 並び替えロジック
+        switch ($sort) {
+            case 'name':
+                $query->orderBy('name', $order);
+                break;
+            case 'last_planned_date':
+                // NULL を常に末尾にしたい（献立日がないレシピを最後にする）
+                if (strtolower($order) === 'desc') {
+                    $query->orderByRaw('last_planned_date IS NULL ASC, last_planned_date DESC');
+                } else {
+                    $query->orderByRaw('last_planned_date IS NULL ASC, last_planned_date ASC');
+                }
+                break;
+            default:
+                // created_at などそのまま指定されるカラムは orderBy で対応
+                $query->orderBy($sort ?? 'created_at', $order ?? 'desc');
+                break;
+        }
+
+        $items = $query->get();
+
+        return $items->map(fn($item) => $this->formatIndexResponse($item))->toArray();
+    }
+
     protected function getCreateFields(): array
     {
-        return ['name' => 'name', 'url' => 'url', 'memo' => 'memo', 'serving_count' => 'servingCount', 'owner_user_id' => 'ownerUserId'];
+        return [
+            'name' => 'name',
+            'url' => 'url',
+            'memo' => 'memo',
+            'serving_count' => 'servingCount',
+            'cooking_time' => 'cookingTime',
+            'owner_user_id' => 'ownerUserId',
+        ];
     }
 
     protected function getUpdateFields(): array
     {
-        return ['name' => 'name', 'url' => 'url', 'memo' => 'memo', 'serving_count' => 'servingCount', 'owner_user_id' => 'ownerUserId'];
+        return [
+            'name' => 'name',
+            'url' => 'url',
+            'memo' => 'memo',
+            'serving_count' => 'servingCount',
+            'cooking_time' => 'cookingTime',
+            'owner_user_id' => 'ownerUserId',
+        ];
     }
 
     /**
@@ -75,6 +142,8 @@ class RecipeService extends AbstractDomainService
             'name' => $recipe->name,
             'categories' => $this->formatRecipeCategories($recipe->categories),
             'thumbnail' => $this->imageService->formatImage($recipe->thumbnails->first()),
+            'lastPlannedDate' => $recipe->last_planned_date ?? null,
+            'cookingTime' => $recipe->cooking_time,
         ];
     }
 

@@ -17,6 +17,8 @@ class RecipeIndexRequest extends BaseApiRequest
         return [
             'page' => 'integer|min:1|nullable',
             'per_page' => 'integer|min:1|max:100|nullable',
+            'sort' => 'nullable|string|in:created_at,last_planned_date,name',
+            'order' => 'nullable|string|in:asc,desc',
         ];
     }
 
@@ -33,6 +35,10 @@ class RecipeIndexRequest extends BaseApiRequest
             'per_page.integer' => __('validation.integer', ['attribute' => 'per_page']),
             'per_page.min' => __('validation.min.numeric', ['attribute' => 'per_page', 'min' => 1]),
             'per_page.max' => __('validation.max.numeric', ['attribute' => 'per_page', 'max' => 100]),
+            'sort.string' => __('validation.string', ['attribute' => 'sort']),
+            'sort.in' => __('validation.in', ['attribute' => 'sort']),
+            'order.string' => __('validation.string', ['attribute' => 'order']),
+            'order.in' => __('validation.in', ['attribute' => 'order']),
         ];
     }
 

@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('url')->nullable();
             $table->string('memo')->nullable();
             $table->integer('serving_count')->nullable();
+            $table->integer('cooking_time')->nullable();
             $table->enum('status', ['limited', 'public'])->default('limited');
             $table->timestamps();
         });

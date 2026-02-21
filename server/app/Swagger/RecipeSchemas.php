@@ -34,7 +34,9 @@ namespace App\Swagger;
  *     @OA\Property(property="categories", type="array", description="料理カテゴリ",
  *         @OA\Items(ref="#/components/schemas/RecipeCategory")
  *     ),
- *     @OA\Property(property="thumbnail", ref="#/components/schemas/Image", nullable=true, description="サムネイル画像情報")
+ *     @OA\Property(property="thumbnail", ref="#/components/schemas/Image", nullable=true, description="サムネイル画像情報"),
+ *     @OA\Property(property="lastPlannedDate", type="string", format="date", nullable=true, description="前回の献立日"),
+ *     @OA\Property(property="cookingTime", type="integer", nullable=true, description="調理時間（分）")
  * )
  *
  * @OA\Schema(

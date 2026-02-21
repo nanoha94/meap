@@ -136,7 +136,8 @@ const MealCardField = ({ mealCategory, mealPlanItems, addItem, deleteItem }: Pro
                                     onSelectedRecipeChange={setSelectedRecipeInDialog}
                                     onConfirm={handleConfirm}
                                 />
-                            )
+                            ),
+                            maxWidth: 1000,
                         });
                     }} />
                 </div>

@@ -96,7 +96,9 @@ export interface IRecipe {
     categories: IRecipeCategory[];
     ingredients: IIngredientItem[];
     steps: IRecipeStep[];
+    lastPlannedDate: string | null;
+    cookingTime: number | null;
 }
 
 // 一覧用
-export type IRecipeListItem = Pick<IRecipe, 'id' | 'name' | 'categories' | 'thumbnail'>;
+export type IRecipeListItem = Pick<IRecipe, 'id' | 'name' | 'categories' | 'thumbnail' | 'lastPlannedDate'>;

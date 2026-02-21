@@ -11,7 +11,7 @@ const RecipePageWithData = async () => {
 
     return (
         <RecipeListPage
-            fetchRecipes={recipes?.data ?? []}
+            fetchedRecipes={recipes?.data ?? []}
             total={recipes?.total ?? 0}
             errorMessage={errorMessage}
         />

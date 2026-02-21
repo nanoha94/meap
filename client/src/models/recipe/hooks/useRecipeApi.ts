@@ -14,6 +14,7 @@ import {
 } from '@/types';
 import { RecipeStepEditFormData } from '../types';
 import { useRecipeStore } from './useRecipeStores';
+import { sortOptions } from '../constants';
 
 /**
  * 手順をフォーマット
@@ -38,7 +39,7 @@ export const formatStepItems = (
 
 export const useRecipeApi = () => {
     const { incrementLoadingCount, decrementLoadingCount } = useGlobalStore();
-    const { setRecipes } = useRecipeStore();
+    const setRecipes = useRecipeStore(state => state.setRecipes);
     const { bulkUploadImage } = useImageApi();
     const router = useRouter();
     const { addSnackbar } = useSnackbars();
@@ -104,7 +105,7 @@ export const useRecipeApi = () => {
     );
 
     const fetchRecipes = React.useCallback(
-        async () => {
+        async (sortOptionId?: string) => {
             // 重複リクエスト防止
             if (isFetchRequestRef.current) {
                 return;
@@ -115,6 +116,10 @@ export const useRecipeApi = () => {
                 incrementLoadingCount();
 
                 const { data: responseData } = await axios.get('/recipes', {
+                    params: {
+                        sort: sortOptions.find(v => v.id === sortOptionId)?.sort,
+                        order: sortOptions.find(v => v.id === sortOptionId)?.order,
+                    },
                     timeout: TIMEOUT_MS,
                 });
                 if (responseData.success) {

@@ -34,6 +34,8 @@ class RecipeController extends ApiController
      *     security={{"sanctum":{}}},
      *     @OA\Parameter(ref="#/components/parameters/RecipePageParam"),
      *     @OA\Parameter(ref="#/components/parameters/RecipePerPageParam"),
+     *     @OA\Parameter(ref="#/components/parameters/RecipeSortParam"),
+     *     @OA\Parameter(ref="#/components/parameters/RecipeOrderParam"),
      *     @OA\Response(response=200, ref="#/components/responses/RecipeIndexSuccess"),
      *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
@@ -52,9 +54,12 @@ class RecipeController extends ApiController
                 // ページネーションのパラメータを取得（デフォルト値も設定）
                 $perPage = $request->input('per_page', 15);
                 $page = $request->input('page', 1);
+                // 並び替えパラメータ
+                $sort = $request->input('sort', 'created_at');
+                $order = $request->input('order', 'desc');
 
                 // TODO: 将来的に無限スクロール対応を検討（現在は全件取得）
-                $res = $this->recipeService->index($group);
+                $res = $this->recipeService->index($group, $sort, $order);
                 $total = count($res);
                 $message = __('api.list_retrieved', ['attribute' => __('api.attributes.recipe'), 'count' => $total]);
                 return $this->indexResponse($res, $total, $message);

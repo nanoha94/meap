@@ -39,6 +39,7 @@ entity recipes #LightBlue {
     * url : string / レシピURL
     * memo : string / メモ
     * serving_count : int / 分量（○○人分）
+    * cooking_time : int / 調理時間（分）
     * status: ENUM('limited', 'public') / 公開状態（デフォルト: 'limited'）
     * group_id : string <<FK>>
     * owner_user_id : string <<FK>>

@@ -50,6 +50,31 @@ namespace App\Swagger;
  *         example="1"
  *     )
  * )
+ * 
+ * @OA\Parameter(
+ *     parameter="RecipeSortParam",
+ *     name="sort",
+ *     in="query",
+ *     description="並び替えキー",
+ *     required=false,
+ *     @OA\Schema(
+ *         type="string",
+ *         default="created_at",
+ *         enum={"created_at", "last_planned_date", "name"}
+ *     )
+ * )
+ * @OA\Parameter(
+ *     parameter="RecipeOrderParam",
+ *     name="order",
+ *     in="query",
+ *     description="並び順",
+ *     required=false,
+ *     @OA\Schema(
+ *         type="string",
+ *         default="desc",
+ *         enum={"asc", "desc"}
+ *     )
+ * )
  */
 
 class RecipeParameters {}

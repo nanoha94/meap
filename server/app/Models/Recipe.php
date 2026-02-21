@@ -23,6 +23,7 @@ class Recipe extends Model
         'url',
         'memo',
         'serving_count',
+        'cooking_time',
         'status',
     ];
 

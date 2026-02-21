@@ -2217,6 +2217,13 @@
                         "example": 4,
                         "nullable": true
                     },
+                    "cookingTime": {
+                        "description": "調理時間（分）",
+                        "type": "integer",
+                        "minimum": 0,
+                        "example": 30,
+                        "nullable": true
+                    },
                     "thumbnailId": {
                         "description": "サムネイル画像ID",
                         "type": "string",
@@ -2536,6 +2543,17 @@
                         ],
                         "nullable": true,
                         "description": "サムネイル画像情報"
+                    },
+                    "lastPlannedDate": {
+                        "description": "前回の献立日",
+                        "type": "string",
+                        "format": "date",
+                        "nullable": true
+                    },
+                    "cookingTime": {
+                        "description": "調理時間（分）",
+                        "type": "integer",
+                        "nullable": true
                     }
                 },
                 "type": "object"
