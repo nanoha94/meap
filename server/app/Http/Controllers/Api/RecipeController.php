@@ -36,9 +36,15 @@ class RecipeController extends ApiController
      *     @OA\Parameter(ref="#/components/parameters/RecipePerPageParam"),
      *     @OA\Parameter(ref="#/components/parameters/RecipeSortParam"),
      *     @OA\Parameter(ref="#/components/parameters/RecipeOrderParam"),
+     *     @OA\Parameter(ref="#/components/parameters/RecipeRecipeNameParam"),
+     *     @OA\Parameter(ref="#/components/parameters/RecipeIngredientNameParam"),
+     *     @OA\Parameter(ref="#/components/parameters/RecipeCategoryIdsParam"),
+     *     @OA\Parameter(ref="#/components/parameters/RecipeLastPlannedDateFromParam"),
+     *     @OA\Parameter(ref="#/components/parameters/RecipeLastPlannedDateToParam"),
      *     @OA\Response(response=200, ref="#/components/responses/RecipeIndexSuccess"),
      *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
-     *     @OA\Response(response=404, ref="#/components/responses/NotFound")
+     *     @OA\Response(response=404, ref="#/components/responses/NotFound"),
+     *     @OA\Response(response=422, ref="#/components/responses/ValidationErrors")
      * )
      */
     public function index(RecipeIndexRequest $request): JsonResponse
@@ -58,8 +64,16 @@ class RecipeController extends ApiController
                 $sort = $request->input('sort', 'created_at');
                 $order = $request->input('order', 'desc');
 
+                $filters = $request->only([
+                    'recipe_name',
+                    'ingredient_name',
+                    'category_ids',
+                    'last_planned_date_from',
+                    'last_planned_date_to',
+                ]);
+
                 // TODO: 将来的に無限スクロール対応を検討（現在は全件取得）
-                $res = $this->recipeService->index($group, $sort, $order);
+                $res = $this->recipeService->index($group, $sort, $order, $filters);
                 $total = count($res);
                 $message = __('api.list_retrieved', ['attribute' => __('api.attributes.recipe'), 'count' => $total]);
                 return $this->indexResponse($res, $total, $message);

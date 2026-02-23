@@ -1,52 +1,83 @@
 'use client';
+
 import React from 'react';
+import dayjs from 'dayjs';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { CirclePlus, SlidersHorizontal } from 'lucide-react';
 
-import { Header, HeaderTextButton, StyledSelect } from '@/components';
+import { Header, HeaderTextButton, RecipeFilterForm, StyledSelect } from '@/components';
 import { COLOR_VARIANT, colors } from '@/constants';
-import { useSnackbars } from '@/hooks';
-import { sortOptions, useRecipeApi, useRecipeStore } from '@/models/recipe';
+import { useDialog, useSnackbars } from '@/hooks';
+import { sortOptions, useRecipeStore } from '@/models/recipe';
+import { RecipeFilterFormData } from '@/models/recipe/types';
 import { IRecipe } from '@/types';
-import dayjs from 'dayjs';
+import { useGlobalStore } from '@/stores';
+import { getQueryString } from '@/models/recipe/utils';
 
 interface Props {
     fetchedRecipes: IRecipe[];
-    total: number;
+    fetchedRecipesTotal: number;
     errorMessage?: string;
+    sortOptionId?: string;
+    filterOptions?: RecipeFilterFormData;
 }
 
 const RecipeListPage = ({
     fetchedRecipes = [],
-    total = 0,
+    fetchedRecipesTotal = 0,
     errorMessage,
+    sortOptionId,
+    filterOptions,
 }: Props) => {
+    const router = useRouter();
     const setStoreRecipes = useRecipeStore(state => state.setRecipes);
-    const setSortOption = useRecipeStore(state => state.setSortOption);
-    const { recipes, sortOption } = useRecipeStore();
-    const { fetchRecipes } = useRecipeApi();
+    const setListSortOptions = useRecipeStore(state => state.setListSortOptions);
+    const setListFilterOptions = useRecipeStore(state => state.setListFilterOptions);
+    const listFilterOptions = useRecipeStore(state => state.listFilterOptions);
+    const listSortOptions = useRecipeStore(state => state.listSortOptions);
+    const recipes = useRecipeStore(state => state.recipes);
+    const recipeTotal = useRecipeStore(state => state.recipeTotal);
     const { addSnackbar } = useSnackbars();
+    const { openDialog } = useDialog();
+    const { incrementLoadingCount, resetLoadingCount } = useGlobalStore();
 
     /**
-     * 並び替え処理
-     * @param e SelectChangeEvent
+     * 並び替え処理（ストア更新・再取得・URLクエリ更新）
      */
-    const handleChangeSortOption = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const selected = e.target.value;
-        setSortOption(selected);
-        await fetchRecipes(selected);
-    };
+    const handleChangeSortOption = React.useCallback(async (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const option = sortOptions.find(o => o.id === e.target.value) ?? sortOptions[0];
+        router.push(`/recipe?${getQueryString(option, listFilterOptions)}`);
+        incrementLoadingCount();
+    }, [listFilterOptions, router, incrementLoadingCount]);
 
     /**
-     * 料理/レシピをストアにセット
-     * @returns void
+     * 初期表示時: ストアにレシピと並び順をセット
      */
     React.useEffect(() => {
         if (fetchedRecipes) {
-            setStoreRecipes(fetchedRecipes);
+            setStoreRecipes(fetchedRecipes, fetchedRecipesTotal);
         }
-    }, [fetchedRecipes, setStoreRecipes]);
+    }, [fetchedRecipes, fetchedRecipesTotal, setStoreRecipes]);
+
+    /**
+     * sortOptionId をストアに反映
+     */
+    React.useEffect(() => {
+        if (!sortOptionId) return;
+        setListSortOptions(sortOptionId);
+        resetLoadingCount();
+    }, [sortOptionId, setListSortOptions, resetLoadingCount]);
+
+    /**
+     * filterOptions をストアに反映
+     */
+    React.useEffect(() => {
+        if (!filterOptions) return;
+        setListFilterOptions(filterOptions);
+        resetLoadingCount();
+    }, [filterOptions, setListFilterOptions]);
 
     /**
      * エラーメッセージを表示
@@ -56,7 +87,7 @@ const RecipeListPage = ({
         if (errorMessage) {
             addSnackbar('error', errorMessage);
         }
-    }, [errorMessage]);
+    }, [errorMessage, addSnackbar]);
 
     return (
         <>
@@ -74,12 +105,28 @@ const RecipeListPage = ({
                 }
             />
             <main className='p-5 pb-[60px] md:px-10 max-w-[1000px] mx-auto flex flex-col gap-y-5'>
-                <div className="flex justify-between gap-x-5">
-                    {/* TODO: 絞り込み・並び替え実装 */}
-                    <button type="button" onClick={() => { }} className="flex items-center gap-x-2"><SlidersHorizontal color={colors.black} strokeWidth={1.5} />絞り込み</button>
-                    <StyledSelect value={sortOption} options={sortOptions} onChange={handleChangeSortOption} isShowPlaceholder={false} className="!w-auto" />
+                <div className="flex justify-between gap-x-5 gap-y-2 flex-wrap">
+                    <button type="button" onClick={() => {
+                        openDialog({
+                            title: '絞り込み条件',
+                            children: () => (
+                                <RecipeFilterForm />
+                            ),
+                        });
+                    }} className="py-1 px-2 flex items-center gap-x-2 rounded hover:bg-gray-light"><SlidersHorizontal color={colors.black} strokeWidth={1.5} />絞り込み</button>
+                    <StyledSelect
+                        value={
+                            sortOptionId ??
+                            sortOptions.find(o => o.sort === listSortOptions.sort && o.order === listSortOptions.order)?.id ??
+                            sortOptions[0].id
+                        }
+                        options={sortOptions}
+                        onChange={handleChangeSortOption}
+                        isShowPlaceholder={false}
+                        className="!w-auto"
+                    />
                 </div>
-                {total > 0 ? (
+                {recipeTotal > 0 ? (
                     <div className="grid grid-cols-[repeat(auto-fill,_minmax(160px,_1fr))] gap-3">
                         {recipes.map(v => (
                             <Link

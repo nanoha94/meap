@@ -742,6 +742,27 @@
                     },
                     {
                         "$ref": "#/components/parameters/RecipePerPageParam"
+                    },
+                    {
+                        "$ref": "#/components/parameters/RecipeSortParam"
+                    },
+                    {
+                        "$ref": "#/components/parameters/RecipeOrderParam"
+                    },
+                    {
+                        "$ref": "#/components/parameters/RecipeRecipeNameParam"
+                    },
+                    {
+                        "$ref": "#/components/parameters/RecipeIngredientNameParam"
+                    },
+                    {
+                        "$ref": "#/components/parameters/RecipeCategoryIdsParam"
+                    },
+                    {
+                        "$ref": "#/components/parameters/RecipeLastPlannedDateFromParam"
+                    },
+                    {
+                        "$ref": "#/components/parameters/RecipeLastPlannedDateToParam"
                     }
                 ],
                 "responses": {
@@ -753,6 +774,9 @@
                     },
                     "404": {
                         "$ref": "#/components/responses/NotFound"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationErrors"
                     }
                 },
                 "security": [
@@ -3827,6 +3851,90 @@
                 "schema": {
                     "type": "string",
                     "example": "1"
+                }
+            },
+            "RecipeSortParam": {
+                "name": "sort",
+                "in": "query",
+                "description": "並び替えキー",
+                "required": false,
+                "schema": {
+                    "type": "string",
+                    "default": "created_at",
+                    "enum": [
+                        "created_at",
+                        "last_planned_date",
+                        "name"
+                    ]
+                }
+            },
+            "RecipeOrderParam": {
+                "name": "order",
+                "in": "query",
+                "description": "並び順",
+                "required": false,
+                "schema": {
+                    "type": "string",
+                    "default": "desc",
+                    "enum": [
+                        "asc",
+                        "desc"
+                    ]
+                }
+            },
+            "RecipeRecipeNameParam": {
+                "name": "recipe_name",
+                "in": "query",
+                "description": "料理名の部分一致検索",
+                "required": false,
+                "schema": {
+                    "type": "string",
+                    "maxLength": 255
+                }
+            },
+            "RecipeIngredientNameParam": {
+                "name": "ingredient_name",
+                "in": "query",
+                "description": "食材名の部分一致検索",
+                "required": false,
+                "schema": {
+                    "type": "string",
+                    "maxLength": 255
+                }
+            },
+            "RecipeCategoryIdsParam": {
+                "name": "category_ids",
+                "in": "query",
+                "description": "カテゴリIDの配列（OR条件）",
+                "required": false,
+                "schema": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "format": "uuid"
+                    }
+                }
+            },
+            "RecipeLastPlannedDateFromParam": {
+                "name": "last_planned_date_from",
+                "in": "query",
+                "description": "前回の献立日の開始日",
+                "required": false,
+                "schema": {
+                    "type": "string",
+                    "format": "date",
+                    "example": "2025-02-21"
+                }
+            },
+            "RecipeLastPlannedDateToParam": {
+                "name": "last_planned_date_to",
+                "in": "query",
+                "description": "前回の献立日の終了日",
+                "required": false,
+                "schema": {
+                    "type": "string",
+                    "format": "date",
+                    "example": "2025-02-21"
                 }
             },
             "ShoppingIdParam": {

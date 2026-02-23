@@ -7,10 +7,11 @@ import { useRouter } from "next/navigation";
 import { sortOptions, useRecipeApi, useRecipeStore } from "@/models/recipe";
 import { IRecipeListItem } from "@/types";
 import { BUTTON_TYPE, colors } from "@/constants";
-import { TextButton } from "@/components";
+import { RecipeFilterForm, TextButton } from "@/components";
 import { useDialog } from "@/hooks";
 import { StyledSelect } from "../form-fields";
 import dayjs from "dayjs";
+import { useGlobalStore } from "@/stores";
 
 interface Props {
     selectedRecipe: IRecipeListItem | null;
@@ -21,10 +22,11 @@ interface Props {
 
 const RecipeSelect = ({ selectedRecipe, disabledRecipes, onSelectedRecipeChange, onConfirm }: Props) => {
     const router = useRouter();
-    const { closeDialog } = useDialog();
-    const { recipes } = useRecipeStore();
+    const { openDialog, closeDialog } = useDialog();
     const { fetchRecipes } = useRecipeApi();
-    const [sortOption, setSortOption] = React.useState<string>(sortOptions[0].id);
+    const [sortOptionId, setSortOptionId] = React.useState<string>(sortOptions[0].id);
+    const recipes = useRecipeStore(state => state.recipes);
+    const resetLoadingCount = useGlobalStore(state => state.resetLoadingCount);
 
     /**
      * 並び替え処理
@@ -32,17 +34,27 @@ const RecipeSelect = ({ selectedRecipe, disabledRecipes, onSelectedRecipeChange,
      */
     const handleChangeSortOption = async (e: React.ChangeEvent<HTMLSelectElement>) => {
         const selected = e.target.value;
-        setSortOption(selected);
+        setSortOptionId(selected);
         await fetchRecipes(selected);
     };
 
+    React.useEffect(() => {
+        resetLoadingCount();
+    }, [recipes, resetLoadingCount]);
+
     return (
         <div className="flex flex-col gap-y-5">
-            <div className="flex justify-between gap-x-5">
-                {/* TODO: 絞り込み・並び替え実装 */}
-                <button type="button" onClick={() => { }} className="flex items-center gap-x-2">
+            <div className="flex justify-between gap-x-5 gap-y-2 flex-wrap">
+                <button type="button" onClick={() => {
+                    openDialog({
+                        title: '絞り込み条件',
+                        children: () => (
+                            <RecipeFilterForm />
+                        ),
+                    });
+                }} className="py-1 px-2 flex items-center gap-x-2 rounded hover:bg-gray-light">
                     <SlidersHorizontal color={colors.black} strokeWidth={1.5} />絞り込み</button>
-                <StyledSelect value={sortOption} options={sortOptions} onChange={handleChangeSortOption} isShowPlaceholder={false} className="!w-auto" />
+                <StyledSelect value={sortOptionId} options={sortOptions} onChange={handleChangeSortOption} isShowPlaceholder={false} className="!w-auto" />
             </div>
             {recipes.length > 0 ? (
                 <>
@@ -96,7 +108,7 @@ const RecipeSelect = ({ selectedRecipe, disabledRecipes, onSelectedRecipeChange,
                 </div>
             )
             }
-        </div >
+        </div>
     );
 };
 

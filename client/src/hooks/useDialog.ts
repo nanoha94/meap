@@ -19,7 +19,7 @@ export const useDialog = () => {
     const closeDialog = React.useCallback(() => {
         setDialogs(prev => {
             if (prev.length > 1) {
-                return prev.slice(1);
+                return prev.slice(0, -1);
             } else {
                 return [];
             }
@@ -51,7 +51,7 @@ export const useDialog = () => {
             // dialogsの最新の状態を直接参照するため、currentDialogの依存を削除
             setDialogs(prev => {
                 if (prev.length > 0) {
-                    return [newDialog, ...prev];
+                    return [...prev, newDialog];
                 } else {
                     return [newDialog];
                 }

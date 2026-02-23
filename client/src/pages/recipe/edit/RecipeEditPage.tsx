@@ -25,7 +25,7 @@ import { ActionButton, IRecipe } from '@/types';
 
 
 interface Props {
-    fetchRecipe?: IRecipe;
+    fetchedRecipe?: IRecipe;
     errorMessage?: string;
 }
 
@@ -35,7 +35,7 @@ const lineTitleWrapperStyle =
 const lineTitleStyle = 'z-10 px-5 text-xl md:text-2xl bg-primary-background';
 
 const RecipeEditPage = ({
-    fetchRecipe,
+    fetchedRecipe,
     errorMessage,
 }: Props) => {
     const { addSnackbar } = useSnackbars();
@@ -43,7 +43,7 @@ const RecipeEditPage = ({
     const { openAlertDialog } = useAlertDialog();
     const { deleteRecipe } = useRecipeApi();
     const [ownerUserId, setOwnerUserId] = React.useState<string>(
-        (fetchRecipe as IRecipe)?.ownerUserId || loginUser.id,
+        (fetchedRecipe as IRecipe)?.ownerUserId || loginUser.id,
     );
     const {
         control,
@@ -51,22 +51,22 @@ const RecipeEditPage = ({
         onSubmit,
         errors,
         isDisabledSendButton,
-    } = useRecipeEditForm(ownerUserId, fetchRecipe);
+    } = useRecipeEditForm(ownerUserId, fetchedRecipe);
     const { isTextCopied, copyToClipboard } = useTextCopy();
 
 
     /**
      * ヘッダーのアクションボタン設定
      */
-    const headerActionButtonConfigs: ActionButton[] = fetchRecipe?.ownerUserId === loginUser?.id ? [
+    const headerActionButtonConfigs: ActionButton[] = fetchedRecipe?.ownerUserId === loginUser?.id ? [
         // 削除できるのは、編集責任者のみ
         {
             label: '削除する',
             icon: <Trash2 size={20} strokeWidth={2} />,
             onClick: () => openAlertDialog(
-                RECIPE_ALERT_DIALOG_CONFIGS.deleteItem(fetchRecipe.name),
+                RECIPE_ALERT_DIALOG_CONFIGS.deleteItem(fetchedRecipe.name),
                 () => {
-                    deleteRecipe(fetchRecipe.id);
+                    deleteRecipe(fetchedRecipe.id);
                 }
             ),
             color: COLOR_VARIANT.ALERT,

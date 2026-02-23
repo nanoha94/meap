@@ -8,7 +8,9 @@ import ApplicationLogo from '../ApplicationLogo';
 
 import { navigationItems } from '@/constants';
 import { useAuth } from '@/hooks';
+import { useRecipeStore } from '@/models/recipe';
 import { useAccountHandlers, useAccountStore } from '@/models/settings';
+import { getQueryString } from '@/models/recipe/utils';
 
 interface Props {
     className?: string;
@@ -19,10 +21,17 @@ const SideNavigation = ({ className }: Props) => {
     const { logout } = useAuth();
     const { iconAvatar } = useAccountHandlers();
     const pathname = usePathname();
+    const listSortOptions = useRecipeStore(state => state.listSortOptions);
+    const listFilterOptions = useRecipeStore(state => state.listFilterOptions);
 
     if (!pathname) {
         return <></>;
     }
+
+    const formattedLink = (link: string) =>
+        link === '/recipe'
+            ? `/recipe?${getQueryString(listSortOptions, listFilterOptions)}`
+            : link;
 
     return (
         <div
@@ -62,7 +71,7 @@ const SideNavigation = ({ className }: Props) => {
                 {navigationItems.map((v, idx) => (
                     <Link
                         key={idx}
-                        href={v.link}
+                        href={formattedLink(v.link)}
                         className={`py-3 px-4 flex-1 transition-colors hover:bg-gray-light ${pathname === v.link ? 'pointer-events-none' : ''} `}>
                         <div
                             className={`flex items-center gap-x-2 whitespace-nowrap ${pathname === v.link ? 'text-primary-main' : 'text-black'} `}>

@@ -30,6 +30,19 @@ export type IGetRecipeCategoryIndexResponse = IBaseApiIndexResponse<IRecipeCateg
 //--------------------------------
 // リクエスト型
 //--------------------------------
+// レシピ一覧取得
+export interface IGetRecipeIndexRequest {
+    // page?: number;
+    // perPage?: number;
+    sort?: string;
+    order?: string;
+    recipe_name?: string;
+    ingredient_name?: string;
+    category_ids?: string[];
+    last_planned_date_from?: string;
+    last_planned_date_to?: string;
+}
+
 // レシピ作成/更新
 export interface IPostPutRecipeRequest {
     id?: string;
@@ -74,7 +87,7 @@ export interface IPutRecipeCategoryRequest {
 //--------------------------------
 export interface IRecipeCategory {
     id: string;
-    name?: string; // nameは省略可（idだけで十分な場合もある）
+    name: string;
     order: number;
 }
 

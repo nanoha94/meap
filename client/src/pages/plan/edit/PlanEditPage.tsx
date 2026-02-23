@@ -132,7 +132,7 @@ const PlanEditPage = ({ selectedDate, fetchMealPlan, errorMessage }: Props) => {
      */
     React.useEffect(() => {
         resetLoadingCount();
-    }, [selectedDate]);
+    }, [selectedDate, resetLoadingCount]);
 
     /**
   * ドラッグ中でない場合、tmpItemsをstoreItemsの内容で更新

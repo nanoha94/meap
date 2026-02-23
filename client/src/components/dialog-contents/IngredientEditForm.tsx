@@ -97,70 +97,68 @@ const IngredientEditForm = ({
         <form
             onSubmit={handleSubmit(onSubmit)}
             className="w-full flex flex-col gap-y-10">
-            <div className="mx-auto max-w-[440px] w-full flex flex-col gap-y-5">
-                <div className="w-full flex flex-col gap-y-2">
-                    <HorizontalRowField
-                        control={control}
-                        name="name"
-                        label="材料名">
-                        {({ value, onChange, id }) => (
-                            <input
-                                ref={nameInputRef}
-                                type="text"
-                                id={id}
-                                value={value as string}
-                                placeholder="材料名を入力"
-                                onChange={e => onChange(e.target.value)}
-                                className="py-2 px-4 border rounded-lg outline-none border-gray-main"
-                            />
-                        )}
-                    </HorizontalRowField>
-                    <HorizontalRowField
-                        control={control}
-                        name="quantity"
-                        label="数量">
-                        {({ value, onChange, id }) => (
-                            <input
-                                type="number"
-                                id={id}
-                                value={
-                                    value === undefined || value === null
-                                        ? ''
-                                        : (value as number)
+            <div className="mx-auto w-full flex flex-col gap-y-2">
+                <HorizontalRowField
+                    control={control}
+                    name="name"
+                    label="材料名">
+                    {({ value, onChange, id }) => (
+                        <input
+                            ref={nameInputRef}
+                            type="text"
+                            id={id}
+                            value={value as string}
+                            placeholder="材料名を入力"
+                            onChange={e => onChange(e.target.value)}
+                            className="py-2 px-4 border rounded-lg outline-none border-gray-main"
+                        />
+                    )}
+                </HorizontalRowField>
+                <HorizontalRowField
+                    control={control}
+                    name="quantity"
+                    label="数量">
+                    {({ value, onChange, id }) => (
+                        <input
+                            type="number"
+                            id={id}
+                            value={
+                                value === undefined || value === null
+                                    ? ''
+                                    : (value as number)
+                            }
+                            placeholder="数量を入力"
+                            min={0}
+                            disabled={isDisabledQuantity}
+                            onChange={e => {
+                                const val = e.target.value;
+                                // 空欄ならnull、整数なら数値、小数や不正値は無視
+                                if (val === '') {
+                                    onChange(null);
+                                } else if (/^-?\d+$/.test(val)) {
+                                    onChange(Number(val));
                                 }
-                                placeholder="数量を入力"
-                                min={0}
-                                disabled={isDisabledQuantity}
-                                onChange={e => {
-                                    const val = e.target.value;
-                                    // 空欄ならnull、整数なら数値、小数や不正値は無視
-                                    if (val === '') {
-                                        onChange(null);
-                                    } else if (/^-?\d+$/.test(val)) {
-                                        onChange(Number(val));
-                                    }
-                                    // それ以外（小数や不正値）は何もしない
-                                }}
-                                className="py-2 px-4 border rounded-lg outline-none border-gray-main"
-                                inputMode="numeric"
-                                pattern="\d*"
-                            />
-                        )}
-                    </HorizontalRowField>
-                    <HorizontalRowField
-                        control={control}
-                        name="unit.id"
-                        label="単位">
-                        {({ value, onChange, id }) => (
-                            <StyledSelect
-                                value={value as string}
-                                name={id}
-                                onChange={e => onChange(e.target.value)}
-                                options={units}
-                            />
-                        )}
-                    </HorizontalRowField>
-                </div>
+                                // それ以外（小数や不正値）は何もしない
+                            }}
+                            className="py-2 px-4 border rounded-lg outline-none border-gray-main"
+                            inputMode="numeric"
+                            pattern="\d*"
+                        />
+                    )}
+                </HorizontalRowField>
+                <HorizontalRowField
+                    control={control}
+                    name="unit.id"
+                    label="単位">
+                    {({ value, onChange, id }) => (
+                        <StyledSelect
+                            value={value as string}
+                            name={id}
+                            onChange={e => onChange(e.target.value)}
+                            options={units}
+                        />
+                    )}
+                </HorizontalRowField>
             </div>
             <div className="mx-auto max-w-[320px] w-full flex gap-x-6">
                 <Button

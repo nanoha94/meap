@@ -12,7 +12,7 @@ import { useAccountStore } from '@/models/settings';
 import { ActionButton, IImage, IRecipe } from '@/types';
 
 interface Props {
-    fetchRecipe?: IRecipe;
+    fetchedRecipe?: IRecipe;
     errorMessage?: string;
 }
 
@@ -22,7 +22,7 @@ const lineTitleWrapperStyle =
 const lineTitleStyle = 'z-10 px-5 text-xl md:text-2xl bg-primary-background';
 
 const RecipeDetailPage = ({
-    fetchRecipe,
+    fetchedRecipe,
     errorMessage,
 }: Props) => {
     const { loginUser } = useAccountStore();
@@ -35,13 +35,13 @@ const RecipeDetailPage = ({
      * 削除確認ダイアログを開く
      */
     const openDeleteCheckDialog = () => {
-        if (!fetchRecipe) {
+        if (!fetchedRecipe) {
             return;
         }
         openAlertDialog(
-            RECIPE_ALERT_DIALOG_CONFIGS.deleteItem(fetchRecipe.name),
+            RECIPE_ALERT_DIALOG_CONFIGS.deleteItem(fetchedRecipe.name),
             () => {
-                deleteRecipe(fetchRecipe.id);
+                deleteRecipe(fetchedRecipe.id);
             },
         );
     };
@@ -49,7 +49,7 @@ const RecipeDetailPage = ({
     /**
      * メニューボタン押下時に開くアクションボタン設定
      */
-    const actionButtonConfigs: ActionButton[] = fetchRecipe?.ownerUserId === loginUser?.id ? [
+    const actionButtonConfigs: ActionButton[] = fetchedRecipe?.ownerUserId === loginUser?.id ? [
         // 削除できるのは、編集責任者のみ
         {
             label: '削除する',
@@ -76,7 +76,7 @@ const RecipeDetailPage = ({
             rightContent={
                 <div className="flex items-center gap-x-4">
                     <HeaderTextButton colorVariant={COLOR_VARIANT.SECONDARY}
-                        href={`/recipe/${fetchRecipe?.id}/edit`}>
+                        href={`/recipe/${fetchedRecipe?.id}/edit`}>
                         <Pencil size={20} strokeWidth={2} />
                         編集
                     </HeaderTextButton>
@@ -86,18 +86,18 @@ const RecipeDetailPage = ({
         />
             <main className="pb-[60px] max-w-[1200px] mx-auto">
                 {/* サムネイル画像 */}
-                <RecipeThumbnail thumbnail={fetchRecipe?.thumbnail ?? null} className="md:hidden" />
+                <RecipeThumbnail thumbnail={fetchedRecipe?.thumbnail ?? null} className="md:hidden" />
                 <div className="p-5 md:px-10 grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-14">
                     {/* サムネイル画像 */}
-                    <RecipeThumbnail thumbnail={fetchRecipe?.thumbnail ?? null} className="hidden md:block" />
+                    <RecipeThumbnail thumbnail={fetchedRecipe?.thumbnail ?? null} className="hidden md:block" />
                     <div className="flex-1 flex flex-col gap-y-8">
                         {/* 料理名 */}
-                        <div className="text-2xl font-bold">{fetchRecipe?.name}</div>
+                        <div className="text-2xl font-bold">{fetchedRecipe?.name}</div>
                         {/* カテゴリー */}
-                        {fetchRecipe?.categories &&
-                            fetchRecipe?.categories.length > 0 && (
+                        {fetchedRecipe?.categories &&
+                            fetchedRecipe?.categories.length > 0 && (
                                 <ul className="flex flex-wrap gap-x-3">
-                                    {fetchRecipe?.categories.map(category => (
+                                    {fetchedRecipe?.categories.map(category => (
                                         <li
                                             key={category.id}
                                             className="py-1 px-2 text-xs leading-none text-gray-main rounded-full border border-gray-main">
@@ -109,8 +109,8 @@ const RecipeDetailPage = ({
                         {/* メモ */}
                         <div className="flex flex-col gap-y-2">
                             <div className="text-xl">メモ</div>
-                            {fetchRecipe?.memo ? (
-                                <div>{fetchRecipe?.memo}</div>
+                            {fetchedRecipe?.memo ? (
+                                <div>{fetchedRecipe?.memo}</div>
                             ) : (
                                 <div>メモがありません</div>
                             )}
@@ -121,15 +121,15 @@ const RecipeDetailPage = ({
                             <span
                                 className={
                                     lineTitleStyle
-                                }>{`材料${fetchRecipe?.servingCount ? `【${fetchRecipe?.servingCount}人分】` : ''}`}</span>
+                                }>{`材料${fetchedRecipe?.servingCount ? `【${fetchedRecipe?.servingCount}人分】` : ''}`}</span>
                         </div>
                         {/* 材料 */}
-                        {fetchRecipe?.ingredients &&
-                            fetchRecipe?.ingredients.length > 0 ? (
+                        {fetchedRecipe?.ingredients &&
+                            fetchedRecipe?.ingredients.length > 0 ? (
                             <div className="flex flex-col gap-y-5">
                                 {ingredientCategories?.map(
                                     category =>
-                                        fetchRecipe.ingredients.some(
+                                        fetchedRecipe.ingredients.some(
                                             ingredient =>
                                                 ingredient.categoryId === category.id,
                                         ) && (
@@ -138,7 +138,7 @@ const RecipeDetailPage = ({
                                                     {category.name}
                                                 </div>
                                                 <ul className="flex flex-col gap-y-1">
-                                                    {fetchRecipe.ingredients
+                                                    {fetchedRecipe.ingredients
                                                         .filter(
                                                             ingredient =>
                                                                 ingredient.categoryId ===
@@ -179,27 +179,27 @@ const RecipeDetailPage = ({
                         <div className={lineTitleWrapperStyle}>
                             <span className={lineTitleStyle}>作り方</span>
                         </div>
-                        {!fetchRecipe?.url &&
-                            (!fetchRecipe?.steps || fetchRecipe?.steps.length <= 0) && (
+                        {!fetchedRecipe?.url &&
+                            (!fetchedRecipe?.steps || fetchedRecipe?.steps.length <= 0) && (
                                 <div>作り方がありません</div>
                             )}
                         {/* レシピURL */}
-                        {fetchRecipe?.url && (
+                        {fetchedRecipe?.url && (
                             <div className="flex flex-col gap-y-1">
                                 <div className="text-xl font-bold">レシピ</div>
                                 <a
-                                    href={fetchRecipe?.url}
+                                    href={fetchedRecipe?.url}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="text-primary-main underline transition-colors hover:text-accent-main">
-                                    {fetchRecipe?.url}
+                                    {fetchedRecipe?.url}
                                 </a>
                             </div>
                         )}
                         {/* 手順 */}
-                        {fetchRecipe?.steps && (
+                        {fetchedRecipe?.steps && (
                             <ul className="grid grid-cols-[repeat(auto-fill,_minmax(180px,_1fr))] gap-5">
-                                {fetchRecipe?.steps.map((step, index) => (
+                                {fetchedRecipe?.steps.map((step, index) => (
                                     <li key={step.id}>
                                         <div className="flex flex-col gap-y-1">
                                             <div>{index + 1}.&nbsp;</div>

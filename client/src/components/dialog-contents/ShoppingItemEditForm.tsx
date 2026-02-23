@@ -6,8 +6,8 @@ import { Button, StyledSelect, VerticalRowField } from '@/components';
 import { BUTTON_TYPE, BUTTON_VARIANT, COLOR_VARIANT, EDIT_MODE, EditMode } from '@/constants';
 import { useDialog } from '@/hooks';
 import {
-    useShoppingCategoryApi,
     useShoppingItemApi,
+    useShoppingStore,
 } from '@/models/shopping';
 import { IShoppingItem } from '@/types';
 
@@ -25,7 +25,7 @@ interface FormData {
 const ShoppingItemEditForm: React.FC<Props> = ({ editingItem, editMode }) => {
     const { closeDialog } = useDialog();
     const { storeShoppingItem, updateShoppingItems } = useShoppingItemApi();
-    const { storeData } = useShoppingCategoryApi();
+    const { categories } = useShoppingStore();
 
     const defaultValues = {
         name: '',
@@ -51,9 +51,9 @@ const ShoppingItemEditForm: React.FC<Props> = ({ editingItem, editMode }) => {
             name: editingItem?.name || '',
             categoryId:
                 editingItem?.categoryId ||
-                storeData.categories.find(v => v.isDefault)?.id,
+                categories.find(v => v.isDefault)?.id,
         });
-    }, [editingItem, storeData.categories, reset]);
+    }, [editingItem, categories, reset]);
 
     /**
      * フォームの送信処理
@@ -102,7 +102,7 @@ const ShoppingItemEditForm: React.FC<Props> = ({ editingItem, editMode }) => {
                         <StyledSelect
                             value={value as string}
                             name="categoryId"
-                            options={storeData.categories}
+                            options={categories}
                             isShowPlaceholder={false}
                             onChange={onChange}
                         />

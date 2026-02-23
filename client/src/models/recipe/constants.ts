@@ -52,7 +52,7 @@ export const sortOptions: { id: string; name: string, sort: string, order: strin
     { id: 'created_at_newest', name: '作成日が新しい順', sort: 'created_at', order: 'desc' },
     { id: 'created_at_oldest', name: '作成日が古い順', sort: 'created_at', order: 'asc' },
     { id: 'meal_plan_date_newest', name: '前回の献立日が新しい順', sort: 'last_planned_date', order: 'desc' },
-    { id: 'meal_plan_date_oldest', name: '前回の献立日が古い順', sort: 'last_planned_date', order: 'asc ' },
-    { id: 'name_asc', name: '名前順', sort: 'name', order: 'asc' },
+    { id: 'meal_plan_date_oldest', name: '前回の献立日が古い順', sort: 'last_planned_date', order: 'asc' },
+    // { id: 'name_asc', name: '名前順', sort: 'name', order: 'asc' },
+    // 漢字の並び替えにはカナをDBに登録する必要があるため、保留（TODO: UI要検討）
 ];
-

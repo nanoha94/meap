@@ -5,6 +5,8 @@ import { usePathname } from 'next/navigation';
 import { NavigationIcon } from '.';
 
 import { navigationItems } from '@/constants';
+import { useRecipeStore } from '@/models/recipe';
+import { getQueryString } from '@/models/recipe/utils';
 
 interface Props {
     className?: string;
@@ -12,6 +14,8 @@ interface Props {
 
 const FooterNavigation = ({ className }: Props) => {
     const pathname = usePathname();
+    const listSortOptions = useRecipeStore(state => state.listSortOptions);
+    const listFilterOptions = useRecipeStore(state => state.listFilterOptions);
 
     if (!pathname) {
         return <></>;
@@ -23,6 +27,11 @@ const FooterNavigation = ({ className }: Props) => {
     //     return <></>;
     // }
 
+    const formattedLink = (link: string) =>
+        link === '/recipe'
+            ? `/recipe?${getQueryString(listSortOptions, listFilterOptions)}`
+            : link;
+
     return (
         <div
             className={`fixed bottom-0 w-full flex bg-white ${className ? className : ''}`}
@@ -30,7 +39,7 @@ const FooterNavigation = ({ className }: Props) => {
             {navigationItems.map((v, idx) => (
                 <Link
                     key={idx}
-                    href={v.link}
+                    href={formattedLink(v.link)}
                     className={`py-2 px-0.5 flex-1 transition-colors hover:bg-gray-ligh ${pathname === v.link ? 'pointer-events-none' : ''}`}>
                     <div className="relative mx-auto w-16 h-auto aspect-square rounded-full transition-colors hover:bg-gray-light">
                         <div

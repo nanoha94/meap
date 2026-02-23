@@ -75,6 +75,49 @@ namespace App\Swagger;
  *         enum={"asc", "desc"}
  *     )
  * )
+ * @OA\Parameter(
+ *     parameter="RecipeRecipeNameParam",
+ *     name="recipe_name",
+ *     in="query",
+ *     description="料理名の部分一致検索",
+ *     required=false,
+ *     @OA\Schema(type="string", maxLength=255)
+ * )
+ * @OA\Parameter(
+ *     parameter="RecipeIngredientNameParam",
+ *     name="ingredient_name",
+ *     in="query",
+ *     description="食材名の部分一致検索",
+ *     required=false,
+ *     @OA\Schema(type="string", maxLength=255)
+ * )
+ * @OA\Parameter(
+ *     parameter="RecipeCategoryIdsParam",
+ *     name="category_ids",
+ *     in="query",
+ *     description="カテゴリIDの配列（OR条件）",
+ *     required=false,
+ *     @OA\Schema(
+ *         type="array",
+ *         @OA\Items(type="string", format="uuid")
+ *     )
+ * )
+ * @OA\Parameter(
+ *     parameter="RecipeLastPlannedDateFromParam",
+ *     name="last_planned_date_from",
+ *     in="query",
+ *     description="前回の献立日の開始日",
+ *     required=false,
+ *     @OA\Schema(type="string", format="date", example="2025-02-21")
+ * )
+ * @OA\Parameter(
+ *     parameter="RecipeLastPlannedDateToParam",
+ *     name="last_planned_date_to",
+ *     in="query",
+ *     description="前回の献立日の終了日",
+ *     required=false,
+ *     @OA\Schema(type="string", format="date", example="2025-02-21")
+ * )
  */
 
 class RecipeParameters {}

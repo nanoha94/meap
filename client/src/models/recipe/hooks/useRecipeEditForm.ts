@@ -31,21 +31,21 @@ export const formatIngredientItems = (
         });
 };
 
-export const useRecipeEditForm = (ownerUserId: string, fetchRecipe?: IRecipe) => {
+export const useRecipeEditForm = (ownerUserId: string, fetchedRecipe?: IRecipe) => {
     const [errors, setErrors] = React.useState<Record<string, string> | null>(
         null,
     );
     const methods = useForm<RecipeEditFormData>({
-        defaultValues: { 
-            ...DEFAULT_RECIPE_EDIT_FORM_DATA, 
-            ...fetchRecipe,
+        defaultValues: {
+            ...DEFAULT_RECIPE_EDIT_FORM_DATA,
+            ...fetchedRecipe,
         },
     });
     const { control, handleSubmit } = methods;
     const { storeRecipe, updateRecipe } = useRecipeApi();
     const watchedName = useWatch({ control, name: 'name' });
     const watchedSteps = useWatch({ control, name: 'steps' });
-    const editMode: EditMode = fetchRecipe
+    const editMode: EditMode = fetchedRecipe
         ? EDIT_MODE.UPDATE
         : EDIT_MODE.CREATE;
 
@@ -75,7 +75,7 @@ export const useRecipeEditForm = (ownerUserId: string, fetchRecipe?: IRecipe) =>
             servingCount: data.servingCount ?? null,
             thumbnailId: data.thumbnail?.id,
             categoryIds: data.categories.map(v => v.id),
-            ownerUserId: ownerUserId ?? fetchRecipe?.ownerUserId ?? '',
+            ownerUserId: ownerUserId ?? fetchedRecipe?.ownerUserId ?? '',
             ingredients: formatIngredientItems(data.ingredients),
             // stepsはstoreRecipe()/updateRecipe()でフォーマットする
         };

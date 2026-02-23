@@ -1,13 +1,15 @@
 "use client";
 import React from 'react';
 import { ja } from 'date-fns/locale/ja';
-import { Calendar } from 'lucide-react';
+import { Calendar, X } from 'lucide-react';
 import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 import { colors } from '@/constants';
 
 interface Props {
-    value: Date;
+    value?: Date | null;
+    hasClearButton?: boolean;
     onChange: (date: Date | null, event?: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement> | undefined) => void;
 }
 
@@ -89,7 +91,14 @@ const CalendarCustomHeader = ({
  * @param onChange - 日付変更時のコールバック
  * @returns 
  */
-const StyuledDatePicker = ({ value, onChange }: Props) => {
+const StyledDatePicker = ({ value, hasClearButton = false, onChange }: Props) => {
+    const hasValue = value !== null && value !== undefined;
+
+    const handleClear = (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.stopPropagation();
+        onChange(null);
+    };
+
     return (
         <div className="relative cursor-pointer rounded-lg transition-colors group hover:bg-gray-light">
             <DatePicker
@@ -102,14 +111,28 @@ const StyuledDatePicker = ({ value, onChange }: Props) => {
                     <ReadOnlyInput className="py-2 px-4 w-full flex-1 bg-white rounded-lg border border-gray-main cursor-pointer" />
                 }
                 renderCustomHeader={CalendarCustomHeader}
+                popperClassName="react-datepicker-popper z-[60]"
             />
-            <div className="absolute p-1 right-2 top-1/2 -translate-y-1/2 rounded-full transition-colors pointer-events-none group-hover:bg-gray-light">
-                <Calendar color={colors.gray.main}
-                    size={24}
-                    strokeWidth={1.5} />
-            </div>
+            {hasValue && hasClearButton ? (
+                <button
+                    type="button"
+                    onClick={handleClear}
+                    className="absolute p-1 right-2 top-1/2 -translate-y-1/2 rounded-full transition-colors bg-alert-main hover:bg-alert-light"
+                    aria-label="日付をクリア"
+                >
+                    <X color="white"
+                        size={16}
+                        strokeWidth={3} />
+                </button>
+            ) : (
+                <div className="absolute p-1 right-2 top-1/2 -translate-y-1/2 rounded-full transition-colors pointer-events-none group-hover:bg-gray-light">
+                    <Calendar color={colors.gray.main}
+                        size={24}
+                        strokeWidth={1.5} />
+                </div>
+            )}
         </div>
     );
 };
 
-export default StyuledDatePicker;
+export default StyledDatePicker;

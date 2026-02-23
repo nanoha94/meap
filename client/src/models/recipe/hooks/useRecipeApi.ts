@@ -8,13 +8,15 @@ import axios from '@/lib/axios';
 import { useImageApi } from '@/models/image';
 import { useGlobalStore } from '@/stores';
 import {
+    IGetRecipeIndexRequest,
     IPostPutRecipeRequest,
     IPostRecipeResponse,
     IRecipeStep,
 } from '@/types';
-import { RecipeStepEditFormData } from '../types';
+import { RecipeFilterFormData, RecipeStepEditFormData } from '../types';
 import { useRecipeStore } from './useRecipeStores';
 import { sortOptions } from '../constants';
+import { getQueryString } from '../utils';
 
 /**
  * 手順をフォーマット
@@ -40,10 +42,13 @@ export const formatStepItems = (
 export const useRecipeApi = () => {
     const { incrementLoadingCount, decrementLoadingCount } = useGlobalStore();
     const setRecipes = useRecipeStore(state => state.setRecipes);
+    const { listSortOptions, listFilterOptions } = useRecipeStore();
     const { bulkUploadImage } = useImageApi();
     const router = useRouter();
     const { addSnackbar } = useSnackbars();
     const { handleApiError } = useApiErrorHandler();
+    const setListSortOptions = useRecipeStore(state => state.setListSortOptions);
+    const setListFilterOptions = useRecipeStore(state => state.setListFilterOptions);
 
     // 重複リクエスト防止用のフラグ
     const isFetchRequestRef = React.useRef(false);
@@ -105,10 +110,38 @@ export const useRecipeApi = () => {
     );
 
     const fetchRecipes = React.useCallback(
-        async (sortOptionId?: string) => {
+        async (sortOptionId?: string, filterOptions?: RecipeFilterFormData) => {
             // 重複リクエスト防止
             if (isFetchRequestRef.current) {
                 return;
+            }
+
+            // パラメータをセット（ストアの値を使用）
+            const params: IGetRecipeIndexRequest = {
+                sort: listSortOptions.sort,
+                order: listSortOptions.order,
+                recipe_name: listFilterOptions?.recipeName,
+                ingredient_name: listFilterOptions?.ingredientName,
+                category_ids: listFilterOptions?.categoryId ? [listFilterOptions?.categoryId] : [], // TODO: ひとまずはカテゴリ１つとしておく。後で配列に変更する
+                last_planned_date_from: listFilterOptions?.lastPlannedDateFrom,
+                last_planned_date_to: listFilterOptions?.lastPlannedDateTo,
+            };
+
+            // 並び替えパラメータをセット
+            if (sortOptionId) {
+                setListSortOptions(sortOptionId);
+                params.sort = sortOptions.find(v => v.id === sortOptionId)?.sort;
+                params.order = sortOptions.find(v => v.id === sortOptionId)?.order;
+            }
+
+            // フィルターパラメータをセット
+            if (filterOptions) {
+                setListFilterOptions(filterOptions);
+                params.recipe_name = filterOptions?.recipeName;
+                params.ingredient_name = filterOptions?.ingredientName;
+                params.category_ids = filterOptions?.categoryId ? [filterOptions?.categoryId] : []; // TODO: ひとまずはカテゴリ１つとしておく。後で配列に変更する
+                params.last_planned_date_from = filterOptions?.lastPlannedDateFrom;
+                params.last_planned_date_to = filterOptions?.lastPlannedDateTo;
             }
 
             try {
@@ -116,14 +149,11 @@ export const useRecipeApi = () => {
                 incrementLoadingCount();
 
                 const { data: responseData } = await axios.get('/recipes', {
-                    params: {
-                        sort: sortOptions.find(v => v.id === sortOptionId)?.sort,
-                        order: sortOptions.find(v => v.id === sortOptionId)?.order,
-                    },
+                    params,
                     timeout: TIMEOUT_MS,
                 });
                 if (responseData.success) {
-                    setRecipes(responseData.data);
+                    setRecipes(responseData.data, responseData.total);
                 }
             } catch (error) {
                 handleApiError(error);
@@ -132,7 +162,7 @@ export const useRecipeApi = () => {
                 decrementLoadingCount();
             }
         },
-        [incrementLoadingCount, decrementLoadingCount, setRecipes, handleApiError],
+        [incrementLoadingCount, decrementLoadingCount, setRecipes, handleApiError, listSortOptions, listFilterOptions],
     );
 
     const storeRecipe = React.useCallback(
@@ -175,7 +205,7 @@ export const useRecipeApi = () => {
                     },
                 );
                 if (responseData.success) {
-                    router.push('/recipe/');
+                    router.push(`/recipe?${getQueryString(listSortOptions, listFilterOptions)}`);
                     addSnackbar(
                         'success',
                         responseData.message ??

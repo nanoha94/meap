@@ -18,7 +18,7 @@ const PageWithData = async ({ id }: PageWithDataProps) => {
 
     return (
         <RecipeEditPage
-            fetchRecipe={recipe?.data}
+            fetchedRecipe={recipe?.data}
             errorMessage={errorMessage}
         />
     );

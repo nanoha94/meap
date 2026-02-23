@@ -11,7 +11,7 @@ import {
 } from '@/components';
 import { BUTTON_TYPE, BUTTON_VARIANT, COLOR_VARIANT, DND_SORTABLE_LIST_TYPE, TMP_ID_PREFIX } from '@/constants';
 import { useDialog } from '@/hooks';
-import { useShoppingCategoryApi } from '@/models/shopping';
+import { useShoppingCategoryApi, useShoppingStore } from '@/models/shopping';
 import { IShoppingCategory } from '@/types';
 
 interface FormData {
@@ -20,7 +20,8 @@ interface FormData {
 
 const ShoppingCategoryEditForm: React.FC = () => {
     const { closeDialog } = useDialog();
-    const { storeData, bulkUpdateShoppingCategories } =
+    const { categories } = useShoppingStore();
+    const { bulkUpdateShoppingCategories } =
         useShoppingCategoryApi();
     const prefix = TMP_ID_PREFIX.SHOPPING_CATEGORY;
 
@@ -97,8 +98,8 @@ const ShoppingCategoryEditForm: React.FC = () => {
 
     // 初期化処理
     React.useEffect(() => {
-        if (storeData?.categories?.length > 0) {
-            reset({ categories: storeData.categories });
+        if (categories?.length > 0) {
+            reset({ categories: categories });
         }
     }, []);
 

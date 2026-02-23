@@ -193,7 +193,6 @@ export const useShoppingCategoryApi = () => {
     );
 
     return {
-        storeData: { categories: storeCategories },
         bulkUpdateShoppingCategories,
     };
 };

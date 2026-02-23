@@ -43,12 +43,18 @@ class RecipeService extends AbstractDomainService
         return $group->recipes();
     }
 
+    /**
+     * 前回献立日を算出するサブクエリ（SELECT 用は " as last_planned_date" を付与して使用）
+     */
+    protected function getLastPlannedDateSubquery(): string
+    {
+        return '(SELECT MAX(mp.date) FROM meal_recipe_mappings mrm ' .
+            'JOIN meals m ON mrm.meal_id = m.id JOIN meal_plans mp ON m.meal_plan_id = mp.id ' .
+            'WHERE mrm.recipe_id = recipes.id)';
+    }
+
     protected function getSelectColumns(): array
     {
-        $lastPlannedDateSubquery = '(SELECT MAX(mp.date) FROM meal_recipe_mappings mrm ' .
-            'JOIN meals m ON mrm.meal_id = m.id JOIN meal_plans mp ON m.meal_plan_id = mp.id ' .
-            'WHERE mrm.recipe_id = recipes.id) as last_planned_date';
-
         return [
             'id',
             'group_id',
@@ -58,7 +64,7 @@ class RecipeService extends AbstractDomainService
             'memo',
             'serving_count',
             'cooking_time',
-            DB::raw($lastPlannedDateSubquery),
+            DB::raw($this->getLastPlannedDateSubquery() . ' as last_planned_date'),
             'status',
         ];
     }
@@ -74,13 +80,45 @@ class RecipeService extends AbstractDomainService
      * @param Group $group
      * @param string|null $sort
      * @param string|null $order
+     * @param array $filters
      * @return array
      */
-    public function index(Group $group, ?string $sort = 'created_at', ?string $order = 'desc'): array
+    public function index(Group $group, ?string $sort = 'created_at', ?string $order = 'desc', array $filters = []): array
     {
         $query = $this->getGroupRelation($group)
             ->select($this->getSelectColumns())
             ->with($this->getWithColumns());
+
+        // フィルタ条件
+        if (!empty($filters['recipe_name'])) {
+            $keywords = preg_split('/[\s　]+/u', trim($filters['recipe_name']), -1, PREG_SPLIT_NO_EMPTY);
+            foreach ($keywords as $keyword) {
+                $query->where('recipes.name', 'like', '%' . $keyword . '%');
+            }
+        }
+
+        if (!empty($filters['ingredient_name'])) {
+            $keywords = preg_split('/[\s　]+/u', trim($filters['ingredient_name']), -1, PREG_SPLIT_NO_EMPTY);
+            foreach ($keywords as $keyword) {
+                $query->whereHas('ingredients', function ($q) use ($keyword) {
+                    $q->where('ingredients.name', 'like', '%' . $keyword . '%');
+                });
+            }
+        }
+
+        if (!empty($filters['category_ids'])) {
+            $query->whereHas('categories', function ($q) use ($filters) {
+                $q->whereIn('recipe_categories.id', $filters['category_ids']);
+            });
+        }
+
+        $lastPlannedDateSubquery = $this->getLastPlannedDateSubquery();
+        if (!empty($filters['last_planned_date_from'])) {
+            $query->whereRaw("{$lastPlannedDateSubquery} >= ?", [$filters['last_planned_date_from']]);
+        }
+        if (!empty($filters['last_planned_date_to'])) {
+            $query->whereRaw("{$lastPlannedDateSubquery} <= ?", [$filters['last_planned_date_to']]);
+        }
 
         // 並び替えロジック
         switch ($sort) {
