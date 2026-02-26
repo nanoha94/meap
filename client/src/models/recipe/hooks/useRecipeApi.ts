@@ -15,8 +15,8 @@ import {
 } from '@/types';
 import { RecipeFilterFormData, RecipeStepEditFormData } from '../types';
 import { useRecipeStore } from './useRecipeStores';
-import { sortOptions } from '../constants';
-import { getQueryString } from '../utils';
+import { RECIPES_PER_PAGE, sortOptions } from '../constants';
+import { getBrowserQueryString } from '../utils';
 
 /**
  * 手順をフォーマット
@@ -42,13 +42,13 @@ export const formatStepItems = (
 export const useRecipeApi = () => {
     const { incrementLoadingCount, decrementLoadingCount } = useGlobalStore();
     const setRecipes = useRecipeStore(state => state.setRecipes);
-    const { listSortOptions, listFilterOptions } = useRecipeStore();
+    const listSortOptions = useRecipeStore(state => state.listSortOptions);
+    const listFilterOptions = useRecipeStore(state => state.listFilterOptions);
+    const listCurrentPage = useRecipeStore(state => state.listCurrentPage);
     const { bulkUploadImage } = useImageApi();
     const router = useRouter();
     const { addSnackbar } = useSnackbars();
     const { handleApiError } = useApiErrorHandler();
-    const setListSortOptions = useRecipeStore(state => state.setListSortOptions);
-    const setListFilterOptions = useRecipeStore(state => state.setListFilterOptions);
 
     // 重複リクエスト防止用のフラグ
     const isFetchRequestRef = React.useRef(false);
@@ -109,40 +109,32 @@ export const useRecipeApi = () => {
         [bulkUploadImage],
     );
 
+    /**
+     * レシピ一覧を取得する（ストアデータは更新しない）
+     * @param sortOptionId 並び替えオプションID
+     * @param filterOptions フィルターオプション
+     * @param page ページ番号
+     * @returns レシピ一覧
+     */
     const fetchRecipes = React.useCallback(
-        async (sortOptionId?: string, filterOptions?: RecipeFilterFormData) => {
+        async (sortOptionId?: string, filterOptions?: RecipeFilterFormData, page?: number) => {
             // 重複リクエスト防止
             if (isFetchRequestRef.current) {
                 return;
             }
 
-            // パラメータをセット（ストアの値を使用）
+            // パラメータをセット（デフォルト値）
             const params: IGetRecipeIndexRequest = {
-                sort: listSortOptions.sort,
-                order: listSortOptions.order,
-                recipe_name: listFilterOptions?.recipeName,
-                ingredient_name: listFilterOptions?.ingredientName,
-                category_ids: listFilterOptions?.categoryId ? [listFilterOptions?.categoryId] : [], // TODO: ひとまずはカテゴリ１つとしておく。後で配列に変更する
-                last_planned_date_from: listFilterOptions?.lastPlannedDateFrom,
-                last_planned_date_to: listFilterOptions?.lastPlannedDateTo,
+                sort: sortOptions.find(v => v.id === sortOptionId)?.sort ?? sortOptions[0].sort,
+                order: sortOptions.find(v => v.id === sortOptionId)?.order ?? sortOptions[0].order,
+                recipe_name: filterOptions?.recipeName,
+                ingredient_name: filterOptions?.ingredientName,
+                category_ids: filterOptions?.categoryId ? [filterOptions?.categoryId] : [], // TODO: ひとまずはカテゴリ１つとしておく。後で配列に変更する
+                last_planned_date_from: filterOptions?.lastPlannedDateFrom,
+                last_planned_date_to: filterOptions?.lastPlannedDateTo,
+                limit: RECIPES_PER_PAGE,
+                offset: ((page ?? 1) - 1) * RECIPES_PER_PAGE,
             };
-
-            // 並び替えパラメータをセット
-            if (sortOptionId) {
-                setListSortOptions(sortOptionId);
-                params.sort = sortOptions.find(v => v.id === sortOptionId)?.sort;
-                params.order = sortOptions.find(v => v.id === sortOptionId)?.order;
-            }
-
-            // フィルターパラメータをセット
-            if (filterOptions) {
-                setListFilterOptions(filterOptions);
-                params.recipe_name = filterOptions?.recipeName;
-                params.ingredient_name = filterOptions?.ingredientName;
-                params.category_ids = filterOptions?.categoryId ? [filterOptions?.categoryId] : []; // TODO: ひとまずはカテゴリ１つとしておく。後で配列に変更する
-                params.last_planned_date_from = filterOptions?.lastPlannedDateFrom;
-                params.last_planned_date_to = filterOptions?.lastPlannedDateTo;
-            }
 
             try {
                 isFetchRequestRef.current = true;
@@ -153,10 +145,19 @@ export const useRecipeApi = () => {
                     timeout: TIMEOUT_MS,
                 });
                 if (responseData.success) {
-                    setRecipes(responseData.data, responseData.total);
+                    return {
+                        recipes: responseData.data,
+                        pageSize: Math.ceil((responseData?.total ?? 0) / RECIPES_PER_PAGE),
+                        currentPage: page ?? 1,
+                    };
                 }
             } catch (error) {
                 handleApiError(error);
+                return {
+                    recipes: [],
+                    pageSize: 0,
+                    currentPage: 1,
+                };
             } finally {
                 isFetchRequestRef.current = false;
                 decrementLoadingCount();
@@ -205,13 +206,13 @@ export const useRecipeApi = () => {
                     },
                 );
                 if (responseData.success) {
-                    router.push(`/recipe?${getQueryString(listSortOptions, listFilterOptions)}`);
+                    router.push(`/recipe?${getBrowserQueryString(listSortOptions, listFilterOptions, listCurrentPage)}`);
+                    router.refresh();
                     addSnackbar(
                         'success',
                         responseData.message ??
                         'リクエストが正常に完了しました',
                     );
-                    await fetchRecipes();
                 }
             } catch (error) {
                 handleApiError(error);
@@ -260,13 +261,13 @@ export const useRecipeApi = () => {
                 });
                 if (responseData.success) {
                     router.push(`/recipe/${data.id}`);
+                    router.refresh();
                     addSnackbar(
                         'success',
                         responseData.message ??
                         'リクエストが正常に完了しました',
                     );
 
-                    await fetchRecipes();
                 }
             } catch (error) {
                 handleApiError(error);

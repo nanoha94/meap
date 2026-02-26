@@ -4,28 +4,28 @@ namespace App\Swagger;
 
 /**
  * @OA\Parameter(
- *     parameter="RecipePageParam",
- *     name="page",
+ *     parameter="RecipeLimitParam",
+ *     name="limit",
  *     in="query",
- *     description="ページ番号",
- *     required=false,
- *     @OA\Schema(
- *         type="integer",
- *         default=1,
- *         minimum=1
- *     )
- * )
- * @OA\Parameter(
- *     parameter="RecipePerPageParam",
- *     name="per_page",
- *     in="query",
- *     description="1ページあたりの表示件数",
+ *     description="取得件数（1-100）",
  *     required=false,
  *     @OA\Schema(
  *         type="integer",
  *         default=15,
  *         minimum=1,
  *         maximum=100
+ *     )
+ * )
+ * @OA\Parameter(
+ *     parameter="RecipeOffsetParam",
+ *     name="offset",
+ *     in="query",
+ *     description="取得開始位置（0以上）",
+ *     required=false,
+ *     @OA\Schema(
+ *         type="integer",
+ *         default=0,
+ *         minimum=0
  *     )
  * )
  * @OA\Parameter(

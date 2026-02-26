@@ -99,7 +99,7 @@ test('3-7-1: 【一覧取得】 正常な料理一覧取得', function () {
         'success' => true
     ]);
 
-    // レスポンス構造の確認
+    // レスポンス構造の確認（limit/offset 含む）
     $response->assertJsonStructure([
         'success',
         'message',
@@ -110,8 +110,12 @@ test('3-7-1: 【一覧取得】 正常な料理一覧取得', function () {
                 'lastPlannedDate',
                 'cookingTime',
             ]
-        ]
+        ],
+        'total',
+        'limit',
+        'offset'
     ]);
+    $response->assertJson(['limit' => 15, 'offset' => 0]);
 
     // Content-Typeがapplication/jsonであることを確認
     $response->assertHeader('Content-Type', 'application/json');
@@ -146,8 +150,12 @@ test('3-7-2: 【一覧取得】 レスポンス形式確認', function () {
                     ]
                 ]
             ]
-        ]
+        ],
+        'total',
+        'limit',
+        'offset'
     ]);
+    $response->assertJson(['limit' => 15, 'offset' => 0]);
 
     // 正しいJSON形式でレスポンスが返されることを確認
     $response->assertHeader('Content-Type', 'application/json');
@@ -768,7 +776,58 @@ test('3-7-18: 【一覧取得】 絞り込みパラメータをすべて指定�
     expect($names)->not->toContain('サラダ');
 });
 
-test('3-7-19: 【一覧取得】 未認証ユーザー', function () {
+test('3-7-19: 【一覧取得】 limit/offset 指定時に正しい件数・位置で取得できること', function () {
+    for ($i = 1; $i <= 5; $i++) {
+        $this->actingAs($this->user)->post('/recipes', [
+            'name' => "レシピ{$i}",
+            'servingCount' => 1,
+            'ownerUserId' => $this->user->id
+        ]);
+    }
+
+    $response = $this->actingAs($this->user)->get('/recipes?limit=2&offset=1');
+    $response->assertStatus(200);
+    $data = $response->json('data');
+    expect($data)->toHaveCount(2);
+    $response->assertJson(['total' => 5, 'limit' => 2, 'offset' => 1]);
+});
+
+test('3-7-20: 【一覧取得】 limit のみ指定時にデフォルト offset=0 で取得できること', function () {
+    $this->actingAs($this->user)->post('/recipes', [
+        'name' => 'レシピ1',
+        'servingCount' => 1,
+        'ownerUserId' => $this->user->id
+    ]);
+    $this->actingAs($this->user)->post('/recipes', [
+        'name' => 'レシピ2',
+        'servingCount' => 1,
+        'ownerUserId' => $this->user->id
+    ]);
+
+    $response = $this->actingAs($this->user)->get('/recipes?limit=1');
+    $response->assertStatus(200);
+    $data = $response->json('data');
+    expect($data)->toHaveCount(1);
+    $response->assertJson(['limit' => 1, 'offset' => 0]);
+});
+
+test('3-7-21: 【一覧取得】 offset のみ指定時にデフォルト limit=15 で取得できること', function () {
+    for ($i = 1; $i <= 20; $i++) {
+        $this->actingAs($this->user)->post('/recipes', [
+            'name' => "レシピ{$i}",
+            'servingCount' => 1,
+            'ownerUserId' => $this->user->id
+        ]);
+    }
+
+    $response = $this->actingAs($this->user)->get('/recipes?offset=10');
+    $response->assertStatus(200);
+    $data = $response->json('data');
+    expect($data)->toHaveCount(10);
+    $response->assertJson(['limit' => 15, 'offset' => 10, 'total' => 20]);
+});
+
+test('3-7-22: 【一覧取得】 未認証ユーザー', function () {
     $response = $this->get('/recipes');
 
     $response->assertStatus(401);
@@ -787,7 +846,7 @@ test('3-7-19: 【一覧取得】 未認証ユーザー', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-7-20: 【一覧取得】 グループが存在しない', function () {
+test('3-7-23: 【一覧取得】 グループが存在しない', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -811,7 +870,55 @@ test('3-7-20: 【一覧取得】 グループが存在しない', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-7-23: 【一覧取得】 データベース接続エラー', function () {
+test('3-7-24: 【一覧取得】 バリデーションエラー（limit が整数でない）', function () {
+    $response = $this->actingAs($this->user)->get('/recipes?limit=abc');
+    $response->assertStatus(422);
+    $response->assertJsonValidationErrors(['limit']);
+});
+
+test('3-7-25: 【一覧取得】 バリデーションエラー（limit が 1 未満）', function () {
+    $response = $this->actingAs($this->user)->get('/recipes?limit=0');
+    $response->assertStatus(422);
+    $response->assertJsonValidationErrors(['limit']);
+});
+
+test('3-7-26: 【一覧取得】 バリデーションエラー（limit が 100 超過）', function () {
+    $response = $this->actingAs($this->user)->get('/recipes?limit=101');
+    $response->assertStatus(422);
+    $response->assertJsonValidationErrors(['limit']);
+});
+
+test('3-7-27: 【一覧取得】 バリデーションエラー（offset が整数でない）', function () {
+    $response = $this->actingAs($this->user)->get('/recipes?offset=xyz');
+    $response->assertStatus(422);
+    $response->assertJsonValidationErrors(['offset']);
+});
+
+test('3-7-28: 【一覧取得】 バリデーションエラー（offset が 0 未満）', function () {
+    $response = $this->actingAs($this->user)->get('/recipes?offset=-1');
+    $response->assertStatus(422);
+    $response->assertJsonValidationErrors(['offset']);
+});
+
+test('3-7-29: 【一覧取得】 バリデーションエラー（sort が不正な値）', function () {
+    $response = $this->actingAs($this->user)->get('/recipes?sort=invalid_column');
+    $response->assertStatus(422);
+    $response->assertJson([
+        'success' => false
+    ]);
+    $response->assertJsonValidationErrors(['sort']);
+});
+
+test('3-7-30: 【一覧取得】 バリデーションエラー（order が不正な値）', function () {
+    $response = $this->actingAs($this->user)->get('/recipes?order=invalid');
+    $response->assertStatus(422);
+    $response->assertJson([
+        'success' => false
+    ]);
+    $response->assertJsonValidationErrors(['order']);
+});
+
+test('3-7-31: 【一覧取得】 データベース接続エラー', function () {
     $this->mock(\App\Services\RecipeService::class, function ($mock) {
         $mock->shouldReceive('index')
             ->once()
@@ -832,7 +939,7 @@ test('3-7-23: 【一覧取得】 データベース接続エラー', function ()
     ]);
 });
 
-test('3-7-24: 【一覧取得】 RecipeService 例外', function () {
+test('3-7-32: 【一覧取得】 RecipeService 例外', function () {
     $this->mock(\App\Services\RecipeService::class, function ($mock) {
         $mock->shouldReceive('index')
             ->once()
@@ -850,25 +957,6 @@ test('3-7-24: 【一覧取得】 RecipeService 例外', function () {
     $response->assertJsonStructure([
         'success',
         'message'
-    ]);
-});
-
-// ===== index() メソッドのテストケース =====
-// 3-7-3から3-7-9までのテストケースは上記に移動済み
-
-test('3-7-21: 【一覧取得】 バリデーションエラー（sort が不正な値）', function () {
-    $response = $this->actingAs($this->user)->get('/recipes?sort=invalid_column');
-    $response->assertStatus(422);
-    $response->assertJson([
-        'success' => false
-    ]);
-});
-
-test('3-7-17: 【一覧取得】 バリデーションエラー（order が不正な値）', function () {
-    $response = $this->actingAs($this->user)->get('/recipes?order=invalid');
-    $response->assertStatus(422);
-    $response->assertJson([
-        'success' => false
     ]);
 });
 

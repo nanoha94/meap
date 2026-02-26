@@ -16,9 +16,9 @@ beforeEach(function () {
             return $this->successResponse($data, $message);
         }
 
-        public function testIndexResponse($data, $total, $message)
+        public function testIndexResponse($data, $total, $message, $limit = null, $offset = null)
         {
-            return $this->indexResponse($data, $total, $message);
+            return $this->indexResponse($data, $total, $message, $limit, $offset);
         }
 
         public function testSuccessResponseWithWarning($data, $message, $warning)
@@ -178,12 +178,17 @@ test('1-1-7: 【indexResponse】 データ一覧取得レスポンステスト',
         'data' => $data,
         'total' => $total,
     ], $response->getData(true));
+    $this->assertArrayNotHasKey('limit', $response->getData(true));
+    $this->assertArrayNotHasKey('offset', $response->getData(true));
 });
 
-test('1-1-8: 【indexResponse】 データ一覧取得レスポンステスト（total なし）', function () {
+test('1-1-8: 【indexResponse】 limit/offset 指定時のデータ一覧取得レスポンステスト', function () {
     $data = ['item1', 'item2'];
+    $total = 42;
     $message = 'Data list retrieved successfully';
-    $response = $this->dummy->testIndexResponse($data, null, $message);
+    $limit = 15;
+    $offset = 0;
+    $response = $this->dummy->testIndexResponse($data, $total, $message, $limit, $offset);
 
     $this->assertInstanceOf(JsonResponse::class, $response);
     $this->assertEquals(200, $response->getStatusCode());
@@ -191,6 +196,9 @@ test('1-1-8: 【indexResponse】 データ一覧取得レスポンステスト�
         'success' => true,
         'message' => $message,
         'data' => $data,
+        'total' => $total,
+        'limit' => $limit,
+        'offset' => $offset,
     ], $response->getData(true));
 });
 

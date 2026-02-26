@@ -2,6 +2,8 @@ import { TMP_ID_PREFIX } from '@/constants';
 import { AlertDialogConfig, IRecipeCategory } from '@/types';
 import { RecipeEditFormData, RecipeStepEditFormData } from './types';
 
+export const RECIPES_PER_PAGE = 20;
+
 // アラートダイアログの設定
 export const RECIPE_ALERT_DIALOG_CONFIGS = {
     // レシピを削除

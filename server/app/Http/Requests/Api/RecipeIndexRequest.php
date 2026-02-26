@@ -15,8 +15,8 @@ class RecipeIndexRequest extends BaseApiRequest
     public function rules(): array
     {
         return [
-            'page' => 'integer|min:1|nullable',
-            'per_page' => 'integer|min:1|max:100|nullable',
+            'limit' => 'integer|min:1|max:100|nullable',
+            'offset' => 'integer|min:0|nullable',
             'sort' => 'nullable|string|in:created_at,last_planned_date,name',
             'order' => 'nullable|string|in:asc,desc',
             'recipe_name' => 'nullable|string|max:255',
@@ -36,11 +36,11 @@ class RecipeIndexRequest extends BaseApiRequest
     public function messages()
     {
         return [
-            'page.integer' => __('validation.integer', ['attribute' => 'page']),
-            'page.min' => __('validation.min.numeric', ['attribute' => 'page', 'min' => 1]),
-            'per_page.integer' => __('validation.integer', ['attribute' => 'per_page']),
-            'per_page.min' => __('validation.min.numeric', ['attribute' => 'per_page', 'min' => 1]),
-            'per_page.max' => __('validation.max.numeric', ['attribute' => 'per_page', 'max' => 100]),
+            'limit.integer' => __('validation.integer', ['attribute' => 'limit']),
+            'limit.min' => __('validation.min.numeric', ['attribute' => 'limit', 'min' => 1]),
+            'limit.max' => __('validation.max.numeric', ['attribute' => 'limit', 'max' => 100]),
+            'offset.integer' => __('validation.integer', ['attribute' => 'offset']),
+            'offset.min' => __('validation.min.numeric', ['attribute' => 'offset', 'min' => 0]),
             'sort.string' => __('validation.string', ['attribute' => 'sort']),
             'sort.in' => __('validation.in', ['attribute' => 'sort']),
             'order.string' => __('validation.string', ['attribute' => 'order']),

@@ -32,8 +32,8 @@ export type IGetRecipeCategoryIndexResponse = IBaseApiIndexResponse<IRecipeCateg
 //--------------------------------
 // レシピ一覧取得
 export interface IGetRecipeIndexRequest {
-    // page?: number;
-    // perPage?: number;
+    limit?: number;
+    offset?: number;
     sort?: string;
     order?: string;
     recipe_name?: string;

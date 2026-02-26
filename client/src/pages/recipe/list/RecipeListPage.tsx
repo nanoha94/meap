@@ -14,11 +14,13 @@ import { sortOptions, useRecipeStore } from '@/models/recipe';
 import { RecipeFilterFormData } from '@/models/recipe/types';
 import { IRecipe } from '@/types';
 import { useGlobalStore } from '@/stores';
-import { getQueryString } from '@/models/recipe/utils';
+import { getBrowserQueryString } from '@/models/recipe/utils';
+import Pagination from '@/components/Pagination';
 
 interface Props {
     fetchedRecipes: IRecipe[];
-    fetchedRecipesTotal: number;
+    pageSize: number;
+    currentPage: number;
     errorMessage?: string;
     sortOptionId?: string;
     filterOptions?: RecipeFilterFormData;
@@ -26,7 +28,8 @@ interface Props {
 
 const RecipeListPage = ({
     fetchedRecipes = [],
-    fetchedRecipesTotal = 0,
+    pageSize,
+    currentPage,
     errorMessage,
     sortOptionId,
     filterOptions,
@@ -37,8 +40,8 @@ const RecipeListPage = ({
     const setListFilterOptions = useRecipeStore(state => state.setListFilterOptions);
     const listFilterOptions = useRecipeStore(state => state.listFilterOptions);
     const listSortOptions = useRecipeStore(state => state.listSortOptions);
+    const listCurrentPage = useRecipeStore(state => state.listCurrentPage);
     const recipes = useRecipeStore(state => state.recipes);
-    const recipeTotal = useRecipeStore(state => state.recipeTotal);
     const { addSnackbar } = useSnackbars();
     const { openDialog } = useDialog();
     const { incrementLoadingCount, resetLoadingCount } = useGlobalStore();
@@ -46,20 +49,36 @@ const RecipeListPage = ({
     /**
      * 並び替え処理（ストア更新・再取得・URLクエリ更新）
      */
-    const handleChangeSortOption = React.useCallback(async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const handleChangeSortOptions = React.useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
         const option = sortOptions.find(o => o.id === e.target.value) ?? sortOptions[0];
-        router.push(`/recipe?${getQueryString(option, listFilterOptions)}`);
+        router.push(`/recipe?${getBrowserQueryString(option, listFilterOptions, listCurrentPage)}`);
         incrementLoadingCount();
-    }, [listFilterOptions, router, incrementLoadingCount]);
+    }, [listFilterOptions, listCurrentPage, router, incrementLoadingCount]);
+
+    /**
+     * 絞り込み条件変更処理（ストア更新・再取得・URLクエリ更新）
+     */
+    const handleChangeFilterOptions = React.useCallback((data: RecipeFilterFormData) => {
+        router.push(`/recipe?${getBrowserQueryString(listSortOptions, data, listCurrentPage)}`);
+        incrementLoadingCount();
+    }, [listSortOptions, listCurrentPage, router, incrementLoadingCount]);
+
+    /**
+     * ページ番号変更処理（ストア更新・再取得・URLクエリ更新）
+     */
+    const handleChangePage = React.useCallback((page: number) => {
+        router.push(`/recipe?${getBrowserQueryString(listSortOptions, listFilterOptions, page)}`);
+        incrementLoadingCount();
+    }, [listSortOptions, listFilterOptions, router, incrementLoadingCount]);
 
     /**
      * 初期表示時: ストアにレシピと並び順をセット
      */
     React.useEffect(() => {
         if (fetchedRecipes) {
-            setStoreRecipes(fetchedRecipes, fetchedRecipesTotal);
+            setStoreRecipes(fetchedRecipes, pageSize, currentPage);
         }
-    }, [fetchedRecipes, fetchedRecipesTotal, setStoreRecipes]);
+    }, [fetchedRecipes, pageSize, currentPage, setStoreRecipes]);
 
     /**
      * sortOptionId をストアに反映
@@ -110,7 +129,7 @@ const RecipeListPage = ({
                         openDialog({
                             title: '絞り込み条件',
                             children: () => (
-                                <RecipeFilterForm />
+                                <RecipeFilterForm search={handleChangeFilterOptions} />
                             ),
                         });
                     }} className="py-1 px-2 flex items-center gap-x-2 rounded hover:bg-gray-light"><SlidersHorizontal color={colors.black} strokeWidth={1.5} />絞り込み</button>
@@ -121,45 +140,48 @@ const RecipeListPage = ({
                             sortOptions[0].id
                         }
                         options={sortOptions}
-                        onChange={handleChangeSortOption}
+                        onChange={handleChangeSortOptions}
                         isShowPlaceholder={false}
                         className="!w-auto"
                     />
                 </div>
-                {recipeTotal > 0 ? (
-                    <div className="grid grid-cols-[repeat(auto-fill,_minmax(160px,_1fr))] gap-3">
-                        {recipes.map(v => (
-                            <Link
-                                href={`/recipe/${v.id}`}
-                                key={v.id}
-                                className="relative w-full text-left flex flex-col bg-white rounded transition-transform duration-500 cursor-pointer hover:-translate-y-2"
-                                style={{ boxShadow: '1px 1px 5px rgba(0, 0, 0, 15%)' }}>
-                                <div className="w-full h-auto aspect-video object-cover bg-gray-background">
-                                    {v.thumbnail && v.thumbnail.src && (
-                                        <Image
-                                            src={v.thumbnail.src}
-                                            alt={v.name}
-                                            width={v.thumbnail.width}
-                                            height={v.thumbnail.height}
-                                            className="w-full h-auto aspect-video object-cover rounded-t"
-                                        />
-                                    )}
-                                </div>
-                                <div className="p-2 flex flex-col gap-y-1">
-                                    <div className="text-sm">{v.name}</div>
-                                    <div className="text-xs">
-                                        {v.categories
-                                            .map(category => category.name)
-                                            .join('/')}
+                <div className='flex flex-col gap-y-14'>
+                    {pageSize > 0 ? (
+                        <div className="grid grid-cols-[repeat(auto-fill,_minmax(160px,_1fr))] gap-3">
+                            {recipes.map(v => (
+                                <Link
+                                    href={`/recipe/${v.id}`}
+                                    key={v.id}
+                                    className="relative w-full text-left flex flex-col bg-white rounded transition-transform duration-500 cursor-pointer hover:-translate-y-2"
+                                    style={{ boxShadow: '1px 1px 5px rgba(0, 0, 0, 15%)' }}>
+                                    <div className="w-full h-auto aspect-video object-cover bg-gray-background">
+                                        {v.thumbnail && v.thumbnail.src && (
+                                            <Image
+                                                src={v.thumbnail.src}
+                                                alt={v.name}
+                                                width={v.thumbnail.width}
+                                                height={v.thumbnail.height}
+                                                className="w-full h-auto aspect-video object-cover rounded-t"
+                                            />
+                                        )}
                                     </div>
-                                    <div className="text-xs text-black">前回の献立日：{v.lastPlannedDate ? dayjs(v.lastPlannedDate).format('YYYY/MM/DD') : '-'}</div>
-                                </div>
-                            </Link>
-                        ))}
-                    </div>
-                ) : (
-                    <p>まだ料理/レシピが登録されていません。</p>
-                )}
+                                    <div className="p-2 flex flex-col gap-y-1">
+                                        <div className="text-sm">{v.name}</div>
+                                        <div className="text-xs">
+                                            {v.categories
+                                                .map(category => category.name)
+                                                .join('/')}
+                                        </div>
+                                        <div className="text-xs text-black">前回の献立日：{v.lastPlannedDate ? dayjs(v.lastPlannedDate).format('YYYY/MM/DD') : '-'}</div>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                    ) : (
+                        <p>まだ料理/レシピが登録されていません。</p>
+                    )}
+                    <Pagination pageSize={pageSize} currentPage={currentPage} onPageChange={handleChangePage} />
+                </div>
             </main>
         </>
     );

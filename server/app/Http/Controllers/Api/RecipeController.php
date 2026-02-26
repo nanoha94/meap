@@ -32,8 +32,8 @@ class RecipeController extends ApiController
      *     summary="料理一覧を取得",
      *     tags={"Recipes"},
      *     security={{"sanctum":{}}},
-     *     @OA\Parameter(ref="#/components/parameters/RecipePageParam"),
-     *     @OA\Parameter(ref="#/components/parameters/RecipePerPageParam"),
+     *     @OA\Parameter(ref="#/components/parameters/RecipeLimitParam"),
+     *     @OA\Parameter(ref="#/components/parameters/RecipeOffsetParam"),
      *     @OA\Parameter(ref="#/components/parameters/RecipeSortParam"),
      *     @OA\Parameter(ref="#/components/parameters/RecipeOrderParam"),
      *     @OA\Parameter(ref="#/components/parameters/RecipeRecipeNameParam"),
@@ -58,8 +58,8 @@ class RecipeController extends ApiController
                 $group = $user->groups()->first();
 
                 // ページネーションのパラメータを取得（デフォルト値も設定）
-                $perPage = $request->input('per_page', 15);
-                $page = $request->input('page', 1);
+                $limit = $request->input('limit', 15);
+                $offset = $request->input('offset', 0);
                 // 並び替えパラメータ
                 $sort = $request->input('sort', 'created_at');
                 $order = $request->input('order', 'desc');
@@ -72,11 +72,9 @@ class RecipeController extends ApiController
                     'last_planned_date_to',
                 ]);
 
-                // TODO: 将来的に無限スクロール対応を検討（現在は全件取得）
-                $res = $this->recipeService->index($group, $sort, $order, $filters);
-                $total = count($res);
-                $message = __('api.list_retrieved', ['attribute' => __('api.attributes.recipe'), 'count' => $total]);
-                return $this->indexResponse($res, $total, $message);
+                $result = $this->recipeService->index($group, $limit, $offset, $sort, $order, $filters);
+                $message = __('api.list_retrieved', ['attribute' => __('api.attributes.recipe'), 'count' => $result['total']]);
+                return $this->indexResponse($result['data'], $result['total'], $message, $limit, $offset);
             },
             $request,
             $failedMessage,

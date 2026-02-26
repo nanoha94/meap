@@ -10,7 +10,7 @@ import { navigationItems } from '@/constants';
 import { useAuth } from '@/hooks';
 import { useRecipeStore } from '@/models/recipe';
 import { useAccountHandlers, useAccountStore } from '@/models/settings';
-import { getQueryString } from '@/models/recipe/utils';
+import { getBrowserQueryString } from '@/models/recipe/utils';
 
 interface Props {
     className?: string;
@@ -23,6 +23,7 @@ const SideNavigation = ({ className }: Props) => {
     const pathname = usePathname();
     const listSortOptions = useRecipeStore(state => state.listSortOptions);
     const listFilterOptions = useRecipeStore(state => state.listFilterOptions);
+    const listCurrentPage = useRecipeStore(state => state.listCurrentPage);
 
     if (!pathname) {
         return <></>;
@@ -30,7 +31,7 @@ const SideNavigation = ({ className }: Props) => {
 
     const formattedLink = (link: string) =>
         link === '/recipe'
-            ? `/recipe?${getQueryString(listSortOptions, listFilterOptions)}`
+            ? `/recipe?${getBrowserQueryString(listSortOptions, listFilterOptions, listCurrentPage)}`
             : link;
 
     return (

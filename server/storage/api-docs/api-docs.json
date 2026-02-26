@@ -738,10 +738,10 @@
                 "operationId": "c8c22c89eaaa570cd6722a3901fed111",
                 "parameters": [
                     {
-                        "$ref": "#/components/parameters/RecipePageParam"
+                        "$ref": "#/components/parameters/RecipeLimitParam"
                     },
                     {
-                        "$ref": "#/components/parameters/RecipePerPageParam"
+                        "$ref": "#/components/parameters/RecipeOffsetParam"
                     },
                     {
                         "$ref": "#/components/parameters/RecipeSortParam"
@@ -3810,27 +3810,27 @@
                     "example": "1"
                 }
             },
-            "RecipePageParam": {
-                "name": "page",
+            "RecipeLimitParam": {
+                "name": "limit",
                 "in": "query",
-                "description": "ページ番号",
-                "required": false,
-                "schema": {
-                    "type": "integer",
-                    "default": 1,
-                    "minimum": 1
-                }
-            },
-            "RecipePerPageParam": {
-                "name": "per_page",
-                "in": "query",
-                "description": "1ページあたりの表示件数",
+                "description": "取得件数（1-100）",
                 "required": false,
                 "schema": {
                     "type": "integer",
                     "default": 15,
                     "maximum": 100,
                     "minimum": 1
+                }
+            },
+            "RecipeOffsetParam": {
+                "name": "offset",
+                "in": "query",
+                "description": "取得開始位置（0以上）",
+                "required": false,
+                "schema": {
+                    "type": "integer",
+                    "default": 0,
+                    "minimum": 0
                 }
             },
             "RecipeIdParam": {

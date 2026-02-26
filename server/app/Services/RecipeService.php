@@ -78,12 +78,14 @@ class RecipeService extends AbstractDomainService
      * レシピ一覧取得（並び替え対応）
      *
      * @param Group $group
+     * @param int|null $limit
+     * @param int|null $offset
      * @param string|null $sort
      * @param string|null $order
      * @param array $filters
      * @return array
      */
-    public function index(Group $group, ?string $sort = 'created_at', ?string $order = 'desc', array $filters = []): array
+    public function index(Group $group, ?int $limit = 15, ?int $offset = 0, ?string $sort = 'created_at', ?string $order = 'desc', array $filters = []): array
     {
         $query = $this->getGroupRelation($group)
             ->select($this->getSelectColumns())
@@ -139,9 +141,11 @@ class RecipeService extends AbstractDomainService
                 break;
         }
 
-        $items = $query->get();
+        $total = $query->count();
+        $items = $query->skip($offset)->take($limit)->get();
+        $data = $items->map(fn($item) => $this->formatIndexResponse($item))->toArray();
 
-        return $items->map(fn($item) => $this->formatIndexResponse($item))->toArray();
+        return ['data' => $data, 'total' => $total];
     }
 
     protected function getCreateFields(): array

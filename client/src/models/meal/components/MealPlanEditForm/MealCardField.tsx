@@ -121,7 +121,7 @@ const MealCardField = ({ mealCategory, mealPlanItems, addItem, deleteItem }: Pro
                         </Sortable>
                     ))}
                     <EmptyButton type="button" className="ml-8 !w-[calc(100%-32px)] !h-auto aspect-[4/3]" onClick={async () => {
-                        await fetchRecipes();
+                        const result = await fetchRecipes();
                         setSelectedRecipeInDialog(null);
                         openDialog({
                             title: '料理を検索',
@@ -131,6 +131,7 @@ const MealCardField = ({ mealCategory, mealPlanItems, addItem, deleteItem }: Pro
                             </HeaderTextButton>,
                             children: () => (
                                 <RecipeSelect
+                                    initFetchedRecipes={result}
                                     selectedRecipe={selectedRecipeInDialog}
                                     disabledRecipes={mealPlanItems.map(item => item.recipeId)}
                                     onSelectedRecipeChange={setSelectedRecipeInDialog}

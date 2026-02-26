@@ -4,20 +4,32 @@ import React from 'react';
 import dayjs from 'dayjs';
 
 import { BUTTON_TYPE } from '@/constants';
-import { useRecipeStore } from '@/models/recipe';
-import { useRecipeFilterForm } from '@/models/recipe/hooks/useRecipeFilterForm';
+import { RecipeFilterFormData, useRecipeStore } from '@/models/recipe';
 import Button from '../Button';
 import { StyledDatePicker, StyledSelect } from '../form-fields';
 import { VerticalRowField, VerticaFromToField } from '../react-hook-form';
 import { useDialog } from '@/hooks';
+import { useForm } from 'react-hook-form';
 
-const RecipeFilterForm = () => {
-    const { control, getValues, trigger, errors, onSubmit } = useRecipeFilterForm();
+interface Props {
+    search: (filterOptions: RecipeFilterFormData) => void;
+}
+
+const RecipeFilterForm = ({ search }: Props) => {
+    const listFilterOptions = useRecipeStore(state => state.listFilterOptions);
+    const { control, handleSubmit, getValues, trigger, formState: { errors } } = useForm<RecipeFilterFormData>({
+        defaultValues: listFilterOptions,
+    });
     const { categories } = useRecipeStore();
     const { closeDialog } = useDialog();
 
+    const onSubmit = (data: RecipeFilterFormData) => {
+        search(data);
+        closeDialog();
+    };
+
     return (
-        <form onSubmit={onSubmit(() => closeDialog())} className="w-full flex flex-col gap-y-10">
+        <form onSubmit={handleSubmit(onSubmit)} className="w-full flex flex-col gap-y-10">
             <div className="mx-auto w-full flex flex-col gap-y-4">
                 <VerticalRowField
                     control={control}

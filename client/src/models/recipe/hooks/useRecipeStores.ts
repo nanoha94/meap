@@ -7,13 +7,14 @@ import { RecipeFilterFormData } from '../types';
 interface RecipeState {
     // state
     recipes: IRecipe[];
-    recipeTotal: number;
     categories: IRecipeCategory[];
     listSortOptions: { sort: string, order: string };
     listFilterOptions: RecipeFilterFormData;
+    listPagesize: number;
+    listCurrentPage: number;
 
     // setter func
-    setRecipes: (recipes: IRecipe[], total: number) => void;
+    setRecipes: (recipes: IRecipe[], pageSize: number, currentPage: number) => void;
     setCategories: (categories: IRecipeCategory[]) => void;
     setListSortOptions: (sortOptionId: string) => void;
     setListFilterOptions: (filterFormData: RecipeFilterFormData) => void;
@@ -22,7 +23,6 @@ interface RecipeState {
 export const useRecipeStore = create<RecipeState>(set => ({
     // initial state
     recipes: [],
-    recipeTotal: 0,
     categories: [],
     listSortOptions: { sort: sortOptions[0].sort, order: sortOptions[0].order },
     listFilterOptions: {
@@ -32,9 +32,11 @@ export const useRecipeStore = create<RecipeState>(set => ({
         lastPlannedDateFrom: '',
         lastPlannedDateTo: '',
     },
+    listPagesize: 0,
+    listCurrentPage: 1,
 
     // setter func
-    setRecipes: (recipes: IRecipe[], total: number) => set({ recipes, recipeTotal: total }),
+    setRecipes: (recipes: IRecipe[], pageSize: number, currentPage: number) => set({ recipes, listPagesize: pageSize, listCurrentPage: currentPage }),
     setCategories: (categories: IRecipeCategory[]) => set({ categories }),
     setListSortOptions: (sortOptionId: string) => {
         const option = sortOptions.find(o => o.id === sortOptionId);

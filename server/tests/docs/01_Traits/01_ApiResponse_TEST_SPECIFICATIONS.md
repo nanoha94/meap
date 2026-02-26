@@ -22,8 +22,8 @@
 | 1-1-4  | 【createdResponse】 データ作成成功レスポンステスト            | 基本機能 | データを入力                         | - 成功フラグが true<br>- ステータスコード 201<br>- データ作成メッセージが含まれる          | `ApiResponse::createdResponse()` |
 | 1-1-5  | 【updatedResponse】 データ更新成功レスポンステスト            | 基本機能 | データを入力                         | - 成功フラグが true<br>- ステータスコード 200<br>- データ更新メッセージが含まれる          | `ApiResponse::updatedResponse()` |
 | 1-1-6  | 【deletedResponse】 データ削除成功レスポンステスト            | 基本機能 | メッセージを入力                     | - 成功フラグが true<br>- ステータスコード 200<br>- データ削除メッセージが含まれる          | `ApiResponse::deletedResponse()` |
-| 1-1-7  | 【indexResponse】 データ一覧取得レスポンステスト              | 基本機能 | データと合計数を入力                 | - 成功フラグが true<br>- ステータスコード 200<br>- データと合計数が含まれる                | `ApiResponse::indexResponse()`  |
-| 1-1-8  | 【indexResponse】 データ一覧取得レスポンステスト（total なし）| 基本機能 | データを入力                         | - 成功フラグが true<br>- ステータスコード 200<br>- データが含まれる                        | `ApiResponse::indexResponse()`  |
+| 1-1-7  | 【indexResponse】 データ一覧取得レスポンステスト              | 基本機能 | データと合計数を入力（limit/offset は省略） | - 成功フラグが true<br>- ステータスコード 200<br>- データと合計数が含まれる<br>- limit/offset がレスポンスに含まれない | `ApiResponse::indexResponse()`  |
+| 1-1-8  | 【indexResponse】 limit/offset 指定時のデータ一覧取得レスポンステスト | 基本機能 | データ、合計数、limit=15、offset=0 を入力 | - 成功フラグが true<br>- ステータスコード 200<br>- データと合計数が含まれる<br>- limit: 15, offset: 0 がレスポンスに含まれる | `ApiResponse::indexResponse()`  |
 | 1-1-9  | 【showResponse】 データ詳細取得レスポンステスト               | 基本機能 | データを入力                         | - 成功フラグが true<br>- ステータスコード 200<br>- データが含まれる                        | `ApiResponse::showResponse()`   |
 | 1-1-10 | 【errorResponse】 エラーレスポンステスト                      | 基本機能 | エラーメッセージを入力               | - 成功フラグが false<br>- ステータスコード 400<br>- エラーメッセージが含まれる             | `ApiResponse::errorResponse()`  |
 | 1-1-11 | 【errorResponse】 エラー詳細付きエラーレスポンステスト        | 基本機能 | エラーメッセージとエラー詳細を入力   | - 成功フラグが false<br>- ステータスコード 400<br>- エラーメッセージとエラー詳細が含まれる | `ApiResponse::errorResponse()`  |
