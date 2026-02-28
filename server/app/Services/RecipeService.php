@@ -95,7 +95,7 @@ class RecipeService extends AbstractDomainService
         if (!empty($filters['recipe_name'])) {
             $keywords = preg_split('/[\s　]+/u', trim($filters['recipe_name']), -1, PREG_SPLIT_NO_EMPTY);
             foreach ($keywords as $keyword) {
-                $query->where('recipes.name', 'like', '%' . $keyword . '%');
+                $query->where('recipes.name', 'ilike', '%' . $keyword . '%');
             }
         }
 
@@ -103,7 +103,7 @@ class RecipeService extends AbstractDomainService
             $keywords = preg_split('/[\s　]+/u', trim($filters['ingredient_name']), -1, PREG_SPLIT_NO_EMPTY);
             foreach ($keywords as $keyword) {
                 $query->whereHas('ingredients', function ($q) use ($keyword) {
-                    $q->where('ingredients.name', 'like', '%' . $keyword . '%');
+                    $q->where('ingredients.name', 'ilike', '%' . $keyword . '%');
                 });
             }
         }
@@ -128,11 +128,10 @@ class RecipeService extends AbstractDomainService
                 $query->orderBy('name', $order);
                 break;
             case 'last_planned_date':
-                // NULL を常に末尾にしたい（献立日がないレシピを最後にする）
                 if (strtolower($order) === 'desc') {
-                    $query->orderByRaw('last_planned_date IS NULL ASC, last_planned_date DESC');
+                    $query->orderByRaw('last_planned_date DESC NULLS LAST');
                 } else {
-                    $query->orderByRaw('last_planned_date IS NULL ASC, last_planned_date ASC');
+                    $query->orderByRaw('last_planned_date ASC NULLS LAST');
                 }
                 break;
             default:

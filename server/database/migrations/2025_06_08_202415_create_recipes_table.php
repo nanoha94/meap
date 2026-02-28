@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('memo')->nullable();
             $table->integer('serving_count')->nullable();
             $table->integer('cooking_time')->nullable();
-            $table->enum('status', ['limited', 'public'])->default('limited');
+            $table->string('status')->default('limited');
             $table->timestamps();
         });
     }
