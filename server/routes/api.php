@@ -18,8 +18,8 @@ use App\Http\Controllers\Api\ImageController;
 
 // 認証のみ必要（メール認証不要）
 Route::middleware(['auth:sanctum'])->group(function () {
-    // 認証ユーザー情報を取得（メール未認証でもアクセス可能）
     Route::get('/user', [UserController::class, 'show']);
+    Route::put('/user', [UserController::class, 'update']);
 });
 
 // メール認証済みユーザーのみアクセス可能

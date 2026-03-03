@@ -3,7 +3,6 @@ import React from 'react';
 import { Control, Controller } from 'react-hook-form';
 
 import { GrippableVerticalItem, ImageEditField } from '@/components';
-import { STYLE_SIZE } from '@/constants';
 import { RecipeEditFormData } from '@/models/recipe/types';
 import { IRecipeStep } from '@/types';
 
@@ -52,7 +51,15 @@ const StepEditItem = ({
                     <ImageEditField
                         control={control}
                         name={`steps.${index}.image`}
-                        size={STYLE_SIZE.SM}
+                        styleConfig={{
+                            iconSmSize: 20,
+                            iconMdSize: 32,
+                            imageRounded: 'rounded-lg',
+                            containerClass: 'aspect-[4/3] bg-gray-light',
+                            labelClass: 'gap-y-1 text-gray-main',
+                            overlayIconContainerClass: 'gap-x-2.5',
+                            overlayIconClass: 'p-1.5',
+                        }}
                     />
 
                     <Controller

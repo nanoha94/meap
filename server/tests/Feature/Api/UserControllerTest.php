@@ -3,9 +3,11 @@
 use App\Models\User;
 use App\Models\Group;
 use App\Models\Color;
+use App\Models\Image;
 use App\Services\UserService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
 
@@ -51,9 +53,7 @@ test('3-11-1: 【一覧取得】 正常なユーザー一覧取得', function ()
                 'language' => 'ja',
                 'avatar' => [
                     'seed' => null,
-                    'url' => null,
-                    'width' => null,
-                    'height' => null,
+                    'image' => null,
                 ]
             ]
         ],
@@ -66,13 +66,12 @@ test('3-11-1: 【一覧取得】 正常なユーザー一覧取得', function ()
         'message',
         'data' => [
             '*' => [
+                'id',
                 'name',
                 'language',
                 'avatar' => [
                     'seed',
-                    'url',
-                    'width',
-                    'height'
+                    'image'
                 ]
             ]
         ],
@@ -131,13 +130,17 @@ test('3-11-2: 【一覧取得】 グループ内ユーザー情報の確認', fu
 });
 
 test('3-11-3: 【一覧取得】 ユーザー情報フォーマット確認', function () {
+    $image = Image::create([
+        'src' => '/storage/images/test.jpg',
+        'width' => 100,
+        'height' => 100
+    ]);
+
     $user = User::factory()->create([
         'name' => 'Test User',
         'language' => 'ja',
         'avatar_seed' => 'testseed',
-        'avatar_image_url' => 'https://example.com/avatar.jpg',
-        'avatar_image_width' => 100,
-        'avatar_image_height' => 100,
+        'avatar_image_id' => $image->id,
         'email_verified_at' => now()
     ]);
 
@@ -163,9 +166,12 @@ test('3-11-3: 【一覧取得】 ユーザー情報フォーマット確認', fu
                 'language' => 'ja',
                 'avatar' => [
                     'seed' => 'testseed',
-                    'url' => 'https://example.com/avatar.jpg',
-                    'width' => 100,
-                    'height' => 100,
+                    'image' => [
+                        'id' => $image->id,
+                        'src' => '/storage/images/test.jpg',
+                        'width' => 100,
+                        'height' => 100,
+                    ]
                 ]
             ]
         ],
@@ -183,9 +189,12 @@ test('3-11-3: 【一覧取得】 ユーザー情報フォーマット確認', fu
                 'language',
                 'avatar' => [
                     'seed',
-                    'url',
-                    'width',
-                    'height'
+                    'image' => [
+                        'id',
+                        'src',
+                        'width',
+                        'height'
+                    ]
                 ]
             ]
         ],
@@ -232,13 +241,12 @@ test('3-11-4: 【一覧取得】 グループに 1 人のみの場合', function
         'message',
         'data' => [
             '*' => [
+                'id',
                 'name',
                 'language',
                 'avatar' => [
                     'seed',
-                    'url',
-                    'width',
-                    'height'
+                    'image'
                 ]
             ]
         ],
@@ -388,7 +396,10 @@ test('3-11-9: 【詳細取得】 正常なユーザー情報取得', function ()
             'id' => $user->id,
             'name' => 'Test User',
             'email' => 'test@example.com',
-            'avatar_seed' => 'testseed123'
+            'avatar' => [
+                'seed' => 'testseed123',
+                'image' => null
+            ]
         ]
     ]);
 
@@ -406,7 +417,10 @@ test('3-11-9: 【詳細取得】 正常なユーザー情報取得', function ()
             'name',
             'email',
             'email_verified_at',
-            'avatar_seed'
+            'avatar' => [
+                'seed',
+                'image'
+            ]
         ]
     ]);
 
@@ -431,7 +445,10 @@ test('3-11-10: 【詳細取得】 メール未認証ユーザー', function () {
             'name' => $user->name,
             'email' => $user->email,
             'email_verified_at' => null,
-            'avatar_seed' => $user->avatar_seed
+            'avatar' => [
+                'seed' => $user->avatar_seed,
+                'image' => null
+            ]
         ]
     ]);
 
@@ -444,7 +461,10 @@ test('3-11-10: 【詳細取得】 メール未認証ユーザー', function () {
             'name',
             'email',
             'email_verified_at',
-            'avatar_seed'
+            'avatar' => [
+                'seed',
+                'image'
+            ]
         ]
     ]);
 });
@@ -456,6 +476,403 @@ test('3-11-11: 【詳細取得】 未認証ユーザー', function () {
     $response->assertJson([
         'success' => false,
         'message' => '認証が必要です。'
+    ]);
+
+    // レスポンス構造の確認
+    $response->assertJsonStructure([
+        'success',
+        'message'
+    ]);
+
+    // Content-Typeがapplication/jsonであることを確認
+    $response->assertHeader('Content-Type', 'application/json');
+});
+
+// ===== update() メソッドのテストケース =====
+
+test('3-11-12: 【更新】 名前のみ更新', function () {
+    $image = Image::create([
+        'src' => '/storage/images/users/dummy/test.jpg',
+        'width' => 100,
+        'height' => 100
+    ]);
+    $user = User::factory()->create([
+        'name' => 'Old Name',
+        'avatar_image_id' => $image->id,
+        'email_verified_at' => now()
+    ]);
+
+    $response = $this->actingAs($user)->putJson('/user', [
+        'name' => 'New Name'
+    ]);
+
+    $response->assertStatus(200);
+    $response->assertJson([
+        'success' => true,
+        'data' => null
+    ]);
+    // メッセージは更新後のユーザー名を含む形式
+    expect($response->json('message'))->toBe('ユーザー(New Name)を更新しました。');
+
+    // データベースで名前が更新され、avatar_image_id は送信されないため null になることを確認
+    $user->refresh();
+    expect($user->name)->toBe('New Name');
+    expect($user->avatar_image_id)->toBeNull();
+
+    // レスポンス構造の確認
+    $response->assertJsonStructure([
+        'success',
+        'message',
+        'data'
+    ]);
+
+    // Content-Typeがapplication/jsonであることを確認
+    $response->assertHeader('Content-Type', 'application/json');
+});
+
+test('3-11-13: 【更新】 アバター画像IDのみ更新', function () {
+    $user = User::factory()->create([
+        'email_verified_at' => now()
+    ]);
+
+    $group = Group::create([
+        'group_size' => 1
+    ]);
+    DB::table('group_user_mappings')->insert([
+        'user_id' => $user->id,
+        'group_id' => $group->id
+    ]);
+
+    $image = Image::create([
+        'src' => "/storage/images/users/{$user->id}/test.jpg",
+        'width' => 100,
+        'height' => 100
+    ]);
+
+    $response = $this->actingAs($user)->putJson('/user', [
+        'avatar_image_id' => $image->id
+    ]);
+
+    $response->assertStatus(200);
+    $response->assertJson([
+        'success' => true,
+        'data' => null
+    ]);
+    // メッセージは更新後のユーザー名を含む形式
+    expect($response->json('message'))->toContain('ユーザー(');
+    expect($response->json('message'))->toContain(')を更新しました。');
+
+    // データベースでアバター画像IDが更新されていることを確認
+    $user->refresh();
+    expect($user->avatar_image_id)->toBe($image->id);
+
+    // レスポンス構造の確認
+    $response->assertJsonStructure([
+        'success',
+        'message',
+        'data'
+    ]);
+
+    // Content-Typeがapplication/jsonであることを確認
+    $response->assertHeader('Content-Type', 'application/json');
+});
+
+test('3-11-14: 【更新】 名前とアバター画像IDを同時に更新', function () {
+    $user = User::factory()->create([
+        'name' => 'Old Name',
+        'email_verified_at' => now()
+    ]);
+
+    $group = Group::create([
+        'group_size' => 1
+    ]);
+    DB::table('group_user_mappings')->insert([
+        'user_id' => $user->id,
+        'group_id' => $group->id
+    ]);
+
+    $image = Image::create([
+        'src' => "/storage/images/users/{$user->id}/test.jpg",
+        'width' => 100,
+        'height' => 100
+    ]);
+
+    $response = $this->actingAs($user)->putJson('/user', [
+        'name' => 'New Name',
+        'avatar_image_id' => $image->id
+    ]);
+
+    $response->assertStatus(200);
+    $response->assertJson([
+        'success' => true,
+        'data' => null
+    ]);
+    // メッセージは更新後のユーザー名を含む形式
+    expect($response->json('message'))->toBe('ユーザー(New Name)を更新しました。');
+
+    // データベースで両方が更新されていることを確認
+    $user->refresh();
+    expect($user->name)->toBe('New Name');
+    expect($user->avatar_image_id)->toBe($image->id);
+
+    // レスポンス構造の確認
+    $response->assertJsonStructure([
+        'success',
+        'message',
+        'data'
+    ]);
+
+    // Content-Typeがapplication/jsonであることを確認
+    $response->assertHeader('Content-Type', 'application/json');
+});
+
+test('3-11-15: 【更新】 アバター画像IDをnullに設定（削除）', function () {
+    // ストレージに画像ファイルを作成
+    $filePath = 'images/test.jpg';
+    Storage::disk('public')->put($filePath, 'fake image content');
+
+    $image = Image::create([
+        'src' => '/storage/' . $filePath,
+        'width' => 100,
+        'height' => 100
+    ]);
+
+    $user = User::factory()->create([
+        'avatar_image_id' => $image->id,
+        'email_verified_at' => now()
+    ]);
+
+    $imageId = $image->id; // 後で確認するために保存
+    $userName = $user->name; // メッセージ検証用に保存
+
+    $response = $this->actingAs($user)->putJson('/user', [
+        'avatar_image_id' => null
+    ]);
+
+    $response->assertStatus(200);
+    $response->assertJson([
+        'success' => true,
+        'data' => null
+    ]);
+    // メッセージは更新後のユーザー名を含む形式
+    expect($response->json('message'))->toBe("ユーザー({$userName})を更新しました。");
+
+    // データベースでアバター画像IDがnullになっていることを確認
+    $user->refresh();
+    expect($user->avatar_image_id)->toBeNull();
+
+    // リレーション経由で画像が取得できないことを確認
+    expect($user->avatarImage)->toBeNull();
+
+    // 画像レコード自体はデータベースに存在し続けることを確認（削除されていない）
+    $this->assertDatabaseHas('images', [
+        'id' => $imageId
+    ]);
+
+    // 画像ファイルはストレージに存在し続けることを確認（削除されていない）
+    expect(Storage::disk('public')->exists($filePath))->toBeTrue();
+
+    // レスポンス構造の確認
+    $response->assertJsonStructure([
+        'success',
+        'message',
+        'data'
+    ]);
+
+    // Content-Typeがapplication/jsonであることを確認
+    $response->assertHeader('Content-Type', 'application/json');
+});
+
+test('3-11-16: 【更新】 アバター画像IDキーを省略した場合、nullになる', function () {
+    $filePath = 'images/test.jpg';
+    Storage::disk('public')->put($filePath, 'fake image content');
+    $image = Image::create([
+        'src' => '/storage/' . $filePath,
+        'width' => 100,
+        'height' => 100
+    ]);
+    $user = User::factory()->create([
+        'name' => 'Test User',
+        'avatar_image_id' => $image->id,
+        'email_verified_at' => now()
+    ]);
+    $userName = $user->name;
+
+    // avatar_image_id を送らずに名前のみ送信（キー省略）
+    $response = $this->actingAs($user)->putJson('/user', [
+        'name' => $userName
+    ]);
+
+    $response->assertStatus(200);
+    $response->assertJson([
+        'success' => true,
+        'data' => null
+    ]);
+    expect($response->json('message'))->toBe("ユーザー({$userName})を更新しました。");
+
+    $user->refresh();
+    expect($user->avatar_image_id)->toBeNull();
+    expect($user->avatarImage)->toBeNull();
+
+    $response->assertJsonStructure([
+        'success',
+        'message',
+        'data'
+    ]);
+    $response->assertHeader('Content-Type', 'application/json');
+});
+
+test('3-11-17: 【更新】 バリデーションエラー（name が文字列でない）', function () {
+    $user = User::factory()->create([
+        'email_verified_at' => now()
+    ]);
+
+    $response = $this->actingAs($user)->putJson('/user', [
+        'name' => 12345
+    ]);
+
+    $response->assertStatus(422);
+    $response->assertJsonValidationErrors(['name']);
+
+    // レスポンス構造の確認
+    $response->assertJsonStructure([
+        'success',
+        'message',
+        'errors' => [
+            'name'
+        ]
+    ]);
+
+    // Content-Typeがapplication/jsonであることを確認
+    $response->assertHeader('Content-Type', 'application/json');
+});
+
+test('3-11-18: 【更新】 バリデーションエラー（name が 255 文字超過）', function () {
+    $user = User::factory()->create([
+        'email_verified_at' => now()
+    ]);
+
+    $response = $this->actingAs($user)->putJson('/user', [
+        'name' => str_repeat('a', 256)
+    ]);
+
+    $response->assertStatus(422);
+    $response->assertJsonValidationErrors(['name']);
+
+    // レスポンス構造の確認
+    $response->assertJsonStructure([
+        'success',
+        'message',
+        'errors' => [
+            'name'
+        ]
+    ]);
+
+    // Content-Typeがapplication/jsonであることを確認
+    $response->assertHeader('Content-Type', 'application/json');
+});
+
+test('3-11-19: 【更新】 バリデーションエラー（avatar_image_id が UUID 形式でない）', function () {
+    $user = User::factory()->create([
+        'email_verified_at' => now()
+    ]);
+
+    $response = $this->actingAs($user)->putJson('/user', [
+        'avatar_image_id' => 'invalid-uuid'
+    ]);
+
+    $response->assertStatus(422);
+    $response->assertJsonValidationErrors(['avatar_image_id']);
+
+    // レスポンス構造の確認
+    $response->assertJsonStructure([
+        'success',
+        'message',
+        'errors' => [
+            'avatar_image_id'
+        ]
+    ]);
+
+    // Content-Typeがapplication/jsonであることを確認
+    $response->assertHeader('Content-Type', 'application/json');
+});
+
+test('3-11-20: 【更新】 avatar_image_id が存在しない画像ID', function () {
+    $user = User::factory()->create([
+        'email_verified_at' => now()
+    ]);
+
+    $group = Group::create([
+        'group_size' => 1
+    ]);
+    DB::table('group_user_mappings')->insert([
+        'user_id' => $user->id,
+        'group_id' => $group->id
+    ]);
+
+    // 存在しないUUIDを生成
+    $nonExistentUuid = '550e8400-e29b-41d4-a716-446655440000';
+
+    $response = $this->actingAs($user)->putJson('/user', [
+        'avatar_image_id' => $nonExistentUuid
+    ]);
+
+    $response->assertStatus(404);
+    $response->assertJson([
+        'success' => false
+    ]);
+
+    // レスポンス構造の確認
+    $response->assertJsonStructure([
+        'success',
+        'message'
+    ]);
+
+    // Content-Typeがapplication/jsonであることを確認
+    $response->assertHeader('Content-Type', 'application/json');
+});
+
+test('3-11-21: 【更新】 未認証ユーザー', function () {
+    $response = $this->putJson('/user', [
+        'name' => 'New Name'
+    ]);
+
+    $response->assertStatus(401);
+    $response->assertJson([
+        'success' => false,
+        'message' => '認証が必要です。'
+    ]);
+
+    // レスポンス構造の確認
+    $response->assertJsonStructure([
+        'success',
+        'message'
+    ]);
+
+    // Content-Typeがapplication/jsonであることを確認
+    $response->assertHeader('Content-Type', 'application/json');
+});
+
+test('3-11-22: 【更新】 UserService 例外', function () {
+    $user = User::factory()->create([
+        'email_verified_at' => now()
+    ]);
+
+    // UserServiceのupdateProfileメソッドで例外を発生させる
+    $this->mock(\App\Services\UserService::class, function ($mock) {
+        $mock->shouldReceive('updateProfile')
+            ->once()
+            ->andThrow(new \Exception('Service exception'));
+    });
+
+    $response = $this->actingAs($user)->putJson('/user', [
+        'name' => 'New Name'
+    ]);
+
+    $response->assertStatus(500);
+    $response->assertJson([
+        'success' => false,
+        'message' => 'ユーザーの更新に失敗しました。'
     ]);
 
     // レスポンス構造の確認

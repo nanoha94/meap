@@ -186,6 +186,10 @@ return [
         'terms' => [
             'required' => 'Agreement to the terms is required for registration.',
         ],
+        'upload_path' => [
+            'no_traversal' => 'The upload path must not contain "..".',
+            'no_absolute' => 'The upload path must not be an absolute path.',
+        ],
     ],
 
     /*

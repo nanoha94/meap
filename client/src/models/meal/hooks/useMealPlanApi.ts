@@ -6,7 +6,7 @@ import { TIMEOUT_MS } from "@/constants";
 import { useApiErrorHandler, useSnackbars } from "@/hooks";
 import axios from "@/lib/axios";
 import { useGlobalStore } from "@/stores";
-import { IPostMealPlanResponse, IPostPutMealPlanRequest, IPutMealPlanResponse } from "@/types";
+import { IPostMealPlanResponse, IPostPutMealPlanRequest } from "@/types";
 
 export const useMealPlanApi = () => {
     const { incrementLoadingCount, decrementLoadingCount } = useGlobalStore();
@@ -77,19 +77,15 @@ export const useMealPlanApi = () => {
             return;
         }
 
-        const sendData: IPostPutMealPlanRequest = data;
-
         try {
             isUpdateRequestRef.current = true;
             incrementLoadingCount();
 
             // APIリクエスト
-            const res = await axios.put(`/meal-plans/${data.id}`, sendData, {
+            const { data: responseData } = await axios.put(`/meal-plans/${data.id}`, data, {
                 timeout: TIMEOUT_MS,
             });
 
-            // レスポンスデータ
-            const responseData: IPutMealPlanResponse = res.data;
             if (responseData.success) {
                 // TODO: プランページのクエリパラメータを変更するか検討（現状はyearとmonthを渡すことになっている）
                 // 日付を変更してもリロード（再データフェッチ）しないようにする

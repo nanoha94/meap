@@ -85,16 +85,14 @@ const IngredientItemList = ({
 
             openDialog({
                 title,
-                children: () => (
-                    <IngredientEditForm
-                        editingItem={editItem}
-                        actionButtonText={actionButtonText}
-                        onAction={(value: IIngredientItem) => {
-                            updateItem(index, value);
-                            closeDialog();
-                        }}
-                    />
-                ),
+                children: <IngredientEditForm
+                    editingItem={editItem}
+                    actionButtonText={actionButtonText}
+                    onAction={(value: IIngredientItem) => {
+                        updateItem(index, value);
+                        closeDialog();
+                    }}
+                />,
             });
         }
     }, [items, category, addEmptyItem, updateItem, openDialog, closeDialog]);

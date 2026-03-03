@@ -9,7 +9,7 @@ import { IUploadImageResponse } from '@/types';
 export const useImageApi = () => {
     const { addSnackbar } = useSnackbars();
     const { handleApiError } = useApiErrorHandler();
-    const bulkUploadImage = React.useCallback(async (files: File[]) => {
+    const bulkUploadImage = React.useCallback(async (files: File[], uploadPath?: string) => {
         try {
             // FormDataを作成してファイルを追加
             const formData = new FormData();
@@ -20,6 +20,11 @@ export const useImageApi = () => {
                     formData.append('images[]', file);
                 }
             });
+
+            // upload_path が指定されていれば FormData に追加
+            if (uploadPath) {
+                formData.append('upload_path', uploadPath);
+            }
 
             const res = await axios.post<IUploadImageResponse>(
                 `/images/upload-bulk`,

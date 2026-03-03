@@ -81,14 +81,12 @@ const MealCardField = ({ mealCategory, mealPlanItems, addItem, deleteItem }: Pro
                     確定
                 </HeaderTextButton>
             ),
-            children: () => (
-                <RecipeSelect
-                    selectedRecipe={selectedRecipeInDialog}
-                    disabledRecipes={mealPlanItems.map(item => item.recipeId)}
-                    onSelectedRecipeChange={setSelectedRecipeInDialog}
-                    onConfirm={handleConfirm}
-                />
-            ),
+            children: <RecipeSelect
+                selectedRecipe={selectedRecipeInDialog}
+                disabledRecipes={mealPlanItems.map(item => item.recipeId)}
+                onSelectedRecipeChange={setSelectedRecipeInDialog}
+                onConfirm={handleConfirm}
+            />,
         });
     }, [selectedRecipeInDialog, dialogButtonDisabled, updateCurrentDialogConfig, handleConfirm]);
 
@@ -129,15 +127,13 @@ const MealCardField = ({ mealCategory, mealPlanItems, addItem, deleteItem }: Pro
                                 <Check size={20} strokeWidth={2} />
                                 確定
                             </HeaderTextButton>,
-                            children: () => (
-                                <RecipeSelect
-                                    initFetchedRecipes={result}
-                                    selectedRecipe={selectedRecipeInDialog}
-                                    disabledRecipes={mealPlanItems.map(item => item.recipeId)}
-                                    onSelectedRecipeChange={setSelectedRecipeInDialog}
-                                    onConfirm={handleConfirm}
-                                />
-                            ),
+                            children: <RecipeSelect
+                                initFetchedRecipes={result}
+                                selectedRecipe={selectedRecipeInDialog}
+                                disabledRecipes={mealPlanItems.map(item => item.recipeId)}
+                                onSelectedRecipeChange={setSelectedRecipeInDialog}
+                                onConfirm={handleConfirm}
+                            />,
                             maxWidth: 1000,
                         });
                     }} />

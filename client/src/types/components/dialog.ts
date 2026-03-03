@@ -16,7 +16,7 @@ export type DialogConfig = {
     title: string;
     customButton?: React.ReactNode;
     maxWidth?: number;
-    children: () => React.ReactNode;
+    children: React.ReactNode;
 };
 
 export type DialogData = {

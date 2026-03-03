@@ -2,7 +2,7 @@ import { create } from 'zustand';
 
 import { ILoginUser, IUser } from '@/types';
 
-interface AccountState {
+interface UserState {
     // state
     loginUser: ILoginUser; // ログインユーザー
     users: IUser[]; // グループ内ユーザー一覧
@@ -12,12 +12,12 @@ interface AccountState {
     setUsers: (users: IUser[]) => void;
 }
 
-export const useAccountStore = create<AccountState>(set => ({
+export const useUserStore = create<UserState>(set => ({
     // initial state
     loginUser: {} as ILoginUser,
     users: [] as IUser[],
 
     // setter func
-    setLoginUser: (loginUser:ILoginUser) => set({ loginUser }),
+    setLoginUser: (loginUser: ILoginUser) => set({ loginUser }),
     setUsers: (users: IUser[]) => set({ users }),
 }));

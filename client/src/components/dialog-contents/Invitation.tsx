@@ -7,7 +7,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { TextButton } from '@/components';
 import { colors } from '@/constants';
 import { useDialog, useTextCopy } from '@/hooks';
-import { useInvitationApi } from '@/models/settings';
+import { useInvitationApi } from '@/models/user';
 
 const Invitation: React.FC = () => {
     const { closeDialog } = useDialog();

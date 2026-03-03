@@ -50,11 +50,10 @@ const ShoppingItemCard = ({ item }: Props) => {
             onClick: () => {
                 openDialog({
                     title: '買い物アイテムを編集',
-                    children: () =>
-                        <ShoppingItemEditForm
-                            editingItem={item}
-                            editMode={EDIT_MODE.UPDATE}
-                        />
+                    children: <ShoppingItemEditForm
+                        editingItem={item}
+                        editMode={EDIT_MODE.UPDATE}
+                    />
                 });
             },
         },

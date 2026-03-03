@@ -42,8 +42,8 @@ class ImageController extends ApiController
                 // 画像ファイルを取得
                 $imageFiles = $this->imageService->getValidImageFiles($request, 20);
 
-                // グループID配下に直接保存
-                $uploadPath = (string)$group->id;
+                // upload_path 指定時はそのパスを使用、未指定時は groups/{group_id} 配下に保存
+                $uploadPath = $validated['upload_path'] ?? 'groups/' . $group->id;
 
                 // 画像をアップロード
                 $uploadedImages = collect($imageFiles)

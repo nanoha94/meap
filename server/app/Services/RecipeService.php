@@ -552,12 +552,6 @@ class RecipeService extends AbstractDomainService
                 $newImageId = $requestStep['imageId'] ?? null;
                 $currentImageId = $step->images->first()?->id;
 
-                // 新しい画像IDが指定されている場合、先に存在確認を行う
-                // これにより、存在しない画像の場合は古い画像を削除する前にエラーになる
-                if (!empty($newImageId)) {
-                    $this->imageService->findImagesByIds([$newImageId], $group);
-                }
-
                 // 画像が変更された場合（null/空文字列も含む）
                 if ($newImageId !== $currentImageId) {
                     // 既存の画像を削除リストに追加
@@ -606,12 +600,10 @@ class RecipeService extends AbstractDomainService
 
     /**
      * 手順に画像を紐づける
+     * 注: 画像の存在確認は呼び出し元で事前に行うこと（updateStepsでは533行目で一括検証済み）
      */
     private function attachStepImage(RecipeStep $step, string $imageId, Group $group): void
     {
-        // 画像の存在とグループスコープを検証
-        $this->imageService->findImagesByIds([$imageId], $group);
-
         $step->images()->attach($imageId, [
             'group_id' => $group->id,
             'related_model' => RecipeStep::class,

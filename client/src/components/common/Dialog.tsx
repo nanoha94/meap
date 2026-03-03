@@ -27,7 +27,7 @@ const Dialog = () => {
                     </button>
                 </div>
             </div>
-            <div className="p-5 flex-1 overflow-y-auto">{v.config.children()}</div>
+            <div className="p-5 flex-1 overflow-y-auto">{v.config.children}</div>
         </div>
     </div>);
 };

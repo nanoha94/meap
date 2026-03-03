@@ -9,18 +9,18 @@ import ApplicationLogo from '../ApplicationLogo';
 import { navigationItems } from '@/constants';
 import { useAuth } from '@/hooks';
 import { useRecipeStore } from '@/models/recipe';
-import { useAccountHandlers, useAccountStore } from '@/models/settings';
+import { useUserStore, iconAvatar } from '@/models/user';
 import { getBrowserQueryString } from '@/models/recipe/utils';
+import Image from 'next/image';
 
 interface Props {
     className?: string;
 }
 
 const SideNavigation = ({ className }: Props) => {
-    const { loginUser } = useAccountStore();
     const { logout } = useAuth();
-    const { iconAvatar } = useAccountHandlers();
     const pathname = usePathname();
+    const loginUser = useUserStore(state => state.loginUser);
     const listSortOptions = useRecipeStore(state => state.listSortOptions);
     const listFilterOptions = useRecipeStore(state => state.listFilterOptions);
     const listCurrentPage = useRecipeStore(state => state.listCurrentPage);
@@ -47,17 +47,26 @@ const SideNavigation = ({ className }: Props) => {
                 {loginUser && (
                     <Link
                         href="/settings/account"
-                        key={loginUser.avatar_seed}
+                        key={loginUser.id}
                         className="py-2 px-3 w-full mx-auto flex flex-col items-center gap-y-1 transition-colors hover:bg-gray-light ">
-                        {/* TODO: アイコンの指定がある場合はアイコン、指定がない場合はiconsを使用する */}
-                        <div
-                            className="w-14 h-auto aspect-square rounded-full overflow-hidden"
-                            dangerouslySetInnerHTML={{
-                                __html: iconAvatar(
-                                    loginUser.avatar_seed ?? '',
-                                ).toString(),
-                            }}
-                        />
+                        <div className="w-14 h-auto aspect-square rounded-full overflow-hidden">
+                            {loginUser?.avatar?.image ? (
+                                <Image
+                                    src={loginUser.avatar.image.src}
+                                    alt="avatar"
+                                    width={loginUser.avatar.image.width}
+                                    height={loginUser.avatar.image.height}
+                                    className="w-full h-full object-cover"
+                                />
+                            ) : (
+                                <div
+                                    dangerouslySetInnerHTML={{
+                                        __html: iconAvatar(
+                                            loginUser?.avatar?.seed ?? '',
+                                        ).toString(),
+                                    }}
+                                />
+                            )}</div>
                         <div className="text-sm">{loginUser.name}</div>
                     </Link>
                 )}

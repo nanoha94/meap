@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Laravel\Sanctum\HasApiTokens;
@@ -31,9 +32,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'password',
         'language',
         'avatar_seed', // アイコン生成用のシード値
-        'avatar_image_url',
-        'avatar_image_width',
-        'avatar_image_height',
+        'avatar_image_id',
     ];
 
     /**
@@ -119,6 +118,14 @@ class User extends Authenticatable implements MustVerifyEmail
         } while (self::where('avatar_seed', $customId)->exists());
 
         return $customId;
+    }
+
+    /**
+     * プロフィールアイコン画像を取得する
+     */
+    public function avatarImage(): BelongsTo
+    {
+        return $this->belongsTo(Image::class, 'avatar_image_id');
     }
 
     /**

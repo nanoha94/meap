@@ -3,8 +3,10 @@
 namespace App\Services;
 
 use App\Enums\HttpStatusCode;
+use App\Enums\ImageScope;
 use App\Models\Group;
 use App\Models\Image;
+use App\Models\User;
 use App\Traits\LoggingTrait;
 use Exception;
 use Illuminate\Http\Request;
@@ -57,23 +59,31 @@ class ImageService
 
 
     /**
-     * 指定されたIDの画像を取得し、グループスコープで検証
+     * 指定されたIDの画像を取得し、スコープで検証
      * 
      * @param array $imageIds 取得する画像IDの配列
-     * @param \App\Models\Group $group ユーザーの所属グループ（検証用）
+     * @param \App\Models\Group|null $group グループスコープ検証時に使用するグループ（scope=ImageScope::GROUPの場合に必須）
+     * @param \App\Models\User|null $user ユーザースコープ検証時に使用するユーザー（scope=ImageScope::USERの場合に使用）
+     * @param \App\Enums\ImageScope $scope 検証スコープ。デフォルトは ImageScope::GROUP
      * @return \Illuminate\Support\Collection 検証済みの画像コレクション
-     * @throws HttpException 画像が見つからない、またはグループに属していない場合
+     * @throws HttpException 画像が見つからない、または指定されたスコープに属していない場合
      */
-    public function findImagesByIds(array $imageIds, Group $group): Collection
-    {
+    public function findImagesByIds(
+        array $imageIds,
+        ?Group $group = null,
+        ?User $user = null,
+        ImageScope $scope = ImageScope::GROUP
+    ): Collection {
         if (empty($imageIds)) {
             return collect();
         }
 
         $images = Image::whereIn('id', $imageIds)->get();
-        $groupIdPattern = "/images\\/{$group->id}\\//";
 
-        // すべての画像が存在し、かつグループに属していることを確認
+        // スコープに応じてパターンを決定
+        $pattern = $this->getScopePattern($scope, $group, $user);
+
+        // すべての画像が存在し、かつ指定されたスコープに属していることを確認
         $validImages = collect();
         foreach ($imageIds as $imageId) {
             $image = $images->firstWhere('id', $imageId);
@@ -85,7 +95,7 @@ class ImageService
                 );
             }
 
-            if (!preg_match($groupIdPattern, $image->src)) {
+            if (!preg_match($pattern, $image->src)) {
                 throw new HttpException(
                     HttpStatusCode::NOT_FOUND->value,
                     __('api.not_found', ['attribute' => __('api.attributes.image')])
@@ -99,15 +109,73 @@ class ImageService
     }
 
     /**
+     * スコープに応じたパスパターンを取得
+     * 
+     * @param \App\Enums\ImageScope $scope 検証スコープ
+     * @param \App\Models\Group|null $group グループ（groupスコープ時に使用）
+     * @param \App\Models\User|null $user ユーザー（userスコープ時に使用）
+     * @return string 正規表現パターン
+     * @throws HttpException 必須パラメータが不足している場合
+     */
+    private function getScopePattern(ImageScope $scope, ?Group $group, ?User $user): string
+    {
+        return match ($scope) {
+            ImageScope::USER => $this->getUserScopePattern($user),
+            ImageScope::GROUP => $this->getGroupScopePattern($group),
+        };
+    }
+
+    /**
+     * ユーザースコープのパスパターンを取得
+     * 
+     * @param \App\Models\User|null $user ユーザー
+     * @return string 正規表現パターン
+     * @throws HttpException ユーザーが指定されていない場合
+     */
+    private function getUserScopePattern(?User $user): string
+    {
+        // ユーザースコープ: images/users/{user_id}/ のみ許可
+        if ($user === null) {
+            throw new HttpException(
+                HttpStatusCode::INTERNAL_SERVER_ERROR->value,
+                'User is required for user scope validation'
+            );
+        }
+        $escapedUserId = preg_quote($user->id, '/');
+        return "/images\\/users\\/{$escapedUserId}\\//";
+    }
+
+    /**
+     * グループスコープのパスパターンを取得
+     * 
+     * @param \App\Models\Group|null $group グループ
+     * @return string 正規表現パターン
+     * @throws HttpException グループが指定されていない場合
+     */
+    private function getGroupScopePattern(?Group $group): string
+    {
+        if ($group === null) {
+            throw new HttpException(
+                HttpStatusCode::INTERNAL_SERVER_ERROR->value,
+                'Group is required for group scope validation'
+            );
+        }
+
+        // グループスコープ: images/groups/{group_id}/ のみ許可
+        $escapedGroupId = preg_quote($group->id, '/');
+        return "/images\\/groups\\/{$escapedGroupId}\\//";
+    }
+
+    /**
      * 画像を一括削除
      * 
      * 指定されたrelatedIdとの紐づけを解除します。
-     * 紐づけ解除後、他の紐づけが残っていない場合は画像レコードと物理ファイルも削除します。
+     * imagesテーブルからは削除せず、紐づけ解除のみを行います。
      * 
      * @param array $imageIds 削除する画像IDの配列
      * @param string $relatedId 紐づけを解除するエンティティのID（必須）
      * @param \App\Models\Group $group ユーザーの所属グループ（安全性チェック用）
-     * @return int 削除された画像の数（紐づけ解除のみの場合はカウントしない）
+     * @return int 紐づけ解除された画像の数
      */
     public function deleteImages(array $imageIds, string $relatedId, Group $group): int
     {
@@ -117,7 +185,9 @@ class ImageService
 
         // 指定されたIDの画像を取得し、グループIDがパスに含まれているかチェック
         $images = Image::whereIn('id', $imageIds)->get();
-        $groupIdPattern = "/images\\/{$group->id}\\//";
+        $escapedGroupId = preg_quote($group->id, '/');
+        // 旧形式(images/{group_id}/...)と現形式(images/groups/{group_id}/...)の両方を許可
+        $groupIdPattern = "/images\\/(groups\\/)?{$escapedGroupId}\\//";
 
         // 削除対象の画像を抽出（グループチェック）
         $imagesToProcess = [];
@@ -137,9 +207,9 @@ class ImageService
             return 0;
         }
 
-        // トランザクション内でDB削除を実行
-        $deletedImages = DB::transaction(function () use ($imagesToProcess, $relatedId, $group,) {
-            $deleted = [];
+        // トランザクション内で紐づけ解除を実行
+        $unlinkedCount = DB::transaction(function () use ($imagesToProcess, $relatedId, $group) {
+            $count = 0;
             foreach ($imagesToProcess as $image) {
                 // 指定された紐づけを解除（主キー: image_id, related_id, group_id）
                 $deletedMappingCount = DB::table('image_mappings')
@@ -148,37 +218,14 @@ class ImageService
                     ->where('related_id', $relatedId)
                     ->delete();
 
-                // 紐づけ解除後、他の紐づけが残っているかチェック
-                $remainingMappingCount = DB::table('image_mappings')
-                    ->where('image_id', $image->id)
-                    ->where('group_id', $group->id)
-                    ->count();
-
-                if ($remainingMappingCount > 0) {
-                    // 他の紐づけが残っている場合は画像レコードを削除しない
-                    continue;
+                if ($deletedMappingCount > 0) {
+                    $count++;
                 }
-
-                // 他の紐づけが残っていない場合は、画像レコードを削除
-                // （image_mappingsは存在しないため、カスケード削除は発生しない）
-                $image->delete();
-                $deleted[] = $image;
             }
-            return $deleted;
+            return $count;
         });
 
-        // トランザクションコミット後、ファイルを削除
-        foreach ($deletedImages as $image) {
-            if (!$this->deleteImageFile($image->src)) {
-                $this->logWarning(__METHOD__,  __('operations.image.bulk_destroy'), __('api.image.deletion_failed'), [
-                    'image_id' => $image->id,
-                    'image_src' => $image->src
-                ]);
-                throw new HttpException(HttpStatusCode::INTERNAL_SERVER_ERROR->value, __('api.image.deletion_failed'));
-            }
-        }
-
-        return count($deletedImages);
+        return $unlinkedCount;
     }
 
     /**

@@ -104,8 +104,14 @@ abstract class AbstractDomainService
     public function index(Group $group): array
     {
         return DB::transaction(function () use ($group) {
-            $query = $this->getGroupRelation($group)
-                ->select($this->getSelectColumns());
+            $relation = $this->getGroupRelation($group);
+            $query = $relation;
+
+            // BelongsToManyリレーションの場合はselect()を使わない
+            // select()を使うとテーブル名のプレフィックスが必要になるため
+            if (!($relation instanceof BelongsToMany) && $this->getSelectColumns()) {
+                $query = $query->select($this->getSelectColumns());
+            }
 
             if ($this->getWithColumns()) {
                 $query->with($this->getWithColumns());
@@ -180,8 +186,13 @@ abstract class AbstractDomainService
     public function show(string $id, Group $group): array
     {
         return DB::transaction(function () use ($id, $group) {
-            $item = $this->getGroupRelation($group)
-                ->where('id', $id)->select($this->getSelectColumns());
+            $relation = $this->getGroupRelation($group);
+            $item = $relation->where('id', $id);
+
+            // BelongsToManyリレーションの場合はselect()を使わない
+            if (!($relation instanceof BelongsToMany) && $this->getSelectColumns()) {
+                $item = $item->select($this->getSelectColumns());
+            }
 
             if ($this->getWithColumns()) {
                 $item->with($this->getWithColumns());
@@ -296,7 +307,11 @@ abstract class AbstractDomainService
      */
     public function findItemsByIds(array $ids, Group $group): Collection
     {
-        $items = $this->getGroupRelation($group)->whereIn('id', $ids);
+        $relation = $this->getGroupRelation($group);
+        $items = $relation->whereIn('id', $ids);
+
+        // BelongsToManyリレーションの場合はselect()を使わない
+        // このメソッドではselect()を使っていないが、将来の拡張のためにコメントを追加
 
         if ($this->getWithColumns()) {
             $items->with($this->getWithColumns());

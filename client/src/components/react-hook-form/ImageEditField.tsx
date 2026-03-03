@@ -4,41 +4,33 @@ import Image from 'next/image';
 import { Control, Controller, FieldValues, Path } from 'react-hook-form';
 import { ImagePlus, Trash2 } from 'lucide-react';
 
-import { MAX_IMAGE_SIZE, STYLE_SIZE } from '@/constants';
-import { IImageWithFile } from '@/types';
+import { MAX_IMAGE_SIZE } from '@/constants';
+import { IImageWithFile, ImageEditFieldStyleConfig } from '@/types';
 
 interface Props<T extends FieldValues> {
     control: Control<T>;
     name: Path<T>;
-    size?: (typeof STYLE_SIZE)[keyof typeof STYLE_SIZE];
+    styleConfig?: Partial<ImageEditFieldStyleConfig>;
     className?: string;
 }
 
-const sizeConfigs = {
-    [STYLE_SIZE.SM]: {
-        iconSmSize: 20,
-        iconMdSize: 32,
-        iconSmPadding: 'p-1.5',
-        iconsGapX: 'gap-x-2.5',
-        iconTextGapY: 'gap-y-1',
-        imageRounded: 'rounded-lg',
-    },
-    [STYLE_SIZE.LG]: {
-        iconSmSize: 32,
-        iconMdSize: 40,
-        iconSmPadding: 'p-4',
-        iconsGapX: 'gap-x-6',
-        iconTextGapY: 'gap-y-4',
-        imageRounded: 'rounded-none md:rounded-lg',
-    },
+const defaultStyleConfig: ImageEditFieldStyleConfig = {
+    iconSmSize: 32,
+    iconMdSize: 40,
+    imageRounded: 'rounded-none md:rounded-lg',
+    containerClass: 'aspect-[4/3] bg-gray-light',
+    labelClass: 'gap-y-4 text-gray-main',
+    overlayIconContainerClass: 'gap-x-6',
+    overlayIconClass: 'p-4',
 };
 
 const ImageEditField = <T extends FieldValues>({
     control,
     name,
-    size = STYLE_SIZE.LG,
+    styleConfig: styleConfigOverride,
     className,
 }: Props<T>) => {
+    const styleConfig = { ...defaultStyleConfig, ...styleConfigOverride };
     const fileInputRef = React.useRef<HTMLInputElement>(null);
     // nameプロパティから一意のIDを生成（配列のインデックスやネストされたパスに対応）
     const inputId = React.useMemo(
@@ -114,7 +106,7 @@ const ImageEditField = <T extends FieldValues>({
                 control={control}
                 name={name}
                 render={({ field: { onChange, value } }) => (
-                    <div className={`relative w-full h-auto aspect-[4/3] bg-gray-light rounded-lg transition-opcity ${sizeConfigs[size].imageRounded}`}>
+                    <div className={`relative w-full h-auto transition-opacity ${styleConfig.containerClass} ${styleConfig.imageRounded}`}>
                         {/* サムネイルが設定されている場合 */}
                         {value?.src && value?.src?.length > 0 ? (
                             <>
@@ -123,17 +115,17 @@ const ImageEditField = <T extends FieldValues>({
                                     alt={name}
                                     width={value.width}
                                     height={value.height}
-                                    className="absolute top-0 left-0 w-full h-full object-cover rounded-lg"
+                                    className={`absolute top-0 left-0 w-full h-full object-cover ${styleConfig.imageRounded}`}
                                 />
                                 <div
-                                    className={`absolute top-0 left-0 w-full h-full flex items-center justify-center ${sizeConfigs[size].iconsGapX}`}>
+                                    className={`absolute top-0 left-0 w-full h-full flex items-center justify-center ${styleConfig.overlayIconContainerClass}`}>
                                     <div className="relative group">
                                         <label
                                             htmlFor={inputId}
-                                            className={`${sizeConfigs[size].iconSmPadding} inline-block cursor-pointer text-white rounded-full bg-gray-main/80 transition-opacity hover:opacity-70`}>
+                                            className={`${styleConfig.overlayIconClass} inline-block cursor-pointer text-white rounded-full bg-gray-main/80 transition-opacity hover:opacity-70`}>
                                             <ImagePlus
                                                 size={
-                                                    sizeConfigs[size].iconSmSize
+                                                    styleConfig.iconSmSize
                                                 }
                                                 strokeWidth={1.5}
                                             />
@@ -151,10 +143,10 @@ const ImageEditField = <T extends FieldValues>({
                                                     value,
                                                 )
                                             }
-                                            className={`${sizeConfigs[size].iconSmPadding} cursor-pointer text-white rounded-full bg-gray-main/80 transition-opacity hover:opacity-70`}>
+                                            className={`${styleConfig.overlayIconClass} cursor-pointer text-white rounded-full bg-gray-main/80 transition-opacity hover:opacity-70`}>
                                             <Trash2
                                                 size={
-                                                    sizeConfigs[size].iconSmSize
+                                                    styleConfig.iconSmSize
                                                 }
                                             />
                                         </button>
@@ -165,12 +157,11 @@ const ImageEditField = <T extends FieldValues>({
                                 </div>
                             </>
                         ) : (
-                            // サムネイルが未設定の場合
                             <label
                                 htmlFor={inputId}
-                                className={`absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center ${sizeConfigs[size].iconTextGapY} cursor-pointer text-gray-main rounded-lg hover:opacity-70`}>
+                                className={`absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center cursor-pointer ${styleConfig.labelClass} ${styleConfig.imageRounded} hover:opacity-70`}>
                                 <ImagePlus
-                                    size={sizeConfigs[size].iconMdSize}
+                                    size={styleConfig.iconMdSize}
                                     strokeWidth={1.5}
                                 />
                                 <span>画像を設定</span>

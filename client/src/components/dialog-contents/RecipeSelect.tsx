@@ -78,9 +78,7 @@ const RecipeSelect = ({ initFetchedRecipes, selectedRecipe, disabledRecipes, onS
                 <button type="button" onClick={() => {
                     openDialog({
                         title: '絞り込み条件',
-                        children: () => (
-                            <RecipeFilterForm search={handleChangeFilterOptions} />
-                        ),
+                        children: <RecipeFilterForm search={handleChangeFilterOptions} />,
                     });
                 }} className="py-1 px-2 flex items-center gap-x-2 rounded hover:bg-gray-light">
                     <SlidersHorizontal color={colors.black} strokeWidth={1.5} />絞り込み</button>

@@ -3,7 +3,7 @@ import React from 'react';
 
 import { useIngredientStore } from '@/models/ingredient';
 import { useRecipeStore } from '@/models/recipe';
-import { useAccountStore } from '@/models/settings';
+import { useUserStore } from '@/models/user';
 import { useShoppingStore } from '@/models/shopping';
 import { ILoginUser, IMaster } from '@/types';
 import { useMealStore } from '@/models/meal';
@@ -20,11 +20,12 @@ interface Props {
  * @returns void
  */
 const DataHandler = ({ user, masterData }: Props) => {
-    const { setLoginUser, setUsers } = useAccountStore();
     const { setCategories: setIngredientCategories, setUnits: setIngredientUnits } = useIngredientStore();
     const { setCategories: setRecipeCategories } = useRecipeStore();
     const { setMealCategories } = useMealStore();
     const { setCategories: setShoppingCategories } = useShoppingStore();
+    const setLoginUser = useUserStore(state => state.setLoginUser);
+    const setUsers = useUserStore(state => state.setUsers);
 
     /**
      * ユーザー情報をストアにセット

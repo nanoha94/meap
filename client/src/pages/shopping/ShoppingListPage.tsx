@@ -32,7 +32,7 @@ const ShoppingListPage: React.FC<Props> = ({ fetchItems, errorMessage }) => {
     const handleOpenCategorySettingDialog = () => {
         openDialog({
             title: '買い物カテゴリ―設定',
-            children: () => <ShoppingCategoryEditForm />,
+            children: <ShoppingCategoryEditForm />,
         });
     };
 

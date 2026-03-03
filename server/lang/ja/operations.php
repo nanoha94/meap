@@ -67,6 +67,7 @@ return [
     ],
     'users' => [
         'index' => 'ユーザー一覧取得',
+        'update' => 'プロフィール更新',
     ],
 
     'master' => [

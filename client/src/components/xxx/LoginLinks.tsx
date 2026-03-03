@@ -2,10 +2,10 @@
 import React from 'react';
 import Link from 'next/link';
 
-import { useAccountStore } from '@/models/settings';
+import { useUserStore } from '@/models/user';
 
 const LoginLinks = () => {
-    const { loginUser } = useAccountStore();
+    const loginUser = useUserStore(state => state.loginUser);
 
     return (
         <div className="fixed top-0 right-0 px-6 py-4">

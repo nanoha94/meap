@@ -5,7 +5,7 @@ import dayjs from 'dayjs';
 import { Button } from '@/components';
 import { BUTTON_VARIANT, COLOR_VARIANT } from '@/constants';
 import { useDialog } from '@/hooks';
-import { useAccountHandlers, useInvitationApi } from '@/models/settings';
+import { useAccountNavigation, useInvitationApi, iconAvatar } from '@/models/user';
 import { IInvitation } from '@/types';
 
 interface Props {
@@ -15,7 +15,7 @@ interface Props {
 
 const JoinGroup: React.FC<Props> = ({ invitationDetail, isDelete = false }) => {
     const { joinGroup } = useInvitationApi();
-    const { iconAvatar, removeTokenFromPath } = useAccountHandlers();
+    const { removeTokenFromPath } = useAccountNavigation();
     const { closeDialog } = useDialog();
 
     /**

@@ -10,12 +10,12 @@ import {
     IPostInvitationJoinResponse,
 } from '@/types';
 import { DELETE_CHECK_FOR_JOIN_GROUP_DIALOG_CONFIGS, JOIN_ERROR_TYPE } from '../constants';
-import { useAccountHandlers } from './useAccountHandlers';
+import { useAccountNavigation } from './useAccountNavigation';
 
 export const useInvitationApi = () => {
     const { addSnackbar } = useSnackbars();
     const { openAlertDialog } = useAlertDialog();
-    const { removeTokenFromPath } = useAccountHandlers();
+    const { removeTokenFromPath } = useAccountNavigation();
     const { handleApiError } = useApiErrorHandler();
     const { incrementLoadingCount, decrementLoadingCount } = useGlobalStore();
     // fetchInvitationTokenのローディング状態（画面全体のローディングアニメーションは動作させたくないためローカル管理）

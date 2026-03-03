@@ -20,7 +20,7 @@ import {
     useRecipeApi,
     useRecipeEditForm,
 } from '@/models/recipe';
-import { useAccountStore } from '@/models/settings';
+import { useUserStore } from '@/models/user';
 import { ActionButton, IRecipe } from '@/types';
 
 
@@ -39,9 +39,10 @@ const RecipeEditPage = ({
     errorMessage,
 }: Props) => {
     const { addSnackbar } = useSnackbars();
-    const { loginUser, users } = useAccountStore();
     const { openAlertDialog } = useAlertDialog();
     const { deleteRecipe } = useRecipeApi();
+    const loginUser = useUserStore(state => state.loginUser);
+    const users = useUserStore(state => state.users);
     const [ownerUserId, setOwnerUserId] = React.useState<string>(
         (fetchedRecipe as IRecipe)?.ownerUserId || loginUser.id,
     );
@@ -53,7 +54,6 @@ const RecipeEditPage = ({
         isDisabledSendButton,
     } = useRecipeEditForm(ownerUserId, fetchedRecipe);
     const { isTextCopied, copyToClipboard } = useTextCopy();
-
 
     /**
      * ヘッダーのアクションボタン設定
@@ -72,6 +72,13 @@ const RecipeEditPage = ({
             color: COLOR_VARIANT.ALERT,
         },
     ] : [];
+
+    /**
+     * 編集責任者を設定
+     */
+    React.useEffect(() => {
+        setOwnerUserId(fetchedRecipe?.ownerUserId || loginUser.id);
+    }, [fetchedRecipe, loginUser]);
 
 
     /**

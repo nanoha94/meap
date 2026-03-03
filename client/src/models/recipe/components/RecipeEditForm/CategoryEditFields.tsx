@@ -143,7 +143,7 @@ const CategoryEditFields = ({ control }: Props) => {
                     onClick={() => {
                         openDialog({
                             title: '料理カテゴリーを設定',
-                            children: () => <RecipeCategoryEditForm />
+                            children: <RecipeCategoryEditForm />
                         });
                     }}>
                     カテゴリーの追加・編集

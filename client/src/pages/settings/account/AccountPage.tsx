@@ -2,10 +2,11 @@
 import React from 'react';
 import { ChevronRight } from 'lucide-react';
 
-import { Header, Invitation, JoinGroup, TextButton } from '@/components';
+import { Header, Invitation, JoinGroup, ProfileEditForm, TextButton } from '@/components';
 import { useDialog, useSnackbars } from '@/hooks';
-import { useAccountHandlers, useAccountStore } from '@/models/settings';
+import { useUserStore, iconAvatar } from '@/models/user';
 import { IInvitation } from '@/types';
+import Image from 'next/image';
 
 interface Props {
     invitationDetail?: IInvitation | null;
@@ -14,11 +15,9 @@ interface Props {
 
 const AccountPage = ({ invitationDetail, errorMessage }: Props) => {
     const { addSnackbar } = useSnackbars();
-    const { loginUser, users } = useAccountStore();
-    const { iconAvatar } = useAccountHandlers();
     const { openDialog } = useDialog();
-
-
+    const loginUser = useUserStore(state => state.loginUser);
+    const users = useUserStore(state => state.users);
 
     /**
      * エラーメッセージを表示
@@ -47,9 +46,7 @@ const AccountPage = ({ invitationDetail, errorMessage }: Props) => {
         if (invitationDetail) {
             openDialog({
                 title: 'グループに参加',
-                children: () => (
-                    <JoinGroup invitationDetail={invitationDetail} />
-                ),
+                children: <JoinGroup invitationDetail={invitationDetail} />
             });
         }
     }, [invitationDetail, isMounted]);
@@ -59,21 +56,36 @@ const AccountPage = ({ invitationDetail, errorMessage }: Props) => {
             <Header title="アカウント設定" hasBackButton={true} />
             <main className="p-5 pb-[60px] md:px-10  max-w-[1000px] mx-auto flex flex-col">
                 <div className="pt-2 pb-7 mb-7 flex gap-x-5">
-                    {/* TODO: アイコンの指定がある場合はアイコン、指定がない場合はiconsを使用する */}
                     <div
-                        className="w-[120px] h-auto aspect-square rounded-full overflow-hidden"
-                        dangerouslySetInnerHTML={{
-                            __html: iconAvatar(
-                                loginUser?.avatar_seed ?? '',
-                            ).toString(),
-                        }}
-                    />
+                        className="w-[120px] h-auto aspect-square rounded-full overflow-hidden">
+                        {loginUser?.avatar?.image ? (
+                            <Image
+                                src={loginUser.avatar.image.src}
+                                alt="avatar"
+                                width={loginUser.avatar.image.width}
+                                height={loginUser.avatar.image.height}
+                                className="w-full h-full object-cover"
+                            />
+                        ) : (
+                            <div
+                                dangerouslySetInnerHTML={{
+                                    __html: iconAvatar(
+                                        loginUser?.avatar?.seed ?? '',
+                                    ).toString(),
+                                }}
+                            />
+                        )}
+                    </div>
                     <div className="flex flex-col gap-y-3">
                         <div className="flex flex-col gap-y-1">
                             <div className="text-xl">{loginUser?.name}</div>
                         </div>
-                        {/* TODO: プロフィール編集ページへ遷移 */}
-                        <TextButton onClick={() => { }}>
+                        <TextButton onClick={() => {
+                            openDialog({
+                                title: 'プロフィール編集',
+                                children: <ProfileEditForm />,
+                            });
+                        }}>
                             プロフィールを編集
                             <ChevronRight />
                         </TextButton>
@@ -88,21 +100,31 @@ const AccountPage = ({ invitationDetail, errorMessage }: Props) => {
                                     .filter(
                                         v =>
                                             v.avatar.seed !==
-                                            loginUser?.avatar_seed,
+                                            loginUser?.avatar.seed,
                                     )
                                     .map(user => (
                                         <div
                                             key={user.avatar.seed}
                                             className="w-full max-w-[100px] mx-auto flex flex-col gap-y-1">
-                                            {/* TODO: アイコンの指定がある場合はアイコン、指定がない場合はiconsを使用する */}
                                             <div
-                                                className="w-full h-auto aspect-square rounded-full overflow-hidden"
-                                                dangerouslySetInnerHTML={{
-                                                    __html: iconAvatar(
-                                                        user.avatar.seed ?? '',
-                                                    ).toString(),
-                                                }}
-                                            />
+                                                className="w-full h-auto aspect-square rounded-full overflow-hidden">
+                                                {user?.avatar?.image ? (
+                                                    <Image
+                                                        src={user.avatar.image.src}
+                                                        alt="avatar"
+                                                        width={user.avatar.image.width}
+                                                        height={user.avatar.image.height}
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <div
+                                                        dangerouslySetInnerHTML={{
+                                                            __html: iconAvatar(
+                                                                loginUser?.avatar?.seed ?? '',
+                                                            ).toString(),
+                                                        }}
+                                                    />
+                                                )}</div>
                                             <div className="text-sm text-center">
                                                 {user.name}
                                             </div>
@@ -113,7 +135,7 @@ const AccountPage = ({ invitationDetail, errorMessage }: Props) => {
                                 onClick={() => {
                                     openDialog({
                                         title: 'メンバー招待',
-                                        children: () => <Invitation />,
+                                        children: <Invitation />,
                                     });
                                 }}>
                                 メンバーを招待
@@ -127,7 +149,7 @@ const AccountPage = ({ invitationDetail, errorMessage }: Props) => {
                                 onClick={() => {
                                     openDialog({
                                         title: 'メンバー招待',
-                                        children: () => <Invitation />
+                                        children: <Invitation />
                                     });
                                 }}>
                                 メンバーを招待

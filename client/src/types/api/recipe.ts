@@ -50,7 +50,7 @@ export interface IPostPutRecipeRequest {
     url?: string;
     memo?: string;
     servingCount?: number | null;
-    thumbnailId?: string;
+    thumbnailId?: string | null;
     categoryIds: string[];
     ownerUserId: string;
     ingredients?: {

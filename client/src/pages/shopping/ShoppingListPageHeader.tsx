@@ -27,11 +27,10 @@ const ShoppingListPageHeader = () => {
             onClick: () => {
                 openDialog({
                     title: '買い物アイテムを追加',
-                    children: () =>
-                        <ShoppingItemEditForm
-                            editingItem={undefined}
-                            editMode={EDIT_MODE.CREATE}
-                        />
+                    children: <ShoppingItemEditForm
+                        editingItem={undefined}
+                        editMode={EDIT_MODE.CREATE}
+                    />
                 });
             },
         },

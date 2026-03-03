@@ -8,7 +8,7 @@ import { COLOR_VARIANT } from '@/constants';
 import { useAlertDialog, useSnackbars } from '@/hooks';
 import { useIngredientStore } from '@/models/ingredient';
 import { RECIPE_ALERT_DIALOG_CONFIGS, useRecipeApi } from '@/models/recipe';
-import { useAccountStore } from '@/models/settings';
+import { useUserStore } from '@/models/user';
 import { ActionButton, IImage, IRecipe } from '@/types';
 
 interface Props {
@@ -25,7 +25,7 @@ const RecipeDetailPage = ({
     fetchedRecipe,
     errorMessage,
 }: Props) => {
-    const { loginUser } = useAccountStore();
+    const loginUser = useUserStore(state => state.loginUser);
     const { addSnackbar } = useSnackbars();
     const { deleteRecipe } = useRecipeApi();
     const { openAlertDialog } = useAlertDialog();

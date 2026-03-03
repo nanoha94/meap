@@ -159,6 +159,7 @@ entity users {
     * email : string
     password : string / ログイン用パスワード（ソーシャルログインでは使用しない）
     * avatar_seed : string / プロフィール画像のシード
+    avatar_image_id : string <<FK>> / プロフィール画像ID
     provider : string / プロバイダ名（例: 'google'）
     provider_id : string / ソーシャルログイン用ID
 }
@@ -248,6 +249,7 @@ entity published_recipe_steps #LightGreen {
 group_user_mappings }o--|| groups : group_id
 users ||--|| group_user_mappings : user_id
 invitation_tokens  }o--|| users : inviter_user_id
+users }o--o| images : avatar_image_id
 
 images ||--o{ image_mappings : image_id
 groups ||--o{ image_mappings : group_id
@@ -286,7 +288,7 @@ recipe_category_mappings }o--|| recipe_categories : category_id
 recipe_categories }o--|| groups : group_id
 
 published_recipes }o--|| recipes : recipe_id
-published_recipes }o--|| users : owner_user_id
+users ||--o{ published_recipes : owner_user_id
 published_recipes }o--o| images : thumbnail_image_id
 published_recipe_categories ||--o{ published_recipe_category_mappings : published_recipe_category_id
 published_recipe_category_mappings }o--|| published_recipes : published_recipe_id
@@ -302,7 +304,7 @@ note bottom of groups
   もしくは、すでに存在しているグループに招待してもらって所属する。
 end note
 
-note right of meal_plans
+note left of meal_plans
   １日ごとの献立を管理する。
 end note
 
@@ -310,7 +312,7 @@ note right of meals
   １食ごとの献立を管理する。
 end note
 
-note right of meal_categories
+note left of meal_categories
   献立カテゴリを管理する。
   （朝食、昼食、夕食など）
 end note
@@ -323,11 +325,11 @@ note right of published_recipes
   公開レシピ情報を管理する。
 end note
 
-note right of recipe_steps
+note bottom of recipe_steps
   料理手順を管理する。
 end note
 
-note right of recipe_categories
+note bottom of recipe_categories
   料理カテゴリを管理する。
 end note
 

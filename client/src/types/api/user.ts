@@ -1,4 +1,5 @@
 import { IBaseApiResponseWithData, IBaseApiIndexResponse } from './common';
+import { IImage } from './image';
 
 //--------------------------------
 // レスポンス型
@@ -10,15 +11,28 @@ export type IGetUserResponse = IBaseApiResponseWithData<ILoginUser>;
 export type IGetGroupUserResponse = IBaseApiIndexResponse<IUser[]>;
 
 //--------------------------------
+// リクエスト型
+//--------------------------------
+// ユーザー情報更新
+export interface IPutUserRequest {
+    name: string;
+    avatar_image_id?: string;
+}
+
+
+//--------------------------------
 // データ型
 //--------------------------------
-export interface ILoginUser {    
+export interface ILoginUser {
     id: string;
     name?: string;
     email?: string;
     email_verified_at?: string;
     language?: string;
-    avatar_seed: string;
+    avatar: {
+        seed: string;
+        image?: IImage;
+    };
 }
 
 export interface IUser {
@@ -27,9 +41,7 @@ export interface IUser {
     language: string;
     avatar: {
         seed: string;
-        url: string;
-        width: number;
-        height: number;
+        image?: IImage;
     };
 }
 

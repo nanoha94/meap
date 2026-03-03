@@ -42,5 +42,11 @@ namespace App\Swagger;
  *     description="認証ユーザー情報を取得しました。",
  *     @OA\JsonContent(ref="#/components/schemas/UserResponse")
  * )
+ * 
+ * @OA\Response(
+ *     response="UserUpdateSuccess",
+ *     description="ユーザー(新しい名前)を更新しました。",
+ *     @OA\JsonContent(ref="#/components/schemas/BaseApiResponse")
+ * )
  */
 class UserResponses {}

@@ -66,6 +66,9 @@ trait ExceptionHandlerTrait
             $message = $defaultMessage ?? __('api.general.database_error');
             $this->logError(HttpStatusCode::INTERNAL_SERVER_ERROR, $operation, $e, $request, [
                 'message' => $message,
+                'sql_error' => $e->getMessage(),
+                'sql' => $e->getSql() ?? null,
+                'bindings' => $e->getBindings() ?? null,
                 ...$additionalContext,
             ]);
             return $this->errorResponse($message, HttpStatusCode::INTERNAL_SERVER_ERROR);
