@@ -12,7 +12,7 @@ export const DELETE_CHECK_FOR_JOIN_GROUP_DIALOG_CONFIGS: Record<
     AlertDialogConfig
 > = {
     [JOIN_ERROR_TYPE.ALREADY_IN_ANOTHER_GROUP]: {
-        title: 'データ削除',
+        title: 'グループ退出',
         message: ['現在のグループを退出して\n新しいグループに参加しますか？'],
         alertMessage: '',
         actionButtonText: '退出して参加',
@@ -22,7 +22,7 @@ export const DELETE_CHECK_FOR_JOIN_GROUP_DIALOG_CONFIGS: Record<
         message: [
             'すでに登録済みのデータがあります。\n削除してグループに参加しますか？',
         ],
-        alertMessage: '※削除したデータは復元できません',
+        alertMessage: '※データは新しいグループへは引き継げません。',
         actionButtonText: '削除して参加',
     },
 };

@@ -23,7 +23,7 @@ export function middleware(request: NextRequest) {
         response.cookies.set('redirectPath', redirectPath, {
             path: '/',
             maxAge: 3600, // 1時間有効
-            sameSite: 'strict',
+            sameSite: 'lax', // メール認証後バックエンド→フロントのリダイレクト時にも送るため
             secure: true,
         });
     }

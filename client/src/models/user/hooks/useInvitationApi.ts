@@ -2,7 +2,7 @@ import React from 'react';
 
 import { API_STATUS_CODE, TIMEOUT_MS } from '@/constants';
 import { useAlertDialog, useApiErrorHandler, useSnackbars } from '@/hooks';
-import axios from '@/lib/axios';
+import axios, { isAxiosError } from '@/lib/axios';
 import { useGlobalStore } from '@/stores';
 import {
     IInvitation,
@@ -11,13 +11,17 @@ import {
 } from '@/types';
 import { DELETE_CHECK_FOR_JOIN_GROUP_DIALOG_CONFIGS, JOIN_ERROR_TYPE } from '../constants';
 import { useAccountNavigation } from './useAccountNavigation';
+import { useRouter } from 'next/navigation';
 
 export const useInvitationApi = () => {
+    const router = useRouter();
     const { addSnackbar } = useSnackbars();
     const { openAlertDialog } = useAlertDialog();
     const { removeTokenFromPath } = useAccountNavigation();
     const { handleApiError } = useApiErrorHandler();
-    const { incrementLoadingCount, decrementLoadingCount } = useGlobalStore();
+    const incrementLoadingCount = useGlobalStore(state => state.incrementLoadingCount);
+    const decrementLoadingCount = useGlobalStore(state => state.decrementLoadingCount);
+
     // fetchInvitationTokenのローディング状態（画面全体のローディングアニメーションは動作させたくないためローカル管理）
     const [isFetching, setIsFetching] = React.useState<boolean>(false);
     const [invitationLink, setInvitationLink] = React.useState<string | null>(null);
@@ -106,26 +110,30 @@ export const useInvitationApi = () => {
             const responseData: IPostInvitationJoinResponse = res.data;
 
             if (responseData.success) {
+                router.refresh();
                 addSnackbar('success', responseData.message);
             }
         } catch (error) {
-            // TODO: 見直し（handleApiErrorは使用できないのか？）
-            if (error.code === 'ECONNABORTED') {
-                addSnackbar('error', 'リクエストがタイムアウトしました');
+            // Axiosエラーでない場合はhandleApiErrorに委譲
+            if (!isAxiosError(error)) {
+                handleApiError(error);
+                return;
             }
-            // 409エラーの場合は、その後データ消去確認ダイアログを表示する（スナックバーは表示しない）
-            if (error.response.status === API_STATUS_CODE.CONFLICT && error.response?.data?.error_type) {
+
+            // 409エラーかつerror_typeがある場合は、データ消去確認ダイアログを表示する（スナックバーは表示しない）
+            if (
+                error.response?.status === API_STATUS_CODE.CONFLICT &&
+                error.response?.data?.error_type != null
+            ) {
                 console.error(error.response?.data?.message);
 
                 const errorType = error.response?.data?.error_type as keyof typeof JOIN_ERROR_TYPE;
                 openAlertDialog(DELETE_CHECK_FOR_JOIN_GROUP_DIALOG_CONFIGS[errorType], () => {
                     joinGroup(invitationDetail, true);
                 });
-
             } else {
-                console.error(error.response?.data?.message);
-                addSnackbar('error', error.response?.data?.message || 'エラーが発生しました');
-
+                // 409以外のエラー（タイムアウト・その他のHTTPエラー）はhandleApiErrorに委譲
+                handleApiError(error);
             }
         } finally {
             // ローディングアニメーションを終了

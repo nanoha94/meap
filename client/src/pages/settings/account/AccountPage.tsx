@@ -99,8 +99,7 @@ const AccountPage = ({ invitationDetail, errorMessage }: Props) => {
                                 {users
                                     .filter(
                                         v =>
-                                            v.avatar.seed !==
-                                            loginUser?.avatar.seed,
+                                            v.id !== loginUser?.id,
                                     )
                                     .map(user => (
                                         <div
@@ -120,7 +119,7 @@ const AccountPage = ({ invitationDetail, errorMessage }: Props) => {
                                                     <div
                                                         dangerouslySetInnerHTML={{
                                                             __html: iconAvatar(
-                                                                loginUser?.avatar?.seed ?? '',
+                                                                user?.avatar?.seed ?? '',
                                                             ).toString(),
                                                         }}
                                                     />
