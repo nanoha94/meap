@@ -20,6 +20,7 @@ use App\Http\Controllers\Api\ImageController;
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/user', [UserController::class, 'show']);
     Route::put('/user', [UserController::class, 'update']);
+    Route::delete('/user', [UserController::class, 'destroy']);
 });
 
 // メール認証済みユーザーのみアクセス可能

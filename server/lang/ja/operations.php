@@ -34,6 +34,8 @@ return [
     'image' => [
         'bulk_upload' => '画像一括アップロード',
         'bulk_destroy' => '画像一括削除',
+        'delete_images_by_group' => 'グループ配下画像一括削除',
+        'delete_images_by_user' => 'ユーザー配下画像一括削除',
     ],
     'invitation' => [
         'store' => '招待トークン作成',
@@ -68,6 +70,7 @@ return [
     'users' => [
         'index' => 'ユーザー一覧取得',
         'update' => 'プロフィール更新',
+        'destroy' => 'アカウント削除',
     ],
 
     'master' => [

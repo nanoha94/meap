@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\ImageService;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -15,6 +16,15 @@ class Group extends Model
     use HasFactory;
 
     protected $keyType = 'string';
+
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::deleting(function (Group $group): void {
+            app(ImageService::class)->deleteImagesByGroup($group);
+        });
+    }
     public $incrementing = false;
 
     protected $fillable = [
@@ -122,9 +132,7 @@ class Group extends Model
         $this->save();
 
         if ($this->group_size === 0) {
-            DB::transaction(function () {
-                $this->delete();
-            });
+            $this->delete();
         }
     }
 

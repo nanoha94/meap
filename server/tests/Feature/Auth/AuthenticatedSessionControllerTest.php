@@ -323,7 +323,7 @@ test('2-1-17: セッション無効化', function () {
     $this->assertNull($this->app['session']->get('auth.password_confirmed_at'));
 });
 
-test('2-1-18: クッキー削除確認', function () {
+test('2-1-18: 【ログアウト】 クッキー削除確認', function () {
     $user = User::factory()->create();
 
     $response = $this->actingAs($user)->post('/logout');

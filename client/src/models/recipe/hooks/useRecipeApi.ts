@@ -166,6 +166,13 @@ export const useRecipeApi = () => {
         [incrementLoadingCount, decrementLoadingCount, setRecipes, handleApiError, listSortOptions, listFilterOptions],
     );
 
+    /**
+     * レシピを作成する
+     * @param data 作成するレシピデータ
+     * @param thumbnail サムネイル画像
+     * @param steps 手順リスト
+     * @returns void
+     */
     const storeRecipe = React.useCallback(
         async (
             data: IPostPutRecipeRequest,
@@ -224,6 +231,13 @@ export const useRecipeApi = () => {
         [incrementLoadingCount, decrementLoadingCount, bulkUploadImage, uploadStepImages, router, addSnackbar, handleApiError],
     );
 
+    /**
+     * レシピを更新する
+     * @param data 更新するレシピデータ
+     * @param thumbnail サムネイル画像
+     * @param steps 手順リスト
+     * @returns void
+     */
     const updateRecipe = React.useCallback(
         async (
             data: IPostPutRecipeRequest,
@@ -279,6 +293,11 @@ export const useRecipeApi = () => {
         [incrementLoadingCount, decrementLoadingCount, bulkUploadImage, uploadStepImages, router, addSnackbar, handleApiError],
     );
 
+    /**
+     * レシピを削除する
+     * @param id 削除するレシピのID
+     * @returns void
+     */
     const deleteRecipe = React.useCallback(async (id: string) => {
         // 重複リクエスト防止
         if (isDeleteRequestRef.current) {

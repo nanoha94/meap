@@ -1221,6 +1221,33 @@
                         "sanctum": []
                     }
                 ]
+            },
+            "delete": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "認証ユーザーのアカウント削除",
+                "operationId": "4911c16a146b7daa4d4865b36b7c402d",
+                "responses": {
+                    "200": {
+                        "description": "削除成功（success, message, data: null）",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BaseApiResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
             }
         },
         "/login": {

@@ -107,4 +107,23 @@ class UserService extends AbstractDomainService
             }
         });
     }
+
+    /**
+     * アカウントを削除する
+     * トランザクション内で Sanctum トークン削除 → ユーザー削除（CASCADE）→ グループの refreshGroupSize
+     *
+     * @param User $user 削除対象のユーザー
+     */
+    public function deleteAccount(User $user): void
+    {
+        DB::transaction(function () use ($user) {
+            $user->tokens()->delete();
+            $group = $user->groups()->first();
+            $this->imageService->deleteImagesByUser($user);
+            $user->delete();
+            if ($group) {
+                $group->refreshGroupSize();
+            }
+        });
+    }
 }

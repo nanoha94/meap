@@ -91,8 +91,9 @@ test('1-2-6: 存在しないIDテスト', function () {
     $group = Group::factory()->create();
     $modelClass = 'App\\Models\\Ingredient';
 
+    // 有効なUUID形式だがDBに存在しないID（PostgreSQLのUUID型でクエリが実行されるため形式必須）
     $items = [
-        ['id' => 'non-existent-id']
+        ['id' => '00000000-0000-0000-0000-000000000000']
     ];
 
     $this->expectException(InvalidArgumentException::class);

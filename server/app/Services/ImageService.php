@@ -229,6 +229,34 @@ class ImageService
     }
 
     /**
+     * グループ配下の画像を一括削除（ディレクトリ削除でファイルもまとめて削除＋images レコード削除）
+     */
+    public function deleteImagesByGroup(Group $group): void
+    {
+        Image::where('src', 'like', '%images/groups/' . $group->id . '/%')->delete();
+        $dirPath = 'images/groups/' . $group->id;
+        if (!$this->deleteImageDirectory($dirPath)) {
+            $this->logWarning(__METHOD__, __('operations.image.delete_images_by_group'), __('api.image.file_delete_failed'), [
+                'directory' => $dirPath,
+            ]);
+        }
+    }
+
+    /**
+     * ユーザー配下の画像を一括削除（ディレクトリ削除でファイルもまとめて削除＋images レコード削除）
+     */
+    public function deleteImagesByUser(User $user): void
+    {
+        Image::where('src', 'like', '%images/users/' . $user->id . '/%')->delete();
+        $dirPath = 'images/users/' . $user->id;
+        if (!$this->deleteImageDirectory($dirPath)) {
+            $this->logWarning(__METHOD__, __('operations.image.delete_images_by_user'), __('api.image.file_delete_failed'), [
+                'directory' => $dirPath,
+            ]);
+        }
+    }
+
+    /**
      * 画像情報をフォーマット
      */
     public function formatImage($image): ?array
@@ -296,6 +324,23 @@ class ImageService
             $path = str_replace('/storage/', '', parse_url($imageUrl, PHP_URL_PATH));
             if (Storage::disk('public')->exists($path)) {
                 Storage::disk('public')->delete($path);
+            }
+            return true;
+        } catch (Exception $e) {
+            return false;
+        }
+    }
+
+    /**
+     * 画像用ディレクトリを削除（storage public ディスク基準の相対パス）
+     *
+     * @param string $relativePath 例: images/groups/{group_id} または images/users/{user_id}
+     */
+    private function deleteImageDirectory(string $relativePath): bool
+    {
+        try {
+            if (Storage::disk('public')->exists($relativePath)) {
+                Storage::disk('public')->deleteDirectory($relativePath);
             }
             return true;
         } catch (Exception $e) {

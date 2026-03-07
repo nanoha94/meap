@@ -248,8 +248,7 @@ export const useAuth = () => {
 
             // セッションストレージをクリア
             if (typeof window !== 'undefined') {
-                sessionStorage.removeItem('redirectAfterLogin');
-                // 他のセッション関連データも必要に応じてクリア
+                sessionStorage.clear();
             }
 
             // ログインページへ遷移（Laravel側でCookieは削除される）

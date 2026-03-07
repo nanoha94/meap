@@ -41,7 +41,7 @@ const ProfileEditForm = () => {
     const isDisabledSendButton = React.useMemo(() => {
         if (watchedName === '') return true;
         const nameUnchanged = watchedName === (loginUser.name ?? '');
-        const avatarUnchanged = watchedAvatarImage?.id === loginUser.avatar.image?.id;
+        const avatarUnchanged = watchedAvatarImage?.src === loginUser.avatar.image?.src;
         return nameUnchanged && avatarUnchanged;
     }, [watchedName, watchedAvatarImage, loginUser.name, loginUser.avatar.image]);
 

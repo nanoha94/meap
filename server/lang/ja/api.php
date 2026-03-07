@@ -40,6 +40,7 @@ return [
         'bulk_deletion_failed' => '画像の一括削除に失敗しました。',
         'deletion_failed' => '画像の削除に失敗しました。',
         'group_mismatch' => 'グループIDが一致しません。',
+        'file_delete_failed' => '画像ファイルの削除に失敗しました。',
         'still_in_use' => '画像は他のモデルで使用されているため削除できません。',
     ],
     'invitation' => [

@@ -811,7 +811,7 @@ test('3-1-27: 【一括削除】 ImageService 例外', function () {
     ]);
 });
 
-test('3-1-28: 【一括削除】 ファイル削除失敗', function () {
+test('3-1-28: 【一括削除】 ImageService の deleteImages 内で想定外エラー', function () {
     // 画像をアップロードAPIで作成
     $file = UploadedFile::fake()->image('test.jpg', 100, 100);
     $uploadResponse = $this->actingAs($this->user)->post('/images/upload-bulk', [
@@ -820,7 +820,7 @@ test('3-1-28: 【一括削除】 ファイル削除失敗', function () {
     $imageId = $uploadResponse->json('data.0.id');
     $relatedId = \Illuminate\Support\Str::uuid()->toString();
 
-    // 実装は紐づけ解除のみでファイル削除を行わないため、ImageService の例外で 500 を検証
+    // 本APIは紐づけ解除のみでファイル削除を行わない。ImageService::deleteImages 内で想定外エラーが発生した場合の 500 を検証
     $this->mock(ImageService::class, function ($mock) {
         $mock->shouldReceive('deleteImages')
             ->andThrow(new \Exception('File delete failed'));

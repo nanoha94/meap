@@ -30,6 +30,11 @@ UserController のテストケースの詳細仕様を示します。認証ユ�
 | 3-11-20 | 【更新】 avatar_image_id が存在しない画像ID                         | 異常系 | 認証済みユーザー、存在しない画像ID を指定            | HTTP 404 Not Found                                                   | `UserService::updateProfile()` |
 | 3-11-21 | 【更新】 未認証ユーザー                                             | 異常系 | 認証されていないユーザー                             | HTTP 401 Unauthorized                                                | `UserController::update()`     |
 | 3-11-22 | 【更新】 UserService 例外                                           | 異常系 | UserService::updateProfile() で例外                  | HTTP 500 Internal Server Error                                       | `UserController::update()`     |
+| 3-11-23 | 【削除】 正常なアカウント削除                                       | 正常系 | 認証済みユーザー                                     | HTTP 200 JSON success、ユーザー・トークン・group_user_mappings 削除、0人グループは削除。ユーザー配下に画像がある場合は ImageService::deleteImagesByUser により images/users/{user_id} ディレクトリと当該 images レコードも削除 | `UserController::destroy()`    |
+| 3-11-24 | 【削除】 未認証ユーザー                                             | 異常系 | 認証されていないユーザー                             | HTTP 401 Unauthorized                                                | `UserController::destroy()`    |
+| 3-11-25 | 【削除】 UserService 例外                                           | 異常系 | UserService::deleteAccount() で例外                  | HTTP 500 Internal Server Error                                       | `UserController::destroy()`    |
+| 3-11-26 | 【削除】 アカウント削除時にユーザー配下の画像ディレクトリと images レコードが削除される | 正常系 | ユーザー配下に画像（images/users/{user_id}/）がある状態でアカウント削除 | 当該ディレクトリと当該 images レコードが削除される                   | `UserController::destroy()` / `ImageService::deleteImagesByUser()`    |
+| 3-11-27 | 【削除】 アカウント削除後のレスポンスにクッキー削除が含まれる                             | 正常系 | 認証済みユーザーでアカウント削除                                     | HTTP 200、レスポンスにセッション・XSRF-TOKEN の削除用Cookieが含まれる | `UserController::destroy()` / `ClearsSessionCookies::clearSessionCookiesOnResponse()` |
 
 ## テスト実行方法
 

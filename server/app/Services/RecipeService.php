@@ -405,7 +405,7 @@ class RecipeService extends AbstractDomainService
                 return [
                     'id' => $item->id,
                     'name' => $item->name,
-                    'quantity' => $item->pivot->quantity,
+                    'quantity' => $item->pivot->quantity !== null ? (float) $item->pivot->quantity : null,
                     'unit' => [
                         'id' => $item->pivot->unit_id,
                         'name' => $unit->name,

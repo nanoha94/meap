@@ -157,11 +157,11 @@ entity users {
     --
     * name : string
     * email : string
-    password : string / ログイン用パスワード（ソーシャルログインでは使用しない）
+    * password : string / ログイン用パスワード（ソーシャルログインでは使用しない）
     * avatar_seed : string / プロフィール画像のシード
-    avatar_image_id : string <<FK>> / プロフィール画像ID
-    provider : string / プロバイダ名（例: 'google'）
-    provider_id : string / ソーシャルログイン用ID
+    * avatar_image_id : string <<FK>> / プロフィール画像ID
+    * provider : string / プロバイダ名（例: 'google'）
+    * provider_id : string / ソーシャルログイン用ID
 }
 
 entity invitation_tokens {

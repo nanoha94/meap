@@ -5,6 +5,7 @@ namespace App\Http\Requests\Api;
 use App\Http\Requests\Api\BaseApiRequest;
 use App\Models\IngredientUnit;
 use App\Models\Recipe;
+use Illuminate\Support\Str;
 
 class RecipeUpdateRequest extends BaseApiRequest
 {
@@ -106,7 +107,7 @@ class RecipeUpdateRequest extends BaseApiRequest
             }
 
             foreach ($ingredients as $index => $ingredient) {
-                if (!empty($ingredient['unitId'])) {
+                if (!empty($ingredient['unitId']) && Str::isUuid($ingredient['unitId'])) {
                     $unit = IngredientUnit::find($ingredient['unitId']);
 
                     if ($unit && $unit->requires_quantity && empty($ingredient['quantity'])) {

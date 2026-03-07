@@ -21,7 +21,7 @@ export const useUserApi = () => {
 
     // 重複リクエスト防止用のフラグ
     const isUpdateRequestRef = React.useRef(false);
-
+    const isDeleteRequestRef = React.useRef(false);
 
     /**
      * ユーザー情報を更新する
@@ -64,7 +64,41 @@ export const useUserApi = () => {
         }
     }, [incrementLoadingCount, decrementLoadingCount, handleApiError, bulkUploadImage, loginUser.id, router, addSnackbar]);
 
+    /**
+     * ユーザーを削除する
+     * @returns void
+     */
+    const deleteUser = React.useCallback(async () => {
+        // 重複リクエスト防止
+        if (isDeleteRequestRef.current) {
+            return;
+        }
+
+        try {
+            isDeleteRequestRef.current = true;
+            incrementLoadingCount();
+            const { data: responseData } = await axios.delete('/user', {
+                timeout: TIMEOUT_MS,
+            });
+            if (responseData.success) {
+                addSnackbar('success', responseData.message ?? 'リクエストが正常に完了しました');
+
+                if (typeof window !== "undefined") {
+                    sessionStorage.clear();
+                }
+
+                window.location.href = "/login";
+            }
+        }
+        catch (error) {
+            handleApiError(error);
+        } finally {
+            isDeleteRequestRef.current = false;
+            decrementLoadingCount();
+        }
+    }, [incrementLoadingCount, decrementLoadingCount, handleApiError, addSnackbar]);
+
     return {
-        updateUser
+        updateUser, deleteUser
     };
 };

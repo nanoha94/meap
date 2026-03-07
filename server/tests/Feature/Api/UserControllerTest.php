@@ -4,7 +4,6 @@ use App\Models\User;
 use App\Models\Group;
 use App\Models\Color;
 use App\Models\Image;
-use App\Services\UserService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -882,5 +881,176 @@ test('3-11-22: 【更新】 UserService 例外', function () {
     ]);
 
     // Content-Typeがapplication/jsonであることを確認
+    $response->assertHeader('Content-Type', 'application/json');
+});
+
+// ===== destroy() メソッドのテストケース =====
+
+test('3-11-23: 【削除】 正常なアカウント削除', function () {
+    $user = User::factory()->create([
+        'name' => 'Delete Me',
+        'email_verified_at' => now()
+    ]);
+
+    $group = Group::create(['group_size' => 1]);
+    DB::table('group_user_mappings')->insert([
+        'user_id' => $user->id,
+        'group_id' => $group->id
+    ]);
+
+    $userId = $user->id;
+    $groupId = $group->id;
+    $userName = $user->name;
+
+    $response = $this->actingAs($user)->delete('/user');
+
+    $response->assertStatus(200);
+    $response->assertJson([
+        'success' => true,
+        'message' => "ユーザー({$userName})を削除しました。",
+        'data' => null
+    ]);
+    $response->assertJsonStructure([
+        'success',
+        'message',
+        'data'
+    ]);
+    $response->assertHeader('Content-Type', 'application/json');
+
+    // ユーザーが削除されていること
+    $this->assertDatabaseMissing('users', ['id' => $userId]);
+
+    // 当該ユーザーの personal_access_tokens が削除されていること
+    $tokenCount = DB::table('personal_access_tokens')
+        ->where('tokenable_id', $userId)
+        ->where('tokenable_type', \App\Models\User::class)
+        ->count();
+    expect($tokenCount)->toBe(0);
+
+    // group_user_mappings から当該ユーザーの紐づきが削除されていること
+    $this->assertDatabaseMissing('group_user_mappings', ['user_id' => $userId]);
+
+    // グループが1人のみだったため refreshGroupSize によりグループも削除されていること
+    $this->assertDatabaseMissing('groups', ['id' => $groupId]);
+});
+
+test('3-11-26: 【削除】 アカウント削除時にユーザー配下の画像ディレクトリと images レコードが削除される', function () {
+    Storage::fake('public');
+
+    $user = User::factory()->create([
+        'name' => 'Delete Me With Images',
+        'email_verified_at' => now()
+    ]);
+
+    $group = Group::create(['group_size' => 1]);
+    DB::table('group_user_mappings')->insert([
+        'user_id' => $user->id,
+        'group_id' => $group->id
+    ]);
+
+    $userId = $user->id;
+    $userName = $user->name;
+
+    // ユーザー配下の画像ディレクトリとファイルを作成
+    $dirPath = 'images/users/' . $userId;
+    $filePath = $dirPath . '/test.jpg';
+    Storage::disk('public')->put($filePath, 'fake image content');
+    expect(Storage::disk('public')->exists($filePath))->toBeTrue();
+
+    // Image レコード作成（deleteImagesByUser の LIKE 条件に合う src）
+    $image = Image::create([
+        'src' => url('/storage/' . $filePath),
+        'width' => 100,
+        'height' => 100
+    ]);
+    $imageId = $image->id;
+    $this->assertDatabaseHas('images', ['id' => $imageId]);
+
+    $response = $this->actingAs($user)->delete('/user');
+
+    $response->assertStatus(200);
+    $response->assertJson([
+        'success' => true,
+        'message' => "ユーザー({$userName})を削除しました。",
+        'data' => null
+    ]);
+
+    // ユーザーが削除されていること
+    $this->assertDatabaseMissing('users', ['id' => $userId]);
+
+    // 当該ユーザー配下の images レコードが削除されていること
+    $this->assertDatabaseMissing('images', ['id' => $imageId]);
+
+    // 当該ユーザー配下の画像ディレクトリが削除されていること（ImageService::deleteImagesByUser のディレクトリ削除）
+    expect(Storage::disk('public')->exists($dirPath))->toBeFalse();
+});
+
+test('3-11-27: 【削除】 アカウント削除後のレスポンスにクッキー削除が含まれる', function () {
+    $user = User::factory()->create([
+        'email_verified_at' => now()
+    ]);
+
+    $group = Group::create(['group_size' => 1]);
+    DB::table('group_user_mappings')->insert([
+        'user_id' => $user->id,
+        'group_id' => $group->id
+    ]);
+
+    $response = $this->actingAs($user)->delete('/user');
+
+    $response->assertStatus(200);
+    $response->assertJson([
+        'success' => true,
+        'data' => null
+    ]);
+
+    $cookies = $response->headers->getCookies();
+    expect($cookies)->not->toBeEmpty();
+
+    $sessionCookieName = config('session.cookie');
+    $sessionCookies = array_filter($cookies, fn($c) => $c->getName() === $sessionCookieName);
+    $xsrfCookies = array_filter($cookies, fn($c) => $c->getName() === 'XSRF-TOKEN');
+
+    expect($sessionCookies)->not->toBeEmpty();
+    expect($xsrfCookies)->not->toBeEmpty();
+});
+
+test('3-11-24: 【削除】 未認証ユーザー', function () {
+    $response = $this->delete('/user');
+
+    $response->assertStatus(401);
+    $response->assertJson([
+        'success' => false,
+        'message' => '認証が必要です。'
+    ]);
+    $response->assertJsonStructure([
+        'success',
+        'message'
+    ]);
+    $response->assertHeader('Content-Type', 'application/json');
+});
+
+test('3-11-25: 【削除】 UserService 例外', function () {
+    $user = User::factory()->create([
+        'email_verified_at' => now()
+    ]);
+
+    $this->mock(\App\Services\UserService::class, function ($mock) {
+        $mock->shouldReceive('deleteAccount')
+            ->once()
+            ->andThrow(new \Exception('Service exception'));
+    });
+
+    $response = $this->actingAs($user)->delete('/user');
+
+    $response->assertStatus(500);
+    $response->assertJson([
+        'success' => false,
+        'message' => 'ユーザーの削除に失敗しました。'
+    ]);
+    $response->assertJsonStructure([
+        'success',
+        'message'
+    ]);
     $response->assertHeader('Content-Type', 'application/json');
 });

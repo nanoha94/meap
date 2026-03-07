@@ -1,10 +1,8 @@
-import Link from 'next/link';
+import SettingsPage from '@/pages/settings/account/SettingsPage';
 
 const Page = () => {
     return (
-        <div>
-            <Link href="/settings/account/">link</Link>
-        </div>
+        <SettingsPage />
     );
 };
 

@@ -34,6 +34,8 @@ return [
     'image' => [
         'bulk_upload' => 'Bulk image upload',
         'bulk_destroy' => 'Bulk image deletion',
+        'delete_images_by_group' => 'Delete images by group',
+        'delete_images_by_user' => 'Delete images by user',
     ],
     'invitation' => [
         'store' => 'Invitation token creation',

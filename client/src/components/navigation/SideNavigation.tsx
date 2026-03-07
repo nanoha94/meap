@@ -82,7 +82,7 @@ const SideNavigation = ({ className }: Props) => {
                     <Link
                         key={idx}
                         href={formattedLink(v.link)}
-                        className={`py-3 px-4 flex-1 transition-colors hover:bg-gray-light ${pathname === v.link ? 'pointer-events-none' : ''} `}>
+                        className={`py-3 px-4 flex-1 transition-colors hover:bg-gray-light ${pathname === v.link ? 'pointer-events-none' : ''}`}>
                         <div
                             className={`flex items-center gap-x-2 whitespace-nowrap ${pathname === v.link ? 'text-primary-main' : 'text-black'} `}>
                             <NavigationIcon
