@@ -17,7 +17,7 @@ export type RecipeStepEditFormData = Omit<IRecipeStep, 'image'> & {
 export interface RecipeFilterFormData {
     recipeName?: string;
     ingredientName?: string;
-    categoryId?: string;       // TODO: ひとまずはカテゴリ１つとしておく。後で配列に変更する
+    categoryIds?: string[];
     lastPlannedDateFrom?: string;
     lastPlannedDateTo?: string;
 }

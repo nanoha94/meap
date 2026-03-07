@@ -129,7 +129,7 @@ export const useRecipeApi = () => {
                 order: sortOptions.find(v => v.id === sortOptionId)?.order ?? sortOptions[0].order,
                 recipe_name: filterOptions?.recipeName,
                 ingredient_name: filterOptions?.ingredientName,
-                category_ids: filterOptions?.categoryId ? [filterOptions?.categoryId] : [], // TODO: ひとまずはカテゴリ１つとしておく。後で配列に変更する
+                category_ids: filterOptions?.categoryIds ? filterOptions?.categoryIds : [],
                 last_planned_date_from: filterOptions?.lastPlannedDateFrom,
                 last_planned_date_to: filterOptions?.lastPlannedDateTo,
                 limit: RECIPES_PER_PAGE,

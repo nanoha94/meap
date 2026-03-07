@@ -6,23 +6,57 @@ import dayjs from 'dayjs';
 import { BUTTON_TYPE } from '@/constants';
 import { RecipeFilterFormData, useRecipeStore } from '@/models/recipe';
 import Button from '../Button';
-import { StyledDatePicker, StyledSelect } from '../form-fields';
+import { CheckboxField, StyledDatePicker } from '../form-fields';
 import { VerticalRowField, VerticaFromToField } from '../react-hook-form';
 import { useDialog } from '@/hooks';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 
 interface Props {
     search: (filterOptions: RecipeFilterFormData) => void;
+    defaultValues?: RecipeFilterFormData;
 }
 
-const RecipeFilterForm = ({ search }: Props) => {
-    const listFilterOptions = useRecipeStore(state => state.listFilterOptions);
-    const { control, handleSubmit, getValues, trigger, formState: { errors } } = useForm<RecipeFilterFormData>({
-        defaultValues: listFilterOptions,
+const RecipeFilterForm = ({ search, defaultValues }: Props) => {
+    const { control, handleSubmit, getValues, trigger, formState: { errors }, setValue } = useForm<RecipeFilterFormData>({
+        defaultValues: defaultValues,
     });
     const { categories } = useRecipeStore();
     const { closeDialog } = useDialog();
 
+    /**
+    * カテゴリーのチェック状態を変更
+    * @param checkedId チェックされたカテゴリーID
+    * @param currentCheckedIds 現在チェックされているカテゴリーID
+    */
+    const handleChange = (
+        checkedId: string,
+        currentCheckedIds: string[] = [],
+    ) => {
+        const isChecked = currentCheckedIds.find(
+            id => id === checkedId,
+        );
+
+        // チェックされている場合は削除
+        if (isChecked) {
+            setValue(
+                'categoryIds',
+                currentCheckedIds.filter(
+                    id => id !== checkedId,
+                ),
+            );
+        } else {
+            // チェックされていない場合は追加
+            setValue('categoryIds', [
+                ...currentCheckedIds,
+                checkedId,
+            ]);
+        }
+    };
+
+    /**
+     * フォームの送信処理
+     * @param data フォームのデータ
+     */
     const onSubmit = (data: RecipeFilterFormData) => {
         search(data);
         closeDialog();
@@ -47,20 +81,27 @@ const RecipeFilterForm = ({ search }: Props) => {
                         <input type="text" id={id} value={value as string} placeholder="料理名を入力" onChange={e => onChange(e.target.value)} className="py-2 px-4 border rounded-lg outline-none border-gray-main" />
                     )}
                 </VerticalRowField>
-                {categories.length > 0 && <VerticalRowField
-                    control={control}
-                    name="categoryId"
-                    label="カテゴリ―">
-                    {({ value, onChange }) => (
-                        <StyledSelect
-                            value={value as string}
+                {categories.length > 0 &&
+                    <div className="flex flex-col gap-y-2">
+                        <div>カテゴリー</div>
+                        <Controller
+                            control={control}
                             name="categoryIds"
-                            options={categories}
-                            isShowPlaceholder={true}
-                            onChange={onChange}
+                            render={({ field: { value } }) => (
+                                <div className="flex flex-wrap gap-y-2 gap-x-3">
+                                    {categories.map(category => {
+                                        const isChecked = value?.some(
+                                            v => v === category.id.toString(),
+                                        );
+                                        return (
+                                            <CheckboxField key={category.id} id={`checkbox-${category.id}`} checked={isChecked || false} onChange={() => handleChange(category.id.toString(), value)} label={category.name} />
+                                        );
+                                    })}
+                                </div>
+                            )}
                         />
-                    )}
-                </VerticalRowField>}
+                    </div>
+                }
                 <VerticaFromToField
                     control={control}
                     fromName="lastPlannedDateFrom"

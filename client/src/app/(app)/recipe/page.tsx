@@ -15,7 +15,7 @@ interface RecipePageSearchParams {
     order?: string;
     recipeName?: string;
     ingredientName?: string;
-    categoryId?: string;
+    categoryIds?: string;
     lastPlannedDateFrom?: string;
     lastPlannedDateTo?: string;
     page?: number;
@@ -27,7 +27,7 @@ interface Props {
         order?: string;
         recipe_name?: string;
         ingredient_name?: string;
-        category_id?: string;
+        category_ids?: string;
         last_planned_date_from?: string;
         last_planned_date_to?: string;
         page?: number;
@@ -41,7 +41,7 @@ const RecipePageWithData = async ({
     order,
     recipeName,
     ingredientName,
-    categoryId,
+    categoryIds,
     lastPlannedDateFrom,
     lastPlannedDateTo,
     page,
@@ -54,7 +54,7 @@ const RecipePageWithData = async ({
         {
             recipeName: recipeName?.trim(),
             ingredientName: ingredientName?.trim(),
-            categoryId: categoryId?.trim(),
+            categoryIds: categoryIds?.split(',').map(id => id.trim()),
             lastPlannedDateFrom: lastPlannedDateFrom?.trim(),
             lastPlannedDateTo: lastPlannedDateTo?.trim()
         }, page ?? 1)}`;
@@ -70,7 +70,7 @@ const RecipePageWithData = async ({
     const filterOptions: RecipeFilterFormData = {
         recipeName: recipeName ?? '',
         ingredientName: ingredientName ?? '',
-        categoryId: categoryId ?? '',
+        categoryIds: categoryIds?.split(',').map(id => id.trim()),
         lastPlannedDateFrom: lastPlannedDateFrom ?? '',
         lastPlannedDateTo: lastPlannedDateTo ?? '',
     };
@@ -89,7 +89,7 @@ const RecipePageWithData = async ({
 
 const Page = async ({ searchParams }: Props) => {
     const resolved = await Promise.resolve(searchParams);
-    const { sort, order, recipe_name, ingredient_name, category_id, last_planned_date_from, last_planned_date_to, page } = resolved;
+    const { sort, order, recipe_name, ingredient_name, category_ids, last_planned_date_from, last_planned_date_to, page } = resolved;
     if (!sort || !order || !page) {
         redirect(`/recipe?sort=${sort ?? defaultSort.sort}&order=${order ?? defaultSort.order}&page=${page ?? 1}`);
     }
@@ -104,7 +104,7 @@ const Page = async ({ searchParams }: Props) => {
                 order={order}
                 recipeName={recipe_name}
                 ingredientName={ingredient_name}
-                categoryId={category_id}
+                categoryIds={category_ids}
                 lastPlannedDateFrom={last_planned_date_from}
                 lastPlannedDateTo={last_planned_date_to}
                 page={page}

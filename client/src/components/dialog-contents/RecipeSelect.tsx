@@ -30,7 +30,7 @@ const RecipeSelect = ({ initFetchedRecipes, selectedRecipe, disabledRecipes, onS
     const { openDialog, closeDialog } = useDialog();
     const { fetchRecipes } = useRecipeApi();
     const [sortOptionId, setSortOptionId] = React.useState<string>(sortOptions[0].id);
-    const [filterOptions, setFilterOptions] = React.useState<RecipeFilterFormData>({ recipeName: '', ingredientName: '', categoryId: '', lastPlannedDateFrom: '', lastPlannedDateTo: '' });
+    const [filterOptions, setFilterOptions] = React.useState<RecipeFilterFormData>({ recipeName: '', ingredientName: '', categoryIds: [], lastPlannedDateFrom: '', lastPlannedDateTo: '' });
     const [recipes, setRecipes] = React.useState<IRecipe[]>(initFetchedRecipes?.recipes ?? []);
     const [pageSize, setPageSize] = React.useState<number>(initFetchedRecipes?.pageSize ?? 0);
     const [currentPage, setCurrentPage] = React.useState<number>(initFetchedRecipes?.currentPage ?? 1);
@@ -78,7 +78,7 @@ const RecipeSelect = ({ initFetchedRecipes, selectedRecipe, disabledRecipes, onS
                 <button type="button" onClick={() => {
                     openDialog({
                         title: '絞り込み条件',
-                        children: <RecipeFilterForm search={handleChangeFilterOptions} />,
+                        children: <RecipeFilterForm search={handleChangeFilterOptions} defaultValues={filterOptions} />,
                     });
                 }} className="py-1 px-2 flex items-center gap-x-2 rounded hover:bg-gray-light">
                     <SlidersHorizontal color={colors.black} strokeWidth={1.5} />絞り込み</button>
