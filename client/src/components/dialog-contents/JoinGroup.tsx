@@ -7,6 +7,7 @@ import { BUTTON_VARIANT, COLOR_VARIANT } from '@/constants';
 import { useDialog } from '@/hooks';
 import { useAccountNavigation, useInvitationApi, iconAvatar } from '@/models/user';
 import { IInvitation } from '@/types';
+import Image from 'next/image';
 
 interface Props {
     invitationDetail: IInvitation | null;
@@ -57,18 +58,27 @@ const JoinGroup: React.FC<Props> = ({ invitationDetail, isDelete = false }) => {
                     さんに招待されています。参加しますか？
                 </p>
                 <div className="w-full flex flex-col items-center gap-y-1">
-                    {/* TODO: アイコンの指定がある場合はアイコン、指定がない場合は
-                                iconsを使用する */}
-                    <div
-                        className="max-w-[100px] w-full h-auto aspect-square 
-                                    rounded-full overflow-hidden"
-                        dangerouslySetInnerHTML={{
-                            __html: iconAvatar(
-                                invitationDetail?.inviter.avatar
-                                    .seed ?? '',
-                            ).toString(),
-                        }}
-                    />
+                    <div className="max-w-[100px] w-full h-auto aspect-square 
+                                    rounded-full overflow-hidden">
+                        {invitationDetail?.inviter?.avatar?.image ? (
+                            <Image
+                                src={invitationDetail?.inviter.avatar.image.src}
+                                alt="avatar"
+                                width={invitationDetail?.inviter.avatar.image.width}
+                                height={invitationDetail?.inviter.avatar.image.height}
+                                className="w-full h-full object-cover"
+                            />
+                        ) : (
+                            <div
+
+                                dangerouslySetInnerHTML={{
+                                    __html: iconAvatar(
+                                        invitationDetail?.inviter.avatar
+                                            .seed ?? '',
+                                    ).toString(),
+                                }}
+                            />)}
+                    </div>
                     <div className="text-sm">
                         {invitationDetail?.inviter.name}
                     </div>
