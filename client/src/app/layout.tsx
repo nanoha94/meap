@@ -14,8 +14,8 @@ const RootLayout = ({ children }: RootLayoutProps) => {
             <body className="text-base text-black">
                 {children}
                 <Snackbars />
-                <AlertDialog />
                 <Dialog />
+                <AlertDialog />
                 <LoadingAnimation />
             </body>
         </html>

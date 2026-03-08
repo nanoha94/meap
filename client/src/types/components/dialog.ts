@@ -17,6 +17,7 @@ export type DialogConfig = {
     customButton?: React.ReactNode;
     maxWidth?: number;
     children: React.ReactNode;
+    isCheckBeforeClose?: boolean;
 };
 
 export type DialogData = {

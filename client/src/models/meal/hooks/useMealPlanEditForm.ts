@@ -1,6 +1,6 @@
 "use client";
 import React from 'react';
-import { useFieldArray, useForm } from 'react-hook-form';
+import { useFieldArray, useForm, useWatch } from 'react-hook-form';
 
 import { EDIT_MODE, EditMode, TMP_ID_PREFIX } from '@/constants';
 import { IMealCategory, IMealPlan, IMealPlanItem, IPostPutMealPlanRequest } from '@/types';
@@ -40,6 +40,7 @@ export const useMealPlanEditForm = (selectedDate: string, fetchMealPlan?: IMealP
     });
     const { control, handleSubmit, reset } = methods;
     const mealsFieldArray = useFieldArray({ control, name: 'meals' });
+    const watchedMeals = useWatch({ control, name: 'meals' });
     const { storeMealPlan, updateMealPlan } = useMealPlanApi();
     const editMode: EditMode = fetchMealPlan ? EDIT_MODE.UPDATE : EDIT_MODE.CREATE;
 
@@ -52,9 +53,10 @@ export const useMealPlanEditForm = (selectedDate: string, fetchMealPlan?: IMealP
      * 送信ボタンの無効化判定
      * 献立が変更されていない場合は送信ボタンを無効化
      */
-    const isDisabledSendButton = React.useCallback((data: IMealPlanItem[]) => {
-        return JSON.stringify(normalizeForCompare(fetchMealPlan?.meals ?? [])) === JSON.stringify(normalizeForCompare(data));
-    }, [fetchMealPlan, mealsFieldArray.fields]);
+    const isDisabledSendButton = React.useMemo(() => {
+        const current = (watchedMeals ?? []) as IMealPlanItem[];
+        return JSON.stringify(normalizeForCompare(fetchMealPlan?.meals ?? [])) === JSON.stringify(normalizeForCompare(current));
+    }, [fetchMealPlan?.meals, watchedMeals]);
 
     /**
      * フォームの送信処理

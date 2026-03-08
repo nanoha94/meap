@@ -3,6 +3,8 @@ import React from 'react';
 
 import { useGlobalStore } from '@/stores';
 import { DialogConfig, DialogData } from '@/types';
+import { ALERT_DIALOG_CONFIGS } from '@/constants';
+import { useAlertDialog } from './useAlertDialog';
 
 /**
  * Dialogを管理するカスタムフック
@@ -11,19 +13,27 @@ import { DialogConfig, DialogData } from '@/types';
  */
 export const useDialog = () => {
     const setDialogs = useGlobalStore(state => state.setDialogs);
+    const { openAlertDialog } = useAlertDialog();
 
     /**
      * 現在のダイアログを閉じる
      * キューから次のダイアログを自動的に表示
      */
-    const closeDialog = React.useCallback(() => {
-        setDialogs(prev => {
-            if (prev.length > 1) {
-                return prev.slice(0, -1);
-            } else {
-                return [];
-            }
-        });
+    const closeDialog = React.useCallback((isCheck?: boolean) => {
+        const isCheckBeforeClose = isCheck ?? useGlobalStore.getState().dialogs[0]?.config?.isCheckBeforeClose ?? false;
+        if (isCheckBeforeClose) {
+            openAlertDialog(ALERT_DIALOG_CONFIGS.unsavedChanges(), () => {
+                closeDialog(false);
+            });
+        } else {
+            setDialogs(prev => {
+                if (prev.length > 1) {
+                    return prev.slice(0, -1);
+                } else {
+                    return [];
+                }
+            });
+        }
     }, [setDialogs]);
 
     /**
@@ -42,7 +52,6 @@ export const useDialog = () => {
                     if (onClose) {
                         onClose();
                     }
-                    // ダイアログを閉じる
                     closeDialog();
                 },
             };

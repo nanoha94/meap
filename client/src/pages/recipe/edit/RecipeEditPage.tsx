@@ -1,5 +1,6 @@
 "use client";
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { FormProvider } from 'react-hook-form';
 import { Copy, Save, Trash2 } from 'lucide-react';
 
@@ -10,8 +11,8 @@ import {
     StyledSelect,
     VerticalRowField,
 } from '@/components';
-import { BUTTON_TYPE, COLOR_VARIANT, colors } from '@/constants';
-import { useAlertDialog, useSnackbars, useTextCopy } from '@/hooks';
+import { ALERT_DIALOG_CONFIGS, BUTTON_TYPE, COLOR_VARIANT, colors } from '@/constants';
+import { useAlertDialog, useNavigationGuard, useSnackbars, useTextCopy } from '@/hooks';
 import {
     CategoryEditFields,
     IngredientEditFields,
@@ -54,6 +55,16 @@ const RecipeEditPage = ({
         isDisabledSendButton,
     } = useRecipeEditForm(ownerUserId, fetchedRecipe);
     const { isTextCopied, copyToClipboard } = useTextCopy();
+    const router = useRouter();
+    useNavigationGuard(!isDisabledSendButton);
+
+    const handleBackClick = () => {
+        if (isDisabledSendButton) {
+            router.back();
+        } else {
+            openAlertDialog(ALERT_DIALOG_CONFIGS.unsavedChanges(), () => router.back());
+        }
+    };
 
     /**
      * ヘッダーのアクションボタン設定
@@ -96,6 +107,7 @@ const RecipeEditPage = ({
             <Header
                 maxWidth="1200px"
                 hasBackButton={true}
+                onBackClick={handleBackClick}
                 leftContent={
                     <div className="items-center gap-x-4 whitespace-nowrap w-[300px] hidden md:flex">
                         <span>編集責任者</span>

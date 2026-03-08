@@ -8,7 +8,7 @@ import { HeaderTextButton, MenuButton, RecipeSelect, EmptyButton, Sortable } fro
 import { BUTTON_TYPE, COLOR_VARIANT, TMP_ID_PREFIX } from "@/constants";
 import { useRecipeApi } from "@/models/recipe";
 import { ActionButton, IMealCategory, IMealPlanItem, IRecipeListItem } from "@/types";
-import { useDialog } from "@/hooks";
+import { useDialog, useNavigationGuard } from "@/hooks";
 import RecipeCard from "../RecipeCard";
 
 interface Props {
@@ -53,6 +53,7 @@ const MealCardField = ({ mealCategory, mealPlanItems, addItem, deleteItem }: Pro
      * 確定ボタンの無効化判定
      */
     const dialogButtonDisabled = React.useMemo(() => selectedRecipeInDialog === null, [selectedRecipeInDialog]);
+    useNavigationGuard(!dialogButtonDisabled);
 
     /**
      * 確定ボタン押下時の処理（ダイアログヘッダーボタン）
@@ -68,7 +69,7 @@ const MealCardField = ({ mealCategory, mealPlanItems, addItem, deleteItem }: Pro
             recipeThumbnail: selectedRecipeInDialog.thumbnail,
             recipeOrder: mealPlanItems.length,
         });
-        closeDialog();
+        closeDialog(false);
     }, [selectedRecipeInDialog, closeDialog]);
 
     // ダイアログ内の customButton / children は開いた時点の要素が store に保存されるため、
@@ -135,7 +136,8 @@ const MealCardField = ({ mealCategory, mealPlanItems, addItem, deleteItem }: Pro
                                 onConfirm={handleConfirm}
                             />,
                             maxWidth: 1000,
-                        });
+                            isCheckBeforeClose: !dialogButtonDisabled,
+                        },);
                     }} />
                 </div>
             </SortableContext>

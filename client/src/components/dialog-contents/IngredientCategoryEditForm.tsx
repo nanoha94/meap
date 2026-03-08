@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { CirclePlus } from 'lucide-react';
-import { Controller, useFieldArray, useForm } from 'react-hook-form';
+import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
 
 import {
     Button,
@@ -11,7 +11,7 @@ import {
     TextButton,
 } from '@/components';
 import { BUTTON_TYPE, BUTTON_VARIANT, COLOR_VARIANT, DND_SORTABLE_LIST_TYPE, TMP_ID_PREFIX } from '@/constants';
-import { useDialog } from '@/hooks';
+import { useDialog, useNavigationGuard } from '@/hooks';
 import { defaultIngredientCategory, useIngredientCategoryApi } from '@/models/ingredient';
 import { IIngredientCategory } from '@/types';
 
@@ -20,12 +20,12 @@ interface FormData {
 }
 
 const IngredientCategoryEditForm: React.FC = () => {
-    const { closeDialog } = useDialog();
+    const { closeDialog, updateCurrentDialogConfig } = useDialog();
     const { storeData, bulkUpdateIngredientCategories } =
         useIngredientCategoryApi();
     const prefix = TMP_ID_PREFIX.INGREDIENT_CATEGORY;
 
-    const { control, handleSubmit, watch, reset } = useForm<FormData>({
+    const { control, handleSubmit, reset } = useForm<FormData>({
         defaultValues: {
             categories: [],
         },
@@ -39,7 +39,23 @@ const IngredientCategoryEditForm: React.FC = () => {
     /**
      * カテゴリーの監視
      */
-    const watchedCategories = watch('categories');
+    const watchedCategories = useWatch({ control, name: 'categories' });
+
+    /**
+     * 送信ボタンの無効化判定
+     * カテゴリーが変更されていない場合は送信ボタンを無効化
+     */
+    const isDisabledSendButton = React.useMemo(() => {
+        return JSON.stringify(watchedCategories.filter(item => item.name !== '')) === JSON.stringify(storeData.categories);
+    }, [watchedCategories, storeData.categories]);
+    useNavigationGuard(!isDisabledSendButton);
+
+    /**
+     * 閉じる前確認の要否をフォーム状態に合わせて更新
+    */
+    React.useEffect(() => {
+        updateCurrentDialogConfig({ isCheckBeforeClose: !isDisabledSendButton });
+    }, [isDisabledSendButton, updateCurrentDialogConfig]);
 
     /**
      * 空のカテゴリーを追加
@@ -149,10 +165,10 @@ const IngredientCategoryEditForm: React.FC = () => {
                     type={BUTTON_TYPE.BUTTON}
                     colorVariant={COLOR_VARIANT.GRAY}
                     variant={BUTTON_VARIANT.OUTLINED}
-                    onClick={closeDialog}>
+                    onClick={() => closeDialog()}>
                     戻る
                 </Button>
-                <Button type={BUTTON_TYPE.SUBMIT}>設定</Button>
+                <Button type={BUTTON_TYPE.SUBMIT} disabled={isDisabledSendButton}>設定</Button>
             </div>
         </form>
     );

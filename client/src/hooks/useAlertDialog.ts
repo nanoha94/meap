@@ -28,7 +28,7 @@ export const useAlertDialog = () => {
                 config,
                 onCancel: () => {
                     closeAlertDialog();
-                },  
+                },
                 onAction: () => {
                     onAction();
                     closeAlertDialog();

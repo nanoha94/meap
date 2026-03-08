@@ -28,7 +28,7 @@ export const useRecipeStore = create<RecipeState>(set => ({
     listFilterOptions: {
         recipeName: '',
         ingredientName: '',
-        categoryId: '',
+        categoryIds: [],
         lastPlannedDateFrom: '',
         lastPlannedDateTo: '',
     },

@@ -118,7 +118,7 @@ const RecipeSelect = ({ initFetchedRecipes, selectedRecipe, disabledRecipes, onS
                         </div>
                         <TextButton
                             type={BUTTON_TYPE.BUTTON}
-                            onClick={() => { router.push('/recipe/new'); closeDialog(); }}
+                            onClick={() => { router.push('/recipe/new'); closeDialog(false); }}
                             className="!pl-0 !border-none !bg-transparent hover:!bg-gray-light">
                             <CirclePlus size={20} />
                             料理/レシピを追加
@@ -129,7 +129,7 @@ const RecipeSelect = ({ initFetchedRecipes, selectedRecipe, disabledRecipes, onS
                         <p>まだ料理/レシピが登録されていません。</p>
                         <TextButton
                             type={BUTTON_TYPE.BUTTON}
-                            onClick={() => { router.push('/recipe/new'); closeDialog(); }}
+                            onClick={() => { router.push('/recipe/new'); closeDialog(false); }}
                             className="!pl-0 !border-none !bg-transparent hover:!bg-gray-light">
                             <CirclePlus size={20} />
                             料理/レシピを追加

@@ -13,11 +13,13 @@ interface Props {
     leftContent?: React.ReactNode;
     rightContent?: React.ReactNode;
     hasBackButton?: boolean;
+    onBackClick?: () => void;
     actionButtons?: ActionButton[];
 }
 
-const Header = ({ title, maxWidth = '1000px', leftContent, rightContent, hasBackButton = false, actionButtons }: Props) => {
+const Header = ({ title, maxWidth = '1000px', leftContent, rightContent, hasBackButton = false, onBackClick, actionButtons }: Props) => {
     const router = useRouter();
+    const handleBackClick = () => (onBackClick ? onBackClick() : router.back());
     return (
         <header
             className="bg-white"
@@ -25,7 +27,7 @@ const Header = ({ title, maxWidth = '1000px', leftContent, rightContent, hasBack
             <div className={`py-3 px-4 sm:px-6 lg:px-10 max-w-[${maxWidth}] mx-auto min-h-[60px] flex items-center justify-between gap-x-10`}>
                 <div className="flex items-center gap-x-4">
                     {hasBackButton && <button
-                        onClick={() => router.back()}
+                        onClick={handleBackClick}
                         className="p-1 appearance-none rounded-full transition-colors hover:bg-gray-light">
                         <ChevronLeft color={colors.black} size={24} />
                     </button>}

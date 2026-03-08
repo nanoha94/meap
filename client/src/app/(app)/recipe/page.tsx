@@ -70,7 +70,7 @@ const RecipePageWithData = async ({
     const filterOptions: RecipeFilterFormData = {
         recipeName: recipeName ?? '',
         ingredientName: ingredientName ?? '',
-        categoryIds: categoryIds?.split(',').map(id => id.trim()),
+        categoryIds: categoryIds?.split(',').map(id => id.trim()) ?? [],
         lastPlannedDateFrom: lastPlannedDateFrom ?? '',
         lastPlannedDateTo: lastPlannedDateTo ?? '',
     };

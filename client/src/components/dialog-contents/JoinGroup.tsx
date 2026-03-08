@@ -32,7 +32,7 @@ const JoinGroup: React.FC<Props> = ({ invitationDetail, isDelete = false }) => {
      * ダイアログを閉じる
      */
     const handleClose = React.useCallback(() => {
-        closeDialog();
+        closeDialog(false);
         removeTokenFromPath();
     }, [closeDialog, removeTokenFromPath]);
 
@@ -45,7 +45,7 @@ const JoinGroup: React.FC<Props> = ({ invitationDetail, isDelete = false }) => {
         if (!invitationDetail) return;
 
         joinGroup(invitationDetail, isDelete);
-        closeDialog();
+        closeDialog(false);
     }, [invitationDetail, joinGroup, closeDialog]);
 
 

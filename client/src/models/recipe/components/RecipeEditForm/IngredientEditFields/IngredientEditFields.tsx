@@ -285,7 +285,7 @@ const IngredientEditFields = ({ control }: Props) => {
                 onClick={() => {
                     openDialog({
                         title: '材料カテゴリーを設定',
-                        children: <IngredientCategoryEditForm />
+                        children: <IngredientCategoryEditForm />,
                     });
                 }}>
                 材料カテゴリーの追加・編集

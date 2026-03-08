@@ -1,10 +1,10 @@
 'use client';
 import React from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 
 import { Button, StyledSelect, VerticalRowField } from '@/components';
 import { BUTTON_TYPE, BUTTON_VARIANT, COLOR_VARIANT, EDIT_MODE, EditMode } from '@/constants';
-import { useDialog } from '@/hooks';
+import { useDialog, useNavigationGuard } from '@/hooks';
 import {
     useShoppingItemApi,
     useShoppingStore,
@@ -23,7 +23,7 @@ interface FormData {
 }
 
 const ShoppingItemEditForm: React.FC<Props> = ({ editingItem, editMode }) => {
-    const { closeDialog } = useDialog();
+    const { closeDialog, updateCurrentDialogConfig } = useDialog();
     const { storeShoppingItem, updateShoppingItems } = useShoppingItemApi();
     const { categories } = useShoppingStore();
 
@@ -33,14 +33,30 @@ const ShoppingItemEditForm: React.FC<Props> = ({ editingItem, editMode }) => {
         tags: [],
     };
 
-    const { control, handleSubmit, reset, watch } = useForm<FormData>({
+    const { control, handleSubmit, reset } = useForm<FormData>({
         defaultValues,
     });
 
     /**
      * アイテム名の監視
      */
-    const watchName = watch('name');
+    const watchName = useWatch({ control, name: 'name' });
+
+    /**
+     * 送信ボタンの無効化判定
+     * アイテム名が空の場合は送信ボタンを無効化
+     */
+    const isDisabledSendButton = React.useMemo(() => {
+        return watchName.length <= 0;
+    }, [watchName]);
+    useNavigationGuard(!isDisabledSendButton);
+
+    /**
+     * 閉じる前確認の要否をフォーム状態に合わせて更新
+     */
+    React.useEffect(() => {
+        updateCurrentDialogConfig({ isCheckBeforeClose: !isDisabledSendButton });
+    }, [isDisabledSendButton, updateCurrentDialogConfig]);
 
     /**
      * フォームのリセット
@@ -70,7 +86,7 @@ const ShoppingItemEditForm: React.FC<Props> = ({ editingItem, editMode }) => {
                 },
             ]);
         }
-        closeDialog();
+        closeDialog(false);
     };
 
     return (
@@ -113,10 +129,10 @@ const ShoppingItemEditForm: React.FC<Props> = ({ editingItem, editMode }) => {
                 <Button
                     type={BUTTON_TYPE.BUTTON} colorVariant={COLOR_VARIANT.GRAY}
                     variant={BUTTON_VARIANT.OUTLINED}
-                    onClick={closeDialog}>
+                    onClick={() => closeDialog()}>
                     戻る
                 </Button>
-                <Button type={BUTTON_TYPE.SUBMIT} disabled={watchName.length <= 0}>
+                <Button type={BUTTON_TYPE.SUBMIT} disabled={isDisabledSendButton}>
                     {editMode === EDIT_MODE.CREATE ? '追加' : '保存'}
                 </Button>
             </div>

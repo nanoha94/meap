@@ -19,7 +19,7 @@ const Invitation: React.FC = () => {
     // 取得に失敗したらダイアログを閉じる
     React.useEffect(() => {
         fetchInvitationToken(() => {
-            closeDialog();
+            closeDialog(false);
         });
     }, []);
 
@@ -39,7 +39,7 @@ const Invitation: React.FC = () => {
                     <div className="flex flex-col items-center">
                         <button
                             onClick={() =>
-                                fetchInvitationToken(() => closeDialog())
+                                fetchInvitationToken(() => closeDialog(false))
                             }
                             className="p-2 w-fit bg-gray-background rounded-full transition-colors hover:bg-gray-light">
                             <RotateCw

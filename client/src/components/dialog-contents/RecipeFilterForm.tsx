@@ -8,7 +8,7 @@ import { RecipeFilterFormData, useRecipeStore } from '@/models/recipe';
 import Button from '../Button';
 import { CheckboxField, StyledDatePicker } from '../form-fields';
 import { VerticalRowField, VerticaFromToField } from '../react-hook-form';
-import { useDialog } from '@/hooks';
+import { useDialog, useNavigationGuard } from '@/hooks';
 import { Controller, useForm } from 'react-hook-form';
 
 interface Props {
@@ -17,11 +17,28 @@ interface Props {
 }
 
 const RecipeFilterForm = ({ search, defaultValues }: Props) => {
-    const { control, handleSubmit, getValues, trigger, formState: { errors }, setValue } = useForm<RecipeFilterFormData>({
+    const { control, handleSubmit, getValues, watch, trigger, formState: { errors }, setValue } = useForm<RecipeFilterFormData>({
         defaultValues: defaultValues,
     });
     const { categories } = useRecipeStore();
-    const { closeDialog } = useDialog();
+    const { closeDialog, updateCurrentDialogConfig } = useDialog();
+
+    /** フォーム値の変更を購読し、入力変更時に再レンダーさせる */
+    const currentValues = watch();
+
+    /**
+     * 送信ボタンの無効化判定
+     * フォームのデータが変更されていない場合は送信ボタンを無効化
+     */
+    const isDisabledSendButton = JSON.stringify(currentValues) === JSON.stringify(defaultValues);
+    useNavigationGuard(!isDisabledSendButton);
+
+    /**
+     * 閉じる前確認の要否をフォーム状態に合わせて更新
+     */
+    React.useEffect(() => {
+        updateCurrentDialogConfig({ isCheckBeforeClose: !isDisabledSendButton });
+    }, [isDisabledSendButton, updateCurrentDialogConfig]);
 
     /**
     * カテゴリーのチェック状態を変更
@@ -59,7 +76,7 @@ const RecipeFilterForm = ({ search, defaultValues }: Props) => {
      */
     const onSubmit = (data: RecipeFilterFormData) => {
         search(data);
-        closeDialog();
+        closeDialog(false);
     };
 
     return (

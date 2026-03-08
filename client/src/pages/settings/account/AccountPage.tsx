@@ -4,7 +4,7 @@ import { ChevronRight } from 'lucide-react';
 
 import { Header, Invitation, JoinGroup, ProfileEditForm, TextButton } from '@/components';
 import { useDialog, useSnackbars } from '@/hooks';
-import { useUserStore, iconAvatar } from '@/models/user';
+import { useUserStore, iconAvatar, useAccountNavigation } from '@/models/user';
 import { IInvitation } from '@/types';
 import Image from 'next/image';
 
@@ -16,6 +16,7 @@ interface Props {
 const AccountPage = ({ invitationDetail, errorMessage }: Props) => {
     const { addSnackbar } = useSnackbars();
     const { openDialog } = useDialog();
+    const { removeTokenFromPath } = useAccountNavigation();
     const loginUser = useUserStore(state => state.loginUser);
     const users = useUserStore(state => state.users);
 
@@ -46,8 +47,8 @@ const AccountPage = ({ invitationDetail, errorMessage }: Props) => {
         if (invitationDetail) {
             openDialog({
                 title: 'グループに参加',
-                children: <JoinGroup invitationDetail={invitationDetail} />
-            });
+                children: <JoinGroup invitationDetail={invitationDetail} />,
+            }, removeTokenFromPath);
         }
     }, [invitationDetail, isMounted]);
 

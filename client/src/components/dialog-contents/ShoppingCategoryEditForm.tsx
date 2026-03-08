@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 import { CirclePlus } from 'lucide-react';
-import { Controller, useFieldArray, useForm } from 'react-hook-form';
+import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
 
 import {
     Button,
@@ -10,7 +10,7 @@ import {
     TextButton,
 } from '@/components';
 import { BUTTON_TYPE, BUTTON_VARIANT, COLOR_VARIANT, DND_SORTABLE_LIST_TYPE, TMP_ID_PREFIX } from '@/constants';
-import { useDialog } from '@/hooks';
+import { useDialog, useNavigationGuard } from '@/hooks';
 import { useShoppingCategoryApi, useShoppingStore } from '@/models/shopping';
 import { IShoppingCategory } from '@/types';
 
@@ -19,13 +19,13 @@ interface FormData {
 }
 
 const ShoppingCategoryEditForm: React.FC = () => {
-    const { closeDialog } = useDialog();
+    const { closeDialog, updateCurrentDialogConfig } = useDialog();
     const { categories } = useShoppingStore();
     const { bulkUpdateShoppingCategories } =
         useShoppingCategoryApi();
     const prefix = TMP_ID_PREFIX.SHOPPING_CATEGORY;
 
-    const { control, handleSubmit, watch, reset } = useForm<FormData>({
+    const { control, handleSubmit, reset } = useForm<FormData>({
         defaultValues: {
             categories: [],
         },
@@ -39,7 +39,24 @@ const ShoppingCategoryEditForm: React.FC = () => {
     /**
      * カテゴリーの監視
      */
-    const watchedCategories = watch('categories');
+    const watchedCategories = useWatch({ control, name: 'categories' });
+
+    /**
+    * 送信ボタンの無効化判定
+    * カテゴリーが変更されていない場合は送信ボタンを無効化
+    */
+    const isDisabledSendButton = React.useMemo(() => {
+        return JSON.stringify(watchedCategories.filter(item => item.name !== '')) === JSON.stringify(categories);
+    }, [watchedCategories, categories]);
+    useNavigationGuard(!isDisabledSendButton);
+
+    /**
+     * 閉じる前確認の要否をフォーム状態に合わせて更新
+     */
+    React.useEffect(() => {
+        updateCurrentDialogConfig({ isCheckBeforeClose: !isDisabledSendButton });
+    }, [isDisabledSendButton, updateCurrentDialogConfig]);
+
 
     /**
      * 空のカテゴリーを追加
@@ -89,7 +106,7 @@ const ShoppingCategoryEditForm: React.FC = () => {
                     order: idx,
                 })),
             );
-            closeDialog();
+            closeDialog(false);
         } catch {
             // エラーの場合はダイアログを閉じない
             // エラーハンドリングはbulkUpdateShoppingCategoriesで行う
@@ -151,10 +168,10 @@ const ShoppingCategoryEditForm: React.FC = () => {
                     type={BUTTON_TYPE.BUTTON}
                     colorVariant={COLOR_VARIANT.GRAY}
                     variant={BUTTON_VARIANT.OUTLINED}
-                    onClick={closeDialog}>
+                    onClick={() => closeDialog()}>
                     戻る
                 </Button>
-                <Button type={BUTTON_TYPE.SUBMIT}>設定</Button>
+                <Button type={BUTTON_TYPE.SUBMIT} disabled={isDisabledSendButton}>設定</Button>
             </div>
         </form>
     );

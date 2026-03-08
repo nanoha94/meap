@@ -1,10 +1,10 @@
 'use client';
 import React from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 
 import { Button, HorizontalRowField, StyledSelect } from '@/components';
 import { BUTTON_TYPE, BUTTON_VARIANT, COLOR_VARIANT, TMP_ID_PREFIX } from '@/constants';
-import { useDialog } from '@/hooks';
+import { useDialog, useNavigationGuard } from '@/hooks';
 import { defaultIngredientItem, useIngredientStore } from '@/models/ingredient';
 import { IIngredientItem } from '@/types';
 
@@ -21,10 +21,10 @@ const IngredientEditForm = ({
     actionButtonText,
     onAction,
 }: Props) => {
-    const { closeDialog } = useDialog();
+    const { closeDialog, updateCurrentDialogConfig } = useDialog();
     const prefix: string = TMP_ID_PREFIX.INGREDIENT_ITEM;
     const { units } = useIngredientStore();
-    const { control, handleSubmit, reset, watch, setValue } = useForm<FormData>(
+    const { control, handleSubmit, reset, setValue } = useForm<FormData>(
         {
             defaultValues: {
                 ...defaultIngredientItem,
@@ -34,10 +34,10 @@ const IngredientEditForm = ({
     );
     const nameInputRef = React.useRef<HTMLInputElement>(null);
 
-    const watchedName = watch('name');
-    const watchedQuantity = watch('quantity');
-    const watchedUnitId = watch('unit.id');
-    const watchedUnit = watch('unit');
+    const watchedName = useWatch({ control, name: 'name' });
+    const watchedQuantity = useWatch({ control, name: 'quantity' });
+    const watchedUnitId = useWatch({ control, name: 'unit.id' });
+    const watchedUnit = useWatch({ control, name: 'unit' });
 
     /**
      * 数量の入力可/不可
@@ -58,6 +58,14 @@ const IngredientEditForm = ({
             (!isDisabledQuantity && !watchedQuantity)
         );
     }, [watchedName, watchedUnitId, watchedQuantity, isDisabledQuantity]);
+    useNavigationGuard(!isDisabledSendButton);
+
+    /**
+     * 閉じる前確認の要否をフォーム状態に合わせて更新
+     */
+    React.useEffect(() => {
+        updateCurrentDialogConfig({ isCheckBeforeClose: watchedName !== '' || watchedUnitId !== '' || watchedQuantity !== null });
+    }, [watchedName, watchedUnitId, watchedQuantity, updateCurrentDialogConfig]);
 
     /**
      * フォーカスを当てる
@@ -165,7 +173,7 @@ const IngredientEditForm = ({
                     type={BUTTON_TYPE.BUTTON}
                     colorVariant={COLOR_VARIANT.GRAY}
                     variant={BUTTON_VARIANT.OUTLINED}
-                    onClick={closeDialog}>
+                    onClick={() => closeDialog()}>
                     戻る
                 </Button>
                 <Button type={BUTTON_TYPE.SUBMIT} disabled={isDisabledSendButton}>

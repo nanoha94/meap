@@ -9,8 +9,8 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { FormProvider } from 'react-hook-form';
 
 import { Header, HeaderTextButton, StyledDatePicker } from '@/components';
-import { BUTTON_TYPE, COLOR_VARIANT } from '@/constants';
-import { useAlertDialog, useItemAndCategoryDnd, useSnackbars } from '@/hooks';
+import { ALERT_DIALOG_CONFIGS, BUTTON_TYPE, COLOR_VARIANT } from '@/constants';
+import { useAlertDialog, useItemAndCategoryDnd, useNavigationGuard, useSnackbars } from '@/hooks';
 import { MealCardField, RecipeCard, useMealStore, useMealPlanEditForm, useMealPlanApi } from '@/models/meal';
 import { useGlobalStore } from '@/stores';
 import { ActionButton, IMealPlan, IMealPlanItem } from '@/types';
@@ -26,12 +26,22 @@ interface Props {
 const PlanEditPage = ({ selectedDate, fetchMealPlan, errorMessage }: Props) => {
     const router = useRouter();
     const { openAlertDialog } = useAlertDialog();
-    const { incrementLoadingCount, resetLoadingCount } = useGlobalStore();
+    const incrementLoadingCount = useGlobalStore(state => state.incrementLoadingCount);
+    const resetLoadingCount = useGlobalStore(state => state.resetLoadingCount);
     const { deleteMealPlan } = useMealPlanApi();
     const { mealCategories } = useMealStore();
     const { addSnackbar } = useSnackbars();
     const { methods, isDisabledSendButton, onSubmit, fields, insert, replace, remove } = useMealPlanEditForm(selectedDate, fetchMealPlan);
     const [tmpItems, setTmpItems] = React.useState<IMealPlanItem[]>([]);
+    useNavigationGuard(!isDisabledSendButton);
+
+    const handleBackClick = React.useCallback(() => {
+        if (isDisabledSendButton) {
+            router.back();
+        } else {
+            openAlertDialog(ALERT_DIALOG_CONFIGS.unsavedChanges(), () => router.back());
+        }
+    }, [isDisabledSendButton, router, openAlertDialog]);
 
     /**
      * ヘッダーメニューボタン押下時に開くアクションボタン設定
@@ -51,8 +61,8 @@ const PlanEditPage = ({ selectedDate, fetchMealPlan, errorMessage }: Props) => {
 
 
     /**
-  * ドラッグオーバー
-  */
+     * ドラッグオーバー
+     */
     const customHandleDragOver = React.useCallback(
         (
             activeId: string,
@@ -147,7 +157,7 @@ const PlanEditPage = ({ selectedDate, fetchMealPlan, errorMessage }: Props) => {
 
     return (
         <>
-            <Header hasBackButton={true} leftContent={
+            <Header hasBackButton={true} onBackClick={handleBackClick} leftContent={
                 <div className="items-center gap-x-4 whitespace-nowrap w-[300px] hidden md:flex">
                     <StyledDatePicker
                         value={(() => {
@@ -158,7 +168,7 @@ const PlanEditPage = ({ selectedDate, fetchMealPlan, errorMessage }: Props) => {
                     />
                 </div>
             } rightContent={
-                <HeaderTextButton type={BUTTON_TYPE.SUBMIT} form="plan-edit-form" colorVariant={COLOR_VARIANT.SECONDARY} disabled={isDisabledSendButton(tmpItems)}>
+                <HeaderTextButton type={BUTTON_TYPE.SUBMIT} form="plan-edit-form" colorVariant={COLOR_VARIANT.SECONDARY} disabled={isDisabledSendButton}>
                     <Save size={20} strokeWidth={2} />
                     保存
                 </HeaderTextButton >}

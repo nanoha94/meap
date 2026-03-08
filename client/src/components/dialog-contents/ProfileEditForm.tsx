@@ -4,7 +4,7 @@ import React from "react";
 import { useForm } from "react-hook-form";
 
 import { BUTTON_TYPE } from "@/constants";
-import { useDialog } from "@/hooks";
+import { useDialog, useNavigationGuard } from "@/hooks";
 import { iconAvatar, useUserApi, useUserStore } from "@/models/user";
 import Button from "../Button";
 import { ImageEditField, VerticalRowField } from "../react-hook-form";
@@ -12,7 +12,7 @@ import { ProfileEditFormData } from "@/models/user/types";
 
 
 const ProfileEditForm = () => {
-    const { closeDialog } = useDialog();
+    const { closeDialog, updateCurrentDialogConfig } = useDialog();
     const { updateUser } = useUserApi();
     const loginUser = useUserStore(state => state.loginUser);
     const { control, handleSubmit, watch, reset } = useForm<ProfileEditFormData>({
@@ -44,6 +44,14 @@ const ProfileEditForm = () => {
         const avatarUnchanged = watchedAvatarImage?.src === loginUser.avatar.image?.src;
         return nameUnchanged && avatarUnchanged;
     }, [watchedName, watchedAvatarImage, loginUser.name, loginUser.avatar.image]);
+    useNavigationGuard(!isDisabledSendButton);
+
+    /**
+     * 閉じる前確認の要否をフォーム状態に合わせて更新
+     */
+    React.useEffect(() => {
+        updateCurrentDialogConfig({ isCheckBeforeClose: !isDisabledSendButton });
+    }, [isDisabledSendButton, updateCurrentDialogConfig]);
 
     /**
      * フォームの送信処理
@@ -54,7 +62,7 @@ const ProfileEditForm = () => {
             name: data.name,
             avatar_image_id: data.avatarImage?.id,
         }, data.avatarImage?.file ?? null);
-        closeDialog();
+        closeDialog(false);
     };
 
     return (

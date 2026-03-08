@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 import { CirclePlus } from 'lucide-react';
-import { Controller, useFieldArray, useForm } from 'react-hook-form';
+import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
 
 import {
     Button,
@@ -10,7 +10,7 @@ import {
     TextButton,
 } from '@/components';
 import { BUTTON_TYPE, BUTTON_VARIANT, COLOR_VARIANT, DND_SORTABLE_LIST_TYPE, TMP_ID_PREFIX } from '@/constants';
-import { useDialog } from '@/hooks';
+import { useDialog, useNavigationGuard } from '@/hooks';
 import { DEFAULT_RECIPE_CATEGORY, useRecipeCategoryApi } from '@/models/recipe';
 import { IRecipeCategory } from '@/types';
 
@@ -20,11 +20,11 @@ interface FormData {
 }
 
 const RecipeCategoryEditForm: React.FC = () => {
-    const { closeDialog } = useDialog();
+    const { closeDialog, updateCurrentDialogConfig } = useDialog();
     const { storeData, bulkUpdateRecipeCategories } = useRecipeCategoryApi();
     const prefix = TMP_ID_PREFIX.RECIPE_CATEGORY;
 
-    const { control, handleSubmit, watch, reset } = useForm<FormData>({
+    const { control, handleSubmit, reset } = useForm<FormData>({
         defaultValues: {
             categories: [DEFAULT_RECIPE_CATEGORY],
         },
@@ -38,12 +38,28 @@ const RecipeCategoryEditForm: React.FC = () => {
     /**
      * カテゴリーの監視
      */
-    const watchedCategories = watch('categories');
+    const watchedCategories = useWatch({ control, name: 'categories' });
+
+    /**
+     * 送信ボタンの無効化判定
+     * カテゴリーが変更されていない場合は送信ボタンを無効化
+     */
+    const isDisabledSendButton = React.useMemo(() => {
+        return JSON.stringify(watchedCategories.filter(item => item.name !== '')) === JSON.stringify(storeData.categories);
+    }, [watchedCategories, storeData.categories]);
+    useNavigationGuard(!isDisabledSendButton);
+
+    /**
+     * 閉じる前確認の要否をフォーム状態に合わせて更新
+     */
+    React.useEffect(() => {
+        updateCurrentDialogConfig({ isCheckBeforeClose: !isDisabledSendButton });
+    }, [isDisabledSendButton, updateCurrentDialogConfig]);
 
     /**
      * 空のカテゴリーを追加
      */
-    const addEmptyCategory = () => {
+    const addEmptyCategory = React.useCallback(() => {
         const emptyItem = watchedCategories.filter(item => item.name === '');
 
         if (emptyItem.length > 0) {
@@ -67,8 +83,11 @@ const RecipeCategoryEditForm: React.FC = () => {
 
         // 末尾に追加
         append(newItem);
-    };
+    }, [watchedCategories, append, prefix]);
 
+    /**
+     * カテゴリーを削除
+     */
     const removeCategory = React.useCallback(
         (index: number) => {
             if (fields.length <= 1) {
@@ -98,7 +117,7 @@ const RecipeCategoryEditForm: React.FC = () => {
                     order: idx,
                 })),
             );
-            closeDialog();
+            closeDialog(false);
         } catch {
             // エラーの場合はダイアログを閉じない
             // エラーハンドリングはbulkUpdateRecipeCategoriesで行う
@@ -165,10 +184,10 @@ const RecipeCategoryEditForm: React.FC = () => {
                     type={BUTTON_TYPE.BUTTON}
                     colorVariant={COLOR_VARIANT.GRAY}
                     variant={BUTTON_VARIANT.OUTLINED}
-                    onClick={closeDialog}>
+                    onClick={() => closeDialog()}>
                     戻る
                 </Button>
-                <Button type={BUTTON_TYPE.SUBMIT}>設定</Button>
+                <Button type={BUTTON_TYPE.SUBMIT} disabled={isDisabledSendButton}>設定</Button>
             </div>
         </form>
     );

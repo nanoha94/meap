@@ -90,14 +90,12 @@ const IngredientItemList = ({
                     actionButtonText={actionButtonText}
                     onAction={(value: IIngredientItem) => {
                         updateItem(index, value);
-                        closeDialog();
+                        closeDialog(false);
                     }}
                 />,
             });
         }
     }, [items, category, addEmptyItem, updateItem, openDialog, closeDialog]);
-
-
 
     return (
         <>
