@@ -113,14 +113,12 @@ const RecipeListPage = ({
             <Header
                 title="料理/レシピ一覧"
                 rightContent={
-                    <div className="hidden md:flex">
-                        <HeaderTextButton
-                            href="/recipe/new"
-                            colorVariant={COLOR_VARIANT.SECONDARY}>
-                            <CirclePlus size={20} />
-                            料理/レシピを追加
-                        </HeaderTextButton>
-                    </div>
+                    <HeaderTextButton
+                        href="/recipe/new"
+                        colorVariant={COLOR_VARIANT.SECONDARY}>
+                        <CirclePlus size={20} />
+                        料理/レシピを追加
+                    </HeaderTextButton>
                 }
             />
             <main className='p-5 pb-[60px] md:px-10 max-w-[1000px] mx-auto flex flex-col gap-y-5'>
@@ -143,8 +141,8 @@ const RecipeListPage = ({
                         className="!w-auto"
                     />
                 </div>
-                <div className='flex flex-col gap-y-14'>
-                    {pageSize > 0 ? (
+                {pageSize <= 0 ? <p>登録されている料理/レシピはありません。</p> :
+                    <div className='flex flex-col gap-y-14'>
                         <div className="grid grid-cols-[repeat(auto-fill,_minmax(160px,_1fr))] gap-3">
                             {recipes.map(v => (
                                 <Link
@@ -175,11 +173,9 @@ const RecipeListPage = ({
                                 </Link>
                             ))}
                         </div>
-                    ) : (
-                        <p>まだ料理/レシピが登録されていません。</p>
-                    )}
-                    <Pagination pageSize={pageSize} currentPage={currentPage} onPageChange={handleChangePage} />
-                </div>
+                        <Pagination pageSize={pageSize} currentPage={currentPage} onPageChange={handleChangePage} />
+                    </div>
+                }
             </main>
         </>
     );

@@ -1,7 +1,8 @@
 "use client";
+
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { FormProvider } from 'react-hook-form';
+import { Controller, FormProvider } from 'react-hook-form';
 import { Copy, Save, Trash2 } from 'lucide-react';
 
 import {
@@ -44,16 +45,16 @@ const RecipeEditPage = ({
     const { deleteRecipe } = useRecipeApi();
     const loginUser = useUserStore(state => state.loginUser);
     const users = useUserStore(state => state.users);
-    const [ownerUserId, setOwnerUserId] = React.useState<string>(
-        (fetchedRecipe as IRecipe)?.ownerUserId || loginUser.id,
-    );
     const {
         control,
         methods,
         onSubmit,
         errors,
         isDisabledSendButton,
-    } = useRecipeEditForm(ownerUserId, fetchedRecipe);
+    } = useRecipeEditForm(
+        fetchedRecipe?.ownerUserId || loginUser.id,
+        fetchedRecipe,
+    );
     const { isTextCopied, copyToClipboard } = useTextCopy();
     const router = useRouter();
     useNavigationGuard(!isDisabledSendButton);
@@ -84,13 +85,6 @@ const RecipeEditPage = ({
         },
     ] : [];
 
-    /**
-     * 編集責任者を設定
-     */
-    React.useEffect(() => {
-        setOwnerUserId(fetchedRecipe?.ownerUserId || loginUser.id);
-    }, [fetchedRecipe, loginUser]);
-
 
     /**
      * エラーメッセージを表示
@@ -111,14 +105,18 @@ const RecipeEditPage = ({
                 leftContent={
                     <div className="items-center gap-x-4 whitespace-nowrap w-[300px] hidden md:flex">
                         <span>編集責任者</span>
-                        <StyledSelect
-                            value={ownerUserId}
-                            name="userId"
-                            options={users}
-                            isShowPlaceholder={false}
-                            onChange={e => {
-                                setOwnerUserId(e.target.value);
-                            }}
+                        <Controller
+                            control={control}
+                            name="ownerUserId"
+                            render={({ field: { value, onChange } }) => (
+                                <StyledSelect
+                                    value={value}
+                                    name="ownerUserId"
+                                    options={users}
+                                    isShowPlaceholder={false}
+                                    onChange={onChange}
+                                />
+                            )}
                         />
                     </div>
                 }

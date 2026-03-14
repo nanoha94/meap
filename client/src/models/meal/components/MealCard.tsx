@@ -1,5 +1,6 @@
 'use client';
 import { Pencil, Trash2 } from "lucide-react";
+import Link from "next/link";
 
 import { MenuButton } from "@/components";
 import { ActionButton, IMealCategory, IMealPlanItem } from "@/types";
@@ -43,7 +44,7 @@ const MealCard = ({ mealPlanId, mealPlanItems, mealCategory, editPagePath }: Pro
     ];
 
     return (
-        <div className="pr-2 pl-3 pt-2 pb-4 md:px-5 md:py-4 flex flex-col gap-y-5 bg-white md:rounded shadow-card">
+        <div className="px-3 pt-2 pb-4 md:px-5 md:py-4 flex flex-col gap-y-5 bg-white md:rounded shadow-card">
             <div className="flex items-center justify-between">
                 <div
                     className="relative pl-4 text-xl before:content-[''] before:absolute before:top-1/2 before:left-0 before:translate-y-[-50%] before:block before:w-1 before:h-5/6 before:bg-[var(--category-color)] before:rounded-full"
@@ -57,7 +58,7 @@ const MealCard = ({ mealPlanId, mealPlanItems, mealCategory, editPagePath }: Pro
             </div>
             <div className="grid grid-cols-[repeat(auto-fill,_minmax(150px,_1fr))] md:grid-cols-[repeat(auto-fill,_minmax(180px,_1fr))] gap-5">
                 {mealPlanItems.map((v) => (
-                    <RecipeCard key={v.recipeId} recipe={v} hasDeleteButton={false} />
+                    <Link key={v.recipeId} href={`/recipe/${v.recipeId}`} className=" transition-transform duration-500 hover:-translate-y-2"><RecipeCard recipe={v} hasDeleteButton={false} /></Link>
                 ))}
             </div>
         </div>

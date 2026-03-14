@@ -45,6 +45,7 @@ export const DEFAULT_RECIPE_EDIT_FORM_DATA: RecipeEditFormData = {
     ingredients: [],
     steps: [],
     cookingTime: null,
+    ownerUserId: '',
 };
 
 /**

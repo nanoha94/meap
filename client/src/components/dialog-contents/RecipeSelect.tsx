@@ -1,12 +1,12 @@
 "use client";
 import React from "react";
-import { CirclePlus, SlidersHorizontal } from "lucide-react";
+import { ChevronRight, SlidersHorizontal } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 import { RecipeFilterFormData, sortOptions, useRecipeApi } from "@/models/recipe";
 import { IRecipe, IRecipeListItem } from "@/types";
-import { BUTTON_TYPE, colors } from "@/constants";
+import { BUTTON_TYPE, COLOR_VARIANT, colors } from "@/constants";
 import { RecipeFilterForm, TextButton } from "@/components";
 import { useDialog } from "@/hooks";
 import { StyledSelect } from "../form-fields";
@@ -118,10 +118,10 @@ const RecipeSelect = ({ initFetchedRecipes, selectedRecipe, disabledRecipes, onS
                         </div>
                         <TextButton
                             type={BUTTON_TYPE.BUTTON}
-                            onClick={() => { router.push('/recipe/new'); closeDialog(false); }}
-                            className="!pl-0 !border-none !bg-transparent hover:!bg-gray-light">
-                            <CirclePlus size={20} />
+                            colorVariant={COLOR_VARIANT.SECONDARY}
+                            onClick={() => { router.push('/recipe/new'); closeDialog(false); }}>
                             料理/レシピを追加
+                            <ChevronRight size={20} />
                         </TextButton>
                     </>
                 ) : (
@@ -129,10 +129,10 @@ const RecipeSelect = ({ initFetchedRecipes, selectedRecipe, disabledRecipes, onS
                         <p>まだ料理/レシピが登録されていません。</p>
                         <TextButton
                             type={BUTTON_TYPE.BUTTON}
-                            onClick={() => { router.push('/recipe/new'); closeDialog(false); }}
-                            className="!pl-0 !border-none !bg-transparent hover:!bg-gray-light">
-                            <CirclePlus size={20} />
+                            colorVariant={COLOR_VARIANT.SECONDARY}
+                            onClick={() => { router.push('/recipe/new'); closeDialog(false); }}>
                             料理/レシピを追加
+                            <ChevronRight size={20} />
                         </TextButton>
                     </div>
                 )

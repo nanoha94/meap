@@ -21,7 +21,8 @@ export default {
                 background: '#FEFAF5',
             },
             secondary: {
-                main: '#5E6946',
+                main: '#7E8B55',
+                light: '#CDD59A',
                 background: '#F6F8ED',
             },
             accent: {

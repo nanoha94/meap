@@ -311,8 +311,9 @@ export const useRecipeApi = () => {
                 timeout: TIMEOUT_MS,
             });
             if (responseData.success) {
-                addSnackbar('success', responseData.message ?? 'リクエストが正常に完了しました');
                 router.push('/recipe/');
+                router.refresh();
+                addSnackbar('success', responseData.message ?? 'リクエストが正常に完了しました');
             }
         } catch (error) {
             handleApiError(error);

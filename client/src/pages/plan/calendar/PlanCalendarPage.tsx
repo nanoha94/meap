@@ -4,12 +4,13 @@ import dayjs, { Dayjs } from 'dayjs';
 import 'dayjs/locale/ja';
 import { useRouter } from 'next/navigation';
 
-import { Header, MonthlyCalendar } from '@/components';
-import EmptyButton from '@/components/EmptyButton';
+import { Header, MonthlyCalendar, TextButton } from '@/components';
 import { getDayOfWeekTextColor } from '@/constants/calendar';
 import { useSnackbars } from '@/hooks';
 import { IMealPlan } from '@/types';
 import { MealCard, useMealStore } from '@/models/meal';
+import { COLOR_VARIANT } from '@/constants';
+import { ChevronRight } from 'lucide-react';
 
 interface Props {
     fetchMealPlans: IMealPlan[];
@@ -91,14 +92,23 @@ const PlanCalendarPage = ({ fetchMealPlans, errorMessage, year, month }: Props) 
                     onDateSelect={setSelectedDate}
                 />
                 <div className="py-5 flex flex-col gap-y-3">
-                    <div className={`px-3 text-base font-bold ${getDayOfWeekTextColor(selectedDate.day())}`}>{selectedDate.locale('ja').format('MM/DD')}<span className="ml-1 text-xs">{selectedDate.locale('ja').format('(ddd)')}</span>
+                    <div className="px-3 flex items-center justify-between gap-x-1"><div className={`text-base font-bold ${getDayOfWeekTextColor(selectedDate.day())}`}>{selectedDate.locale('ja').format('MM/DD')}<span className="ml-1 text-xs">{selectedDate.locale('ja').format('(ddd)')}</span>
                     </div>
-                    {mealPlan && mealCategories?.map(v => {
-                        const mealPlanItems = mealPlan.meals.filter(m => m.categoryId === v.id);
-                        return mealPlanItems && mealPlanItems.length > 0 &&
-                            <MealCard key={v.id} mealPlanId={mealPlan.id} mealPlanItems={mealPlanItems} mealCategory={v} editPagePath={editPagePath} />;
-                    })}
-                    <div className="px-3 lg:px-0"><EmptyButton href={editPagePath} /></div>
+                        <TextButton
+                            href={editPagePath}
+                            colorVariant={COLOR_VARIANT.SECONDARY}>
+                            献立を作成・編集
+                            <ChevronRight size={20} />
+                        </TextButton>
+                    </div>
+                    {!mealPlan
+                        ? <p className="px-3">登録されている献立はありません。</p>
+                        : mealCategories?.map(v => {
+                            const mealPlanItems = mealPlan.meals.filter(m => m.categoryId === v.id);
+                            return mealPlanItems && mealPlanItems.length > 0 &&
+                                <MealCard key={v.id} mealPlanId={mealPlan.id} mealPlanItems={mealPlanItems} mealCategory={v} editPagePath={editPagePath} />;
+                        })
+                    }
                 </div>
             </main>
         </>

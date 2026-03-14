@@ -7,7 +7,7 @@ import { ButtonType, COLOR_VARIANT } from '@/constants';
 type Props = {
     type?: ButtonType;
     disabled?: boolean;
-    colorVariant?: (typeof COLOR_VARIANT)['SECONDARY'] | (typeof COLOR_VARIANT)['GRAY'] | (typeof COLOR_VARIANT)['ACCENT'] | (typeof COLOR_VARIANT)['ALERT'];
+    colorVariant?: (typeof COLOR_VARIANT)['SECONDARY'] | (typeof COLOR_VARIANT)['GRAY'];
     /** フォーム外の submit ボタンで、紐づける form の id */
     form?: string;
     children: React.ReactNode;
@@ -16,12 +16,10 @@ type Props = {
 const getHeaderTextButtonClassName = (colorVariant: NonNullable<Props['colorVariant']>) => {
     const colorMappings = {
         secondary:
-            'text-secondary-main border-secondary-main bg-secondary-background hover:bg-secondary-main',
-        gray: 'text-gray-main border-gray-main bg-gray-background hover:bg-gray-main',
-        accent: 'text-accent-main border-accent-main bg-accent-background hover:bg-accent-main',
-        alert: 'text-alert-main border-alert-main bg-alert-background hover:bg-alert-main',
+            'text-white bg-secondary-main hover:text-secondary-main hover:bg-secondary-light',
+        gray: 'text-white bg-gray-main hover:text-gray-main hover:bg-gray-light'
     };
-    return `py-1 px-2 w-fit flex items-center gap-x-1 text-base font-bold rounded border-2 transition-colors hover:text-white shadow-card ${colorMappings[colorVariant]
+    return `py-1 px-2 w-fit flex items-center gap-x-1 text-base font-bold rounded transition-colors shadow-card ${colorMappings[colorVariant]
         } disabled:opacity-50 disabled:pointer-events-none`;
 };
 
