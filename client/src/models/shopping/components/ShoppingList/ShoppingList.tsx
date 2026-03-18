@@ -146,7 +146,7 @@ const ShoppingList = () => {
     }, [storeItems, activeId]);
 
     return (
-        <div className="flex flex-col gap-y-7">
+        <div className="flex flex-col md:flex-row md:w-max gap-7 md:pr-10">
             <DndContext
                 sensors={sensors}
                 collisionDetection={rectIntersection}

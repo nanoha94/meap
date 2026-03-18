@@ -82,7 +82,7 @@ const PlanCalendarPage = ({ fetchMealPlans, errorMessage, year, month }: Props) 
     return (
         <>
             <Header title="献立表" />
-            <main className='pb-[60px] lg:px-10 max-w-[1000px] mx-auto'>
+            <main className="pb-[60px] lg:px-10 max-w-[1000px]">
                 <MonthlyCalendar
                     dots={dots}
                     year={year}

@@ -51,6 +51,7 @@ const ShoppingListPageHeader = () => {
                     placement="top-10 right-0"
                 />
             </div>}
+            className="mx-0 max-w-none"
         />
     );
 };

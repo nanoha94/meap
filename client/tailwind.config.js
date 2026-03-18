@@ -27,7 +27,7 @@ export default {
             },
             accent: {
                 main: '#A36062',
-                background: '#F8ECEE',
+                background: '#F6F0F0',
             },
 
             alert: {

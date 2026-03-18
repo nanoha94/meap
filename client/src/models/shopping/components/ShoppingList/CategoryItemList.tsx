@@ -2,15 +2,16 @@
 
 import React from 'react';
 import { useDroppable } from '@dnd-kit/core';
-import { rectSortingStrategy, SortableContext } from '@dnd-kit/sortable';
-import { Trash2, X } from 'lucide-react';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { CirclePlus, Trash2, X } from 'lucide-react';
 
-import { MenuButton, Sortable } from '@/components';
-import { useAlertDialog } from '@/hooks';
+import { MenuButton, ShoppingItemEditForm, Sortable, TextButton } from '@/components';
+import { useAlertDialog, useDialog } from '@/hooks';
 import { ActionButton, IShoppingCategory, IShoppingItem } from '@/types';
 import { SHOPPING_ALERT_DIALOG_CONFIGS } from '../../constants';
 import { useShoppingItemApi, useShoppingStore } from '../../hooks';
 import ShoppingItemCard from './ShoppingItemCard';
+import { BUTTON_TYPE, EDIT_MODE } from '@/constants';
 
 interface Props {
     category: IShoppingCategory;
@@ -21,6 +22,7 @@ const CategoryItemList: React.FC<Props> = ({ category, items }) => {
     const { deleteShoppingItems } = useShoppingItemApi();
     const { items: storeItems, setItems: setStoreItems } = useShoppingStore();
     const { openAlertDialog } = useAlertDialog();
+    const { openDialog } = useDialog();
     const { setNodeRef: setDroppableNodeRef } = useDroppable({
         id: category.id,
     });
@@ -79,37 +81,51 @@ const CategoryItemList: React.FC<Props> = ({ category, items }) => {
 
     return (
         <>
-            <div className="flex flex-col gap-y-4">
-                <div className="flex gap-x-4 items-center text-gray-main">
+            <div className="md:min-w-[460px] flex flex-col rounded bg-accent-background shadow-card">
+                <div className="px-5 py-4 flex gap-x-4 justify-between items-center text-xl">
                     {category.name}
                     <MenuButton
                         actionButtons={actionButtonConfigs}
-                        placement="top-left"
+                        placement="top-right"
                         className="w-5 h-5"
                     />
                 </div>
-                <SortableContext
-                    items={items.map(item => item.id)}
-                    id={category.id}
-                    strategy={rectSortingStrategy}>
-                    <div
-                        ref={setDroppableNodeRef}
-                        className="grid grid-cols-[repeat(auto-fill,_minmax(320px,_1fr))] gap-4">
-                        {items.length > 0 ? (
-                            items.map(
+                <div className='pl-5 pr-4 py-4 flex flex-col gap-y-4'>
+                    <SortableContext
+                        items={items.map(item => item.id)}
+                        id={category.id}
+                        strategy={verticalListSortingStrategy}
+                    >
+                        <div
+                            ref={setDroppableNodeRef}
+                            className="flex flex-col gap-y-4">
+                            {items.length > 0 ? (items.map(
                                 item =>
                                     !!item && (
                                         <Sortable key={item.id} id={item.id}>
                                             <ShoppingItemCard item={item} />
                                         </Sortable>
                                     ),
-                            )
-                        ) : (
-                            <div>登録されているアイテムはありません</div>
-                        )}
-                    </div>
-                </SortableContext>
-            </div>
+                            )) : <p>登録されているアイテムはありません</p>}
+                        </div>
+                    </SortableContext >
+                    <TextButton
+                        type={BUTTON_TYPE.BUTTON}
+                        onClick={() => {
+                            openDialog({
+                                title: '買い物アイテムを追加',
+                                children: <ShoppingItemEditForm
+                                    editingItem={undefined}
+                                    editMode={EDIT_MODE.CREATE}
+                                />
+                            });
+                        }}
+                        className="!border-none !bg-transparent hover:!bg-gray-light">
+                        <CirclePlus size={20} />
+                        アイテムを追加
+                    </TextButton>
+                </div>
+            </div >
         </>
     );
 };

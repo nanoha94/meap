@@ -9,7 +9,6 @@ import {
 import { COLOR_VARIANT } from '@/constants';
 import { useDialog, useSnackbars } from '@/hooks';
 import {
-    AddShoppingItemButton,
     ShoppingList,
     useShoppingStore,
 } from '@/models/shopping';
@@ -44,7 +43,6 @@ const ShoppingListPage: React.FC<Props> = ({ fetchItems, errorMessage }) => {
         }
     }, [fetchItems]);
 
-
     /**
      * エラーメッセージを表示
      * @returns void
@@ -58,10 +56,12 @@ const ShoppingListPage: React.FC<Props> = ({ fetchItems, errorMessage }) => {
     return (
         <>
             <ShoppingListPageHeader />
-            <main className="p-5 pb-[60px] md:px-10 max-w-[1000px] mx-auto">
-                <div className="pb-12 flex flex-col gap-y-7">
+            <main className="pt-5 w-full h-[calc(100vh-60px)] overflow-auto">
+                <div className="px-5 md:px-10 pb-[60px]">
                     {/* 買い物リスト */}
-                    <ShoppingList />
+                    <div className="mb-7">
+                        <ShoppingList />
+                    </div>
                     <TextButton
                         colorVariant={COLOR_VARIANT.SECONDARY}
                         onClick={handleOpenCategorySettingDialog}>
@@ -69,7 +69,6 @@ const ShoppingListPage: React.FC<Props> = ({ fetchItems, errorMessage }) => {
                         <ChevronRight size={20} />
                     </TextButton>
                 </div>
-                <AddShoppingItemButton />
             </main>
         </>
     );

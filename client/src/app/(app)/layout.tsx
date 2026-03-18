@@ -47,7 +47,7 @@ const AppLayout = async ({ children }: Props) => {
         <div className="min-h-screen h-full flex flex-col">
             <div className="flex h-full mb-20 md:mb-0">
                 <SideNavigation className="z-10 hidden md:block" />
-                <div className="flex-1 min-h-screen h-full bg-primary-background md:ml-[160px]">
+                <div className="flex-1 min-h-screen h-full bg-primary-background md:w-[calc(100vw-160px)] md:ml-[160px]">
                     {children}
                 </div>
             </div>
