@@ -4,29 +4,38 @@ namespace App\Swagger;
 
 /**
  * @OA\Parameter(
- *     parameter="MealPlanIndexYearParam",
- *     name="year",
+ *     parameter="MealPlanIndexDateFromParam",
+ *     name="date_from",
  *     in="query",
- *     description="取得対象の年（1900〜2100）",
+ *     description="取得対象の開始日",
  *     required=true,
  *     @OA\Schema(
- *         type="integer",
- *         minimum=1900,
- *         maximum=2100,
- *         example=2024
+ *         type="string",
+ *         format="date",
+ *         example="2024-01-01"
  *     )
  * )
  * @OA\Parameter(
- *     parameter="MealPlanIndexMonthParam",
- *     name="month",
+ *     parameter="MealPlanIndexDateToParam",
+ *     name="date_to",
  *     in="query",
- *     description="取得対象の月（1〜12）",
+ *     description="取得対象の終了日",
  *     required=true,
  *     @OA\Schema(
- *         type="integer",
- *         minimum=1,
- *         maximum=12,
- *         example=1
+ *         type="string",
+ *         format="date",
+ *         example="2024-01-31"
+ *     )
+ * )
+ * @OA\Parameter(
+ *     parameter="MealPlanIndexIncludeIngredientsParam",
+ *     name="include_ingredients",
+ *     in="query",
+ *     description="レスポンスにレシピの食材一覧を含めるかどうか",
+ *     required=false,
+ *     @OA\Schema(
+ *         type="boolean",
+ *         example=true
  *     )
  * )
  * @OA\Parameter(

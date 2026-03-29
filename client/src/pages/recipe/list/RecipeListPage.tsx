@@ -141,8 +141,9 @@ const RecipeListPage = ({
                         className="!w-auto"
                     />
                 </div>
-                {pageSize <= 0 ? <p>登録されている料理/レシピはありません。</p> :
-                    <div className='flex flex-col gap-y-14'>
+                {pageSize <= 0
+                    ? <p>登録されている料理/レシピはありません。</p>
+                    : <div className='flex flex-col gap-y-14'>
                         <div className="grid grid-cols-[repeat(auto-fill,_minmax(160px,_1fr))] gap-3">
                             {recipes.map(v => (
                                 <Link

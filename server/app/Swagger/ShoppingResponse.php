@@ -47,6 +47,11 @@ namespace App\Swagger;
  *     @OA\JsonContent(ref="#/components/schemas/ShoppingItemShowResponse")
  * )
  * @OA\Response(
+ *     response="ShoppingItemBulkStoreSuccess",
+ *     description="買い物アイテムを3件作成しました。",
+ *     @OA\JsonContent(ref="#/components/schemas/BaseApiResponse")
+ * )
+ * @OA\Response(
  *     response="ShoppingItemBulkUpdateSuccess",
  *     description="買い物アイテムを3件更新しました。",
  *     @OA\JsonContent(ref="#/components/schemas/BaseApiResponse")

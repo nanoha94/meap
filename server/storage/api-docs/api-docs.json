@@ -438,14 +438,17 @@
                     "MealPlans"
                 ],
                 "summary": "献立一覧を取得",
-                "description": "指定した年・月の献立一覧を取得します。year と month は必須のクエリパラメータです。",
+                "description": "指定した期間の献立一覧を取得します。date_from と date_to は必須のクエリパラメータです。",
                 "operationId": "97ebdfd313f0459c06cf0a048ab8b1d3",
                 "parameters": [
                     {
-                        "$ref": "#/components/parameters/MealPlanIndexYearParam"
+                        "$ref": "#/components/parameters/MealPlanIndexDateFromParam"
                     },
                     {
-                        "$ref": "#/components/parameters/MealPlanIndexMonthParam"
+                        "$ref": "#/components/parameters/MealPlanIndexDateToParam"
+                    },
+                    {
+                        "$ref": "#/components/parameters/MealPlanIndexIncludeIngredientsParam"
                     }
                 ],
                 "responses": {
@@ -1070,6 +1073,32 @@
                 "responses": {
                     "200": {
                         "$ref": "#/components/responses/ShoppingItemBulkUpdateSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Shopping"
+                ],
+                "summary": "買い物アイテムを一括作成",
+                "operationId": "529ae7e19fbf968bc854ef4867e1e0f3",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/ShoppingItemBulkStoreRequest"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/ShoppingItemBulkStoreSuccess"
                     },
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
@@ -2207,6 +2236,14 @@
                         "description": "1食内のレシピ並び順（0始まり）",
                         "type": "integer",
                         "example": 0
+                    },
+                    "ingredients": {
+                        "description": "レシピの食材一覧（include_ingredients=true の場合のみ）",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/IngredientItem"
+                        },
+                        "nullable": true
                     }
                 },
                 "type": "object"
@@ -3703,6 +3740,16 @@
                     }
                 }
             },
+            "ShoppingItemBulkStoreSuccess": {
+                "description": "買い物アイテムを3件作成しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/BaseApiResponse"
+                        }
+                    }
+                }
+            },
             "ShoppingItemBulkUpdateSuccess": {
                 "description": "買い物アイテムを3件更新しました。",
                 "content": {
@@ -3834,28 +3881,36 @@
                     "example": "1234567890"
                 }
             },
-            "MealPlanIndexYearParam": {
-                "name": "year",
+            "MealPlanIndexDateFromParam": {
+                "name": "date_from",
                 "in": "query",
-                "description": "取得対象の年（1900〜2100）",
+                "description": "取得対象の開始日",
                 "required": true,
                 "schema": {
-                    "type": "integer",
-                    "maximum": 2100,
-                    "minimum": 1900,
-                    "example": 2024
+                    "type": "string",
+                    "format": "date",
+                    "example": "2024-01-01"
                 }
             },
-            "MealPlanIndexMonthParam": {
-                "name": "month",
+            "MealPlanIndexDateToParam": {
+                "name": "date_to",
                 "in": "query",
-                "description": "取得対象の月（1〜12）",
+                "description": "取得対象の終了日",
                 "required": true,
                 "schema": {
-                    "type": "integer",
-                    "maximum": 12,
-                    "minimum": 1,
-                    "example": 1
+                    "type": "string",
+                    "format": "date",
+                    "example": "2024-01-31"
+                }
+            },
+            "MealPlanIndexIncludeIngredientsParam": {
+                "name": "include_ingredients",
+                "in": "query",
+                "description": "レスポンスにレシピの食材一覧を含めるかどうか",
+                "required": false,
+                "schema": {
+                    "type": "boolean",
+                    "example": true
                 }
             },
             "MealPlanDateParam": {
@@ -4354,6 +4409,25 @@
                     "application/json": {
                         "schema": {
                             "$ref": "#/components/schemas/ShoppingItemRequest"
+                        }
+                    }
+                }
+            },
+            "ShoppingItemBulkStoreRequest": {
+                "description": "一括登録する買い物アイテムデータ",
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ShoppingItemRequest"
+                                    }
+                                }
+                            },
+                            "type": "object"
                         }
                     }
                 }

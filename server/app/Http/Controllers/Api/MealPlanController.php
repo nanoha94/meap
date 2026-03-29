@@ -25,11 +25,12 @@ class MealPlanController extends ApiController
      * @OA\Get(
      *     path="/meal-plans",
      *     summary="献立一覧を取得",
-     *     description="指定した年・月の献立一覧を取得します。year と month は必須のクエリパラメータです。",
+     *     description="指定した期間の献立一覧を取得します。date_from と date_to は必須のクエリパラメータです。",
      *     tags={"MealPlans"},
      *     security={{"sanctum":{}}},
-     *     @OA\Parameter(ref="#/components/parameters/MealPlanIndexYearParam"),
-     *     @OA\Parameter(ref="#/components/parameters/MealPlanIndexMonthParam"),
+     *     @OA\Parameter(ref="#/components/parameters/MealPlanIndexDateFromParam"),
+     *     @OA\Parameter(ref="#/components/parameters/MealPlanIndexDateToParam"),
+     *     @OA\Parameter(ref="#/components/parameters/MealPlanIndexIncludeIngredientsParam"),
      *     @OA\Response(response=200, ref="#/components/responses/MealPlanIndexSuccess"),
      *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
      *     @OA\Response(response=422, ref="#/components/responses/ValidationErrors"),
@@ -44,10 +45,11 @@ class MealPlanController extends ApiController
         return $this->executeWithExceptionHandling(
             function () use ($request) {
                 $validated = $request->validated();
-                $res = $this->mealPlanService->indexForMonth(
+                $res = $this->mealPlanService->indexForDateRange(
                     $this->getUserGroup($request),
-                    (int) $validated['year'],
-                    (int) $validated['month'],
+                    $validated['date_from'],
+                    $validated['date_to'],
+                    $validated['include_ingredients'] ?? false,
                 );
                 $total = count($res);
                 $message = __('api.list_retrieved', ['attribute' => __('api.attributes.meal_plan'), 'count' => $total]);

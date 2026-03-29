@@ -137,7 +137,7 @@ const MealCardField = ({ mealCategory, mealPlanItems, addItem, deleteItem }: Pro
                             />,
                             maxWidth: 1000,
                             isCheckBeforeClose: !dialogButtonDisabled,
-                        },);
+                        });
                     }} />
                 </div>
             </SortableContext>

@@ -1,20 +1,19 @@
 <?php
 
-use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\ImageController;
 use App\Http\Controllers\Api\IngredientCategoryController;
 use App\Http\Controllers\Api\IngredientUnitController;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\InvitationController;
 use App\Http\Controllers\Api\MasterController;
-use App\Http\Controllers\Api\ShoppingCategoryController;
-use App\Http\Controllers\Api\ShoppingItemController;
-use App\Http\Controllers\Api\MealPlanController;
-use App\Http\Controllers\Api\ShoppingTagController;
 use App\Http\Controllers\Api\MealCategoryController;
+use App\Http\Controllers\Api\MealPlanController;
 use App\Http\Controllers\Api\RecipeCategoryController;
 use App\Http\Controllers\Api\RecipeController;
-use App\Http\Controllers\Api\ImageController;
+use App\Http\Controllers\Api\ShoppingCategoryController;
+use App\Http\Controllers\Api\ShoppingItemController;
+use App\Http\Controllers\Api\ShoppingTagController;
+use App\Http\Controllers\Api\UserController;
+use Illuminate\Support\Facades\Route;
 
 // 認証のみ必要（メール認証不要）
 Route::middleware(['auth:sanctum'])->group(function () {
@@ -62,6 +61,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
     // shopping
     Route::apiResource('/shopping-items', ShoppingItemController::class)->only(['index', 'store']);
+    Route::post('/shopping-items/bulk', [ShoppingItemController::class, 'bulkStore']);
     Route::put('/shopping-items/bulk', [ShoppingItemController::class, 'bulkUpdate']);
     Route::delete('/shopping-items/bulk', [ShoppingItemController::class, 'bulkDestroy']);
     Route::apiResource('/shopping-categories', ShoppingCategoryController::class)->only(['index']);

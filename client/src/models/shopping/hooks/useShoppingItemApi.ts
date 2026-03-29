@@ -23,11 +23,13 @@ export const useShoppingItemApi = () => {
         setItems: setStoreItems,
     } = useShoppingStore();
 
-        // 重複リクエスト防止用のフラグ
-        const isFetchRequestRef = React.useRef(false);
-        const isStoreRequestRef = React.useRef(false);
-        const isUpdateRequestRef = React.useRef(false);
-        const isDeleteRequestRef = React.useRef(false);
+    // 重複リクエスト防止用のフラグ
+    const isFetchRequestRef = React.useRef(false);
+    const isStoreRequestRef = React.useRef(false);
+    const isBulkStoreRequestRef = React.useRef(false);
+    const isUpdateBulkRequestRef = React.useRef(false);
+    const isDeleteBulkRequestRef = React.useRef(false);
+
     /**
      * 取得処理（更新処理の後に呼び出す）
      */
@@ -42,7 +44,7 @@ export const useShoppingItemApi = () => {
                 // ローディング状態をセット
                 isFetchRequestRef.current = true;
                 incrementLoadingCount();
-          
+
                 const res = await axios.get('/shopping-items', {
                     timeout: TIMEOUT_MS,
                 });
@@ -60,7 +62,7 @@ export const useShoppingItemApi = () => {
                 decrementLoadingCount();
             }
         },
-        [ setServerItems, setStoreItems, handleApiError],
+        [setServerItems, setStoreItems, handleApiError],
     );
 
     /**
@@ -78,7 +80,7 @@ export const useShoppingItemApi = () => {
             isStoreRequestRef.current = true;
             incrementLoadingCount();
 
-            const {data: responseData} = await axios.post<IPostShoppingItemResponse>(`/shopping-items`, {
+            const { data: responseData } = await axios.post<IPostShoppingItemResponse>(`/shopping-items`, {
                 ...item,
                 timeout: TIMEOUT_MS,
             });
@@ -87,7 +89,7 @@ export const useShoppingItemApi = () => {
                     'success',
                     responseData.message ?? 'リクエストが正常に完了しました',
                 );
-               await fetchShoppingItems();
+                await fetchShoppingItems();
             }
         } catch (error) {
             handleApiError(error);
@@ -98,6 +100,42 @@ export const useShoppingItemApi = () => {
     };
 
     /**
+     * 一括作成処理
+     * @param items 作成するアイテム
+     * @returns 作成結果
+     */
+    const bulkStoreShoppingItems = React.useCallback(
+        async (items: IPostShoppingItemRequest[]) => {
+            if (
+                isBulkStoreRequestRef.current ||
+                items.length <= 0
+            ) {
+                return;
+            }
+
+            try {
+                isBulkStoreRequestRef.current = true;
+                incrementLoadingCount();
+
+                const { data: responseData } = await axios.post(`/shopping-items/bulk`, {
+                    data: items,
+                    timeout: TIMEOUT_MS,
+                });
+                if (responseData.success) {
+                    await fetchShoppingItems();
+                    addSnackbar('success', responseData.message ?? 'リクエストが正常に完了しました');
+                }
+            } catch (error) {
+                handleApiError(error);
+            } finally {
+                isBulkStoreRequestRef.current = false;
+                decrementLoadingCount();
+            }
+        },
+        [incrementLoadingCount, decrementLoadingCount, fetchShoppingItems, addSnackbar, handleApiError],
+    );
+
+    /**
      * 更新処理
      * @param items 更新するアイテム
      * @returns 更新結果
@@ -105,34 +143,35 @@ export const useShoppingItemApi = () => {
     const updateShoppingItems = React.useCallback(
         async (items: IPutShoppingItemRequest[]) => {
             if (
-                isUpdateRequestRef.current ||
+                isUpdateBulkRequestRef.current ||
                 items.length <= 0 ||
-                JSON.stringify(items) === JSON.stringify(serverItems)                
+                JSON.stringify(items) === JSON.stringify(serverItems)
             ) {
                 return;
             }
 
             try {
-                isUpdateRequestRef.current = true;
+                isUpdateBulkRequestRef.current = true;
                 incrementLoadingCount();
 
-                const  {data: responseData}  = await axios.put(`/shopping-items/bulk`, {
+                const { data: responseData } = await axios.put(`/shopping-items/bulk`, {
                     data: items.filter(v => v.name && v.name.length > 0),
                     timeout: TIMEOUT_MS,
                 });
                 if (responseData.success) {
-                    // await fetchShoppingItems(true); // サーバーデータのみ更新
                     await fetchShoppingItems();
                     addSnackbar('success', responseData.message ?? 'リクエストが正常に完了しました');
                 }
             } catch (error) {
                 handleApiError(error);
+                // エラーが発生した場合は再取得して状態を復元
+                await fetchShoppingItems();
             } finally {
-                isUpdateRequestRef.current = false;
+                isUpdateBulkRequestRef.current = false;
                 decrementLoadingCount();
             }
         },
-        [ serverItems, incrementLoadingCount, decrementLoadingCount, fetchShoppingItems, addSnackbar, handleApiError],
+        [serverItems, incrementLoadingCount, decrementLoadingCount, fetchShoppingItems, addSnackbar, handleApiError],
     );
 
     /**
@@ -142,15 +181,15 @@ export const useShoppingItemApi = () => {
      */
     const deleteShoppingItems = React.useCallback(async (ids: string[]) => {
         // 重複リクエスト防止
-        if (isDeleteRequestRef.current) {
+        if (isDeleteBulkRequestRef.current) {
             return;
         }
 
         try {
-            isDeleteRequestRef.current = true;
+            isDeleteBulkRequestRef.current = true;
             incrementLoadingCount();
 
-            const {data: responseData} = await axios.delete('/shopping-items/bulk', {
+            const { data: responseData } = await axios.delete('/shopping-items/bulk', {
                 data: { ids },
                 timeout: TIMEOUT_MS,
             });
@@ -163,7 +202,7 @@ export const useShoppingItemApi = () => {
             // エラーが発生した場合は再取得して状態を復元
             await fetchShoppingItems();
         } finally {
-            isDeleteRequestRef.current = false;
+            isDeleteBulkRequestRef.current = false;
             decrementLoadingCount();
         }
     }, [incrementLoadingCount, decrementLoadingCount, fetchShoppingItems, addSnackbar, handleApiError]);
@@ -171,6 +210,7 @@ export const useShoppingItemApi = () => {
     return {
         storeData: { items: storeItems },
         storeShoppingItem,
+        bulkStoreShoppingItems,
         updateShoppingItems,
         deleteShoppingItems,
     };

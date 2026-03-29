@@ -25,6 +25,13 @@ namespace App\Swagger;
  *     @OA\Property(property="recipeName", type="string", description="料理名", example="ハンバーグ"),
  *     @OA\Property(property="recipeThumbnail", ref="#/components/schemas/Image", nullable=true, description="サムネイル画像情報"),
  *     @OA\Property(property="recipeOrder", type="integer", description="1食内のレシピ並び順（0始まり）", example=0),
+ *     @OA\Property(
+ *         property="ingredients",
+ *         type="array",
+ *         nullable=true,
+ *         description="レシピの食材一覧（include_ingredients=true の場合のみ）",
+ *         @OA\Items(ref="#/components/schemas/IngredientItem")
+ *     ),
  * )
  *
  * POST/PUT 献立リクエスト用。レスポンスの meals は上記フラット配列（MealPlanItem[]）。

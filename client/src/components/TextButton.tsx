@@ -8,7 +8,7 @@ type Props = {
     className?: string;
     size?: ButtonSize;
     disabled?: boolean;
-    colorVariant?: (typeof COLOR_VARIANT)['PRIMARY'] | (typeof COLOR_VARIANT)['SECONDARY'] | (typeof COLOR_VARIANT)['GRAY'] | (typeof COLOR_VARIANT)['ACCENT'];
+    colorVariant?: (typeof COLOR_VARIANT)['PRIMARY'] | (typeof COLOR_VARIANT)['SECONDARY'] | (typeof COLOR_VARIANT)['GRAY'] | (typeof COLOR_VARIANT)['ALERT'];
     children: React.ReactNode;
     type?: ButtonType;
 } & ({ href: string; onClick?: never } | { onClick?: () => void; href?: never });
@@ -28,12 +28,12 @@ const TextButton = ({
             primary: 'text-primary-main border-primary-main',
             secondary: 'text-secondary-main border-secondary-main',
             gray: 'text-gray-main border-gray-main',
-            accent: 'text-accent-main border-accent-main',
+            alert: 'text-alert-main border-alert-main',
         };
         return colorMappings[colorVariant];
     }, [colorVariant]);
 
-    const buttonClassName = `py-1 px-2 w-fit flex items-center gap-x-1 ${size === BUTTON_SIZE.SMALL ? 'text-sm' : 'text-base'} font-bold bg-white rounded border transition-colors hover:bg-gray-light ${colorClasses} ${disabled ? 'opacity-50 pointer-events-none' : ''} ${className ?? ''}`;
+    const buttonClassName = `py-1 px-2 w-fit flex items-center gap-x-1 ${size === BUTTON_SIZE.SMALL ? 'text-xs' : 'text-base'} font-bold bg-white rounded border transition-colors hover:bg-gray-light ${colorClasses} ${disabled ? 'opacity-50 pointer-events-none' : ''} ${className ?? ''}`;
 
     if (href) {
         return (

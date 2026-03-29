@@ -57,6 +57,7 @@ return [
     'shopping_item' => [
         'index' => '買い物アイテム一覧取得',
         'store' => '買い物アイテム作成',
+        'bulk_store' => '買い物アイテム一括作成',
         'bulk_update' => '買い物アイテム一括更新',
         'bulk_destroy' => '買い物アイテム一括削除',
         'tag_processing' => '買い物アイテムタグ処理',

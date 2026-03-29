@@ -7,6 +7,22 @@ use App\Http\Requests\Api\BaseApiRequest;
 class MealPlanIndexRequest extends BaseApiRequest
 {
     /**
+     * GETクエリの "true"/"false" 文字列を boolean に変換する
+     */
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('include_ingredients')) {
+            $value = $this->input('include_ingredients');
+            $normalized = match (strtolower((string) $value)) {
+                'true' => true,
+                'false' => false,
+                default => $value,
+            };
+            $this->merge(['include_ingredients' => $normalized]);
+        }
+    }
+
+    /**
      * Get the validation rules that apply to the request.
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
@@ -14,8 +30,9 @@ class MealPlanIndexRequest extends BaseApiRequest
     public function rules(): array
     {
         return [
-            'year' => 'required|integer|min:1900|max:2100',
-            'month' => 'required|integer|min:1|max:12',
+            'date_from' => 'required|date|date_format:Y-m-d',
+            'date_to' => 'required|date|date_format:Y-m-d|after_or_equal:date_from',
+            'include_ingredients' => 'sometimes|boolean',
         ];
     }
 
@@ -27,14 +44,13 @@ class MealPlanIndexRequest extends BaseApiRequest
     public function messages(): array
     {
         return [
-            'year.required' => __('validation.required', ['attribute' => 'year']),
-            'year.integer' => __('validation.integer', ['attribute' => 'year']),
-            'year.min' => __('validation.min.numeric', ['attribute' => 'year', 'min' => 1900]),
-            'year.max' => __('validation.max.numeric', ['attribute' => 'year', 'max' => 2100]),
-            'month.required' => __('validation.required', ['attribute' => 'month']),
-            'month.integer' => __('validation.integer', ['attribute' => 'month']),
-            'month.min' => __('validation.min.numeric', ['attribute' => 'month', 'min' => 1]),
-            'month.max' => __('validation.max.numeric', ['attribute' => 'month', 'max' => 12]),
+            'date_from.required' => __('validation.required', ['attribute' => 'date_from']),
+            'date_from.date' => __('validation.date', ['attribute' => 'date_from']),
+            'date_from.date_format' => __('validation.date_format', ['attribute' => 'date_from', 'format' => 'Y-m-d']),
+            'date_to.required' => __('validation.required', ['attribute' => 'date_to']),
+            'date_to.date' => __('validation.date', ['attribute' => 'date_to']),
+            'date_to.date_format' => __('validation.date_format', ['attribute' => 'date_to', 'format' => 'Y-m-d']),
+            'date_to.after_or_equal' => __('validation.after_or_equal', ['attribute' => 'date_to', 'date' => 'date_from']),
         ];
     }
 

@@ -6,7 +6,8 @@ import { TIMEOUT_MS } from "@/constants";
 import { useApiErrorHandler, useSnackbars } from "@/hooks";
 import axios from "@/lib/axios";
 import { useGlobalStore } from "@/stores";
-import { IPostMealPlanResponse, IPostPutMealPlanRequest } from "@/types";
+import { IGetMealPlanIndexRequest, IGetMealPlanIndexResponse, IPostMealPlanResponse, IPostPutMealPlanRequest } from "@/types";
+import { MealPlanFilterFormData } from "../types";
 
 export const useMealPlanApi = () => {
     const { incrementLoadingCount, decrementLoadingCount } = useGlobalStore();
@@ -15,9 +16,53 @@ export const useMealPlanApi = () => {
     const { handleApiError } = useApiErrorHandler();
 
     // 重複リクエスト防止用のフラグ
+    const isFetchRequestRef = React.useRef(false);
     const isStoreRequestRef = React.useRef(false);
     const isUpdateRequestRef = React.useRef(false);
     const isDeleteRequestRef = React.useRef(false);
+
+    /**
+     * 献立プラン一覧を取得
+     * @param filterOptions フィルターオプション
+     * @returns 献立プラン一覧
+     */
+    const fetchMealPlans = React.useCallback(async (filterOptions?: MealPlanFilterFormData) => {
+        // 重複リクエスト防止
+        if (isFetchRequestRef.current) {
+            return;
+        }
+
+        // パラメータをセット
+        const params: IGetMealPlanIndexRequest = {
+            date_from: filterOptions?.dateFrom,
+            date_to: filterOptions?.dateTo,
+            include_ingredients: filterOptions?.includeIngredients ?? false,
+        };
+
+        try {
+            isFetchRequestRef.current = true;
+            incrementLoadingCount();
+
+            const { data: responseData } = await axios.get<IGetMealPlanIndexResponse>(
+                `/meal-plans`,
+                {
+                    params,
+                    timeout: TIMEOUT_MS,
+                },
+            );
+
+            if (responseData.success) {
+                return responseData.data;
+            }
+            return [];
+        } catch (error) {
+            handleApiError(error);
+            return [];
+        } finally {
+            isFetchRequestRef.current = false;
+            decrementLoadingCount();
+        }
+    }, [incrementLoadingCount, decrementLoadingCount, router, addSnackbar, handleApiError]);
 
     /**
      * 献立プラン作成
@@ -108,6 +153,10 @@ export const useMealPlanApi = () => {
         [incrementLoadingCount, decrementLoadingCount, router, addSnackbar, handleApiError],
     );
 
+    /**
+     * 献立プラン削除
+     * @param id 削除する献立プランのID
+     */
     const deleteMealPlan = React.useCallback(async (id: string) => {
         try {
             isDeleteRequestRef.current = true;
@@ -130,6 +179,6 @@ export const useMealPlanApi = () => {
     }, [incrementLoadingCount, decrementLoadingCount, router, addSnackbar, handleApiError]);
 
     return {
-        storeMealPlan, updateMealPlan, deleteMealPlan
+        fetchMealPlans, storeMealPlan, updateMealPlan, deleteMealPlan
     };
 };

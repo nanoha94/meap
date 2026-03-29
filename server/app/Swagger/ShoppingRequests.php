@@ -52,6 +52,20 @@ namespace App\Swagger;
  * )
  *
  * @OA\RequestBody(
+ *     request="ShoppingItemBulkStoreRequest",
+ *     description="一括登録する買い物アイテムデータ",
+ *     required=true,
+ *     @OA\JsonContent(
+ *         type="object",
+ *         @OA\Property(
+ *             property="data",
+ *             type="array",
+ *             @OA\Items(ref="#/components/schemas/ShoppingItemRequest")
+ *         )
+ *     )
+ * )
+ *
+ * @OA\RequestBody(
  *     request="ShoppingItemBulkUpdateRequest",
  *     description="一括更新する買い物アイテムデータ",
  *     required=true,

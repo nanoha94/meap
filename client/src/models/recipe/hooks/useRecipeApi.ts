@@ -123,7 +123,7 @@ export const useRecipeApi = () => {
                 return;
             }
 
-            // パラメータをセット（デフォルト値）
+            // パラメータをセット
             const params: IGetRecipeIndexRequest = {
                 sort: sortOptions.find(v => v.id === sortOptionId)?.sort ?? sortOptions[0].sort,
                 order: sortOptions.find(v => v.id === sortOptionId)?.order ?? sortOptions[0].order,

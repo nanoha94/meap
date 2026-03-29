@@ -132,6 +132,44 @@ class ShoppingItemService extends AbstractDomainService
     }
 
     /**
+     * 買い物アイテムを一括作成
+     *
+     * @param array $data 作成データの配列（[['categoryId', 'name', 'tags'], ...]）
+     * @param Group $group グループモデル
+     * @return array 互換性のため空配列を返す（コントローラーでは使用しない）
+     * @throws HttpException カテゴリが見つからない場合
+     */
+    public function bulkCreate(array $data, Group $group): array
+    {
+        return DB::transaction(function () use ($data, $group) {
+            $categoryIds = array_unique(array_column($data, 'categoryId'));
+            $this->shoppingCategoryService->findItemsByIds($categoryIds, $group);
+
+            foreach ($data as $itemData) {
+                $itemData['is_pinned'] = false;
+                $itemData['is_checked'] = false;
+                $itemData['order'] = $group->shoppingItems()
+                    ->where('category_id', $itemData['categoryId'])->count() + 1;
+
+                $createData = [];
+                foreach ($this->getCreateFields() as $field => $dataKey) {
+                    $createData[$field] = $itemData[$dataKey];
+                }
+                $item = $this->getGroupRelation($group)->create($createData);
+
+                if (!empty($itemData['tags'])) {
+                    $tagIds = $this->shoppingTagService->findOrCreateTagIds($itemData['tags'], $group);
+                    if (!empty($tagIds)) {
+                        $item->tags()->attach($tagIds);
+                    }
+                }
+            }
+
+            return [];
+        });
+    }
+
+    /**
      * 買い物アイテムを一括更新
      *
      * @param array $data 更新データの配列（[['id' => ..., 'categoryId' => ..., 'name' => ..., 'tags' => [...], ...], ...]）

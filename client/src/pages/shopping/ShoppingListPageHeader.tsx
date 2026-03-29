@@ -2,7 +2,7 @@
 import React from 'react';
 import { CalendarDays, CirclePlus, Pencil } from 'lucide-react';
 
-import { Header, HeaderTextButton, MenuButton, ShoppingItemEditForm } from '@/components';
+import { Header, HeaderTextButton, MenuButton, ShoppingItemBulkCreateForm, ShoppingItemEditForm } from '@/components';
 import { COLOR_VARIANT, EDIT_MODE } from '@/constants';
 import { useDialog } from '@/hooks';
 import { ActionButton } from '@/types';
@@ -19,7 +19,12 @@ const ShoppingListPageHeader = () => {
             label: '献立から追加',
             icon: <CalendarDays />,
             // TODO: 実装
-            onClick: () => { },
+            onClick: () => openDialog({
+                title: '買い物リストに追加',
+                children: <ShoppingItemBulkCreateForm />,
+                childrenWrapperClassName: '!p-0 bg-primary-background rounded-b-xl',
+                maxWidth: 1000,
+            })
         },
         {
             label: 'テキストで追加',

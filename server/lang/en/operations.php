@@ -57,6 +57,7 @@ return [
     'shopping_item' => [
         'index' => 'Shopping item list retrieval',
         'store' => 'Shopping item creation',
+        'bulk_store' => 'Shopping item bulk creation',
         'bulk_update' => 'Shopping item bulk update',
         'bulk_destroy' => 'Shopping item bulk deletion',
         'tag_processing' => 'Shopping item tag processing',

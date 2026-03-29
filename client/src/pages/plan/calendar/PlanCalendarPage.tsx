@@ -82,7 +82,7 @@ const PlanCalendarPage = ({ fetchMealPlans, errorMessage, year, month }: Props) 
     return (
         <>
             <Header title="献立表" />
-            <main className="pb-[60px] lg:px-10 max-w-[1000px]">
+            <main className="mx-auto pb-[60px] lg:px-10 max-w-[1000px]">
                 <MonthlyCalendar
                     dots={dots}
                     year={year}
@@ -91,7 +91,7 @@ const PlanCalendarPage = ({ fetchMealPlans, errorMessage, year, month }: Props) 
                     selectedDate={selectedDate}
                     onDateSelect={setSelectedDate}
                 />
-                <div className="py-5 flex flex-col gap-y-3">
+                <div className="pt-5 flex flex-col gap-y-3">
                     <div className="px-3 flex items-center justify-between gap-x-1"><div className={`text-base font-bold ${getDayOfWeekTextColor(selectedDate.day())}`}>{selectedDate.locale('ja').format('MM/DD')}<span className="ml-1 text-xs">{selectedDate.locale('ja').format('(ddd)')}</span>
                     </div>
                         <TextButton

@@ -43,7 +43,12 @@ class MealPlanService extends AbstractDomainService
 
     protected function getWithColumns(): array
     {
-        return ['meals.mealCategory.color', 'meals.recipes.thumbnails'];
+        return [
+            'meals.mealCategory.color',
+            'meals.recipes.thumbnails',
+            'meals.recipes.ingredients',
+            'meals.recipes.ingredientUnits'
+        ];
     }
 
     protected function getGroupBy(): string | null
@@ -62,22 +67,20 @@ class MealPlanService extends AbstractDomainService
     }
 
     /**
-     * 献立一覧を取得（指定した年・月の date 範囲でフィルタ）
+     * 献立一覧を取得（指定した日付範囲でフィルタ）
      *
      * @param Group $group グループ
-     * @param int $year 年
-     * @param int $month 月（1-12）
+     * @param string $dateFrom 開始日（Y-m-d）
+     * @param string $dateTo 終了日（Y-m-d）
+     * @param bool $includeIngredients 食材を含めるか
      * @return array
      */
-    public function indexForMonth(Group $group, int $year, int $month): array
+    public function indexForDateRange(Group $group, string $dateFrom, string $dateTo, bool $includeIngredients = false): array
     {
-        return DB::transaction(function () use ($group, $year, $month) {
-            $start = sprintf('%04d-%02d-01', $year, $month);
-            $end = date('Y-m-t', strtotime($start));
-
+        return DB::transaction(function () use ($group, $dateFrom, $dateTo, $includeIngredients) {
             $query = $this->getGroupRelation($group)
                 ->select($this->getSelectColumns())
-                ->whereBetween('date', [$start, $end]);
+                ->whereBetween('date', [$dateFrom, $dateTo]);
 
             if ($this->getWithColumns()) {
                 $query->with($this->getWithColumns());
@@ -93,8 +96,8 @@ class MealPlanService extends AbstractDomainService
                 $items = $items->groupBy($this->getGroupBy())->values();
             }
 
-            return $items->map(function ($item) {
-                return $this->formatIndexResponse($item);
+            return $items->map(function ($item) use ($includeIngredients, $group) {
+                return $this->formatIndexResponse($item, $includeIngredients, $group);
             })->toArray();
         });
     }
@@ -135,7 +138,7 @@ class MealPlanService extends AbstractDomainService
         });
     }
 
-    protected function formatIndexResponse(Model|Collection $items): array
+    protected function formatIndexResponse(Model|Collection $items, bool $includeIngredients = false, ?Group $group = null): array
     {
         // 型チェック（groupBy により 1 日分の MealPlan の Collection が渡る）
         $this->typeCheck($items, Collection::class);
@@ -148,7 +151,7 @@ class MealPlanService extends AbstractDomainService
         return [
             'id' => $mealPlan->id,
             'date' => $mealPlan->date,
-            'meals' => $this->formatMeals($allMeals),
+            'meals' => $this->formatMeals($allMeals, $includeIngredients, $group),
         ];
     }
 
@@ -251,35 +254,46 @@ class MealPlanService extends AbstractDomainService
 
     /**
      * 1食分の献立メニュー（meals）をフォーマット
-     * @param Collection
+     * @param Collection $meals
+     * @param bool $includeIngredients 食材を含めるか
+     * @param Group|null $group グループ（食材を含める場合に必要）
      * @return array
      */
-    private function formatMeals(Collection $meals): array
+    private function formatMeals(Collection $meals, bool $includeIngredients = false, ?Group $group = null): array
     {
-        return $meals->sortBy('order')->values()->flatMap(function (Meal $meal) {
+        return $meals->sortBy('order')->values()->flatMap(function (Meal $meal) use ($includeIngredients, $group) {
             return array_map(function (array $recipeItem) use ($meal) {
                 $recipeItem['id'] = $meal['id'];
                 $recipeItem['categoryId'] = $meal->category_id;
                 $recipeItem['order'] = $meal->order;
 
                 return $recipeItem;
-            }, $this->formatRecipes($meal->recipes));
+            }, $this->formatRecipes($meal->recipes, $includeIngredients, $group));
         })->values()->toArray();
     }
 
     /**
      * 献立用にレシピをフォーマット（MealPlanItem 形式: id, recipeId, recipeOrder, name, thumbnail）
      * @param Collection $recipes orderByPivot('order') 済みのコレクション
+     * @param bool $includeIngredients 食材を含めるか
+     * @param Group|null $group グループ（食材を含める場合に必要）
      * @return array
      */
-    private function formatRecipes(Collection $recipes): array
+    private function formatRecipes(Collection $recipes, bool $includeIngredients = false, ?Group $group = null): array
     {
-        return $recipes->map(fn(Recipe $recipe) => [
-            'recipeId' => $recipe->id,
-            'recipeName' => $recipe->name,
-            'recipeThumbnail' => $this->imageService->formatImage($recipe->thumbnails->first()),
-            'recipeOrder' => (int) ($recipe->pivot->order ?? 0),
-        ])->values()->toArray();
+        return $recipes->map(function (Recipe $recipe) use ($includeIngredients, $group) {
+            $item = [
+                'recipeId' => $recipe->id,
+                'recipeName' => $recipe->name,
+                'recipeThumbnail' => $this->imageService->formatImage($recipe->thumbnails->first()),
+                'recipeOrder' => (int) ($recipe->pivot->order ?? 0),
+            ];
+            if ($includeIngredients && $group) {
+                $item['ingredients'] = $this->recipeService->formatRecipeIngredients($recipe, $group);
+            }
+
+            return $item;
+        })->values()->toArray();
     }
 
     /**

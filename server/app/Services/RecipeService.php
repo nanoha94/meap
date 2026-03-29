@@ -380,7 +380,7 @@ class RecipeService extends AbstractDomainService
     /**
      * レシピの食材情報をフォーマット
      */
-    private function formatRecipeIngredients(Recipe $recipe, Group $group): array
+    public function formatRecipeIngredients(Recipe $recipe, Group $group): array
     {
         // グループの全カテゴリを取得（order順でソート）
         $categories = $group->ingredientCategories()

@@ -1,5 +1,6 @@
 "use client";
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { ja } from 'date-fns/locale/ja';
 import { Calendar, X } from 'lucide-react';
 import DatePicker from 'react-datepicker';
@@ -100,7 +101,7 @@ const StyledDatePicker = ({ value, hasClearButton = false, onChange }: Props) =>
     };
 
     return (
-        <div className="relative cursor-pointer rounded-lg transition-colors group hover:bg-gray-light">
+        <div className="relative min-w-[200px] cursor-pointer rounded-lg transition-colors group hover:bg-gray-light">
             <DatePicker
                 selected={value}
                 onChange={onChange}
@@ -112,6 +113,15 @@ const StyledDatePicker = ({ value, hasClearButton = false, onChange }: Props) =>
                 }
                 renderCustomHeader={CalendarCustomHeader}
                 popperClassName="react-datepicker-popper z-[60]"
+                popperContainer={({ children }) => {
+                    if (typeof document === "undefined") {
+                        return <div className="z-50 relative">{children}</div>;
+                    }
+                    return createPortal(
+                        <div className="z-50 relative">{children}</div>,
+                        document.body
+                    );
+                }}
             />
             {hasValue && hasClearButton ? (
                 <button

@@ -64,7 +64,7 @@ const VerticaFromToField = <T extends FieldValues>({
                 {memo && <p className="text-xs">{memo}</p>}
             </div>
             <div className="flex flex-col gap-y-1">
-                <div className="flex items-center gap-x-3">
+                <div className="flex items-center flex-wrap md:flex-nowrap gap-3">
                     <Controller
                         control={control}
                         name={fromName}
@@ -91,7 +91,19 @@ const VerticaFromToField = <T extends FieldValues>({
                         name={toName}
                         rules={toRules}
                         render={({ field: { onChange, value } }) =>
-                            children({ value, onChange, id: toName })
+                            children({
+                                value,
+                                onChange: (v: unknown) => {
+                                    onChange(v);
+                                    // toNameが変更されたら、toNameのバリデーションを再実行
+                                    if (trigger && rangeValidate) {
+                                        trigger(toName).catch(() => {
+                                            // エラーは無視（バリデーションエラーは正常な動作）
+                                        });
+                                    }
+                                },
+                                id: toName,
+                            })
                         }
                     />
                 </div>

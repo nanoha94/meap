@@ -15,8 +15,10 @@ export type AlertDialogData = {
 export type DialogConfig = {
     title: string;
     customButton?: React.ReactNode;
+    footer?: React.ReactNode;
     maxWidth?: number;
     children: React.ReactNode;
+    childrenWrapperClassName?: string;
     isCheckBeforeClose?: boolean;
 };
 

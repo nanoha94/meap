@@ -1,4 +1,5 @@
 import React from 'react';
+import dayjs from 'dayjs';
 
 import { Loading } from '@/components';
 import { fetchData } from '@/lib/apiClient';
@@ -17,9 +18,12 @@ interface PlanPageWithDataProps {
 const PlanPageWithData = async ({ searchParams }: PlanPageWithDataProps) => {
     const resolvedParams = await Promise.resolve(searchParams);
     const { year, month } = getYearMonthFromSearchParams(resolvedParams);
-    const { data: mealPlans, errorMessage } = await fetchData<IGetMealPlanIndexResponse>(
-        `/meal-plans?year=${year}&month=${month}`,
-    );
+    const dateFrom = dayjs().year(year).month(month - 1).date(1).format('YYYY-MM-DD');
+    const dateTo = dayjs(dateFrom).endOf('month').format('YYYY-MM-DD');
+    const { data: mealPlans, errorMessage } =
+        await fetchData<IGetMealPlanIndexResponse>(
+            `/meal-plans?date_from=${dateFrom}&date_to=${dateTo}`,
+        );
 
     return (
         <PlanCalendarPage

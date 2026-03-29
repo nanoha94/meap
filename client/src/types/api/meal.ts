@@ -1,4 +1,5 @@
 import { IBaseApiIndexResponse, IBaseApiResponse, IBaseApiResponseWithData } from "./common";
+import { IIngredientItem } from "./ingredient";
 import { IImage } from "./image";
 
 //--------------------------------
@@ -23,6 +24,13 @@ export type IDeleteMealPlanResponse = IBaseApiResponse;
 //--------------------------------
 // リクエスト型
 //--------------------------------
+// 献立プラン一覧取得
+export interface IGetMealPlanIndexRequest {
+    date_from?: string;
+    date_to?: string;
+    include_ingredients?: boolean;
+}
+
 // 献立プラン作成/更新
 export interface IPostPutMealPlanRequest {
     id?: string;
@@ -53,6 +61,7 @@ export interface IMealPlanItem {
     recipeName: string;                // レシピ/料理名
     recipeThumbnail: IImage | null;    // レシピ/料理サムネイル画像
     recipeOrder: number;               // レシピ/料理並び順
+    ingredients?: IIngredientItem[];   // 食材一覧（include_ingredients=true時のみ）
 }
 
 export interface IMealPlan {
