@@ -6,8 +6,26 @@ import { Button, HorizontalRowField, StyledSelect } from '@/components';
 import { BUTTON_TYPE, BUTTON_VARIANT, COLOR_VARIANT, TMP_ID_PREFIX } from '@/constants';
 import { useDialog, useNavigationGuard } from '@/hooks';
 import { defaultIngredientItem, useIngredientStore } from '@/models/ingredient';
-import { IIngredientItem } from '@/types';
+import { IIngredientItem, IIngredientUnit } from '@/types';
 
+/**
+ * 材料編集フォームの「変更なし」比較用（単位マスタの requiresQuantity に合わせて数量を揃える）
+ */
+const stringifyIngredientForCompare = (
+    name: string | undefined,
+    quantity: number | null | undefined,
+    unitId: string | undefined,
+    categoryId: string | undefined,
+    unitDef: IIngredientUnit | null | undefined,
+) => {
+    const requiresQuantity = unitDef?.requiresQuantity ?? true;
+    return JSON.stringify({
+        name: name ?? '',
+        quantity: requiresQuantity ? (quantity ?? null) : null,
+        unitId: unitId ?? '',
+        categoryId: categoryId ?? '',
+    });
+};
 
 interface Props {
     editingItem: IIngredientItem | undefined;
@@ -38,6 +56,7 @@ const IngredientEditForm = ({
     const watchedQuantity = useWatch({ control, name: 'quantity' });
     const watchedUnitId = useWatch({ control, name: 'unit.id' });
     const watchedUnit = useWatch({ control, name: 'unit' });
+    const watchedCategoryId = useWatch({ control, name: 'categoryId' });
 
     /**
      * 数量の入力可/不可
@@ -48,24 +67,59 @@ const IngredientEditForm = ({
 
     /**
      * 送信ボタンの無効化判定
+     * 必須項目が欠ける、または編集開始時点（editingItem）と同一内容の場合は true（無効）
+     * ※IngredientCategoryEditForm と同様に JSON.stringify で比較
      */
     const isDisabledSendButton = React.useMemo(() => {
-        // 食材名が空の場合、単位が選択されていない場合は送信ボタンを無効化
-        // 数量が必要の場合は数量が入力されていない場合は送信ボタンを無効化
-        return (
+        const invalid =
             watchedName === '' ||
             watchedUnitId === '' ||
-            (!isDisabledQuantity && !watchedQuantity)
-        );
-    }, [watchedName, watchedUnitId, watchedQuantity, isDisabledQuantity]);
+            (!isDisabledQuantity && !watchedQuantity);
+
+        if (!editingItem) {
+            return invalid;
+        }
+
+        const baselineUnit =
+            units.find(u => u.id === editingItem.unit?.id) ??
+            editingItem.unit ??
+            undefined;
+
+        const unchanged =
+            stringifyIngredientForCompare(
+                watchedName,
+                watchedQuantity,
+                watchedUnitId,
+                watchedCategoryId,
+                watchedUnit,
+            ) ===
+            stringifyIngredientForCompare(
+                editingItem.name,
+                editingItem.quantity,
+                editingItem.unit?.id,
+                editingItem.categoryId,
+                baselineUnit,
+            );
+
+        return invalid || unchanged;
+    }, [
+        watchedName,
+        watchedUnitId,
+        watchedQuantity,
+        watchedCategoryId,
+        watchedUnit,
+        isDisabledQuantity,
+        editingItem,
+        units,
+    ]);
     useNavigationGuard(!isDisabledSendButton);
 
     /**
      * 閉じる前確認の要否をフォーム状態に合わせて更新
      */
     React.useEffect(() => {
-        updateCurrentDialogConfig({ isCheckBeforeClose: watchedName !== '' || watchedUnitId !== '' || watchedQuantity !== null });
-    }, [watchedName, watchedUnitId, watchedQuantity, updateCurrentDialogConfig]);
+        updateCurrentDialogConfig({ isCheckBeforeClose: !isDisabledSendButton });
+    }, [isDisabledSendButton, updateCurrentDialogConfig]);
 
     /**
      * フォーカスを当てる
@@ -81,7 +135,7 @@ const IngredientEditForm = ({
         if (editingItem) {
             reset(editingItem);
         }
-    }, [editingItem]);
+    }, [editingItem, reset]);
 
     // 単位の監視
     React.useEffect(() => {
@@ -92,7 +146,7 @@ const IngredientEditForm = ({
                 setValue('quantity', null);
             }
         }
-    }, [watchedUnitId]);
+    }, [watchedUnitId, units, setValue]);
 
     /**
      * フォームの送信

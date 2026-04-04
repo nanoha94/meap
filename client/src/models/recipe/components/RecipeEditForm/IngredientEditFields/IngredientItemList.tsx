@@ -26,6 +26,7 @@ interface Props {
     addEmptyItem: () => IIngredientItem[];
     updateItem: (index: number, item: IIngredientItem) => void;
     removeItem: (index: number) => void;
+    errors?: (localIndex: number) => string;
 }
 
 const IngredientItemList = ({
@@ -34,6 +35,7 @@ const IngredientItemList = ({
     addEmptyItem,
     updateItem,
     removeItem,
+    errors,
 }: Props) => {
     const { openDialog, closeDialog } = useDialog();
     const { setNodeRef: setDroppableNodeRef } = useDroppable({
@@ -107,22 +109,31 @@ const IngredientItemList = ({
                 <div
                     ref={setDroppableNodeRef}
                     className="flex flex-col gap-y-2">
-                    {items.map((field, index) => (
-                        <Sortable key={field.id} id={field.id}>
-                            <GrippableHorizontalItem
-                                hasDeleteButton={true}
-                                isDisabledDeleteButton={index === 0 &&
-                                    items.length === 1 &&
-                                    field.name === ''}
-                                onDelete={() => removeItem(index)}>
-                                <DialogField
-                                    value={formatIngredient(field)}
-                                    placeholder={`${category.name}を設定`}
-                                    onOpenDialog={() => openEditDialog(field)}
-                                />
-                            </GrippableHorizontalItem>
-                        </Sortable>
-                    ))}
+                    {items.map((field, index) => {
+                        const errorMessage = errors?.(index) ?? '';
+                        return (
+                            <div key={field.id} className="flex flex-col gap-y-1">
+                                <Sortable id={field.id}>
+                                    <GrippableHorizontalItem
+                                        hasDeleteButton={true}
+                                        isDisabledDeleteButton={index === 0 &&
+                                            items.length === 1 &&
+                                            field.name === ''}
+                                        onDelete={() => removeItem(index)}>
+                                        <DialogField
+                                            value={formatIngredient(field)}
+                                            placeholder={`${category.name}を設定`}
+                                            hasError={errorMessage !== ''}
+                                            onOpenDialog={() => openEditDialog(field)}
+                                        />
+                                    </GrippableHorizontalItem>
+                                </Sortable>
+                                {errorMessage && (
+                                    <p className="pl-8 text-alert-main text-sm">{errorMessage}</p>
+                                )}
+                            </div>
+                        );
+                    })}
                 </div>
             </SortableContext>
             <TextButton

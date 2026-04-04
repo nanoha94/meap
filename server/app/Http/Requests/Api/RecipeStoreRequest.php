@@ -120,6 +120,18 @@ class RecipeStoreRequest extends BaseApiRequest
                     }
                 }
             }
+
+            $seen = [];
+            foreach ($ingredients as $index => $ingredient) {
+                $key = ($ingredient['name'] ?? '') . '|' . ($ingredient['unitId'] ?? '');
+                if (in_array($key, $seen, true)) {
+                    $validator->errors()->add(
+                        "ingredients.{$index}.name",
+                        __('validation.duplicate_ingredient')
+                    );
+                }
+                $seen[] = $key;
+            }
         });
     }
 

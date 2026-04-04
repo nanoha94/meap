@@ -76,7 +76,7 @@ const StepEditItem = ({
                                     onChange(e);
                                     adjustTextareaHeight(e.target);
                                 }}
-                                className="flex-1 py-2 px-4  border rounded-lg resize-none overflow-hidden outline-black"
+                                className={`flex-1 py-2 px-4  ${errorMessage ? 'border-alert-main border-2 outline-alert-main' : 'border outline-black'} rounded-lg resize-none overflow-hidden`}
                             />
                         )}
                     />

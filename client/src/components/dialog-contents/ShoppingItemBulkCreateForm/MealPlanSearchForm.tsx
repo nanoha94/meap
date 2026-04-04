@@ -60,14 +60,20 @@ const MealPlanSearchForm: React.FC<Props> = ({ search, updateDateList }) => {
             errorMessage={errors?.dateTo?.message ? [errors.dateTo.message] : undefined}
             rangeValidate={(from, to) => {
                 if (!from || !to) return true;
-                return from <= to ? true : '終了日はより後の日付にしてください';
+                return from <= to ? true : '終了日は開始日より後の日付にしてください';
             }}>
-            {({ value, onChange }) => {
+            {({ value, onChange, hasError, isFrom, pairedFieldValue }) => {
                 const dateValue = value && typeof value === 'string' ? new Date(value) : undefined;
+                const pairedFieldData = pairedFieldValue && typeof pairedFieldValue === 'string'
+                    ? new Date(pairedFieldValue)
+                    : undefined;
                 return (
                     <StyledDatePicker
                         value={dateValue}
+                        minDate={!isFrom ? pairedFieldData : undefined}
+                        maxDate={isFrom ? pairedFieldData : undefined}
                         hasClearButton={true}
+                        hasError={hasError}
                         onChange={(d) => onChange(d ? dayjs(d).format('YYYY-MM-DD') : '')}
                     />
                 );

@@ -21,9 +21,10 @@ import IngredientItemList from './IngredientItemList';
 
 interface Props {
     control: Control<RecipeEditFormData>;
+    errors: Record<string, string> | null;
 }
 
-const IngredientEditFields = ({ control }: Props) => {
+const IngredientEditFields = ({ control, errors }: Props) => {
     const prefix = TMP_ID_PREFIX.INGREDIENT_ITEM;
     const { categories } = useIngredientStore();
     const { openDialog } = useDialog();
@@ -260,6 +261,11 @@ const IngredientEditFields = ({ control }: Props) => {
                                         index: number,
                                         item: IIngredientItem,
                                     ) => updateItem(offsetIndex + index, item)}
+                                    errors={localIndex =>
+                                        errors?.[
+                                        `ingredients.${offsetIndex + localIndex}.name`
+                                        ] ?? ''
+                                    }
                                 />
                             );
                         })}
@@ -272,6 +278,7 @@ const IngredientEditFields = ({ control }: Props) => {
                                     <DialogField
                                         value={formatIngredient(activeItem)}
                                         placeholder={`${activeCategory?.name}を設定`}
+                                        hasError={false}
                                         onOpenDialog={() => { }}
                                     />
                                 </GrippableHorizontalItem>

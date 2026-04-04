@@ -209,7 +209,7 @@ const RecipeEditPage = ({
                                     )}
                                 </VerticalRowField>
                                 {/* 材料 */}
-                                <IngredientEditFields control={control} />
+                                <IngredientEditFields control={control} errors={errors} />
                             </div>
                             <div className="flex-1 flex flex-col gap-y-8">
                                 <div className={lineTitleWrapperStyle}>

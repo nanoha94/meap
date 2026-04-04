@@ -6,6 +6,7 @@ import { colors } from '@/constants';
 interface Props {
     value: string;
     placeholder: string;
+    hasError: boolean;
     onOpenDialog: () => void;
 }
 
@@ -13,10 +14,11 @@ interface Props {
  * ダイアログを開いてフィールドを編集するボタン
  * @param value - フィールドの値
  * @param placeholder - プレースホルダー
+ * @param hasError - エラーがあるかどうか
  * @param onOpenDialog - ダイアログを開く関数
  * @returns 
  */
-const DialogField = ({ value, placeholder, onOpenDialog }: Props) => {
+const DialogField = ({ value, placeholder, hasError, onOpenDialog }: Props) => {
     return (
         <button
             type="button"
@@ -29,7 +31,7 @@ const DialogField = ({ value, placeholder, onOpenDialog }: Props) => {
                 type="text"
                 readOnly
                 placeholder={placeholder}
-                className="py-2 px-4 w-full flex-1 outline-none bg-white rounded-lg border border-gray-main pointer-events-none"
+                className={`py-2 px-4 w-full flex-1 bg-white rounded-lg border ${hasError ? 'border-alert-main border-2' : 'border-gray-main outline-none'} pointer-events-none`}
             />
             <div
                 className="absolute p-1 right-2 top-1/2 -translate-y-1/2 cursor-pointer rounded-full transition-colors group-hover:bg-gray-light"

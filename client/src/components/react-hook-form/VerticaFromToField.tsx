@@ -27,6 +27,9 @@ interface Props<T extends FieldValues> {
         value: unknown;
         onChange: (v: unknown) => void;
         id: string;
+        hasError: boolean;
+        isFrom: boolean;
+        pairedFieldValue?: unknown;
     }) => React.ReactElement;
 }
 
@@ -44,6 +47,8 @@ const VerticaFromToField = <T extends FieldValues>({
     trigger,
     rangeValidate,
 }: Props<T>) => {
+    const hasError = Boolean(errorMessage?.some(Boolean));
+
     const toRules: RegisterOptions<T> = {
         ...rules,
         ...(rangeValidate && getValues && {
@@ -82,6 +87,9 @@ const VerticaFromToField = <T extends FieldValues>({
                                     }
                                 },
                                 id: fromName,
+                                hasError,
+                                isFrom: true,
+                                pairedFieldValue: getValues?.(toName),
                             })
                         }
                     />
@@ -103,6 +111,9 @@ const VerticaFromToField = <T extends FieldValues>({
                                     }
                                 },
                                 id: toName,
+                                hasError,
+                                isFrom: false,
+                                pairedFieldValue: getValues?.(fromName),
                             })
                         }
                     />

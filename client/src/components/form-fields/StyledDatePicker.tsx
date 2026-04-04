@@ -11,6 +11,9 @@ import { colors } from '@/constants';
 interface Props {
     value?: Date | null;
     hasClearButton?: boolean;
+    hasError?: boolean;
+    minDate?: Date | null;
+    maxDate?: Date | null;
     onChange: (date: Date | null, event?: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement> | undefined) => void;
 }
 
@@ -90,9 +93,12 @@ const CalendarCustomHeader = ({
  * 日付選択フィールド
  * @param value - 日付
  * @param onChange - 日付変更時のコールバック
+ * @param hasError - エラー時は枠線を alert 色にする
+ * @param minDate - 選択可能な最小日付
+ * @param maxDate - 選択可能な最大日付
  * @returns 
  */
-const StyledDatePicker = ({ value, hasClearButton = false, onChange }: Props) => {
+const StyledDatePicker = ({ value, hasClearButton = false, hasError = false, minDate, maxDate, onChange }: Props) => {
     const hasValue = value !== null && value !== undefined;
 
     const handleClear = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -105,20 +111,24 @@ const StyledDatePicker = ({ value, hasClearButton = false, onChange }: Props) =>
             <DatePicker
                 selected={value}
                 onChange={onChange}
+                minDate={minDate ?? undefined}
+                maxDate={maxDate ?? undefined}
                 dateFormat="yyyy/MM/dd（E）"
                 locale={ja}
                 placeholderText="日付を選択"
                 customInput={
-                    <ReadOnlyInput className="py-2 px-4 w-full flex-1 bg-white rounded-lg border border-gray-main cursor-pointer" />
+                    <ReadOnlyInput
+                        className={`py-2 px-4 w-full flex-1 bg-white rounded-lg border cursor-pointer ${hasError ? 'border-alert-main border-2' : 'border-gray-main'}`}
+                    />
                 }
                 renderCustomHeader={CalendarCustomHeader}
                 popperClassName="react-datepicker-popper z-[60]"
                 popperContainer={({ children }) => {
                     if (typeof document === "undefined") {
-                        return <div className="z-50 relative">{children}</div>;
+                        return <div className="z-[60] relative">{children}</div>;
                     }
                     return createPortal(
-                        <div className="z-50 relative">{children}</div>,
+                        <div className="z-[60] relative">{children}</div>,
                         document.body
                     );
                 }}

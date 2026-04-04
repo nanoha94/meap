@@ -9,6 +9,7 @@ import { DEFAULT_RECIPE_EDIT_FORM_DATA } from '../constants';
 import { RecipeEditFormData } from '../types';
 import { useRecipeApi } from './useRecipeApi';
 
+
 /**
  * 食材をフォーマット
  * @param items 食材リスト
@@ -30,6 +31,29 @@ export const formatIngredientItems = (
                 order: idx,
             };
         });
+};
+
+
+/**
+ * 材料の name + unitId が同一の行を検出し、重複行に対応するエラーキーを返す（サーバー側と同じキー形式）
+ */
+const buildDuplicateIngredientErrors = (
+    items: IIngredientItem[] | undefined,
+): Record<string, string> => {
+    if (!items?.length) {
+        return {};
+    }
+    const seen = new Set<string>();
+    const out: Record<string, string> = {};
+    items.forEach((ingredient, index) => {
+        const key = `${ingredient.name ?? ''}|${ingredient.unit?.id ?? ''}`;
+        if (seen.has(key)) {
+            out[`ingredients.${index}.name`] = '同じ材料名と単位の組み合わせが重複しています。';
+        } else {
+            seen.add(key);
+        }
+    });
+    return out;
 };
 
 /**
@@ -206,19 +230,34 @@ export const useRecipeEditForm = (initialOwnerUserId: string, fetchedRecipe?: IR
 
     React.useEffect(() => {
         if (watchedSteps?.length > 0) {
-            watchedSteps.forEach((item, index) => {
-                if (item.instruction === '' && item.image?.src.length !== 0) {
-                    setErrors({
-                        [`steps.${index}`]: '説明文を入力してください',
-                    });
-                } else {
-                    setErrors({
-                        [`steps.${index}`]: '',
-                    });
-                }
+            setErrors(prev => {
+                const next = { ...(prev ?? {}) };
+                watchedSteps.forEach((item, index) => {
+                    if (item.instruction === '' && item.image?.src.length !== 0) {
+                        next[`steps.${index}`] = '手順を入力してください';
+                    } else {
+                        next[`steps.${index}`] = '';
+                    }
+                });
+                return next;
             });
         }
     }, [watchedSteps]);
+
+    React.useEffect(() => {
+        setErrors(prev => {
+            const base = { ...(prev ?? {}) };
+            Object.keys(base).forEach(k => {
+                if (k.startsWith('ingredients.')) {
+                    delete base[k];
+                }
+            });
+            return {
+                ...base,
+                ...buildDuplicateIngredientErrors(watchedIngredients),
+            };
+        });
+    }, [watchedIngredients]);
 
     return {
         control,

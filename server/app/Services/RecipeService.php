@@ -493,19 +493,20 @@ class RecipeService extends AbstractDomainService
 
         $ids = $this->findOrCreateIds($ingredientData, $group, Ingredient::class);
 
-        $data = [];
-        foreach ($ingredients as $idx => $item) {
-            if (isset($ids[$idx])) {
-                $data[$ids[$idx]] = [
-                    'quantity' => $item['quantity'] ?? null,
-                    'unit_id' => $item['unitId'],
-                    'category_id' => $item['categoryId'],
-                    'order' => $item['order'] ?? 0
-                ];
-            }
-        }
+        // sync() は ingredient_id キーのため同一材料×異単位の複数行を表現できないので、detach()とattach()で紐づける
+        $recipe->ingredients()->detach();
 
-        $recipe->ingredients()->sync($data);
+        foreach ($ingredients as $idx => $item) {
+            if (!isset($ids[$idx])) {
+                continue;
+            }
+            $recipe->ingredients()->attach($ids[$idx], [
+                'quantity' => $item['quantity'] ?? null,
+                'unit_id' => $item['unitId'],
+                'category_id' => $item['categoryId'],
+                'order' => $item['order'] ?? 0,
+            ]);
+        }
     }
 
     /**

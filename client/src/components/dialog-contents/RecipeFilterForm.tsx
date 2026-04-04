@@ -131,12 +131,18 @@ const RecipeFilterForm = ({ search, defaultValues }: Props) => {
                         if (!from || !to) return true;
                         return from <= to ? true : '終了日はより後の日付にしてください';
                     }}>
-                    {({ value, onChange }) => {
+                    {({ value, onChange, hasError, isFrom, pairedFieldValue }) => {
                         const dateValue = value && typeof value === 'string' ? new Date(value) : undefined;
+                        const pairedFieldData = pairedFieldValue && typeof pairedFieldValue === 'string'
+                            ? new Date(pairedFieldValue)
+                            : undefined;
                         return (
                             <StyledDatePicker
                                 value={dateValue}
+                                minDate={!isFrom ? pairedFieldData : undefined}
+                                maxDate={isFrom ? pairedFieldData : undefined}
                                 hasClearButton={true}
+                                hasError={hasError}
                                 onChange={(d) => onChange(d ? dayjs(d).format('YYYY-MM-DD') : '')}
                             />
                         );
