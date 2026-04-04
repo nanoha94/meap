@@ -9,6 +9,39 @@ import { useGlobalStore } from '@/stores';
 import { useApiErrorHandler } from './useApiErrorHandler';
 import { useSnackbars } from '../useSnackbars';
 
+interface RegisterProps {
+    name: string;
+    email: string;
+    password: string;
+    password_confirmation: string;
+    setErrors: (errors: Record<string, string[]>) => void;
+}
+
+interface LoginProps {
+    email: string;
+    password: string;
+    remember: boolean;
+    setErrors: (errors: Record<string, string[]>) => void;
+    setStatus: (status: string | null) => void;
+}
+
+interface PasswordResetRequestProps {
+    email: string;
+    setErrors: (errors: Record<string, string[]>) => void;
+    setStatus: (status: string | null) => void;
+}
+
+interface ResetPasswordProps {
+    password: string;
+    password_confirmation: string;
+    setErrors: (errors: Record<string, string[]>) => void;
+    setStatus: (status: string | null) => void;
+}
+
+interface ResendEmailVerificationProps {
+    setMessage: (message: string) => void;
+}
+
 export const useAuth = () => {
     const router = useRouter();
     const params = useParams();
@@ -32,7 +65,7 @@ export const useAuth = () => {
      * @param setErrors エラーを設定する関数
      * @param props ユーザー登録フォームの入力値
      */
-    const register = async ({ setErrors, ...props }) => {
+    const register = async ({ setErrors, ...props }: RegisterProps) => {
         // 重複リクエスト防止
         if (isRegisterRequestRef.current) {
             return;
@@ -46,7 +79,7 @@ export const useAuth = () => {
             // スナックバーをすべて削除
             clearAllSnackbars();
             // エラーをクリア
-            setErrors([]);
+            setErrors({});
             // CSRFトークンを取得
             await csrf();
 
@@ -74,7 +107,7 @@ export const useAuth = () => {
      * @param setStatus ステータスを設定する関数
      * @param props ログインフォームの入力値
      */
-    const login = async ({ setErrors, setStatus, ...props }) => {
+    const login = async ({ setErrors, setStatus, ...props }: LoginProps) => {
         // 重複リクエスト防止
         if (isLoginRequestRef.current) {
             return;
@@ -87,7 +120,7 @@ export const useAuth = () => {
             // スナックバーをすべて削除
             clearAllSnackbars();
             // エラーをクリア
-            setErrors([]);
+            setErrors({});
             // ステータスをクリア
             setStatus(null);
             // CSRFトークンを取得
@@ -117,7 +150,11 @@ export const useAuth = () => {
      * @param setStatus ステータスを設定する関数
      * @param email メールアドレス
      */
-    const passwordResetRequest = async ({ setErrors, setStatus, email }) => {
+    const passwordResetRequest = async ({
+        setErrors,
+        setStatus,
+        email,
+    }: PasswordResetRequestProps) => {
         // 重複リクエスト防止
         if (isPasswordResetRequestRef.current) {
             return;
@@ -131,7 +168,7 @@ export const useAuth = () => {
             // スナックバーをすべて削除
             clearAllSnackbars();
             // エラーをクリア
-            setErrors([]);
+            setErrors({});
             // ステータスをクリア
             setStatus(null);
             // CSRFトークンを取得
@@ -162,7 +199,7 @@ export const useAuth = () => {
      * @param setStatus ステータスを設定する関数
      * @param props パスワードリセットフォームの入力値
      */
-    const resetPassword = async ({ setErrors, setStatus, ...props }) => {
+    const resetPassword = async ({ setErrors, setStatus, ...props }: ResetPasswordProps) => {
         // 重複リクエスト防止
         if (isResetPasswordRequestRef.current) {
             return;
@@ -176,7 +213,7 @@ export const useAuth = () => {
             // スナックバーをすべて削除
             clearAllSnackbars();
             // エラーをクリア
-            setErrors([]);
+            setErrors({});
             // ステータスをクリア
             setStatus(null);
             // CSRFトークンを取得
@@ -205,7 +242,7 @@ export const useAuth = () => {
      * メールアドレス再送信リクエスト
      * @param setMessage メッセージを設定する関数
      */
-    const resendEmailVerification = async ({ setMessage }) => {
+    const resendEmailVerification = async ({ setMessage }: ResendEmailVerificationProps) => {
         // 重複リクエスト防止
         if (isResendEmailVerificationRequestRef.current) {
             return;

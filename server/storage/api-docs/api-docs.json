@@ -1435,6 +1435,11 @@
                         "type": "string",
                         "format": "password",
                         "example": "password"
+                    },
+                    "remember": {
+                        "description": "ログイン状態を保持する",
+                        "type": "boolean",
+                        "example": false
                     }
                 },
                 "type": "object"

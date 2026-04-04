@@ -32,6 +32,7 @@ class LoginRequest extends BaseAuthRequest
         return [
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
+            'remember' => ['sometimes', 'boolean'],
         ];
     }
 
@@ -48,6 +49,7 @@ class LoginRequest extends BaseAuthRequest
             'email.email' => __('validation.email', ['attribute' => 'email']),
             'password.required' => __('validation.required', ['attribute' => 'password']),
             'password.string' => __('validation.string', ['attribute' => 'password']),
+            'remember.boolean' => __('validation.boolean', ['attribute' => 'remember']),
         ];
     }
 

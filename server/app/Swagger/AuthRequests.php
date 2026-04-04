@@ -9,7 +9,8 @@ namespace App\Swagger;
  *     schema="LoginRequest",
  *     required={"email", "password"},
  *     @OA\Property(property="email", type="string", format="email", example="test@example.com"),
- *     @OA\Property(property="password", type="string", format="password", example="password")
+ *     @OA\Property(property="password", type="string", format="password", example="password"),
+ *     @OA\Property(property="remember", type="boolean", example=false, description="ログイン状態を保持する")
  * )
  *
  * ユーザー登録リクエスト
