@@ -44,7 +44,8 @@ const RecipeListPage = ({
     const recipes = useRecipeStore(state => state.recipes);
     const { addSnackbar } = useSnackbars();
     const { openDialog } = useDialog();
-    const { incrementLoadingCount, resetLoadingCount } = useGlobalStore();
+    const incrementLoadingCount = useGlobalStore(state => state.incrementLoadingCount);
+    const resetLoadingCount = useGlobalStore(state => state.resetLoadingCount);
 
     /**
      * 並び替え処理（ストア更新・再取得・URLクエリ更新）

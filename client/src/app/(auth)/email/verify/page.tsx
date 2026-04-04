@@ -7,7 +7,7 @@ import { useGlobalStore } from '@/stores';
 
 const Page = () => {
     const { resendEmailVerification } = useAuth();
-    const { loadingCount } = useGlobalStore();
+    const loadingCount = useGlobalStore(state => state.loadingCount);
     const [message, setMessage] = React.useState<string | null>(null);
     const [isInitialSent, setIsInitialSent] = React.useState(false);
     const hasInitialSent = React.useRef(false);

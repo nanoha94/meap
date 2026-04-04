@@ -10,7 +10,8 @@ import { IGetMealPlanIndexRequest, IGetMealPlanIndexResponse, IPostMealPlanRespo
 import { MealPlanFilterFormData } from "../types";
 
 export const useMealPlanApi = () => {
-    const { incrementLoadingCount, decrementLoadingCount } = useGlobalStore();
+    const incrementLoadingCount = useGlobalStore(state => state.incrementLoadingCount);
+    const decrementLoadingCount = useGlobalStore(state => state.decrementLoadingCount);
     const router = useRouter();
     const { addSnackbar } = useSnackbars();
     const { handleApiError } = useApiErrorHandler();

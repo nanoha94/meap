@@ -13,7 +13,8 @@ export const useAuth = () => {
     const router = useRouter();
     const params = useParams();
     const { clearAllSnackbars } = useSnackbars();
-    const { incrementLoadingCount, decrementLoadingCount } = useGlobalStore();
+    const incrementLoadingCount = useGlobalStore(state => state.incrementLoadingCount);
+    const decrementLoadingCount = useGlobalStore(state => state.decrementLoadingCount);
     const { handleApiError } = useApiErrorHandler();
 
     const csrf = () => axios.get('/sanctum/csrf-cookie');

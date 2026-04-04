@@ -15,7 +15,8 @@ import { useShoppingStore } from '../hooks';
 export const useShoppingItemApi = () => {
     const { addSnackbar } = useSnackbars();
     const { handleApiError } = useApiErrorHandler();
-    const { incrementLoadingCount, decrementLoadingCount } = useGlobalStore();
+    const incrementLoadingCount = useGlobalStore(state => state.incrementLoadingCount);
+    const decrementLoadingCount = useGlobalStore(state => state.decrementLoadingCount);
     const {
         items: storeItems,
         serverItems,

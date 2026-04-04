@@ -1,17 +1,19 @@
-"use client";
-import React from "react";
-import { ChevronRight, SlidersHorizontal } from "lucide-react";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
+'use client';
 
-import { RecipeFilterFormData, sortOptions, useRecipeApi } from "@/models/recipe";
-import { IRecipe, IRecipeListItem } from "@/types";
-import { BUTTON_TYPE, COLOR_VARIANT, colors } from "@/constants";
-import { RecipeFilterForm, TextButton } from "@/components";
-import { useDialog } from "@/hooks";
-import { StyledSelect } from "../form-fields";
-import dayjs from "dayjs";
-import Pagination from "../Pagination";
+import React from 'react';
+import dayjs from 'dayjs';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { ChevronRight, SlidersHorizontal } from 'lucide-react';
+
+import { Button, RecipeFilterForm, TextButton } from '@/components';
+import { BUTTON_TYPE, BUTTON_VARIANT, COLOR_VARIANT, colors } from '@/constants';
+import { useDialog, useNavigationGuard } from '@/hooks';
+import { RecipeFilterFormData, sortOptions, useRecipeApi } from '@/models/recipe';
+import { IRecipe, IRecipeListItem } from '@/types';
+
+import Pagination from '../Pagination';
+import { StyledSelect } from '../form-fields';
 
 interface Props {
     initFetchedRecipes?: {
@@ -19,21 +21,33 @@ interface Props {
         pageSize: number;
         currentPage: number;
     };
-    selectedRecipe: IRecipeListItem | null;
-    disabledRecipes: string[];
-    onSelectedRecipeChange: (recipe: IRecipeListItem) => void;
-    onConfirm: () => void;
+    defaultItems: IRecipeListItem[];
+    onSave: (selectedItems: IRecipeListItem[]) => void;
 }
 
-const RecipeSelect = ({ initFetchedRecipes, selectedRecipe, disabledRecipes, onSelectedRecipeChange, onConfirm }: Props) => {
+const toRecipeListItem = (recipe: IRecipe): IRecipeListItem => ({
+    id: recipe.id,
+    name: recipe.name,
+    categories: recipe.categories,
+    thumbnail: recipe.thumbnail,
+    lastPlannedDate: recipe.lastPlannedDate,
+});
+
+const RecipeSelect = ({ initFetchedRecipes, defaultItems, onSave }: Props) => {
     const router = useRouter();
-    const { openDialog, closeDialog } = useDialog();
+    const { openDialog, closeDialog, updateCurrentDialogConfig } = useDialog();
     const { fetchRecipes } = useRecipeApi();
     const [sortOptionId, setSortOptionId] = React.useState<string>(sortOptions[0].id);
     const [filterOptions, setFilterOptions] = React.useState<RecipeFilterFormData>({ recipeName: '', ingredientName: '', categoryIds: [], lastPlannedDateFrom: '', lastPlannedDateTo: '' });
     const [recipes, setRecipes] = React.useState<IRecipe[]>(initFetchedRecipes?.recipes ?? []);
     const [pageSize, setPageSize] = React.useState<number>(initFetchedRecipes?.pageSize ?? 0);
     const [currentPage, setCurrentPage] = React.useState<number>(initFetchedRecipes?.currentPage ?? 1);
+    const [selectedItems, setSelectedItems] = React.useState<IRecipeListItem[]>(defaultItems);
+
+    const selectedIdSet = React.useMemo(
+        () => new Set(selectedItems.map((r) => r.id)),
+        [selectedItems],
+    );
 
     /**
      * 並び替え処理
@@ -71,6 +85,52 @@ const RecipeSelect = ({ initFetchedRecipes, selectedRecipe, disabledRecipes, onS
         }
     };
 
+    const toggleRecipeSelection = (recipe: IRecipe) => {
+        const listItem = toRecipeListItem(recipe);
+        if (selectedIdSet.has(recipe.id)) {
+            const next = selectedItems.filter((r) => r.id !== recipe.id);
+            setSelectedItems(next);
+        } else {
+            const next = [...selectedItems, listItem];
+            setSelectedItems(next);
+        }
+    };
+
+    /**
+     * 保存ボタンの無効化判定（ダイアログを開いた時点の選択と同じなら無効）
+     */
+    const isDisabledSaveButton = React.useMemo(
+        () => {
+            if (selectedItems.length !== defaultItems.length) return false;
+            const sortIds = (items: IRecipeListItem[]) => [...items].map((x) => x.id).sort().join('\0');
+            return sortIds(selectedItems) === sortIds(defaultItems);
+        },
+        [defaultItems, selectedItems],
+    );
+    useNavigationGuard(!isDisabledSaveButton);
+
+    /**
+     * 保存ボタン押下時の処理
+     */
+    const handleSave = React.useCallback(() => {
+        if (isDisabledSaveButton) return;
+        onSave(selectedItems);
+    }, [isDisabledSaveButton, onSave, selectedItems]);
+
+    /**
+     * フッターを更新
+     */
+    React.useEffect(() => {
+        updateCurrentDialogConfig({
+            footer: <FormFooter
+                selectedItems={selectedItems}
+                isDisabledSaveButton={isDisabledSaveButton}
+                closeDialog={closeDialog}
+                handleSave={handleSave}
+            />,
+            isCheckBeforeClose: !isDisabledSaveButton,
+        });
+    }, [selectedItems, isDisabledSaveButton, updateCurrentDialogConfig, closeDialog]);
 
     return (
         <div className="flex flex-col gap-y-5">
@@ -92,11 +152,9 @@ const RecipeSelect = ({ initFetchedRecipes, selectedRecipe, disabledRecipes, onS
                                 <button
                                     key={v.id}
                                     type="button"
-                                    disabled={disabledRecipes.includes(v.id)}
-                                    className={`relative w-full text-left flex flex-col bg-white rounded-md overflow-hidden transition-colors cursor-pointer hover:bg-gray-light border-2 disabled:opacity-50 disabled:pointer-events-none ${selectedRecipe?.id === v.id ? 'border-primary-main' : 'border-transparent'}`}
+                                    className={`relative w-full text-left flex flex-col bg-white rounded-md overflow-hidden transition-colors cursor-pointer hover:bg-gray-light border-2 ${selectedIdSet.has(v.id) ? 'border-primary-main' : 'border-transparent'}`}
                                     style={{ boxShadow: '1px 1px 5px rgba(0, 0, 0, 15%)' }}
-                                    onClick={() => onSelectedRecipeChange(v)}
-                                    onDoubleClick={onConfirm}
+                                    onClick={() => toggleRecipeSelection(v)}
                                 >
                                     <div className="w-full h-auto aspect-video object-cover bg-gray-background">
                                         {v.thumbnail && v.thumbnail.src && (
@@ -142,5 +200,44 @@ const RecipeSelect = ({ initFetchedRecipes, selectedRecipe, disabledRecipes, onS
         </div>
     );
 };
-
 export default RecipeSelect;
+
+interface FormFooterProps {
+    selectedItems: IRecipeListItem[];
+    isDisabledSaveButton: boolean;
+    closeDialog: () => void;
+    handleSave: () => void;
+}
+
+const FormFooter = ({ selectedItems, isDisabledSaveButton, closeDialog, handleSave }: FormFooterProps) => {
+    return <div className="p-3 w-full flex flex-wrap gap-4 items-end bg-white rounded-b-xl" style={{ boxShadow: '0px -5px 8px 0 rgba(0, 0, 0, 10%)' }}>
+        <div className=" w-full h-fit flex flex-col sm:flex-row gap-6 sm:items-end justify-between">
+            <div className="flex flex-col gap-y-2 flex-1">
+                <div className="text-lg">選択中の料理</div>
+                <div className="flex gap-x-2">
+                    {selectedItems.length > 0 ? selectedItems.map((item, index) => (
+                        <>
+                            <div key={index}>{item.name}</div>
+                            {index < selectedItems.length - 1 && <div>/</div>}
+                        </>
+                    )) : <div>まだ選択されていません</div>}
+                </div>
+            </div>
+            <div className="mx-auto sm:mr-0 sm:max-w-[320px] w-full flex gap-x-6">
+                <Button
+                    type={BUTTON_TYPE.BUTTON}
+                    colorVariant={COLOR_VARIANT.GRAY}
+                    variant={BUTTON_VARIANT.OUTLINED}
+                    onClick={() => closeDialog()}>
+                    戻る
+                </Button>
+                <Button type={BUTTON_TYPE.BUTTON}
+                    disabled={isDisabledSaveButton}
+                    onClick={handleSave}
+                >
+                    保存
+                </Button>
+            </div>
+        </div>
+    </div>;
+};

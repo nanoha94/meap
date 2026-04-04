@@ -18,7 +18,8 @@ export const useIngredientCategoryApi = () => {
     const { addSnackbar } = useSnackbars();
     const { handleApiError } = useApiErrorHandler();
     const { categories: storeCategories } = useIngredientStore();
-    const { incrementLoadingCount, decrementLoadingCount } = useGlobalStore();
+    const incrementLoadingCount = useGlobalStore(state => state.incrementLoadingCount);
+    const decrementLoadingCount = useGlobalStore(state => state.decrementLoadingCount);
 
     // 重複リクエスト防止用のフラグ
     const isBulkUpdateRequestRef = React.useRef(false);
@@ -170,7 +171,7 @@ export const useIngredientCategoryApi = () => {
             } catch (error) {
                 handleApiError(error);
             } finally {
-                isBulkUpdateRequestRef.current = false; 
+                isBulkUpdateRequestRef.current = false;
                 decrementLoadingCount();
             }
         },

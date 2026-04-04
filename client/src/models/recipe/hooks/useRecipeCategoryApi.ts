@@ -11,7 +11,8 @@ import { useRecipeStore } from '../hooks';
 
 export const useRecipeCategoryApi = () => {
     const { categories: storeCategories } = useRecipeStore();
-    const { incrementLoadingCount, decrementLoadingCount } = useGlobalStore();
+    const incrementLoadingCount = useGlobalStore(state => state.incrementLoadingCount);
+    const decrementLoadingCount = useGlobalStore(state => state.decrementLoadingCount);
     const router = useRouter();
     const { addSnackbar } = useSnackbars();
     const { handleApiError } = useApiErrorHandler();

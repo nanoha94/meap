@@ -40,7 +40,12 @@ export const formatStepItems = (
 };
 
 export const useRecipeApi = () => {
-    const { incrementLoadingCount, decrementLoadingCount } = useGlobalStore();
+    const incrementLoadingCount = useGlobalStore(
+        (state) => state.incrementLoadingCount,
+    );
+    const decrementLoadingCount = useGlobalStore(
+        (state) => state.decrementLoadingCount,
+    );
     const setRecipes = useRecipeStore(state => state.setRecipes);
     const listSortOptions = useRecipeStore(state => state.listSortOptions);
     const listFilterOptions = useRecipeStore(state => state.listFilterOptions);
