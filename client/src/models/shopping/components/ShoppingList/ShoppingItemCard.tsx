@@ -71,6 +71,7 @@ const ShoppingItemCard = ({ item, syncPendingItems }: Props) => {
             onClick: async () => {
                 await syncPendingItems();
                 openAlertDialog(SHOPPING_ALERT_DIALOG_CONFIGS.deleteItem(name), () => {
+                    setStoreItems(storeItems.filter(v => v.id !== id));
                     deleteShoppingItems([id]);
                 });
             },

@@ -25,6 +25,7 @@ interface FormData {
 const ShoppingItemEditForm: React.FC<Props> = ({ editingItem, editMode }) => {
     //store
     const categories = useShoppingStore(state => state.categories);
+    const items = useShoppingStore(state => state.items);
 
     // state
     const defaultValues = {
@@ -86,7 +87,12 @@ const ShoppingItemEditForm: React.FC<Props> = ({ editingItem, editMode }) => {
      */
     const onSubmit = (data: FormData) => {
         if (editMode === EDIT_MODE.CREATE) {
-            storeShoppingItem(data);
+            storeShoppingItem({
+                ...data,
+                order: items.length,
+                isPinned: false,
+                isChecked: false,
+            });
         } else if (editingItem) {
             updateShoppingItems([
                 {

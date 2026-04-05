@@ -25,6 +25,7 @@ function isItemChecked(
 export const useShoppingItemBulkCreateForm = () => {
     // store
     const categories = useShoppingStore(state => state.categories);
+    const items = useShoppingStore(state => state.items);
 
     // hook
     const { closeDialog } = useDialog();
@@ -150,11 +151,15 @@ export const useShoppingItemBulkCreateForm = () => {
     const onSubmit = (data: ShoppingItemBulkCreateFormData) => {
         // 献立UIではタグに recipeId を id として保持しているが、API の tags.id は ShoppingTag の UUID のみ有効。
         // レシピIDを送ると findOrCreateIds が「存在しないID」として 500 になるため、名前のみ送る。
+        const baseOrder = items.length;
         bulkStoreShoppingItems(
-            data.items.map((item) => ({
+            data.items.map((item, index) => ({
                 name: item.name,
                 categoryId: data.categoryId,
                 tags: item.tags.map((tag) => ({ name: tag.name })),
+                order: baseOrder + index,
+                isPinned: false,
+                isChecked: false,
             })),
         );
         closeDialog(false);

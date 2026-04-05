@@ -7,11 +7,14 @@ interface ShoppingState {
     serverItems: IShoppingItem[]; // DBに保存されているアイテム一覧
     items: IShoppingItem[]; // ローカルのアイテム一覧
     categories: IShoppingCategory[]; // ローカルのカテゴリー一覧
+    /** 削除直後に続く一括更新の成功スナックバーを1回だけ出さない */
+    isSkipNextBulkSnackbar: boolean;
 
     // setter func
     setServerItems: (items: IShoppingItem[]) => void;
     setItems: (items: IShoppingItem[]) => void;
     setCategories: (categories: IShoppingCategory[]) => void;
+    setIsSkipNextBulkSnackbar: (value: boolean) => void;
 }
 
 export const useShoppingStore = create<ShoppingState>(set => ({
@@ -19,6 +22,7 @@ export const useShoppingStore = create<ShoppingState>(set => ({
     serverItems: [],
     items: [],
     categories: [],
+    isSkipNextBulkSnackbar: false,
 
     // setter func
     setServerItems: (items: IShoppingItem[]) => {
@@ -31,5 +35,9 @@ export const useShoppingStore = create<ShoppingState>(set => ({
 
     setCategories: (categories: IShoppingCategory[]) => {
         set({ categories });
+    },
+
+    setIsSkipNextBulkSnackbar: (value: boolean) => {
+        set({ isSkipNextBulkSnackbar: value });
     },
 }));

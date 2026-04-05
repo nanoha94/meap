@@ -12,6 +12,9 @@ import {
 } from '@/types';
 import { useShoppingStore } from '../hooks';
 
+/** 削除後に続く一括更新が来ない場合のフラグ残留を防ぐ（ms） */
+const SKIP_NEXT_BULK_SNACKBAR_CLEAR_MS = 15000;
+
 export const useShoppingItemApi = () => {
     // store
     const incrementLoadingCount = useGlobalStore(state => state.incrementLoadingCount);
@@ -20,6 +23,9 @@ export const useShoppingItemApi = () => {
     const setStoreItems = useShoppingStore(state => state.setItems);
     const serverItems = useShoppingStore(state => state.serverItems);
     const setServerItems = useShoppingStore(state => state.setServerItems);
+    const setIsSkipNextBulkSnackbar = useShoppingStore(
+        state => state.setIsSkipNextBulkSnackbar,
+    );
 
     //hook
     const { addSnackbar } = useSnackbars();
@@ -31,6 +37,17 @@ export const useShoppingItemApi = () => {
     const isBulkStoreRequestRef = React.useRef(false);
     const isUpdateBulkRequestRef = React.useRef(false);
     const isDeleteBulkRequestRef = React.useRef(false);
+    const skipNextBulkSnackbarTimeoutRef = React.useRef<
+        ReturnType<typeof setTimeout> | undefined
+    >(undefined);
+
+    const clearIsSkipNextBulkSnackbar = React.useCallback(() => {
+        setIsSkipNextBulkSnackbar(false);
+        if (skipNextBulkSnackbarTimeoutRef.current !== undefined) {
+            clearTimeout(skipNextBulkSnackbarTimeoutRef.current);
+            skipNextBulkSnackbarTimeoutRef.current = undefined;
+        }
+    }, [setIsSkipNextBulkSnackbar]);
 
     /**
      * 取得処理（更新処理の後に呼び出す）
@@ -162,10 +179,20 @@ export const useShoppingItemApi = () => {
                 });
                 if (responseData.success) {
                     await fetchShoppingItems();
-                    addSnackbar('success', responseData.message ?? 'リクエストが正常に完了しました');
+                    // await 後はクロージャより getState() で最新のフラグを参照する
+                    const { isSkipNextBulkSnackbar } = useShoppingStore.getState();
+                    if (isSkipNextBulkSnackbar) {
+                        clearIsSkipNextBulkSnackbar();
+                    } else {
+                        addSnackbar(
+                            'success',
+                            responseData.message ?? 'リクエストが正常に完了しました',
+                        );
+                    }
                 }
             } catch (error) {
                 handleApiError(error);
+                clearIsSkipNextBulkSnackbar();
                 // エラーが発生した場合は再取得して状態を復元
                 await fetchShoppingItems();
             } finally {
@@ -173,7 +200,15 @@ export const useShoppingItemApi = () => {
                 decrementLoadingCount();
             }
         },
-        [serverItems, incrementLoadingCount, decrementLoadingCount, fetchShoppingItems, addSnackbar, handleApiError],
+        [
+            serverItems,
+            incrementLoadingCount,
+            decrementLoadingCount,
+            fetchShoppingItems,
+            addSnackbar,
+            handleApiError,
+            clearIsSkipNextBulkSnackbar,
+        ],
     );
 
     /**
@@ -196,6 +231,15 @@ export const useShoppingItemApi = () => {
                 timeout: TIMEOUT_MS,
             });
             if (responseData.success) {
+                setIsSkipNextBulkSnackbar(true);
+                if (skipNextBulkSnackbarTimeoutRef.current !== undefined) {
+                    clearTimeout(skipNextBulkSnackbarTimeoutRef.current);
+                }
+                skipNextBulkSnackbarTimeoutRef.current = setTimeout(() => {
+                    setIsSkipNextBulkSnackbar(false);
+                    skipNextBulkSnackbarTimeoutRef.current = undefined;
+                }, SKIP_NEXT_BULK_SNACKBAR_CLEAR_MS);
+
                 await fetchShoppingItems();
                 addSnackbar('success', responseData.message ?? 'リクエストが正常に完了しました');
             }
@@ -207,7 +251,14 @@ export const useShoppingItemApi = () => {
             isDeleteBulkRequestRef.current = false;
             decrementLoadingCount();
         }
-    }, [incrementLoadingCount, decrementLoadingCount, fetchShoppingItems, addSnackbar, handleApiError]);
+    }, [
+        incrementLoadingCount,
+        decrementLoadingCount,
+        fetchShoppingItems,
+        addSnackbar,
+        handleApiError,
+        setIsSkipNextBulkSnackbar,
+    ]);
 
     return {
         storeData: { items: storeItems },

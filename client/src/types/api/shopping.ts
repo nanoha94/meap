@@ -35,6 +35,9 @@ export interface IPostShoppingItemRequest {
     name: string;
     categoryId: string;
     tags: { id?: string; name: string }[];
+    order: number;
+    isPinned: boolean;
+    isChecked: boolean;
 }
 
 // 買い物カテゴリー作成

@@ -46,7 +46,7 @@ class ShoppingItemService extends AbstractDomainService
 
     protected function getCreateFields(): array
     {
-        return ['category_id' => 'categoryId', 'name' => 'name', 'is_pinned' => 'is_pinned', 'is_checked' => 'is_checked', 'order' => 'order'];
+        return ['category_id' => 'categoryId', 'name' => 'name', 'is_pinned' => 'isPinned', 'is_checked' => 'isChecked', 'order' => 'order'];
     }
 
     protected function getUpdateFields(): array
@@ -100,16 +100,12 @@ class ShoppingItemService extends AbstractDomainService
     /**
      * タグ付きでアイテムを作成
      *
-     * @param array $data 作成データ（categoryId, name, tags）
+     * @param array $data 作成データ（categoryId, name, tags, order, isPinned, isChecked）
      * @param Group $group グループモデル
      * @throws HttpException カテゴリが見つからない場合
      */
     public function create(array $data, Group $group): void
     {
-        $data['is_pinned'] = false;
-        $data['is_checked'] = false;
-        $data['order'] = $group->shoppingItems()->where('category_id', $data['categoryId'])->count() + 1;
-
         DB::transaction(function () use ($data, $group) {
             // 1. カテゴリの存在確認とグループIDチェック
             $this->shoppingCategoryService->findItemsByIds([$data['categoryId']], $group)->first();
@@ -134,7 +130,7 @@ class ShoppingItemService extends AbstractDomainService
     /**
      * 買い物アイテムを一括作成
      *
-     * @param array $data 作成データの配列（[['categoryId', 'name', 'tags'], ...]）
+     * @param array $data 作成データの配列（[['categoryId', 'name', 'tags', 'order', 'isPinned', 'isChecked'], ...]）
      * @param Group $group グループモデル
      * @return array 互換性のため空配列を返す（コントローラーでは使用しない）
      * @throws HttpException カテゴリが見つからない場合
@@ -146,11 +142,6 @@ class ShoppingItemService extends AbstractDomainService
             $this->shoppingCategoryService->findItemsByIds($categoryIds, $group);
 
             foreach ($data as $itemData) {
-                $itemData['is_pinned'] = false;
-                $itemData['is_checked'] = false;
-                $itemData['order'] = $group->shoppingItems()
-                    ->where('category_id', $itemData['categoryId'])->count() + 1;
-
                 $createData = [];
                 foreach ($this->getCreateFields() as $field => $dataKey) {
                     $createData[$field] = $itemData[$dataKey];

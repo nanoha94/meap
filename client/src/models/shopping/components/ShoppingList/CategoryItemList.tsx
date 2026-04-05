@@ -46,12 +46,13 @@ const CategoryItemList: React.FC<Props> = ({
             items.filter(v => !v.isPinned && v.isChecked).map(v => v.name),
         );
         openAlertDialog(config, () => {
-            // TODO: 削除可能なものが含まれているかチェックする
-            deleteShoppingItems(
-                items
-                    .filter(v => !v.isPinned && v.isChecked)
-                    .map(v => v.id),
-            );
+            const deleteIds = items
+                .filter(v => !v.isPinned && v.isChecked)
+                .map(v => v.id);
+            const deleteIdSet = new Set(deleteIds);
+            const currentItems = useShoppingStore.getState().items;
+            setStoreItems(currentItems.filter(v => !deleteIdSet.has(v.id)));
+            deleteShoppingItems(deleteIds);
         });
     };
 
@@ -76,6 +77,7 @@ const CategoryItemList: React.FC<Props> = ({
      */
     const actionButtonConfigs: ActionButton[] =
         [
+            // TODO: disabled判定
             {
                 label: 'チェック解除',
                 icon: <X />,
@@ -83,6 +85,7 @@ const CategoryItemList: React.FC<Props> = ({
                     handleAllClearChecked(items);
                 },
             },
+            // TODO: disabled判定
             {
                 label: 'チェック済みを削除',
                 icon: <Trash2 />,

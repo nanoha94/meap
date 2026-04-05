@@ -45,11 +45,17 @@ test('3-9-1: 【一覧取得】 正常な買い物アイテム一覧取得', fun
     // テスト用のアイテムをAPIで作成
     $this->actingAs($this->user)->post('/shopping-items', [
         'name' => '牛乳',
-        'categoryId' => $this->categoryId
+        'categoryId' => $this->categoryId,
+        'order' => 0,
+        'isPinned' => false,
+        'isChecked' => false,
     ]);
     $this->actingAs($this->user)->post('/shopping-items', [
         'name' => 'パン',
-        'categoryId' => $this->categoryId
+        'categoryId' => $this->categoryId,
+        'order' => 1,
+        'isPinned' => false,
+        'isChecked' => false,
     ]);
 
     $response = $this->actingAs($this->user)->get('/shopping-items');
@@ -96,13 +102,19 @@ test('3-9-2: 【一覧取得】 カテゴリ別アイテム取得確認', functi
     // カテゴリ1のアイテムをAPIで作成
     $this->actingAs($this->user)->post('/shopping-items', [
         'name' => '牛乳',
-        'categoryId' => $this->categoryId
+        'categoryId' => $this->categoryId,
+        'order' => 0,
+        'isPinned' => false,
+        'isChecked' => false,
     ]);
 
     // カテゴリ2のアイテムをAPIで作成
     $this->actingAs($this->user)->post('/shopping-items', [
         'name' => 'パン',
-        'categoryId' => $category2Id
+        'categoryId' => $category2Id,
+        'order' => 0,
+        'isPinned' => false,
+        'isChecked' => false,
     ]);
 
     $response = $this->actingAs($this->user)->get('/shopping-items');
@@ -124,18 +136,27 @@ test('3-9-2: 【一覧取得】 カテゴリ別アイテム取得確認', functi
 });
 
 test('3-9-3: 【一覧取得】 アイテムの並び順確認', function () {
-    // 異なるorder順でアイテムをAPIで作成（作成順序でorderが自動設定される）
+    // クライアント指定の order で並び順を再現
     $this->actingAs($this->user)->post('/shopping-items', [
         'name' => 'アイテム1',
-        'categoryId' => $this->categoryId
+        'categoryId' => $this->categoryId,
+        'order' => 0,
+        'isPinned' => false,
+        'isChecked' => false,
     ]);
     $this->actingAs($this->user)->post('/shopping-items', [
         'name' => 'アイテム2',
-        'categoryId' => $this->categoryId
+        'categoryId' => $this->categoryId,
+        'order' => 1,
+        'isPinned' => false,
+        'isChecked' => false,
     ]);
     $this->actingAs($this->user)->post('/shopping-items', [
         'name' => 'アイテム3',
-        'categoryId' => $this->categoryId
+        'categoryId' => $this->categoryId,
+        'order' => 2,
+        'isPinned' => false,
+        'isChecked' => false,
     ]);
 
     $response = $this->actingAs($this->user)->get('/shopping-items');
@@ -155,7 +176,10 @@ test('3-9-4: 【一覧取得】 レスポンス形式確認', function () {
     // テスト用のアイテムをAPIで作成
     $this->actingAs($this->user)->post('/shopping-items', [
         'name' => '牛乳',
-        'categoryId' => $this->categoryId
+        'categoryId' => $this->categoryId,
+        'order' => 0,
+        'isPinned' => false,
+        'isChecked' => false,
     ]);
 
     $response = $this->actingAs($this->user)->get('/shopping-items');
@@ -275,6 +299,9 @@ test('3-9-9: 【新規作成】 正常な買い物アイテム作成', function 
     $data = [
         'name' => '牛乳',
         'categoryId' => $this->categoryId,
+        'order' => 0,
+        'isPinned' => false,
+        'isChecked' => false,
         'tags' => []
     ];
 
@@ -311,6 +338,9 @@ test('3-9-10: 【新規作成】 タグ紐づけ機能確認', function () {
     $data = [
         'name' => '牛乳',
         'categoryId' => $this->categoryId,
+        'order' => 0,
+        'isPinned' => false,
+        'isChecked' => false,
         'tags' => [
             [
                 'id' => $tag->id,
@@ -334,7 +364,10 @@ test('3-9-10: 【新規作成】 タグ紐づけ機能確認', function () {
 test('3-9-11: 【新規作成】 タグ未指定でアイテム作成（tags 省略）', function () {
     $data = [
         'name' => '牛乳',
-        'categoryId' => $this->categoryId
+        'categoryId' => $this->categoryId,
+        'order' => 0,
+        'isPinned' => false,
+        'isChecked' => false,
     ];
 
     $response = $this->actingAs($this->user)->post('/shopping-items', $data);
@@ -354,6 +387,9 @@ test('3-9-12: 【新規作成】 タグ空配列でアイテム作成（tags=[]�
     $data = [
         'name' => '牛乳',
         'categoryId' => $this->categoryId,
+        'order' => 0,
+        'isPinned' => false,
+        'isChecked' => false,
         'tags' => []
     ];
 
@@ -373,6 +409,9 @@ test('3-9-13: 【新規作成】 タグ null でアイテム作成（tags=null�
     $data = [
         'name' => '牛乳',
         'categoryId' => $this->categoryId,
+        'order' => 0,
+        'isPinned' => false,
+        'isChecked' => false,
         'tags' => null
     ];
 
@@ -392,6 +431,9 @@ test('3-9-14: 【新規作成】 数量情報の確認', function () {
     $data = [
         'name' => '牛乳',
         'categoryId' => $this->categoryId,
+        'order' => 0,
+        'isPinned' => false,
+        'isChecked' => false,
         'tags' => []
     ];
 
@@ -409,7 +451,10 @@ test('3-9-14: 【新規作成】 数量情報の確認', function () {
 
 test('3-9-15: 【新規作成】 バリデーションエラー（アイテム名未入力）', function () {
     $data = [
-        'categoryId' => $this->categoryId
+        'categoryId' => $this->categoryId,
+        'order' => 0,
+        'isPinned' => false,
+        'isChecked' => false,
     ];
 
     $response = $this->actingAs($this->user)->post('/shopping-items', $data);
@@ -437,7 +482,10 @@ test('3-9-15: 【新規作成】 バリデーションエラー（アイテム�
 test('3-9-16: 【新規作成】 バリデーションエラー（アイテム名が 255 文字超過）', function () {
     $data = [
         'name' => str_repeat('a', 256),
-        'categoryId' => $this->categoryId
+        'categoryId' => $this->categoryId,
+        'order' => 0,
+        'isPinned' => false,
+        'isChecked' => false,
     ];
 
     $response = $this->actingAs($this->user)->post('/shopping-items', $data);
@@ -464,7 +512,10 @@ test('3-9-16: 【新規作成】 バリデーションエラー（アイテム�
 
 test('3-9-17: 【新規作成】 バリデーションエラー（カテゴリ ID 未入力）', function () {
     $data = [
-        'name' => '牛乳'
+        'name' => '牛乳',
+        'order' => 0,
+        'isPinned' => false,
+        'isChecked' => false,
     ];
 
     $response = $this->actingAs($this->user)->post('/shopping-items', $data);
@@ -492,7 +543,10 @@ test('3-9-17: 【新規作成】 バリデーションエラー（カテゴリ I
 test('3-9-18: 【新規作成】 バリデーションエラー（カテゴリ ID が UUID 形式でない）', function () {
     $data = [
         'name' => '牛乳',
-        'categoryId' => 'invalid-uuid'
+        'categoryId' => 'invalid-uuid',
+        'order' => 0,
+        'isPinned' => false,
+        'isChecked' => false,
     ];
 
     $response = $this->actingAs($this->user)->post('/shopping-items', $data);
@@ -521,6 +575,9 @@ test('3-9-19: 【新規作成】 バリデーションエラー（tags が配列
     $data = [
         'name' => '牛乳',
         'categoryId' => $this->categoryId,
+        'order' => 0,
+        'isPinned' => false,
+        'isChecked' => false,
         'tags' => 'not_array'
     ];
 
@@ -550,6 +607,9 @@ test('3-9-20: 【新規作成】 バリデーションエラー（tags.id が UU
     $data = [
         'name' => '牛乳',
         'categoryId' => $this->categoryId,
+        'order' => 0,
+        'isPinned' => false,
+        'isChecked' => false,
         'tags' => [
             [
                 'id' => 'invalid-uuid',
@@ -584,6 +644,9 @@ test('3-9-21: 【新規作成】 バリデーションエラー（tags.name 未�
     $data = [
         'name' => '牛乳',
         'categoryId' => $this->categoryId,
+        'order' => 0,
+        'isPinned' => false,
+        'isChecked' => false,
         'tags' => [
             [
                 'id' => null
@@ -650,6 +713,9 @@ test('3-9-23: 【新規作成】 バリデーションエラー（tags.name が 
     $data = [
         'name' => '牛乳',
         'categoryId' => $this->categoryId,
+        'order' => 0,
+        'isPinned' => false,
+        'isChecked' => false,
         'tags' => [
             [
                 'name' => str_repeat('a', 256)
@@ -682,7 +748,10 @@ test('3-9-23: 【新規作成】 バリデーションエラー（tags.name が 
 test('3-9-24: 【新規作成】 存在しないカテゴリ ID', function () {
     $data = [
         'name' => '牛乳',
-        'categoryId' => '00000000-0000-0000-0000-000000000000'
+        'categoryId' => '00000000-0000-0000-0000-000000000000',
+        'order' => 0,
+        'isPinned' => false,
+        'isChecked' => false,
     ];
 
     $response = $this->actingAs($this->user)->post('/shopping-items', $data);
@@ -706,7 +775,10 @@ test('3-9-24: 【新規作成】 存在しないカテゴリ ID', function () {
 test('3-9-25: 【新規作成】 未認証ユーザー', function () {
     $data = [
         'name' => '牛乳',
-        'categoryId' => $this->categoryId
+        'categoryId' => $this->categoryId,
+        'order' => 0,
+        'isPinned' => false,
+        'isChecked' => false,
     ];
 
     $response = $this->post('/shopping-items', $data);
@@ -735,7 +807,10 @@ test('3-9-26: 【新規作成】 グループが存在しない', function () {
 
     $data = [
         'name' => '牛乳',
-        'categoryId' => $this->categoryId
+        'categoryId' => $this->categoryId,
+        'order' => 0,
+        'isPinned' => false,
+        'isChecked' => false,
     ];
 
     $response = $this->actingAs($user)->post('/shopping-items', $data);
@@ -765,7 +840,10 @@ test('3-9-27: 【新規作成】 データベース接続エラー', function ()
 
     $data = [
         'name' => '牛乳',
-        'categoryId' => $this->categoryId
+        'categoryId' => $this->categoryId,
+        'order' => 0,
+        'isPinned' => false,
+        'isChecked' => false,
     ];
 
     $response = $this->actingAs($this->user)->post('/shopping-items', $data);
@@ -792,7 +870,10 @@ test('3-9-28: 【新規作成】 アイテム作成失敗', function () {
 
     $data = [
         'name' => '牛乳',
-        'categoryId' => $this->categoryId
+        'categoryId' => $this->categoryId,
+        'order' => 0,
+        'isPinned' => false,
+        'isChecked' => false,
     ];
 
     $response = $this->actingAs($this->user)->post('/shopping-items', $data);
@@ -817,7 +898,10 @@ test('3-9-29: 【一括作成】 1件の一括作成（タグなし）', functio
         'data' => [
             [
                 'name' => '牛乳',
-                'categoryId' => $this->categoryId
+                'categoryId' => $this->categoryId,
+                'order' => 0,
+                'isPinned' => false,
+                'isChecked' => false,
             ]
         ]
     ];
@@ -852,6 +936,9 @@ test('3-9-30: 【一括作成】 1件の一括作成（タグあり）', functio
             [
                 'name' => '牛乳',
                 'categoryId' => $this->categoryId,
+                'order' => 0,
+                'isPinned' => false,
+                'isChecked' => false,
                 'tags' => [
                     [
                         'id' => $tag->id,
@@ -878,15 +965,24 @@ test('3-9-31: 【一括作成】 複数件の一括作成', function () {
         'data' => [
             [
                 'name' => '牛乳',
-                'categoryId' => $this->categoryId
+                'categoryId' => $this->categoryId,
+                'order' => 0,
+                'isPinned' => false,
+                'isChecked' => false,
             ],
             [
                 'name' => 'パン',
-                'categoryId' => $this->categoryId
+                'categoryId' => $this->categoryId,
+                'order' => 1,
+                'isPinned' => false,
+                'isChecked' => false,
             ],
             [
                 'name' => '卵',
-                'categoryId' => $this->categoryId
+                'categoryId' => $this->categoryId,
+                'order' => 2,
+                'isPinned' => false,
+                'isChecked' => false,
             ]
         ]
     ];
@@ -918,7 +1014,10 @@ test('3-9-32: 【一括作成】 一括作成成功メッセージの確認', fu
         'data' => [
             [
                 'name' => '牛乳',
-                'categoryId' => $this->categoryId
+                'categoryId' => $this->categoryId,
+                'order' => 0,
+                'isPinned' => false,
+                'isChecked' => false,
             ]
         ]
     ];
@@ -1001,7 +1100,10 @@ test('3-9-36: 【一括作成】 バリデーションエラー（name 未入力
     $data = [
         'data' => [
             [
-                'categoryId' => $this->categoryId
+                'categoryId' => $this->categoryId,
+                'order' => 0,
+                'isPinned' => false,
+                'isChecked' => false,
             ]
         ]
     ];
@@ -1029,7 +1131,10 @@ test('3-9-37: 【一括作成】 バリデーションエラー（name が文字
         'data' => [
             [
                 'name' => 123,
-                'categoryId' => $this->categoryId
+                'categoryId' => $this->categoryId,
+                'order' => 0,
+                'isPinned' => false,
+                'isChecked' => false,
             ]
         ]
     ];
@@ -1048,7 +1153,10 @@ test('3-9-38: 【一括作成】 バリデーションエラー（name が 255 �
         'data' => [
             [
                 'name' => str_repeat('a', 256),
-                'categoryId' => $this->categoryId
+                'categoryId' => $this->categoryId,
+                'order' => 0,
+                'isPinned' => false,
+                'isChecked' => false,
             ]
         ]
     ];
@@ -1066,7 +1174,10 @@ test('3-9-39: 【一括作成】 バリデーションエラー（categoryId 未
     $data = [
         'data' => [
             [
-                'name' => '牛乳'
+                'name' => '牛乳',
+                'order' => 0,
+                'isPinned' => false,
+                'isChecked' => false,
             ]
         ]
     ];
@@ -1085,7 +1196,10 @@ test('3-9-40: 【一括作成】 バリデーションエラー（categoryId が
         'data' => [
             [
                 'name' => '牛乳',
-                'categoryId' => 'invalid-uuid'
+                'categoryId' => 'invalid-uuid',
+                'order' => 0,
+                'isPinned' => false,
+                'isChecked' => false,
             ]
         ]
     ];
@@ -1125,6 +1239,9 @@ test('3-9-42: 【一括作成】 バリデーションエラー（tags.id が UU
             [
                 'name' => '牛乳',
                 'categoryId' => $this->categoryId,
+                'order' => 0,
+                'isPinned' => false,
+                'isChecked' => false,
                 'tags' => [
                     [
                         'id' => 'invalid-uuid',
@@ -1150,6 +1267,9 @@ test('3-9-43: 【一括作成】 バリデーションエラー（tags.name 未�
             [
                 'name' => '牛乳',
                 'categoryId' => $this->categoryId,
+                'order' => 0,
+                'isPinned' => false,
+                'isChecked' => false,
                 'tags' => [
                     [
                         'id' => null
@@ -1174,6 +1294,9 @@ test('3-9-44: 【一括作成】 バリデーションエラー（tags.name が�
             [
                 'name' => '牛乳',
                 'categoryId' => $this->categoryId,
+                'order' => 0,
+                'isPinned' => false,
+                'isChecked' => false,
                 'tags' => [
                     [
                         'name' => 123
@@ -1198,6 +1321,9 @@ test('3-9-45: 【一括作成】 バリデーションエラー（tags.name が 
             [
                 'name' => '牛乳',
                 'categoryId' => $this->categoryId,
+                'order' => 0,
+                'isPinned' => false,
+                'isChecked' => false,
                 'tags' => [
                     [
                         'name' => str_repeat('a', 256)
@@ -1221,7 +1347,10 @@ test('3-9-46: 【一括作成】 存在しないカテゴリ ID', function () {
         'data' => [
             [
                 'name' => '牛乳',
-                'categoryId' => '00000000-0000-0000-0000-000000000000'
+                'categoryId' => '00000000-0000-0000-0000-000000000000',
+                'order' => 0,
+                'isPinned' => false,
+                'isChecked' => false,
             ]
         ]
     ];
@@ -1242,7 +1371,10 @@ test('3-9-47: 【一括作成】 未認証ユーザー', function () {
         'data' => [
             [
                 'name' => '牛乳',
-                'categoryId' => $this->categoryId
+                'categoryId' => $this->categoryId,
+                'order' => 0,
+                'isPinned' => false,
+                'isChecked' => false,
             ]
         ]
     ];
@@ -1267,7 +1399,10 @@ test('3-9-48: 【一括作成】 グループが存在しない', function () {
         'data' => [
             [
                 'name' => '牛乳',
-                'categoryId' => $this->categoryId
+                'categoryId' => $this->categoryId,
+                'order' => 0,
+                'isPinned' => false,
+                'isChecked' => false,
             ]
         ]
     ];
@@ -1294,7 +1429,10 @@ test('3-9-49: 【一括作成】 サービス例外', function () {
         'data' => [
             [
                 'name' => '牛乳',
-                'categoryId' => $this->categoryId
+                'categoryId' => $this->categoryId,
+                'order' => 0,
+                'isPinned' => false,
+                'isChecked' => false,
             ]
         ]
     ];
@@ -1315,11 +1453,17 @@ test('3-9-50: 【一括更新】 正常な買い物アイテム一括更新', fu
     // テスト用のアイテムをAPIで作成
     $this->actingAs($this->user)->post('/shopping-items', [
         'name' => '牛乳',
-        'categoryId' => $this->categoryId
+        'categoryId' => $this->categoryId,
+        'order' => 0,
+        'isPinned' => false,
+        'isChecked' => false,
     ]);
     $this->actingAs($this->user)->post('/shopping-items', [
         'name' => 'パン',
-        'categoryId' => $this->categoryId
+        'categoryId' => $this->categoryId,
+        'order' => 1,
+        'isPinned' => false,
+        'isChecked' => false,
     ]);
     $indexResponse = $this->actingAs($this->user)->get('/shopping-items');
     $item1Id = collect($indexResponse->json('data'))->first(fn($i) => $i['name'] === '牛乳' && $i['categoryId'] === $this->categoryId)['id'];
@@ -1384,7 +1528,10 @@ test('3-9-51: 【一括更新】 一括更新成功メッセージの確認', fu
     // テスト用のアイテムをAPIで作成
     $this->actingAs($this->user)->post('/shopping-items', [
         'name' => '牛乳',
-        'categoryId' => $this->categoryId
+        'categoryId' => $this->categoryId,
+        'order' => 0,
+        'isPinned' => false,
+        'isChecked' => false,
     ]);
     $indexResponse = $this->actingAs($this->user)->get('/shopping-items');
     $itemId = collect($indexResponse->json('data'))->first(fn($i) => $i['name'] === '牛乳' && $i['categoryId'] === $this->categoryId)['id'];
@@ -1422,7 +1569,10 @@ test('3-9-52: 【一括更新】 既存タグを ID 未指定・同名で更新'
     // テスト用のアイテムをAPIで作成
     $this->actingAs($this->user)->post('/shopping-items', [
         'name' => '牛乳',
-        'categoryId' => $this->categoryId
+        'categoryId' => $this->categoryId,
+        'order' => 0,
+        'isPinned' => false,
+        'isChecked' => false,
     ]);
     $indexResponse = $this->actingAs($this->user)->get('/shopping-items');
     $itemId = collect($indexResponse->json('data'))->first(fn($i) => $i['name'] === '牛乳' && $i['categoryId'] === $this->categoryId)['id'];
@@ -1465,7 +1615,10 @@ test('3-9-53: 【一括更新】 新規タグを ID 未指定で追加', functio
     // テスト用のアイテムをAPIで作成
     $this->actingAs($this->user)->post('/shopping-items', [
         'name' => '牛乳',
-        'categoryId' => $this->categoryId
+        'categoryId' => $this->categoryId,
+        'order' => 0,
+        'isPinned' => false,
+        'isChecked' => false,
     ]);
     $indexResponse = $this->actingAs($this->user)->get('/shopping-items');
     $itemId = collect($indexResponse->json('data'))->first(fn($i) => $i['name'] === '牛乳' && $i['categoryId'] === $this->categoryId)['id'];
@@ -1514,7 +1667,10 @@ test('3-9-54: 【一括更新】 既存タグと新規タグを混在させた�
     // テスト用のアイテムをAPIで作成
     $this->actingAs($this->user)->post('/shopping-items', [
         'name' => '牛乳',
-        'categoryId' => $this->categoryId
+        'categoryId' => $this->categoryId,
+        'order' => 0,
+        'isPinned' => false,
+        'isChecked' => false,
     ]);
     $indexResponse = $this->actingAs($this->user)->get('/shopping-items');
     $itemId = collect($indexResponse->json('data'))->first(fn($i) => $i['name'] === '牛乳' && $i['categoryId'] === $this->categoryId)['id'];
@@ -1564,7 +1720,10 @@ test('3-9-55: 【一括更新】 タグ未指定でアイテム更新（tags 省
     // テスト用のアイテムをAPIで作成
     $this->actingAs($this->user)->post('/shopping-items', [
         'name' => '牛乳',
-        'categoryId' => $this->categoryId
+        'categoryId' => $this->categoryId,
+        'order' => 0,
+        'isPinned' => false,
+        'isChecked' => false,
     ]);
     $indexResponse = $this->actingAs($this->user)->get('/shopping-items');
     $itemId = collect($indexResponse->json('data'))->first(fn($i) => $i['name'] === '牛乳' && $i['categoryId'] === $this->categoryId)['id'];
@@ -1601,7 +1760,10 @@ test('3-9-56: 【一括更新】 タグ空配列でアイテム更新（tags=[]�
     // テスト用のアイテムをAPIで作成
     $this->actingAs($this->user)->post('/shopping-items', [
         'name' => '牛乳',
-        'categoryId' => $this->categoryId
+        'categoryId' => $this->categoryId,
+        'order' => 0,
+        'isPinned' => false,
+        'isChecked' => false,
     ]);
     $indexResponse = $this->actingAs($this->user)->get('/shopping-items');
     $itemId = collect($indexResponse->json('data'))->first(fn($i) => $i['name'] === '牛乳' && $i['categoryId'] === $this->categoryId)['id'];
@@ -1639,7 +1801,10 @@ test('3-9-57: 【一括更新】 タグ null でアイテム更新（tags=null�
     // テスト用のアイテムをAPIで作成
     $this->actingAs($this->user)->post('/shopping-items', [
         'name' => '牛乳',
-        'categoryId' => $this->categoryId
+        'categoryId' => $this->categoryId,
+        'order' => 0,
+        'isPinned' => false,
+        'isChecked' => false,
     ]);
     $indexResponse = $this->actingAs($this->user)->get('/shopping-items');
     $itemId = collect($indexResponse->json('data'))->first(fn($i) => $i['name'] === '牛乳' && $i['categoryId'] === $this->categoryId)['id'];
@@ -1727,7 +1892,10 @@ test('3-9-59: 【一括更新】 他グループのアイテム更新', function
 
     $this->actingAs($otherUser)->post('/shopping-items', [
         'name' => '他のグループのアイテム',
-        'categoryId' => $otherCategoryId
+        'categoryId' => $otherCategoryId,
+        'order' => 0,
+        'isPinned' => false,
+        'isChecked' => false,
     ]);
     $otherItemIndexResponse = $this->actingAs($otherUser)->get('/shopping-items');
     $otherItemId = collect($otherItemIndexResponse->json('data'))->first(fn($i) => $i['name'] === '他のグループのアイテム' && $i['categoryId'] === $otherCategoryId)['id'];
@@ -1768,7 +1936,10 @@ test('3-9-60: 【一括更新】 存在しないタグ ID を指定', function (
     // テスト用のアイテムをAPIで作成
     $this->actingAs($this->user)->post('/shopping-items', [
         'name' => '牛乳',
-        'categoryId' => $this->categoryId
+        'categoryId' => $this->categoryId,
+        'order' => 0,
+        'isPinned' => false,
+        'isChecked' => false,
     ]);
     $indexResponse = $this->actingAs($this->user)->get('/shopping-items');
     $itemId = collect($indexResponse->json('data'))->first(fn($i) => $i['name'] === '牛乳' && $i['categoryId'] === $this->categoryId)['id'];
@@ -2730,11 +2901,17 @@ test('3-9-87: 【一括削除】 正常な買い物アイテム一括削除', fu
     // テスト用のアイテムをAPIで作成
     $this->actingAs($this->user)->post('/shopping-items', [
         'name' => '牛乳',
-        'categoryId' => $this->categoryId
+        'categoryId' => $this->categoryId,
+        'order' => 0,
+        'isPinned' => false,
+        'isChecked' => false,
     ]);
     $this->actingAs($this->user)->post('/shopping-items', [
         'name' => 'パン',
-        'categoryId' => $this->categoryId
+        'categoryId' => $this->categoryId,
+        'order' => 1,
+        'isPinned' => false,
+        'isChecked' => false,
     ]);
     $indexResponse = $this->actingAs($this->user)->get('/shopping-items');
     $item1Id = collect($indexResponse->json('data'))->first(fn($i) => $i['name'] === '牛乳' && $i['categoryId'] === $this->categoryId)['id'];
@@ -2774,7 +2951,10 @@ test('3-9-88: 【一括削除】 一括削除成功メッセージの確認', fu
     // テスト用のアイテムをAPIで作成
     $this->actingAs($this->user)->post('/shopping-items', [
         'name' => '牛乳',
-        'categoryId' => $this->categoryId
+        'categoryId' => $this->categoryId,
+        'order' => 0,
+        'isPinned' => false,
+        'isChecked' => false,
     ]);
     $indexResponse = $this->actingAs($this->user)->get('/shopping-items');
     $itemId = collect($indexResponse->json('data'))->first(fn($i) => $i['name'] === '牛乳' && $i['categoryId'] === $this->categoryId)['id'];
@@ -2836,7 +3016,10 @@ test('3-9-90: 【一括削除】 他グループのアイテム削除', function
 
     $this->actingAs($otherUser)->post('/shopping-items', [
         'name' => '他のグループのアイテム',
-        'categoryId' => $otherCategoryId
+        'categoryId' => $otherCategoryId,
+        'order' => 0,
+        'isPinned' => false,
+        'isChecked' => false,
     ]);
     $otherItemIndexResponse = $this->actingAs($otherUser)->get('/shopping-items');
     $otherItemId = collect($otherItemIndexResponse->json('data'))->first(fn($i) => $i['name'] === '他のグループのアイテム' && $i['categoryId'] === $otherCategoryId)['id'];
