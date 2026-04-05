@@ -10,8 +10,9 @@ import { IShoppingItem } from '@/types';
 import { getItemsInCategory } from '@/utils';
 import { DEBOUNCE_DELAY } from '../../constants';
 import { useShoppingItemApi, useShoppingStore } from '../../hooks';
+import { ShoppingListHandle } from '../../types';
 
-const ShoppingList = () => {
+const ShoppingList = React.forwardRef<ShoppingListHandle, object>((_, ref) => {
     // store
     const setStoreItems = useShoppingStore(state => state.setItems);
     const storeItems = useShoppingStore(state => state.items);
@@ -26,7 +27,10 @@ const ShoppingList = () => {
     const lastSentItemsRef = React.useRef<string>('');
 
     // デバウンス処理
-    const debouncedItems = useDebounce(storeItems, DEBOUNCE_DELAY);
+    const [debouncedItems, flushDebouncedItems] = useDebounce(
+        storeItems,
+        DEBOUNCE_DELAY,
+    );
 
     /**
      * ドラッグオーバー
@@ -85,30 +89,72 @@ const ShoppingList = () => {
     });
 
     /**
-     * デバウンス処理
+     * ローカル items がサーバーと異なり、かつ直近送信と同一でなければ bulk 更新する（共通処理）
+     */
+    const pushPendingItems = React.useCallback(
+        async (
+            items: IShoppingItem[],
+            serverItemsSnapshot: IShoppingItem[],
+        ) => {
+            const currentItemsStr = JSON.stringify(items);
+            const serverItemsStr = JSON.stringify(serverItemsSnapshot);
+            if (
+                items.length === 0 ||
+                currentItemsStr === serverItemsStr ||
+                currentItemsStr === lastSentItemsRef.current
+            ) {
+                return;
+            }
+            lastSentItemsRef.current = currentItemsStr;
+            const updateItems = items.map((item, idx) => ({
+                ...item,
+                order: idx,
+            }));
+            await updateShoppingItems(updateItems);
+        },
+        [updateShoppingItems],
+    );
+
+    /**
+     * デバウンスを flush し、未保存分を API へ送って完了まで待つ
+     */
+    const syncPendingItems = React.useCallback(async () => {
+        if (activeId) {
+            return;
+        }
+        flushDebouncedItems();
+        const { items, serverItems: serverItemsSnapshot } =
+            useShoppingStore.getState();
+        await pushPendingItems(items, serverItemsSnapshot);
+    }, [activeId, flushDebouncedItems, pushPendingItems]);
+
+    /**
+     * 未保存の変更を送り終えるまで待つ（ローディングアニメーションが終わるまで）
+     * @returns void
+     */
+    React.useImperativeHandle(
+        ref,
+        () => ({
+            syncPendingItems,
+        }),
+        [syncPendingItems],
+    );
+
+    /**
+     * デバウンス後の items がサーバーとずれていれば更新
      */
     React.useEffect(() => {
         // debouncedItems が undefined の場合（初期化前）は何もしない
-        if (debouncedItems && !activeId) {
-            const currentItemsStr = JSON.stringify(debouncedItems);
-            // serverItemsからフラット化して比較
-            const serverItemsStr = JSON.stringify(serverItems);
-
-            // アイテムの比較と更新処理を直接実行
-            if (
-                debouncedItems.length > 0 &&
-                currentItemsStr !== serverItemsStr &&
-                currentItemsStr !== lastSentItemsRef.current // 重複送信防止
-            ) {
-                lastSentItemsRef.current = currentItemsStr; // 送信するアイテムを記録
-                const updateItems = debouncedItems.map((item, idx) => ({
-                    ...item,
-                    order: idx,
-                }));
-                updateShoppingItems(updateItems);
-            }
+        if (!debouncedItems || activeId) {
+            return;
         }
-    }, [debouncedItems, activeId]);
+        void pushPendingItems(debouncedItems, serverItems);
+    }, [
+        debouncedItems,
+        activeId,
+        serverItems,
+        pushPendingItems,
+    ]);
 
     /**
      * アンマウント・ページアンロード時の保存処理
@@ -162,15 +208,18 @@ const ShoppingList = () => {
                             key={`${category.id}-${itemsKey}`}
                             category={category}
                             items={items}
+                            syncPendingItems={syncPendingItems}
                         />
                     );
                 })}
                 <DragOverlay>
-                    {activeItem && <ShoppingItemCard item={activeItem} />}
+                    {activeItem && <ShoppingItemCard item={activeItem} syncPendingItems={syncPendingItems} />}
                 </DragOverlay>
             </DndContext>
         </div>
     );
-};
+});
+
+ShoppingList.displayName = 'ShoppingList';
 
 export default ShoppingList;

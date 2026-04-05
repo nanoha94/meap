@@ -11,9 +11,10 @@ import { useShoppingItemApi, useShoppingStore } from '../../hooks';
 
 interface Props {
     item: IShoppingItem;
+    syncPendingItems: () => Promise<void>;
 }
 
-const ShoppingItemCard = ({ item }: Props) => {
+const ShoppingItemCard = ({ item, syncPendingItems }: Props) => {
     // state
     const { id, name, isPinned = false, isChecked = false } = item;
 
@@ -53,7 +54,8 @@ const ShoppingItemCard = ({ item }: Props) => {
         {
             label: '編集する',
             icon: <Pencil />,
-            onClick: () => {
+            onClick: async () => {
+                await syncPendingItems();
                 openDialog({
                     title: '買い物アイテムを編集',
                     children: <ShoppingItemEditForm
@@ -66,7 +68,8 @@ const ShoppingItemCard = ({ item }: Props) => {
         {
             label: '削除する',
             icon: <Trash2 />,
-            onClick: () => {
+            onClick: async () => {
+                await syncPendingItems();
                 openAlertDialog(SHOPPING_ALERT_DIALOG_CONFIGS.deleteItem(name), () => {
                     deleteShoppingItems([id]);
                 });

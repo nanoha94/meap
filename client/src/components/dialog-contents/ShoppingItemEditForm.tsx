@@ -39,19 +39,25 @@ const ShoppingItemEditForm: React.FC<Props> = ({ editingItem, editMode }) => {
     const { control, handleSubmit, reset } = useForm<FormData>({
         defaultValues,
     });
-
-    /**
-     * アイテム名の監視
-     */
     const watchName = useWatch({ control, name: 'name' });
+    const watchCategoryId = useWatch({ control, name: 'categoryId' });
 
     /**
      * 送信ボタンの無効化判定
-     * アイテム名が空の場合は送信ボタンを無効化
+     * アイテム名が空、または編集内容に変更がない場合は送信ボタンを無効化
      */
     const isDisabledSendButton = React.useMemo(() => {
-        return watchName.length <= 0;
-    }, [watchName]);
+        if (watchName.length <= 0) return true;
+        if (editMode === EDIT_MODE.UPDATE && editingItem) {
+            const isSameName = watchName === (editingItem.name || '');
+            const defaultCategoryId =
+                editingItem.categoryId ||
+                categories.find(v => v.isDefault)?.id;
+            const isSameCategory = watchCategoryId === defaultCategoryId;
+            return isSameName && isSameCategory;
+        }
+        return false;
+    }, [watchName, watchCategoryId, editMode, editingItem, categories]);
     useNavigationGuard(!isDisabledSendButton);
 
     /**

@@ -10,6 +10,7 @@ import { COLOR_VARIANT } from '@/constants';
 import { useDialog, useSnackbars } from '@/hooks';
 import {
     ShoppingList,
+    ShoppingListHandle,
     useShoppingStore,
 } from '@/models/shopping';
 import { IShoppingItem } from '@/types';
@@ -28,8 +29,14 @@ const ShoppingListPage: React.FC<Props> = ({ fetchItems, errorMessage }) => {
     // hook
     const { addSnackbar } = useSnackbars();
     const { openDialog } = useDialog();
+    const shoppingListRef = React.useRef<ShoppingListHandle>(null);
 
-    const handleOpenCategorySettingDialog = () => {
+    /**
+     * カテゴリー設定ダイアログを開く
+     * @returns void
+     */
+    const handleOpenCategorySettingDialog = async () => {
+        await shoppingListRef.current?.syncPendingItems();
         openDialog({
             title: '買い物カテゴリ―設定',
             children: <ShoppingCategoryEditForm />,
@@ -62,7 +69,7 @@ const ShoppingListPage: React.FC<Props> = ({ fetchItems, errorMessage }) => {
                 <div className="px-5 md:px-10">
                     {/* 買い物リスト */}
                     <div className="mb-7">
-                        <ShoppingList />
+                        <ShoppingList ref={shoppingListRef} />
                     </div>
                     <TextButton
                         colorVariant={COLOR_VARIANT.SECONDARY}

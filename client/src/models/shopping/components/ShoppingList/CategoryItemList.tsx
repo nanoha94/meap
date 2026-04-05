@@ -16,9 +16,14 @@ import { BUTTON_TYPE, EDIT_MODE } from '@/constants';
 interface Props {
     category: IShoppingCategory;
     items: IShoppingItem[];
+    syncPendingItems: () => Promise<void>;
 }
 
-const CategoryItemList: React.FC<Props> = ({ category, items }) => {
+const CategoryItemList: React.FC<Props> = ({
+    category,
+    items,
+    syncPendingItems,
+}) => {
     // store
     const storeItems = useShoppingStore(state => state.items);
     const setStoreItems = useShoppingStore(state => state.setItems);
@@ -34,9 +39,11 @@ const CategoryItemList: React.FC<Props> = ({ category, items }) => {
     /**
      * 削除確認ダイアログを開く
      */
-    const openDeleteCheckDialog = () => {
+    const openDeleteCheckDialog = async () => {
+        await syncPendingItems();
         const config = SHOPPING_ALERT_DIALOG_CONFIGS.deleteItemsFromCategory(
             category.name,
+            items.filter(v => !v.isPinned && v.isChecked).map(v => v.name),
         );
         openAlertDialog(config, () => {
             // TODO: 削除可能なものが含まれているかチェックする
@@ -107,7 +114,7 @@ const CategoryItemList: React.FC<Props> = ({ category, items }) => {
                                 item =>
                                     !!item && (
                                         <Sortable key={item.id} id={item.id}>
-                                            <ShoppingItemCard item={item} />
+                                            <ShoppingItemCard item={item} syncPendingItems={syncPendingItems} />
                                         </Sortable>
                                     ),
                             )) : <p>登録されているアイテムはありません</p>}
@@ -115,7 +122,8 @@ const CategoryItemList: React.FC<Props> = ({ category, items }) => {
                     </SortableContext >
                     <TextButton
                         type={BUTTON_TYPE.BUTTON}
-                        onClick={() => {
+                        onClick={async () => {
+                            await syncPendingItems();
                             openDialog({
                                 title: '買い物アイテムを追加',
                                 children: <ShoppingItemEditForm

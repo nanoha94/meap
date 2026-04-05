@@ -6,4 +6,9 @@ export type ShoppingItemEditFormData = IPostShoppingItemRequest;
 export type ShoppingItemBulkCreateFormData = {
     categoryId: string;
     items: Omit<IPostShoppingItemRequest, 'categoryId'>[];
+};
+
+export interface ShoppingListHandle {
+    /** 未保存の変更を送り終えるまで待つ（ローディングアニメーションが終わるまで） */
+    syncPendingItems: () => Promise<void>;
 }
