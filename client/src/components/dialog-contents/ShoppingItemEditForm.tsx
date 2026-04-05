@@ -14,6 +14,7 @@ import { IShoppingItem } from '@/types';
 interface Props {
     editingItem: IShoppingItem | undefined;
     editMode: EditMode;
+    defaultCategoryId?: string;
 }
 
 interface FormData {
@@ -22,7 +23,11 @@ interface FormData {
     tags: { id?: string; name: string }[];
 }
 
-const ShoppingItemEditForm: React.FC<Props> = ({ editingItem, editMode }) => {
+const ShoppingItemEditForm: React.FC<Props> = ({
+    editingItem,
+    editMode,
+    defaultCategoryId,
+}) => {
     //store
     const categories = useShoppingStore(state => state.categories);
     const items = useShoppingStore(state => state.items);
@@ -51,14 +56,15 @@ const ShoppingItemEditForm: React.FC<Props> = ({ editingItem, editMode }) => {
         if (watchName.length <= 0) return true;
         if (editMode === EDIT_MODE.UPDATE && editingItem) {
             const isSameName = watchName === (editingItem.name || '');
-            const defaultCategoryId =
+            const resolvedCategoryId =
                 editingItem.categoryId ||
+                defaultCategoryId ||
                 categories.find(v => v.isDefault)?.id;
-            const isSameCategory = watchCategoryId === defaultCategoryId;
+            const isSameCategory = watchCategoryId === resolvedCategoryId;
             return isSameName && isSameCategory;
         }
         return false;
-    }, [watchName, watchCategoryId, editMode, editingItem, categories]);
+    }, [watchName, watchCategoryId, editMode, editingItem, categories, defaultCategoryId]);
     useNavigationGuard(!isDisabledSendButton);
 
     /**
@@ -77,9 +83,10 @@ const ShoppingItemEditForm: React.FC<Props> = ({ editingItem, editMode }) => {
             name: editingItem?.name || '',
             categoryId:
                 editingItem?.categoryId ||
+                defaultCategoryId ||
                 categories.find(v => v.isDefault)?.id,
         });
-    }, [editingItem, categories, reset]);
+    }, [editingItem, categories, defaultCategoryId, reset]);
 
     /**
      * フォームの送信処理

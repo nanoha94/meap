@@ -132,6 +132,7 @@ const CategoryItemList: React.FC<Props> = ({
                                 children: <ShoppingItemEditForm
                                     editingItem={undefined}
                                     editMode={EDIT_MODE.CREATE}
+                                    defaultCategoryId={category.id}
                                 />
                             });
                         }}
