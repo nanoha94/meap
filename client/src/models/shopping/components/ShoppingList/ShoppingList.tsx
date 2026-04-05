@@ -105,15 +105,32 @@ const ShoppingList = React.forwardRef<ShoppingListHandle, object>((_, ref) => {
             ) {
                 return;
             }
-            lastSentItemsRef.current = currentItemsStr;
             const updateItems = items.map((item, idx) => ({
                 ...item,
                 order: idx,
             }));
-            await updateShoppingItems(updateItems);
+            const serverItemById = new Map(
+                serverItemsSnapshot.map(item => [item.id, item]),
+            );
+            const changedItems = updateItems.filter(item => {
+                const serverItem = serverItemById.get(item.id);
+                return (
+                    !serverItem ||
+                    JSON.stringify(item) !== JSON.stringify(serverItem)
+                );
+            });
+            if (changedItems.length === 0) {
+                return;
+            }
+            lastSentItemsRef.current = currentItemsStr;
+            await updateShoppingItems(changedItems);
         },
         [updateShoppingItems],
     );
+
+    /** beforeunload / アンマウント用 effect は依存を空に固定するため、pushPendingItems だけ ref で最新を参照（flush は useDebounce 内で参照が安定） */
+    const pushPendingItemsRef = React.useRef(pushPendingItems);
+    pushPendingItemsRef.current = pushPendingItems;
 
     /**
      * デバウンスを flush し、未保存分を API へ送って完了まで待つ
@@ -157,28 +174,29 @@ const ShoppingList = React.forwardRef<ShoppingListHandle, object>((_, ref) => {
     ]);
 
     /**
-     * アンマウント・ページアンロード時の保存処理
+     * アンマウント・ページアンロード時の保存処理（差分のみ API 送信。getState で常に最新を参照）
      */
     React.useEffect(() => {
-        const handleBeforeUnload = () => {
-            const updateItems = storeItems.map((item, idx) => ({
-                ...item,
-                order: idx,
-            }));
-            updateShoppingItems(updateItems);
+        const persistFromStore = () => {
+            /** beforeunload / アンマウント用 effect は依存を空に固定するため、pushPendingItems だけ ref で最新を参照（flush は useDebounce 内で参照が安定） */
+            flushDebouncedItems();
 
+            // ここで useShoppingStore.getState() を呼び出すと、マウント時にはまだ storeItems が空のため、常に最新の storeItems を参照できる
+            // アンマウント時には storeItems が最新の内容になっているため、常に最新の storeItems を参照できる
+            const { items, serverItems: serverItemsSnapshot } =
+                useShoppingStore.getState();
+            void pushPendingItemsRef.current(items, serverItemsSnapshot);
+        };
+
+        const handleBeforeUnload = () => {
+            persistFromStore();
         };
 
         window.addEventListener('beforeunload', handleBeforeUnload);
 
         return () => {
             window.removeEventListener('beforeunload', handleBeforeUnload);
-            // アンマウント時の保存処理
-            const updateItems = storeItems.map((item, idx) => ({
-                ...item,
-                order: idx,
-            }));
-            updateShoppingItems(updateItems);
+            persistFromStore();
         };
     }, []); // 依存配列を空にして、マウント時に一度だけ実行
 
