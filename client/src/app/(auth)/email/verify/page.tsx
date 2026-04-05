@@ -73,7 +73,6 @@ const Page = () => {
                     disabled={loadingCount > 0 && isInitialSent}>
                     認証メールを再送する
                 </Button>
-                {/* TODO: useAuthでスナックバーでメッセージ表示しているので、不要なら削除（要検討） */}
                 {message && <p className="text-alert-main">{message}</p>}
             </div>
         </div>

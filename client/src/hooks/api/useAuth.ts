@@ -286,6 +286,8 @@ export const useAuth = () => {
             incrementLoadingCount();
             // スナックバーをすべて削除
             clearAllSnackbars();
+            // CSRFトークンを取得
+            await csrf();
 
             await axios.post('/logout');
 
