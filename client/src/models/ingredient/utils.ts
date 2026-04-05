@@ -12,7 +12,7 @@ export const formatIngredient = (item: IIngredientItem) => {
 
     let result: string = item.name;
     if (result && item.unit) {
-        result += ` / ${item.quantity || ''}${item.unit.name}`;
+        result += ` ${item.quantity || ''}${item.unit.name}`;
     }
     return result;
 };

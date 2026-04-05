@@ -48,7 +48,7 @@ const ShoppingItemBulkCreateForm = () => {
 
 
     return (
-        <form className="flex flex-col" onSubmit={onSubmit}>
+        <form id="shopping-item-bulk-create-form" className="flex flex-col" onSubmit={onSubmit}>
             <div className="p-5 flex-1">
                 <div className="pb-5 border-b border-gray-border">
                     {/* 献立プランの検索フォーム */}
@@ -113,7 +113,10 @@ const FormFooter = ({ control, categories, isDisabledSendButton, closeDialog }: 
                     onClick={() => closeDialog()}>
                     戻る
                 </Button>
-                <Button type={BUTTON_TYPE.SUBMIT} disabled={isDisabledSendButton}>
+                <Button
+                    type={BUTTON_TYPE.SUBMIT}
+                    disabled={isDisabledSendButton}
+                    form="shopping-item-bulk-create-form">
                     追加
                 </Button>
             </div>

@@ -157,7 +157,7 @@ export const useShoppingItemBulkCreateForm = () => {
                 tags: item.tags.map((tag) => ({ name: tag.name })),
             })),
         );
-        closeDialog();
+        closeDialog(false);
     };
 
     return {
