@@ -18,7 +18,6 @@ const ShoppingListPageHeader = () => {
         {
             label: '献立から追加',
             icon: <CalendarDays />,
-            // TODO: 実装
             onClick: () => openDialog({
                 title: '買い物リストに追加',
                 children: <ShoppingItemBulkCreateForm />,

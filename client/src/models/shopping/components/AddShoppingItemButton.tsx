@@ -3,12 +3,13 @@
 import React from 'react';
 import { CalendarDays, LucideProps, Minus, Pencil, Plus } from 'lucide-react';
 
-import { ShoppingItemEditForm } from '@/components';
+import { ShoppingItemBulkCreateForm, ShoppingItemEditForm } from '@/components';
 import { colors, EDIT_MODE } from '@/constants';
 import { useDialog } from '@/hooks';
 import itemOpenStyles from '@/styles/itemOpen.module.css';
 import { ActionButton } from '@/types';
 
+// 未使用
 const AddShoppingItemButton = () => {
     const [isOpen, setIsOpen] = React.useState<boolean>(false);
     const containerRef = React.useRef<HTMLDivElement>(null);
@@ -18,8 +19,12 @@ const AddShoppingItemButton = () => {
         {
             label: '献立から追加',
             icon: <CalendarDays />,
-            // TODO: 実装
-            onClick: () => { },
+            onClick: () => openDialog({
+                title: '買い物リストに追加',
+                children: <ShoppingItemBulkCreateForm />,
+                childrenWrapperClassName: '!p-0 bg-primary-background rounded-b-xl',
+                maxWidth: 1000,
+            })
         },
         {
             label: 'テキストから追加',
