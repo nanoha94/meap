@@ -5,9 +5,12 @@ import { v4 as uuidv4 } from 'uuid';
 import { useGlobalStore } from '@/stores';
 
 export const useSnackbars = () => {
-    const previousMessageRef = React.useRef<string | null>(null);
+    // store
     const snackbars = useGlobalStore(state => state.snackbars);
     const setSnackbars = useGlobalStore(state => state.setSnackbars);
+
+    // hook
+    const previousMessageRef = React.useRef<string | null>(null);
 
     // スナックバー削除の共通処理（アニメーション付き）
     const removeSnackbar = React.useCallback(
@@ -22,7 +25,7 @@ export const useSnackbars = () => {
                 setSnackbars(prev => prev.filter(v => v.id !== id));
 
                 // スナックバーが空の場合、前回のメッセージをクリア
-                if(snackbars.length === 0) {
+                if (snackbars.length === 0) {
                     previousMessageRef.current = null;
                 }
             }, 100);

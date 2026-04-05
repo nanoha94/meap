@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useUserStore } from '@/models/user';
 
 const LoginLinks = () => {
+    // store
     const loginUser = useUserStore(state => state.loginUser);
 
     return (

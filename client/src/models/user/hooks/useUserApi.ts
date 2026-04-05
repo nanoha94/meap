@@ -11,13 +11,16 @@ import { useImageApi } from "@/models/image";
 import { useUserStore } from "@/models/user";
 
 export const useUserApi = () => {
+    // store
+    const incrementLoadingCount = useGlobalStore(state => state.incrementLoadingCount);
+    const decrementLoadingCount = useGlobalStore(state => state.decrementLoadingCount);
+    const loginUser = useUserStore(state => state.loginUser);
+
+    // hook
     const router = useRouter();
     const { bulkUploadImage } = useImageApi();
     const { addSnackbar } = useSnackbars();
     const { handleApiError } = useApiErrorHandler();
-    const incrementLoadingCount = useGlobalStore(state => state.incrementLoadingCount);
-    const decrementLoadingCount = useGlobalStore(state => state.decrementLoadingCount);
-    const loginUser = useUserStore(state => state.loginUser);
 
     // 重複リクエスト防止用のフラグ
     const isUpdateRequestRef = React.useRef(false);

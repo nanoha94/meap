@@ -34,7 +34,10 @@ const normalizeForCompare = (items: IMealPlanItem[]): Omit<IMealPlanItem, 'id'>[
     items.map(({ id, ...rest }) => rest);
 
 export const useMealPlanEditForm = (selectedDate: string, fetchMealPlan?: IMealPlan) => {
-    const { mealCategories } = useMealStore();
+    // store
+    const mealCategories = useMealStore(state => state.mealCategories);
+
+    // hook
     const methods = useForm<MealPlanEditFormData>({
         defaultValues: getDefaultValues(fetchMealPlan, mealCategories),
     });
@@ -42,6 +45,8 @@ export const useMealPlanEditForm = (selectedDate: string, fetchMealPlan?: IMealP
     const mealsFieldArray = useFieldArray({ control, name: 'meals' });
     const watchedMeals = useWatch({ control, name: 'meals' });
     const { storeMealPlan, updateMealPlan } = useMealPlanApi();
+
+    // state
     const editMode: EditMode = fetchMealPlan ? EDIT_MODE.UPDATE : EDIT_MODE.CREATE;
 
     // 非同期で fetchMealPlan が渡ってきたときにフォームを再設定（useFieldArray に反映される）

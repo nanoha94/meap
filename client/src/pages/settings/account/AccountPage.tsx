@@ -14,11 +14,14 @@ interface Props {
 }
 
 const AccountPage = ({ invitationDetail, errorMessage }: Props) => {
+    // store
+    const loginUser = useUserStore(state => state.loginUser);
+    const users = useUserStore(state => state.users);
+
+    // hook
     const { addSnackbar } = useSnackbars();
     const { openDialog } = useDialog();
     const { removeTokenFromPath } = useAccountNavigation();
-    const loginUser = useUserStore(state => state.loginUser);
-    const users = useUserStore(state => state.users);
 
     /**
      * エラーメッセージを表示

@@ -12,9 +12,13 @@ import { ProfileEditFormData } from "@/models/user/types";
 
 
 const ProfileEditForm = () => {
+    // store
+    const loginUser = useUserStore(state => state.loginUser);
+
+    // hook
     const { closeDialog, updateCurrentDialogConfig } = useDialog();
     const { updateUser } = useUserApi();
-    const loginUser = useUserStore(state => state.loginUser);
+
     const { control, handleSubmit, watch, reset } = useForm<ProfileEditFormData>({
         defaultValues: {
             name: loginUser.name ?? '',

@@ -23,16 +23,19 @@ interface FormData {
 }
 
 const ShoppingItemEditForm: React.FC<Props> = ({ editingItem, editMode }) => {
-    const { closeDialog, updateCurrentDialogConfig } = useDialog();
-    const { storeShoppingItem, updateShoppingItems } = useShoppingItemApi();
-    const { categories } = useShoppingStore();
+    //store
+    const categories = useShoppingStore(state => state.categories);
 
+    // state
     const defaultValues = {
         name: '',
         categoryId: '',
         tags: [],
     };
 
+    // hook 
+    const { closeDialog, updateCurrentDialogConfig } = useDialog();
+    const { storeShoppingItem, updateShoppingItems } = useShoppingItemApi();
     const { control, handleSubmit, reset } = useForm<FormData>({
         defaultValues,
     });

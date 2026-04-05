@@ -14,12 +14,15 @@ import {
 import { useIngredientStore } from '../hooks';
 
 export const useIngredientCategoryApi = () => {
+    // store
+    const storeCategories = useIngredientStore(state => state.categories);
+    const incrementLoadingCount = useGlobalStore(state => state.incrementLoadingCount);
+    const decrementLoadingCount = useGlobalStore(state => state.decrementLoadingCount);
+
+    // hook
     const router = useRouter();
     const { addSnackbar } = useSnackbars();
     const { handleApiError } = useApiErrorHandler();
-    const { categories: storeCategories } = useIngredientStore();
-    const incrementLoadingCount = useGlobalStore(state => state.incrementLoadingCount);
-    const decrementLoadingCount = useGlobalStore(state => state.decrementLoadingCount);
 
     // 重複リクエスト防止用のフラグ
     const isBulkUpdateRequestRef = React.useRef(false);

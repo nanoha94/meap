@@ -34,7 +34,7 @@ const RecipeListPage = ({
     sortOptionId,
     filterOptions,
 }: Props) => {
-    const router = useRouter();
+    // store
     const setStoreRecipes = useRecipeStore(state => state.setRecipes);
     const setListSortOptions = useRecipeStore(state => state.setListSortOptions);
     const setListFilterOptions = useRecipeStore(state => state.setListFilterOptions);
@@ -42,10 +42,13 @@ const RecipeListPage = ({
     const listSortOptions = useRecipeStore(state => state.listSortOptions);
     const listCurrentPage = useRecipeStore(state => state.listCurrentPage);
     const recipes = useRecipeStore(state => state.recipes);
-    const { addSnackbar } = useSnackbars();
-    const { openDialog } = useDialog();
     const incrementLoadingCount = useGlobalStore(state => state.incrementLoadingCount);
     const resetLoadingCount = useGlobalStore(state => state.resetLoadingCount);
+
+    // hook
+    const router = useRouter();
+    const { addSnackbar } = useSnackbars();
+    const { openDialog } = useDialog();
 
     /**
      * 並び替え処理（ストア更新・再取得・URLクエリ更新）

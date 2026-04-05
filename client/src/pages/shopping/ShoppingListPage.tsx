@@ -21,10 +21,11 @@ interface Props {
 }
 
 const ShoppingListPage: React.FC<Props> = ({ fetchItems, errorMessage }) => {
-    const {
-        setServerItems,
-        setItems: setStoreItems,
-    } = useShoppingStore();
+    // store
+    const setServerItems = useShoppingStore(state => state.setServerItems);
+    const setStoreItems = useShoppingStore(state => state.setItems);
+
+    // hook
     const { addSnackbar } = useSnackbars();
     const { openDialog } = useDialog();
 

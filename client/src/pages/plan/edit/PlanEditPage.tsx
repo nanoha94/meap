@@ -24,12 +24,14 @@ interface Props {
 }
 
 const PlanEditPage = ({ selectedDate, fetchMealPlan, errorMessage }: Props) => {
-    const router = useRouter();
-    const { openAlertDialog } = useAlertDialog();
+    // store
     const incrementLoadingCount = useGlobalStore(state => state.incrementLoadingCount);
     const resetLoadingCount = useGlobalStore(state => state.resetLoadingCount);
-    const { deleteMealPlan } = useMealPlanApi();
-    const { mealCategories } = useMealStore();
+    const mealCategories = useMealStore(state => state.mealCategories);
+
+    // hook
+    const router = useRouter();
+    const { openAlertDialog } = useAlertDialog(); const { deleteMealPlan } = useMealPlanApi();
     const { addSnackbar } = useSnackbars();
     const { methods, isDisabledSendButton, onSubmit, fields, insert, replace, remove } = useMealPlanEditForm(selectedDate, fetchMealPlan);
     const [tmpItems, setTmpItems] = React.useState<IMealPlanItem[]>([]);

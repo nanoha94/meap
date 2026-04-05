@@ -37,11 +37,14 @@ const IngredientItemList = ({
     removeItem,
     errors,
 }: Props) => {
+    // store
+    const categories = useIngredientStore(state => state.categories);
+
+    // hook
     const { openDialog, closeDialog } = useDialog();
     const { setNodeRef: setDroppableNodeRef } = useDroppable({
         id: category.id,
     });
-    const { categories } = useIngredientStore();
 
     /**
      * 食材の編集ダイアログを開く

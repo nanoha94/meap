@@ -43,11 +43,14 @@ interface ResendEmailVerificationProps {
 }
 
 export const useAuth = () => {
+    //store
+    const incrementLoadingCount = useGlobalStore(state => state.incrementLoadingCount);
+    const decrementLoadingCount = useGlobalStore(state => state.decrementLoadingCount);
+
+    // hook
     const router = useRouter();
     const params = useParams();
     const { clearAllSnackbars } = useSnackbars();
-    const incrementLoadingCount = useGlobalStore(state => state.incrementLoadingCount);
-    const decrementLoadingCount = useGlobalStore(state => state.decrementLoadingCount);
     const { handleApiError } = useApiErrorHandler();
 
     const csrf = () => axios.get('/sanctum/csrf-cookie');

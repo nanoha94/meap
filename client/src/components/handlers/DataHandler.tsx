@@ -20,10 +20,12 @@ interface Props {
  * @returns void
  */
 const DataHandler = ({ user, masterData }: Props) => {
-    const { setCategories: setIngredientCategories, setUnits: setIngredientUnits } = useIngredientStore();
-    const { setCategories: setRecipeCategories } = useRecipeStore();
-    const { setMealCategories } = useMealStore();
-    const { setCategories: setShoppingCategories } = useShoppingStore();
+    // store
+    const setIngredientCategories = useIngredientStore(state => state.setCategories);
+    const setIngredientUnits = useIngredientStore(state => state.setUnits);
+    const setRecipeCategories = useRecipeStore(state => state.setCategories);
+    const setMealCategories = useMealStore(state => state.setMealCategories);
+    const setShoppingCategories = useShoppingStore(state => state.setCategories);
     const setLoginUser = useUserStore(state => state.setLoginUser);
     const setUsers = useUserStore(state => state.setUsers);
 

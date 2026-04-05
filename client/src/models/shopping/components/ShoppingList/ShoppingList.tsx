@@ -12,12 +12,13 @@ import { DEBOUNCE_DELAY } from '../../constants';
 import { useShoppingItemApi, useShoppingStore } from '../../hooks';
 
 const ShoppingList = () => {
-    const {
-        setItems: setStoreItems,
-        items: storeItems,
-        serverItems,
-        categories,
-    } = useShoppingStore();
+    // store
+    const setStoreItems = useShoppingStore(state => state.setItems);
+    const storeItems = useShoppingStore(state => state.items);
+    const serverItems = useShoppingStore(state => state.serverItems);
+    const categories = useShoppingStore(state => state.categories);
+
+    // hook
     const { updateShoppingItems } = useShoppingItemApi();
     const [tmpItems, setTmpItems] = React.useState<IShoppingItem[]>([]);
 

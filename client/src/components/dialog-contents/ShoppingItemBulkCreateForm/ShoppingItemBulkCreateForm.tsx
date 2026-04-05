@@ -16,6 +16,11 @@ import { Control } from "react-hook-form";
 import { IShoppingCategory } from "@/types";
 
 const ShoppingItemBulkCreateForm = () => {
+    // store
+    const mealCategories = useMealStore(state => state.mealCategories);
+    const categories = useShoppingStore(state => state.categories);
+
+    // hook
     const { closeDialog, updateCurrentDialogConfig } = useDialog();
     const {
         control,
@@ -30,9 +35,6 @@ const ShoppingItemBulkCreateForm = () => {
         searchMealPlans,
         updateDateList,
     } = useShoppingItemBulkCreateForm();
-    const mealCategories = useMealStore(state => state.mealCategories);
-
-    const categories = useShoppingStore(state => state.categories);
 
     /**
      * 閉じる前確認の要否をフォーム状態に合わせて更新

@@ -13,16 +13,17 @@ import {
 import { useShoppingStore } from '../hooks';
 
 export const useShoppingItemApi = () => {
-    const { addSnackbar } = useSnackbars();
-    const { handleApiError } = useApiErrorHandler();
+    // store
     const incrementLoadingCount = useGlobalStore(state => state.incrementLoadingCount);
     const decrementLoadingCount = useGlobalStore(state => state.decrementLoadingCount);
-    const {
-        items: storeItems,
-        serverItems,
-        setServerItems,
-        setItems: setStoreItems,
-    } = useShoppingStore();
+    const storeItems = useShoppingStore(state => state.items);
+    const setStoreItems = useShoppingStore(state => state.setItems);
+    const serverItems = useShoppingStore(state => state.serverItems);
+    const setServerItems = useShoppingStore(state => state.setServerItems);
+
+    //hook
+    const { addSnackbar } = useSnackbars();
+    const { handleApiError } = useApiErrorHandler();
 
     // 重複リクエスト防止用のフラグ
     const isFetchRequestRef = React.useRef(false);

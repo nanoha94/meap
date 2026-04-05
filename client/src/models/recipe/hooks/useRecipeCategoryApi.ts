@@ -10,9 +10,12 @@ import { IPostRecipeCategoryRequest, IPutRecipeCategoryRequest, IRecipeCategory 
 import { useRecipeStore } from '../hooks';
 
 export const useRecipeCategoryApi = () => {
-    const { categories: storeCategories } = useRecipeStore();
+    // store
+    const storeCategories = useRecipeStore(state => state.categories);
     const incrementLoadingCount = useGlobalStore(state => state.incrementLoadingCount);
     const decrementLoadingCount = useGlobalStore(state => state.decrementLoadingCount);
+
+    // hook
     const router = useRouter();
     const { addSnackbar } = useSnackbars();
     const { handleApiError } = useApiErrorHandler();

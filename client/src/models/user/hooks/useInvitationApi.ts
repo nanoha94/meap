@@ -14,13 +14,16 @@ import { useAccountNavigation } from './useAccountNavigation';
 import { useRouter } from 'next/navigation';
 
 export const useInvitationApi = () => {
+    // store
+    const incrementLoadingCount = useGlobalStore(state => state.incrementLoadingCount);
+    const decrementLoadingCount = useGlobalStore(state => state.decrementLoadingCount);
+
+    //hook
     const router = useRouter();
     const { addSnackbar } = useSnackbars();
     const { openAlertDialog } = useAlertDialog();
     const { removeTokenFromPath } = useAccountNavigation();
     const { handleApiError } = useApiErrorHandler();
-    const incrementLoadingCount = useGlobalStore(state => state.incrementLoadingCount);
-    const decrementLoadingCount = useGlobalStore(state => state.decrementLoadingCount);
 
     // fetchInvitationTokenのローディング状態（画面全体のローディングアニメーションは動作させたくないためローカル管理）
     const [isFetching, setIsFetching] = React.useState<boolean>(false);

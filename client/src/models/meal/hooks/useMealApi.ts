@@ -8,8 +8,11 @@ import axios from "@/lib/axios";
 import { useGlobalStore } from "@/stores";
 
 export const useMealApi = () => {
+    // store
     const incrementLoadingCount = useGlobalStore(state => state.incrementLoadingCount);
     const decrementLoadingCount = useGlobalStore(state => state.decrementLoadingCount);
+
+    // hook
     const router = useRouter();
     const { addSnackbar } = useSnackbars();
     const { handleApiError } = useApiErrorHandler();

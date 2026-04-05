@@ -20,9 +20,13 @@ interface Props {
 }
 
 const PlanCalendarPage = ({ fetchMealPlans, errorMessage, year, month }: Props) => {
+    // store
+    const mealCategories = useMealStore(state => state.mealCategories);
+    const setMealPlans = useMealStore(state => state.setMealPlans);
+
+    // hook
     const router = useRouter();
     const { addSnackbar } = useSnackbars();
-    const { mealCategories, setMealPlans } = useMealStore();
     const [selectedDate, setSelectedDate] = React.useState<Dayjs>(dayjs());
 
     /**

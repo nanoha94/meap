@@ -18,12 +18,15 @@ interface Props {
 }
 
 const SideNavigation = ({ className }: Props) => {
-    const { logout } = useAuth();
-    const pathname = usePathname();
+    // store
     const loginUser = useUserStore(state => state.loginUser);
     const listSortOptions = useRecipeStore(state => state.listSortOptions);
     const listFilterOptions = useRecipeStore(state => state.listFilterOptions);
     const listCurrentPage = useRecipeStore(state => state.listCurrentPage);
+
+    // hook
+    const { logout } = useAuth();
+    const pathname = usePathname();
 
     if (!pathname) {
         return <></>;

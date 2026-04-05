@@ -23,11 +23,13 @@ function isItemChecked(
 }
 
 export const useShoppingItemBulkCreateForm = () => {
+    // store
+    const categories = useShoppingStore(state => state.categories);
+
+    // hook
     const { closeDialog } = useDialog();
     const { fetchMealPlans } = useMealPlanApi();
     const { bulkStoreShoppingItems } = useShoppingItemApi();
-    const categories = useShoppingStore(state => state.categories);
-
     const [mealPlans, setMealPlans] = React.useState<IMealPlan[]>([]);
     const [dateList, setDateList] = React.useState<Dayjs[]>([]);
 

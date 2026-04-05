@@ -6,8 +6,12 @@ import { useAuth, useLoadingAnimation } from '@/hooks';
 import { useGlobalStore } from '@/stores';
 
 const Page = () => {
-    const { resendEmailVerification } = useAuth();
+    // store
     const loadingCount = useGlobalStore(state => state.loadingCount);
+
+    // hook
+    const { resendEmailVerification } = useAuth();
+
     const [message, setMessage] = React.useState<string | null>(null);
     const [isInitialSent, setIsInitialSent] = React.useState(false);
     const hasInitialSent = React.useRef(false);

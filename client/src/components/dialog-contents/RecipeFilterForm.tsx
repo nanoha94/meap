@@ -17,12 +17,15 @@ interface Props {
 }
 
 const RecipeFilterForm = ({ search, defaultValues }: Props) => {
+    // store
+    const categories = useRecipeStore(state => state.categories);
+
+    // hook
+    const { closeDialog, updateCurrentDialogConfig } = useDialog();
+
     const { control, handleSubmit, getValues, watch, trigger, formState: { errors }, setValue } = useForm<RecipeFilterFormData>({
         defaultValues: defaultValues,
     });
-    const { categories } = useRecipeStore();
-    const { closeDialog, updateCurrentDialogConfig } = useDialog();
-
     /** フォーム値の変更を購読し、入力変更時に再レンダーさせる */
     const currentValues = watch();
 

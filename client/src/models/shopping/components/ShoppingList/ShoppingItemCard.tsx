@@ -14,8 +14,14 @@ interface Props {
 }
 
 const ShoppingItemCard = ({ item }: Props) => {
+    // state
     const { id, name, isPinned = false, isChecked = false } = item;
-    const { items: storeItems, setItems: setStoreItems } = useShoppingStore();
+
+    //store
+    const storeItems = useShoppingStore(state => state.items);
+    const setStoreItems = useShoppingStore(state => state.setItems);
+
+    // hook
     const { deleteShoppingItems } = useShoppingItemApi();
     const { openDialog } = useDialog();
     const { openAlertDialog } = useAlertDialog();

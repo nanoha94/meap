@@ -7,9 +7,12 @@ import { colors } from '@/constants';
 import { useGlobalStore } from '@/stores';
 
 const LoadingAnimation = () => {
+    // store
     const loadingCount = useGlobalStore(state => state.loadingCount);
     const visibleLoadingAnimation = useGlobalStore(state => state.visibleLoadingAnimation);
     const resetLoadingCount = useGlobalStore(state => state.resetLoadingCount);
+
+    // hook
     const pathname = usePathname();
     const prevPath = React.useRef<string>(pathname);
 

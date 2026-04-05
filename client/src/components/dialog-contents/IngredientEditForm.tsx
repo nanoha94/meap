@@ -39,9 +39,14 @@ const IngredientEditForm = ({
     actionButtonText,
     onAction,
 }: Props) => {
-    const { closeDialog, updateCurrentDialogConfig } = useDialog();
+    // constant value
     const prefix: string = TMP_ID_PREFIX.INGREDIENT_ITEM;
-    const { units } = useIngredientStore();
+
+    // store
+    const units = useIngredientStore(state => state.units);
+
+    // hook
+    const { closeDialog, updateCurrentDialogConfig } = useDialog();
     const { control, handleSubmit, reset, setValue } = useForm<FormData>(
         {
             defaultValues: {
@@ -51,7 +56,6 @@ const IngredientEditForm = ({
         },
     );
     const nameInputRef = React.useRef<HTMLInputElement>(null);
-
     const watchedName = useWatch({ control, name: 'name' });
     const watchedQuantity = useWatch({ control, name: 'quantity' });
     const watchedUnitId = useWatch({ control, name: 'unit.id' });

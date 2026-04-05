@@ -25,8 +25,13 @@ interface Props {
 }
 
 const IngredientEditFields = ({ control, errors }: Props) => {
+    // constant value
     const prefix = TMP_ID_PREFIX.INGREDIENT_ITEM;
-    const { categories } = useIngredientStore();
+
+    // store
+    const categories = useIngredientStore(state => state.categories);
+
+    // hook
     const { openDialog } = useDialog();
     const [tmpItems, setTmpItems] = React.useState<IIngredientItem[]>([]);
     const dndContextId = React.useId();

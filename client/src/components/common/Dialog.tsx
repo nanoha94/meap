@@ -61,7 +61,9 @@ const DialogPanel = ({ dialog }: DialogPanelProps) => {
 };
 
 const Dialog = () => {
+    // store
     const dialogs = useGlobalStore(state => state.dialogs);
+
     if (dialogs.length <= 0) return <></>;
 
     return dialogs.map(v => <DialogPanel key={v.config.title} dialog={v} />);

@@ -13,10 +13,13 @@ interface Props {
 }
 
 const FooterNavigation = ({ className }: Props) => {
-    const pathname = usePathname();
+    // store
     const listSortOptions = useRecipeStore(state => state.listSortOptions);
     const listFilterOptions = useRecipeStore(state => state.listFilterOptions);
     const listCurrentPage = useRecipeStore(state => state.listCurrentPage);
+
+    // hook
+    const pathname = usePathname();
 
     if (!pathname) {
         return <></>;

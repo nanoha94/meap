@@ -6,7 +6,10 @@ import { BUTTON_VARIANT, COLOR_VARIANT } from '@/constants';
 import { useGlobalStore } from '@/stores';
 
 const AlertDialog = () => {
+    // store
     const alertDialogs = useGlobalStore(state => state.alertDialogs);
+
+    // state
     const currentDialog = alertDialogs[0] || null;
 
     if (!currentDialog || !currentDialog.isOpen || !currentDialog.config) return <></>;

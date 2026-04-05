@@ -40,6 +40,7 @@ export const formatStepItems = (
 };
 
 export const useRecipeApi = () => {
+    // store
     const incrementLoadingCount = useGlobalStore(
         (state) => state.incrementLoadingCount,
     );
@@ -50,6 +51,8 @@ export const useRecipeApi = () => {
     const listSortOptions = useRecipeStore(state => state.listSortOptions);
     const listFilterOptions = useRecipeStore(state => state.listFilterOptions);
     const listCurrentPage = useRecipeStore(state => state.listCurrentPage);
+
+    // hook
     const { bulkUploadImage } = useImageApi();
     const router = useRouter();
     const { addSnackbar } = useSnackbars();

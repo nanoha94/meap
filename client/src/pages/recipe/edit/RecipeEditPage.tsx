@@ -40,11 +40,14 @@ const RecipeEditPage = ({
     fetchedRecipe,
     errorMessage,
 }: Props) => {
+    // store
+    const loginUser = useUserStore(state => state.loginUser);
+    const users = useUserStore(state => state.users);
+
+    // hook
     const { addSnackbar } = useSnackbars();
     const { openAlertDialog } = useAlertDialog();
     const { deleteRecipe } = useRecipeApi();
-    const loginUser = useUserStore(state => state.loginUser);
-    const users = useUserStore(state => state.users);
     const {
         control,
         methods,

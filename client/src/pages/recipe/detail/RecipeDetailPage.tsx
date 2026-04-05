@@ -25,11 +25,14 @@ const RecipeDetailPage = ({
     fetchedRecipe,
     errorMessage,
 }: Props) => {
+    // store
     const loginUser = useUserStore(state => state.loginUser);
+    const ingredientCategories = useIngredientStore(state => state.categories);
+
+    // hook
     const { addSnackbar } = useSnackbars();
     const { deleteRecipe } = useRecipeApi();
     const { openAlertDialog } = useAlertDialog();
-    const { categories: ingredientCategories } = useIngredientStore();
 
     /**
      * 削除確認ダイアログを開く

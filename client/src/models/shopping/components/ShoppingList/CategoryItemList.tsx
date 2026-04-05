@@ -19,8 +19,12 @@ interface Props {
 }
 
 const CategoryItemList: React.FC<Props> = ({ category, items }) => {
+    // store
+    const storeItems = useShoppingStore(state => state.items);
+    const setStoreItems = useShoppingStore(state => state.setItems);
+
+    // hook
     const { deleteShoppingItems } = useShoppingItemApi();
-    const { items: storeItems, setItems: setStoreItems } = useShoppingStore();
     const { openAlertDialog } = useAlertDialog();
     const { openDialog } = useDialog();
     const { setNodeRef: setDroppableNodeRef } = useDroppable({

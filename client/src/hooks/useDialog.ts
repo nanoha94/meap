@@ -12,7 +12,10 @@ import { useAlertDialog } from './useAlertDialog';
  * @returns { openDialog, closeDialog }
  */
 export const useDialog = () => {
+    // store
     const setDialogs = useGlobalStore(state => state.setDialogs);
+
+    // hook
     const { openAlertDialog } = useAlertDialog();
 
     /**

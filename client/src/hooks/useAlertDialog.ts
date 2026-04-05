@@ -10,9 +10,11 @@ import { AlertDialogConfig, AlertDialogData } from '@/types';
  * @returns { openAlertDialog, closeAlertDialog }
  */
 export const useAlertDialog = () => {
+    // store
     const alertDialogs = useGlobalStore(state => state.alertDialogs);
     const setAlertDialogs = useGlobalStore(state => state.setAlertDialogs);
 
+    // state
     const currentDialog = alertDialogs[0] || null;
 
     /**

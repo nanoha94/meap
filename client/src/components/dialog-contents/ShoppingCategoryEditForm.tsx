@@ -19,18 +19,22 @@ interface FormData {
 }
 
 const ShoppingCategoryEditForm: React.FC = () => {
+    // constant value
+    const prefix = TMP_ID_PREFIX.SHOPPING_CATEGORY;
+
+    // store
+    const categories = useShoppingStore(state => state.categories);
+
+    // hook
     const { closeDialog, updateCurrentDialogConfig } = useDialog();
-    const { categories } = useShoppingStore();
     const { bulkUpdateShoppingCategories } =
         useShoppingCategoryApi();
-    const prefix = TMP_ID_PREFIX.SHOPPING_CATEGORY;
 
     const { control, handleSubmit, reset } = useForm<FormData>({
         defaultValues: {
             categories: [],
         },
     });
-
     const { fields, append, remove, move } = useFieldArray({
         control,
         name: 'categories',

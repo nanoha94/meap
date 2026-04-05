@@ -15,7 +15,10 @@ interface Props {
 }
 
 const CategoryEditFields = ({ control }: Props) => {
-    const { categories } = useRecipeStore();
+    // store
+    const categories = useRecipeStore(state => state.categories);
+
+    // hook
     const { setValue } = useFormContext<RecipeEditFormData>();
     const { openDialog } = useDialog();
 

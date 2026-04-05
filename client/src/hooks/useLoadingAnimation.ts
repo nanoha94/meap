@@ -8,6 +8,7 @@ import { useGlobalStore } from '@/stores';
  * @returns void
  */
 export const useLoadingAnimation = (condition: boolean = true) => {
+    // store
     const setLoadingCondition = useGlobalStore(state => state.setLoadingCondition);
 
     React.useEffect(() => {
