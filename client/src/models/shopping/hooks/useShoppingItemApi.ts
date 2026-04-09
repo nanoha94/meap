@@ -53,35 +53,37 @@ export const useShoppingItemApi = () => {
      * 取得処理（更新処理の後に呼び出す）
      */
     const fetchShoppingItems = React.useCallback(
-        async (serverOnly = false) => {
+        async (silent = false) => {
             // 重複リクエスト防止
             if (isFetchRequestRef.current) {
                 return;
             }
 
             try {
-                // ローディング状態をセット
                 isFetchRequestRef.current = true;
-                incrementLoadingCount();
+                if (!silent) incrementLoadingCount();
 
                 const res = await axios.get('/shopping-items', {
                     timeout: TIMEOUT_MS,
                 });
                 if (res.data) {
                     setServerItems(res.data.data);
-                    // serverOnlyがfalseの場合のみローカル状態も更新
-                    if (!serverOnly) {
-                        setStoreItems(res.data.data);
-                    }
+                    setStoreItems(res.data.data);
                 }
             } catch (error) {
                 handleApiError(error);
             } finally {
                 isFetchRequestRef.current = false;
-                decrementLoadingCount();
+                if (!silent) decrementLoadingCount();
             }
         },
-        [setServerItems, setStoreItems, handleApiError],
+        [
+            setServerItems,
+            setStoreItems,
+            handleApiError,
+            incrementLoadingCount,
+            decrementLoadingCount,
+        ],
     );
 
     /**
@@ -157,10 +159,11 @@ export const useShoppingItemApi = () => {
     /**
      * 更新処理
      * @param items 更新するアイテム
+     * @param silent true のときローディング表示を出さず、後続の fetch も同様に silent にする
      * @returns 更新結果
      */
     const updateShoppingItems = React.useCallback(
-        async (items: IPutShoppingItemRequest[]) => {
+        async (items: IPutShoppingItemRequest[], silent = false) => {
             if (
                 isUpdateBulkRequestRef.current ||
                 items.length <= 0 ||
@@ -171,19 +174,19 @@ export const useShoppingItemApi = () => {
 
             try {
                 isUpdateBulkRequestRef.current = true;
-                incrementLoadingCount();
+                if (!silent) incrementLoadingCount();
 
                 const { data: responseData } = await axios.put(`/shopping-items/bulk`, {
                     data: items.filter(v => v.name && v.name.length > 0),
                     timeout: TIMEOUT_MS,
                 });
                 if (responseData.success) {
-                    await fetchShoppingItems();
+                    await fetchShoppingItems(silent);
                     // await 後はクロージャより getState() で最新のフラグを参照する
                     const { isSkipNextBulkSnackbar } = useShoppingStore.getState();
                     if (isSkipNextBulkSnackbar) {
                         clearIsSkipNextBulkSnackbar();
-                    } else {
+                    } else if (!silent) {
                         addSnackbar(
                             'success',
                             responseData.message ?? 'リクエストが正常に完了しました',
@@ -194,10 +197,10 @@ export const useShoppingItemApi = () => {
                 handleApiError(error);
                 clearIsSkipNextBulkSnackbar();
                 // エラーが発生した場合は再取得して状態を復元
-                await fetchShoppingItems();
+                await fetchShoppingItems(silent);
             } finally {
                 isUpdateBulkRequestRef.current = false;
-                decrementLoadingCount();
+                if (!silent) decrementLoadingCount();
             }
         },
         [

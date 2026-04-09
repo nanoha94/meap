@@ -123,7 +123,7 @@ const ShoppingList = React.forwardRef<ShoppingListHandle, object>((_, ref) => {
                 return;
             }
             lastSentItemsRef.current = currentItemsStr;
-            await updateShoppingItems(changedItems);
+            await updateShoppingItems(changedItems, true);
         },
         [updateShoppingItems],
     );
