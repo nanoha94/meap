@@ -98,36 +98,6 @@ class ShoppingItemService extends AbstractDomainService
     }
 
     /**
-     * タグ付きでアイテムを作成
-     *
-     * @param array $data 作成データ（categoryId, name, tags, order, isPinned, isChecked）
-     * @param Group $group グループモデル
-     * @throws HttpException カテゴリが見つからない場合
-     */
-    public function create(array $data, Group $group): void
-    {
-        DB::transaction(function () use ($data, $group) {
-            // 1. カテゴリの存在確認とグループIDチェック
-            $this->shoppingCategoryService->findItemsByIds([$data['categoryId']], $group)->first();
-
-            // 2. アイテム作成
-            $createData = [];
-            foreach ($this->getCreateFields() as $field => $dataKey) {
-                $createData[$field] = $data[$dataKey];
-            }
-            $item = $this->getGroupRelation($group)->create($createData);
-
-            // 3. タグの紐づけ
-            if (!empty($data['tags'])) {
-                $tagIds = $this->shoppingTagService->findOrCreateTagIds($data['tags'], $group);
-                if (!empty($tagIds)) {
-                    $item->tags()->attach($tagIds);
-                }
-            }
-        });
-    }
-
-    /**
      * 買い物アイテムを一括作成
      *
      * @param array $data 作成データの配列（[['categoryId', 'name', 'tags', 'order', 'isPinned', 'isChecked'], ...]）

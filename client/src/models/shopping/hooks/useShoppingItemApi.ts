@@ -34,7 +34,6 @@ export const useShoppingItemApi = () => {
     // 重複リクエスト防止用のフラグ
     const isFetchRequestRef = React.useRef(false);
     const isStoreRequestRef = React.useRef(false);
-    const isBulkStoreRequestRef = React.useRef(false);
     const isUpdateBulkRequestRef = React.useRef(false);
     const isDeleteBulkRequestRef = React.useRef(false);
     const skipNextBulkSnackbarTimeoutRef = React.useRef<
@@ -87,73 +86,47 @@ export const useShoppingItemApi = () => {
     );
 
     /**
-     * 作成処理
-     * @param item 作成するアイテム
-     * @returns 作成結果
-     */
-    const storeShoppingItem = async (item: IPostShoppingItemRequest) => {
-        // 重複リクエスト防止
-        if (isStoreRequestRef.current) {
-            return;
-        }
-
-        try {
-            isStoreRequestRef.current = true;
-            incrementLoadingCount();
-
-            const { data: responseData } = await axios.post<IPostShoppingItemResponse>(`/shopping-items`, {
-                ...item,
-                timeout: TIMEOUT_MS,
-            });
-            if (responseData.success) {
-                addSnackbar(
-                    'success',
-                    responseData.message ?? 'リクエストが正常に完了しました',
-                );
-                await fetchShoppingItems();
-            }
-        } catch (error) {
-            handleApiError(error);
-        } finally {
-            isStoreRequestRef.current = false;
-            decrementLoadingCount();
-        }
-    };
-
-    /**
-     * 一括作成処理
+     * 作成処理（一括API）
      * @param items 作成するアイテム
-     * @returns 作成結果
      */
-    const bulkStoreShoppingItems = React.useCallback(
+    const storeShoppingItems = React.useCallback(
         async (items: IPostShoppingItemRequest[]) => {
-            if (
-                isBulkStoreRequestRef.current ||
-                items.length <= 0
-            ) {
+            if (isStoreRequestRef.current || items.length <= 0) {
                 return;
             }
 
             try {
-                isBulkStoreRequestRef.current = true;
+                isStoreRequestRef.current = true;
                 incrementLoadingCount();
 
-                const { data: responseData } = await axios.post(`/shopping-items/bulk`, {
-                    data: items,
-                    timeout: TIMEOUT_MS,
-                });
+                const { data: responseData } = await axios.post<IPostShoppingItemResponse>(
+                    `/shopping-items/bulk`,
+                    {
+                        data: items,
+                        timeout: TIMEOUT_MS,
+                    },
+                );
                 if (responseData.success) {
                     await fetchShoppingItems();
-                    addSnackbar('success', responseData.message ?? 'リクエストが正常に完了しました');
+                    addSnackbar(
+                        'success',
+                        responseData.message ?? 'リクエストが正常に完了しました',
+                    );
                 }
             } catch (error) {
                 handleApiError(error);
             } finally {
-                isBulkStoreRequestRef.current = false;
+                isStoreRequestRef.current = false;
                 decrementLoadingCount();
             }
         },
-        [incrementLoadingCount, decrementLoadingCount, fetchShoppingItems, addSnackbar, handleApiError],
+        [
+            incrementLoadingCount,
+            decrementLoadingCount,
+            fetchShoppingItems,
+            addSnackbar,
+            handleApiError,
+        ],
     );
 
     /**
@@ -265,8 +238,7 @@ export const useShoppingItemApi = () => {
 
     return {
         storeData: { items: storeItems },
-        storeShoppingItem,
-        bulkStoreShoppingItems,
+        storeShoppingItems,
         updateShoppingItems,
         deleteShoppingItems,
     };

@@ -60,7 +60,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/users', [UserController::class, 'index']);
 
     // shopping
-    Route::apiResource('/shopping-items', ShoppingItemController::class)->only(['index', 'store']);
+    Route::apiResource('/shopping-items', ShoppingItemController::class)->only(['index']);
     Route::post('/shopping-items/bulk', [ShoppingItemController::class, 'bulkStore']);
     Route::put('/shopping-items/bulk', [ShoppingItemController::class, 'bulkUpdate']);
     Route::delete('/shopping-items/bulk', [ShoppingItemController::class, 'bulkDestroy']);

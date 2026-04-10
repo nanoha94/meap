@@ -1032,32 +1032,6 @@
                         "sanctum": []
                     }
                 ]
-            },
-            "post": {
-                "tags": [
-                    "Shopping"
-                ],
-                "summary": "買い物アイテムを作成",
-                "operationId": "5c39746ace78b613725ec210781f2d9b",
-                "requestBody": {
-                    "$ref": "#/components/requestBodies/ShoppingItemStoreRequest"
-                },
-                "responses": {
-                    "200": {
-                        "$ref": "#/components/responses/ShoppingItemStoreSuccess"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/Unauthorized"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/NotFound"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
             }
         },
         "/shopping-items/bulk": {
@@ -2875,27 +2849,6 @@
                     }
                 ]
             },
-            "ShoppingItemShowResponse": {
-                "required": [
-                    "success",
-                    "message",
-                    "data"
-                ],
-                "properties": {
-                    "success": {
-                        "type": "boolean",
-                        "example": true
-                    },
-                    "message": {
-                        "type": "string",
-                        "example": "買い物アイテム(りんご)を取得しました。"
-                    },
-                    "data": {
-                        "$ref": "#/components/schemas/ShoppingItem"
-                    }
-                },
-                "type": "object"
-            },
             "ShoppingCategoryIndexResponse": {
                 "allOf": [
                     {
@@ -3725,26 +3678,6 @@
                     }
                 }
             },
-            "ShoppingItemStoreSuccess": {
-                "description": "買い物アイテム(りんご)を作成しました。",
-                "content": {
-                    "application/json": {
-                        "schema": {
-                            "$ref": "#/components/schemas/BaseApiResponse"
-                        }
-                    }
-                }
-            },
-            "ShoppingItemShowSuccess": {
-                "description": "買い物アイテム(りんご)を取得しました。",
-                "content": {
-                    "application/json": {
-                        "schema": {
-                            "$ref": "#/components/schemas/ShoppingItemShowResponse"
-                        }
-                    }
-                }
-            },
             "ShoppingItemBulkStoreSuccess": {
                 "description": "買い物アイテムを3件作成しました。",
                 "content": {
@@ -4096,16 +4029,6 @@
                     "example": "2025-02-21"
                 }
             },
-            "ShoppingIdParam": {
-                "name": "id",
-                "in": "path",
-                "description": "買い物アイテムID",
-                "required": true,
-                "schema": {
-                    "type": "string",
-                    "example": "1"
-                }
-            },
             "ShoppingCategoryIdParam": {
                 "name": "id",
                 "in": "path",
@@ -4403,17 +4326,6 @@
                                 }
                             },
                             "type": "object"
-                        }
-                    }
-                }
-            },
-            "ShoppingItemStoreRequest": {
-                "description": "登録する買い物アイテムデータ",
-                "required": true,
-                "content": {
-                    "application/json": {
-                        "schema": {
-                            "$ref": "#/components/schemas/ShoppingItemRequest"
                         }
                     }
                 }

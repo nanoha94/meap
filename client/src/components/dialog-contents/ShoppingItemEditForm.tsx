@@ -41,7 +41,7 @@ const ShoppingItemEditForm: React.FC<Props> = ({
 
     // hook 
     const { closeDialog, updateCurrentDialogConfig } = useDialog();
-    const { storeShoppingItem, updateShoppingItems } = useShoppingItemApi();
+    const { storeShoppingItems, updateShoppingItems } = useShoppingItemApi();
     const { control, handleSubmit, reset } = useForm<FormData>({
         defaultValues,
     });
@@ -94,12 +94,14 @@ const ShoppingItemEditForm: React.FC<Props> = ({
      */
     const onSubmit = (data: FormData) => {
         if (editMode === EDIT_MODE.CREATE) {
-            storeShoppingItem({
-                ...data,
-                order: items.length,
-                isPinned: false,
-                isChecked: false,
-            });
+            storeShoppingItems([
+                {
+                    ...data,
+                    order: items.length,
+                    isPinned: false,
+                    isChecked: false,
+                },
+            ]);
         } else if (editingItem) {
             updateShoppingItems([
                 {

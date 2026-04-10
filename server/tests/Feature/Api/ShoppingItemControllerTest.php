@@ -43,19 +43,23 @@ beforeEach(function () {
 
 test('3-9-1: 【一覧取得】 正常な買い物アイテム一覧取得', function () {
     // テスト用のアイテムをAPIで作成
-    $this->actingAs($this->user)->post('/shopping-items', [
-        'name' => '牛乳',
-        'categoryId' => $this->categoryId,
-        'order' => 0,
-        'isPinned' => false,
-        'isChecked' => false,
-    ]);
-    $this->actingAs($this->user)->post('/shopping-items', [
-        'name' => 'パン',
-        'categoryId' => $this->categoryId,
-        'order' => 1,
-        'isPinned' => false,
-        'isChecked' => false,
+    $this->actingAs($this->user)->post('/shopping-items/bulk', [
+        'data' => [
+            [
+                'name' => '牛乳',
+                'categoryId' => $this->categoryId,
+                'order' => 0,
+                'isPinned' => false,
+                'isChecked' => false,
+            ],
+            [
+                'name' => 'パン',
+                'categoryId' => $this->categoryId,
+                'order' => 1,
+                'isPinned' => false,
+                'isChecked' => false,
+            ],
+        ],
     ]);
 
     $response = $this->actingAs($this->user)->get('/shopping-items');
@@ -99,22 +103,24 @@ test('3-9-2: 【一覧取得】 カテゴリ別アイテム取得確認', functi
     $category2Id = collect($categoryIndexResponse->json('data'))->firstWhere('name', 'カテゴリ2')['id'];
     expect($category2Id)->not->toBeNull();
 
-    // カテゴリ1のアイテムをAPIで作成
-    $this->actingAs($this->user)->post('/shopping-items', [
-        'name' => '牛乳',
-        'categoryId' => $this->categoryId,
-        'order' => 0,
-        'isPinned' => false,
-        'isChecked' => false,
-    ]);
-
-    // カテゴリ2のアイテムをAPIで作成
-    $this->actingAs($this->user)->post('/shopping-items', [
-        'name' => 'パン',
-        'categoryId' => $category2Id,
-        'order' => 0,
-        'isPinned' => false,
-        'isChecked' => false,
+    // カテゴリ1・2のアイテムをAPIで作成
+    $this->actingAs($this->user)->post('/shopping-items/bulk', [
+        'data' => [
+            [
+                'name' => '牛乳',
+                'categoryId' => $this->categoryId,
+                'order' => 0,
+                'isPinned' => false,
+                'isChecked' => false,
+            ],
+            [
+                'name' => 'パン',
+                'categoryId' => $category2Id,
+                'order' => 0,
+                'isPinned' => false,
+                'isChecked' => false,
+            ],
+        ],
     ]);
 
     $response = $this->actingAs($this->user)->get('/shopping-items');
@@ -137,26 +143,30 @@ test('3-9-2: 【一覧取得】 カテゴリ別アイテム取得確認', functi
 
 test('3-9-3: 【一覧取得】 アイテムの並び順確認', function () {
     // クライアント指定の order で並び順を再現
-    $this->actingAs($this->user)->post('/shopping-items', [
-        'name' => 'アイテム1',
-        'categoryId' => $this->categoryId,
-        'order' => 0,
-        'isPinned' => false,
-        'isChecked' => false,
-    ]);
-    $this->actingAs($this->user)->post('/shopping-items', [
-        'name' => 'アイテム2',
-        'categoryId' => $this->categoryId,
-        'order' => 1,
-        'isPinned' => false,
-        'isChecked' => false,
-    ]);
-    $this->actingAs($this->user)->post('/shopping-items', [
-        'name' => 'アイテム3',
-        'categoryId' => $this->categoryId,
-        'order' => 2,
-        'isPinned' => false,
-        'isChecked' => false,
+    $this->actingAs($this->user)->post('/shopping-items/bulk', [
+        'data' => [
+            [
+                'name' => 'アイテム1',
+                'categoryId' => $this->categoryId,
+                'order' => 0,
+                'isPinned' => false,
+                'isChecked' => false,
+            ],
+            [
+                'name' => 'アイテム2',
+                'categoryId' => $this->categoryId,
+                'order' => 1,
+                'isPinned' => false,
+                'isChecked' => false,
+            ],
+            [
+                'name' => 'アイテム3',
+                'categoryId' => $this->categoryId,
+                'order' => 2,
+                'isPinned' => false,
+                'isChecked' => false,
+            ],
+        ],
     ]);
 
     $response = $this->actingAs($this->user)->get('/shopping-items');
@@ -174,12 +184,16 @@ test('3-9-3: 【一覧取得】 アイテムの並び順確認', function () {
 
 test('3-9-4: 【一覧取得】 レスポンス形式確認', function () {
     // テスト用のアイテムをAPIで作成
-    $this->actingAs($this->user)->post('/shopping-items', [
-        'name' => '牛乳',
-        'categoryId' => $this->categoryId,
-        'order' => 0,
-        'isPinned' => false,
-        'isChecked' => false,
+    $this->actingAs($this->user)->post('/shopping-items/bulk', [
+        'data' => [
+            [
+                'name' => '牛乳',
+                'categoryId' => $this->categoryId,
+                'order' => 0,
+                'isPinned' => false,
+                'isChecked' => false,
+            ],
+        ],
     ]);
 
     $response = $this->actingAs($this->user)->get('/shopping-items');
@@ -293,607 +307,9 @@ test('3-9-8: 【一覧取得】 ShoppingService 例外', function () {
     ]);
 });
 
-// ===== store() メソッドのテストケース =====
-
-test('3-9-9: 【新規作成】 正常な買い物アイテム作成', function () {
-    $data = [
-        'name' => '牛乳',
-        'categoryId' => $this->categoryId,
-        'order' => 0,
-        'isPinned' => false,
-        'isChecked' => false,
-        'tags' => []
-    ];
-
-    $response = $this->actingAs($this->user)->post('/shopping-items', $data);
-
-    $response->assertStatus(201);
-    $response->assertJson([
-        'success' => true,
-        'message' => '買い物アイテム(牛乳)を作成しました。'
-    ]);
-
-    // データベースに保存されていることを確認
-    $this->assertDatabaseHas('shopping_items', [
-        'group_id' => $this->group->id,
-        'category_id' => $this->categoryId,
-        'name' => '牛乳'
-    ]);
-
-    // レスポンス構造の確認（store は data を返さない）
-    $response->assertJsonStructure(['success', 'message']);
-    $response->assertJsonPath('data', null);
-
-    // Content-Typeがapplication/jsonであることを確認
-    $response->assertHeader('Content-Type', 'application/json');
-});
-
-test('3-9-10: 【新規作成】 タグ紐づけ機能確認', function () {
-    // タグを作成
-    $tag = ShoppingTag::create([
-        'group_id' => $this->group->id,
-        'name' => '特売品'
-    ]);
-
-    $data = [
-        'name' => '牛乳',
-        'categoryId' => $this->categoryId,
-        'order' => 0,
-        'isPinned' => false,
-        'isChecked' => false,
-        'tags' => [
-            [
-                'id' => $tag->id,
-                'name' => '特売品'
-            ]
-        ]
-    ];
-
-    $response = $this->actingAs($this->user)->post('/shopping-items', $data);
-
-    $response->assertStatus(201);
-
-    // タグが正しく紐づけられていることを確認（store は data を返さないため index で取得）
-    $indexResponse = $this->actingAs($this->user)->get('/shopping-items');
-    $itemData = collect($indexResponse->json('data'))->first(fn($i) => $i['name'] === '牛乳' && $i['categoryId'] === $this->categoryId);
-    $item = ShoppingItem::with('tags')->find($itemData['id']);
-    expect($item->tags)->toHaveCount(1);
-    expect($item->tags[0]->name)->toBe('特売品');
-});
-
-test('3-9-11: 【新規作成】 タグ未指定でアイテム作成（tags 省略）', function () {
-    $data = [
-        'name' => '牛乳',
-        'categoryId' => $this->categoryId,
-        'order' => 0,
-        'isPinned' => false,
-        'isChecked' => false,
-    ];
-
-    $response = $this->actingAs($this->user)->post('/shopping-items', $data);
-
-    $response->assertStatus(201);
-    $response->assertJson([
-        'success' => true,
-        'message' => '買い物アイテム(牛乳)を作成しました。'
-    ]);
-
-    // タグが空で保存されていることを DB で確認（store は data を返さない）
-    $item = ShoppingItem::with('tags')->where('group_id', $this->group->id)->where('name', '牛乳')->first();
-    expect($item->tags)->toHaveCount(0);
-});
-
-test('3-9-12: 【新規作成】 タグ空配列でアイテム作成（tags=[]）', function () {
-    $data = [
-        'name' => '牛乳',
-        'categoryId' => $this->categoryId,
-        'order' => 0,
-        'isPinned' => false,
-        'isChecked' => false,
-        'tags' => []
-    ];
-
-    $response = $this->actingAs($this->user)->post('/shopping-items', $data);
-
-    $response->assertStatus(201);
-    $response->assertJson([
-        'success' => true,
-        'message' => '買い物アイテム(牛乳)を作成しました。'
-    ]);
-
-    // レスポンスは success + message のみ（data は返さない）
-    $response->assertJsonStructure(['success', 'message']);
-});
-
-test('3-9-13: 【新規作成】 タグ null でアイテム作成（tags=null）', function () {
-    $data = [
-        'name' => '牛乳',
-        'categoryId' => $this->categoryId,
-        'order' => 0,
-        'isPinned' => false,
-        'isChecked' => false,
-        'tags' => null
-    ];
-
-    $response = $this->actingAs($this->user)->post('/shopping-items', $data);
-
-    $response->assertStatus(201);
-    $response->assertJson([
-        'success' => true,
-        'message' => '買い物アイテム(牛乳)を作成しました。'
-    ]);
-
-    // レスポンスは success + message のみ（data は返さない）
-    $response->assertJsonStructure(['success', 'message']);
-});
-
-test('3-9-14: 【新規作成】 数量情報の確認', function () {
-    $data = [
-        'name' => '牛乳',
-        'categoryId' => $this->categoryId,
-        'order' => 0,
-        'isPinned' => false,
-        'isChecked' => false,
-        'tags' => []
-    ];
-
-    $response = $this->actingAs($this->user)->post('/shopping-items', $data);
-
-    $response->assertStatus(201);
-
-    // 数量情報が正しく保存されていることを確認（store は data を返さないため index で取得）
-    $indexResponse = $this->actingAs($this->user)->get('/shopping-items');
-    $itemData = collect($indexResponse->json('data'))->first(fn($i) => $i['name'] === '牛乳' && $i['categoryId'] === $this->categoryId);
-    expect($itemData)->toHaveKey('isPinned');
-    expect($itemData)->toHaveKey('isChecked');
-    expect($itemData)->toHaveKey('order');
-});
-
-test('3-9-15: 【新規作成】 バリデーションエラー（アイテム名未入力）', function () {
-    $data = [
-        'categoryId' => $this->categoryId,
-        'order' => 0,
-        'isPinned' => false,
-        'isChecked' => false,
-    ];
-
-    $response = $this->actingAs($this->user)->post('/shopping-items', $data);
-
-    $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['name']);
-
-    // エラーメッセージの内容を検証
-    $responseData = $response->json();
-    $this->assertContains('nameは必ず指定してください。', $responseData['errors']['name']);
-
-    // レスポンス構造の確認
-    $response->assertJsonStructure([
-        'success',
-        'message',
-        'errors' => [
-            'name'
-        ]
-    ]);
-
-    // Content-Typeがapplication/jsonであることを確認
-    $response->assertHeader('Content-Type', 'application/json');
-});
-
-test('3-9-16: 【新規作成】 バリデーションエラー（アイテム名が 255 文字超過）', function () {
-    $data = [
-        'name' => str_repeat('a', 256),
-        'categoryId' => $this->categoryId,
-        'order' => 0,
-        'isPinned' => false,
-        'isChecked' => false,
-    ];
-
-    $response = $this->actingAs($this->user)->post('/shopping-items', $data);
-
-    $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['name']);
-
-    // エラーメッセージの内容を検証
-    $responseData = $response->json();
-    $this->assertContains('nameは、255文字以内で指定してください。', $responseData['errors']['name']);
-
-    // レスポンス構造の確認
-    $response->assertJsonStructure([
-        'success',
-        'message',
-        'errors' => [
-            'name'
-        ]
-    ]);
-
-    // Content-Typeがapplication/jsonであることを確認
-    $response->assertHeader('Content-Type', 'application/json');
-});
-
-test('3-9-17: 【新規作成】 バリデーションエラー（カテゴリ ID 未入力）', function () {
-    $data = [
-        'name' => '牛乳',
-        'order' => 0,
-        'isPinned' => false,
-        'isChecked' => false,
-    ];
-
-    $response = $this->actingAs($this->user)->post('/shopping-items', $data);
-
-    $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['categoryId']);
-
-    // エラーメッセージの内容を検証
-    $responseData = $response->json();
-    $this->assertContains('categoryIdは必ず指定してください。', $responseData['errors']['categoryId']);
-
-    // レスポンス構造の確認
-    $response->assertJsonStructure([
-        'success',
-        'message',
-        'errors' => [
-            'categoryId'
-        ]
-    ]);
-
-    // Content-Typeがapplication/jsonであることを確認
-    $response->assertHeader('Content-Type', 'application/json');
-});
-
-test('3-9-18: 【新規作成】 バリデーションエラー（カテゴリ ID が UUID 形式でない）', function () {
-    $data = [
-        'name' => '牛乳',
-        'categoryId' => 'invalid-uuid',
-        'order' => 0,
-        'isPinned' => false,
-        'isChecked' => false,
-    ];
-
-    $response = $this->actingAs($this->user)->post('/shopping-items', $data);
-
-    $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['categoryId']);
-
-    // エラーメッセージの内容を検証
-    $responseData = $response->json();
-    $this->assertContains('categoryIdに有効なUUIDを指定してください。', $responseData['errors']['categoryId']);
-
-    // レスポンス構造の確認
-    $response->assertJsonStructure([
-        'success',
-        'message',
-        'errors' => [
-            'categoryId'
-        ]
-    ]);
-
-    // Content-Typeがapplication/jsonであることを確認
-    $response->assertHeader('Content-Type', 'application/json');
-});
-
-test('3-9-19: 【新規作成】 バリデーションエラー（tags が配列でない）', function () {
-    $data = [
-        'name' => '牛乳',
-        'categoryId' => $this->categoryId,
-        'order' => 0,
-        'isPinned' => false,
-        'isChecked' => false,
-        'tags' => 'not_array'
-    ];
-
-    $response = $this->actingAs($this->user)->post('/shopping-items', $data);
-
-    $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['tags']);
-
-    // エラーメッセージの内容を検証
-    $responseData = $response->json();
-    $this->assertContains('tagsは配列でなくてはなりません。', $responseData['errors']['tags']);
-
-    // レスポンス構造の確認
-    $response->assertJsonStructure([
-        'success',
-        'message',
-        'errors' => [
-            'tags'
-        ]
-    ]);
-
-    // Content-Typeがapplication/jsonであることを確認
-    $response->assertHeader('Content-Type', 'application/json');
-});
-
-test('3-9-20: 【新規作成】 バリデーションエラー（tags.id が UUID 形式でない）', function () {
-    $data = [
-        'name' => '牛乳',
-        'categoryId' => $this->categoryId,
-        'order' => 0,
-        'isPinned' => false,
-        'isChecked' => false,
-        'tags' => [
-            [
-                'id' => 'invalid-uuid',
-                'name' => '特売品'
-            ]
-        ]
-    ];
-
-    $response = $this->actingAs($this->user)->post('/shopping-items', $data);
-
-    $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['tags.0.id']);
-
-    // エラーメッセージの内容を検証
-    $responseData = $response->json();
-    $this->assertContains('tags.*.idに有効なUUIDを指定してください。', $responseData['errors']['tags.0.id']);
-
-    // レスポンス構造の確認
-    $response->assertJsonStructure([
-        'success',
-        'message',
-        'errors' => [
-            'tags.0.id'
-        ]
-    ]);
-
-    // Content-Typeがapplication/jsonであることを確認
-    $response->assertHeader('Content-Type', 'application/json');
-});
-
-test('3-9-21: 【新規作成】 バリデーションエラー（tags.name 未入力）', function () {
-    $data = [
-        'name' => '牛乳',
-        'categoryId' => $this->categoryId,
-        'order' => 0,
-        'isPinned' => false,
-        'isChecked' => false,
-        'tags' => [
-            [
-                'id' => null
-            ]
-        ]
-    ];
-
-    $response = $this->actingAs($this->user)->post('/shopping-items', $data);
-
-    $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['tags.0.name']);
-
-    // エラーメッセージの内容を検証
-    $responseData = $response->json();
-    $this->assertContains('tags.*.nameは必ず指定してください。', $responseData['errors']['tags.0.name']);
-
-    // レスポンス構造の確認
-    $response->assertJsonStructure([
-        'success',
-        'message',
-        'errors' => [
-            'tags.0.name'
-        ]
-    ]);
-
-    // Content-Typeがapplication/jsonであることを確認
-    $response->assertHeader('Content-Type', 'application/json');
-});
-
-test('3-9-22: 【新規作成】 バリデーションエラー（tags.name が文字列でない）', function () {
-    $data = [
-        'name' => '牛乳',
-        'categoryId' => $this->categoryId,
-        'tags' => [
-            [
-                'name' => 123
-            ]
-        ]
-    ];
-
-    $response = $this->actingAs($this->user)->post('/shopping-items', $data);
-
-    $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['tags.0.name']);
-
-    // エラーメッセージの内容を検証
-    $responseData = $response->json();
-    $this->assertContains('tags.*.nameは文字列を指定してください。', $responseData['errors']['tags.0.name']);
-
-    // レスポンス構造の確認
-    $response->assertJsonStructure([
-        'success',
-        'message',
-        'errors' => [
-            'tags.0.name'
-        ]
-    ]);
-
-    // Content-Typeがapplication/jsonであることを確認
-    $response->assertHeader('Content-Type', 'application/json');
-});
-
-test('3-9-23: 【新規作成】 バリデーションエラー（tags.name が 255 文字超過）', function () {
-    $data = [
-        'name' => '牛乳',
-        'categoryId' => $this->categoryId,
-        'order' => 0,
-        'isPinned' => false,
-        'isChecked' => false,
-        'tags' => [
-            [
-                'name' => str_repeat('a', 256)
-            ]
-        ]
-    ];
-
-    $response = $this->actingAs($this->user)->post('/shopping-items', $data);
-
-    $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['tags.0.name']);
-
-    // エラーメッセージの内容を検証
-    $responseData = $response->json();
-    $this->assertContains('tags.*.nameは、255文字以内で指定してください。', $responseData['errors']['tags.0.name']);
-
-    // レスポンス構造の確認
-    $response->assertJsonStructure([
-        'success',
-        'message',
-        'errors' => [
-            'tags.0.name'
-        ]
-    ]);
-
-    // Content-Typeがapplication/jsonであることを確認
-    $response->assertHeader('Content-Type', 'application/json');
-});
-
-test('3-9-24: 【新規作成】 存在しないカテゴリ ID', function () {
-    $data = [
-        'name' => '牛乳',
-        'categoryId' => '00000000-0000-0000-0000-000000000000',
-        'order' => 0,
-        'isPinned' => false,
-        'isChecked' => false,
-    ];
-
-    $response = $this->actingAs($this->user)->post('/shopping-items', $data);
-
-    $response->assertStatus(404);
-    $response->assertJson([
-        'success' => false,
-        'message' => '指定された買い物カテゴリーが見つかりませんでした。'
-    ]);
-
-    // レスポンス構造の確認
-    $response->assertJsonStructure([
-        'success',
-        'message'
-    ]);
-
-    // Content-Typeがapplication/jsonであることを確認
-    $response->assertHeader('Content-Type', 'application/json');
-});
-
-test('3-9-25: 【新規作成】 未認証ユーザー', function () {
-    $data = [
-        'name' => '牛乳',
-        'categoryId' => $this->categoryId,
-        'order' => 0,
-        'isPinned' => false,
-        'isChecked' => false,
-    ];
-
-    $response = $this->post('/shopping-items', $data);
-
-    $response->assertStatus(401);
-    $response->assertJson([
-        'success' => false,
-        'message' => '認証が必要です。'
-    ]);
-
-    // レスポンス構造の確認
-    $response->assertJsonStructure([
-        'success',
-        'message'
-    ]);
-
-    // Content-Typeがapplication/jsonであることを確認
-    $response->assertHeader('Content-Type', 'application/json');
-});
-
-test('3-9-26: 【新規作成】 グループが存在しない', function () {
-    $user = User::factory()->create([
-        'email_verified_at' => now()
-    ]);
-    // グループに所属させない
-
-    $data = [
-        'name' => '牛乳',
-        'categoryId' => $this->categoryId,
-        'order' => 0,
-        'isPinned' => false,
-        'isChecked' => false,
-    ];
-
-    $response = $this->actingAs($user)->post('/shopping-items', $data);
-
-    $response->assertStatus(422);
-    $response->assertJson([
-        'success' => false,
-        'message' => 'ユーザーはグループに所属していません。'
-    ]);
-
-    // レスポンス構造の確認
-    $response->assertJsonStructure([
-        'success',
-        'message'
-    ]);
-
-    // Content-Typeがapplication/jsonであることを確認
-    $response->assertHeader('Content-Type', 'application/json');
-});
-
-test('3-9-27: 【新規作成】 データベース接続エラー', function () {
-    $this->mock(\App\Services\ShoppingItemService::class, function ($mock) {
-        $mock->shouldReceive('create')
-            ->once()
-            ->andThrow(new \Exception('Database connection failed'));
-    });
-
-    $data = [
-        'name' => '牛乳',
-        'categoryId' => $this->categoryId,
-        'order' => 0,
-        'isPinned' => false,
-        'isChecked' => false,
-    ];
-
-    $response = $this->actingAs($this->user)->post('/shopping-items', $data);
-
-    $response->assertStatus(500);
-    $response->assertJson([
-        'success' => false,
-        'message' => '買い物アイテムの作成に失敗しました。'
-    ]);
-
-    // レスポンス構造の確認
-    $response->assertJsonStructure([
-        'success',
-        'message'
-    ]);
-});
-
-test('3-9-28: 【新規作成】 アイテム作成失敗', function () {
-    $this->mock(\App\Services\ShoppingItemService::class, function ($mock) {
-        $mock->shouldReceive('create')
-            ->once()
-            ->andThrow(new \Exception('Create failed'));
-    });
-
-    $data = [
-        'name' => '牛乳',
-        'categoryId' => $this->categoryId,
-        'order' => 0,
-        'isPinned' => false,
-        'isChecked' => false,
-    ];
-
-    $response = $this->actingAs($this->user)->post('/shopping-items', $data);
-
-    $response->assertStatus(500);
-    $response->assertJson([
-        'success' => false,
-        'message' => '買い物アイテムの作成に失敗しました。'
-    ]);
-
-    // レスポンス構造の確認
-    $response->assertJsonStructure([
-        'success',
-        'message'
-    ]);
-});
-
 // ===== bulkStore() メソッドのテストケース =====
 
-test('3-9-29: 【一括作成】 1件の一括作成（タグなし）', function () {
+test('3-9-9: 【一括作成】 1件の一括作成（タグなし）', function () {
     $data = [
         'data' => [
             [
@@ -925,7 +341,7 @@ test('3-9-29: 【一括作成】 1件の一括作成（タグなし）', functio
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-30: 【一括作成】 1件の一括作成（タグあり）', function () {
+test('3-9-10: 【一括作成】 1件の一括作成（タグあり）', function () {
     $tag = ShoppingTag::create([
         'group_id' => $this->group->id,
         'name' => '特売品'
@@ -960,7 +376,104 @@ test('3-9-30: 【一括作成】 1件の一括作成（タグあり）', functio
     expect($item->tags[0]->name)->toBe('特売品');
 });
 
-test('3-9-31: 【一括作成】 複数件の一括作成', function () {
+test('3-9-11: 【一括作成】 タグ未指定でアイテム作成（tags 省略）', function () {
+    $data = [
+        'data' => [
+            [
+                'name' => '牛乳',
+                'categoryId' => $this->categoryId,
+                'order' => 0,
+                'isPinned' => false,
+                'isChecked' => false,
+            ],
+        ],
+    ];
+
+    $response = $this->actingAs($this->user)->post('/shopping-items/bulk', $data);
+
+    $response->assertStatus(201);
+    $response->assertJson([
+        'success' => true,
+        'message' => '買い物アイテムを1件作成しました。',
+    ]);
+
+    $item = ShoppingItem::with('tags')->where('group_id', $this->group->id)->where('name', '牛乳')->first();
+    expect($item->tags)->toHaveCount(0);
+});
+
+test('3-9-12: 【一括作成】 タグ空配列でアイテム作成（tags=[]）', function () {
+    $data = [
+        'data' => [
+            [
+                'name' => '牛乳',
+                'categoryId' => $this->categoryId,
+                'order' => 0,
+                'isPinned' => false,
+                'isChecked' => false,
+                'tags' => [],
+            ],
+        ],
+    ];
+
+    $response = $this->actingAs($this->user)->post('/shopping-items/bulk', $data);
+
+    $response->assertStatus(201);
+    $response->assertJson([
+        'success' => true,
+        'message' => '買い物アイテムを1件作成しました。',
+    ]);
+    $response->assertJsonStructure(['success', 'message']);
+});
+
+test('3-9-13: 【一括作成】 タグ null でアイテム作成（tags=null）', function () {
+    $data = [
+        'data' => [
+            [
+                'name' => '牛乳',
+                'categoryId' => $this->categoryId,
+                'order' => 0,
+                'isPinned' => false,
+                'isChecked' => false,
+                'tags' => null,
+            ],
+        ],
+    ];
+
+    $response = $this->actingAs($this->user)->post('/shopping-items/bulk', $data);
+
+    $response->assertStatus(201);
+    $response->assertJson([
+        'success' => true,
+        'message' => '買い物アイテムを1件作成しました。',
+    ]);
+    $response->assertJsonStructure(['success', 'message']);
+});
+
+test('3-9-14: 【一括作成】 数量情報の確認', function () {
+    $data = [
+        'data' => [
+            [
+                'name' => '牛乳',
+                'categoryId' => $this->categoryId,
+                'order' => 5,
+                'isPinned' => true,
+                'isChecked' => true,
+            ],
+        ],
+    ];
+
+    $response = $this->actingAs($this->user)->post('/shopping-items/bulk', $data);
+
+    $response->assertStatus(201);
+
+    $indexResponse = $this->actingAs($this->user)->get('/shopping-items');
+    $itemData = collect($indexResponse->json('data'))->first(fn($i) => $i['name'] === '牛乳' && $i['categoryId'] === $this->categoryId);
+    expect($itemData['isPinned'])->toBeTrue();
+    expect($itemData['isChecked'])->toBeTrue();
+    expect($itemData['order'])->toBe(5);
+});
+
+test('3-9-15: 【一括作成】 複数件の一括作成', function () {
     $data = [
         'data' => [
             [
@@ -1009,7 +522,7 @@ test('3-9-31: 【一括作成】 複数件の一括作成', function () {
     ]);
 });
 
-test('3-9-32: 【一括作成】 一括作成成功メッセージの確認', function () {
+test('3-9-16: 【一括作成】 一括作成成功メッセージの確認', function () {
     $data = [
         'data' => [
             [
@@ -1029,7 +542,7 @@ test('3-9-32: 【一括作成】 一括作成成功メッセージの確認', fu
     expect($message)->toBe('買い物アイテムを1件作成しました。');
 });
 
-test('3-9-33: 【一括作成】 バリデーションエラー（data 未入力）', function () {
+test('3-9-17: 【一括作成】 バリデーションエラー（data 未入力）', function () {
     $data = [];
 
     $response = $this->actingAs($this->user)->post('/shopping-items/bulk', $data);
@@ -1050,7 +563,7 @@ test('3-9-33: 【一括作成】 バリデーションエラー（data 未入力
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-34: 【一括作成】 バリデーションエラー（data が配列でない）', function () {
+test('3-9-18: 【一括作成】 バリデーションエラー（data が配列でない）', function () {
     $data = [
         'data' => 'not_array'
     ];
@@ -1073,7 +586,7 @@ test('3-9-34: 【一括作成】 バリデーションエラー（data が配列
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-35: 【一括作成】 バリデーションエラー（data が空配列）', function () {
+test('3-9-19: 【一括作成】 バリデーションエラー（data が空配列）', function () {
     $data = [
         'data' => []
     ];
@@ -1096,7 +609,7 @@ test('3-9-35: 【一括作成】 バリデーションエラー（data が空配
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-36: 【一括作成】 バリデーションエラー（name 未入力）', function () {
+test('3-9-20: 【一括作成】 バリデーションエラー（name 未入力）', function () {
     $data = [
         'data' => [
             [
@@ -1126,7 +639,7 @@ test('3-9-36: 【一括作成】 バリデーションエラー（name 未入力
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-37: 【一括作成】 バリデーションエラー（name が文字列でない）', function () {
+test('3-9-21: 【一括作成】 バリデーションエラー（name が文字列でない）', function () {
     $data = [
         'data' => [
             [
@@ -1148,7 +661,7 @@ test('3-9-37: 【一括作成】 バリデーションエラー（name が文字
     $this->assertContains('data.*.nameは文字列を指定してください。', $responseData['errors']['data.0.name']);
 });
 
-test('3-9-38: 【一括作成】 バリデーションエラー（name が 255 文字超過）', function () {
+test('3-9-22: 【一括作成】 バリデーションエラー（name が 255 文字超過）', function () {
     $data = [
         'data' => [
             [
@@ -1170,7 +683,7 @@ test('3-9-38: 【一括作成】 バリデーションエラー（name が 255 �
     $this->assertContains('data.*.nameは、255文字以内で指定してください。', $responseData['errors']['data.0.name']);
 });
 
-test('3-9-39: 【一括作成】 バリデーションエラー（categoryId 未入力）', function () {
+test('3-9-23: 【一括作成】 バリデーションエラー（categoryId 未入力）', function () {
     $data = [
         'data' => [
             [
@@ -1191,7 +704,7 @@ test('3-9-39: 【一括作成】 バリデーションエラー（categoryId 未
     $this->assertContains('data.*.categoryIdは必ず指定してください。', $responseData['errors']['data.0.categoryId']);
 });
 
-test('3-9-40: 【一括作成】 バリデーションエラー（categoryId が UUID 形式でない）', function () {
+test('3-9-24: 【一括作成】 バリデーションエラー（categoryId が UUID 形式でない）', function () {
     $data = [
         'data' => [
             [
@@ -1213,7 +726,7 @@ test('3-9-40: 【一括作成】 バリデーションエラー（categoryId が
     $this->assertContains('data.*.categoryIdに有効なUUIDを指定してください。', $responseData['errors']['data.0.categoryId']);
 });
 
-test('3-9-41: 【一括作成】 バリデーションエラー（tags が配列でない）', function () {
+test('3-9-25: 【一括作成】 バリデーションエラー（tags が配列でない）', function () {
     $data = [
         'data' => [
             [
@@ -1233,7 +746,7 @@ test('3-9-41: 【一括作成】 バリデーションエラー（tags が配列
     $this->assertContains('data.*.tagsは配列でなくてはなりません。', $responseData['errors']['data.0.tags']);
 });
 
-test('3-9-42: 【一括作成】 バリデーションエラー（tags.id が UUID 形式でない）', function () {
+test('3-9-26: 【一括作成】 バリデーションエラー（tags.id が UUID 形式でない）', function () {
     $data = [
         'data' => [
             [
@@ -1261,7 +774,7 @@ test('3-9-42: 【一括作成】 バリデーションエラー（tags.id が UU
     $this->assertContains('data.*.tags.*.idに有効なUUIDを指定してください。', $responseData['errors']['data.0.tags.0.id']);
 });
 
-test('3-9-43: 【一括作成】 バリデーションエラー（tags.name 未入力）', function () {
+test('3-9-27: 【一括作成】 バリデーションエラー（tags.name 未入力）', function () {
     $data = [
         'data' => [
             [
@@ -1288,7 +801,7 @@ test('3-9-43: 【一括作成】 バリデーションエラー（tags.name 未�
     $this->assertContains('data.*.tags.*.nameは必ず指定してください。', $responseData['errors']['data.0.tags.0.name']);
 });
 
-test('3-9-44: 【一括作成】 バリデーションエラー（tags.name が文字列でない）', function () {
+test('3-9-28: 【一括作成】 バリデーションエラー（tags.name が文字列でない）', function () {
     $data = [
         'data' => [
             [
@@ -1315,7 +828,7 @@ test('3-9-44: 【一括作成】 バリデーションエラー（tags.name が�
     $this->assertContains('data.*.tags.*.nameは文字列を指定してください。', $responseData['errors']['data.0.tags.0.name']);
 });
 
-test('3-9-45: 【一括作成】 バリデーションエラー（tags.name が 255 文字超過）', function () {
+test('3-9-29: 【一括作成】 バリデーションエラー（tags.name が 255 文字超過）', function () {
     $data = [
         'data' => [
             [
@@ -1342,7 +855,7 @@ test('3-9-45: 【一括作成】 バリデーションエラー（tags.name が 
     $this->assertContains('data.*.tags.*.nameは、255文字以内で指定してください。', $responseData['errors']['data.0.tags.0.name']);
 });
 
-test('3-9-46: 【一括作成】 存在しないカテゴリ ID', function () {
+test('3-9-30: 【一括作成】 存在しないカテゴリ ID', function () {
     $data = [
         'data' => [
             [
@@ -1366,7 +879,7 @@ test('3-9-46: 【一括作成】 存在しないカテゴリ ID', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-47: 【一括作成】 未認証ユーザー', function () {
+test('3-9-31: 【一括作成】 未認証ユーザー', function () {
     $data = [
         'data' => [
             [
@@ -1390,7 +903,7 @@ test('3-9-47: 【一括作成】 未認証ユーザー', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-48: 【一括作成】 グループが存在しない', function () {
+test('3-9-32: 【一括作成】 グループが存在しない', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -1418,7 +931,7 @@ test('3-9-48: 【一括作成】 グループが存在しない', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-49: 【一括作成】 サービス例外', function () {
+test('3-9-33: 【一括作成】 サービス例外', function () {
     $this->mock(\App\Services\ShoppingItemService::class, function ($mock) {
         $mock->shouldReceive('bulkCreate')
             ->once()
@@ -1449,21 +962,25 @@ test('3-9-49: 【一括作成】 サービス例外', function () {
 
 // ===== bulkUpdate() メソッドのテストケース =====
 
-test('3-9-50: 【一括更新】 正常な買い物アイテム一括更新', function () {
+test('3-9-34: 【一括更新】 正常な買い物アイテム一括更新', function () {
     // テスト用のアイテムをAPIで作成
-    $this->actingAs($this->user)->post('/shopping-items', [
-        'name' => '牛乳',
-        'categoryId' => $this->categoryId,
-        'order' => 0,
-        'isPinned' => false,
-        'isChecked' => false,
-    ]);
-    $this->actingAs($this->user)->post('/shopping-items', [
-        'name' => 'パン',
-        'categoryId' => $this->categoryId,
-        'order' => 1,
-        'isPinned' => false,
-        'isChecked' => false,
+    $this->actingAs($this->user)->post('/shopping-items/bulk', [
+        'data' => [
+            [
+                'name' => '牛乳',
+                'categoryId' => $this->categoryId,
+                'order' => 0,
+                'isPinned' => false,
+                'isChecked' => false,
+            ],
+            [
+                'name' => 'パン',
+                'categoryId' => $this->categoryId,
+                'order' => 1,
+                'isPinned' => false,
+                'isChecked' => false,
+            ],
+        ],
     ]);
     $indexResponse = $this->actingAs($this->user)->get('/shopping-items');
     $item1Id = collect($indexResponse->json('data'))->first(fn($i) => $i['name'] === '牛乳' && $i['categoryId'] === $this->categoryId)['id'];
@@ -1524,14 +1041,18 @@ test('3-9-50: 【一括更新】 正常な買い物アイテム一括更新', fu
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-51: 【一括更新】 一括更新成功メッセージの確認', function () {
+test('3-9-35: 【一括更新】 一括更新成功メッセージの確認', function () {
     // テスト用のアイテムをAPIで作成
-    $this->actingAs($this->user)->post('/shopping-items', [
-        'name' => '牛乳',
-        'categoryId' => $this->categoryId,
-        'order' => 0,
-        'isPinned' => false,
-        'isChecked' => false,
+    $this->actingAs($this->user)->post('/shopping-items/bulk', [
+        'data' => [
+            [
+                'name' => '牛乳',
+                'categoryId' => $this->categoryId,
+                'order' => 0,
+                'isPinned' => false,
+                'isChecked' => false,
+            ],
+        ],
     ]);
     $indexResponse = $this->actingAs($this->user)->get('/shopping-items');
     $itemId = collect($indexResponse->json('data'))->first(fn($i) => $i['name'] === '牛乳' && $i['categoryId'] === $this->categoryId)['id'];
@@ -1559,7 +1080,7 @@ test('3-9-51: 【一括更新】 一括更新成功メッセージの確認', fu
     expect($message)->toBe('買い物アイテムを1件更新しました。');
 });
 
-test('3-9-52: 【一括更新】 既存タグを ID 未指定・同名で更新', function () {
+test('3-9-36: 【一括更新】 既存タグを ID 未指定・同名で更新', function () {
     // 既存のタグを作成（タグはAPIでの作成がないため直接作成）
     $tag = ShoppingTag::create([
         'group_id' => $this->group->id,
@@ -1567,12 +1088,16 @@ test('3-9-52: 【一括更新】 既存タグを ID 未指定・同名で更新'
     ]);
 
     // テスト用のアイテムをAPIで作成
-    $this->actingAs($this->user)->post('/shopping-items', [
-        'name' => '牛乳',
-        'categoryId' => $this->categoryId,
-        'order' => 0,
-        'isPinned' => false,
-        'isChecked' => false,
+    $this->actingAs($this->user)->post('/shopping-items/bulk', [
+        'data' => [
+            [
+                'name' => '牛乳',
+                'categoryId' => $this->categoryId,
+                'order' => 0,
+                'isPinned' => false,
+                'isChecked' => false,
+            ],
+        ],
     ]);
     $indexResponse = $this->actingAs($this->user)->get('/shopping-items');
     $itemId = collect($indexResponse->json('data'))->first(fn($i) => $i['name'] === '牛乳' && $i['categoryId'] === $this->categoryId)['id'];
@@ -1611,14 +1136,18 @@ test('3-9-52: 【一括更新】 既存タグを ID 未指定・同名で更新'
     expect($updatedItem->tags[0]->id)->toBe($tag->id);
 });
 
-test('3-9-53: 【一括更新】 新規タグを ID 未指定で追加', function () {
+test('3-9-37: 【一括更新】 新規タグを ID 未指定で追加', function () {
     // テスト用のアイテムをAPIで作成
-    $this->actingAs($this->user)->post('/shopping-items', [
-        'name' => '牛乳',
-        'categoryId' => $this->categoryId,
-        'order' => 0,
-        'isPinned' => false,
-        'isChecked' => false,
+    $this->actingAs($this->user)->post('/shopping-items/bulk', [
+        'data' => [
+            [
+                'name' => '牛乳',
+                'categoryId' => $this->categoryId,
+                'order' => 0,
+                'isPinned' => false,
+                'isChecked' => false,
+            ],
+        ],
     ]);
     $indexResponse = $this->actingAs($this->user)->get('/shopping-items');
     $itemId = collect($indexResponse->json('data'))->first(fn($i) => $i['name'] === '牛乳' && $i['categoryId'] === $this->categoryId)['id'];
@@ -1657,7 +1186,7 @@ test('3-9-53: 【一括更新】 新規タグを ID 未指定で追加', functio
     expect($updatedItem->tags[0]->name)->toBe('新しいタグ');
 });
 
-test('3-9-54: 【一括更新】 既存タグと新規タグを混在させた更新', function () {
+test('3-9-38: 【一括更新】 既存タグと新規タグを混在させた更新', function () {
     // 既存のタグを作成（タグはAPIでの作成がないため直接作成）
     $existingTag = ShoppingTag::create([
         'group_id' => $this->group->id,
@@ -1665,12 +1194,16 @@ test('3-9-54: 【一括更新】 既存タグと新規タグを混在させた�
     ]);
 
     // テスト用のアイテムをAPIで作成
-    $this->actingAs($this->user)->post('/shopping-items', [
-        'name' => '牛乳',
-        'categoryId' => $this->categoryId,
-        'order' => 0,
-        'isPinned' => false,
-        'isChecked' => false,
+    $this->actingAs($this->user)->post('/shopping-items/bulk', [
+        'data' => [
+            [
+                'name' => '牛乳',
+                'categoryId' => $this->categoryId,
+                'order' => 0,
+                'isPinned' => false,
+                'isChecked' => false,
+            ],
+        ],
     ]);
     $indexResponse = $this->actingAs($this->user)->get('/shopping-items');
     $itemId = collect($indexResponse->json('data'))->first(fn($i) => $i['name'] === '牛乳' && $i['categoryId'] === $this->categoryId)['id'];
@@ -1716,14 +1249,18 @@ test('3-9-54: 【一括更新】 既存タグと新規タグを混在させた�
     expect($updatedItem->tags)->toHaveCount(2);
 });
 
-test('3-9-55: 【一括更新】 タグ未指定でアイテム更新（tags 省略）', function () {
+test('3-9-39: 【一括更新】 タグ未指定でアイテム更新（tags 省略）', function () {
     // テスト用のアイテムをAPIで作成
-    $this->actingAs($this->user)->post('/shopping-items', [
-        'name' => '牛乳',
-        'categoryId' => $this->categoryId,
-        'order' => 0,
-        'isPinned' => false,
-        'isChecked' => false,
+    $this->actingAs($this->user)->post('/shopping-items/bulk', [
+        'data' => [
+            [
+                'name' => '牛乳',
+                'categoryId' => $this->categoryId,
+                'order' => 0,
+                'isPinned' => false,
+                'isChecked' => false,
+            ],
+        ],
     ]);
     $indexResponse = $this->actingAs($this->user)->get('/shopping-items');
     $itemId = collect($indexResponse->json('data'))->first(fn($i) => $i['name'] === '牛乳' && $i['categoryId'] === $this->categoryId)['id'];
@@ -1756,14 +1293,18 @@ test('3-9-55: 【一括更新】 タグ未指定でアイテム更新（tags 省
     ]);
 });
 
-test('3-9-56: 【一括更新】 タグ空配列でアイテム更新（tags=[]）', function () {
+test('3-9-40: 【一括更新】 タグ空配列でアイテム更新（tags=[]）', function () {
     // テスト用のアイテムをAPIで作成
-    $this->actingAs($this->user)->post('/shopping-items', [
-        'name' => '牛乳',
-        'categoryId' => $this->categoryId,
-        'order' => 0,
-        'isPinned' => false,
-        'isChecked' => false,
+    $this->actingAs($this->user)->post('/shopping-items/bulk', [
+        'data' => [
+            [
+                'name' => '牛乳',
+                'categoryId' => $this->categoryId,
+                'order' => 0,
+                'isPinned' => false,
+                'isChecked' => false,
+            ],
+        ],
     ]);
     $indexResponse = $this->actingAs($this->user)->get('/shopping-items');
     $itemId = collect($indexResponse->json('data'))->first(fn($i) => $i['name'] === '牛乳' && $i['categoryId'] === $this->categoryId)['id'];
@@ -1797,14 +1338,18 @@ test('3-9-56: 【一括更新】 タグ空配列でアイテム更新（tags=[]�
     ]);
 });
 
-test('3-9-57: 【一括更新】 タグ null でアイテム更新（tags=null）', function () {
+test('3-9-41: 【一括更新】 タグ null でアイテム更新（tags=null）', function () {
     // テスト用のアイテムをAPIで作成
-    $this->actingAs($this->user)->post('/shopping-items', [
-        'name' => '牛乳',
-        'categoryId' => $this->categoryId,
-        'order' => 0,
-        'isPinned' => false,
-        'isChecked' => false,
+    $this->actingAs($this->user)->post('/shopping-items/bulk', [
+        'data' => [
+            [
+                'name' => '牛乳',
+                'categoryId' => $this->categoryId,
+                'order' => 0,
+                'isPinned' => false,
+                'isChecked' => false,
+            ],
+        ],
     ]);
     $indexResponse = $this->actingAs($this->user)->get('/shopping-items');
     $itemId = collect($indexResponse->json('data'))->first(fn($i) => $i['name'] === '牛乳' && $i['categoryId'] === $this->categoryId)['id'];
@@ -1838,7 +1383,7 @@ test('3-9-57: 【一括更新】 タグ null でアイテム更新（tags=null�
     ]);
 });
 
-test('3-9-58: 【一括更新】 存在しないアイテムの更新', function () {
+test('3-9-42: 【一括更新】 存在しないアイテムの更新', function () {
     $data = [
         'data' => [
             [
@@ -1871,7 +1416,7 @@ test('3-9-58: 【一括更新】 存在しないアイテムの更新', function
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-59: 【一括更新】 他グループのアイテム更新', function () {
+test('3-9-43: 【一括更新】 他グループのアイテム更新', function () {
     // 他グループのユーザーを作成
     $otherUser = User::factory()->create(['email_verified_at' => now()]);
     $otherGroup = Group::create(['group_size' => 1]);
@@ -1890,12 +1435,16 @@ test('3-9-59: 【一括更新】 他グループのアイテム更新', function
     $otherCategoryId = collect($otherCategoryIndexResponse->json('data'))->firstWhere('name', '他のグループのカテゴリ')['id'];
     expect($otherCategoryId)->not->toBeNull();
 
-    $this->actingAs($otherUser)->post('/shopping-items', [
-        'name' => '他のグループのアイテム',
-        'categoryId' => $otherCategoryId,
-        'order' => 0,
-        'isPinned' => false,
-        'isChecked' => false,
+    $this->actingAs($otherUser)->post('/shopping-items/bulk', [
+        'data' => [
+            [
+                'name' => '他のグループのアイテム',
+                'categoryId' => $otherCategoryId,
+                'order' => 0,
+                'isPinned' => false,
+                'isChecked' => false,
+            ],
+        ],
     ]);
     $otherItemIndexResponse = $this->actingAs($otherUser)->get('/shopping-items');
     $otherItemId = collect($otherItemIndexResponse->json('data'))->first(fn($i) => $i['name'] === '他のグループのアイテム' && $i['categoryId'] === $otherCategoryId)['id'];
@@ -1932,14 +1481,18 @@ test('3-9-59: 【一括更新】 他グループのアイテム更新', function
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-60: 【一括更新】 存在しないタグ ID を指定', function () {
+test('3-9-44: 【一括更新】 存在しないタグ ID を指定', function () {
     // テスト用のアイテムをAPIで作成
-    $this->actingAs($this->user)->post('/shopping-items', [
-        'name' => '牛乳',
-        'categoryId' => $this->categoryId,
-        'order' => 0,
-        'isPinned' => false,
-        'isChecked' => false,
+    $this->actingAs($this->user)->post('/shopping-items/bulk', [
+        'data' => [
+            [
+                'name' => '牛乳',
+                'categoryId' => $this->categoryId,
+                'order' => 0,
+                'isPinned' => false,
+                'isChecked' => false,
+            ],
+        ],
     ]);
     $indexResponse = $this->actingAs($this->user)->get('/shopping-items');
     $itemId = collect($indexResponse->json('data'))->first(fn($i) => $i['name'] === '牛乳' && $i['categoryId'] === $this->categoryId)['id'];
@@ -1977,7 +1530,7 @@ test('3-9-60: 【一括更新】 存在しないタグ ID を指定', function (
     ]);
 });
 
-test('3-9-61: 【一括更新】 バリデーションエラー（data 未入力）', function () {
+test('3-9-45: 【一括更新】 バリデーションエラー（data 未入力）', function () {
     $data = [];
 
     $response = $this->actingAs($this->user)->put('/shopping-items/bulk', $data);
@@ -2002,7 +1555,7 @@ test('3-9-61: 【一括更新】 バリデーションエラー（data 未入力
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-62: 【一括更新】 バリデーションエラー（data が配列でない）', function () {
+test('3-9-46: 【一括更新】 バリデーションエラー（data が配列でない）', function () {
     $data = [
         'data' => 'not_array'
     ];
@@ -2029,7 +1582,7 @@ test('3-9-62: 【一括更新】 バリデーションエラー（data が配列
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-63: 【一括更新】 バリデーションエラー（data が空配列）', function () {
+test('3-9-47: 【一括更新】 バリデーションエラー（data が空配列）', function () {
     $data = [
         'data' => []
     ];
@@ -2056,7 +1609,7 @@ test('3-9-63: 【一括更新】 バリデーションエラー（data が空配
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-64: 【一括更新】 バリデーションエラー（id 未入力）', function () {
+test('3-9-48: 【一括更新】 バリデーションエラー（id 未入力）', function () {
     $data = [
         'data' => [
             [
@@ -2091,7 +1644,7 @@ test('3-9-64: 【一括更新】 バリデーションエラー（id 未入力�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-65: 【一括更新】 バリデーションエラー（id が UUID 形式でない）', function () {
+test('3-9-49: 【一括更新】 バリデーションエラー（id が UUID 形式でない）', function () {
     $data = [
         'data' => [
             [
@@ -2127,7 +1680,7 @@ test('3-9-65: 【一括更新】 バリデーションエラー（id が UUID �
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-66: 【一括更新】 バリデーションエラー（name 未入力）', function () {
+test('3-9-50: 【一括更新】 バリデーションエラー（name 未入力）', function () {
     $data = [
         'data' => [
             [
@@ -2162,7 +1715,7 @@ test('3-9-66: 【一括更新】 バリデーションエラー（name 未入力
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-67: 【一括更新】 バリデーションエラー（name が文字列でない）', function () {
+test('3-9-51: 【一括更新】 バリデーションエラー（name が文字列でない）', function () {
     $data = [
         'data' => [
             [
@@ -2198,7 +1751,7 @@ test('3-9-67: 【一括更新】 バリデーションエラー（name が文字
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-68: 【一括更新】 バリデーションエラー（name が 255 文字超過）', function () {
+test('3-9-52: 【一括更新】 バリデーションエラー（name が 255 文字超過）', function () {
     $data = [
         'data' => [
             [
@@ -2234,7 +1787,7 @@ test('3-9-68: 【一括更新】 バリデーションエラー（name が 255 �
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-69: 【一括更新】 バリデーションエラー（categoryId 未入力）', function () {
+test('3-9-53: 【一括更新】 バリデーションエラー（categoryId 未入力）', function () {
     $data = [
         'data' => [
             [
@@ -2269,7 +1822,7 @@ test('3-9-69: 【一括更新】 バリデーションエラー（categoryId 未
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-70: 【一括更新】 バリデーションエラー（categoryId が UUID 形式でない）', function () {
+test('3-9-54: 【一括更新】 バリデーションエラー（categoryId が UUID 形式でない）', function () {
     $data = [
         'data' => [
             [
@@ -2305,7 +1858,7 @@ test('3-9-70: 【一括更新】 バリデーションエラー（categoryId が
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-71: 【一括更新】 バリデーションエラー（isPinned 未入力）', function () {
+test('3-9-55: 【一括更新】 バリデーションエラー（isPinned 未入力）', function () {
     $data = [
         'data' => [
             [
@@ -2340,7 +1893,7 @@ test('3-9-71: 【一括更新】 バリデーションエラー（isPinned 未�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-72: 【一括更新】 バリデーションエラー（isPinned が boolean 型でない）', function () {
+test('3-9-56: 【一括更新】 バリデーションエラー（isPinned が boolean 型でない）', function () {
     $data = [
         'data' => [
             [
@@ -2376,7 +1929,7 @@ test('3-9-72: 【一括更新】 バリデーションエラー（isPinned が b
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-73: 【一括更新】 バリデーションエラー（isChecked 未入力）', function () {
+test('3-9-57: 【一括更新】 バリデーションエラー（isChecked 未入力）', function () {
     $data = [
         'data' => [
             [
@@ -2411,7 +1964,7 @@ test('3-9-73: 【一括更新】 バリデーションエラー（isChecked 未�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-74: 【一括更新】 バリデーションエラー（isChecked が boolean 型でない）', function () {
+test('3-9-58: 【一括更新】 バリデーションエラー（isChecked が boolean 型でない）', function () {
     $data = [
         'data' => [
             [
@@ -2447,7 +2000,7 @@ test('3-9-74: 【一括更新】 バリデーションエラー（isChecked が 
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-75: 【一括更新】 バリデーションエラー（order 未入力）', function () {
+test('3-9-59: 【一括更新】 バリデーションエラー（order 未入力）', function () {
     $data = [
         'data' => [
             [
@@ -2482,7 +2035,7 @@ test('3-9-75: 【一括更新】 バリデーションエラー（order 未入�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-76: 【一括更新】 バリデーションエラー（order が数値でない）', function () {
+test('3-9-60: 【一括更新】 バリデーションエラー（order が数値でない）', function () {
     $data = [
         'data' => [
             [
@@ -2518,7 +2071,7 @@ test('3-9-76: 【一括更新】 バリデーションエラー（order が数�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-77: 【一括更新】 バリデーションエラー（order が負の値）', function () {
+test('3-9-61: 【一括更新】 バリデーションエラー（order が負の値）', function () {
     $data = [
         'data' => [
             [
@@ -2554,7 +2107,7 @@ test('3-9-77: 【一括更新】 バリデーションエラー（order が負�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-78: 【一括更新】 バリデーションエラー（tags が配列でない）', function () {
+test('3-9-62: 【一括更新】 バリデーションエラー（tags が配列でない）', function () {
     $data = [
         'data' => [
             [
@@ -2591,7 +2144,7 @@ test('3-9-78: 【一括更新】 バリデーションエラー（tags が配列
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-79: 【一括更新】 バリデーションエラー（tags.id が UUID 形式でない）', function () {
+test('3-9-63: 【一括更新】 バリデーションエラー（tags.id が UUID 形式でない）', function () {
     $data = [
         'data' => [
             [
@@ -2633,7 +2186,7 @@ test('3-9-79: 【一括更新】 バリデーションエラー（tags.id が UU
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-80: 【一括更新】 バリデーションエラー（tags.name 未入力）', function () {
+test('3-9-64: 【一括更新】 バリデーションエラー（tags.name 未入力）', function () {
     $data = [
         'data' => [
             [
@@ -2674,7 +2227,7 @@ test('3-9-80: 【一括更新】 バリデーションエラー（tags.name 未�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-81: 【一括更新】 バリデーションエラー（tags.name が文字列でない）', function () {
+test('3-9-65: 【一括更新】 バリデーションエラー（tags.name が文字列でない）', function () {
     $data = [
         'data' => [
             [
@@ -2715,7 +2268,7 @@ test('3-9-81: 【一括更新】 バリデーションエラー（tags.name が�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-82: 【一括更新】 バリデーションエラー（tags.name が 255 文字超過）', function () {
+test('3-9-66: 【一括更新】 バリデーションエラー（tags.name が 255 文字超過）', function () {
     $data = [
         'data' => [
             [
@@ -2756,7 +2309,7 @@ test('3-9-82: 【一括更新】 バリデーションエラー（tags.name が 
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-83: 【一括更新】 未認証ユーザー', function () {
+test('3-9-67: 【一括更新】 未認証ユーザー', function () {
     $data = [
         'data' => [
             [
@@ -2788,7 +2341,7 @@ test('3-9-83: 【一括更新】 未認証ユーザー', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-84: 【一括更新】 グループが存在しない', function () {
+test('3-9-68: 【一括更新】 グループが存在しない', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -2825,7 +2378,7 @@ test('3-9-84: 【一括更新】 グループが存在しない', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-85: 【一括更新】 データベース接続エラー', function () {
+test('3-9-69: 【一括更新】 データベース接続エラー', function () {
     $this->mock(\App\Services\ShoppingItemService::class, function ($mock) {
         $mock->shouldReceive('bulkUpdate')
             ->once()
@@ -2860,7 +2413,7 @@ test('3-9-85: 【一括更新】 データベース接続エラー', function ()
     ]);
 });
 
-test('3-9-86: 【一括更新】 アイテム更新失敗', function () {
+test('3-9-70: 【一括更新】 アイテム更新失敗', function () {
     $this->mock(\App\Services\ShoppingItemService::class, function ($mock) {
         $mock->shouldReceive('bulkUpdate')
             ->once()
@@ -2897,21 +2450,25 @@ test('3-9-86: 【一括更新】 アイテム更新失敗', function () {
 
 // ===== bulkDestroy() メソッドのテストケース =====
 
-test('3-9-87: 【一括削除】 正常な買い物アイテム一括削除', function () {
+test('3-9-71: 【一括削除】 正常な買い物アイテム一括削除', function () {
     // テスト用のアイテムをAPIで作成
-    $this->actingAs($this->user)->post('/shopping-items', [
-        'name' => '牛乳',
-        'categoryId' => $this->categoryId,
-        'order' => 0,
-        'isPinned' => false,
-        'isChecked' => false,
-    ]);
-    $this->actingAs($this->user)->post('/shopping-items', [
-        'name' => 'パン',
-        'categoryId' => $this->categoryId,
-        'order' => 1,
-        'isPinned' => false,
-        'isChecked' => false,
+    $this->actingAs($this->user)->post('/shopping-items/bulk', [
+        'data' => [
+            [
+                'name' => '牛乳',
+                'categoryId' => $this->categoryId,
+                'order' => 0,
+                'isPinned' => false,
+                'isChecked' => false,
+            ],
+            [
+                'name' => 'パン',
+                'categoryId' => $this->categoryId,
+                'order' => 1,
+                'isPinned' => false,
+                'isChecked' => false,
+            ],
+        ],
     ]);
     $indexResponse = $this->actingAs($this->user)->get('/shopping-items');
     $item1Id = collect($indexResponse->json('data'))->first(fn($i) => $i['name'] === '牛乳' && $i['categoryId'] === $this->categoryId)['id'];
@@ -2947,14 +2504,18 @@ test('3-9-87: 【一括削除】 正常な買い物アイテム一括削除', fu
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-88: 【一括削除】 一括削除成功メッセージの確認', function () {
+test('3-9-72: 【一括削除】 一括削除成功メッセージの確認', function () {
     // テスト用のアイテムをAPIで作成
-    $this->actingAs($this->user)->post('/shopping-items', [
-        'name' => '牛乳',
-        'categoryId' => $this->categoryId,
-        'order' => 0,
-        'isPinned' => false,
-        'isChecked' => false,
+    $this->actingAs($this->user)->post('/shopping-items/bulk', [
+        'data' => [
+            [
+                'name' => '牛乳',
+                'categoryId' => $this->categoryId,
+                'order' => 0,
+                'isPinned' => false,
+                'isChecked' => false,
+            ],
+        ],
     ]);
     $indexResponse = $this->actingAs($this->user)->get('/shopping-items');
     $itemId = collect($indexResponse->json('data'))->first(fn($i) => $i['name'] === '牛乳' && $i['categoryId'] === $this->categoryId)['id'];
@@ -2972,7 +2533,7 @@ test('3-9-88: 【一括削除】 一括削除成功メッセージの確認', fu
     expect($message)->toBe('買い物アイテムを1件削除しました。');
 });
 
-test('3-9-89: 【一括削除】 存在しないアイテムの削除', function () {
+test('3-9-73: 【一括削除】 存在しないアイテムの削除', function () {
     $data = [
         'ids' => ['00000000-0000-0000-0000-000000000000']
     ];
@@ -2995,7 +2556,7 @@ test('3-9-89: 【一括削除】 存在しないアイテムの削除', function
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-90: 【一括削除】 他グループのアイテム削除', function () {
+test('3-9-74: 【一括削除】 他グループのアイテム削除', function () {
     // 他グループのユーザーを作成
     $otherUser = User::factory()->create(['email_verified_at' => now()]);
     $otherGroup = Group::create(['group_size' => 1]);
@@ -3014,12 +2575,16 @@ test('3-9-90: 【一括削除】 他グループのアイテム削除', function
     $otherCategoryId = collect($otherCategoryIndexResponse->json('data'))->firstWhere('name', '他のグループのカテゴリ')['id'];
     expect($otherCategoryId)->not->toBeNull();
 
-    $this->actingAs($otherUser)->post('/shopping-items', [
-        'name' => '他のグループのアイテム',
-        'categoryId' => $otherCategoryId,
-        'order' => 0,
-        'isPinned' => false,
-        'isChecked' => false,
+    $this->actingAs($otherUser)->post('/shopping-items/bulk', [
+        'data' => [
+            [
+                'name' => '他のグループのアイテム',
+                'categoryId' => $otherCategoryId,
+                'order' => 0,
+                'isPinned' => false,
+                'isChecked' => false,
+            ],
+        ],
     ]);
     $otherItemIndexResponse = $this->actingAs($otherUser)->get('/shopping-items');
     $otherItemId = collect($otherItemIndexResponse->json('data'))->first(fn($i) => $i['name'] === '他のグループのアイテム' && $i['categoryId'] === $otherCategoryId)['id'];
@@ -3046,7 +2611,7 @@ test('3-9-90: 【一括削除】 他グループのアイテム削除', function
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-91: 【一括削除】 バリデーションエラー（IDs 未入力）', function () {
+test('3-9-75: 【一括削除】 バリデーションエラー（IDs 未入力）', function () {
     $data = [];
 
     $response = $this->actingAs($this->user)->delete('/shopping-items/bulk', $data);
@@ -3071,7 +2636,7 @@ test('3-9-91: 【一括削除】 バリデーションエラー（IDs 未入力�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-92: 【一括削除】 バリデーションエラー（IDs が配列でない）', function () {
+test('3-9-76: 【一括削除】 バリデーションエラー（IDs が配列でない）', function () {
     $data = [
         'ids' => 'not_array'
     ];
@@ -3098,7 +2663,7 @@ test('3-9-92: 【一括削除】 バリデーションエラー（IDs が配列�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-93: 【一括削除】 バリデーションエラー（IDs が空配列）', function () {
+test('3-9-77: 【一括削除】 バリデーションエラー（IDs が空配列）', function () {
     $data = [
         'ids' => []
     ];
@@ -3125,7 +2690,7 @@ test('3-9-93: 【一括削除】 バリデーションエラー（IDs が空配�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-94: 【一括削除】 バリデーションエラー（ID が UUID 形式でない）', function () {
+test('3-9-78: 【一括削除】 バリデーションエラー（ID が UUID 形式でない）', function () {
     $data = [
         'ids' => ['invalid-uuid']
     ];
@@ -3152,7 +2717,7 @@ test('3-9-94: 【一括削除】 バリデーションエラー（ID が UUID �
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-95: 【一括削除】 未認証ユーザー', function () {
+test('3-9-79: 【一括削除】 未認証ユーザー', function () {
     $data = [
         'ids' => ['00000000-0000-0000-0000-000000000000']
     ];
@@ -3175,7 +2740,7 @@ test('3-9-95: 【一括削除】 未認証ユーザー', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-96: 【一括削除】 グループが存在しない', function () {
+test('3-9-80: 【一括削除】 グループが存在しない', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -3203,7 +2768,7 @@ test('3-9-96: 【一括削除】 グループが存在しない', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-97: 【一括削除】 データベース接続エラー', function () {
+test('3-9-81: 【一括削除】 データベース接続エラー', function () {
     $this->mock(\App\Services\ShoppingItemService::class, function ($mock) {
         $mock->shouldReceive('bulkDelete')
             ->once()
@@ -3232,7 +2797,7 @@ test('3-9-97: 【一括削除】 データベース接続エラー', function ()
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-9-98: 【一括削除】 アイテム削除失敗', function () {
+test('3-9-82: 【一括削除】 アイテム削除失敗', function () {
     $this->mock(\App\Services\ShoppingItemService::class, function ($mock) {
         $mock->shouldReceive('bulkDelete')
             ->once()

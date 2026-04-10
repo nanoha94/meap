@@ -30,7 +30,7 @@ export const useShoppingItemBulkCreateForm = () => {
     // hook
     const { closeDialog } = useDialog();
     const { fetchMealPlans } = useMealPlanApi();
-    const { bulkStoreShoppingItems } = useShoppingItemApi();
+    const { storeShoppingItems } = useShoppingItemApi();
     const [mealPlans, setMealPlans] = React.useState<IMealPlan[]>([]);
     const [dateList, setDateList] = React.useState<Dayjs[]>([]);
 
@@ -152,7 +152,7 @@ export const useShoppingItemBulkCreateForm = () => {
         // 献立UIではタグに recipeId を id として保持しているが、API の tags.id は ShoppingTag の UUID のみ有効。
         // レシピIDを送ると findOrCreateIds が「存在しないID」として 500 になるため、名前のみ送る。
         const baseOrder = items.length;
-        bulkStoreShoppingItems(
+        storeShoppingItems(
             data.items.map((item, index) => ({
                 name: item.name,
                 categoryId: data.categoryId,

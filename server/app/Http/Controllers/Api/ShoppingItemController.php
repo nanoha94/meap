@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\ApiController;
-use App\Http\Requests\Api\ShoppingItemStoreRequest;
 use App\Http\Requests\Api\ShoppingItemBulkStoreRequest;
 use App\Http\Requests\Api\ShoppingItemBulkUpdateRequest;
 use App\Http\Requests\Api\ShoppingItemBulkDestroyRequest;
@@ -42,39 +41,6 @@ class ShoppingItemController extends ApiController
                 $total = count($res);
                 $message = __('api.list_retrieved', ['attribute' => __('api.attributes.shopping.item'), 'count' => $total]);
                 return $this->indexResponse($res, $total, $message);
-            },
-            $request,
-            $failedMessage,
-            $operation
-        );
-    }
-
-    /**
-     * @OA\Post(
-     *     path="/shopping-items",
-     *     summary="買い物アイテムを作成",
-     *     tags={"Shopping"},
-     *     security={{"sanctum":{}}},
-     *     @OA\RequestBody(ref="#/components/requestBodies/ShoppingItemStoreRequest"),
-     *     @OA\Response(response=200, ref="#/components/responses/ShoppingItemStoreSuccess"),
-     *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
-     *     @OA\Response(response=404, ref="#/components/responses/NotFound")
-     * )
-     */
-    public function store(ShoppingItemStoreRequest $request): JsonResponse
-    {
-        $operation = __('operations.shopping_item.store');
-        $failedMessage = __('api.creation_failed', ['attribute' => __('api.attributes.shopping.item')]);
-
-        return $this->executeWithExceptionHandling(
-            function () use ($request) {
-                $this->shoppingItemService->create(
-                    $request->validated(),
-                    $this->getUserGroup($request)
-                );
-
-                $message = __('api.created', ['attribute' => __('api.attributes.shopping.item'), 'name' => $request->name]);
-                return $this->createdResponse(null, $message);
             },
             $request,
             $failedMessage,

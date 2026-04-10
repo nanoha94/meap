@@ -27,26 +27,6 @@ namespace App\Swagger;
  *     @OA\JsonContent(ref="#/components/schemas/ShoppingItemIndexResponse")
  * )
  * @OA\Response(
- *     response="ShoppingItemStoreSuccess",
- *     description="買い物アイテム(りんご)を作成しました。",
- *     @OA\JsonContent(ref="#/components/schemas/BaseApiResponse")
- * )
- * 買い物アイテム詳細取得レスポンス（success, message, data: ShoppingItem）
- *
- * @OA\Schema(
- *     schema="ShoppingItemShowResponse",
- *     required={"success", "message", "data"},
- *     @OA\Property(property="success", type="boolean", example=true),
- *     @OA\Property(property="message", type="string", example="買い物アイテム(りんご)を取得しました。"),
- *     @OA\Property(property="data", ref="#/components/schemas/ShoppingItem")
- * )
- *
- * @OA\Response(
- *     response="ShoppingItemShowSuccess",
- *     description="買い物アイテム(りんご)を取得しました。",
- *     @OA\JsonContent(ref="#/components/schemas/ShoppingItemShowResponse")
- * )
- * @OA\Response(
  *     response="ShoppingItemBulkStoreSuccess",
  *     description="買い物アイテムを3件作成しました。",
  *     @OA\JsonContent(ref="#/components/schemas/BaseApiResponse")
