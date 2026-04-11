@@ -1,20 +1,30 @@
+import dayjs from 'dayjs';
+
 /**
- * 検索パラメータから年月を取得（サーバー・クライアント共通）
- * @param searchParams 検索パラメータ { year?: string; month?: string }
- * @returns { year: number; month: number } 年月
+ * 検索パラメータから日付情報を取得
+ * @param searchParams 検索パラメータ { date?: string }
+ * @returns { date: string; year: number; month: number }
  */
-export const getYearMonthFromSearchParams = (
-    searchParams: { year?: string | null; month?: string | null },
-): { year: number; month: number } => {
+export const getDateFromSearchParams = (searchParams: {
+    date?: string | null;
+}): { date: string; year: number; month: number } => {
     const now = new Date();
-    const yearParam = searchParams?.year;
-    const monthParam = searchParams?.month;
+    const dateParam = searchParams?.date;
 
-    const year = yearParam ? parseInt(String(yearParam), 10) : now.getFullYear();
-    const month = monthParam ? parseInt(String(monthParam), 10) : now.getMonth() + 1;
+    if (dateParam) {
+        const parsed = dayjs(dateParam);
+        if (parsed.isValid()) {
+            return {
+                date: parsed.format('YYYY-MM-DD'),
+                year: parsed.year(),
+                month: parsed.month() + 1,
+            };
+        }
+    }
 
-    const validYear = Number.isInteger(year) && year >= 1900 && year <= 2100 ? year : now.getFullYear();
-    const validMonth = Number.isInteger(month) && month >= 1 && month <= 12 ? month : now.getMonth() + 1;
-
-    return { year: validYear, month: validMonth };
+    return {
+        date: dayjs(now).format('YYYY-MM-DD'),
+        year: now.getFullYear(),
+        month: now.getMonth() + 1,
+    };
 };

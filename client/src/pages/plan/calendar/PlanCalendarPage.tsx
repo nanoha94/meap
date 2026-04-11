@@ -17,9 +17,10 @@ interface Props {
     errorMessage?: string;
     year: number;
     month: number;
+    date: string;
 }
 
-const PlanCalendarPage = ({ fetchMealPlans, errorMessage, year, month }: Props) => {
+const PlanCalendarPage = ({ fetchMealPlans, errorMessage, year, month, date }: Props) => {
     // store
     const mealCategories = useMealStore(state => state.mealCategories);
     const setMealPlans = useMealStore(state => state.setMealPlans);
@@ -27,7 +28,7 @@ const PlanCalendarPage = ({ fetchMealPlans, errorMessage, year, month }: Props) 
     // hook
     const router = useRouter();
     const { addSnackbar } = useSnackbars();
-    const [selectedDate, setSelectedDate] = React.useState<Dayjs>(dayjs());
+    const [selectedDate, setSelectedDate] = React.useState<Dayjs>(() => dayjs(date));
 
     /**
      * 献立表のドットを生成
@@ -91,9 +92,18 @@ const PlanCalendarPage = ({ fetchMealPlans, errorMessage, year, month }: Props) 
                     dots={dots}
                     year={year}
                     month={month}
-                    onMonthChange={(y, m) => router.push(`/plan?year=${y}&month=${m}`)}
+                    onMonthChange={(y, m) => {
+                        const newDate = dayjs().year(y).month(m - 1).date(1).format('YYYY-MM-DD');
+                        router.push(`/plan?date=${newDate}`);
+                    }}
                     selectedDate={selectedDate}
-                    onDateSelect={setSelectedDate}
+                    onDateSelect={(date) => {
+                        setSelectedDate(prev => {
+                            const resolved = typeof date === 'function' ? date(prev) : date;
+                            window.history.replaceState(null, '', `/plan?date=${resolved.format('YYYY-MM-DD')}`);
+                            return resolved;
+                        });
+                    }}
                 />
                 <div className="pt-5 flex flex-col gap-y-3">
                     <div className="px-3 flex items-center justify-between gap-x-1"><div className={`text-base font-bold ${getDayOfWeekTextColor(selectedDate.day())}`}>{selectedDate.locale('ja').format('MM/DD')}<span className="ml-1 text-xs">{selectedDate.locale('ja').format('(ddd)')}</span>

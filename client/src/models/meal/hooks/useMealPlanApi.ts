@@ -136,10 +136,6 @@ export const useMealPlanApi = () => {
             });
 
             if (responseData.success) {
-                // TODO: プランページのクエリパラメータを変更するか検討（現状はyearとmonthを渡すことになっている）
-                // 日付を変更してもリロード（再データフェッチ）しないようにする
-                // planページでデータフェッチするのはyearかmonthが変更された場合のみ
-                // router.push(`/plan?date=${date}`);
                 router.refresh();
                 addSnackbar(
                     'success',
