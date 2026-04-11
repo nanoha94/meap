@@ -77,18 +77,18 @@ const CategoryItemList: React.FC<Props> = ({
      */
     const actionButtonConfigs: ActionButton[] =
         [
-            // TODO: disabled判定
             {
                 label: 'チェック解除',
                 icon: <X />,
+                disabled: items.every(v => !v.isChecked),
                 onClick: () => {
                     handleAllClearChecked(items);
                 },
             },
-            // TODO: disabled判定
             {
                 label: 'チェック済みを削除',
                 icon: <Trash2 />,
+                disabled: items.every(v => !v.isChecked),
                 onClick: openDeleteCheckDialog,
             },
         ];
