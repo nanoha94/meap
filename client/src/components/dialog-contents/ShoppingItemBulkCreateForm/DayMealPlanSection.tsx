@@ -12,8 +12,16 @@ export type DayMealPlanSectionProps = {
     date: Dayjs;
     mealPlan: IMealPlan | undefined;
     mealCategories: IMealCategory[];
-    isChecked: (checkedName: string, recipe: { id: string; name: string }) => boolean;
-    handleChange: (checkedName: string, recipe: { id: string; name: string }) => void;
+    isChecked: (
+        checkedName: string,
+        recipe: { id: string; name: string },
+        mealId: string,
+    ) => boolean;
+    handleChange: (
+        checkedName: string,
+        recipe: { id: string; name: string },
+        mealId: string,
+    ) => void;
     handleSelectAll: (mealPlan: IMealPlan, mealCategory: IMealCategory) => void;
     handleUnselectAll: (mealPlan: IMealPlan, mealCategory: IMealCategory) => void;
 };

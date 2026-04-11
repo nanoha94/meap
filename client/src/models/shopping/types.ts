@@ -8,6 +8,7 @@ export type ShoppingItemBulkCreateFormData = {
     categoryId: string;
     items: {
         name: string;
+        mealId: string;
         tags: { id?: string; name: string }[];
     }[];
 };

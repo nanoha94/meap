@@ -14,10 +14,12 @@ function isItemChecked(
     items: ShoppingItemBulkCreateFormData["items"],
     checkedName: string,
     recipe: { id: string; name: string },
+    mealId: string,
 ) {
     return items.some(
         (v) =>
             v.name === checkedName &&
+            v.mealId === mealId &&
             v.tags.some((tag) => tag.name === recipe.name && tag.id === recipe.id),
     );
 }
@@ -63,21 +65,22 @@ export const useShoppingItemBulkCreateForm = () => {
     }, [watchedItems]);
 
     const isChecked = React.useCallback(
-        (checkedName: string, recipe: { id: string; name: string }) =>
-            isItemChecked(watchedItems ?? [], checkedName, recipe),
+        (checkedName: string, recipe: { id: string; name: string }, mealId: string) =>
+            isItemChecked(watchedItems ?? [], checkedName, recipe, mealId),
         [watchedItems],
     );
 
     const handleChange = React.useCallback(
-        (checkedName: string, recipe: { id: string; name: string }) => {
+        (checkedName: string, recipe: { id: string; name: string }, mealId: string) => {
             const current = watchedItems ?? [];
-            if (isItemChecked(current, checkedName, recipe)) {
+            if (isItemChecked(current, checkedName, recipe, mealId)) {
                 setValue(
                     "items",
                     current.filter(
                         (v) =>
                             !(
                                 v.name === checkedName &&
+                                v.mealId === mealId &&
                                 v.tags.some(
                                     (tag) => tag.name === recipe.name && tag.id === recipe.id,
                                 )
@@ -87,7 +90,11 @@ export const useShoppingItemBulkCreateForm = () => {
             } else {
                 setValue("items", [
                     ...current,
-                    { name: checkedName, tags: [{ id: recipe.id, name: recipe.name }] },
+                    {
+                        name: checkedName,
+                        mealId,
+                        tags: [{ id: recipe.id, name: recipe.name }],
+                    },
                 ]);
             }
         },
@@ -107,10 +114,11 @@ export const useShoppingItemBulkCreateForm = () => {
                                 !isItemChecked(current, formatIngredient(ingredient), {
                                     id: meal.recipeId,
                                     name: meal.recipeName,
-                                }),
+                                }, meal.id),
                         )
                         .map((ingredient) => ({
                             name: formatIngredient(ingredient),
+                            mealId: meal.id,
                             tags: [{ id: meal.recipeId, name: meal.recipeName }],
                         })),
                 ),
@@ -131,6 +139,7 @@ export const useShoppingItemBulkCreateForm = () => {
                             (meal.ingredients ?? []).some(
                                 (ingredient) =>
                                     item.name === formatIngredient(ingredient) &&
+                                    item.mealId === meal.id &&
                                     item.tags.some(
                                         (tag) =>
                                             tag.id === meal.recipeId &&
