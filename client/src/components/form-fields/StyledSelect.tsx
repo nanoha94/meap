@@ -21,7 +21,7 @@ const StyledSelect = ({
     className,
 }: Props) => {
     return (
-        <div className={`relative w-full ${className}`}>
+        <div className={`relative w-full ${className ?? ''}`}>
             <select
                 value={value}
                 onChange={e => {

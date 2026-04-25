@@ -101,7 +101,7 @@ const ImageEditField = <T extends FieldValues>({
     };
 
     return (
-        <div className={`flex flex-col gap-y-1 w-full ${className}`}>
+        <div className={`flex flex-col gap-y-1 w-full ${className ?? ''}`}>
             <Controller
                 control={control}
                 name={name}

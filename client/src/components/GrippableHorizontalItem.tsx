@@ -20,7 +20,7 @@ const GrippableHorizontalItem: React.FC<Props> = ({
     className = '',
 }) => {
     return (
-        <div className={`flex items-center gap-x-2 ${className}`}>
+        <div className={`flex items-center gap-x-2 ${className ?? ''}`}>
             <GripVertical color={colors.gray.main} />
             {children}
             {hasDeleteButton && (

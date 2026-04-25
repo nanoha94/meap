@@ -237,7 +237,7 @@ export default RecipeDetailPage;
 
 const RecipeThumbnail = ({ thumbnail, className }: { thumbnail: IImage | null, className?: string }) => {
     return (
-        <div className={`relative w-full h-auto aspect-[4/3] bg-gray-light rounded-none overflow-hidden md:rounded-lg ${className}`}>
+        <div className={`relative w-full h-auto aspect-[4/3] bg-gray-light rounded-none overflow-hidden md:rounded-lg ${className ?? ''}`}>
             {thumbnail ? (
                 <Image
                     src={thumbnail.src}

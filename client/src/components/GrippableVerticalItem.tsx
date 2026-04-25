@@ -22,7 +22,7 @@ const GrippableVerticalItem: React.FC<Props> = ({
     className = '',
 }) => {
     return (
-        <div className={`flex flex-col gap-x-2 gap-y-1 ${className}`}>
+        <div className={`flex flex-col gap-x-2 gap-y-1 ${className ?? ''}`}>
             <div className="flex justify-between gap-x-2">
                 <div className="flex items-center gap-x-2">
                     <GripVertical color={colors.gray.main} />

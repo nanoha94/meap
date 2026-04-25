@@ -8,6 +8,7 @@ export * from './react-hook-form';
 export * from './svg';
 export { default as ApplicationLogo } from './ApplicationLogo';
 export { default as Button } from './Button';
+export { default as ButtonLink } from './ButtonLink';
 export { default as EmptyButton } from './EmptyButton';
 export { default as GrippableVerticalItem } from './GrippableVerticalItem';
 export { default as GrippableHorizontalItem } from './GrippableHorizontalItem';

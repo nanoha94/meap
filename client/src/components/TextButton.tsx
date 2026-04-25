@@ -8,10 +8,17 @@ type Props = {
     className?: string;
     size?: ButtonSize;
     disabled?: boolean;
-    colorVariant?: (typeof COLOR_VARIANT)['PRIMARY'] | (typeof COLOR_VARIANT)['SECONDARY'] | (typeof COLOR_VARIANT)['GRAY'] | (typeof COLOR_VARIANT)['ALERT'];
+    colorVariant?:
+    | (typeof COLOR_VARIANT)['PRIMARY']
+    | (typeof COLOR_VARIANT)['SECONDARY']
+    | (typeof COLOR_VARIANT)['GRAY']
+    | (typeof COLOR_VARIANT)['ALERT'];
     children: React.ReactNode;
     type?: ButtonType;
-} & ({ href: string; onClick?: never } | { onClick?: () => void; href?: never });
+} & (
+    | { href: string; onClick?: never }
+    | { href?: never; onClick: React.MouseEventHandler<HTMLButtonElement> }
+);
 
 const TextButton = ({
     className,

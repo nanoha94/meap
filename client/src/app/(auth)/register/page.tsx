@@ -1,10 +1,15 @@
 'use client';
+
 import React from 'react';
 import Link from 'next/link';
 import { SubmitHandler, useForm } from 'react-hook-form';
 
-import { Button, VerticalRowField } from '@/components';
-import { BUTTON_TYPE, BUTTON_VARIANT, COLOR_VARIANT } from '@/constants';
+import { Button, ButtonLink, VerticalRowField } from '@/components';
+import {
+    BUTTON_TYPE,
+    BUTTON_VARIANT,
+    COLOR_VARIANT,
+} from '@/constants';
 import { useAuth } from '@/hooks';
 
 interface FormInputs {
@@ -255,10 +260,14 @@ const Page = () => {
                         他の方法でログイン
                     </h1>
                 </div>
-                {/* TODO: リンク？ */}
-                <Button type={BUTTON_TYPE.BUTTON} variant={BUTTON_VARIANT.OUTLINED} colorVariant={COLOR_VARIANT.GRAY}>
+                <ButtonLink
+                    href={`${(process.env.NEXT_PUBLIC_BACKEND_URL || 'https://localhost:8000').replace(/\/$/, '')}/auth/google/redirect`}
+                    variant={BUTTON_VARIANT.OUTLINED}
+                    colorVariant={COLOR_VARIANT.GRAY}
+                    isExternal={true}
+                >
                     Googleアカウントでログイン
-                </Button>
+                </ButtonLink>
             </div>
         </>
     );

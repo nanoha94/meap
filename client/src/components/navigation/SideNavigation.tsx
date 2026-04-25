@@ -39,7 +39,7 @@ const SideNavigation = ({ className }: Props) => {
 
     return (
         <div
-            className={`fixed top-0 left-0 w-[160px] h-full bg-white ${className ? className : ''}`}
+            className={`fixed top-0 left-0 w-[160px] h-full bg-white ${className ?? ''}`}
             style={{ boxShadow: '5px 0 8px 0 rgba(0, 0, 0, 10%)' }}>
             <div className="py-3 flex flex-col border-b border-gray-border">
                 <Link href="/" className="w-fit mx-auto block">
