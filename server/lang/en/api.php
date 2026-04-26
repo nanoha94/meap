@@ -37,6 +37,7 @@ return [
     'image' => [
         'bulk_uploaded' => ':count image(s) uploaded successfully.',
         'upload_failed' => 'Failed to upload and save image.',
+        'remote_download_failed' => 'Failed to fetch image from remote URL.',
         'bulk_deleted' => ':count image(s) deleted successfully.',
         'bulk_deletion_failed' => 'Bulk image deletion failed.',
         'deletion_failed' => 'Image deletion failed.',

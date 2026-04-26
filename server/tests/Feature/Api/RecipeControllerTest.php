@@ -69,7 +69,7 @@ beforeEach(function () {
         'requires_quantity' => true
     ]);
 
-    // テスト用の画像を作成（ImageService::getGroupScopePattern が images/groups/{group_id}/ を要求するため形式を合わせる）
+    // テスト用の画像を作成（グループスコープ検証は images/groups/{group_id}/ 形式のため合わせる）
     $this->image = Image::create([
         'src' => "/storage/images/groups/{$this->group->id}/test.jpg",
         'width' => 800,

@@ -7,47 +7,45 @@ use App\Enums\ImageScope;
 use App\Models\Group;
 use App\Models\Image;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
 use App\Traits\LoggingTrait;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Throwable;
 
 class ImageService
 {
     use LoggingTrait;
-    /**
-     * 画像のバリデーションルールを取得
-     */
-    public function getValidationRules(): array
-    {
-        return [
-            'image',
-            'mimes:jpeg,png,jpg,gif,webp',
-            'max:10240', // 10MB
-        ];
-    }
+
+    private const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 
     /**
      * 画像をアップロードして保存
+     *
+     * ストレージ失敗・DB 失敗時は例外（上位でハンドリング想定）
+     *
+     * {@see downloadAndSaveImage} との挙動の違い: こちらは API 上のファイルアップロード用。失敗時は例外が
+     * そのまま伝播し、戻り値は常に {@see Image}。リモート URL 取り込み用の {@see downloadAndSaveImage} は
+     * 失敗を null 返却＋警告ログに抑え、例外は投げない（ベストエフォート）。
+     *
+     * @return \App\Models\Image
      */
     public function uploadAndSaveImage($file, $uploadPath): Image
     {
-        $fileName = $this->generateFileName($file);
+        $fileName = $this->generateFileName($file->getClientOriginalExtension());
         $fullPath = "images/{$uploadPath}/{$fileName}";
 
-        // ファイルをアップロード
         Storage::disk('public')->put($fullPath, file_get_contents($file));
 
-        // 画像情報を取得
         $imageInfo = getimagesize($file->getPathname());
         $width = $imageInfo[0] ?? null;
         $height = $imageInfo[1] ?? null;
 
-
-        // データベースに保存
         return DB::transaction(function () use ($fullPath, $width, $height) {
             return Image::create([
                 'src' => Storage::disk('public')->url($fullPath),
@@ -57,6 +55,117 @@ class ImageService
         });
     }
 
+    /**
+     * リモート URL から画像を取得し、storage（public ディスク）に保存する。
+     *
+     * 用途例: OAuth プロバイダ（Google 等）が返すアバター画像 の取り込み。
+     * 拡張子・形式は本文を {@see getimagesizefromstring} で解釈し、
+     * {@see uploadAndSaveImage} の mimes（jpeg, png, gif, webp）に合致するもののみ保存する。
+     * 各種失敗時は null を返し、警告ログのみ。例外は再送出しない（ログイン等の上位フローを止めない）。
+     *
+     * {@see uploadAndSaveImage} との挙動の違い: こちらはリモート取得用で失敗を握り null を返すだけ。
+     * アップロード API 用の {@see uploadAndSaveImage} はストレージ／DB 失敗時に例外を投げ、失敗を HTTP エラー
+     * 等で表現する。上位処理を止めないため。
+     *
+     * @param string $url 取得元の HTTP(S) URL
+     * @param string $uploadPath storage 上の相対パス接頭辞（例: users/{id}。先頭の images/ は付けない）
+     * @return \App\Models\Image|null 成功時は作成した Image、いずれかの段階で失敗したら null
+     */
+    public function downloadAndSaveImage(string $url, string $uploadPath): ?Image
+    {
+        $logFail = function (string $reason, array $extra = []) use ($url): void {
+            $this->logWarning(
+                __METHOD__,
+                __('operations.image.download_remote'),
+                __('api.image.remote_download_failed'),
+                ['url' => $url, 'reason' => $reason] + $extra
+            );
+        };
+
+        // 空文字・非 URL は早期終了
+        if ($url === '' || ! filter_var($url, FILTER_VALIDATE_URL)) {
+            $logFail('invalid_url');
+            return null;
+        }
+
+        // Google CDN（lh3-7.googleusercontent.com など）の URL はデフォルトで 96px のサムネイルが返るため、
+        // 末尾の =sNN[-c] サイズ指定を高解像度（=s512-c）に置換してから取得する。
+        $url = $this->normalizeRemoteImageUrl($url);
+
+        // 取得（一部の CDN では一般的なブラウザ User-Agent を要求する）
+        try {
+            $response = Http::timeout(30)
+                ->withHeaders([
+                    'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                ])
+                ->get($url);
+        } catch (Throwable $e) {
+            $logFail('http_exception', ['exception' => $e->getMessage()]);
+            return null;
+        }
+
+        if (! $response->successful()) {
+            $logFail('http_error', ['status' => $response->status()]);
+            return null;
+        }
+
+        $body = $response->body();
+        // 空ファイル防止・アップロード（max:10240 KB）に揃えた 10MB 上限
+        if ($body === '' || strlen($body) > self::MAX_IMAGE_BYTES) {
+            $logFail('empty_or_too_large');
+            return null;
+        }
+
+        // 解釈可能なラスタ画像か検証。拡張子は imageInfo[2]（IMAGETYPE_*）から {@see imageTypeToExtension} で決定
+        // @ は不正バイナリで PHP が出す E_WARNING を抑え、失敗通知は下記 logWarning に統一するため付与
+        $imageInfo = @getimagesizefromstring($body);
+        if ($imageInfo === false) {
+            $logFail('not_a_valid_image');
+            return null;
+        }
+
+        $imageType = $imageInfo[2] ?? 0;
+        $extension = $this->imageTypeToExtension($imageType);
+        if ($extension === null) {
+            $logFail('unsupported_image_type', ['image_type' => $imageType]);
+            return null;
+        }
+
+        $width = $imageInfo[0] ?? null;
+        $height = $imageInfo[1] ?? null;
+
+        $fileName = $this->generateFileName($extension);
+        $fullPath = "images/{$uploadPath}/{$fileName}";
+
+        try {
+            Storage::disk('public')->put($fullPath, $body);
+        } catch (Throwable $e) {
+            $logFail('storage_put_failed', ['exception' => $e->getMessage()]);
+
+            return null;
+        }
+
+        try {
+            return DB::transaction(function () use ($fullPath, $width, $height) {
+                return Image::create([
+                    'src' => Storage::disk('public')->url($fullPath),
+                    'width' => $width,
+                    'height' => $height,
+                ]);
+            });
+        } catch (Throwable $e) {
+            try {
+                if (Storage::disk('public')->exists($fullPath)) {
+                    Storage::disk('public')->delete($fullPath);
+                }
+            } catch (Throwable) {
+                // 掃除失敗は握り潰し（上位でログ済みの文脈に追加しない）
+            }
+            $logFail('db_transaction_failed', ['exception' => $e->getMessage()]);
+
+            return null;
+        }
+    }
 
     /**
      * 指定されたIDの画像を取得し、スコープで検証
@@ -106,64 +215,6 @@ class ImageService
         }
 
         return $validImages;
-    }
-
-    /**
-     * スコープに応じたパスパターンを取得
-     * 
-     * @param \App\Enums\ImageScope $scope 検証スコープ
-     * @param \App\Models\Group|null $group グループ（groupスコープ時に使用）
-     * @param \App\Models\User|null $user ユーザー（userスコープ時に使用）
-     * @return string 正規表現パターン
-     * @throws HttpException 必須パラメータが不足している場合
-     */
-    private function getScopePattern(ImageScope $scope, ?Group $group, ?User $user): string
-    {
-        return match ($scope) {
-            ImageScope::USER => $this->getUserScopePattern($user),
-            ImageScope::GROUP => $this->getGroupScopePattern($group),
-        };
-    }
-
-    /**
-     * ユーザースコープのパスパターンを取得
-     * 
-     * @param \App\Models\User|null $user ユーザー
-     * @return string 正規表現パターン
-     * @throws HttpException ユーザーが指定されていない場合
-     */
-    private function getUserScopePattern(?User $user): string
-    {
-        // ユーザースコープ: images/users/{user_id}/ のみ許可
-        if ($user === null) {
-            throw new HttpException(
-                HttpStatusCode::INTERNAL_SERVER_ERROR->value,
-                'User is required for user scope validation'
-            );
-        }
-        $escapedUserId = preg_quote($user->id, '/');
-        return "/images\\/users\\/{$escapedUserId}\\//";
-    }
-
-    /**
-     * グループスコープのパスパターンを取得
-     * 
-     * @param \App\Models\Group|null $group グループ
-     * @return string 正規表現パターン
-     * @throws HttpException グループが指定されていない場合
-     */
-    private function getGroupScopePattern(?Group $group): string
-    {
-        if ($group === null) {
-            throw new HttpException(
-                HttpStatusCode::INTERNAL_SERVER_ERROR->value,
-                'Group is required for group scope validation'
-            );
-        }
-
-        // グループスコープ: images/groups/{group_id}/ のみ許可
-        $escapedGroupId = preg_quote($group->id, '/');
-        return "/images\\/groups\\/{$escapedGroupId}\\//";
     }
 
     /**
@@ -233,13 +284,10 @@ class ImageService
      */
     public function deleteImagesByGroup(Group $group): void
     {
-        Image::where('src', 'like', '%images/groups/' . $group->id . '/%')->delete();
-        $dirPath = 'images/groups/' . $group->id;
-        if (!$this->deleteImageDirectory($dirPath)) {
-            $this->logWarning(__METHOD__, __('operations.image.delete_images_by_group'), __('api.image.file_delete_failed'), [
-                'directory' => $dirPath,
-            ]);
-        }
+        $this->purgeImagesUnder(
+            'images/groups/' . $group->id,
+            __('operations.image.delete_images_by_group')
+        );
     }
 
     /**
@@ -247,11 +295,24 @@ class ImageService
      */
     public function deleteImagesByUser(User $user): void
     {
-        Image::where('src', 'like', '%images/users/' . $user->id . '/%')->delete();
-        $dirPath = 'images/users/' . $user->id;
-        if (!$this->deleteImageDirectory($dirPath)) {
-            $this->logWarning(__METHOD__, __('operations.image.delete_images_by_user'), __('api.image.file_delete_failed'), [
-                'directory' => $dirPath,
+        $this->purgeImagesUnder(
+            'images/users/' . $user->id,
+            __('operations.image.delete_images_by_user')
+        );
+    }
+
+    /**
+     * 指定ディレクトリ配下の Image 行を削除し、storage 上のディレクトリを削除
+     *
+     * @param string $relativeDir storage public 基準。例: images/groups/{id}, images/users/{id}
+     * @param string $operation logWarning 用の操作名（翻訳済み）
+     */
+    private function purgeImagesUnder(string $relativeDir, string $operation): void
+    {
+        Image::where('src', 'like', '%' . $relativeDir . '/%')->delete();
+        if (!$this->deleteImageDirectory($relativeDir)) {
+            $this->logWarning(__METHOD__, $operation, __('api.image.file_delete_failed'), [
+                'directory' => $relativeDir,
             ]);
         }
     }
@@ -278,7 +339,9 @@ class ImageService
      */
     public function formatBulkImageUploadResponse($images): array
     {
-        return collect($images)->map(fn($image) => $this->formatImage($image))->toArray();
+        return collect($images)
+            ->map(fn($image) => $this->formatImage($image))
+            ->toArray();
     }
 
 
@@ -295,40 +358,94 @@ class ImageService
     }
 
     /**
-     * ファイル名を生成
+     * スコープに応じたパスパターンを取得
+     *
+     * @param \App\Enums\ImageScope $scope 検証スコープ
+     * @param \App\Models\Group|null $group グループ（groupスコープ時に使用）
+     * @param \App\Models\User|null $user ユーザー（userスコープ時に使用）
+     * @return string 正規表現パターン
+     * @throws HttpException 必須パラメータが不足している場合
      */
-    private function generateFileName($file): string
+    private function getScopePattern(ImageScope $scope, ?Group $group, ?User $user): string
     {
-        $extension = $file->getClientOriginalExtension();
+        return match ($scope) {
+            ImageScope::USER => $this->buildScopePattern('users', $user),
+            ImageScope::GROUP => $this->buildScopePattern('groups', $group),
+        };
+    }
+
+    /**
+     * スコープパス（images/{segment}/{owner_id}/）にマッチする正規表現を組み立てる
+     *
+     * @param string $segment パス上の区間（`users` または `groups`）
+     * @param  Model|null  $owner User または Group
+     * @return string 正規表現パターン
+     * @throws HttpException オーナーが null の場合
+     */
+    private function buildScopePattern(string $segment, ?Model $owner): string
+    {
+        if ($owner === null) {
+            [$entity, $scopeWord] = match ($segment) {
+                'users' => ['User', 'user'],
+                'groups' => ['Group', 'group'],
+            };
+            throw new HttpException(
+                HttpStatusCode::INTERNAL_SERVER_ERROR->value,
+                "{$entity} is required for {$scopeWord} scope validation"
+            );
+        }
+        $escapedId = preg_quote($owner->id, '/');
+
+        return "/images\\/{$segment}\\/{$escapedId}\\//";
+    }
+
+    /**
+     * 衝突しにくいファイル名を生成（{timestamp}_{uniqid}.{ext}）
+     *
+     * @param string $extension 拡張子（先頭の . は有っても可）
+     */
+    private function generateFileName(string $extension): string
+    {
+        $safe = ltrim($extension, '.');
         $timestamp = now()->timestamp;
         $random = uniqid();
 
-        return "{$timestamp}_{$random}.{$extension}";
+        return "{$timestamp}_{$random}.{$safe}";
     }
 
     /**
-     * パスからグループIDを抽出
+     * リモート画像 URL を高解像度向けに正規化する。
+     *
+     * 現状は Google ユーザーコンテンツ CDN（*.googleusercontent.com）のみ対象。
+     * Google CDN は URL 末尾の =sNN[-c] でサイズが固定されており、Socialite の getAvatar() は
+     * デフォルト 96px のサムネイル URL を返すため、そのまま保存するとアバター表示が荒くなる。
+     * 末尾の =sNN[-c] を =s512-c に置換することで、512px の画像を取得して保存する。
+     *
+     * 対象外のホストや、サイズ指定が無い URL はそのまま返す。
      */
-    private function extractGroupIdFromPath($uploadPath): ?string
+    private function normalizeRemoteImageUrl(string $url): string
     {
-        $parts = explode('/', $uploadPath);
-        return $parts[0] ?? null;
-    }
-
-    /**
-     * 画像ファイルを削除
-     */
-    private function deleteImageFile($imageUrl): bool
-    {
-        try {
-            $path = str_replace('/storage/', '', parse_url($imageUrl, PHP_URL_PATH));
-            if (Storage::disk('public')->exists($path)) {
-                Storage::disk('public')->delete($path);
-            }
-            return true;
-        } catch (Exception $e) {
-            return false;
+        $host = parse_url($url, PHP_URL_HOST);
+        if (! is_string($host) || ! preg_match('/(^|\.)googleusercontent\.com$/', $host)) {
+            return $url;
         }
+
+        return preg_replace('/=s\d+(-c)?$/', '=s512-c', $url) ?? $url;
+    }
+
+    /**
+     * getimagesize / getimagesizefromstring の IMAGETYPE_* から、保存用拡張子を返す
+     * （mimes: jpeg,png,jpg,gif,webp に合わせる）
+     */
+    private function imageTypeToExtension(int $imageType): ?string
+    {
+        return match ($imageType) {
+            IMAGETYPE_JPEG => 'jpg',
+            IMAGETYPE_PNG => 'png',
+            IMAGETYPE_GIF => 'gif',
+            IMAGETYPE_WEBP => 'webp',
+            default => null,
+        };
     }
 
     /**

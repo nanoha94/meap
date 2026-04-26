@@ -36,6 +36,7 @@ return [
         'bulk_destroy' => '画像一括削除',
         'delete_images_by_group' => 'グループ配下画像一括削除',
         'delete_images_by_user' => 'ユーザー配下画像一括削除',
+        'download_remote' => 'リモート画像ダウンロード',
     ],
     'invitation' => [
         'store' => '招待トークン作成',

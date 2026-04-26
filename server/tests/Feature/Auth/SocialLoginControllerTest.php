@@ -2,9 +2,12 @@
 
 use App\Models\Color;
 use App\Models\Group;
+use App\Models\Image;
 use App\Models\SocialAccount;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\GoogleProvider;
 use Laravel\Socialite\Two\InvalidStateException;
@@ -27,11 +30,15 @@ beforeEach(function () {
 function mockSocialiteUser(array $overrides = []): SocialiteUser
 {
     $socialiteUser = new SocialiteUser();
-    $socialiteUser->map([
+    $data = [
         'id'    => $overrides['id'] ?? 'google-id-123',
         'name'  => array_key_exists('name', $overrides) ? $overrides['name'] : 'Test Google User',
         'email' => array_key_exists('email', $overrides) ? $overrides['email'] : 'google@example.com',
-    ]);
+    ];
+    if (array_key_exists('avatar', $overrides)) {
+        $data['avatar'] = $overrides['avatar'];
+    }
+    $socialiteUser->map($data);
 
     return $socialiteUser;
 }
@@ -233,7 +240,90 @@ test('2-7-8: 【コールバック】 セッション再生成の確認', functi
     expect(session()->getId())->not->toBe($oldSessionId);
 });
 
-test('2-7-9: 【コールバック】 InvalidStateException でエラーリダイレクト', function () {
+test('2-7-9: 【コールバック】 新規ユーザー作成時に Google アバターを取り込み avatar_image_id を設定', function () {
+    $avatarUrl = 'https://lh3.googleusercontent.com/a/test-avatar';
+
+    $oneByOnePng = base64_decode(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+        true
+    );
+
+    Http::fake([
+        $avatarUrl => Http::response($oneByOnePng, 200, ['Content-Type' => 'image/png']),
+    ]);
+    Storage::fake('public');
+
+    $socialiteUser = mockSocialiteUser([
+        'id'     => 'avatar-google-id',
+        'name'   => 'Avatar Google User',
+        'email'  => 'avataruser@example.com',
+        'avatar' => $avatarUrl,
+    ]);
+    mockSocialiteCallback($socialiteUser);
+
+    $response = $this->get('/auth/google/callback');
+
+    $response->assertStatus(302);
+    $response->assertRedirect(config('app.frontend_url') . '/plan');
+
+    Http::assertSent(fn ($request) => $request->url() === $avatarUrl);
+
+    $user = User::where('email', 'avataruser@example.com')->first();
+    expect($user)->not->toBeNull();
+    $user->refresh();
+    expect($user->avatar_image_id)->not->toBeNull();
+
+    $user->load('avatarImage');
+    expect($user->avatarImage)->toBeInstanceOf(Image::class);
+    expect($user->avatarImage->width)->toBe(1);
+    expect($user->avatarImage->height)->toBe(1);
+
+    $pathFromSrc = parse_url($user->avatarImage->src, PHP_URL_PATH);
+    $relativePath = ltrim($pathFromSrc, '/');
+    if (str_starts_with($relativePath, 'storage/')) {
+        $relativePath = substr($relativePath, strlen('storage/'));
+    }
+    expect(Storage::disk('public')->exists($relativePath))->toBeTrue();
+});
+
+test('2-7-10: 【コールバック】 Google CDN のアバター URL は高解像度（=s512-c）に正規化されてダウンロードされる', function () {
+    $originalUrl   = 'https://lh3.googleusercontent.com/a/ACg8oc-test-avatar=s96-c';
+    $normalizedUrl = 'https://lh3.googleusercontent.com/a/ACg8oc-test-avatar=s512-c';
+
+    $oneByOnePng = base64_decode(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+        true
+    );
+
+    Http::fake([
+        $normalizedUrl => Http::response($oneByOnePng, 200, ['Content-Type' => 'image/png']),
+        $originalUrl   => Http::response('should-not-be-called', 500),
+    ]);
+    Storage::fake('public');
+
+    $socialiteUser = mockSocialiteUser([
+        'id'     => 'normalize-google-id',
+        'name'   => 'Normalize Google User',
+        'email'  => 'normalize@example.com',
+        'avatar' => $originalUrl,
+    ]);
+    mockSocialiteCallback($socialiteUser);
+
+    $response = $this->get('/auth/google/callback');
+
+    $response->assertStatus(302);
+    $response->assertRedirect(config('app.frontend_url') . '/plan');
+
+    Http::assertSent(fn ($request) => $request->url() === $normalizedUrl);
+    Http::assertNotSent(fn ($request) => $request->url() === $originalUrl);
+
+    $user = User::where('email', 'normalize@example.com')->first();
+    expect($user)->not->toBeNull();
+    $user->refresh();
+    expect($user->avatar_image_id)->not->toBeNull();
+});
+
+test('2-7-11: 【コールバック】 InvalidStateException でエラーリダイレクト', function () {
     mockSocialiteCallbackThrows(new InvalidStateException());
 
     $response = $this->get('/auth/google/callback');
@@ -243,7 +333,7 @@ test('2-7-9: 【コールバック】 InvalidStateException でエラーリダ�
     $this->assertGuest();
 });
 
-test('2-7-10: 【コールバック】 Google API エラーでエラーリダイレクト', function () {
+test('2-7-12: 【コールバック】 Google API エラーでエラーリダイレクト', function () {
     mockSocialiteCallbackThrows(new \RuntimeException('Google API error'));
 
     $response = $this->get('/auth/google/callback');
@@ -253,7 +343,7 @@ test('2-7-10: 【コールバック】 Google API エラーでエラーリダイ
     $this->assertGuest();
 });
 
-test('2-7-11: 【コールバック】 Google からメールが返らない場合エラーリダイレクト', function () {
+test('2-7-13: 【コールバック】 Google からメールが返らない場合エラーリダイレクト', function () {
     $socialiteUser = mockSocialiteUser([
         'id'    => 'noemail-google-id',
         'email' => null,

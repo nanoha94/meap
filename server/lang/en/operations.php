@@ -36,6 +36,7 @@ return [
         'bulk_destroy' => 'Bulk image deletion',
         'delete_images_by_group' => 'Delete images by group',
         'delete_images_by_user' => 'Delete images by user',
+        'download_remote' => 'Remote image download',
     ],
     'invitation' => [
         'store' => 'Invitation token creation',

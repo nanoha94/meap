@@ -36,6 +36,7 @@ return [
     'image' => [
         'bulk_uploaded' => '画像を:count件アップロードしました。',
         'upload_failed' => '画像のアップロードと保存に失敗しました。',
+        'remote_download_failed' => 'リモートからの画像の取得に失敗しました。',
         'bulk_deleted' => '画像を:count件削除しました。',
         'bulk_deletion_failed' => '画像の一括削除に失敗しました。',
         'deletion_failed' => '画像の削除に失敗しました。',

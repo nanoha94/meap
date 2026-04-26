@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Group;
 use App\Models\SocialAccount;
 use App\Models\User;
+use App\Services\ImageService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -24,6 +25,12 @@ use Throwable;
 class SocialLoginController extends Controller
 {
     private const PROVIDER_GOOGLE = 'google';
+    protected ImageService $imageService;
+
+    public function __construct(ImageService $imageService)
+    {
+        $this->imageService = $imageService;
+    }
 
     /**
      * Google OAuth 同意画面へリダイレクトする。
@@ -130,7 +137,15 @@ class SocialLoginController extends Controller
             return $newUser;
         });
 
-        return $this->loginAndRedirect($request, $user);
+        $avatarUrl = $googleUser->getAvatar();
+        if ($avatarUrl) {
+            $image = $this->imageService->downloadAndSaveImage($avatarUrl, "users/{$user->id}");
+            if ($image !== null) {
+                $user->update(['avatar_image_id' => $image->id]);
+            }
+        }
+
+        return $this->loginAndRedirect($request, $user->fresh());
     }
 
     /**
