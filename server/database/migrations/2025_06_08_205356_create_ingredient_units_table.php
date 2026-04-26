@@ -18,6 +18,7 @@ return new class extends Migration
             $table->boolean('requires_quantity');
             $table->integer('order');
             $table->foreignUuid('group_id')->constrained('groups', 'id')->cascadeOnDelete();
+            $table->boolean('is_default')->default(false);
             $table->timestamps();
         });
     }

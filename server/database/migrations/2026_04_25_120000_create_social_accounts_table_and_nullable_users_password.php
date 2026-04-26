@@ -20,8 +20,6 @@ return new class extends Migration
             $table->timestamps();
             $table->unique(['provider', 'provider_id']);
         });
-
-        DB::statement('ALTER TABLE users ALTER COLUMN password DROP NOT NULL');
     }
 
     /**
@@ -29,8 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::statement('ALTER TABLE users ALTER COLUMN password SET NOT NULL');
-
         Schema::dropIfExists('social_accounts');
     }
 };

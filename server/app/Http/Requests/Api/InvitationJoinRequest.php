@@ -74,11 +74,19 @@ class InvitationJoinRequest extends BaseApiRequest
                 );
             }
 
-            // データがあるかチェック
-            // TODO: 買い物データ以外もチェックする
+            // ユーザー作成データ（シードのデフォルトを除く）が残っていないかチェック
             if (
-                $currentGroup->shoppingItems()->exists() ||
-                $currentGroup->shoppingCategories()->where('is_default', 0)->exists()
+                $currentGroup->shoppingItems()->exists()
+                || $currentGroup->shoppingCategories()->where('is_default', false)->exists()
+                || $currentGroup->shoppingTags()->exists()
+                || $currentGroup->mealPlans()->exists()
+                || $currentGroup->mealCategories()->where('is_default', false)->exists()
+                || $currentGroup->recipes()->exists()
+                || $currentGroup->recipeCategories()->exists()
+                || $currentGroup->ingredients()->exists()
+                || $currentGroup->ingredientCategories()->where('is_default', false)->exists()
+                || $currentGroup->ingredientUnits()->where('is_default', false)->exists()
+                || $currentGroup->images()->exists()
             ) {
                 throw new HttpException(
                     HttpStatusCode::CONFLICT->value,

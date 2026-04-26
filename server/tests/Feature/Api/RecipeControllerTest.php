@@ -66,7 +66,8 @@ beforeEach(function () {
         'name' => 'g',
         'position' => 'suffix',
         'order' => 0,
-        'requires_quantity' => true
+        'requires_quantity' => true,
+        'is_default' => false
     ]);
 
     // テスト用の画像を作成（グループスコープ検証は images/groups/{group_id}/ 形式のため合わせる）
@@ -1072,7 +1073,8 @@ test('3-7-45: 【新規作成】 最小限の必須フィールドのみで食�
         'name' => '個',
         'position' => 'suffix',
         'order' => 1,
-        'requires_quantity' => false
+        'requires_quantity' => false,
+        'is_default' => false
     ]);
 
     $data = [
@@ -1174,7 +1176,8 @@ test('3-7-49: 【新規作成】 requires_quantity=true の食材単位で数量
         'name' => 'kg',
         'position' => 'suffix',
         'order' => 1,
-        'requires_quantity' => true
+        'requires_quantity' => true,
+        'is_default' => false
     ]);
 
     $data = [
@@ -1217,7 +1220,8 @@ test('3-7-50: 【新規作成】 requires_quantity=false の食材単位で数�
         'name' => '適量',
         'position' => 'suffix',
         'order' => 1,
-        'requires_quantity' => false
+        'requires_quantity' => false,
+        'is_default' => false
     ]);
 
     $data = [
@@ -1254,7 +1258,8 @@ test('3-7-51: 【新規作成】 requires_quantity=false の食材単位で数�
         'name' => '適量',
         'position' => 'suffix',
         'order' => 1,
-        'requires_quantity' => false
+        'requires_quantity' => false,
+        'is_default' => false
     ]);
 
     $data = [
@@ -2076,7 +2081,8 @@ test('3-7-75: 【新規作成】 バリデーションエラー（ingredients\*.
         'name' => 'kg',
         'position' => 'suffix',
         'order' => 1,
-        'requires_quantity' => true
+        'requires_quantity' => true,
+        'is_default' => false
     ]);
 
     $data = [
@@ -2480,6 +2486,7 @@ test('3-7-54: 【新規作成】 同一材料名で単位が異なる行は複�
         'position' => 'suffix',
         'order' => 2,
         'requires_quantity' => true,
+        'is_default' => false
     ]);
 
     $data = [
@@ -2700,7 +2707,8 @@ test('3-7-94: 【新規作成】 他グループの食材単位 ID 指定', func
         'name' => '他のグループの単位',
         'position' => 'suffix',
         'requires_quantity' => true,
-        'order' => 0
+        'order' => 0,
+        'is_default' => false
     ]);
 
     $data = [
@@ -3614,7 +3622,8 @@ test('3-7-122: 【更新】 最小限の必須フィールドのみで食材を�
         'name' => '個',
         'position' => 'suffix',
         'order' => 1,
-        'requires_quantity' => false
+        'requires_quantity' => false,
+        'is_default' => false
     ]);
 
     // テスト用の料理をAPIで作成
@@ -3908,7 +3917,8 @@ test('3-7-131: 【更新】 requires_quantity=true の食材単位で数量指�
         'name' => 'kg',
         'position' => 'suffix',
         'order' => 1,
-        'requires_quantity' => true
+        'requires_quantity' => true,
+        'is_default' => false
     ]);
 
     // 料理を作成
@@ -3951,7 +3961,8 @@ test('3-7-132: 【更新】 requires_quantity=false の食材単位で数量指�
         'name' => '適量',
         'position' => 'suffix',
         'order' => 1,
-        'requires_quantity' => false
+        'requires_quantity' => false,
+        'is_default' => false
     ]);
 
     // 料理を作成
@@ -3994,7 +4005,8 @@ test('3-7-133: 【更新】 requires_quantity=false の食材単位で数量省�
         'name' => '適量',
         'position' => 'suffix',
         'order' => 1,
-        'requires_quantity' => false
+        'requires_quantity' => false,
+        'is_default' => false
     ]);
 
     // 料理を作成
@@ -4173,7 +4185,8 @@ test('3-7-158: 【更新】 バリデーションエラー（ingredients\*.requi
         'name' => 'kg',
         'position' => 'suffix',
         'order' => 1,
-        'requires_quantity' => true
+        'requires_quantity' => true,
+        'is_default' => false
     ]);
 
     // 料理を作成
@@ -4951,7 +4964,7 @@ test('3-7-177: 【更新】 他グループの食材単位 ID 指定', function 
     $otherUser = User::factory()->create(['email_verified_at' => now()]);
     $otherGroup = Group::create(['group_size' => 1]);
     DB::table('group_user_mappings')->insert(['user_id' => $otherUser->id, 'group_id' => $otherGroup->id]);
-    $otherUnit = IngredientUnit::create(['group_id' => $otherGroup->id, 'name' => '他', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 0]);
+    $otherUnit = IngredientUnit::create(['group_id' => $otherGroup->id, 'name' => '他', 'position' => 'suffix', 'requires_quantity' => true, 'order' => 0, 'is_default' => false]);
 
     $data = [
         'name' => 'カレーライス',
@@ -5186,6 +5199,7 @@ test('3-7-137: 【更新】 同一材料名で単位が異なる行は複数登�
         'position' => 'suffix',
         'order' => 2,
         'requires_quantity' => true,
+        'is_default' => false
     ]);
 
     $data = [

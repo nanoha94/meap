@@ -18,6 +18,11 @@ class MealCategory extends Model
         'color_id',
         'name',
         'order',
+        'is_default',
+    ];
+
+    protected $casts = [
+        'is_default' => 'boolean',
     ];
 
     /**

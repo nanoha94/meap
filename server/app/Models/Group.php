@@ -71,6 +71,7 @@ class Group extends Model
                 $mealCategory->color_id = $category['color_id'];
                 $mealCategory->name = $category['name'];
                 $mealCategory->order = $category['order'];
+                $mealCategory->is_default = true;
                 $mealCategory->save();
             }
 
@@ -113,10 +114,11 @@ class Group extends Model
                 ['name' => 'お好み', 'position' => 'prefix', 'requires_quantity' => false, 'order' => 26],
             ];
 
-            foreach ($units as $unit) {
-                $unit = new IngredientUnit($unit);
-                $unit->group_id = $group->id;
-                $unit->save();
+            foreach ($units as $unitData) {
+                $ingredientUnit = new IngredientUnit($unitData);
+                $ingredientUnit->group_id = $group->id;
+                $ingredientUnit->is_default = true;
+                $ingredientUnit->save();
             }
 
             return $group;

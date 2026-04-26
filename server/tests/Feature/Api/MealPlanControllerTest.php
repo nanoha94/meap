@@ -59,21 +59,24 @@ beforeEach(function () {
                     'position' => 'suffix',
                     'order' => 0,
                     'requires_quantity' => true,
-                    'group_id' => $groupId
+                    'group_id' => $groupId,
+                    'is_default' => false,
                 ],
                 [
                     'name' => '個',
                     'position' => 'suffix',
                     'order' => 1,
                     'requires_quantity' => true,
-                    'group_id' => $groupId
+                    'group_id' => $groupId,
+                    'is_default' => false,
                 ],
                 [
                     'name' => '少々',
                     'position' => 'prefix',
                     'order' => 2,
                     'requires_quantity' => false,
-                    'group_id' => $groupId
+                    'group_id' => $groupId,
+                    'is_default' => false,
                 ]
             ];
 

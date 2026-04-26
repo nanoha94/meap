@@ -37,7 +37,8 @@ test('3-12-1: 【一覧取得】 正常な食材単位一覧取得', function ()
         'name' => 'g',
         'position' => 'suffix',
         'requires_quantity' => true,
-        'order' => 0
+        'order' => 0,
+        'is_default' => false
     ]);
 
     $unit2 = IngredientUnit::create([
@@ -45,7 +46,8 @@ test('3-12-1: 【一覧取得】 正常な食材単位一覧取得', function ()
         'name' => 'ml',
         'position' => 'suffix',
         'requires_quantity' => true,
-        'order' => 1
+        'order' => 1,
+        'is_default' => false
     ]);
 
     $response = $this->actingAs($this->user)->get('/ingredient-units');
@@ -100,7 +102,8 @@ test('3-12-2: 【一覧取得】 単位情報の並び順確認', function () {
         'name' => 'g',
         'position' => 'suffix',
         'requires_quantity' => true,
-        'order' => 2
+        'order' => 2,
+        'is_default' => false
     ]);
 
     $unit2 = IngredientUnit::create([
@@ -108,7 +111,8 @@ test('3-12-2: 【一覧取得】 単位情報の並び順確認', function () {
         'name' => 'ml',
         'position' => 'suffix',
         'requires_quantity' => true,
-        'order' => 0
+        'order' => 0,
+        'is_default' => false
     ]);
 
     $unit3 = IngredientUnit::create([
@@ -116,7 +120,8 @@ test('3-12-2: 【一覧取得】 単位情報の並び順確認', function () {
         'name' => '個',
         'position' => 'suffix',
         'requires_quantity' => true,
-        'order' => 1
+        'order' => 1,
+        'is_default' => false
     ]);
 
     $response = $this->actingAs($this->user)->get('/ingredient-units');
@@ -164,7 +169,8 @@ test('3-12-4: 【一覧取得】 レスポンス形式確認', function () {
         'name' => 'g',
         'position' => 'suffix',
         'requires_quantity' => true,
-        'order' => 0
+        'order' => 0,
+        'is_default' => false
     ]);
 
     $response = $this->actingAs($this->user)->get('/ingredient-units');
@@ -198,7 +204,8 @@ test('3-12-5: 【一覧取得】 各フィールドの確認', function () {
         'name' => 'g',
         'position' => 'suffix',
         'requires_quantity' => true,
-        'order' => 0
+        'order' => 0,
+        'is_default' => false
     ]);
 
     $response = $this->actingAs($this->user)->get('/ingredient-units');
@@ -227,7 +234,8 @@ test('3-12-6: 【一覧取得】 position フィールドの確認', function ()
         'name' => '大さじ',
         'position' => 'prefix',
         'requires_quantity' => true,
-        'order' => 0
+        'order' => 0,
+        'is_default' => false
     ]);
 
     $unit2 = IngredientUnit::create([
@@ -235,7 +243,8 @@ test('3-12-6: 【一覧取得】 position フィールドの確認', function ()
         'name' => 'g',
         'position' => 'suffix',
         'requires_quantity' => true,
-        'order' => 1
+        'order' => 1,
+        'is_default' => false
     ]);
 
     $response = $this->actingAs($this->user)->get('/ingredient-units');
@@ -258,7 +267,8 @@ test('3-12-7: 【一覧取得】 requiresQuantity フィールドの確認', fun
         'name' => 'g',
         'position' => 'suffix',
         'requires_quantity' => true,
-        'order' => 0
+        'order' => 0,
+        'is_default' => false
     ]);
 
     $unit2 = IngredientUnit::create([
@@ -266,7 +276,8 @@ test('3-12-7: 【一覧取得】 requiresQuantity フィールドの確認', fun
         'name' => '適量',
         'position' => 'prefix',
         'requires_quantity' => false,
-        'order' => 1
+        'order' => 1,
+        'is_default' => false
     ]);
 
     $response = $this->actingAs($this->user)->get('/ingredient-units');
@@ -290,7 +301,8 @@ test('3-12-8: 【一覧取得】 他グループの単位は取得されない',
         'name' => 'g',
         'position' => 'suffix',
         'requires_quantity' => true,
-        'order' => 0
+        'order' => 0,
+        'is_default' => false
     ]);
 
     // 他のグループのユーザーとグループを作成
@@ -307,7 +319,8 @@ test('3-12-8: 【一覧取得】 他グループの単位は取得されない',
         'name' => 'ml',
         'position' => 'suffix',
         'requires_quantity' => true,
-        'order' => 0
+        'order' => 0,
+        'is_default' => false
     ]);
 
     $response = $this->actingAs($this->user)->get('/ingredient-units');

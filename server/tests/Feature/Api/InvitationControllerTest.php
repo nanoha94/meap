@@ -1,10 +1,13 @@
 <?php
 
-use App\Models\User;
-use App\Models\Group;
-use App\Models\InvitationToken;
 use App\Models\Color;
+use App\Models\Group;
+use App\Models\Image;
+use App\Models\InvitationToken;
+use App\Models\Recipe;
+use App\Models\User;
 use App\Services\InvitationTokenService;
+use Illuminate\Support\Str;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -736,7 +739,46 @@ test('3-3-19: 【グループ参加】 元グループの保持確認', function
     expect($joinUserGroup->group_size)->toBe(1);
 });
 
-test('3-3-20: 【グループ参加】 未認証ユーザー', function () {
+test('3-3-20: 【グループ参加】 デフォルトのマスタデータのみ存在する場合', function () {
+    $inviter = User::factory()->create([
+        'email_verified_at' => now()
+    ]);
+    $inviterGroup = Group::create([
+        'group_size' => 1
+    ]);
+    DB::table('group_user_mappings')->insert([
+        'user_id' => $inviter->id,
+        'group_id' => $inviterGroup->id
+    ]);
+
+    $user = User::factory()->create([
+        'email_verified_at' => now()
+    ]);
+    $userGroup = Group::createGroup();
+    DB::table('group_user_mappings')->insert([
+        'user_id' => $user->id,
+        'group_id' => $userGroup->id
+    ]);
+
+    $invitationTokenService = app(InvitationTokenService::class);
+    $plainToken = $invitationTokenService->generateToken();
+    InvitationToken::create([
+        'inviter_user_id' => $inviter->id,
+        'token' => Hash::make($plainToken),
+        'expires_at' => Carbon::now()->addHour()
+    ]);
+
+    $response = $this->actingAs($user)->post("/invitations/{$plainToken}/join");
+
+    $response->assertStatus(200);
+    $response->assertJson([
+        'success' => true,
+        'message' => 'グループに参加しました。'
+    ]);
+    $response->assertHeader('Content-Type', 'application/json');
+});
+
+test('3-3-21: 【グループ参加】 未認証ユーザー', function () {
     $response = $this->post('/invitations/some-token/join');
 
     $response->assertStatus(401);
@@ -755,7 +797,7 @@ test('3-3-20: 【グループ参加】 未認証ユーザー', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-3-21: 【グループ参加】 無効なトークンでの参加', function () {
+test('3-3-22: 【グループ参加】 無効なトークンでの参加', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -779,7 +821,7 @@ test('3-3-21: 【グループ参加】 無効なトークンでの参加', funct
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-3-22: 【グループ参加】 ハッシュチェック失敗', function () {
+test('3-3-23: 【グループ参加】 ハッシュチェック失敗', function () {
     $inviter = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -822,7 +864,7 @@ test('3-3-22: 【グループ参加】 ハッシュチェック失敗', function
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-3-23: 【グループ参加】 有効期限切れトークンでの参加', function () {
+test('3-3-24: 【グループ参加】 有効期限切れトークンでの参加', function () {
     $inviter = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -866,7 +908,7 @@ test('3-3-23: 【グループ参加】 有効期限切れトークンでの参�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-3-24: 【グループ参加】 自分自身のトークンでの参加', function () {
+test('3-3-25: 【グループ参加】 自分自身のトークンでの参加', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -894,7 +936,7 @@ test('3-3-24: 【グループ参加】 自分自身のトークンでの参加',
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-3-25: 【グループ参加】 既に同じグループにいる場合', function () {
+test('3-3-26: 【グループ参加】 既に同じグループにいる場合', function () {
     $inviter = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -930,7 +972,7 @@ test('3-3-25: 【グループ参加】 既に同じグループにいる場合',
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-3-26: 【グループ参加】 他のグループに所属している場合', function () {
+test('3-3-27: 【グループ参加】 他のグループに所属している場合', function () {
     $inviter = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -973,12 +1015,13 @@ test('3-3-26: 【グループ参加】 他のグループに所属している�
         'success' => false,
         'message' => 'すでに別のグループに所属しています。'
     ]);
+    $response->assertJsonPath('error_type', 'already_in_another_group');
 
     // Content-Typeがapplication/jsonであることを確認
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-3-27: 【グループ参加】 既存データがある場合の参加', function () {
+test('3-3-28: 【グループ参加】 買い物アイテムが存在する場合', function () {
     $inviter = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -993,29 +1036,20 @@ test('3-3-27: 【グループ参加】 既存データがある場合の参加',
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
-    $userGroup = Group::create([
-        'group_size' => 1
-    ]);
+    $userGroup = Group::createGroup();
     DB::table('group_user_mappings')->insert([
         'user_id' => $user->id,
         'group_id' => $userGroup->id
     ]);
 
-    // 既存データ（買い物カテゴリとアイテム）を作成
-    $shoppingCategory = $userGroup->shoppingCategories()->create([
-        'name' => 'Test Category',
-        'order' => 0,
-        'is_default' => false
-    ]);
-
-    $shoppingItem = $userGroup->shoppingItems()->create([
+    $defaultShoppingCategory = $userGroup->shoppingCategories()->where('is_default', true)->firstOrFail();
+    $userGroup->shoppingItems()->create([
         'name' => 'Test Item',
-        'category_id' => $shoppingCategory->id,
+        'category_id' => $defaultShoppingCategory->id,
         'order' => 0,
         'is_checked' => false
     ]);
 
-    // トークンを生成
     $invitationTokenService = app(InvitationTokenService::class);
     $plainToken = $invitationTokenService->generateToken();
     InvitationToken::create([
@@ -1024,7 +1058,6 @@ test('3-3-27: 【グループ参加】 既存データがある場合の参加',
         'expires_at' => Carbon::now()->addHour()
     ]);
 
-    // isDelete=falseまたは未指定で既存データがある場合、409 Conflictになる
     $response = $this->actingAs($user)->post("/invitations/{$plainToken}/join");
 
     $response->assertStatus(409);
@@ -1032,12 +1065,476 @@ test('3-3-27: 【グループ参加】 既存データがある場合の参加',
         'success' => false,
         'message' => 'すでに登録済みのデータがあります。'
     ]);
-
-    // Content-Typeがapplication/jsonであることを確認
+    $response->assertJsonPath('error_type', 'has_existing_data');
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-3-28: 【グループ参加】 データベース接続エラー', function () {
+test('3-3-29: 【グループ参加】 is_default=false の買い物カテゴリのみ存在する場合', function () {
+    $inviter = User::factory()->create([
+        'email_verified_at' => now()
+    ]);
+    $inviterGroup = Group::create([
+        'group_size' => 1
+    ]);
+    DB::table('group_user_mappings')->insert([
+        'user_id' => $inviter->id,
+        'group_id' => $inviterGroup->id
+    ]);
+
+    $user = User::factory()->create([
+        'email_verified_at' => now()
+    ]);
+    $userGroup = Group::createGroup();
+    DB::table('group_user_mappings')->insert([
+        'user_id' => $user->id,
+        'group_id' => $userGroup->id
+    ]);
+
+    $userGroup->shoppingCategories()->create([
+        'name' => 'User Shopping Category',
+        'order' => 1,
+        'is_default' => false
+    ]);
+
+    $invitationTokenService = app(InvitationTokenService::class);
+    $plainToken = $invitationTokenService->generateToken();
+    InvitationToken::create([
+        'inviter_user_id' => $inviter->id,
+        'token' => Hash::make($plainToken),
+        'expires_at' => Carbon::now()->addHour()
+    ]);
+
+    $response = $this->actingAs($user)->post("/invitations/{$plainToken}/join");
+
+    $response->assertStatus(409);
+    $response->assertJson([
+        'success' => false,
+        'message' => 'すでに登録済みのデータがあります。'
+    ]);
+    $response->assertJsonPath('error_type', 'has_existing_data');
+    $response->assertHeader('Content-Type', 'application/json');
+});
+
+test('3-3-30: 【グループ参加】 食事予定（meal plan）が存在する場合', function () {
+    $inviter = User::factory()->create([
+        'email_verified_at' => now()
+    ]);
+    $inviterGroup = Group::create([
+        'group_size' => 1
+    ]);
+    DB::table('group_user_mappings')->insert([
+        'user_id' => $inviter->id,
+        'group_id' => $inviterGroup->id
+    ]);
+
+    $user = User::factory()->create([
+        'email_verified_at' => now()
+    ]);
+    $userGroup = Group::createGroup();
+    DB::table('group_user_mappings')->insert([
+        'user_id' => $user->id,
+        'group_id' => $userGroup->id
+    ]);
+
+    $userGroup->mealPlans()->create([
+        'date' => '2026-04-26'
+    ]);
+
+    $invitationTokenService = app(InvitationTokenService::class);
+    $plainToken = $invitationTokenService->generateToken();
+    InvitationToken::create([
+        'inviter_user_id' => $inviter->id,
+        'token' => Hash::make($plainToken),
+        'expires_at' => Carbon::now()->addHour()
+    ]);
+
+    $response = $this->actingAs($user)->post("/invitations/{$plainToken}/join");
+
+    $response->assertStatus(409);
+    $response->assertJson([
+        'success' => false,
+        'message' => 'すでに登録済みのデータがあります。'
+    ]);
+    $response->assertJsonPath('error_type', 'has_existing_data');
+    $response->assertHeader('Content-Type', 'application/json');
+});
+
+test('3-3-31: 【グループ参加】 is_default=false の食事カテゴリが存在する場合', function () {
+    $inviter = User::factory()->create([
+        'email_verified_at' => now()
+    ]);
+    $inviterGroup = Group::create([
+        'group_size' => 1
+    ]);
+    DB::table('group_user_mappings')->insert([
+        'user_id' => $inviter->id,
+        'group_id' => $inviterGroup->id
+    ]);
+
+    $user = User::factory()->create([
+        'email_verified_at' => now()
+    ]);
+    $userGroup = Group::createGroup();
+    DB::table('group_user_mappings')->insert([
+        'user_id' => $user->id,
+        'group_id' => $userGroup->id
+    ]);
+
+    $yellow = Color::where('name', 'イエロー')->firstOrFail();
+    $userGroup->mealCategories()->create([
+        'name' => 'ユーザー定義食事',
+        'color_id' => $yellow->id,
+        'order' => 10,
+        'is_default' => false
+    ]);
+
+    $invitationTokenService = app(InvitationTokenService::class);
+    $plainToken = $invitationTokenService->generateToken();
+    InvitationToken::create([
+        'inviter_user_id' => $inviter->id,
+        'token' => Hash::make($plainToken),
+        'expires_at' => Carbon::now()->addHour()
+    ]);
+
+    $response = $this->actingAs($user)->post("/invitations/{$plainToken}/join");
+
+    $response->assertStatus(409);
+    $response->assertJson([
+        'success' => false,
+        'message' => 'すでに登録済みのデータがあります。'
+    ]);
+    $response->assertJsonPath('error_type', 'has_existing_data');
+    $response->assertHeader('Content-Type', 'application/json');
+});
+
+test('3-3-32: 【グループ参加】 レシピが存在する場合', function () {
+    $inviter = User::factory()->create([
+        'email_verified_at' => now()
+    ]);
+    $inviterGroup = Group::create([
+        'group_size' => 1
+    ]);
+    DB::table('group_user_mappings')->insert([
+        'user_id' => $inviter->id,
+        'group_id' => $inviterGroup->id
+    ]);
+
+    $user = User::factory()->create([
+        'email_verified_at' => now()
+    ]);
+    $userGroup = Group::createGroup();
+    DB::table('group_user_mappings')->insert([
+        'user_id' => $user->id,
+        'group_id' => $userGroup->id
+    ]);
+
+    Recipe::create([
+        'group_id' => $userGroup->id,
+        'owner_user_id' => $user->id,
+        'name' => 'テストレシピ',
+    ]);
+
+    $invitationTokenService = app(InvitationTokenService::class);
+    $plainToken = $invitationTokenService->generateToken();
+    InvitationToken::create([
+        'inviter_user_id' => $inviter->id,
+        'token' => Hash::make($plainToken),
+        'expires_at' => Carbon::now()->addHour()
+    ]);
+
+    $response = $this->actingAs($user)->post("/invitations/{$plainToken}/join");
+
+    $response->assertStatus(409);
+    $response->assertJson([
+        'success' => false,
+        'message' => 'すでに登録済みのデータがあります。'
+    ]);
+    $response->assertJsonPath('error_type', 'has_existing_data');
+    $response->assertHeader('Content-Type', 'application/json');
+});
+
+test('3-3-33: 【グループ参加】 レシピカテゴリが存在する場合', function () {
+    $inviter = User::factory()->create([
+        'email_verified_at' => now()
+    ]);
+    $inviterGroup = Group::create([
+        'group_size' => 1
+    ]);
+    DB::table('group_user_mappings')->insert([
+        'user_id' => $inviter->id,
+        'group_id' => $inviterGroup->id
+    ]);
+
+    $user = User::factory()->create([
+        'email_verified_at' => now()
+    ]);
+    $userGroup = Group::createGroup();
+    DB::table('group_user_mappings')->insert([
+        'user_id' => $user->id,
+        'group_id' => $userGroup->id
+    ]);
+
+    $userGroup->recipeCategories()->create([
+        'name' => 'ユーザー分類',
+        'order' => 0
+    ]);
+
+    $invitationTokenService = app(InvitationTokenService::class);
+    $plainToken = $invitationTokenService->generateToken();
+    InvitationToken::create([
+        'inviter_user_id' => $inviter->id,
+        'token' => Hash::make($plainToken),
+        'expires_at' => Carbon::now()->addHour()
+    ]);
+
+    $response = $this->actingAs($user)->post("/invitations/{$plainToken}/join");
+
+    $response->assertStatus(409);
+    $response->assertJson([
+        'success' => false,
+        'message' => 'すでに登録済みのデータがあります。'
+    ]);
+    $response->assertJsonPath('error_type', 'has_existing_data');
+    $response->assertHeader('Content-Type', 'application/json');
+});
+
+test('3-3-34: 【グループ参加】 材料（ingredient）が存在する場合', function () {
+    $inviter = User::factory()->create([
+        'email_verified_at' => now()
+    ]);
+    $inviterGroup = Group::create([
+        'group_size' => 1
+    ]);
+    DB::table('group_user_mappings')->insert([
+        'user_id' => $inviter->id,
+        'group_id' => $inviterGroup->id
+    ]);
+
+    $user = User::factory()->create([
+        'email_verified_at' => now()
+    ]);
+    $userGroup = Group::createGroup();
+    DB::table('group_user_mappings')->insert([
+        'user_id' => $user->id,
+        'group_id' => $userGroup->id
+    ]);
+
+    $userGroup->ingredients()->create([
+        'name' => 'テスト材料'
+    ]);
+
+    $invitationTokenService = app(InvitationTokenService::class);
+    $plainToken = $invitationTokenService->generateToken();
+    InvitationToken::create([
+        'inviter_user_id' => $inviter->id,
+        'token' => Hash::make($plainToken),
+        'expires_at' => Carbon::now()->addHour()
+    ]);
+
+    $response = $this->actingAs($user)->post("/invitations/{$plainToken}/join");
+
+    $response->assertStatus(409);
+    $response->assertJson([
+        'success' => false,
+        'message' => 'すでに登録済みのデータがあります。'
+    ]);
+    $response->assertJsonPath('error_type', 'has_existing_data');
+    $response->assertHeader('Content-Type', 'application/json');
+});
+
+test('3-3-35: 【グループ参加】 is_default=false の材料カテゴリが存在する場合', function () {
+    $inviter = User::factory()->create([
+        'email_verified_at' => now()
+    ]);
+    $inviterGroup = Group::create([
+        'group_size' => 1
+    ]);
+    DB::table('group_user_mappings')->insert([
+        'user_id' => $inviter->id,
+        'group_id' => $inviterGroup->id
+    ]);
+
+    $user = User::factory()->create([
+        'email_verified_at' => now()
+    ]);
+    $userGroup = Group::createGroup();
+    DB::table('group_user_mappings')->insert([
+        'user_id' => $user->id,
+        'group_id' => $userGroup->id
+    ]);
+
+    $userGroup->ingredientCategories()->create([
+        'name' => 'ユーザーの食材カテゴリ',
+        'order' => 1,
+        'is_default' => false
+    ]);
+
+    $invitationTokenService = app(InvitationTokenService::class);
+    $plainToken = $invitationTokenService->generateToken();
+    InvitationToken::create([
+        'inviter_user_id' => $inviter->id,
+        'token' => Hash::make($plainToken),
+        'expires_at' => Carbon::now()->addHour()
+    ]);
+
+    $response = $this->actingAs($user)->post("/invitations/{$plainToken}/join");
+
+    $response->assertStatus(409);
+    $response->assertJson([
+        'success' => false,
+        'message' => 'すでに登録済みのデータがあります。'
+    ]);
+    $response->assertJsonPath('error_type', 'has_existing_data');
+    $response->assertHeader('Content-Type', 'application/json');
+});
+
+test('3-3-36: 【グループ参加】 is_default=false の材料単位が存在する場合', function () {
+    $inviter = User::factory()->create([
+        'email_verified_at' => now()
+    ]);
+    $inviterGroup = Group::create([
+        'group_size' => 1
+    ]);
+    DB::table('group_user_mappings')->insert([
+        'user_id' => $inviter->id,
+        'group_id' => $inviterGroup->id
+    ]);
+
+    $user = User::factory()->create([
+        'email_verified_at' => now()
+    ]);
+    $userGroup = Group::createGroup();
+    DB::table('group_user_mappings')->insert([
+        'user_id' => $user->id,
+        'group_id' => $userGroup->id
+    ]);
+
+    $userGroup->ingredientUnits()->create([
+        'name' => 'user_cc',
+        'position' => 'suffix',
+        'requires_quantity' => true,
+        'order' => 200,
+        'is_default' => false
+    ]);
+
+    $invitationTokenService = app(InvitationTokenService::class);
+    $plainToken = $invitationTokenService->generateToken();
+    InvitationToken::create([
+        'inviter_user_id' => $inviter->id,
+        'token' => Hash::make($plainToken),
+        'expires_at' => Carbon::now()->addHour()
+    ]);
+
+    $response = $this->actingAs($user)->post("/invitations/{$plainToken}/join");
+
+    $response->assertStatus(409);
+    $response->assertJson([
+        'success' => false,
+        'message' => 'すでに登録済みのデータがあります。'
+    ]);
+    $response->assertJsonPath('error_type', 'has_existing_data');
+    $response->assertHeader('Content-Type', 'application/json');
+});
+
+test('3-3-37: 【グループ参加】 買い物タグが存在する場合', function () {
+    $inviter = User::factory()->create([
+        'email_verified_at' => now()
+    ]);
+    $inviterGroup = Group::create([
+        'group_size' => 1
+    ]);
+    DB::table('group_user_mappings')->insert([
+        'user_id' => $inviter->id,
+        'group_id' => $inviterGroup->id
+    ]);
+
+    $user = User::factory()->create([
+        'email_verified_at' => now()
+    ]);
+    $userGroup = Group::createGroup();
+    DB::table('group_user_mappings')->insert([
+        'user_id' => $user->id,
+        'group_id' => $userGroup->id
+    ]);
+
+    $userGroup->shoppingTags()->create([
+        'name' => '週末用'
+    ]);
+
+    $invitationTokenService = app(InvitationTokenService::class);
+    $plainToken = $invitationTokenService->generateToken();
+    InvitationToken::create([
+        'inviter_user_id' => $inviter->id,
+        'token' => Hash::make($plainToken),
+        'expires_at' => Carbon::now()->addHour()
+    ]);
+
+    $response = $this->actingAs($user)->post("/invitations/{$plainToken}/join");
+
+    $response->assertStatus(409);
+    $response->assertJson([
+        'success' => false,
+        'message' => 'すでに登録済みのデータがあります。'
+    ]);
+    $response->assertJsonPath('error_type', 'has_existing_data');
+    $response->assertHeader('Content-Type', 'application/json');
+});
+
+test('3-3-38: 【グループ参加】 画像が存在する場合', function () {
+    $inviter = User::factory()->create([
+        'email_verified_at' => now()
+    ]);
+    $inviterGroup = Group::create([
+        'group_size' => 1
+    ]);
+    DB::table('group_user_mappings')->insert([
+        'user_id' => $inviter->id,
+        'group_id' => $inviterGroup->id
+    ]);
+
+    $user = User::factory()->create([
+        'email_verified_at' => now()
+    ]);
+    $userGroup = Group::createGroup();
+    DB::table('group_user_mappings')->insert([
+        'user_id' => $user->id,
+        'group_id' => $userGroup->id
+    ]);
+
+    $image = Image::create([
+        'src' => 'invitation_test.jpg',
+        'width' => 10,
+        'height' => 10
+    ]);
+    DB::table('image_mappings')->insert([
+        'image_id' => $image->id,
+        'group_id' => $userGroup->id,
+        'related_model' => Recipe::class,
+        'related_id' => (string) Str::uuid(),
+        'image_type' => 'thumbnail',
+        'order' => 0
+    ]);
+
+    $invitationTokenService = app(InvitationTokenService::class);
+    $plainToken = $invitationTokenService->generateToken();
+    InvitationToken::create([
+        'inviter_user_id' => $inviter->id,
+        'token' => Hash::make($plainToken),
+        'expires_at' => Carbon::now()->addHour()
+    ]);
+
+    $response = $this->actingAs($user)->post("/invitations/{$plainToken}/join");
+
+    $response->assertStatus(409);
+    $response->assertJson([
+        'success' => false,
+        'message' => 'すでに登録済みのデータがあります。'
+    ]);
+    $response->assertJsonPath('error_type', 'has_existing_data');
+    $response->assertHeader('Content-Type', 'application/json');
+});
+
+test('3-3-39: 【グループ参加】 データベース接続エラー', function () {
     $inviter = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -1086,7 +1583,7 @@ test('3-3-28: 【グループ参加】 データベース接続エラー', funct
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-3-29: 【グループ参加】 GroupUserMapping 作成失敗', function () {
+test('3-3-40: 【グループ参加】 GroupUserMapping 作成失敗', function () {
     $inviter = User::factory()->create([
         'email_verified_at' => now()
     ]);

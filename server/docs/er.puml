@@ -13,6 +13,7 @@ entity ingredient_units #LightBlue {
     * id : string <<generated>>
     --
     * name : string
+    * is_default : boolean / trueの場合、デフォルト単位として扱う
     * position :  ENUM('prefix', 'suffix')  / 'prefix'（数字の前）または'suffix'（数字の後）
     * requires_quantity : boolean / 量を入力するかどうか
     * order : int / ソート順
@@ -23,6 +24,7 @@ entity ingredient_categories #LightBlue {
     * id : string <<generated>>
     --
     * name : string
+    * is_default : boolean / trueの場合、デフォルトカテゴリとして扱う
     * order : int / ソート順
     * group_id : string <<FK>>
 }
@@ -94,6 +96,7 @@ entity meal_categories #LightBlue {
     * id : string <<generated>>
     --
     * name : string
+    * is_default : boolean / trueの場合、デフォルトカテゴリとして扱う
     * color_id : string <<FK>>
     * group_id : string <<FK>>
     * order : int / ソート順
