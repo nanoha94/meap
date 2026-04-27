@@ -44,6 +44,10 @@ const MenuButton = ({
     };
 
     React.useEffect(() => {
+        /**
+         * メニュー外をクリックしたらメニューを閉じる
+         * @param event
+         */
         const handleClickOutside = (event: MouseEvent) => {
             if (
                 containerRef.current &&
@@ -53,18 +57,33 @@ const MenuButton = ({
             }
         };
 
+        /**
+         * ウィンドウリサイズしたらメニューを閉じる
+         */
         const handleResize = () => {
             if (isOpen) {
                 setIsOpen(false);
             }
         };
 
+        /**
+         * Escapeキーでメニューを閉じる
+         * @param event
+         */
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (isOpen && event.key === 'Escape') {
+                setIsOpen(false);
+            }
+        };
+
         document.addEventListener('mousedown', handleClickOutside);
         window.addEventListener('resize', handleResize);
+        document.addEventListener('keydown', handleKeyDown);
 
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
             window.removeEventListener('resize', handleResize);
+            document.removeEventListener('keydown', handleKeyDown);
         };
     }, [isOpen]);
 
@@ -72,10 +91,10 @@ const MenuButton = ({
         <div className="relative leading-none" ref={containerRef}>
             {customButton ? (
                 React.cloneElement(customButton as React.ReactElement<{ onClick?: () => void }>, {
-                    onClick: () => setIsOpen(true),
+                    onClick: () => setIsOpen(!isOpen),
                 })
             ) : (
-                <button type="button" onClick={() => setIsOpen(true)} className="p-1 appearance-none rounded-full transition-colors hover:bg-gray-light">
+                <button type="button" onClick={() => setIsOpen(!isOpen)} className="p-1 appearance-none rounded-full transition-colors hover:bg-gray-light">
                     <EllipsisVertical
                         color={colors.gray.main}
                         className={className}
