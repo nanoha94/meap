@@ -63,6 +63,7 @@ const Page = () => {
                     ご登録のメールアドレスを入力してください。
                 </p>
                 <form
+                    noValidate
                     onSubmit={handleSubmit(onSubmit)}
                     className="flex flex-col gap-y-10">
                     {/* Email Address */}

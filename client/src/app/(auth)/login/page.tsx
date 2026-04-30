@@ -83,6 +83,7 @@ const LoginForm = () => {
                     </h1>
                 </div>
                 <form
+                    noValidate
                     onSubmit={handleSubmit(onSubmit)}
                     className="flex flex-col gap-y-10">
                     <div className="flex flex-col gap-y-4">

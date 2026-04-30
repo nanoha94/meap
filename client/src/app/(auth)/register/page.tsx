@@ -94,6 +94,7 @@ const Page = () => {
                     に同意の上、ご登録ください
                 </p>
                 <form
+                    noValidate
                     onSubmit={handleSubmit(onSubmit)}
                     className="flex flex-col gap-y-10">
                     <div className="flex flex-col gap-y-4">
