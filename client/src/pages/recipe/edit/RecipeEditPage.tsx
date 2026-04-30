@@ -158,8 +158,9 @@ const RecipeEditPage = ({
                                     control={control}
                                     name="name"
                                     label="料理名">
-                                    {({ value, onChange }) => (
+                                    {({ value, onChange, id }) => (
                                         <input
+                                            id={id}
                                             type="text"
                                             value={(value as string) ?? ''}
                                             placeholder="料理名を入力"
@@ -197,9 +198,10 @@ const RecipeEditPage = ({
                                     control={control}
                                     name="servingCount"
                                     label="分量目安">
-                                    {({ value, onChange }) => (
+                                    {({ value, onChange, id }) => (
                                         <div className="flex items-center gap-x-2">
                                             <input
+                                                id={id}
                                                 type="number"
                                                 value={(value as string) ?? ''}
                                                 min={1}
@@ -225,10 +227,11 @@ const RecipeEditPage = ({
                                     label="レシピURL"
                                     memo="※外部に公開する際には空にしてください"
                                 >
-                                    {({ value, onChange }) => (
+                                    {({ value, onChange, id }) => (
                                         <div className="flex flex-col gap-y-2">
                                             <div className="flex items-center gap-x-2">
                                                 <input
+                                                    id={id}
                                                     type="text"
                                                     value={(value as string) ?? ''}
                                                     placeholder="レシピURLを入力"

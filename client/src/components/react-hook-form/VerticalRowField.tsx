@@ -10,7 +10,6 @@ import {
 } from 'react-hook-form';
 
 interface Props<T extends FieldValues> {
-    id?: string;
     label: string;
     memo?: string;
     required?: boolean;
@@ -37,7 +36,7 @@ const VerticalRowField = <T extends FieldValues>({
 }: Props<T>) => (
     <div className="flex flex-col gap-y-2">
         <div className="flex flex-col gap-y-1">
-            <label>
+            <label htmlFor={String(name)}>
                 {label}
                 {required && <span className="text-alert-main">（必須）</span>}
             </label>

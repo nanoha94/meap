@@ -113,8 +113,9 @@ const Page = () => {
                             rules={{
                                 required: '必須項目です',
                             }}>
-                            {({ value, onChange }) => (
+                            {({ value, onChange, id }) => (
                                 <input
+                                    id={id}
                                     type="text"
                                     value={value as string}
                                     onChange={e => {
@@ -151,8 +152,9 @@ const Page = () => {
                                         'メールアドレスの形式で入力してください',
                                 },
                             }}>
-                            {({ value, onChange }) => (
+                            {({ value, onChange, id }) => (
                                 <input
+                                    id={id}
                                     type="email"
                                     value={value as string}
                                     onChange={e => {
@@ -181,8 +183,9 @@ const Page = () => {
                                     : []
                             }
                             rules={{ required: '必須項目です' }}>
-                            {({ value, onChange }) => (
+                            {({ value, onChange, id }) => (
                                 <input
+                                    id={id}
                                     type="password"
                                     value={value as string}
                                     onChange={e => {
@@ -213,8 +216,9 @@ const Page = () => {
                                     : []
                             }
                             rules={{ required: '必須項目です' }}>
-                            {({ value, onChange }) => (
+                            {({ value, onChange, id }) => (
                                 <input
+                                    id={id}
                                     type="password"
                                     value={value as string}
                                     onChange={e => {

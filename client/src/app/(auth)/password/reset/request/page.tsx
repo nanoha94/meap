@@ -86,8 +86,9 @@ const Page = () => {
                                     'メールアドレスの形式で入力してください',
                             },
                         }}>
-                        {({ value, onChange }) => (
+                        {({ value, onChange, id }) => (
                             <input
+                                id={id}
                                 type="email"
                                 value={value as string}
                                 onChange={e => {

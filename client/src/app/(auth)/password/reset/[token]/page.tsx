@@ -88,8 +88,9 @@ const PasswordReset = () => {
                                 message: '8文字以上で入力してください',
                             },
                         }}>
-                        {({ value, onChange }) => (
+                        {({ value, onChange, id }) => (
                             <input
+                                id={id}
                                 type="password"
                                 value={value as string}
                                 onChange={e => {
@@ -132,8 +133,9 @@ const PasswordReset = () => {
                                 return true;
                             },
                         }}>
-                        {({ value, onChange }) => (
+                        {({ value, onChange, id }) => (
                             <input
+                                id={id}
                                 type="password"
                                 value={value as string}
                                 onChange={e => {

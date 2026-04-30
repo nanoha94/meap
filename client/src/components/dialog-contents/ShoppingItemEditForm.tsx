@@ -122,8 +122,9 @@ const ShoppingItemEditForm: React.FC<Props> = ({
                     control={control}
                     name="name"
                     label="アイテム名/量">
-                    {({ value, onChange }) => (
+                    {({ value, onChange, id }) => (
                         <input
+                            id={id}
                             type="text"
                             value={value as string}
                             placeholder="アイテム名と量を入力してください"
