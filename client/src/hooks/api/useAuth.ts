@@ -181,11 +181,11 @@ export const useAuth = () => {
             setStatus(response.data.message);
         } catch (error) {
             if (error.response?.status === API_STATUS_CODE.UNPROCESSABLE_ENTITY) {
-                setErrors(error.response.data.errors);
+                setErrors({ email: [error.response.data.message] });
             } else {
                 setStatus(error.response?.data?.message);
             }
-            console.error(error.response?.data?.message);
+            console.error({ email: [error.response?.data?.message] });
             // エラーの時は画面遷移がないのでローディングカウントを減らす
             decrementLoadingCount();
         } finally {
