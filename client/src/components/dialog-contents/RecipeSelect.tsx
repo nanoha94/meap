@@ -8,7 +8,7 @@ import { ChevronRight, SlidersHorizontal } from 'lucide-react';
 
 import { Button, RecipeFilterForm, TextButton } from '@/components';
 import { BUTTON_TYPE, BUTTON_VARIANT, COLOR_VARIANT, colors } from '@/constants';
-import { useDialog, useNavigationGuard } from '@/hooks';
+import { useDialog } from '@/hooks';
 import { RecipeFilterFormData, sortOptions, useRecipeApi } from '@/models/recipe';
 import { IRecipe, IRecipeListItem } from '@/types';
 
@@ -107,7 +107,6 @@ const RecipeSelect = ({ initFetchedRecipes, defaultItems, onSave }: Props) => {
         },
         [defaultItems, selectedItems],
     );
-    useNavigationGuard(!isDisabledSaveButton);
 
     /**
      * 保存ボタン押下時の処理
@@ -138,7 +137,11 @@ const RecipeSelect = ({ initFetchedRecipes, defaultItems, onSave }: Props) => {
                 <button type="button" onClick={() => {
                     openDialog({
                         title: '絞り込み条件',
-                        children: <RecipeFilterForm search={handleChangeFilterOptions} defaultValues={filterOptions} />,
+                        children: <RecipeFilterForm
+                            search={handleChangeFilterOptions}
+                            defaultValues={filterOptions}
+                            suppressNavigationGuard
+                        />,
                     });
                 }} className="py-1 px-2 flex items-center gap-x-2 rounded hover:bg-gray-light">
                     <SlidersHorizontal color={colors.black} strokeWidth={1.5} />絞り込み</button>

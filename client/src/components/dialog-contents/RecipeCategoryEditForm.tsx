@@ -10,7 +10,7 @@ import {
     TextButton,
 } from '@/components';
 import { BUTTON_TYPE, BUTTON_VARIANT, COLOR_VARIANT, DND_SORTABLE_LIST_TYPE, TMP_ID_PREFIX } from '@/constants';
-import { useDialog, useNavigationGuard } from '@/hooks';
+import { useDialog } from '@/hooks';
 import { DEFAULT_RECIPE_CATEGORY, useRecipeCategoryApi } from '@/models/recipe';
 import { IRecipeCategory } from '@/types';
 
@@ -47,7 +47,6 @@ const RecipeCategoryEditForm: React.FC = () => {
     const isDisabledSendButton = React.useMemo(() => {
         return JSON.stringify(watchedCategories.filter(item => item.name !== '')) === JSON.stringify(storeData.categories);
     }, [watchedCategories, storeData.categories]);
-    useNavigationGuard(!isDisabledSendButton);
 
     /**
      * 閉じる前確認の要否をフォーム状態に合わせて更新

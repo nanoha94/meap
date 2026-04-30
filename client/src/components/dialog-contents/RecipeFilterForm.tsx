@@ -14,9 +14,11 @@ import { Controller, useForm } from 'react-hook-form';
 interface Props {
     search: (filterOptions: RecipeFilterFormData) => void;
     defaultValues?: RecipeFilterFormData;
+    /** 親（例: PlanEditPage）が既に useNavigationGuard を掛けている子ダイアログで true。二重の pushState / back で誤検知しないため */
+    suppressNavigationGuard?: boolean;
 }
 
-const RecipeFilterForm = ({ search, defaultValues }: Props) => {
+const RecipeFilterForm = ({ search, defaultValues, suppressNavigationGuard = false }: Props) => {
     // store
     const categories = useRecipeStore(state => state.categories);
 
@@ -34,7 +36,7 @@ const RecipeFilterForm = ({ search, defaultValues }: Props) => {
      * フォームのデータが変更されていない場合は送信ボタンを無効化
      */
     const isDisabledSendButton = JSON.stringify(currentValues) === JSON.stringify(defaultValues);
-    useNavigationGuard(!isDisabledSendButton);
+    useNavigationGuard(suppressNavigationGuard ? false : !isDisabledSendButton);
 
     /**
      * 閉じる前確認の要否をフォーム状態に合わせて更新

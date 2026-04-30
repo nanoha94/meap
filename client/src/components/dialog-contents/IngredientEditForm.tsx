@@ -4,7 +4,7 @@ import { useForm, useWatch } from 'react-hook-form';
 
 import { Button, HorizontalRowField, StyledSelect } from '@/components';
 import { BUTTON_TYPE, BUTTON_VARIANT, COLOR_VARIANT, TMP_ID_PREFIX } from '@/constants';
-import { useDialog, useNavigationGuard } from '@/hooks';
+import { useDialog } from '@/hooks';
 import { defaultIngredientItem, useIngredientStore } from '@/models/ingredient';
 import { IIngredientItem, IIngredientUnit } from '@/types';
 
@@ -116,7 +116,6 @@ const IngredientEditForm = ({
         editingItem,
         units,
     ]);
-    useNavigationGuard(!isDisabledSendButton);
 
     /**
      * 閉じる前確認の要否をフォーム状態に合わせて更新
