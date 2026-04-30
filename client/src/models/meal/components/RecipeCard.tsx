@@ -2,6 +2,7 @@
 import { GripVertical, ImageIcon, Trash2 } from "lucide-react";
 import Image from "next/image";
 
+import { SortableHandle } from "@/components/dnd";
 import { colors } from "@/constants";
 import { IMealPlanItem } from "@/types";
 
@@ -18,7 +19,11 @@ type Props = {
 const RecipeCard = ({ recipe, isGrippable = false, hasDeleteButton = false, onDelete }: Props) => {
     return (
         <div className="flex gap-x-2">
-            {isGrippable && <GripVertical color={colors.gray.main} className="pt-1" />}
+            {isGrippable && (
+                <SortableHandle>
+                    <GripVertical color={colors.gray.main} className="pt-1" />
+                </SortableHandle>
+            )}
             <div className="relative flex-1">
                 <div className="relative w-full h-auto aspect-[4/3] bg-gray-light rounded shadow-card md:rounded-lg overflow-hidden">
                     {recipe.recipeThumbnail ? (

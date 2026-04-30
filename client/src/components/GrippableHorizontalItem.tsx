@@ -2,6 +2,7 @@
 import React from 'react';
 import { GripVertical, Trash2 } from 'lucide-react';
 
+import { SortableHandle } from '@/components/dnd';
 import { colors } from '@/constants';
 
 interface Props {
@@ -21,7 +22,9 @@ const GrippableHorizontalItem: React.FC<Props> = ({
 }) => {
     return (
         <div className={`flex items-center gap-x-2 ${className ?? ''}`}>
-            <GripVertical color={colors.gray.main} />
+            <SortableHandle>
+                <GripVertical color={colors.gray.main} />
+            </SortableHandle>
             {children}
             {hasDeleteButton && (
                 <button

@@ -3,6 +3,7 @@ import React from 'react';
 import { Check, GripVertical, Pencil, Pin, PinOff, Trash2 } from 'lucide-react';
 
 import { MenuButton, ShoppingItemEditForm } from '@/components';
+import { SortableHandle } from '@/components/dnd';
 import { EDIT_MODE, colors } from '@/constants';
 import { useAlertDialog, useDialog } from '@/hooks';
 import { ActionButton, IShoppingItem } from '@/types';
@@ -92,7 +93,9 @@ const ShoppingItemCard = ({ item, syncPendingItems }: Props) => {
                             <Pin color={colors.white} size={20} />
                         </div>
                     )}
-                    <GripVertical color={colors.gray.main} />
+                    <SortableHandle>
+                        <GripVertical color={colors.gray.main} />
+                    </SortableHandle>
                     <div className="flex-1">
                         <input
                             type="checkbox"
