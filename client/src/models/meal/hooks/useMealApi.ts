@@ -6,6 +6,7 @@ import { TIMEOUT_MS } from "@/constants";
 import { useApiErrorHandler, useSnackbars } from "@/hooks";
 import axios from "@/lib/axios";
 import { useGlobalStore } from "@/stores";
+import { IBaseApiResponse } from "@/types";
 
 export const useMealApi = () => {
     // store
@@ -36,12 +37,23 @@ export const useMealApi = () => {
             try {
                 isDeleteRequestRef.current = true;
                 incrementLoadingCount();
-                const { data: responseData } = await axios.delete(`/meal-plans/${mealPlanId}/meals/${id}`, {
-                    timeout: TIMEOUT_MS,
-                });
+                const { data: responseData } = await axios.delete<IBaseApiResponse>(
+                    `/meal-plans/${mealPlanId}/meals/${id}`,
+                    {
+                        timeout: TIMEOUT_MS,
+                    },
+                );
                 if (responseData.success) {
-                    addSnackbar('success', responseData.message ?? 'リクエストが正常に完了しました');
+                    addSnackbar(
+                        'success',
+                        responseData.message || 'リクエストが正常に完了しました',
+                    );
                     router.refresh();
+                } else {
+                    addSnackbar(
+                        'error',
+                        responseData.message || '献立の削除に失敗しました',
+                    );
                 }
             } catch (error) {
                 handleApiError(error);

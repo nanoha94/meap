@@ -40,7 +40,12 @@ export const useImageApi = () => {
             if (responseData.success) {
                 addSnackbar(
                     'success',
-                    responseData.message ?? 'リクエストが正常に完了しました',
+                    responseData.message || 'リクエストが正常に完了しました',
+                );
+            } else {
+                addSnackbar(
+                    'error',
+                    responseData.message || '画像のアップロードに失敗しました',
                 );
             }
             return responseData;

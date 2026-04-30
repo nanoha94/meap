@@ -68,8 +68,13 @@ export const useInvitationApi = () => {
                     `${process.env.NEXT_PUBLIC_FRONT_URL}/settings/account?token=${responseData.data.token}`,
                 );
                 setTokenExpiresAt(responseData.data.expires_at);
+                return { success: true };
             }
-            return { success: true };
+            addSnackbar(
+                'error',
+                responseData.message || '招待リンクの発行に失敗しました',
+            );
+            return { success: false };
         } catch (error) {
             handleApiError(error);
             onError?.();
@@ -114,7 +119,15 @@ export const useInvitationApi = () => {
 
             if (responseData.success) {
                 router.refresh();
-                addSnackbar('success', responseData.message);
+                addSnackbar(
+                    'success',
+                    responseData.message || 'リクエストが正常に完了しました',
+                );
+            } else {
+                addSnackbar(
+                    'error',
+                    responseData.message || 'グループへの参加に失敗しました',
+                );
             }
         } catch (error) {
             // Axiosエラーでない場合はhandleApiErrorに委譲

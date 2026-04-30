@@ -6,6 +6,7 @@ import { useApiErrorHandler, useSnackbars } from '@/hooks';
 import axios from '@/lib/axios';
 import { useGlobalStore } from '@/stores';
 import {
+    IBaseApiResponse,
     IPostShoppingItemRequest,
     IPostShoppingItemResponse,
     IPutShoppingItemRequest,
@@ -110,7 +111,12 @@ export const useShoppingItemApi = () => {
                     await fetchShoppingItems();
                     addSnackbar(
                         'success',
-                        responseData.message ?? 'リクエストが正常に完了しました',
+                        responseData.message || 'リクエストが正常に完了しました',
+                    );
+                } else {
+                    addSnackbar(
+                        'error',
+                        responseData.message || '買い物アイテムの登録に失敗しました',
                     );
                 }
             } catch (error) {
@@ -149,10 +155,13 @@ export const useShoppingItemApi = () => {
                 isUpdateBulkRequestRef.current = true;
                 if (!silent) incrementLoadingCount();
 
-                const { data: responseData } = await axios.put(`/shopping-items/bulk`, {
-                    data: items.filter(v => v.name && v.name.length > 0),
-                    timeout: TIMEOUT_MS,
-                });
+                const { data: responseData } = await axios.put<IBaseApiResponse>(
+                    `/shopping-items/bulk`,
+                    {
+                        data: items.filter(v => v.name && v.name.length > 0),
+                        timeout: TIMEOUT_MS,
+                    },
+                );
                 if (responseData.success) {
                     await fetchShoppingItems(silent);
                     // await 後はクロージャより getState() で最新のフラグを参照する
@@ -162,9 +171,14 @@ export const useShoppingItemApi = () => {
                     } else if (!silent) {
                         addSnackbar(
                             'success',
-                            responseData.message ?? 'リクエストが正常に完了しました',
+                            responseData.message || 'リクエストが正常に完了しました',
                         );
                     }
+                } else if (!silent) {
+                    addSnackbar(
+                        'error',
+                        responseData.message || '買い物アイテムの更新に失敗しました',
+                    );
                 }
             } catch (error) {
                 handleApiError(error);
@@ -202,10 +216,13 @@ export const useShoppingItemApi = () => {
             isDeleteBulkRequestRef.current = true;
             incrementLoadingCount();
 
-            const { data: responseData } = await axios.delete('/shopping-items/bulk', {
-                data: { ids },
-                timeout: TIMEOUT_MS,
-            });
+            const { data: responseData } = await axios.delete<IBaseApiResponse>(
+                '/shopping-items/bulk',
+                {
+                    data: { ids },
+                    timeout: TIMEOUT_MS,
+                },
+            );
             if (responseData.success) {
                 setIsSkipNextBulkSnackbar(true);
                 if (skipNextBulkSnackbarTimeoutRef.current !== undefined) {
@@ -217,7 +234,15 @@ export const useShoppingItemApi = () => {
                 }, SKIP_NEXT_BULK_SNACKBAR_CLEAR_MS);
 
                 await fetchShoppingItems();
-                addSnackbar('success', responseData.message ?? 'リクエストが正常に完了しました');
+                addSnackbar(
+                    'success',
+                    responseData.message || 'リクエストが正常に完了しました',
+                );
+            } else {
+                addSnackbar(
+                    'error',
+                    responseData.message || '買い物アイテムの削除に失敗しました',
+                );
             }
         } catch (error) {
             handleApiError(error);

@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 
 import { TIMEOUT_MS, TMP_ID_PREFIX } from '@/constants';
 import { useApiErrorHandler, useSnackbars } from '@/hooks';
+import { getApiErrorMessageFromSettledResult } from '@/lib/apiResponse';
 import axios from '@/lib/axios';
 import { useGlobalStore } from '@/stores';
 import {
@@ -161,20 +162,29 @@ export const useShoppingCategoryApi = () => {
             try {
                 const results = await Promise.allSettled(requests);
 
-                // エラーが発生したリクエストをチェック
-                const errors = results.filter(
-                    result => result.status === 'rejected',
-                ) as PromiseRejectedResult[];
-
-                if (errors.length > 0) {
-                    // エラーを処理
-                    errors.forEach(error => {
-                        handleApiError(error.reason);
-                    });
+                const rejected = results.filter(
+                    (r): r is PromiseRejectedResult => r.status === 'rejected',
+                );
+                if (rejected.length > 0) {
+                    rejected.forEach(r => handleApiError(r.reason));
                     return;
                 }
 
-                // すべての処理がエラーなく完了した場合
+                const businessErrorMessages = results
+                    .map(r =>
+                        getApiErrorMessageFromSettledResult(
+                            r,
+                            '買い物カテゴリーの更新に失敗しました',
+                        ),
+                    )
+                    .filter((m): m is string => m != null);
+                if (businessErrorMessages.length > 0) {
+                    Array.from(new Set(businessErrorMessages)).forEach(msg =>
+                        addSnackbar('error', msg),
+                    );
+                    return;
+                }
+
                 router.refresh();
                 addSnackbar('success', '買い物カテゴリーを更新しました');
             } catch (error) {

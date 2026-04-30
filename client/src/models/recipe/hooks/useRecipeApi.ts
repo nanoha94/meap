@@ -8,9 +8,12 @@ import axios from '@/lib/axios';
 import { useImageApi } from '@/models/image';
 import { useGlobalStore } from '@/stores';
 import {
+    IDeleteRecipeResponse,
     IGetRecipeIndexRequest,
+    IGetRecipeIndexResponse,
     IPostPutRecipeRequest,
     IPostRecipeResponse,
+    IPutRecipeResponse,
     IRecipeStep,
 } from '@/types';
 import { RecipeFilterFormData, RecipeStepEditFormData } from '../types';
@@ -147,10 +150,13 @@ export const useRecipeApi = () => {
                 isFetchRequestRef.current = true;
                 incrementLoadingCount();
 
-                const { data: responseData } = await axios.get('/recipes', {
-                    params,
-                    timeout: TIMEOUT_MS,
-                });
+                const { data: responseData } = await axios.get<IGetRecipeIndexResponse>(
+                    '/recipes',
+                    {
+                        params,
+                        timeout: TIMEOUT_MS,
+                    },
+                );
                 if (responseData.success) {
                     return {
                         recipes: responseData.data,
@@ -158,6 +164,15 @@ export const useRecipeApi = () => {
                         currentPage: page ?? 1,
                     };
                 }
+                addSnackbar(
+                    'error',
+                    responseData.message || 'レシピ一覧の取得に失敗しました',
+                );
+                return {
+                    recipes: [],
+                    pageSize: 0,
+                    currentPage: page ?? 1,
+                };
             } catch (error) {
                 handleApiError(error);
                 return {
@@ -170,7 +185,7 @@ export const useRecipeApi = () => {
                 decrementLoadingCount();
             }
         },
-        [incrementLoadingCount, decrementLoadingCount, handleApiError],
+        [incrementLoadingCount, decrementLoadingCount, handleApiError, addSnackbar],
     );
 
     /**
@@ -224,8 +239,13 @@ export const useRecipeApi = () => {
                     router.refresh();
                     addSnackbar(
                         'success',
-                        responseData.message ??
+                        responseData.message ||
                         'リクエストが正常に完了しました',
+                    );
+                } else {
+                    addSnackbar(
+                        'error',
+                        responseData.message || 'レシピの保存に失敗しました',
                     );
                 }
             } catch (error) {
@@ -288,18 +308,26 @@ export const useRecipeApi = () => {
                 }
 
                 // APIリクエスト
-                const { data: responseData } = await axios.put(`/recipes/${data.id}`, sendData, {
-                    timeout: TIMEOUT_MS,
-                });
+                const { data: responseData } = await axios.put<IPutRecipeResponse>(
+                    `/recipes/${data.id}`,
+                    sendData,
+                    {
+                        timeout: TIMEOUT_MS,
+                    },
+                );
                 if (responseData.success) {
                     router.push(`/recipe/${data.id}`);
                     router.refresh();
                     addSnackbar(
                         'success',
-                        responseData.message ??
+                        responseData.message ||
                         'リクエストが正常に完了しました',
                     );
-
+                } else {
+                    addSnackbar(
+                        'error',
+                        responseData.message || 'レシピの更新に失敗しました',
+                    );
                 }
             } catch (error) {
                 handleApiError(error);
@@ -325,13 +353,21 @@ export const useRecipeApi = () => {
         try {
             isDeleteRequestRef.current = true;
             incrementLoadingCount();
-            const { data: responseData } = await axios.delete(`/recipes/${id}`, {
-                timeout: TIMEOUT_MS,
-            });
+            const { data: responseData } = await axios.delete<IDeleteRecipeResponse>(
+                `/recipes/${id}`,
+                {
+                    timeout: TIMEOUT_MS,
+                },
+            );
             if (responseData.success) {
                 router.push('/recipe/');
                 router.refresh();
-                addSnackbar('success', responseData.message ?? 'リクエストが正常に完了しました');
+                addSnackbar('success', responseData.message || 'リクエストが正常に完了しました');
+            } else {
+                addSnackbar(
+                    'error',
+                    responseData.message || 'レシピの削除に失敗しました',
+                );
             }
         } catch (error) {
             handleApiError(error);

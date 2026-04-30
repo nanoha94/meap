@@ -5,7 +5,7 @@ import { useApiErrorHandler, useSnackbars } from "@/hooks";
 import axios from "@/lib/axios";
 import { useGlobalStore } from "@/stores";
 import React from "react";
-import { IPutUserRequest } from "@/types";
+import { IBaseApiResponse, IPutUserRequest } from "@/types";
 import { useRouter } from "next/navigation";
 import { useImageApi } from "@/models/image";
 import { useUserStore } from "@/models/user";
@@ -51,12 +51,20 @@ export const useUserApi = () => {
             }
 
             // APIリクエスト
-            const { data: responseData } = await axios.put('/user', data, {
+            const { data: responseData } = await axios.put<IBaseApiResponse>('/user', data, {
                 timeout: TIMEOUT_MS,
             });
             if (responseData.success) {
                 router.refresh();
-                addSnackbar('success', responseData.message ?? 'リクエストが正常に完了しました');
+                addSnackbar(
+                    'success',
+                    responseData.message || 'リクエストが正常に完了しました',
+                );
+            } else {
+                addSnackbar(
+                    'error',
+                    responseData.message || 'ユーザー情報の更新に失敗しました',
+                );
             }
         }
         catch (error) {
@@ -80,17 +88,25 @@ export const useUserApi = () => {
         try {
             isDeleteRequestRef.current = true;
             incrementLoadingCount();
-            const { data: responseData } = await axios.delete('/user', {
+            const { data: responseData } = await axios.delete<IBaseApiResponse>('/user', {
                 timeout: TIMEOUT_MS,
             });
             if (responseData.success) {
-                addSnackbar('success', responseData.message ?? 'リクエストが正常に完了しました');
+                addSnackbar(
+                    'success',
+                    responseData.message || 'リクエストが正常に完了しました',
+                );
 
                 if (typeof window !== "undefined") {
                     sessionStorage.clear();
                 }
 
                 window.location.href = "/login";
+            } else {
+                addSnackbar(
+                    'error',
+                    responseData.message || 'アカウントの削除に失敗しました',
+                );
             }
         }
         catch (error) {

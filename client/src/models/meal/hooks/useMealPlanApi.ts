@@ -6,7 +6,14 @@ import { TIMEOUT_MS } from "@/constants";
 import { useApiErrorHandler, useSnackbars } from "@/hooks";
 import axios from "@/lib/axios";
 import { useGlobalStore } from "@/stores";
-import { IGetMealPlanIndexRequest, IGetMealPlanIndexResponse, IPostMealPlanResponse, IPostPutMealPlanRequest } from "@/types";
+import {
+    IDeleteMealPlanResponse,
+    IGetMealPlanIndexRequest,
+    IGetMealPlanIndexResponse,
+    IPostMealPlanResponse,
+    IPostPutMealPlanRequest,
+    IPutMealPlanResponse,
+} from "@/types";
 import { MealPlanFilterFormData } from "../types";
 
 export const useMealPlanApi = () => {
@@ -58,6 +65,10 @@ export const useMealPlanApi = () => {
             if (responseData.success) {
                 return responseData.data;
             }
+            addSnackbar(
+                'error',
+                responseData.message || '献立プラン一覧の取得に失敗しました',
+            );
             return [];
         } catch (error) {
             handleApiError(error);
@@ -102,8 +113,13 @@ export const useMealPlanApi = () => {
                     router.refresh();
                     addSnackbar(
                         'success',
-                        responseData.message ??
+                        responseData.message ||
                         'リクエストが正常に完了しました',
+                    );
+                } else {
+                    addSnackbar(
+                        'error',
+                        responseData.message || '献立プランの作成に失敗しました',
                     );
                 }
             } catch (error) {
@@ -131,16 +147,25 @@ export const useMealPlanApi = () => {
             incrementLoadingCount();
 
             // APIリクエスト
-            const { data: responseData } = await axios.put(`/meal-plans/${data.id}`, data, {
-                timeout: TIMEOUT_MS,
-            });
+            const { data: responseData } = await axios.put<IPutMealPlanResponse>(
+                `/meal-plans/${data.id}`,
+                data,
+                {
+                    timeout: TIMEOUT_MS,
+                },
+            );
 
             if (responseData.success) {
                 router.refresh();
                 addSnackbar(
                     'success',
-                    responseData.message ??
+                    responseData.message ||
                     'リクエストが正常に完了しました',
+                );
+            } else {
+                addSnackbar(
+                    'error',
+                    responseData.message || '献立プランの更新に失敗しました',
                 );
             }
         } catch (error) {
@@ -161,12 +186,23 @@ export const useMealPlanApi = () => {
         try {
             isDeleteRequestRef.current = true;
             incrementLoadingCount();
-            const { data: responseData } = await axios.delete(`/meal-plans/${id}`, {
-                timeout: TIMEOUT_MS,
-            });
+            const { data: responseData } = await axios.delete<IDeleteMealPlanResponse>(
+                `/meal-plans/${id}`,
+                {
+                    timeout: TIMEOUT_MS,
+                },
+            );
             if (responseData.success) {
-                addSnackbar('success', responseData.message ?? 'リクエストが正常に完了しました');
+                addSnackbar(
+                    'success',
+                    responseData.message || 'リクエストが正常に完了しました',
+                );
                 router.push('/plan/');
+            } else {
+                addSnackbar(
+                    'error',
+                    responseData.message || '献立プランの削除に失敗しました',
+                );
             }
         }
         catch (error) {
