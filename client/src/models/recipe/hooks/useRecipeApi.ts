@@ -14,7 +14,7 @@ import {
     IRecipeStep,
 } from '@/types';
 import { RecipeFilterFormData, RecipeStepEditFormData } from '../types';
-import { useRecipeStore } from './useRecipeStores';
+import { useRecipeListStateStore } from './useRecipeListStateStore';
 import { RECIPES_PER_PAGE, sortOptions } from '../constants';
 import { getBrowserQueryString } from '../utils';
 
@@ -47,10 +47,9 @@ export const useRecipeApi = () => {
     const decrementLoadingCount = useGlobalStore(
         (state) => state.decrementLoadingCount,
     );
-    const setRecipes = useRecipeStore(state => state.setRecipes);
-    const listSortOptions = useRecipeStore(state => state.listSortOptions);
-    const listFilterOptions = useRecipeStore(state => state.listFilterOptions);
-    const listCurrentPage = useRecipeStore(state => state.listCurrentPage);
+    const listSortOptions = useRecipeListStateStore(state => state.listSortOptions);
+    const listFilterOptions = useRecipeListStateStore(state => state.listFilterOptions);
+    const listCurrentPage = useRecipeListStateStore(state => state.listCurrentPage);
 
     // hook
     const { bulkUploadImage } = useImageApi();
@@ -171,7 +170,7 @@ export const useRecipeApi = () => {
                 decrementLoadingCount();
             }
         },
-        [incrementLoadingCount, decrementLoadingCount, setRecipes, handleApiError, listSortOptions, listFilterOptions],
+        [incrementLoadingCount, decrementLoadingCount, handleApiError],
     );
 
     /**
@@ -236,7 +235,18 @@ export const useRecipeApi = () => {
                 decrementLoadingCount();
             }
         },
-        [incrementLoadingCount, decrementLoadingCount, bulkUploadImage, uploadStepImages, router, addSnackbar, handleApiError],
+        [
+            listSortOptions,
+            listFilterOptions,
+            listCurrentPage,
+            router,
+            incrementLoadingCount,
+            decrementLoadingCount,
+            bulkUploadImage,
+            uploadStepImages,
+            addSnackbar,
+            handleApiError,
+        ],
     );
 
     /**

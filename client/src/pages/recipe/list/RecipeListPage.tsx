@@ -10,12 +10,26 @@ import { CirclePlus, SlidersHorizontal } from 'lucide-react';
 import { Header, HeaderTextButton, RecipeFilterForm, StyledSelect } from '@/components';
 import { COLOR_VARIANT, colors } from '@/constants';
 import { useDialog, useSnackbars } from '@/hooks';
-import { sortOptions, useRecipeStore } from '@/models/recipe';
+import { sortOptions, useRecipeListStateStore } from '@/models/recipe';
 import { RecipeFilterFormData } from '@/models/recipe/types';
 import { IRecipe } from '@/types';
 import { useGlobalStore } from '@/stores';
 import { getBrowserQueryString } from '@/models/recipe/utils';
 import Pagination from '@/components/Pagination';
+
+function resolveRecipeSortOption(
+    sortOptionId: string | undefined,
+): (typeof sortOptions)[number] {
+    return sortOptions.find(o => o.id === sortOptionId) ?? sortOptions[0];
+}
+
+const emptyRecipeListFilterOptions: RecipeFilterFormData = {
+    recipeName: '',
+    ingredientName: '',
+    categoryIds: [],
+    lastPlannedDateFrom: '',
+    lastPlannedDateTo: '',
+};
 
 interface Props {
     fetchedRecipes: IRecipe[];
@@ -34,14 +48,10 @@ const RecipeListPage = ({
     sortOptionId,
     filterOptions,
 }: Props) => {
-    // store
-    const setStoreRecipes = useRecipeStore(state => state.setRecipes);
-    const setListSortOptions = useRecipeStore(state => state.setListSortOptions);
-    const setListFilterOptions = useRecipeStore(state => state.setListFilterOptions);
-    const listFilterOptions = useRecipeStore(state => state.listFilterOptions);
-    const listSortOptions = useRecipeStore(state => state.listSortOptions);
-    const listCurrentPage = useRecipeStore(state => state.listCurrentPage);
-    const recipes = useRecipeStore(state => state.recipes);
+    // store — ナビ用の閲覧状態キャッシュ
+    const setListPaging = useRecipeListStateStore(state => state.setListPaging);
+    const setListSortOptions = useRecipeListStateStore(state => state.setListSortOptions);
+    const setListFilterOptions = useRecipeListStateStore(state => state.setListFilterOptions);
     const incrementLoadingCount = useGlobalStore(state => state.incrementLoadingCount);
     const resetLoadingCount = useGlobalStore(state => state.resetLoadingCount);
 
@@ -50,57 +60,85 @@ const RecipeListPage = ({
     const { addSnackbar } = useSnackbars();
     const { openDialog } = useDialog();
 
+    // 絞り込み条件を取得
+    const currentFilterOptions =
+        React.useMemo(
+            () => filterOptions ?? emptyRecipeListFilterOptions,
+            [filterOptions],
+        );
+
+    // 並び替えオプションを取得
+    const currentSortOption =
+        React.useMemo(
+            () => resolveRecipeSortOption(sortOptionId),
+            [sortOptionId],
+        );
+
+    /**
+     * レシピ一覧ページに遷移する
+     * @param sort 並び替えオプション
+     * @param filter 絞り込み条件
+     * @param page ページ番号
+     * @returns void
+     */
+    const navigateToRecipeList = React.useCallback(
+        (
+            sort: { sort: string; order: string },
+            filter: RecipeFilterFormData,
+            page: number,
+        ) => {
+            router.push(`/recipe?${getBrowserQueryString(sort, filter, page)}`);
+            incrementLoadingCount();
+        },
+        [router, incrementLoadingCount],
+    );
+
     /**
      * 並び替え処理（ストア更新・再取得・URLクエリ更新）
      */
     const handleChangeSortOptions = React.useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-        const option = sortOptions.find(o => o.id === e.target.value) ?? sortOptions[0];
-        router.push(`/recipe?${getBrowserQueryString(option, listFilterOptions, listCurrentPage)}`);
-        incrementLoadingCount();
-    }, [listFilterOptions, listCurrentPage, router, incrementLoadingCount]);
+        navigateToRecipeList(
+            resolveRecipeSortOption(e.target.value),
+            currentFilterOptions,
+            currentPage,
+        );
+    }, [navigateToRecipeList, resolveRecipeSortOption, currentFilterOptions, currentPage]);
 
     /**
      * 絞り込み条件変更処理（ストア更新・再取得・URLクエリ更新）
      */
     const handleChangeFilterOptions = React.useCallback((data: RecipeFilterFormData) => {
-        router.push(`/recipe?${getBrowserQueryString(listSortOptions, data, listCurrentPage)}`);
-        incrementLoadingCount();
-    }, [listSortOptions, listCurrentPage, router, incrementLoadingCount]);
+        navigateToRecipeList(currentSortOption, data, currentPage);
+    }, [navigateToRecipeList, currentSortOption, currentPage]);
 
     /**
      * ページ番号変更処理（ストア更新・再取得・URLクエリ更新）
      */
     const handleChangePage = React.useCallback((page: number) => {
-        router.push(`/recipe?${getBrowserQueryString(listSortOptions, listFilterOptions, page)}`);
-        incrementLoadingCount();
-    }, [listSortOptions, listFilterOptions, router, incrementLoadingCount]);
+        navigateToRecipeList(currentSortOption, currentFilterOptions, page);
+    }, [navigateToRecipeList, currentSortOption, currentFilterOptions]);
 
     /**
-     * 初期表示時: ストアにレシピと並び順をセット
+     * URL（Props）に合わせてナビ用キャッシュのみ更新する（表示は Props / URL が Source of Truth）
      */
     React.useEffect(() => {
-        if (fetchedRecipes) {
-            setStoreRecipes(fetchedRecipes, pageSize, currentPage);
+        setListSortOptions(resolveRecipeSortOption(sortOptionId).id);
+        if (filterOptions) {
+            setListFilterOptions(filterOptions);
         }
-    }, [fetchedRecipes, pageSize, currentPage, setStoreRecipes]);
-
-    /**
-     * sortOptionId をストアに反映
-     */
-    React.useEffect(() => {
-        if (!sortOptionId) return;
-        setListSortOptions(sortOptionId);
+        setListPaging({ pageSize, currentPage });
         resetLoadingCount();
-    }, [sortOptionId, setListSortOptions, resetLoadingCount]);
-
-    /**
-     * filterOptions をストアに反映
-     */
-    React.useEffect(() => {
-        if (!filterOptions) return;
-        setListFilterOptions(filterOptions);
-        resetLoadingCount();
-    }, [filterOptions, setListFilterOptions]);
+    }, [
+        sortOptionId,
+        resolveRecipeSortOption,
+        filterOptions,
+        pageSize,
+        currentPage,
+        setListSortOptions,
+        setListFilterOptions,
+        setListPaging,
+        resetLoadingCount,
+    ]);
 
     /**
      * エラーメッセージを表示
@@ -130,15 +168,11 @@ const RecipeListPage = ({
                     <button type="button" onClick={() => {
                         openDialog({
                             title: '絞り込み条件',
-                            children: <RecipeFilterForm search={handleChangeFilterOptions} defaultValues={listFilterOptions} />
+                            children: <RecipeFilterForm search={handleChangeFilterOptions} defaultValues={currentFilterOptions} />
                         });
                     }} className="py-1 px-2 flex items-center gap-x-2 rounded hover:bg-gray-light"><SlidersHorizontal color={colors.black} strokeWidth={1.5} />絞り込み</button>
                     <StyledSelect
-                        value={
-                            sortOptionId ??
-                            sortOptions.find(o => o.sort === listSortOptions.sort && o.order === listSortOptions.order)?.id ??
-                            sortOptions[0].id
-                        }
+                        value={currentSortOption.id}
                         options={sortOptions}
                         onChange={handleChangeSortOptions}
                         isShowPlaceholder={false}
@@ -149,7 +183,7 @@ const RecipeListPage = ({
                     ? <p>登録されている料理/レシピはありません。</p>
                     : <div className='flex flex-col gap-y-14'>
                         <div className="grid grid-cols-[repeat(auto-fill,_minmax(160px,_1fr))] gap-3">
-                            {recipes.map(v => (
+                            {fetchedRecipes.map(v => (
                                 <Link
                                     href={`/recipe/${v.id}`}
                                     key={v.id}

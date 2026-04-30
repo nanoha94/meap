@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { NavigationIcon } from '.';
 
 import { navigationItems } from '@/constants';
-import { useRecipeStore } from '@/models/recipe';
+import { useRecipeListStateStore } from '@/models/recipe';
 import { getBrowserQueryString } from '@/models/recipe/utils';
 
 interface Props {
@@ -14,9 +14,9 @@ interface Props {
 
 const FooterNavigation = ({ className }: Props) => {
     // store
-    const listSortOptions = useRecipeStore(state => state.listSortOptions);
-    const listFilterOptions = useRecipeStore(state => state.listFilterOptions);
-    const listCurrentPage = useRecipeStore(state => state.listCurrentPage);
+    const listSortOptions = useRecipeListStateStore(state => state.listSortOptions);
+    const listFilterOptions = useRecipeListStateStore(state => state.listFilterOptions);
+    const listCurrentPage = useRecipeListStateStore(state => state.listCurrentPage);
 
     // hook
     const pathname = usePathname();

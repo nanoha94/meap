@@ -8,7 +8,7 @@ import ApplicationLogo from '../ApplicationLogo';
 
 import { navigationItems } from '@/constants';
 import { useAuth } from '@/hooks';
-import { useRecipeStore } from '@/models/recipe';
+import { useRecipeListStateStore } from '@/models/recipe';
 import { useUserStore, iconAvatar } from '@/models/user';
 import { getBrowserQueryString } from '@/models/recipe/utils';
 import Image from 'next/image';
@@ -20,9 +20,9 @@ interface Props {
 const SideNavigation = ({ className }: Props) => {
     // store
     const loginUser = useUserStore(state => state.loginUser);
-    const listSortOptions = useRecipeStore(state => state.listSortOptions);
-    const listFilterOptions = useRecipeStore(state => state.listFilterOptions);
-    const listCurrentPage = useRecipeStore(state => state.listCurrentPage);
+    const listSortOptions = useRecipeListStateStore(state => state.listSortOptions);
+    const listFilterOptions = useRecipeListStateStore(state => state.listFilterOptions);
+    const listCurrentPage = useRecipeListStateStore(state => state.listCurrentPage);
 
     // hook
     const { logout } = useAuth();
