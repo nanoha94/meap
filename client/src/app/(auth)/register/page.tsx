@@ -175,6 +175,7 @@ const Page = () => {
                             control={control}
                             name="password"
                             label="パスワード"
+                            memo="8文字以上で、英字・数字・記号をそれぞれ1文字以上含めてください。"
                             errorMessage={
                                 isErrorVisible.password
                                     ? ([
@@ -207,6 +208,7 @@ const Page = () => {
                             control={control}
                             name="passwordConfirmation"
                             label="パスワード（確認用）"
+                            memo="上記のパスワードと同じ内容を入力してください。"
                             errorMessage={
                                 isErrorVisible.passwordConfirmation
                                     ? ([
