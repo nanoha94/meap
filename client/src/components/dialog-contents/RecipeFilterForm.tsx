@@ -100,7 +100,7 @@ const RecipeFilterForm = ({ search, defaultValues, suppressNavigationGuard = fal
                     name="ingredientName"
                     label="材料名">
                     {({ value, onChange, id }) => (
-                        <input type="text" id={id} value={value as string} placeholder="料理名を入力" onChange={e => onChange(e.target.value)} className="py-2 px-4 border rounded-lg outline-none border-gray-main" />
+                        <input type="text" id={id} value={value as string} placeholder="材料名を入力" onChange={e => onChange(e.target.value)} className="py-2 px-4 border rounded-lg outline-none border-gray-main" />
                     )}
                 </VerticalRowField>
                 {categories.length > 0 &&
