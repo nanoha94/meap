@@ -10,8 +10,9 @@ interface RootLayoutProps {
 
 const RootLayout = ({ children }: RootLayoutProps) => {
     return (
-        <html lang="en" className={NOTO_SANS_JP.variable}>
-            <body className="text-base text-black">
+        <html lang="ja" className={NOTO_SANS_JP.variable}>
+            <body
+                className={`${NOTO_SANS_JP.className} text-base text-black`}>
                 {children}
                 <Snackbars />
                 <Dialog />
