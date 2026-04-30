@@ -30,7 +30,6 @@ interface GlobalState {
 
 export const useGlobalStore = create<GlobalState>(set => ({
     // initial state
-    isLoading: false,
     loadingCount: 0,
     visibleLoadingAnimation: true, // デフォルトは表示可能
     snackbars: [],
@@ -39,22 +38,14 @@ export const useGlobalStore = create<GlobalState>(set => ({
 
     // setter func
     incrementLoadingCount: () => {
-        set(state => {
-            const newCount = state.loadingCount + 1;
-            return {
-                loadingCount: newCount,
-                isLoading: newCount > 0,
-            };
-        });
+        set(state => ({
+            loadingCount: state.loadingCount + 1,
+        }));
     },
     decrementLoadingCount: () => {
-        set(state => {
-            const newCount = Math.max(0, state.loadingCount - 1);
-            return {
-                loadingCount: newCount,
-                isLoading: newCount > 0,
-            };
-        });
+        set(state => ({
+            loadingCount: Math.max(0, state.loadingCount - 1),
+        }));
     },
     resetLoadingCount: () => {
         set({

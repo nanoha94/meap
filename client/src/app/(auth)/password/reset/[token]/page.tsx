@@ -30,7 +30,7 @@ const PasswordReset = () => {
     const [apiErrors, setApiErrors] = React.useState<Record<string, string[]>>(
         {},
     );
-    const [apiStatus, setApiStatus] = React.useState(null);
+    const [apiStatus, setApiStatus] = React.useState<string | null>(null);
 
     // 入力エラーがあったとき、その後に入力内容が変更されればエラー有無に関わらずエラー内容を非表示にする
     const [isErrorVisible, setIsErrorVisible] = React.useState<
