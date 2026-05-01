@@ -7,7 +7,9 @@ import { ButtonType, COLOR_VARIANT } from '@/constants';
 type Props = {
     type?: ButtonType;
     disabled?: boolean;
-    colorVariant?: (typeof COLOR_VARIANT)['SECONDARY'] | (typeof COLOR_VARIANT)['GRAY'];
+    colorVariant?:
+    | (typeof COLOR_VARIANT)['SECONDARY']
+    | (typeof COLOR_VARIANT)['GRAY'];
     /** フォーム外の submit ボタンで、紐づける form の id */
     form?: string;
     children: React.ReactNode;
