@@ -1,9 +1,10 @@
 import Link from 'next/link';
 
-import { ApplicationLogo, SnackbarHandler } from '@/components';
+import { SnackbarHandler } from '@/components';
 import { fetchData } from '@/lib/apiClient';
 import { IGetUserResponse } from '@/types';
 import { handleAuthRedirect } from '@/utils';
+import Image from 'next/image';
 
 // 動的レンダリングを強制（クッキーを使用するため）
 export const dynamic = 'force-dynamic';
@@ -33,8 +34,8 @@ const AuthLayout = async ({ children }: Props) => {
                 <SnackbarHandler type="error" message={errorMessage} />
             )}
             <div className="max-w-xl mx-auto pt-10 pb-20 px-5 flex flex-col gap-y-16">
-                <Link href="/" className="w-fit mx-auto block">
-                    <ApplicationLogo className="w-60 h-auto fill-current text-gray-500" />
+                <Link href="/" className="w-[60%] mx-auto block">
+                    <Image src="/images/meap-logo.png" alt="meap" width={297} height={307} className="w-full h-auto" />
                 </Link>
                 {children}
             </div>

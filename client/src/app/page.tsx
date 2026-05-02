@@ -11,9 +11,10 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 
-import { ApplicationLogo, LoginLinks } from '@/components';
+import { LoginLinks } from '@/components';
 import { COLOR_VARIANT } from '@/constants';
 import { getLinkButtonClassName } from '@/utils';
+import Image from 'next/image';
 
 export const metadata = {
     title: 'meap — レシピと献立をまとめて管理',
@@ -102,10 +103,7 @@ const Home = () => {
                         <Link
                             href="/"
                             className="flex items-center gap-2 text-primary-main transition-opacity hover:opacity-80">
-                            <ApplicationLogo className="h-9 w-9 shrink-0 fill-current" />
-                            <span className="text-xl font-semibold tracking-tight">
-                                meap
-                            </span>
+                            <Image src="/images/meap-logo2.png" alt="meap" width={1224} height={486} className="w-auto h-[42px]" />
                         </Link>
                         <LoginLinks />
                     </div>

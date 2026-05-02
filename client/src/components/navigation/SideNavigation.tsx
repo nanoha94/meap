@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LogOut } from 'lucide-react';
 import { NavigationIcon } from '.';
-import ApplicationLogo from '../ApplicationLogo';
 
 import { navigationItems } from '@/constants';
 import { useAuth } from '@/hooks';
@@ -43,7 +42,7 @@ const SideNavigation = ({ className }: Props) => {
             style={{ boxShadow: '5px 0 8px 0 rgba(0, 0, 0, 10%)' }}>
             <div className="py-3 flex flex-col border-b border-gray-border">
                 <Link href="/" className="w-fit mx-auto block">
-                    <ApplicationLogo className="w-[100px] h-auto fill-current text-gray-500" />
+                    <Image src="/images/meap-logo2.png" alt="meap" width={1224} height={486} className="w-auto h-[42px]" />
                 </Link>
             </div>
             <div className="py-3 flex flex-col border-b border-gray-border">
