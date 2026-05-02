@@ -11,10 +11,15 @@ use Illuminate\Database\Eloquent\Model;
 use App\Traits\LoggingTrait;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Drivers\Gd\Driver as GdDriver;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Interfaces\ImageInterface;
+use Intervention\Image\Interfaces\ImageManagerInterface;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;
 
@@ -23,6 +28,7 @@ class ImageService
     use LoggingTrait;
 
     private const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+    private const MAX_LONG_SIDE_PX = 2000;
 
     /**
      * 画像をアップロードして保存
@@ -35,22 +41,31 @@ class ImageService
      *
      * @return \App\Models\Image
      */
-    public function uploadAndSaveImage($file, $uploadPath): Image
+    public function uploadAndSaveImage(UploadedFile $file, string $uploadPath): Image
     {
         $fileName = $this->generateFileName($file->getClientOriginalExtension());
         $fullPath = "images/{$uploadPath}/{$fileName}";
 
-        Storage::disk('public')->put($fullPath, file_get_contents($file));
+        $mediaType = $this->resolveUploadedFileMediaType($file);
 
-        $imageInfo = getimagesize($file->getPathname());
-        $width = $imageInfo[0] ?? null;
-        $height = $imageInfo[1] ?? null;
+        try {
+            $image = $this->imageManager()->decodePath($file->getPathname());
+            $processed = $this->stripResizeEncodeRaster($image, $mediaType);
+        } catch (Throwable $e) {
+            throw new HttpException(
+                HttpStatusCode::INTERNAL_SERVER_ERROR->value,
+                __('api.general.server_error'),
+                $e
+            );
+        }
 
-        return DB::transaction(function () use ($fullPath, $width, $height) {
+        Storage::disk('public')->put($fullPath, $processed['binary']);
+
+        return DB::transaction(function () use ($fullPath, $processed) {
             return Image::create([
                 'src' => Storage::disk('public')->url($fullPath),
-                'width' => $width,
-                'height' => $height,
+                'width' => $processed['width'],
+                'height' => $processed['height'],
             ]);
         });
     }
@@ -131,14 +146,22 @@ class ImageService
             return null;
         }
 
-        $width = $imageInfo[0] ?? null;
-        $height = $imageInfo[1] ?? null;
+        $mediaType = $this->imageTypeToMediaType($imageType);
 
         $fileName = $this->generateFileName($extension);
         $fullPath = "images/{$uploadPath}/{$fileName}";
 
         try {
-            Storage::disk('public')->put($fullPath, $body);
+            $image = $this->imageManager()->decodeBinary($body);
+            $processed = $this->stripResizeEncodeRaster($image, $mediaType);
+        } catch (Throwable $e) {
+            $logFail('image_process_failed', ['exception' => $e->getMessage()]);
+
+            return null;
+        }
+
+        try {
+            Storage::disk('public')->put($fullPath, $processed['binary']);
         } catch (Throwable $e) {
             $logFail('storage_put_failed', ['exception' => $e->getMessage()]);
 
@@ -146,11 +169,11 @@ class ImageService
         }
 
         try {
-            return DB::transaction(function () use ($fullPath, $width, $height) {
+            return DB::transaction(function () use ($fullPath, $processed) {
                 return Image::create([
                     'src' => Storage::disk('public')->url($fullPath),
-                    'width' => $width,
-                    'height' => $height,
+                    'width' => $processed['width'],
+                    'height' => $processed['height'],
                 ]);
             });
         } catch (Throwable $e) {
@@ -411,6 +434,72 @@ class ImageService
         $random = uniqid();
 
         return "{$timestamp}_{$random}.{$safe}";
+    }
+
+    /**
+     * ImageManager インスタンスを取得
+     *
+     * @return \Intervention\Image\ImageManagerInterface
+     */
+    private function imageManager(): ImageManagerInterface
+    {
+        return ImageManager::usingDriver(GdDriver::class);
+    }
+
+    /**
+     * 再エンコードで Exif 等を除去し、長辺を {@see MAX_LONG_SIDE_PX} 以下に縮小する（拡大しない）。
+     *
+     * @return array{binary: string, width: int, height: int}
+     */
+    private function stripResizeEncodeRaster(ImageInterface $image, string $mediaType): array
+    {
+        $processed = $image->scaleDown(width: self::MAX_LONG_SIDE_PX, height: self::MAX_LONG_SIDE_PX);
+        $encoded = $processed->encodeUsingMediaType($mediaType);
+
+        return [
+            'binary' => $encoded->toString(),
+            'width' => $processed->width(),
+            'height' => $processed->height(),
+        ];
+    }
+
+    /**
+     * アップロードファイルの MIME（encode 先フォーマット判定用）
+     */
+    private function resolveUploadedFileMediaType(UploadedFile $file): string
+    {
+        $mime = $file->getMimeType();
+        if (! is_string($mime) || $mime === '') {
+            // getimagesize の失敗は想定しない
+            $imageInfo = @getimagesize($file->getPathname());
+            if ($imageInfo !== false && isset($imageInfo[2])) {
+                $detected = image_type_to_mime_type($imageInfo[2]);
+                $mime = is_string($detected) ? $detected : '';
+            }
+        }
+
+        if (! is_string($mime) || $mime === '') {
+            throw new HttpException(
+                HttpStatusCode::INTERNAL_SERVER_ERROR->value,
+                __('api.general.server_error')
+            );
+        }
+
+        return $mime;
+    }
+
+    /**
+     * getimagesize の IMAGETYPE_* から HTTP メディアタイプへ
+     */
+    private function imageTypeToMediaType(int $imageType): ?string
+    {
+        return match ($imageType) {
+            IMAGETYPE_JPEG => 'image/jpeg',
+            IMAGETYPE_PNG => 'image/png',
+            IMAGETYPE_GIF => 'image/gif',
+            IMAGETYPE_WEBP => 'image/webp',
+            default => null,
+        };
     }
 
     /**

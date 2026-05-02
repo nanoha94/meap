@@ -85,9 +85,9 @@ const Page = () => {
                         className="text-primary-main underline transition-opacity hover:text-opacity-70">
                         利用規約
                     </Link>
-                    と{/* TODO: リンク設定 */}
+                    と
                     <Link
-                        href="#"
+                        href="/privacy"
                         className="text-primary-main underline transition-opacity hover:text-opacity-70">
                         プライバシーポリシー
                     </Link>
