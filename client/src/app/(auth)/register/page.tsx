@@ -79,9 +79,8 @@ const Page = () => {
                     </h1>
                 </div>
                 <p>
-                    {/* TODO: リンク設定 */}
                     <Link
-                        href="#"
+                        href="/terms"
                         className="text-primary-main underline transition-opacity hover:text-opacity-70">
                         利用規約
                     </Link>
