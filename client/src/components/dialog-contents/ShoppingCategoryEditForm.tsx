@@ -122,7 +122,7 @@ const ShoppingCategoryEditForm: React.FC = () => {
         if (categories?.length > 0) {
             reset({ categories: categories });
         }
-    }, []);
+    }, [categories, reset]);
 
     return (
         <form

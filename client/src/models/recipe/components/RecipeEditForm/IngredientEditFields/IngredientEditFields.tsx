@@ -33,7 +33,9 @@ const IngredientEditFields = ({ control, errors }: Props) => {
 
     // hook
     const { openDialog } = useDialog();
-    const [tmpItems, setTmpItems] = React.useState<IIngredientItem[]>([]);
+    /** ドラッグ中のみ setTmpItems で上書き。null のときは watch と同一（effect で watch に追従させない） */
+    const [tmpItemsDrag, setTmpItems] =
+        React.useState<IIngredientItem[] | null>(null);
     const dndContextId = React.useId();
     const { getValues, watch } = useFormContext<RecipeEditFormData>();
     const { replace, update, remove } = useFieldArray<
@@ -43,76 +45,8 @@ const IngredientEditFields = ({ control, errors }: Props) => {
         control,
         name: 'ingredients',
     });
-    const watchFields = watch('ingredients');
-
-    /**
-     * ドラッグオーバー
-     */
-    const customHandleDragOver = React.useCallback(
-        (
-            activeId: string,
-            activeItem: IIngredientItem,
-            overCategoryId: string,
-        ) => {
-            // 別カテゴリーへの移動の場合
-            if (activeItem.categoryId !== overCategoryId) {
-                // 移動元のカテゴリーに属するアイテムを取得
-                const itemsInCategory = getItemsInCategory(
-                    tmpItems,
-                    activeItem.categoryId,
-                );
-
-                // 移動元のカテゴリーにアイテムがなくなった場合、空の食材を追加
-                const updatedItems =
-                    itemsInCategory.length <= 1
-                        ? createItemsWithEmpty(activeItem.categoryId, tmpItems)
-                        : tmpItems;
-
-                // tmpItemsを更新
-                setTmpItems(
-                    updatedItems.map(v =>
-                        v.id === activeId
-                            ? {
-                                ...activeItem,
-                                categoryId: overCategoryId,
-                            }
-                            : v,
-                    ),
-                );
-            }
-        },
-        [tmpItems, categories],
-    );
-
-    /**
-     * ドラッグ終了
-     */
-    const customHandleDragEnd = React.useCallback(
-        (activeIndex: number | undefined, overIndex: number | undefined) => {
-            // 並び替えたtmpItemsを更新
-            const array =
-                activeIndex !== undefined && overIndex !== undefined
-                    ? arrayMove(tmpItems, activeIndex, overIndex)
-                    : tmpItems;
-            replace(array);
-        },
-        [tmpItems],
-    );
-
-    const {
-        activeId,
-        sensors,
-        activeItem,
-        activeCategory,
-        handleDragStart,
-        handleDragOver,
-        handleDragEnd,
-    } = useItemAndCategoryDnd({
-        currentItems: tmpItems,
-        categories,
-        onDragOver: customHandleDragOver,
-        onDragEnd: customHandleDragEnd,
-    });
+    const watchFields = watch('ingredients') ?? [];
+    const tmpItems = tmpItemsDrag ?? watchFields;
 
     /**
      * 空の材料を含むアイテムリストを生成
@@ -140,8 +74,77 @@ const IngredientEditFields = ({ control, errors }: Props) => {
                 .flat();
             return newItems;
         },
-        [categories, tmpItems],
+        [categories, tmpItems, prefix],
     );
+
+    /**
+     * ドラッグオーバー
+     */
+    const customHandleDragOver = React.useCallback(
+        (
+            activeId: string,
+            activeItem: IIngredientItem,
+            overCategoryId: string,
+        ) => {
+            // 別カテゴリーへの移動の場合
+            if (activeItem.categoryId !== overCategoryId) {
+                // 移動元のカテゴリーに属するアイテムを取得
+                const itemsInCategory = getItemsInCategory(
+                    tmpItems,
+                    activeItem.categoryId,
+                );
+
+                // 移動元のカテゴリーにアイテムがなくなった場合、空の食材を追加
+                const updatedItems =
+                    itemsInCategory.length <= 1
+                        ? createItemsWithEmpty(activeItem.categoryId, tmpItems)
+                        : tmpItems;
+
+                // ドラッグ中の表示用リストを更新
+                setTmpItems(
+                    updatedItems.map(v =>
+                        v.id === activeId
+                            ? {
+                                ...activeItem,
+                                categoryId: overCategoryId,
+                            }
+                            : v,
+                    ),
+                );
+            }
+        },
+        [tmpItems, createItemsWithEmpty],
+    );
+
+    /**
+     * ドラッグ終了
+     */
+    const customHandleDragEnd = React.useCallback(
+        (activeIndex: number | undefined, overIndex: number | undefined) => {
+            // 並び替えたtmpItemsを更新
+            const array =
+                activeIndex !== undefined && overIndex !== undefined
+                    ? arrayMove(tmpItems, activeIndex, overIndex)
+                    : tmpItems;
+            replace(array);
+            setTmpItems(null);
+        },
+        [tmpItems, replace],
+    );
+
+    const {
+        sensors,
+        activeItem,
+        activeCategory,
+        handleDragStart,
+        handleDragOver,
+        handleDragEnd,
+    } = useItemAndCategoryDnd({
+        currentItems: tmpItems,
+        categories,
+        onDragOver: customHandleDragOver,
+        onDragEnd: customHandleDragEnd,
+    });
 
     /**
      * 空の食材を追加
@@ -152,7 +155,7 @@ const IngredientEditFields = ({ control, errors }: Props) => {
             replace(items);
             return items;
         },
-        [tmpItems],
+        [createItemsWithEmpty, replace, tmpItems],
     );
 
     /**
@@ -162,7 +165,7 @@ const IngredientEditFields = ({ control, errors }: Props) => {
         (index: number, item: IIngredientItem) => {
             update(index, item);
         },
-        [tmpItems],
+        [update],
     );
 
     /**
@@ -183,11 +186,11 @@ const IngredientEditFields = ({ control, errors }: Props) => {
                 remove(index);
             }
         },
-        [tmpItems],
+        [tmpItems, remove, update],
     );
 
     /**
-     * tmpItemsをfieldsの内容で更新
+     * カテゴリ構成に合わせて空行を補い、フォーム値を replace（tmpItems は watch から導出）
      */
     React.useEffect(() => {
         const ingredients = getValues('ingredients');
@@ -217,19 +220,8 @@ const IngredientEditFields = ({ control, errors }: Props) => {
                 })
                 .flat();
             replace(filledItems);
-            setTmpItems(filledItems);
         }
-    }, [categories]);
-
-    /**
-     * ドラッグ中でない場合、tmpItemsをfieldsの内容で更新
-     * @returns void
-     */
-    React.useEffect(() => {
-        if (!activeId) {
-            setTmpItems(watchFields);
-        }
-    }, [watchFields, activeId]);
+    }, [categories, getValues, prefix, replace]);
 
     return (
         <div className="flex flex-col gap-y-5">

@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs, { type Dayjs } from 'dayjs';
 import 'dayjs/locale/ja';
 import { useRouter } from 'next/navigation';
 
@@ -72,7 +72,7 @@ const PlanCalendarPage = ({ fetchMealPlans, errorMessage, year, month, date }: P
         if (fetchMealPlans) {
             setMealPlans(fetchMealPlans);
         }
-    }, [fetchMealPlans]);
+    }, [fetchMealPlans, setMealPlans]);
 
     /**
       * エラーメッセージを表示
@@ -82,7 +82,19 @@ const PlanCalendarPage = ({ fetchMealPlans, errorMessage, year, month, date }: P
         if (errorMessage) {
             addSnackbar('error', errorMessage);
         }
-    }, [errorMessage]);
+    }, [errorMessage, addSnackbar]);
+
+    React.useEffect(() => {
+        const next = `/plan?date=${selectedDate.format('YYYY-MM-DD')}`;
+        const current = `${window.location.pathname}${window.location.search}`;
+        if (current !== next) {
+            window.history.replaceState(null, '', next);
+        }
+    }, [selectedDate]);
+
+    const onDateSelect = React.useCallback((d: Dayjs | ((prev: Dayjs) => Dayjs)) => {
+        setSelectedDate(prev => (typeof d === 'function' ? d(prev) : d));
+    }, []);
 
     return (
         <>
@@ -97,13 +109,7 @@ const PlanCalendarPage = ({ fetchMealPlans, errorMessage, year, month, date }: P
                         router.push(`/plan?date=${newDate}`);
                     }}
                     selectedDate={selectedDate}
-                    onDateSelect={(date) => {
-                        setSelectedDate(prev => {
-                            const resolved = typeof date === 'function' ? date(prev) : date;
-                            window.history.replaceState(null, '', `/plan?date=${resolved.format('YYYY-MM-DD')}`);
-                            return resolved;
-                        });
-                    }}
+                    onDateSelect={onDateSelect}
                 />
                 <div className="pt-5 flex flex-col gap-y-3">
                     <div className="px-3 flex items-center justify-between gap-x-1"><div className={`text-base font-bold ${getDayOfWeekTextColor(selectedDate.day())}`}>{selectedDate.locale('ja').format('MM/DD')}<span className="ml-1 text-xs">{selectedDate.locale('ja').format('(ddd)')}</span>

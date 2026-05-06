@@ -102,7 +102,7 @@ const RecipeListPage = ({
             currentFilterOptions,
             currentPage,
         );
-    }, [navigateToRecipeList, resolveRecipeSortOption, currentFilterOptions, currentPage]);
+    }, [navigateToRecipeList, currentFilterOptions, currentPage]);
 
     /**
      * 絞り込み条件変更処理（ストア更新・再取得・URLクエリ更新）
@@ -130,7 +130,6 @@ const RecipeListPage = ({
         resetLoadingCount();
     }, [
         sortOptionId,
-        resolveRecipeSortOption,
         filterOptions,
         pageSize,
         currentPage,

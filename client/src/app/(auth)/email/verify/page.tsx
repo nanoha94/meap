@@ -19,19 +19,19 @@ const Page = () => {
     /**
      * 初回のメール送信
      */
-    const sendInitialEmail = async () => {
+    const sendInitialEmail = React.useCallback(async () => {
         await resendEmailVerification({
             setMessage: () => { }, // 初回は状態を設定しない
         });
         setIsInitialSent(true);
-    };
+    }, [resendEmailVerification]);
 
     React.useEffect(() => {
         if (!hasInitialSent.current) {
-            sendInitialEmail();
+            void sendInitialEmail();
             hasInitialSent.current = true;
         }
-    }, []);
+    }, [sendInitialEmail]);
 
     // 初回送信完了後のみローディングアニメーションを表示
     useLoadingAnimation(isInitialSent);

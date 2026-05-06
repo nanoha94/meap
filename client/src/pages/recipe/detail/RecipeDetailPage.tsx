@@ -70,7 +70,7 @@ const RecipeDetailPage = ({
         if (errorMessage) {
             addSnackbar('error', errorMessage);
         }
-    }, [errorMessage]);
+    }, [errorMessage, addSnackbar]);
 
     return (
         <><Header

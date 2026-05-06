@@ -18,7 +18,6 @@ const PasswordReset = () => {
     const {
         handleSubmit,
         control,
-        watch,
         formState: { errors },
     } = useForm<FormInputs>({
         defaultValues: {
@@ -128,8 +127,8 @@ const PasswordReset = () => {
                                 value: 8,
                                 message: '8文字以上で入力してください',
                             },
-                            validate: value => {
-                                if (value !== watch('password')) {
+                            validate: (value, formValues) => {
+                                if (value !== formValues.password) {
                                     return 'パスワードとパスワード（確認用）が一致していません';
                                 }
                                 return true;

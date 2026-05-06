@@ -27,6 +27,7 @@ const Page = () => {
                                 width={1224}
                                 height={486}
                                 className="w-auto h-[42px]"
+                                loading="eager"
                             />
                         </Link>
                         <LoginLinks />

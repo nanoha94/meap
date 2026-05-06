@@ -50,7 +50,7 @@ const StepEditFields = ({ control, errors }: Props) => {
             append(newItem);
             setFocusTargetId(newItem.id);
         }
-    }, [watchSteps, prefix]);
+    }, [watchSteps, prefix, append, setFocusTargetId]);
 
     /**
      * 手順を削除
@@ -75,7 +75,7 @@ const StepEditFields = ({ control, errors }: Props) => {
                 remove(index);
             }
         },
-        [watchSteps],
+        [watchSteps, remove, update],
     );
 
     /**
@@ -85,7 +85,7 @@ const StepEditFields = ({ control, errors }: Props) => {
         if (fields.length <= 0) {
             replace([createDefaultData(DEFAULT_RECIPE_STEP, prefix)]);
         }
-    }, [fields]);
+    }, [fields, prefix, replace]);
 
     return (
         <>

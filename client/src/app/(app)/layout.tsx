@@ -40,7 +40,7 @@ const AppLayout = async ({ children }: Props) => {
     }
 
     // RSCでクッキーを取得する正しい方法
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const redirectPath = cookieStore.get('redirectPath')?.value;
 
     return (

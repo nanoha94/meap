@@ -129,7 +129,7 @@ const RecipeSelect = ({ initFetchedRecipes, defaultItems, onSave }: Props) => {
             />,
             isCheckBeforeClose: !isDisabledSaveButton,
         });
-    }, [selectedItems, isDisabledSaveButton, updateCurrentDialogConfig, closeDialog]);
+    }, [selectedItems, isDisabledSaveButton, updateCurrentDialogConfig, closeDialog, handleSave]);
 
     return (
         <div className="flex flex-col gap-y-5">

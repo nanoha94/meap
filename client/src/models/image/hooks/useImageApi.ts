@@ -53,7 +53,7 @@ export const useImageApi = () => {
             handleApiError(error);
             throw error;
         }
-    }, []);
+    }, [addSnackbar, handleApiError]);
 
     return {
         bulkUploadImage,

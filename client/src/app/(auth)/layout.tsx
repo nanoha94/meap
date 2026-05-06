@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { SnackbarHandler } from '@/components';
@@ -9,8 +10,8 @@ import Image from 'next/image';
 // 動的レンダリングを強制（クッキーを使用するため）
 export const dynamic = 'force-dynamic';
 
-export const metadata = {
-    title: 'Laravel',
+export const metadata: Metadata = {
+    title: 'アカウント | meap',
 };
 
 interface Props {
@@ -18,8 +19,10 @@ interface Props {
 }
 
 const AuthLayout = async ({ children }: Props) => {
-    const { data: user, errorMessage } =
-        await fetchData<IGetUserResponse>('/user');
+    const { data: user, errorMessage } = await fetchData<IGetUserResponse>(
+        '/user',
+        { suppressUnauthorizedLog: true },
+    );
     if (user) {
         handleAuthRedirect(user.data, true);
     }

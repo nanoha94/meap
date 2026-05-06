@@ -118,9 +118,6 @@ const normalizeRecipeForCompare = (recipe: Omit<RecipeEditFormData, 'id' | 'cook
 };
 
 export const useRecipeEditForm = (initialOwnerUserId: string, fetchedRecipe?: IRecipe) => {
-    const [errors, setErrors] = React.useState<Record<string, string> | null>(
-        null,
-    );
     const methods = useForm<RecipeEditFormData>({
         defaultValues: getDefaultValues(fetchedRecipe, initialOwnerUserId),
     });
@@ -143,7 +140,24 @@ export const useRecipeEditForm = (initialOwnerUserId: string, fetchedRecipe?: IR
         if (fetchedRecipe) {
             reset(getDefaultValues(fetchedRecipe, initialOwnerUserId));
         }
-    }, [fetchedRecipe, reset]);
+    }, [fetchedRecipe, reset, initialOwnerUserId]);
+
+    const errors = React.useMemo((): Record<string, string> | null => {
+        const next: Record<string, string> = {};
+
+        if (watchedSteps?.length) {
+            watchedSteps.forEach((item, index) => {
+                next[`steps.${index}`] =
+                    item.instruction === '' && item.image?.src.length !== 0
+                        ? '手順を入力してください'
+                        : '';
+            });
+        }
+
+        Object.assign(next, buildDuplicateIngredientErrors(watchedIngredients));
+
+        return Object.keys(next).length > 0 ? next : null;
+    }, [watchedSteps, watchedIngredients]);
 
     /**
      * 送信ボタンの無効化判定
@@ -227,37 +241,6 @@ export const useRecipeEditForm = (initialOwnerUserId: string, fetchedRecipe?: IR
             );
         }
     };
-
-    React.useEffect(() => {
-        if (watchedSteps?.length > 0) {
-            setErrors(prev => {
-                const next = { ...(prev ?? {}) };
-                watchedSteps.forEach((item, index) => {
-                    if (item.instruction === '' && item.image?.src.length !== 0) {
-                        next[`steps.${index}`] = '手順を入力してください';
-                    } else {
-                        next[`steps.${index}`] = '';
-                    }
-                });
-                return next;
-            });
-        }
-    }, [watchedSteps]);
-
-    React.useEffect(() => {
-        setErrors(prev => {
-            const base = { ...(prev ?? {}) };
-            Object.keys(base).forEach(k => {
-                if (k.startsWith('ingredients.')) {
-                    delete base[k];
-                }
-            });
-            return {
-                ...base,
-                ...buildDuplicateIngredientErrors(watchedIngredients),
-            };
-        });
-    }, [watchedIngredients]);
 
     return {
         control,

@@ -69,7 +69,7 @@ const CategoryItemList: React.FC<Props> = ({
                 ),
             );
         },
-        [storeItems],
+        [storeItems, setStoreItems],
     );
 
     /**

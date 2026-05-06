@@ -1,9 +1,10 @@
 'use client';
 import React from 'react';
 
+import { ALERT_DIALOG_CONFIGS } from '@/constants';
 import { useGlobalStore } from '@/stores';
 import { DialogConfig, DialogData } from '@/types';
-import { ALERT_DIALOG_CONFIGS } from '@/constants';
+
 import { useAlertDialog } from './useAlertDialog';
 
 /**
@@ -19,25 +20,38 @@ export const useDialog = () => {
     const { openAlertDialog } = useAlertDialog();
 
     /**
+     * 確認なしで閉じ処理のみ（状態更新）
+     */
+    const flushCloseStack = React.useCallback(() => {
+        setDialogs(prev => {
+            if (prev.length > 1) {
+                return prev.slice(0, -1);
+            } else {
+                return [];
+            }
+        });
+    }, [setDialogs]);
+
+    /**
      * 現在のダイアログを閉じる
      * キューから次のダイアログを自動的に表示
      */
-    const closeDialog = React.useCallback((isCheck?: boolean) => {
-        const isCheckBeforeClose = isCheck ?? useGlobalStore.getState().dialogs[0]?.config?.isCheckBeforeClose ?? false;
-        if (isCheckBeforeClose) {
-            openAlertDialog(ALERT_DIALOG_CONFIGS.unsavedChanges(), () => {
-                closeDialog(false);
-            });
-        } else {
-            setDialogs(prev => {
-                if (prev.length > 1) {
-                    return prev.slice(0, -1);
-                } else {
-                    return [];
-                }
-            });
-        }
-    }, [setDialogs]);
+    const closeDialog = React.useCallback(
+        (isCheck?: boolean) => {
+            const isCheckBeforeClose =
+                isCheck ??
+                useGlobalStore.getState().dialogs[0]?.config?.isCheckBeforeClose ??
+                false;
+            if (isCheckBeforeClose) {
+                openAlertDialog(ALERT_DIALOG_CONFIGS.unsavedChanges(), () => {
+                    flushCloseStack();
+                });
+            } else {
+                flushCloseStack();
+            }
+        },
+        [flushCloseStack, openAlertDialog],
+    );
 
     /**
      * ダイアログを開く

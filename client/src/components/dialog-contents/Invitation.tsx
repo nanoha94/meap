@@ -21,7 +21,7 @@ const Invitation: React.FC = () => {
         fetchInvitationToken(() => {
             closeDialog(false);
         });
-    }, []);
+    }, [closeDialog, fetchInvitationToken]);
 
     return (
         <div className="flex flex-col gap-y-5">

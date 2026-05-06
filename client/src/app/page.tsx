@@ -103,7 +103,14 @@ const Home = () => {
                         <Link
                             href="/"
                             className="flex items-center gap-2 text-primary-main transition-opacity hover:opacity-80">
-                            <Image src="/images/meap-logo2.png" alt="meap" width={1224} height={486} className="w-auto h-[42px]" />
+                            <Image
+                                src="/images/meap-logo2.png"
+                                alt="meap"
+                                width={1224}
+                                height={486}
+                                className="w-auto h-[42px]"
+                                loading="eager"
+                            />
                         </Link>
                         <LoginLinks />
                     </div>

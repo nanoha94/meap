@@ -26,7 +26,7 @@ const VerifiedHandler = () => {
 
             hasProcessed.current = true;
         }
-    }, []);
+    }, [addSnackbar, pathname, router, searchParams]);
 
     return <></>;
 };

@@ -1,27 +1,22 @@
 import React from 'react';
 
-interface IDebounceOptions {
-    /**
-     * デバウンスをスキップする条件
-     * true になったら、delay分の間デバウンスをスキップします
-     */
-    skipCondition?: boolean;
-}
-
-export const useDebounce = <T>(
-    value: T,
-    delay: number,
-    options?: IDebounceOptions,
-): [T, () => void] => {
+/**
+ * `value` の更新を `delay` ms まとめて反映するデバウンス。
+ *
+ * - 返り値は `[反映済みの値, flush]`。`flush` は待ちを捨てて即時に最新 `value` を反映する。
+ */
+export const useDebounce = <T>(value: T, delay: number): [T, () => void] => {
     const [debouncedValue, setDebouncedValue] = React.useState<T>(value);
-    const [isSkipping, setIsSkipping] = React.useState<boolean>(false);
     const timerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+    /** `flush` が即時反映するときの参照用（常に最新の `value`） */
     const latestValueRef = React.useRef<T>(value);
 
-    latestValueRef.current = value;
+    React.useLayoutEffect(() => {
+        latestValueRef.current = value;
+    }, [value]);
 
     /**
-     * デバウンスをクリアして最新の値をセットする
+     * 待機中のタイマーを破棄し、`value` の最新値をそのまま `debouncedValue` に反映する。
      */
     const flush = React.useCallback(() => {
         if (timerRef.current) {
@@ -32,29 +27,12 @@ export const useDebounce = <T>(
     }, []);
 
     /**
-     * skipConditionがtrueになったら、delay分の間デバウンスをスキップ
+     * `value` か `delay` が変わるたびに、`delay` ms 後に `debouncedValue` を合わせるタイマーを張り直す。
      */
     React.useEffect(() => {
-        if (options?.skipCondition) {
-            setIsSkipping(true);
-            // delay分後にスキップを解除
-            const timer = setTimeout(() => {
-                setIsSkipping(false);
-            }, delay);
-
-            return () => {
-                clearTimeout(timer);
-            };
-        }
-    }, [options?.skipCondition, delay]);
-
-    /**
-     * デバウンスを設定する
-     */
-    React.useEffect(() => {
-        // スキップ中はタイマーを設定せずに前の値を保持
-        if (isSkipping) {
-            return;
+        if (timerRef.current) {
+            clearTimeout(timerRef.current);
+            timerRef.current = null;
         }
 
         timerRef.current = setTimeout(() => {
@@ -68,7 +46,7 @@ export const useDebounce = <T>(
                 timerRef.current = null;
             }
         };
-    }, [value, delay, isSkipping]);
+    }, [value, delay]);
 
     return [debouncedValue, flush];
 };

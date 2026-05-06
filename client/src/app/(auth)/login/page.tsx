@@ -35,29 +35,35 @@ const LoginForm = () => {
     const [apiErrors, setApiErrors] = React.useState<Record<string, string[]>>(
         {},
     );
-    const [apiStatus, setApiStatus] = React.useState<string | null>(null);
+    const [loginStatus, setLoginStatus] = React.useState<string | null>(null);
+
+    /**
+     * パスワードリセットトークンをデコードしてメッセージを取得
+     * @returns パスワードリセットメッセージ
+     */
+    const resetStatusMessage = React.useMemo(() => {
+        const resetToken = searchParams?.get('reset');
+        if (
+            !resetToken ||
+            resetToken.length === 0 ||
+            Object.keys(errors).length > 0
+        ) {
+            return null;
+        }
+        try {
+            const decoded = atob(resetToken);
+            return decoded === 'Your password has been reset.'
+                ? 'パスワードをリセットしました。'
+                : decoded;
+        } catch {
+            return null;
+        }
+    }, [searchParams, errors]);
 
     // 入力エラーがあったとき、その後に入力内容が変更されればエラー有無に関わらずエラー内容を非表示にする
     const [isErrorVisible, setIsErrorVisible] = React.useState<
         Record<visibleErrorFields, boolean>
     >({ email: false, password: false });
-
-    React.useEffect(() => {
-        const resetToken = searchParams?.get('reset');
-        if (
-            !!resetToken &&
-            resetToken?.length > 0 &&
-            Object.keys(errors).length === 0
-        ) {
-            setApiStatus(
-                atob(resetToken) === 'Your password has been reset.'
-                    ? 'パスワードをリセットしました。'
-                    : atob(resetToken),
-            );
-        } else {
-            setApiStatus(null);
-        }
-    }, [searchParams, errors]);
 
     /**
      * ログインフォームの送信
@@ -69,7 +75,7 @@ const LoginForm = () => {
             password: data.password,
             remember: data.isKeepLogin,
             setErrors: setApiErrors,
-            setStatus: setApiStatus,
+            setStatus: setLoginStatus,
         });
     };
 
@@ -190,8 +196,10 @@ const LoginForm = () => {
                             }>
                             ログイン
                         </Button>
-                        {!!apiStatus && (
-                            <p className="text-alert-main">{apiStatus}</p>
+                        {!!(resetStatusMessage ?? loginStatus) && (
+                            <p className="text-alert-main">
+                                {resetStatusMessage ?? loginStatus}
+                            </p>
                         )}
                     </div>
                 </form>

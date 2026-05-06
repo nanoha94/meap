@@ -9,7 +9,7 @@ import Button from '../Button';
 import { CheckboxField, StyledDatePicker } from '../form-fields';
 import { VerticalRowField, VerticaFromToField } from '../react-hook-form';
 import { useDialog, useNavigationGuard } from '@/hooks';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, useForm, useWatch } from 'react-hook-form';
 
 interface Props {
     search: (filterOptions: RecipeFilterFormData) => void;
@@ -25,11 +25,11 @@ const RecipeFilterForm = ({ search, defaultValues, suppressNavigationGuard = fal
     // hook
     const { closeDialog, updateCurrentDialogConfig } = useDialog();
 
-    const { control, handleSubmit, getValues, watch, trigger, formState: { errors }, setValue } = useForm<RecipeFilterFormData>({
+    const { control, handleSubmit, getValues, trigger, formState: { errors }, setValue } = useForm<RecipeFilterFormData>({
         defaultValues: defaultValues,
     });
     /** フォーム値の変更を購読し、入力変更時に再レンダーさせる */
-    const currentValues = watch();
+    const currentValues = useWatch<RecipeFilterFormData>({ control, defaultValue: defaultValues });
 
     /**
      * 送信ボタンの無効化判定
@@ -100,7 +100,13 @@ const RecipeFilterForm = ({ search, defaultValues, suppressNavigationGuard = fal
                     name="ingredientName"
                     label="材料名">
                     {({ value, onChange, id }) => (
-                        <input type="text" id={id} value={value as string} placeholder="材料名を入力" onChange={e => onChange(e.target.value)} className="py-2 px-4 border rounded-lg outline-none border-gray-main" />
+                        <input
+                            type="text"
+                            id={id}
+                            value={value as string}
+                            placeholder="材料名を入力"
+                            onChange={e => onChange(e.target.value)}
+                            className="py-2 px-4 border rounded-lg outline-none border-gray-main" />
                     )}
                 </VerticalRowField>
                 {categories.length > 0 &&

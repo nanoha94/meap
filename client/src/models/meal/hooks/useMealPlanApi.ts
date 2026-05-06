@@ -77,7 +77,7 @@ export const useMealPlanApi = () => {
             isFetchRequestRef.current = false;
             decrementLoadingCount();
         }
-    }, [incrementLoadingCount, decrementLoadingCount, router, addSnackbar, handleApiError]);
+    }, [incrementLoadingCount, decrementLoadingCount, addSnackbar, handleApiError]);
 
     /**
      * 献立プラン作成

@@ -49,7 +49,7 @@ const ShoppingListPage: React.FC<Props> = ({ fetchItems, errorMessage }) => {
             setStoreItems(fetchItems);
             setServerItems(fetchItems);
         }
-    }, [fetchItems]);
+    }, [fetchItems, setStoreItems, setServerItems]);
 
     /**
      * エラーメッセージを表示
@@ -59,7 +59,7 @@ const ShoppingListPage: React.FC<Props> = ({ fetchItems, errorMessage }) => {
         if (errorMessage) {
             addSnackbar('error', errorMessage);
         }
-    }, [errorMessage]);
+    }, [errorMessage, addSnackbar]);
 
     return (
         <>

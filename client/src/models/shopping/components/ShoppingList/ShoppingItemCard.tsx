@@ -45,7 +45,7 @@ const ShoppingItemCard = ({ item, syncPendingItems }: Props) => {
             );
         },
 
-        [storeItems],
+        [storeItems, setStoreItems],
     );
 
     /**

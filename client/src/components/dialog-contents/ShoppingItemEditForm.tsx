@@ -32,18 +32,19 @@ const ShoppingItemEditForm: React.FC<Props> = ({
     const categories = useShoppingStore(state => state.categories);
     const items = useShoppingStore(state => state.items);
 
-    // state
-    const defaultValues = {
-        name: '',
-        categoryId: '',
-        tags: [],
-    };
-
     // hook 
     const { closeDialog, updateCurrentDialogConfig } = useDialog();
     const { storeShoppingItems, updateShoppingItems } = useShoppingItemApi();
+    const emptyFormDefaults = React.useMemo(
+        () => ({
+            name: '',
+            categoryId: '',
+            tags: [] as FormData['tags'],
+        }),
+        [],
+    );
     const { control, handleSubmit, reset } = useForm<FormData>({
-        defaultValues,
+        defaultValues: emptyFormDefaults,
     });
     const watchName = useWatch({ control, name: 'name' });
     const watchCategoryId = useWatch({ control, name: 'categoryId' });
@@ -79,14 +80,14 @@ const ShoppingItemEditForm: React.FC<Props> = ({
      */
     React.useEffect(() => {
         reset({
-            ...defaultValues,
+            ...emptyFormDefaults,
             name: editingItem?.name || '',
             categoryId:
                 editingItem?.categoryId ||
                 defaultCategoryId ||
                 categories.find(v => v.isDefault)?.id,
         });
-    }, [editingItem, categories, defaultCategoryId, reset]);
+    }, [editingItem, categories, defaultCategoryId, reset, emptyFormDefaults]);
 
     /**
      * フォームの送信処理

@@ -53,7 +53,7 @@ export const useMonthlyCalendar = (
             ...daysArray,
             ...Array.from({ length: extraNulls }).map(() => null),
         ];
-    }, [startOfMonth, endOfMonth]);
+    }, [startOfMonth, endOfMonth, startOfWeek]);
     
     /**
      * 今日に移動（表示月を今月にして、選択日も今日にする）
@@ -90,11 +90,16 @@ export const useMonthlyCalendar = (
         }
     };
 
-    
+    /** 親が毎レンダーで新しい onDateSelect を渡すと effect がループするため ref で参照する */
+    const onDateSelectRef = React.useRef(onDateSelect);
+    React.useEffect(() => {
+        onDateSelectRef.current = onDateSelect;
+    }, [onDateSelect]);
+
     // URL と同期時は表示月が変わっても「日」はそのまま維持（同じ日付を新月中で有効な範囲に収める）
     React.useEffect(() => {
         if (current.year !== undefined && current.month !== undefined) {
-            onDateSelect?.(prev => {
+            onDateSelectRef.current?.(prev => {
                 const newMonthStart = dayjs().year(current.year).month(current.month - 1);
                 const day = Math.min(prev.date(), newMonthStart.endOf('month').date());
                 return newMonthStart.date(day);

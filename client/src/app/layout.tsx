@@ -1,4 +1,5 @@
 import React from 'react';
+import type { Metadata } from 'next';
 
 import { AlertDialog, Dialog, LoadingAnimation, Snackbars } from '@/components';
 import { NOTO_SANS_JP } from '@/constants';
@@ -23,8 +24,8 @@ const RootLayout = ({ children }: RootLayoutProps) => {
     );
 };
 
-export const metadata = {
-    title: 'Laravel',
+export const metadata: Metadata = {
+    title: 'meap',
 };
 
 export default RootLayout;

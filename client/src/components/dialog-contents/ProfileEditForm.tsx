@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 
 import { BUTTON_TYPE } from "@/constants";
 import { useDialog, useNavigationGuard } from "@/hooks";
@@ -19,7 +19,7 @@ const ProfileEditForm = () => {
     const { closeDialog, updateCurrentDialogConfig } = useDialog();
     const { updateUser } = useUserApi();
 
-    const { control, handleSubmit, watch, reset } = useForm<ProfileEditFormData>({
+    const { control, handleSubmit, reset } = useForm<ProfileEditFormData>({
         defaultValues: {
             name: loginUser.name ?? '',
             avatarImage: loginUser.avatar.image ?? null,
@@ -34,8 +34,8 @@ const ProfileEditForm = () => {
         });
     }, [loginUser.name, loginUser.avatar.image, reset]);
 
-    const watchedName = watch('name');
-    const watchedAvatarImage = watch('avatarImage');
+    const watchedName = useWatch({ control, name: 'name' });
+    const watchedAvatarImage = useWatch({ control, name: 'avatarImage' });
 
     /**
      * 送信ボタンの無効化判定

@@ -46,7 +46,7 @@ const JoinGroup: React.FC<Props> = ({ invitationDetail, isDelete = false }) => {
 
         joinGroup(invitationDetail, isDelete);
         closeDialog(false);
-    }, [invitationDetail, joinGroup, closeDialog]);
+    }, [invitationDetail, joinGroup, closeDialog, isDelete]);
 
 
     return (

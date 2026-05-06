@@ -36,7 +36,7 @@ const DataHandler = ({ user, masterData }: Props) => {
         if (user) {
             setLoginUser(user);
         }
-    }, [user]);
+    }, [user, setLoginUser]);
 
     /**
      * ユーザー一覧をストアにセット
@@ -45,7 +45,7 @@ const DataHandler = ({ user, masterData }: Props) => {
         if (masterData?.users && masterData.users.length > 0) {
             setUsers(masterData.users);
         }
-    }, [masterData?.users]);
+    }, [masterData?.users, setUsers]);
 
     /**
      * レシピカテゴリーをストアにセット
@@ -54,7 +54,7 @@ const DataHandler = ({ user, masterData }: Props) => {
         if (masterData?.recipeCategories && masterData.recipeCategories.length > 0) {
             setRecipeCategories(masterData.recipeCategories);
         }
-    }, [masterData?.recipeCategories]);
+    }, [masterData?.recipeCategories, setRecipeCategories]);
 
 
     /**
@@ -64,7 +64,7 @@ const DataHandler = ({ user, masterData }: Props) => {
         if (masterData?.ingredientCategories && masterData.ingredientCategories.length > 0) {
             setIngredientCategories(masterData.ingredientCategories);
         }
-    }, [masterData?.ingredientCategories]);
+    }, [masterData?.ingredientCategories, setIngredientCategories]);
 
     /**
      * 食材単位をストアにセット
@@ -73,7 +73,7 @@ const DataHandler = ({ user, masterData }: Props) => {
         if (masterData?.ingredientUnits && masterData.ingredientUnits.length > 0) {
             setIngredientUnits(masterData.ingredientUnits);
         }
-    }, [masterData?.ingredientUnits]);
+    }, [masterData?.ingredientUnits, setIngredientUnits]);
 
     /**
      * 献立カテゴリ―をストアにセット
@@ -82,7 +82,7 @@ const DataHandler = ({ user, masterData }: Props) => {
         if (masterData?.mealCategories && masterData.mealCategories.length > 0) {
             setMealCategories(masterData.mealCategories);
         }
-    }, [masterData?.mealCategories]);
+    }, [masterData?.mealCategories, setMealCategories]);
 
     /**
      * 買い物カテゴリーをストアにセット
@@ -91,7 +91,7 @@ const DataHandler = ({ user, masterData }: Props) => {
         if (masterData?.shoppingCategories && masterData.shoppingCategories.length > 0) {
             setShoppingCategories(masterData.shoppingCategories);
         }
-    }, [masterData?.shoppingCategories]);
+    }, [masterData?.shoppingCategories, setShoppingCategories]);
 
 
     return <></>;

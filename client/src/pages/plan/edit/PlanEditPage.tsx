@@ -1,5 +1,5 @@
 "use client";
-import { DndContext, DragOverlay, rectIntersection } from '@dnd-kit/core';
+import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, rectIntersection } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 import dayjs from 'dayjs';
 import { Save, Trash2 } from 'lucide-react';
@@ -35,6 +35,7 @@ const PlanEditPage = ({ selectedDate, fetchMealPlan, errorMessage }: Props) => {
     const { addSnackbar } = useSnackbars();
     const { methods, isDisabledSendButton, onSubmit, fields, insert, replace, remove } = useMealPlanEditForm(selectedDate, fetchMealPlan);
     const [tmpItems, setTmpItems] = React.useState<IMealPlanItem[]>([]);
+    const [isPlanItemDragging, setIsPlanItemDragging] = React.useState(false);
     useNavigationGuard(!isDisabledSendButton);
 
     const handleBackClick = React.useCallback(() => {
@@ -101,23 +102,39 @@ const PlanEditPage = ({ selectedDate, fetchMealPlan, errorMessage }: Props) => {
                     : tmpItems;
             replace(array);
         },
-        [tmpItems],
+        [tmpItems, replace],
     );
 
     const {
         sensors,
-        activeId,
         activeItem,
-        handleDragStart,
+        handleDragStart: dndHandleDragStart,
         handleDragOver,
-        handleDragEnd,
+        handleDragEnd: dndHandleDragEnd,
     } = useItemAndCategoryDnd({
-        currentItems: tmpItems,
+        currentItems: isPlanItemDragging ? tmpItems : fields,
         categories: mealCategories,
         itemIdKey: 'recipeId',
         onDragOver: customHandleDragOver,
         onDragEnd: customHandleDragEnd,
     });
+
+    const handleDragStart = React.useCallback(
+        (event: DragStartEvent) => {
+            setTmpItems(fields);
+            setIsPlanItemDragging(true);
+            dndHandleDragStart(event);
+        },
+        [dndHandleDragStart, fields],
+    );
+
+    const handleDragEnd = React.useCallback(
+        (event: DragEndEvent) => {
+            dndHandleDragEnd(event);
+            setIsPlanItemDragging(false);
+        },
+        [dndHandleDragEnd],
+    );
 
     /**
      * 日付変更時の処理
@@ -136,7 +153,7 @@ const PlanEditPage = ({ selectedDate, fetchMealPlan, errorMessage }: Props) => {
         if (errorMessage) {
             addSnackbar('error', errorMessage);
         }
-    }, [errorMessage]);
+    }, [errorMessage, addSnackbar]);
 
     /**
      * ページ遷移時の処理
@@ -145,17 +162,6 @@ const PlanEditPage = ({ selectedDate, fetchMealPlan, errorMessage }: Props) => {
     React.useEffect(() => {
         resetLoadingCount();
     }, [selectedDate, resetLoadingCount]);
-
-    /**
-  * ドラッグ中でない場合、tmpItemsをstoreItemsの内容で更新
-  * @returns void
-  */
-    React.useEffect(() => {
-        if (!activeId) {
-            setTmpItems(fields);
-        }
-    }, [fields, activeId]);
-
 
     return (
         <>

@@ -97,7 +97,7 @@ const RecipeEditPage = ({
         if (errorMessage) {
             addSnackbar('error', errorMessage);
         }
-    }, [errorMessage]);
+    }, [errorMessage, addSnackbar]);
 
     return (
         <>

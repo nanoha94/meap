@@ -42,7 +42,14 @@ const SideNavigation = ({ className }: Props) => {
             style={{ boxShadow: '5px 0 8px 0 rgba(0, 0, 0, 10%)' }}>
             <div className="py-3 flex flex-col border-b border-gray-border">
                 <Link href="/" className="w-fit mx-auto block">
-                    <Image src="/images/meap-logo2.png" alt="meap" width={1224} height={486} className="w-auto h-[42px]" />
+                    <Image
+                        src="/images/meap-logo2.png"
+                        alt="meap"
+                        width={1224}
+                        height={486}
+                        className="w-auto h-[42px]"
+                        loading="eager"
+                    />
                 </Link>
             </div>
             <div className="py-3 flex flex-col border-b border-gray-border">

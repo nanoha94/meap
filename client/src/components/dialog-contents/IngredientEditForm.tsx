@@ -3,7 +3,7 @@ import React from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 
 import { Button, HorizontalRowField, StyledSelect } from '@/components';
-import { BUTTON_TYPE, BUTTON_VARIANT, COLOR_VARIANT, TMP_ID_PREFIX } from '@/constants';
+import { BUTTON_TYPE, BUTTON_VARIANT, COLOR_VARIANT } from '@/constants';
 import { useDialog } from '@/hooks';
 import { defaultIngredientItem, useIngredientStore } from '@/models/ingredient';
 import { IIngredientItem, IIngredientUnit } from '@/types';
@@ -39,20 +39,13 @@ const IngredientEditForm = ({
     actionButtonText,
     onAction,
 }: Props) => {
-    // constant value
-    const prefix: string = TMP_ID_PREFIX.INGREDIENT_ITEM;
-
     // store
     const units = useIngredientStore(state => state.units);
 
-    // hook
     const { closeDialog, updateCurrentDialogConfig } = useDialog();
     const { control, handleSubmit, reset, setValue } = useForm<FormData>(
         {
-            defaultValues: {
-                ...defaultIngredientItem,
-                id: `${prefix}${Date.now()}`,
-            },
+            defaultValues: defaultIngredientItem
         },
     );
     const nameInputRef = React.useRef<HTMLInputElement>(null);

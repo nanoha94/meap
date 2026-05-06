@@ -7,9 +7,7 @@ import { notFound } from "next/navigation";
 import React from "react";
 
 interface Props {
-    searchParams: {
-        date: string;
-    };
+    searchParams: Promise<{ date?: string }>;
 }
 
 interface PageWithDataProps {
@@ -17,7 +15,10 @@ interface PageWithDataProps {
 }
 
 const PageWithData = async ({ date }: PageWithDataProps) => {
-    const { data: mealPlan, errorMessage, statusCode } = await fetchData<IGetMealPlanShowResponse>(`/meal-plans/${date}`);
+    const { data: mealPlan, errorMessage, statusCode } =
+        await fetchData<IGetMealPlanShowResponse>(`/meal-plans/${date}`, {
+            suppressNotFoundLog: true,
+        });
 
     // 404は「その日の献立が未登録」なので空の編集画面（新規作成）を表示する
     const isNotFound = statusCode === API_STATUS_CODE.NOT_FOUND;

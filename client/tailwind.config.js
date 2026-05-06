@@ -1,4 +1,4 @@
-export default {
+const tailwindConfig = {
     content: ['./src/**/*.{js,jsx,ts,tsx}'],
     theme: {
         colors: {
@@ -57,3 +57,5 @@ export default {
     },
     plugins: [],
 };
+
+export default tailwindConfig;

@@ -94,7 +94,7 @@ const RecipeCategoryEditForm: React.FC = () => {
             }
             remove(index);
         },
-        [fields],
+        [fields, addEmptyCategory, remove],
     );
 
     /**
@@ -128,7 +128,7 @@ const RecipeCategoryEditForm: React.FC = () => {
         if (storeData?.categories?.length > 0) {
             reset({ categories: storeData.categories });
         }
-    }, []);
+    }, [reset, storeData.categories]);
 
     return (
         <form

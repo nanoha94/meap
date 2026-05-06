@@ -185,6 +185,8 @@ export const useRecipeCategoryApi = () => {
             addSnackbar,
             handleApiError,
             router,
+            generateCreateUpdateRequest,
+            generateDeleteRequest,
         ],
     );
 

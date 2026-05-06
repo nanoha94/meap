@@ -31,17 +31,14 @@ const AccountPage = ({ invitationDetail, errorMessage }: Props) => {
         if (errorMessage) {
             addSnackbar('error', errorMessage);
         }
-    }, [errorMessage]);
+    }, [errorMessage, addSnackbar]);
 
     /**
      * 招待トークンがある場合、グループに参加するダイアログを表示
-     * クライアントサイドでのみ実行するため、マウント済みかどうかをチェック
+     * クライアントサイドでのみ実行するため、SSR では false / クライアントでは true となる
      */
-    const [isMounted, setIsMounted] = React.useState(false);
-
-    React.useEffect(() => {
-        setIsMounted(true);
-    }, []);
+    const subscribe = React.useCallback(() => () => {}, []);
+    const isMounted = React.useSyncExternalStore(subscribe, () => true, () => false);
 
     React.useEffect(() => {
         // クライアントサイドでのみ実行（Suspenseのハイドレーション後に実行）
@@ -53,7 +50,7 @@ const AccountPage = ({ invitationDetail, errorMessage }: Props) => {
                 children: <JoinGroup invitationDetail={invitationDetail} />,
             }, removeTokenFromPath);
         }
-    }, [invitationDetail, isMounted]);
+    }, [invitationDetail, isMounted, openDialog, removeTokenFromPath]);
 
     return (
         <>

@@ -21,12 +21,12 @@ const AccountWithData = async ({ token }: AccountWithDataProps) => {
 };
 
 interface Props {
-    searchParams: {
-        token: string;
-    };
+    searchParams: Promise<{
+        token?: string;
+    }>;
 }
-const Page = ({ searchParams }: Props) => {
-    const { token } = searchParams;
+const Page = async ({ searchParams }: Props) => {
+    const { token } = await searchParams;
 
     return (
         <Suspense fallback={<Loading />}>

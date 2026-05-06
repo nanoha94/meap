@@ -100,7 +100,7 @@ const IngredientItemList = ({
                 />,
             });
         }
-    }, [items, category, addEmptyItem, updateItem, openDialog, closeDialog]);
+    }, [items, category, addEmptyItem, updateItem, openDialog, closeDialog, categories]);
 
     return (
         <>

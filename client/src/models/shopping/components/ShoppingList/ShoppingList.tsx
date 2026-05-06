@@ -56,7 +56,7 @@ const ShoppingList = React.forwardRef<ShoppingListHandle, object>((_, ref) => {
                 );
             }
         },
-        [tmpItems, categories],
+        [tmpItems],
     );
 
     /**
@@ -71,7 +71,7 @@ const ShoppingList = React.forwardRef<ShoppingListHandle, object>((_, ref) => {
                     : tmpItems;
             setStoreItems(array);
         },
-        [tmpItems],
+        [tmpItems, setStoreItems],
     );
 
     const {
@@ -198,7 +198,7 @@ const ShoppingList = React.forwardRef<ShoppingListHandle, object>((_, ref) => {
             window.removeEventListener('beforeunload', handleBeforeUnload);
             persistFromStore();
         };
-    }, []); // 依存配列を空にして、マウント時に一度だけ実行
+    }, [flushDebouncedItems]); // flush の参照は useDebounce 側で安定。pushPendingItems は ref で最新を参照
 
     /**
      * ドラッグ中でない場合、tmpItemsをstoreItemsの内容で更新

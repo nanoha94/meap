@@ -17,16 +17,15 @@ const DialogPanel = ({ dialog }: DialogPanelProps) => {
     const [footerHeight, setFooterHeight] = useState(0);
 
     useEffect(() => {
-        if (!config.footer) {
-            setFooterHeight(0);
-            return;
-        }
+        if (!config.footer) return;
         const el = footerRef.current;
-        if (!el) {
-            setFooterHeight(0);
-            return;
-        }
-        setFooterHeight(el.clientHeight);
+        if (!el) return;
+
+        const resizeObserver = new ResizeObserver(() => {
+            setFooterHeight(el.clientHeight);
+        });
+        resizeObserver.observe(el);
+        return () => resizeObserver.disconnect();
     }, [config.footer]);
 
     return (
@@ -47,7 +46,9 @@ const DialogPanel = ({ dialog }: DialogPanelProps) => {
                         </button>
                     </div>
                 </div>
-                <div className={`p-5 flex-1 overflow-y-auto ${config.childrenWrapperClassName ?? ''}`} style={{ marginBottom: footerHeight }}>
+                <div
+                    className={`p-5 flex-1 overflow-y-auto ${config.childrenWrapperClassName ?? ''}`}
+                    style={{ marginBottom: config.footer ? footerHeight : 0 }}>
                     {config.children}
                 </div>
                 {config.footer && (

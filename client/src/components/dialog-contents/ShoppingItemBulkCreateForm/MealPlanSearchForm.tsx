@@ -47,7 +47,7 @@ const MealPlanSearchForm: React.FC<Props> = ({ search, updateDateList }) => {
             }
         };
         run();
-    }, [watchedDateFrom, watchedDateTo]);
+    }, [watchedDateFrom, watchedDateTo, dateList, search, trigger, updateDateList]);
 
     return (
         <VerticaFromToField

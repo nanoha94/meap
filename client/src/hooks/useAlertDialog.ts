@@ -18,6 +18,20 @@ export const useAlertDialog = () => {
     const currentDialog = alertDialogs[0] || null;
 
     /**
+     * 現在のダイアログを閉じる
+     * キューから次のダイアログを自動的に表示
+     */
+    const closeAlertDialog = React.useCallback(() => {
+        setAlertDialogs(prev => {
+            if (prev.length > 1) {
+                return prev.slice(1);
+            } else {
+                return [];
+            }
+        });
+    }, [setAlertDialogs]);
+
+    /**
      * ダイアログを開く
      * 既にダイアログが表示中の場合は、新しいダイアログを前面に表示
      * @param config ダイアログの設定
@@ -45,23 +59,8 @@ export const useAlertDialog = () => {
                 setAlertDialogs([newDialog]);
             }
         },
-        [currentDialog],
+        [currentDialog, closeAlertDialog, setAlertDialogs],
     );
-
-    /**
-     * 現在のダイアログを閉じる
-     * キューから次のダイアログを自動的に表示
-     */
-    const closeAlertDialog = React.useCallback(() => {
-        setAlertDialogs(prev => {
-            if (prev.length > 1) {
-                return prev.slice(1);
-            } else {
-                return [];
-            }
-        });
-    }, [alertDialogs.length]);
-
 
     return {
         openAlertDialog,

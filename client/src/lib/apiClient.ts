@@ -18,6 +18,16 @@ export class ApiClientError extends Error {
 
 type ApiClientOptions = Omit<RequestInit, 'body'> & {
     body?: Record<string, unknown> | BodyInit | null;
+    /**
+     * true のとき、401 / 409（認証関連）では console.error しない。
+     * ゲスト向けレイアウトでの /user 取得など「未認証であり得る」呼び出し向け。
+     */
+    suppressUnauthorizedLog?: boolean;
+    /**
+     * true のとき、404 では console.error しない。
+     * 献立取得など「リソース未作成であり得る」呼び出し向け。
+     */
+    suppressNotFoundLog?: boolean;
 };
 
 /**
@@ -34,7 +44,7 @@ export async function apiClient<T>(
     const frontendUrl =
         process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://localhost:3000';
 
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const cookieHeader = cookieStore
         .getAll()
         .map(c => `${c.name}=${c.value}`)
@@ -47,7 +57,8 @@ export async function apiClient<T>(
         ...(cookieHeader && { Cookie: cookieHeader }),
     };
 
-    const { body, ...restOptions } = options;
+    const { body, suppressUnauthorizedLog, suppressNotFoundLog, ...restOptions } =
+        options;
     let finalBody: BodyInit | null | undefined;
 
     // bodyがプレーンなオブジェクトの場合、JSONに変換してContent-Typeを設定
@@ -88,13 +99,25 @@ export async function apiClient<T>(
     const response = await fetch(`${baseUrl}${path}`, fetchOptions);
     if (!response.ok) {
         const errorText = await response.text();
-        console.error(
-            `API Client Error: ${response.status} ${response.statusText} on ${path}`,
-            errorText,
-        );
+        const isAuthRelatedFailure =
+            response.status === API_STATUS_CODE.UNAUTHORIZED ||
+            response.status === API_STATUS_CODE.CONFLICT;
+        const isNotFound = response.status === API_STATUS_CODE.NOT_FOUND;
+        const skipErrorLog =
+            (suppressUnauthorizedLog && isAuthRelatedFailure) ||
+            (suppressNotFoundLog && isNotFound);
+        if (!skipErrorLog) {
+            console.error(
+                `API Client Error: ${response.status} ${response.statusText} on ${path}`,
+                errorText,
+            );
+        }
 
         // 認証関連のエラーを統一
-        if (response.status == API_STATUS_CODE.UNAUTHORIZED || response.status === API_STATUS_CODE.CONFLICT) {
+        if (
+            response.status == API_STATUS_CODE.UNAUTHORIZED ||
+            response.status === API_STATUS_CODE.CONFLICT
+        ) {
             throw new ApiClientError('AUTHENTICATION_REQUIRED', response.status);
         }
 
@@ -147,7 +170,16 @@ export async function fetchData<T>(
             signal: controller.signal,
         });
     } catch (error) {
-        console.error(`[fetchData] エラー発生: ${path}`, error);
+        const suppressFetchLog =
+            (options.suppressUnauthorizedLog &&
+                error instanceof ApiClientError &&
+                error.message === 'AUTHENTICATION_REQUIRED') ||
+            (options.suppressNotFoundLog &&
+                error instanceof ApiClientError &&
+                error.statusCode === API_STATUS_CODE.NOT_FOUND);
+        if (!suppressFetchLog) {
+            console.error(`[fetchData] エラー発生: ${path}`, error);
+        }
         if (error instanceof ApiClientError) {
             errorMessage = error.message;
             statusCode = error.statusCode;

@@ -30,7 +30,7 @@ export const useSnackbars = () => {
                 }
             }, 100);
         },
-        [snackbars],
+        [setSnackbars, snackbars],
     );
 
     const addSnackbar = React.useCallback(
@@ -61,7 +61,7 @@ export const useSnackbars = () => {
                 }, timeout);
             }
         },
-        [snackbars],
+        [setSnackbars, removeSnackbar],
     );
 
     const clearAllSnackbars = React.useCallback(() => {
@@ -72,7 +72,7 @@ export const useSnackbars = () => {
         setTimeout(() => {
             setSnackbars([]);
         }, 100);
-    }, [snackbars]);
+    }, [setSnackbars]);
 
     return {
         snackbars,
