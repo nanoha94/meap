@@ -1,6 +1,7 @@
 import React from 'react';
-import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
+import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 
 import { Loading } from '@/components';
 import { fetchData } from '@/lib/apiClient';
@@ -9,6 +10,18 @@ import { IGetRecipeShowResponse } from '@/types';
 
 interface Props {
     params: Promise<{ id: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+    const { id } = await params;
+    const { data: recipe } = await fetchData<IGetRecipeShowResponse>(
+        `/recipes/${id}`,
+        { suppressNotFoundLog: true },
+    );
+
+    return {
+        title: recipe?.data?.name ?? 'レシピ',
+    };
 }
 
 interface PageWithDataProps {

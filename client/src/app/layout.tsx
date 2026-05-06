@@ -25,7 +25,16 @@ const RootLayout = ({ children }: RootLayoutProps) => {
 };
 
 export const metadata: Metadata = {
-    title: 'meap',
+    metadataBase: new URL(process.env.NEXT_PUBLIC_FRONTEND_URL ?? 'http://localhost:3000'),
+    title: {
+        default: 'meap',
+        template: '%s | meap',
+    },
+    description: 'meapは、レシピ・献立・買い物リストをまとめて管理できるアプリです。',
+    openGraph: {
+        title: 'meap',
+        description: 'meapは、レシピ・献立・買い物リストをまとめて管理できるアプリです。',
+    },
 };
 
 export default RootLayout;

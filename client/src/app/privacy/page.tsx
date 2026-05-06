@@ -1,13 +1,12 @@
 import React from 'react';
+import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 
 import { LoginLinks } from '@/components';
 
-export const metadata = {
-    title: 'プライバシーポリシー | meap',
-    description:
-        'meap のプライバシーポリシー。お客様から取得する個人情報の項目、利用目的、第三者提供、安全管理措置、お問い合わせ窓口等について記載しています。',
+export const metadata: Metadata = {
+    title: 'プライバシーポリシー',
 };
 
 const Page = () => {

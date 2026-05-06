@@ -1,13 +1,12 @@
 import React from 'react';
+import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 
 import { LoginLinks } from '@/components';
 
-export const metadata = {
-    title: '利用規約 | meap',
-    description:
-        'meap の利用規約。本サービスをご利用いただく際の条件、お客様が登録するコンテンツの取扱い、グループ共有機能、禁止事項、免責事項等について記載しています。',
+export const metadata: Metadata = {
+    title: '利用規約',
 };
 
 const Page = () => {

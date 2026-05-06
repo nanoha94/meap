@@ -1,14 +1,14 @@
 import React from 'react';
 import { Suspense } from 'react';
-import RecipeListPage from '@/pages/recipe/list/RecipeListPage';
+import { redirect } from 'next/navigation';
 
 import { Loading } from '@/components';
 import { fetchData } from '@/lib/apiClient';
 import { RECIPES_PER_PAGE, sortOptions } from '@/models/recipe';
 import { RecipeFilterFormData } from '@/models/recipe/types';
-import { IGetRecipeIndexResponse } from '@/types';
-import { redirect } from 'next/navigation';
 import { getApiQueryString } from '@/models/recipe/utils';
+import RecipeListPage from '@/pages/recipe/list/RecipeListPage';
+import { IGetRecipeIndexResponse } from '@/types';
 
 interface RecipePageSearchParams {
     sort?: string;

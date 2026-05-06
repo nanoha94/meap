@@ -7,10 +7,6 @@ import { getDateFromSearchParams } from '@/models/meal';
 import PlanCalendarPage from '@/pages/plan/calendar/PlanCalendarPage';
 import { IGetMealPlanIndexResponse } from '@/types';
 
-export const metadata = {
-    title: 'Laravel - Plan',
-};
-
 interface PlanPageWithDataProps {
     searchParams: Promise<{ date?: string }> | { date?: string };
 }

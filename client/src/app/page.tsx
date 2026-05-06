@@ -17,7 +17,7 @@ import { getLinkButtonClassName } from '@/utils';
 import Image from 'next/image';
 
 export const metadata = {
-    title: 'meap — レシピと献立をまとめて管理',
+    title: { absolute: 'meap — レシピと献立をまとめて管理' },
     description:
         'レシピの保存・整理や献立づくりをサポートするアプリ。まずは無料で始められます。',
 };

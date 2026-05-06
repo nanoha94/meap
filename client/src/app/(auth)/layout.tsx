@@ -1,17 +1,20 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 
 import { SnackbarHandler } from '@/components';
 import { fetchData } from '@/lib/apiClient';
 import { IGetUserResponse } from '@/types';
 import { handleAuthRedirect } from '@/utils';
-import Image from 'next/image';
 
 // 動的レンダリングを強制（クッキーを使用するため）
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-    title: 'アカウント | meap',
+    title: {
+        default: 'meap',
+        template: '%s | meap',
+    },
 };
 
 interface Props {
