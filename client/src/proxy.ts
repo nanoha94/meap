@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export function proxy(request: NextRequest) {
-    const baseUrl = process.env.NEXT_PUBLIC_FRONT_URL;
+    const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_URL;
     const pathname = request.nextUrl.pathname;
     const searchParams = request.nextUrl.search;
     const token = request.nextUrl.searchParams.get('token');

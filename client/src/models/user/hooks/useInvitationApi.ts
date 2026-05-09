@@ -65,7 +65,7 @@ export const useInvitationApi = () => {
 
             if (responseData.success) {
                 setInvitationLink(
-                    `${process.env.NEXT_PUBLIC_FRONT_URL}/settings/account?token=${responseData.data.token}`,
+                    `${process.env.NEXT_PUBLIC_FRONTEND_URL}/settings/account?token=${responseData.data.token}`,
                 );
                 setTokenExpiresAt(responseData.data.expires_at);
                 return { success: true };

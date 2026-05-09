@@ -42,7 +42,8 @@ export async function apiClient<T>(
     const baseUrl =
         process.env.NEXT_PUBLIC_BACKEND_URL || 'https://localhost:8000';
     const frontendUrl =
-        process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://localhost:3000';
+        process.env.NEXT_PUBLIC_FRONTEND_URL ||
+        'https://localhost:3000';
 
     const cookieStore = await cookies();
     const cookieHeader = cookieStore
@@ -191,8 +192,8 @@ export async function fetchData<T>(
                 error instanceof Error
                     ? error.message
                     : typeof error === 'string'
-                      ? error
-                      : 'データの取得に失敗しました';
+                        ? error
+                        : 'データの取得に失敗しました';
         }
     } finally {
         // タイムアウトタイマーをクリア
@@ -240,8 +241,8 @@ export async function fetchDataParallel<T extends unknown[]>(
                 error instanceof Error
                     ? error.message
                     : typeof error === 'string'
-                      ? error
-                      : 'データの取得に失敗しました';
+                        ? error
+                        : 'データの取得に失敗しました';
         }
     } finally {
         // タイムアウトタイマーをクリア
