@@ -36,3 +36,19 @@ npx local-ssl-proxy --key ..\certificates\localhost-key.pem --cert ..\certificat
 cd server
 ./vendor/bin/sail up -d
 ```
+
+## Railway 本番マイグレーション
+
+本番環境でのマイグレーションは、必ず次のコマンドを使用してください。
+
+```bash
+php artisan migrate --force --no-interaction
+```
+
+- 本番では `--force` が必須
+- `migrate:reset` / `migrate:refresh` / `migrate:fresh` は実行しない
+- `--seed` は原則実行しない（必要時は対象 Seeder を限定）
+
+詳細手順とトラブルシュートは以下を参照:
+
+- [docs/Railway_本番マイグレーション手順.md](docs/Railway_本番マイグレーション手順.md)
