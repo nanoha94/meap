@@ -1,10 +1,14 @@
+"use client";
+
 import React from 'react';
-import { IPostPutRecipeRequest, IRecipe, IIngredientItem } from '@/types/api';
+import { useForm, useWatch } from 'react-hook-form';
+
+import { EDIT_MODE, EditMode, TMP_ID_PREFIX } from '@/constants';
+import { IIngredientItem, IPostPutRecipeRequest, IRecipe } from '@/types';
+import { DEFAULT_RECIPE_EDIT_FORM_DATA } from '../constants';
 import { RecipeEditFormData } from '../types';
 import { useRecipeApi } from './useRecipeApi';
-import { useForm, useWatch } from 'react-hook-form';
-import { defaultPostData } from '../constants';
-import { EDIT_MODE, TMP_ID_PREFIX } from '@/constants';
+
 
 /**
  * 食材をフォーマット
@@ -29,24 +33,136 @@ export const formatIngredientItems = (
         });
 };
 
-export const useRecipeEditForm = (fetchRecipe?: IRecipe) => {
-    const [errors, setErrors] = React.useState<Record<string, string> | null>(
-        null,
-    );
-    const methods = useForm<RecipeEditFormData>({
-        defaultValues: { ...defaultPostData, ...fetchRecipe },
+
+/**
+ * 材料の name + unitId が同一の行を検出し、重複行に対応するエラーキーを返す（サーバー側と同じキー形式）
+ */
+const buildDuplicateIngredientErrors = (
+    items: IIngredientItem[] | undefined,
+): Record<string, string> => {
+    if (!items?.length) {
+        return {};
+    }
+    const seen = new Set<string>();
+    const out: Record<string, string> = {};
+    items.forEach((ingredient, index) => {
+        const key = `${ingredient.name ?? ''}|${ingredient.unit?.id ?? ''}`;
+        if (seen.has(key)) {
+            out[`ingredients.${index}.name`] = '同じ材料名と単位の組み合わせが重複しています。';
+        } else {
+            seen.add(key);
+        }
     });
-    const { control, handleSubmit } = methods;
+    return out;
+};
+
+/**
+ * デフォルト値を取得 （fetchedRecipeが渡ってきた場合はそれをベースにデフォルト値を取得）
+ * @param fetchedRecipe 
+ * @param initialOwnerUserId 
+ * @returns デフォルト値
+ */
+const getDefaultValues = (fetchedRecipe?: IRecipe, initialOwnerUserId?: string): RecipeEditFormData => ({
+    ...DEFAULT_RECIPE_EDIT_FORM_DATA,
+    ...fetchedRecipe,
+    ownerUserId: fetchedRecipe?.ownerUserId ?? initialOwnerUserId ?? '',
+    thumbnail: fetchedRecipe?.thumbnail
+        ? {
+            ...fetchedRecipe.thumbnail,
+            file: null,
+        }
+        : null,
+    steps: (fetchedRecipe?.steps ?? []).map(step => ({
+        ...step,
+        image: step.image
+            ? {
+                ...step.image,
+                file: null,
+            }
+            : null,
+    })),
+});
+
+/**
+ * 手順を比較用のデータに変換
+ * @param steps 手順
+ * @returns 比較用の手順
+ */
+const normalizeStepsForCompare = (steps: RecipeEditFormData['steps'] | IRecipe['steps']) =>
+    steps
+        .filter(step => step.instruction !== '' || (step.image?.id ?? step.image?.src ?? '') !== '')
+        .map((step, index) => ({
+            instruction: step.instruction,
+            imageId: step.image?.id ?? null,
+            order: index,
+        }));
+
+
+/**
+ * レシピを比較用のデータに変換
+ * @param recipe レシピ
+ * @returns 比較用のデータ
+ */
+const normalizeRecipeForCompare = (recipe: Omit<RecipeEditFormData, 'id' | 'cookingTime'>) => {
+    return {
+        ownerUserId: recipe.ownerUserId ?? '',
+        name: recipe.name,
+        url: recipe.url ?? '',
+        memo: recipe.memo ?? '',
+        servingCount: recipe.servingCount ?? null,
+        thumbnailId: recipe.thumbnail?.id ?? null,
+        categoryIds: recipe.categories.map(category => category.id).sort(),
+        ingredients: formatIngredientItems(recipe.ingredients),
+        steps: normalizeStepsForCompare(recipe.steps),
+    };
+};
+
+export const useRecipeEditForm = (initialOwnerUserId: string, fetchedRecipe?: IRecipe) => {
+    const methods = useForm<RecipeEditFormData>({
+        defaultValues: getDefaultValues(fetchedRecipe, initialOwnerUserId),
+    });
+    const { control, handleSubmit, reset } = methods;
     const { storeRecipe, updateRecipe } = useRecipeApi();
     const watchedName = useWatch({ control, name: 'name' });
+    const watchedUrl = useWatch({ control, name: 'url' });
+    const watchedMemo = useWatch({ control, name: 'memo' });
+    const watchedServingCount = useWatch({ control, name: 'servingCount' });
+    const watchedThumbnail = useWatch({ control, name: 'thumbnail' });
+    const watchedCategories = useWatch({ control, name: 'categories' });
+    const watchedIngredients = useWatch({ control, name: 'ingredients' });
     const watchedSteps = useWatch({ control, name: 'steps' });
-    const editMode: (typeof EDIT_MODE)[keyof typeof EDIT_MODE] = fetchRecipe
+    const watchedOwnerUserId = useWatch({ control, name: 'ownerUserId' });
+    const editMode: EditMode = fetchedRecipe
         ? EDIT_MODE.UPDATE
         : EDIT_MODE.CREATE;
+
+    React.useEffect(() => {
+        if (fetchedRecipe) {
+            reset(getDefaultValues(fetchedRecipe, initialOwnerUserId));
+        }
+    }, [fetchedRecipe, reset, initialOwnerUserId]);
+
+    const errors = React.useMemo((): Record<string, string> | null => {
+        const next: Record<string, string> = {};
+
+        if (watchedSteps?.length) {
+            watchedSteps.forEach((item, index) => {
+                next[`steps.${index}`] =
+                    item.instruction === '' && item.image?.src.length !== 0
+                        ? '手順を入力してください'
+                        : '';
+            });
+        }
+
+        Object.assign(next, buildDuplicateIngredientErrors(watchedIngredients));
+
+        return Object.keys(next).length > 0 ? next : null;
+    }, [watchedSteps, watchedIngredients]);
 
     /**
      * 送信ボタンの無効化判定
      * 料理名が空の場合は送信ボタンを無効化
+     * 更新モードの場合、フォームが変更されていない場合は送信ボタンを無効化
      */
     const isDisabledSendButton: boolean = React.useMemo(() => {
         if (watchedName?.length <= 0) {
@@ -55,53 +171,76 @@ export const useRecipeEditForm = (fetchRecipe?: IRecipe) => {
         if (errors && Object.values(errors).some(v => v !== '')) {
             return true;
         }
+
+        // 更新モードの場合、フォームが変更されていない場合は送信ボタンを無効化
+        if (editMode === EDIT_MODE.UPDATE) {
+            if (!fetchedRecipe) {
+                return true;
+            }
+
+            const currentRecipe = {
+                ownerUserId: watchedOwnerUserId ?? '',
+                name: watchedName ?? '',
+                url: watchedUrl ?? '',
+                memo: watchedMemo ?? '',
+                servingCount: watchedServingCount ?? null,
+                thumbnail: watchedThumbnail ?? null,
+                categories: watchedCategories ?? [],
+                ingredients: watchedIngredients ?? [],
+                steps: watchedSteps ?? [],
+            };
+
+            if (
+                JSON.stringify(normalizeRecipeForCompare(getDefaultValues(fetchedRecipe, initialOwnerUserId))) ===
+                JSON.stringify(normalizeRecipeForCompare(currentRecipe))
+            ) {
+                return true;
+            }
+        }
         return false;
-    }, [watchedName, errors]);
+    }, [
+        watchedName,
+        watchedUrl,
+        watchedMemo,
+        watchedServingCount,
+        watchedThumbnail,
+        watchedCategories,
+        watchedIngredients,
+        watchedSteps,
+        watchedOwnerUserId,
+        errors,
+        editMode,
+        fetchedRecipe,
+        initialOwnerUserId,
+    ]);
 
     /**
      * フォームの送信処理
      * @param data フォームのデータ
      */
-    const onSubmit = (data: RecipeEditFormData) => {
-        console.log({ data });
+    const onSubmit = async (data: RecipeEditFormData) => {
         const sendData: IPostPutRecipeRequest = {
             name: data.name,
             url: data.url,
             memo: data.memo,
+            servingCount: data.servingCount ?? null,
             thumbnailId: data.thumbnail?.id,
             categoryIds: data.categories.map(v => v.id),
+            ownerUserId: data.ownerUserId,
             ingredients: formatIngredientItems(data.ingredients),
             // stepsはstoreRecipe()/updateRecipe()でフォーマットする
         };
 
-        console.log({ sendData });
-
         if (editMode === EDIT_MODE.CREATE) {
-            storeRecipe(sendData, data.thumbnail?.file ?? null, data.steps);
+            await storeRecipe(sendData, data.thumbnail?.file ?? null, data.steps);
         } else {
-            updateRecipe(
+            await updateRecipe(
                 { ...sendData, id: data.id },
                 data.thumbnail?.file ?? null,
                 data.steps,
             );
         }
     };
-
-    React.useEffect(() => {
-        if (watchedSteps?.length > 0) {
-            watchedSteps.forEach((item, index) => {
-                if (item.instruction === '' && item.image?.src.length !== 0) {
-                    setErrors({
-                        [`steps.${index}`]: '説明文を入力してください',
-                    });
-                } else {
-                    setErrors({
-                        [`steps.${index}`]: '',
-                    });
-                }
-            });
-        }
-    }, [watchedSteps]);
 
     return {
         control,

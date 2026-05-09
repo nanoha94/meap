@@ -11,6 +11,23 @@ use Illuminate\Http\Request;
  *      title="meap api document",
  *      description="meap api document",
  * )
+ * @OA\Schema(
+ *     schema="BaseApiResponse",
+ *     description="成功（success, message, data: null）",
+ *     required={"success", "message", "data"},
+ *     @OA\Property(property="success", type="boolean", example=true, description="成功フラグ"),
+ *     @OA\Property(property="message", type="string", example="操作が完了しました。", description="結果メッセージ"),
+ *     @OA\Property(property="data", type="object", nullable=true, example=null, description="store/update/destroy 等では常に null")
+ * )
+ * @OA\Schema(
+ *     schema="BaseApiIndexResponse",
+ *     description="成功（success, message, data: 配列, total）",
+ *     required={"success", "message", "data", "total"},
+ *     @OA\Property(property="success", type="boolean", example=true, description="成功フラグ"),
+ *     @OA\Property(property="message", type="string", example="一覧を取得しました。", description="結果メッセージ"),
+ *     @OA\Property(property="data", type="array", @OA\Items(type="object"), description="一覧データ"),
+ *     @OA\Property(property="total", type="integer", example=10, description="総件数")
+ * )
  * @OA\Tag(
  *     name="Authentication",
  *     description="認証関連のAPI　※swagger上でAPIを実行するには、まずはログインが必要"

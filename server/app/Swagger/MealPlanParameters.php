@@ -4,6 +4,53 @@ namespace App\Swagger;
 
 /**
  * @OA\Parameter(
+ *     parameter="MealPlanIndexDateFromParam",
+ *     name="date_from",
+ *     in="query",
+ *     description="取得対象の開始日",
+ *     required=true,
+ *     @OA\Schema(
+ *         type="string",
+ *         format="date",
+ *         example="2024-01-01"
+ *     )
+ * )
+ * @OA\Parameter(
+ *     parameter="MealPlanIndexDateToParam",
+ *     name="date_to",
+ *     in="query",
+ *     description="取得対象の終了日",
+ *     required=true,
+ *     @OA\Schema(
+ *         type="string",
+ *         format="date",
+ *         example="2024-01-31"
+ *     )
+ * )
+ * @OA\Parameter(
+ *     parameter="MealPlanIndexIncludeIngredientsParam",
+ *     name="include_ingredients",
+ *     in="query",
+ *     description="レスポンスにレシピの食材一覧を含めるかどうか",
+ *     required=false,
+ *     @OA\Schema(
+ *         type="boolean",
+ *         example=true
+ *     )
+ * )
+ * @OA\Parameter(
+ *     parameter="MealPlanDateParam",
+ *     name="date",
+ *     in="path",
+ *     description="献立の日付（Y-m-d）",
+ *     required=true,
+ *     @OA\Schema(
+ *         type="string",
+ *         format="date",
+ *         example="2024-01-15"
+ *     )
+ * )
+ * @OA\Parameter(
  *     parameter="MealPlanIdParam",
  *     name="id",
  *     in="path",
@@ -12,6 +59,28 @@ namespace App\Swagger;
  *     @OA\Schema(
  *         type="string",
  *         example="1"
+ *     )
+ * )
+ * @OA\Parameter(
+ *     parameter="MealPlanIdPathParam",
+ *     name="mealPlanId",
+ *     in="path",
+ *     description="献立ID",
+ *     required=true,
+ *     @OA\Schema(
+ *         type="string",
+ *         format="uuid"
+ *     )
+ * )
+ * @OA\Parameter(
+ *     parameter="MealIdParam",
+ *     name="mealId",
+ *     in="path",
+ *     description="献立の1食ID",
+ *     required=true,
+ *     @OA\Schema(
+ *         type="string",
+ *         format="uuid"
  *     )
  * )
  * @OA\Parameter(

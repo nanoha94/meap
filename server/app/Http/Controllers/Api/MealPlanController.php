@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\Api\MealPlanDestroyRequest;
 use App\Http\Requests\Api\MealPlanIndexRequest;
+use App\Http\Requests\Api\MealDestroyRequest;
 use App\Http\Requests\Api\MealPlanShowRequest;
 use App\Http\Requests\Api\MealPlanStoreRequest;
 use App\Http\Requests\Api\MealPlanUpdateRequest;
@@ -23,11 +24,16 @@ class MealPlanController extends ApiController
     /**
      * @OA\Get(
      *     path="/meal-plans",
-     *     summary="献立一覧を取得",   
+     *     summary="献立一覧を取得",
+     *     description="指定した期間の献立一覧を取得します。date_from と date_to は必須のクエリパラメータです。",
      *     tags={"MealPlans"},
      *     security={{"sanctum":{}}},
+     *     @OA\Parameter(ref="#/components/parameters/MealPlanIndexDateFromParam"),
+     *     @OA\Parameter(ref="#/components/parameters/MealPlanIndexDateToParam"),
+     *     @OA\Parameter(ref="#/components/parameters/MealPlanIndexIncludeIngredientsParam"),
      *     @OA\Response(response=200, ref="#/components/responses/MealPlanIndexSuccess"),
      *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
+     *     @OA\Response(response=422, ref="#/components/responses/ValidationErrors"),
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
@@ -38,7 +44,13 @@ class MealPlanController extends ApiController
 
         return $this->executeWithExceptionHandling(
             function () use ($request) {
-                $res = $this->mealPlanService->index($this->getUserGroup($request));
+                $validated = $request->validated();
+                $res = $this->mealPlanService->indexForDateRange(
+                    $this->getUserGroup($request),
+                    $validated['date_from'],
+                    $validated['date_to'],
+                    $validated['include_ingredients'] ?? false,
+                );
                 $total = count($res);
                 $message = __('api.list_retrieved', ['attribute' => __('api.attributes.meal_plan'), 'count' => $total]);
                 return $this->indexResponse($res, $total, $message);
@@ -56,7 +68,7 @@ class MealPlanController extends ApiController
      *     description="献立を作成します。",
      *     tags={"MealPlans"},
      *     security={{"sanctum":{}}},
-     *     @OA\RequestBody(ref="#/components/requestBodies/MealPlanRequest"),
+     *     @OA\RequestBody(ref="#/components/requestBodies/MealPlanStoreRequest"),
      *     @OA\Response(response=200, ref="#/components/responses/MealPlanStoreSuccess"),
      *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
@@ -69,9 +81,9 @@ class MealPlanController extends ApiController
 
         return $this->executeWithExceptionHandling(
             function () use ($request) {
-                $res = $this->mealPlanService->create($request->validated(), $this->getUserGroup($request));
+                $this->mealPlanService->create($request->validated(), $this->getUserGroup($request));
                 $message = __('api.created', ['attribute' => __('api.attributes.meal_plan'), 'name' => $request->input('date')]);
-                return $this->createdResponse($res, $message);
+                return $this->createdResponse(null, $message);
             },
             $request,
             $failedMessage,
@@ -81,24 +93,26 @@ class MealPlanController extends ApiController
 
     /**
      * @OA\Get(
-     *     path="/meal-plans/{id}",
+     *     path="/meal-plans/{date}",
      *     summary="献立の詳細を取得",
+     *     description="指定した日付（Y-m-d）の献立を1件取得します。",
      *     tags={"MealPlans"},
      *     security={{"sanctum":{}}},
-     *     @OA\Parameter(ref="#/components/parameters/MealPlanIdParam"),
+     *     @OA\Parameter(ref="#/components/parameters/MealPlanDateParam"),
      *     @OA\Response(response=200, ref="#/components/responses/MealPlanShowSuccess"),
      *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
-     *     @OA\Response(response=404, ref="#/components/responses/NotFound")
+     *     @OA\Response(response=404, ref="#/components/responses/NotFound"),
+     *     @OA\Response(response=422, ref="#/components/responses/ValidationErrors")
      * )
      */
-    public function show(MealPlanShowRequest $request, string $id): JsonResponse
+    public function show(MealPlanShowRequest $request, string $date): JsonResponse
     {
         $operation = __('operations.meal_plan.show');
         $failedMessage = __('api.get_failed', ['attribute' => __('api.attributes.meal_plan')]);
 
         return $this->executeWithExceptionHandling(
-            function () use ($request, $id) {
-                $res = $this->mealPlanService->show($id, $this->getUserGroup($request));
+            function () use ($request, $date) {
+                $res = $this->mealPlanService->showByDate($date, $this->getUserGroup($request));
                 $message = __('api.retrieved', ['attribute' => __('api.attributes.meal_plan'), 'name' => $res['date']]);
                 return $this->showResponse($res, $message);
             },
@@ -115,7 +129,7 @@ class MealPlanController extends ApiController
      *     tags={"MealPlans"},
      *     security={{"sanctum":{}}},
      *     @OA\Parameter(ref="#/components/parameters/MealPlanIdParam"),
-     *     @OA\RequestBody(ref="#/components/requestBodies/MealPlanRequest"),
+     *     @OA\RequestBody(ref="#/components/requestBodies/MealPlanUpdateRequest"),
      *     @OA\Response(response=200, ref="#/components/responses/MealPlanUpdateSuccess"),
      *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
@@ -128,9 +142,9 @@ class MealPlanController extends ApiController
 
         return $this->executeWithExceptionHandling(
             function () use ($request, $id) {
-                $res = $this->mealPlanService->update($id, $request->validated(), $this->getUserGroup($request));
-                $message = __('api.updated', ['attribute' => __('api.attributes.meal_plan'), 'name' => $request->input('date')]);
-                return $this->updatedResponse($res, $message);
+                $mealPlan = $this->mealPlanService->update($id, $request->validated(), $this->getUserGroup($request));
+                $message = __('api.updated', ['attribute' => __('api.attributes.meal_plan'), 'name' => $mealPlan->date]);
+                return $this->updatedResponse(null, $message);
             },
             $request,
             $failedMessage,
@@ -160,6 +174,36 @@ class MealPlanController extends ApiController
             function () use ($request, $id) {
                 $deletedMealPlan = $this->mealPlanService->delete($id, $this->getUserGroup($request));
                 $message = __('api.deleted', ['attribute' => __('api.attributes.meal_plan'), 'name' => $deletedMealPlan->date]);
+                return $this->deletedResponse($message);
+            },
+            $request,
+            $failedMessage,
+            $operation
+        );
+    }
+
+    /**
+     * @OA\Delete(
+     *     path="/meal-plans/{mealPlanId}/meals/{mealId}",
+     *     summary="献立の1食を削除",
+     *     tags={"MealPlans"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(ref="#/components/parameters/MealPlanIdPathParam"),
+     *     @OA\Parameter(ref="#/components/parameters/MealIdParam"),
+     *     @OA\Response(response=200, ref="#/components/responses/MealPlanMealDestroySuccess"),
+     *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
+     *     @OA\Response(response=404, ref="#/components/responses/NotFound")
+     * )
+     */
+    public function destroyMeal(MealDestroyRequest $request, string $mealPlanId, string $mealId): JsonResponse
+    {
+        $operation = __('operations.meal_plan.destroy_meal');
+        $failedMessage = __('api.deletion_failed', ['attribute' => __('api.attributes.meal')]);
+
+        return $this->executeWithExceptionHandling(
+            function () use ($request, $mealPlanId, $mealId) {
+                $deletedMeal = $this->mealPlanService->deleteMeal($mealPlanId, $mealId, $this->getUserGroup($request));
+                $message = __('api.deleted', ['attribute' => __('api.attributes.meal_plan'), 'name' => $deletedMeal->mealPlan->date . ' / ' . $deletedMeal->mealCategory->name]);
                 return $this->deletedResponse($message);
             },
             $request,

@@ -27,9 +27,6 @@ class MasterController extends ApiController
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
-    // TODO: モデルごとのAPIでGETリクエストを受けるように変更予定
-    // グループ内の別ユーザーが更新したデータを毎度取得できるようにするため
-    // 今の実装だと、一度に通信するデータ量が多いので、必要なときに必要なだけリクエストできるようにする
     public function __invoke(MasterRequest $request): JsonResponse
     {
         $operation = __('operations.master.index');

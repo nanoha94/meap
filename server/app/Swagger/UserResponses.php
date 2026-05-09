@@ -3,36 +3,50 @@
 namespace App\Swagger;
 
 /**
+ * 認証ユーザー取得レスポンス（success, message, data: LoginUser）
+ *
+ * @OA\Schema(
+ *     schema="UserResponse",
+ *     required={"success", "message", "data"},
+ *     @OA\Property(property="success", type="boolean", example=true),
+ *     @OA\Property(property="message", type="string", example="ユーザーを取得しました。"),
+ *     @OA\Property(property="data", ref="#/components/schemas/LoginUser", description="認証ユーザー情報")
+ * )
+ *
+ * グループユーザー一覧取得レスポンス（allOf: BaseApiIndexResponse + data: User[]）
+ *
+ * @OA\Schema(
+ *     schema="GroupUserResponse",
+ *     allOf={
+ *         @OA\Schema(ref="#/components/schemas/BaseApiIndexResponse"),
+ *         @OA\Schema(
+ *             required={"data"},
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="array",
+ *                 description="ユーザ一覧",
+ *                 @OA\Items(ref="#/components/schemas/User")
+ *             )
+ *         )
+ *     }
+ * )
+ *
  * @OA\Response(
  *     response="UserIndexSuccess",
  *     description="同じグループのユーザーを5件取得しました。",
- *     @OA\JsonContent(
- *         type="object",
- *         @OA\Property(property="success", type="boolean", example=true),
- *         @OA\Property(property="message", type="string", example="同じグループのユーザーを5件取得しました。"),
- *         @OA\Property(
- *             property="data",
- *             type="array",
- *             description="ユーザ一覧",
- *             @OA\Items(
- *                 type="object",
- *                 @OA\Property(property="name", type="string", example="山田太郎"),
- *                 @OA\Property(property="language", type="string", example="ja", description="ユーザーの言語設定"),
- *                 @OA\Property(property="avatar", type="object",
- *                     @OA\Property(property="seed", type="string", example="1234567890"),
- *                     @OA\Property(property="url", type="string", example="https://example.com/avatar.jpg"),
- *                     @OA\Property(property="width", type="integer", example=300),
- *                     @OA\Property(property="height", type="integer", example=300)
- *                 )
- *             )
- *         ),
- *         @OA\Property(
- *             property="total",
- *             type="integer",
- *             description="ユーザ総数",
- *             example=5
- *         )
- *     )
+ *     @OA\JsonContent(ref="#/components/schemas/GroupUserResponse")
+ * )
+ * 
+ * @OA\Response(
+ *     response="UserShowSuccess",
+ *     description="認証ユーザー情報を取得しました。",
+ *     @OA\JsonContent(ref="#/components/schemas/UserResponse")
+ * )
+ * 
+ * @OA\Response(
+ *     response="UserUpdateSuccess",
+ *     description="ユーザー(新しい名前)を更新しました。",
+ *     @OA\JsonContent(ref="#/components/schemas/BaseApiResponse")
  * )
  */
 class UserResponses {}

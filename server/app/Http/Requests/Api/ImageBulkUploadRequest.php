@@ -28,12 +28,27 @@ class ImageBulkUploadRequest extends BaseApiRequest
      */
     public function rules(): array
     {
-        $rules = [
+        return [
             'images' => 'array|min:1|max:20|required',
             'images.*' => 'file|image|mimes:jpeg,png,jpg,gif,webp|max:10240|required',
+            'upload_path' => [
+                'sometimes',
+                'nullable',
+                'string',
+                'max:255',
+                function (string $attribute, mixed $value, \Closure $fail) {
+                    if ($value === null) {
+                        return;
+                    }
+                    if (str_contains($value, '..')) {
+                        $fail(__('validation.custom.upload_path.no_traversal'));
+                    }
+                    if (str_starts_with($value, '/') || str_starts_with($value, '\\')) {
+                        $fail(__('validation.custom.upload_path.no_absolute'));
+                    }
+                },
+            ],
         ];
-
-        return $rules;
     }
 
     /**
@@ -53,6 +68,8 @@ class ImageBulkUploadRequest extends BaseApiRequest
             'images.*.mimes' => __('validation.mimes', ['attribute' => 'images.*', 'values' => 'png,jpeg,jpg,gif,webp']),
             'images.*.max' => __('validation.max.file', ['attribute' => 'images.*', 'max' => 10240]),
             'images.*.required' => __('validation.required', ['attribute' => 'images.*']),
+            'upload_path.string' => __('validation.string', ['attribute' => 'upload_path']),
+            'upload_path.max' => __('validation.max.string', ['attribute' => 'upload_path', 'max' => 255]),
         ];
     }
 

@@ -9,3 +9,4 @@ const axios = Axios.create({
 });
 
 export default axios;
+export const isAxiosError = Axios.isAxiosError.bind(Axios);

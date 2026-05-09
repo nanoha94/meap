@@ -1,12 +1,15 @@
-import { TIMEOUT_MS } from '@/constants';
-import { useSnackbars } from '@/contexts';
-import axios from '@/lib/axios';
-import { IUploadRecipeResponse } from '@/types/api';
+"use client";
 import React from 'react';
+
+import { TIMEOUT_MS } from '@/constants';
+import { useApiErrorHandler, useSnackbars } from '@/hooks';
+import axios from '@/lib/axios';
+import { IUploadImageResponse } from '@/types';
 
 export const useImageApi = () => {
     const { addSnackbar } = useSnackbars();
-    const bulkUploadImage = React.useCallback(async (files: File[]) => {
+    const { handleApiError } = useApiErrorHandler();
+    const bulkUploadImage = React.useCallback(async (files: File[], uploadPath?: string) => {
         try {
             // FormDataを作成してファイルを追加
             const formData = new FormData();
@@ -18,7 +21,12 @@ export const useImageApi = () => {
                 }
             });
 
-            const res = await axios.post<IUploadRecipeResponse>(
+            // upload_path が指定されていれば FormData に追加
+            if (uploadPath) {
+                formData.append('upload_path', uploadPath);
+            }
+
+            const res = await axios.post<IUploadImageResponse>(
                 `/images/upload-bulk`,
                 formData,
                 {
@@ -28,24 +36,24 @@ export const useImageApi = () => {
                     },
                 },
             );
-            const responseData: IUploadRecipeResponse = res.data;
+            const responseData: IUploadImageResponse = res.data;
             if (responseData.success) {
                 addSnackbar(
                     'success',
-                    responseData.message ?? 'リクエストが正常に完了しました',
+                    responseData.message || 'リクエストが正常に完了しました',
+                );
+            } else {
+                addSnackbar(
+                    'error',
+                    responseData.message || '画像のアップロードに失敗しました',
                 );
             }
             return responseData;
         } catch (error) {
-            if (error.code === 'ECONNABORTED') {
-                addSnackbar('error', 'リクエストがタイムアウトしました');
-            } else {
-                console.error(error.response?.data.message);
-                addSnackbar('error', error.response?.data.message);
-            }
+            handleApiError(error);
             throw error;
         }
-    }, []);
+    }, [addSnackbar, handleApiError]);
 
     return {
         bulkUploadImage,

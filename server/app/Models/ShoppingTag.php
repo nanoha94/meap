@@ -19,11 +19,17 @@ class ShoppingTag extends Model
         'name',
     ];
 
+    /**
+     * グループを取得する
+     */
     public function group(): BelongsTo
     {
         return $this->belongsTo(Group::class);
     }
 
+    /**
+     * 買い物リストを取得する
+     */
     public function items(): BelongsToMany
     {
         return $this->belongsToMany(ShoppingItem::class, 'shopping_item_tag_mappings', 'tag_id', 'item_id');

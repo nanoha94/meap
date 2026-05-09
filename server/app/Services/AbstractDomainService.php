@@ -101,31 +101,17 @@ abstract class AbstractDomainService
         return [];
     }
 
-    /**
-     * 作成レスポンスをフォーマット
-     * @param Model $item
-     * @return array
-     */
-    protected function formatStoreResponse(Model $item): array
-    {
-        return [];
-    }
-
-    /**
-     * 更新レスポンスをフォーマット
-     * @param Model $item
-     * @return array
-     */
-    protected function formatUpdateResponse(Model $item): array
-    {
-        return [];
-    }
-
     public function index(Group $group): array
     {
         return DB::transaction(function () use ($group) {
-            $query = $this->getGroupRelation($group)
-                ->select($this->getSelectColumns());
+            $relation = $this->getGroupRelation($group);
+            $query = $relation;
+
+            // BelongsToManyリレーションの場合はselect()を使わない
+            // select()を使うとテーブル名のプレフィックスが必要になるため
+            if (!($relation instanceof BelongsToMany) && $this->getSelectColumns()) {
+                $query = $query->select($this->getSelectColumns());
+            }
 
             if ($this->getWithColumns()) {
                 $query->with($this->getWithColumns());
@@ -153,19 +139,16 @@ abstract class AbstractDomainService
      *
      * @param array $data 作成データ
      * @param Group $group グループモデル
-     * @return array 作成されたアイテムのレスポンスデータ
      */
-    public function create(array $data, Group $group): array
+    public function create(array $data, Group $group): void
     {
-        return DB::transaction(function () use ($data, $group) {
+        DB::transaction(function () use ($data, $group) {
             $createData = [];
             foreach ($this->getCreateFields() as $field => $dataKey) {
                 $createData[$field] = $data[$dataKey];
             }
 
-            $item = $this->getGroupRelation($group)->create($createData);
-
-            return $this->formatStoreResponse($item);
+            $this->getGroupRelation($group)->create($createData);
         });
     }
 
@@ -174,7 +157,7 @@ abstract class AbstractDomainService
      *
      * @param array $data 作成データの配列
      * @param Group $group グループモデル
-     * @return array 作成されたアイテムのレスポンスデータ
+     * @return array 作成されたアイテムの配列
      */
     public function bulkCreate(array $data, Group $group): array
     {
@@ -185,9 +168,7 @@ abstract class AbstractDomainService
                 foreach ($this->getCreateFields() as $field => $dataKey) {
                     $createData[$field] = $item[$dataKey];
                 }
-                $createdItem = $this->getGroupRelation($group)->create($createData);
-
-                $result[] = $this->formatStoreResponse($createdItem);
+                $result[] = $this->getGroupRelation($group)->create($createData);
             }
 
             return $result;
@@ -205,8 +186,13 @@ abstract class AbstractDomainService
     public function show(string $id, Group $group): array
     {
         return DB::transaction(function () use ($id, $group) {
-            $item = $this->getGroupRelation($group)
-                ->where('id', $id)->select($this->getSelectColumns());
+            $relation = $this->getGroupRelation($group);
+            $item = $relation->where('id', $id);
+
+            // BelongsToManyリレーションの場合はselect()を使わない
+            if (!($relation instanceof BelongsToMany) && $this->getSelectColumns()) {
+                $item = $item->select($this->getSelectColumns());
+            }
 
             if ($this->getWithColumns()) {
                 $item->with($this->getWithColumns());
@@ -246,9 +232,7 @@ abstract class AbstractDomainService
                 }
                 $items[$item['id']]->update($updateData);
 
-                // 更新後のデータを取得してフォーマット
-                $freshItem = $items[$item['id']]->fresh($this->getWithColumns());
-                $result[] = $this->formatUpdateResponse($freshItem);
+                $result[] = [];
             }
 
             return $result;
@@ -323,7 +307,11 @@ abstract class AbstractDomainService
      */
     public function findItemsByIds(array $ids, Group $group): Collection
     {
-        $items = $this->getGroupRelation($group)->whereIn('id', $ids);
+        $relation = $this->getGroupRelation($group);
+        $items = $relation->whereIn('id', $ids);
+
+        // BelongsToManyリレーションの場合はselect()を使わない
+        // このメソッドではselect()を使っていないが、将来の拡張のためにコメントを追加
 
         if ($this->getWithColumns()) {
             $items->with($this->getWithColumns());

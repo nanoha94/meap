@@ -1,8 +1,9 @@
 'use client';
 import React from 'react';
-import { colors } from '@/constants/colors';
 import { AlertTriangle, CircleCheck, X } from 'lucide-react';
-import { useSnackbars } from '@/contexts';
+
+import { colors } from '@/constants';
+import { useSnackbars } from '@/hooks';
 import itemOpenStyles from '@/styles/itemOpen.module.css';
 import { Snackbar as SnackbarType } from '@/types';
 

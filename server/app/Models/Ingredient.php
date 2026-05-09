@@ -20,6 +20,9 @@ class Ingredient extends Model
         'name'
     ];
 
+    /**
+     * レシピを取得する
+     */
     public function recipes(): BelongsToMany
     {
         return $this->belongsToMany(Recipe::class, 'recipe_ingredient_mappings', 'ingredient_id', 'recipe_id');

@@ -167,6 +167,7 @@ return [
     'ulid' => 'The :attribute field must be a valid ULID.',
     'uuid' => 'The :attribute field must be a valid UUID.',
     'required_when_unit_requires_quantity' => 'The :attribute field is required for the selected unit.',
+    'duplicate_ingredient' => 'The same ingredient name and unit combination appears more than once.',
 
     /*
     |--------------------------------------------------------------------------
@@ -185,6 +186,10 @@ return [
         ],
         'terms' => [
             'required' => 'Agreement to the terms is required for registration.',
+        ],
+        'upload_path' => [
+            'no_traversal' => 'The upload path must not contain "..".',
+            'no_absolute' => 'The upload path must not be an absolute path.',
         ],
     ],
 
@@ -208,9 +213,7 @@ return [
         'page' => 'page',
         'per_page' => 'items per page',
         'id' => 'ID',
-        'menu' => 'menu',
         'recipe_id' => 'recipe ID',
-        'menu_category_id' => 'menu category ID',
         'recipe' => [
             'name' => 'recipe name',
             'step_id' => 'step ID',

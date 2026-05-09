@@ -40,11 +40,14 @@ trait ExceptionHandlerTrait
         if ($e instanceof HttpException) {
             $message = $e->getMessage() ?? $defaultMessage;
             $errorCode = $e->getStatusCode();
+            $headers = $e->getHeaders();
+            $errorType = $headers['X-Error-Type'] ?? ($additionalContext['error_type'] ?? null);
+
             $this->logError($errorCode ?? HttpStatusCode::INTERNAL_SERVER_ERROR, $operation, $e, $request, [
                 'message' => $message,
                 ...$additionalContext,
             ]);
-            return $this->errorResponse($message,  $errorCode ?? HttpStatusCode::INTERNAL_SERVER_ERROR);
+            return $this->errorResponse($message,  $errorCode ?? HttpStatusCode::INTERNAL_SERVER_ERROR, [], $errorType);
         }
 
         // モデル未発見例外
@@ -63,6 +66,9 @@ trait ExceptionHandlerTrait
             $message = $defaultMessage ?? __('api.general.database_error');
             $this->logError(HttpStatusCode::INTERNAL_SERVER_ERROR, $operation, $e, $request, [
                 'message' => $message,
+                'sql_error' => $e->getMessage(),
+                'sql' => $e->getSql() ?? null,
+                'bindings' => $e->getBindings() ?? null,
                 ...$additionalContext,
             ]);
             return $this->errorResponse($message, HttpStatusCode::INTERNAL_SERVER_ERROR);

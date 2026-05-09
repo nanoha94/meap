@@ -1,51 +1,32 @@
 'use client';
 import React from 'react';
-import { ActionMenu, AlertDialog } from '@/components/common';
-import { colors } from '@/constants/colors';
-import { Check, GripVertical, Pencil, Pin, PinOff, Trash } from 'lucide-react';
-import { IShoppingItem } from '@/types/api';
-import { useShoppingItems, useShoppingStore } from '../../hooks';
+import { Check, GripVertical, Pencil, Pin, PinOff, Trash2 } from 'lucide-react';
+
+import { MenuButton, ShoppingItemEditForm } from '@/components';
+import { SortableHandle } from '@/components/dnd';
+import { EDIT_MODE, colors } from '@/constants';
+import { useAlertDialog, useDialog } from '@/hooks';
+import { ActionButton, IShoppingItem } from '@/types';
 import { SHOPPING_ALERT_DIALOG_CONFIGS } from '../../constants';
-import { AlertDialogData } from '@/types/dialog';
-import { ALERT_DIALOG_STATE_DEFAULT, DIALOG_NAME } from '@/constants/dialog';
-import { EDIT_MODE } from '@/constants';
+import { useShoppingItemApi, useShoppingStore } from '../../hooks';
 
 interface Props {
     item: IShoppingItem;
+    syncPendingItems: () => Promise<void>;
 }
 
-const ShoppingItemCard = ({ item }: Props) => {
+const ShoppingItemCard = ({ item, syncPendingItems }: Props) => {
+    // state
     const { id, name, isPinned = false, isChecked = false } = item;
-    const { items: storeItems, setItems: setStoreItems } = useShoppingStore();
-    const { deleteShoppingItems } = useShoppingItems();
-    const { openDialog } = useShoppingStore();
-    const [deleteCheckDialog, setDeleteCheckDialog] =
-        React.useState<AlertDialogData>(ALERT_DIALOG_STATE_DEFAULT);
 
-    /**
-     * 削除確認ダイアログを閉じる
-     */
-    const closeDeleteCheckDialog = () => {
-        setDeleteCheckDialog(ALERT_DIALOG_STATE_DEFAULT);
-    };
+    //store
+    const storeItems = useShoppingStore(state => state.items);
+    const setStoreItems = useShoppingStore(state => state.setItems);
 
-    /**
-     * 削除確認ダイアログを開く
-     * @param config ダイアログの設定
-     */
-    const openDeleteCheckDialog = () => {
-        const config = SHOPPING_ALERT_DIALOG_CONFIGS.deleteItem(name);
-        setDeleteCheckDialog({
-            isOpen: true,
-            config,
-            onCancel: closeDeleteCheckDialog,
-            onAction: () => {
-                deleteShoppingItems([id]);
-                closeDeleteCheckDialog();
-            },
-            isLoading: false,
-        });
-    };
+    // hook
+    const { deleteShoppingItems } = useShoppingItemApi();
+    const { openDialog } = useDialog();
+    const { openAlertDialog } = useAlertDialog();
 
     /**
      * アイテムのプロパティを切り替えてストアにセットする
@@ -64,24 +45,37 @@ const ShoppingItemCard = ({ item }: Props) => {
             );
         },
 
-        [storeItems],
+        [storeItems, setStoreItems],
     );
 
-    const actionButtons = [
+    /**
+     * メニューボタン押下時に開くアクションボタン設定
+     */
+    const actionButtonConfigs: ActionButton[] = [
         {
             label: '編集する',
             icon: <Pencil />,
-            onClick: () => {
-                openDialog(DIALOG_NAME.SHOPPING_ITEM_ADD_EDIT, {
-                    item,
-                    editMode: EDIT_MODE.UPDATE,
+            onClick: async () => {
+                await syncPendingItems();
+                openDialog({
+                    title: '買い物アイテムを編集',
+                    children: <ShoppingItemEditForm
+                        editingItem={item}
+                        editMode={EDIT_MODE.UPDATE}
+                    />
                 });
             },
         },
         {
             label: '削除する',
-            icon: <Trash />,
-            onClick: openDeleteCheckDialog,
+            icon: <Trash2 />,
+            onClick: async () => {
+                await syncPendingItems();
+                openAlertDialog(SHOPPING_ALERT_DIALOG_CONFIGS.deleteItem(name), () => {
+                    setStoreItems(storeItems.filter(v => v.id !== id));
+                    deleteShoppingItems([id]);
+                });
+            },
         },
         {
             label: isPinned ? '固定解除する' : '固定する',
@@ -99,7 +93,9 @@ const ShoppingItemCard = ({ item }: Props) => {
                             <Pin color={colors.white} size={20} />
                         </div>
                     )}
-                    <GripVertical color={colors.gray.main} />
+                    <SortableHandle>
+                        <GripVertical color={colors.gray.main} />
+                    </SortableHandle>
                     <div className="flex-1">
                         <input
                             type="checkbox"
@@ -114,11 +110,10 @@ const ShoppingItemCard = ({ item }: Props) => {
                             htmlFor={`checkbox-${id}`}
                             className="relative pl-7 w-full h-full whitespace-nowrap cursor-pointer">
                             <div
-                                className={`absolute top-1/2 -translate-y-1/2 left-0 w-5 h-5 rounded border-[1.5px] transition-colors ${
-                                    isChecked
-                                        ? 'bg-primary-main border-[transparent]'
-                                        : 'bg-white border-gray-main'
-                                }`}>
+                                className={`absolute top-1/2 -translate-y-1/2 left-0 w-5 h-5 rounded border-[1.5px] transition-colors ${isChecked
+                                    ? 'bg-primary-main border-[transparent]'
+                                    : 'bg-white border-gray-main'
+                                    }`}>
                                 {isChecked && (
                                     <Check
                                         strokeWidth={3.5}
@@ -131,20 +126,12 @@ const ShoppingItemCard = ({ item }: Props) => {
                             {name}
                         </label>
                     </div>
-                    <ActionMenu
-                        actionButtons={actionButtons}
+                    <MenuButton
+                        actionButtons={actionButtonConfigs}
                         placement="top-right"
                     />
                 </div>
             </div>
-
-            <AlertDialog
-                isOpen={deleteCheckDialog.isOpen}
-                config={deleteCheckDialog.config}
-                onCancel={deleteCheckDialog.onCancel}
-                onAction={deleteCheckDialog.onAction}
-                isLoading={deleteCheckDialog.isLoading}
-            />
         </>
     );
 };

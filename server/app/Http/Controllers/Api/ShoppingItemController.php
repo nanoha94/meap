@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\ApiController;
-use App\Http\Requests\Api\ShoppingItemStoreRequest;
+use App\Http\Requests\Api\ShoppingItemBulkStoreRequest;
 use App\Http\Requests\Api\ShoppingItemBulkUpdateRequest;
 use App\Http\Requests\Api\ShoppingItemBulkDestroyRequest;
 use App\Http\Requests\Api\ShoppingItemIndexRequest;
@@ -50,30 +50,31 @@ class ShoppingItemController extends ApiController
 
     /**
      * @OA\Post(
-     *     path="/shopping-items",
-     *     summary="買い物アイテムを作成",
+     *     path="/shopping-items/bulk",
+     *     summary="買い物アイテムを一括作成",
      *     tags={"Shopping"},
      *     security={{"sanctum":{}}},
-     *     @OA\RequestBody(ref="#/components/requestBodies/ShoppingItemStoreRequest"),
-     *     @OA\Response(response=200, ref="#/components/responses/ShoppingItemStoreSuccess"),
+     *     @OA\RequestBody(ref="#/components/requestBodies/ShoppingItemBulkStoreRequest"),
+     *     @OA\Response(response=200, ref="#/components/responses/ShoppingItemBulkStoreSuccess"),
      *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
      *     @OA\Response(response=404, ref="#/components/responses/NotFound")
      * )
      */
-    public function store(ShoppingItemStoreRequest $request): JsonResponse
+    public function bulkStore(ShoppingItemBulkStoreRequest $request): JsonResponse
     {
-        $operation = __('operations.shopping_item.store');
+        $operation = __('operations.shopping_item.bulk_store');
         $failedMessage = __('api.creation_failed', ['attribute' => __('api.attributes.shopping.item')]);
 
         return $this->executeWithExceptionHandling(
             function () use ($request) {
-                $res = $this->shoppingItemService->create(
-                    $request->validated(),
+                $validated = $request->validated();
+                $this->shoppingItemService->bulkCreate(
+                    $validated['data'],
                     $this->getUserGroup($request)
                 );
-
-                $message = __('api.created', ['attribute' => __('api.attributes.shopping.item'), 'name' => $request->name]);
-                return $this->createdResponse($res, $message);
+                $total = count($validated['data']);
+                $message = __('api.bulk_created', ['attribute' => __('api.attributes.shopping.item'), 'count' => $total]);
+                return $this->createdResponse(null, $message);
             },
             $request,
             $failedMessage,
@@ -107,7 +108,7 @@ class ShoppingItemController extends ApiController
                 );
                 $total = count($res);
                 $message = __('api.bulk_updated', ['attribute' => __('api.attributes.shopping.item'), 'count' => $total]);
-                return $this->updatedResponse($res, $message);
+                return $this->updatedResponse(null, $message);
             },
             $request,
             $failedMessage,

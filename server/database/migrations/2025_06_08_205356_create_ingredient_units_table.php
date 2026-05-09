@@ -14,10 +14,11 @@ return new class extends Migration
         Schema::create('ingredient_units', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('name');
-            $table->enum('position', ['prefix', 'suffix']);
+            $table->string('position');
             $table->boolean('requires_quantity');
             $table->integer('order');
             $table->foreignUuid('group_id')->constrained('groups', 'id')->cascadeOnDelete();
+            $table->boolean('is_default')->default(false);
             $table->timestamps();
         });
     }

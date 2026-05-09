@@ -3,10 +3,7 @@
 namespace App\Services;
 
 use App\Models\Group;
-use App\Models\ShoppingItem;
 use App\Services\AbstractDomainService;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -49,7 +46,7 @@ class ShoppingItemService extends AbstractDomainService
 
     protected function getCreateFields(): array
     {
-        return ['category_id' => 'categoryId', 'name' => 'name', 'is_pinned' => 'is_pinned', 'is_checked' => 'is_checked', 'order' => 'order'];
+        return ['category_id' => 'categoryId', 'name' => 'name', 'is_pinned' => 'isPinned', 'is_checked' => 'isChecked', 'order' => 'order'];
     }
 
     protected function getUpdateFields(): array
@@ -100,81 +97,36 @@ class ShoppingItemService extends AbstractDomainService
         });
     }
 
-    protected function formatStoreResponse(Model $item): array
-    {
-        // 型チェック
-        $this->typeCheck($item, ShoppingItem::class);
-
-        return [
-            'id' => $item->id,
-            'name' => $item->name,
-            'isPinned' => $item->is_pinned,
-            'isChecked' => $item->is_checked,
-            'categoryId' => $item->category_id,
-            'tags' => $item->tags->map(fn($tag) => [
-                'id' => $tag->id,
-                'name' => $tag->name
-            ]),
-            'order' => $item->order
-        ];
-    }
-
-    protected function formatUpdateResponse(Model $item): array
-    {
-        // 型チェック
-        $this->typeCheck($item, ShoppingItem::class);
-
-        return [
-            'id' => $item->id,
-            'name' => $item->name,
-            'isPinned' => $item->is_pinned,
-            'isChecked' => $item->is_checked,
-            'categoryId' => $item->category_id,
-            'tags' => $item->tags->map(fn($tag) => [
-                'id' => $tag->id,
-                'name' => $tag->name
-            ]),
-            'order' => $item->order
-        ];
-    }
-
     /**
-     * タグ付きでアイテムを作成
+     * 買い物アイテムを一括作成
      *
-     * @param array $data 作成データ（categoryId, name, tags）
+     * @param array $data 作成データの配列（[['categoryId', 'name', 'tags', 'order', 'isPinned', 'isChecked'], ...]）
      * @param Group $group グループモデル
-     * @return array 作成されたアイテムのレスポンスデータ
+     * @return array 互換性のため空配列を返す（コントローラーでは使用しない）
      * @throws HttpException カテゴリが見つからない場合
      */
-    public function create(array $data, Group $group): array
+    public function bulkCreate(array $data, Group $group): array
     {
-        $data['is_pinned'] = false;
-        $data['is_checked'] = false;
-        $data['order'] = $group->shoppingItems()->where('category_id', $data['categoryId'])->count() + 1;
-
         return DB::transaction(function () use ($data, $group) {
-            // 1. カテゴリの存在確認とグループIDチェック
-            $this->shoppingCategoryService->findItemsByIds([$data['categoryId']], $group)->first();
+            $categoryIds = array_unique(array_column($data, 'categoryId'));
+            $this->shoppingCategoryService->findItemsByIds($categoryIds, $group);
 
-            // 2. アイテム作成
-            $createData = [];
-            foreach ($this->getCreateFields() as $field => $dataKey) {
-                $createData[$field] = $data[$dataKey];
-            }
-            $item = $this->getGroupRelation($group)->create($createData);
+            foreach ($data as $itemData) {
+                $createData = [];
+                foreach ($this->getCreateFields() as $field => $dataKey) {
+                    $createData[$field] = $itemData[$dataKey];
+                }
+                $item = $this->getGroupRelation($group)->create($createData);
 
-            // 3. タグの紐づけ
-            if (!empty($data['tags'])) {
-                $tagIds = $this->shoppingTagService->findOrCreateTagIds($data['tags'], $group);
-                if (!empty($tagIds)) {
-                    $item->tags()->attach($tagIds);
+                if (!empty($itemData['tags'])) {
+                    $tagIds = $this->shoppingTagService->findOrCreateTagIds($itemData['tags'], $group);
+                    if (!empty($tagIds)) {
+                        $item->tags()->attach($tagIds);
+                    }
                 }
             }
 
-            // 4. タグとカテゴリを含めて再取得
-            $item = $item->fresh(['tags:id,name', 'category:id,name,is_default,order']);
-
-            return $this->formatStoreResponse($item);
+            return [];
         });
     }
 
@@ -217,9 +169,7 @@ class ShoppingItemService extends AbstractDomainService
                     $item->tags()->sync($tagIds);
                 }
 
-                // タグとカテゴリを含めて再取得
-                $item = $item->fresh(['tags:id,name', 'category:id,name,is_default,order']);
-                $updatedItems[] = $this->formatUpdateResponse($item);
+                $updatedItems[] = [];
             }
 
             return $updatedItems;

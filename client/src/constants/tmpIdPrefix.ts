@@ -2,17 +2,19 @@
  * 一時的なIDプレフィックス
  * （id不要でリクエストできる要素に対して使用）
  */
-export enum TMP_ID_PREFIX {
+export const TMP_ID_PREFIX = {
+    // 献立アイテム
+    MEAL_PLAN_ITEM: 'meap-meal-plan-item-',
     // レシピカテゴリー
-    RECIPE_CATEGORY = 'meap-recipe-category-',
+    RECIPE_CATEGORY: 'meap-recipe-category-',
     // 手順
-    RECIPE_STEP = 'meap-recipe-step-',
+    RECIPE_STEP: 'meap-recipe-step-',
     // 食材アイテム
-    INGREDIENT_ITEM = 'meap-ingredient-item-',
+    INGREDIENT_ITEM: 'meap-ingredient-item-',
     // 食材カテゴリー
-    INGREDIENT_CATEGORY = 'meap-ingredient-category-',
+    INGREDIENT_CATEGORY: 'meap-ingredient-category-',
     // 買い物カテゴリ―
-    SHOPPING_CATEGORY = 'meap-shopping-category-',
+    SHOPPING_CATEGORY: 'meap-shopping-category-',
     // 画像
-    IMAGE = 'meap-image-',
-}
+    IMAGE: 'meap-image-',
+} as const;

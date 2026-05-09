@@ -162,6 +162,7 @@ return [
     'id_must_be_string' => 'IDは文字列でなければなりません。',
     'specified_id_does_not_exist' => '指定されたIDは存在しません。',
     'required_when_unit_requires_quantity' => '選択した単位では:attributeの指定が必須です。',
+    'duplicate_ingredient' => '同じ材料名と単位の組み合わせが重複しています。',
 
     /*
     |--------------------------------------------------------------------------
@@ -180,6 +181,10 @@ return [
         ],
         'terms' => [
             'required' => '登録には規約への同意が必須となります。',
+        ],
+        'upload_path' => [
+            'no_traversal' => 'アップロードパスに「..」を含めることはできません。',
+            'no_absolute' => 'アップロードパスに絶対パスは指定できません。',
         ],
     ],
 
@@ -276,9 +281,7 @@ return [
         'page' => 'ページ',
         'per_page' => '1ページあたりの件数',
         'id' => 'ID',
-        'menu' => 'メニュー',
         'recipe_id' => 'レシピID',
-        'menu_category_id' => 'メニュー種別ID',
         'recipe' => [
             'name' => 'レシピ名',
             'step_id' => '手順ID',

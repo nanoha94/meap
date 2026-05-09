@@ -4,21 +4,22 @@ import { IBaseApiIndexResponse } from './common';
 // レスポンス型
 //--------------------------------
 // 食材カテゴリー一覧取得
-export type IGetIngredientCategoryIndexResponse = IBaseApiIndexResponse<
-    IIngredientCategory[]
->;
+export type IGetIngredientCategoryIndexResponse = IBaseApiIndexResponse<IIngredientCategory[]>;
+
+// 食材単位一覧取得
+export type IGetIngredientUnitIndexResponse = IBaseApiIndexResponse<IIngredientUnit[]>;
 
 //--------------------------------
 // リクエストデータ型
 //--------------------------------
 // 食材カテゴリー作成
-export interface IPostIngredientCategoryRequestData {
+export interface IPostIngredientCategoryRequest {
     name: string;
     order: number;
 }
 
 // 食材カテゴリー更新
-export interface IPutIngredientCategoryRequestData {
+export interface IPutIngredientCategoryRequest {
     id: string;
     name: string;
     order: number;

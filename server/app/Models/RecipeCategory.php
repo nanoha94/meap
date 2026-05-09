@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class RecipeCategory extends Model
 {
@@ -18,7 +19,10 @@ class RecipeCategory extends Model
         'order',
     ];
 
-    public function recipes()
+    /**
+     * レシピを取得する
+     */
+    public function recipes(): BelongsToMany
     {
         return $this->belongsToMany(Recipe::class, 'recipe_category_mappings', 'category_id', 'recipe_id');
     }

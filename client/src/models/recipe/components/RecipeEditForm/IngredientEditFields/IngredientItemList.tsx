@@ -1,27 +1,32 @@
+'use client';
+
 import React from 'react';
-import { IIngredientCategory, IIngredientItem } from '@/types/api';
-import { Control } from 'react-hook-form';
-import { EDIT_MODE, DIALOG_NAME } from '@/constants';
-import Sortable from '@/components/dnd/Sortable';
-import { TextButton } from '@/components/common';
-import { CirclePlus } from 'lucide-react';
-import { useIngredientStore } from '@/models/ingredient/hooks';
+import { useDroppable } from '@dnd-kit/core';
 import {
     SortableContext,
     verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import IngredientEditDialogButton from './IngredientEditDialogButton';
-import { useDroppable } from '@dnd-kit/core';
-import { RecipeEditFormData } from '@/models/recipe/types';
+import { CirclePlus } from 'lucide-react';
+
+import {
+    DialogField,
+    GrippableHorizontalItem,
+    IngredientEditForm,
+    Sortable,
+    TextButton,
+} from '@/components';
+import { BUTTON_TYPE, EDIT_MODE } from '@/constants';
+import { useDialog } from '@/hooks';
+import { useIngredientStore, formatIngredient } from '@/models/ingredient';
+import { IIngredientCategory, IIngredientItem } from '@/types';
 
 interface Props {
-    control: Control<RecipeEditFormData>;
     category: IIngredientCategory;
     items: IIngredientItem[];
-    offsetIndex: number;
     addEmptyItem: () => IIngredientItem[];
     updateItem: (index: number, item: IIngredientItem) => void;
     removeItem: (index: number) => void;
+    errors?: (localIndex: number) => string;
 }
 
 const IngredientItemList = ({
@@ -30,8 +35,13 @@ const IngredientItemList = ({
     addEmptyItem,
     updateItem,
     removeItem,
+    errors,
 }: Props) => {
-    const { openDialog } = useIngredientStore();
+    // store
+    const categories = useIngredientStore(state => state.categories);
+
+    // hook
+    const { openDialog, closeDialog } = useDialog();
     const { setNodeRef: setDroppableNodeRef } = useDroppable({
         id: category.id,
     });
@@ -39,35 +49,58 @@ const IngredientItemList = ({
     /**
      * 食材の編集ダイアログを開く
      */
-    const openEditDialog = React.useCallback(() => {
-        let lastIndex = items.length ?? 0;
-        let item = items[lastIndex];
-        const emptyItems = items.filter(item => item.name === '');
+    const openEditDialog = React.useCallback((item?: IIngredientItem) => {
+        let index = items.length ?? 0;
+        let editItem = items[index];
 
-        // 空の食材がある場合は、その食材のインデックスを取得
-        if (emptyItems && emptyItems.length > 0) {
-            lastIndex = items.indexOf(emptyItems[0]) ?? 0;
-            item = items[lastIndex];
+        // 新規追加の場合
+        if (!item) {
+            const emptyItems = items.filter(item => item.name === '');
+
+            // 空の食材がある場合は、その食材のインデックスを取得
+            if (emptyItems && emptyItems.length > 0) {
+                index = items.indexOf(emptyItems[0]) ?? 0;
+                editItem = items[index];
+            }
+            // 空の食材がない場合は、新しい入力項目を追加
+            else {
+                const newItems = addEmptyItem();
+                index =
+                    newItems.filter(v => v.categoryId === category.id).length - 1;
+                editItem = newItems[index];
+            }
         }
-        // 空の食材がない場合は、新しい入力項目を追加
+        // 既存アイテム編集の場合
         else {
-            const newItems = addEmptyItem();
-            lastIndex =
-                newItems.filter(v => v.categoryId === category.id).length - 1;
-            item = newItems[lastIndex];
+            index = items.indexOf(item);
+            editItem = item;
         }
 
         // 食材の編集ダイアログを開く
-        if (item) {
-            openDialog(DIALOG_NAME.INGREDIENT_ADD_EDIT, {
-                item: item,
-                editMode: EDIT_MODE.CREATE,
-                onAction: (value: IIngredientItem) => {
-                    updateItem(lastIndex, value);
-                },
+        if (editItem) {
+            const editMode = editItem.name === '' ? EDIT_MODE.CREATE : EDIT_MODE.UPDATE;
+            const category = categories.find(
+                category => category.id === editItem?.categoryId,
+            );
+            const title =
+                editMode === EDIT_MODE.CREATE
+                    ? `${category?.name ?? '材料'}を追加`
+                    : `${category?.name ?? '材料'}を編集`;
+            const actionButtonText = editMode === EDIT_MODE.CREATE ? '追加' : '保存';
+
+            openDialog({
+                title,
+                children: <IngredientEditForm
+                    editingItem={editItem}
+                    actionButtonText={actionButtonText}
+                    onAction={(value: IIngredientItem) => {
+                        updateItem(index, value);
+                        closeDialog(false);
+                    }}
+                />,
             });
         }
-    }, [items]);
+    }, [items, category, addEmptyItem, updateItem, openDialog, closeDialog, categories]);
 
     return (
         <>
@@ -79,32 +112,39 @@ const IngredientItemList = ({
                 <div
                     ref={setDroppableNodeRef}
                     className="flex flex-col gap-y-2">
-                    {items.map((field, index) => (
-                        <Sortable key={field.id} id={field.id}>
-                            <IngredientEditDialogButton
-                                key={field.id}
-                                item={field}
-                                isDisabled={
-                                    index === 0 &&
-                                    items.length === 1 &&
-                                    field.name === ''
-                                }
-                                placeholder={`${category.name}を設定`}
-                                onDelete={() => removeItem(index)}
-                                onChange={(item: IIngredientItem) =>
-                                    updateItem(index, item)
-                                }
-                            />
-                        </Sortable>
-                    ))}
+                    {items.map((field, index) => {
+                        const errorMessage = errors?.(index) ?? '';
+                        return (
+                            <div key={field.id} className="flex flex-col gap-y-1">
+                                <Sortable id={field.id}>
+                                    <GrippableHorizontalItem
+                                        hasDeleteButton={true}
+                                        isDisabledDeleteButton={index === 0 &&
+                                            items.length === 1 &&
+                                            field.name === ''}
+                                        onDelete={() => removeItem(index)}>
+                                        <DialogField
+                                            value={formatIngredient(field)}
+                                            placeholder={`${category.name}を設定`}
+                                            hasError={errorMessage !== ''}
+                                            onOpenDialog={() => openEditDialog(field)}
+                                        />
+                                    </GrippableHorizontalItem>
+                                </Sortable>
+                                {errorMessage && (
+                                    <p className="pl-8 text-alert-main text-sm">{errorMessage}</p>
+                                )}
+                            </div>
+                        );
+                    })}
                 </div>
             </SortableContext>
             <TextButton
-                type="button"
-                onClick={openEditDialog}
+                type={BUTTON_TYPE.BUTTON}
+                onClick={() => openEditDialog()}
                 className="!border-none !bg-transparent hover:!bg-gray-light">
                 <CirclePlus size={20} />
-                追加
+                {category.name}を追加
             </TextButton>
         </>
     );

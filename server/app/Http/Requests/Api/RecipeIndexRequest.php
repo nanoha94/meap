@@ -15,8 +15,16 @@ class RecipeIndexRequest extends BaseApiRequest
     public function rules(): array
     {
         return [
-            'page' => 'integer|min:1|nullable',
-            'per_page' => 'integer|min:1|max:100|nullable',
+            'limit' => 'integer|min:1|max:100|nullable',
+            'offset' => 'integer|min:0|nullable',
+            'sort' => 'nullable|string|in:created_at,last_planned_date,name',
+            'order' => 'nullable|string|in:asc,desc',
+            'recipe_name' => 'nullable|string|max:255',
+            'ingredient_name' => 'nullable|string|max:255',
+            'category_ids' => 'nullable|array',
+            'category_ids.*' => 'uuid|exists:recipe_categories,id',
+            'last_planned_date_from' => 'nullable|date|date_format:Y-m-d',
+            'last_planned_date_to' => 'nullable|date|date_format:Y-m-d|after_or_equal:last_planned_date_from',
         ];
     }
 
@@ -28,11 +36,27 @@ class RecipeIndexRequest extends BaseApiRequest
     public function messages()
     {
         return [
-            'page.integer' => __('validation.integer', ['attribute' => 'page']),
-            'page.min' => __('validation.min.numeric', ['attribute' => 'page', 'min' => 1]),
-            'per_page.integer' => __('validation.integer', ['attribute' => 'per_page']),
-            'per_page.min' => __('validation.min.numeric', ['attribute' => 'per_page', 'min' => 1]),
-            'per_page.max' => __('validation.max.numeric', ['attribute' => 'per_page', 'max' => 100]),
+            'limit.integer' => __('validation.integer', ['attribute' => 'limit']),
+            'limit.min' => __('validation.min.numeric', ['attribute' => 'limit', 'min' => 1]),
+            'limit.max' => __('validation.max.numeric', ['attribute' => 'limit', 'max' => 100]),
+            'offset.integer' => __('validation.integer', ['attribute' => 'offset']),
+            'offset.min' => __('validation.min.numeric', ['attribute' => 'offset', 'min' => 0]),
+            'sort.string' => __('validation.string', ['attribute' => 'sort']),
+            'sort.in' => __('validation.in', ['attribute' => 'sort']),
+            'order.string' => __('validation.string', ['attribute' => 'order']),
+            'order.in' => __('validation.in', ['attribute' => 'order']),
+            'recipe_name.string' => __('validation.string', ['attribute' => 'recipe_name']),
+            'recipe_name.max' => __('validation.max.string', ['attribute' => 'recipe_name', 'max' => 255]),
+            'ingredient_name.string' => __('validation.string', ['attribute' => 'ingredient_name']),
+            'ingredient_name.max' => __('validation.max.string', ['attribute' => 'ingredient_name', 'max' => 255]),
+            'category_ids.array' => __('validation.array', ['attribute' => 'category_ids']),
+            'category_ids.*.uuid' => __('validation.uuid', ['attribute' => 'category_ids']),
+            'category_ids.*.exists' => __('validation.exists', ['attribute' => 'category_ids']),
+            'last_planned_date_from.date' => __('validation.date', ['attribute' => 'last_planned_date_from']),
+            'last_planned_date_from.date_format' => __('validation.date_format', ['attribute' => 'last_planned_date_from', 'format' => 'Y-m-d']),
+            'last_planned_date_to.date' => __('validation.date', ['attribute' => 'last_planned_date_to']),
+            'last_planned_date_to.date_format' => __('validation.date_format', ['attribute' => 'last_planned_date_to', 'format' => 'Y-m-d']),
+            'last_planned_date_to.after_or_equal' => __('validation.after_or_equal', ['attribute' => 'last_planned_date_to', 'date' => 'last_planned_date_from']),
         ];
     }
 

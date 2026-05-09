@@ -1,90 +1,36 @@
 import React, { Suspense } from 'react';
-import AccountTopPage from '@/pages/settings/AccountTopPage';
-import { Header, Loading } from '@/components/common';
-import {
-    IGetGroupUserResponse,
-    IGetInvitationDetailResponse,
-} from '@/types/api';
-import { apiClient } from '@/lib/apiClient';
-import { SnackbarHandler } from '@/components/handlers';
-import { TIMEOUT_MS } from '@/constants';
-import dynamic from 'next/dynamic';
+import AccountPage from '@/pages/settings/account/AccountPage';
 
-// 動的インポートでダイアログコンポーネントを遅延読み込み
-const JoinDialog = dynamic(
-    () => import('@/models/settings/components/JoinDialog/JoinDialog'),
-    {
-        ssr: false, // SSRでは読み込まない
-        loading: () => null, // ローディング中は何も表示しない
-    },
-);
+import { Loading } from '@/components';
+import { fetchData } from '@/lib/apiClient';
+import { IGetInvitationDetailResponse } from '@/types';
 
 interface AccountWithDataProps {
     token: string;
 }
 const AccountWithData = async ({ token }: AccountWithDataProps) => {
-    let users: IGetGroupUserResponse = { data: [], total: 0 };
-    let invitationDetail: IGetInvitationDetailResponse | null = null;
-    let errorMessage: string = '';
 
-    try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
-
-        users = await apiClient('/users', {
-            signal: controller.signal,
-        });
-
-        if (!!token && token.length > 0) {
-            invitationDetail = await apiClient(`/invitations/${token}`, {
-                signal: controller.signal,
-            });
-        }
-
-        clearTimeout(timeoutId);
-    } catch (error) {
-        console.error(error);
-        // エラーオブジェクトから安全に文字列を抽出
-        if (error instanceof Error && error.name === 'AbortError') {
-            errorMessage =
-                'リクエストがタイムアウトしました。再度お試しください。';
-        } else {
-            errorMessage =
-                error instanceof Error
-                    ? error.message
-                    : typeof error === 'string'
-                      ? error
-                      : 'データの取得に失敗しました';
-        }
-    }
+    const { data: invitationDetail, errorMessage } = await fetchData<IGetInvitationDetailResponse>(`/invitations/${token}`);
 
     return (
-        <>
-            <Header title="アカウント設定" />
-            <main>
-                {errorMessage && (
-                    <SnackbarHandler type="error" message={errorMessage} />
-                )}
-                <AccountTopPage users={users['data']} />
-                {invitationDetail && token && (
-                    <JoinDialog invitationDetail={invitationDetail} />
-                )}
-            </main>
-        </>
+        <AccountPage
+            invitationDetail={invitationDetail?.data ?? null}
+            errorMessage={errorMessage}
+        />
     );
 };
 
 interface Props {
-    searchParams: {
-        token: string;
-    };
+    searchParams: Promise<{
+        token?: string;
+    }>;
 }
-const Page = ({ searchParams }: Props) => {
-    const { token } = searchParams;
+const Page = async ({ searchParams }: Props) => {
+    const { token } = await searchParams;
 
     return (
         <Suspense fallback={<Loading />}>
-            <AccountWithData token={token} />
+            {token && token.length > 0 ? <AccountWithData token={token} /> : <AccountPage />}
         </Suspense>
     );
 };

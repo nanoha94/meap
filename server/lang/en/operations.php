@@ -23,16 +23,20 @@ return [
         'show' => 'Meal plan detail retrieval',
         'update' => 'Meal plan update',
         'destroy' => 'Meal plan deletion',
+        'destroy_meal' => 'Delete one meal from meal plan',
     ],
     'meal_category' => [
         'index' => 'Meal category list retrieval',
-        'store' => 'Meal category creation',
+        'bulk_store' => 'Meal category bulk creation',
         'bulk_update' => 'Meal category bulk update',
-        'destroy' => 'Meal category deletion',
+        'bulk_destroy' => 'Meal category bulk deletion',
     ],
     'image' => [
         'bulk_upload' => 'Bulk image upload',
         'bulk_destroy' => 'Bulk image deletion',
+        'delete_images_by_group' => 'Delete images by group',
+        'delete_images_by_user' => 'Delete images by user',
+        'download_remote' => 'Remote image download',
     ],
     'invitation' => [
         'store' => 'Invitation token creation',
@@ -54,13 +58,14 @@ return [
     'shopping_item' => [
         'index' => 'Shopping item list retrieval',
         'store' => 'Shopping item creation',
+        'bulk_store' => 'Shopping item bulk creation',
         'bulk_update' => 'Shopping item bulk update',
         'bulk_destroy' => 'Shopping item bulk deletion',
         'tag_processing' => 'Shopping item tag processing',
     ],
     'recipe_category' => [
         'index' => 'Recipe category list retrieval',
-        'store' => 'Recipe category creation',
+        'bulk_store' => 'Recipe category bulk creation',
         'bulk_update' => 'Recipe category bulk update',
         'bulk_destroy' => 'Recipe category bulk deletion',
     ],

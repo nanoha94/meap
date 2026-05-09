@@ -7,7 +7,6 @@ ENV WWWUSER=1000
 
 ARG WWWGROUP
 ARG NODE_VERSION=22
-ARG MYSQL_CLIENT="mysql-client"
 ARG POSTGRES_VERSION=17
 
 WORKDIR /var/www/html
@@ -32,8 +31,8 @@ RUN apt-get update && apt-get upgrade -y \
     && apt-get install -y php8.4-cli php8.4-dev \
        php8.4-pgsql php8.4-sqlite3 php8.4-gd \
        php8.4-curl php8.4-mongodb \
-       php8.4-imap php8.4-mysql php8.4-mbstring \
-       php8.4-pdo php8.4-pdo-mysql \
+       php8.4-imap php8.4-mbstring \
+       php8.4-pdo \
        php8.4-xml php8.4-zip php8.4-bcmath php8.4-soap \
        php8.4-intl php8.4-readline \
        php8.4-ldap \
@@ -54,7 +53,6 @@ RUN apt-get update && apt-get upgrade -y \
     && echo "deb [signed-by=/etc/apt/keyrings/pgdg.gpg] http://apt.postgresql.org/pub/repos/apt noble-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
     && apt-get update \
     && apt-get install -y yarn \
-    && apt-get install -y $MYSQL_CLIENT \
     && apt-get install -y postgresql-client-$POSTGRES_VERSION \
     && apt-get -y autoremove \
     && apt-get clean \

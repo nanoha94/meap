@@ -1,23 +1,40 @@
-import '@/styles/global.css';
-import { Snackbars } from '@/components/common';
-import { SnackbarsProvider } from '@/contexts/useSnackbars';
-import { notoSansJp } from '@/constants';
+import React from 'react';
+import type { Metadata } from 'next';
 
-const RootLayout = ({ children }) => {
+import { AlertDialog, Dialog, LoadingAnimation, Snackbars } from '@/components';
+import { NOTO_SANS_JP } from '@/constants';
+import '@/styles/global.css';
+
+interface RootLayoutProps {
+    children: React.ReactNode;
+}
+
+const RootLayout = ({ children }: RootLayoutProps) => {
     return (
-        <html lang="en" className={notoSansJp.variable}>
-            <SnackbarsProvider>
-                <body className="text-base text-black">
-                    {children}
-                    <Snackbars />
-                </body>
-            </SnackbarsProvider>
+        <html lang="ja" className={NOTO_SANS_JP.variable}>
+            <body
+                className={`${NOTO_SANS_JP.className} text-base text-black`}>
+                {children}
+                <Snackbars />
+                <Dialog />
+                <AlertDialog />
+                <LoadingAnimation />
+            </body>
         </html>
     );
 };
 
-export const metadata = {
-    title: 'Laravel',
+export const metadata: Metadata = {
+    metadataBase: new URL(process.env.NEXT_PUBLIC_FRONTEND_URL ?? 'http://localhost:3000'),
+    title: {
+        default: 'meap',
+        template: '%s | meap',
+    },
+    description: 'meapは、レシピ・献立・買い物リストをまとめて管理できるアプリです。',
+    openGraph: {
+        title: 'meap',
+        description: 'meapは、レシピ・献立・買い物リストをまとめて管理できるアプリです。',
+    },
 };
 
 export default RootLayout;

@@ -4,12 +4,15 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Traits\ClearsSessionCookies;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class AuthenticatedSessionController extends Controller
 {
+    use ClearsSessionCookies;
+
     /**
      * @OA\Post(
      *     path="/login",
@@ -64,39 +67,6 @@ class AuthenticatedSessionController extends Controller
 
         $response = $this->successResponse(null, __('auth.success', ['attribute' => __('auth.attributes.logout')]));
 
-        // 複数のドメインとパスパターンで削除
-        $domains = [config('session.domain'), null, '', '.' . parse_url(config('app.url'), PHP_URL_HOST)];
-        $paths = [config('session.path'), '/', ''];
-
-        foreach ($domains as $d) {
-            foreach ($paths as $p) {
-                $response->cookie(
-                    config('session.cookie'),
-                    '',
-                    -1,
-                    $p,
-                    $d,
-                    config('session.secure'),
-                    config('session.http_only'),
-                    false,
-                    config('session.same_site')
-                );
-
-                $response->cookie(
-                    'XSRF-TOKEN',
-                    '',
-                    -1,
-                    $p,
-                    $d,
-                    config('session.secure'),
-                    false,
-                    false,
-                    config('session.same_site')
-                );
-            }
-        }
-
-
-        return $response;
+        return $this->clearSessionCookiesOnResponse($response);
     }
 }

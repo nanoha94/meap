@@ -37,10 +37,12 @@ return [
     'image' => [
         'bulk_uploaded' => ':count image(s) uploaded successfully.',
         'upload_failed' => 'Failed to upload and save image.',
+        'remote_download_failed' => 'Failed to fetch image from remote URL.',
         'bulk_deleted' => ':count image(s) deleted successfully.',
         'bulk_deletion_failed' => 'Bulk image deletion failed.',
         'deletion_failed' => 'Image deletion failed.',
         'group_mismatch' => 'Group ID does not match.',
+        'file_delete_failed' => 'Failed to delete image file.',
         'still_in_use' => 'Image cannot be deleted because it is still in use by other models.',
     ],
     'invitation' => [
@@ -61,8 +63,8 @@ return [
     'attributes' => [
         'user' => 'User',
         'meal_plan' => 'Meal plan',
+        'meal' => 'One meal (from meal plan)',
         'meal_category' => 'Meal category',
-        'menu_category' => 'Menu category',
         'recipe' => 'Recipe',
         'recipe_category' => 'Recipe category',
         'ingredient' => 'Ingredient',

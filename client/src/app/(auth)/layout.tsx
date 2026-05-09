@@ -1,14 +1,20 @@
+import type { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
-import ApplicationLogo from '@/components/ApplicationLogo';
-import { IGetUserResponse } from '@/types/api';
-import { apiClient } from '@/lib/apiClient';
+
+import { SnackbarHandler } from '@/components';
+import { fetchData } from '@/lib/apiClient';
+import { IGetUserResponse } from '@/types';
 import { handleAuthRedirect } from '@/utils';
 
 // 動的レンダリングを強制（クッキーを使用するため）
 export const dynamic = 'force-dynamic';
 
-export const metadata = {
-    title: 'Laravel',
+export const metadata: Metadata = {
+    title: {
+        default: 'meap',
+        template: '%s | meap',
+    },
 };
 
 interface Props {
@@ -16,23 +22,30 @@ interface Props {
 }
 
 const AuthLayout = async ({ children }: Props) => {
-    let user: IGetUserResponse | null = null;
-
-    try {
-        user = await apiClient('/user'); // 認証状態に基づいてリダイレクト
-        handleAuthRedirect(user, true);
-    } catch (error) {
-        console.error('Failed to fetch user:', error);
-        // ユーザー情報が取得できない場合はnullのまま
+    const { data: user, errorMessage } = await fetchData<IGetUserResponse>(
+        '/user',
+        { suppressUnauthorizedLog: true },
+    );
+    if (user) {
+        handleAuthRedirect(user.data, true);
     }
 
+    // 認証エラー（AUTHENTICATION_REQUIRED）はログインページでは表示しない
+    const shouldShowError =
+        errorMessage && errorMessage !== 'AUTHENTICATION_REQUIRED';
+
     return (
-        <div className="max-w-xl mx-auto pt-10 pb-20 px-5 flex flex-col gap-y-16">
-            <Link href="/" className="w-fit mx-auto block">
-                <ApplicationLogo className="w-60 h-auto fill-current text-gray-500" />
-            </Link>
-            {children}
-        </div>
+        <>
+            {shouldShowError && (
+                <SnackbarHandler type="error" message={errorMessage} />
+            )}
+            <div className="max-w-xl mx-auto pt-10 pb-20 px-5 flex flex-col gap-y-16">
+                <Link href="/" className="w-[60%] mx-auto block">
+                    <Image src="/images/meap-logo.png" alt="meap" width={297} height={307} className="w-full h-auto" />
+                </Link>
+                {children}
+            </div>
+        </>
     );
 };
 

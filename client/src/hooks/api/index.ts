@@ -1,2 +1,2 @@
 export { useAuth } from './useAuth';
-export { useJoinGroup } from './useJoinGroup';
+export { useApiErrorHandler } from './useApiErrorHandler';

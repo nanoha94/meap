@@ -1,12 +1,12 @@
 'use client';
 import Link from 'next/link';
-import { useAuth } from '@/hooks/api';
-import React, { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Button } from '@/components/common';
+import React from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
-import LoadingAnimation from '@/components/common/LoadingAnimation';
-import { VerticalRowField } from '@/components/react-hook-form';
+
+import { AuthLoading, Button, ButtonLink, VerticalRowField } from '@/components';
+import { BUTTON_TYPE, BUTTON_VARIANT, COLOR_VARIANT } from '@/constants';
+import { useAuth } from '@/hooks';
 
 interface FormInputs {
     email: string;
@@ -18,7 +18,7 @@ type visibleErrorFields = 'email' | 'password';
 
 const LoginForm = () => {
     const searchParams = useSearchParams();
-    const { isLoading, login } = useAuth();
+    const { login } = useAuth();
 
     const {
         handleSubmit,
@@ -35,43 +35,52 @@ const LoginForm = () => {
     const [apiErrors, setApiErrors] = React.useState<Record<string, string[]>>(
         {},
     );
-    const [apiStatus, setApiStatus] = React.useState<string | null>(null);
+    const [loginStatus, setLoginStatus] = React.useState<string | null>(null);
+
+    /**
+     * パスワードリセットトークンをデコードしてメッセージを取得
+     * @returns パスワードリセットメッセージ
+     */
+    const resetStatusMessage = React.useMemo(() => {
+        const resetToken = searchParams?.get('reset');
+        if (
+            !resetToken ||
+            resetToken.length === 0 ||
+            Object.keys(errors).length > 0
+        ) {
+            return null;
+        }
+        try {
+            const decoded = atob(resetToken);
+            return decoded === 'Your password has been reset.'
+                ? 'パスワードをリセットしました。'
+                : decoded;
+        } catch {
+            return null;
+        }
+    }, [searchParams, errors]);
 
     // 入力エラーがあったとき、その後に入力内容が変更されればエラー有無に関わらずエラー内容を非表示にする
     const [isErrorVisible, setIsErrorVisible] = React.useState<
         Record<visibleErrorFields, boolean>
     >({ email: false, password: false });
 
-    React.useEffect(() => {
-        const resetToken = searchParams?.get('reset');
-        if (
-            !!resetToken &&
-            resetToken?.length > 0 &&
-            Object.keys(errors).length === 0
-        ) {
-            setApiStatus(
-                atob(resetToken) === 'Your password has been reset.'
-                    ? 'パスワードをリセットしました。'
-                    : atob(resetToken),
-            );
-        } else {
-            setApiStatus(null);
-        }
-    }, [searchParams, errors]);
-
+    /**
+     * ログインフォームの送信
+     * @param data フォームの入力値
+     */
     const onSubmit: SubmitHandler<FormInputs> = (data: FormInputs) => {
         login({
             email: data.email,
             password: data.password,
             remember: data.isKeepLogin,
             setErrors: setApiErrors,
-            setStatus: setApiStatus,
+            setStatus: setLoginStatus,
         });
     };
 
     return (
         <>
-            {isLoading && <LoadingAnimation />}
             <div className="flex flex-col gap-y-10">
                 <div className="relative w-full text-center">
                     <span className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-px bg-gray-main" />
@@ -80,6 +89,7 @@ const LoginForm = () => {
                     </h1>
                 </div>
                 <form
+                    noValidate
                     onSubmit={handleSubmit(onSubmit)}
                     className="flex flex-col gap-y-10">
                     <div className="flex flex-col gap-y-4">
@@ -91,9 +101,9 @@ const LoginForm = () => {
                             errorMessage={
                                 isErrorVisible.email
                                     ? ([
-                                          errors.email?.message,
-                                          ...(apiErrors?.email || []),
-                                      ].filter(Boolean) as string[])
+                                        errors.email?.message,
+                                        ...(apiErrors?.email || []),
+                                    ].filter(Boolean) as string[])
                                     : []
                             }
                             rules={{
@@ -104,8 +114,9 @@ const LoginForm = () => {
                                         'メールアドレスの形式で入力してください',
                                 },
                             }}>
-                            {({ value, onChange }) => (
+                            {({ value, onChange, id }) => (
                                 <input
+                                    id={id}
                                     type="email"
                                     value={value as string}
                                     onChange={e => {
@@ -116,7 +127,7 @@ const LoginForm = () => {
                                         }));
                                         setApiErrors({ email: [] });
                                     }}
-                                    className={`py-2 px-4 border rounded-lg ${isErrorVisible.email && (!!errors.email?.message || (!!apiErrors.email && apiErrors.email?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
+                                    className={`py-2 px-4 border rounded-lg ${isErrorVisible.email && (!!errors.email?.message || (!!apiErrors.email && apiErrors.email?.length > 0)) ? 'border-alert-main border-2' : 'border-gray-main'}`}
                                 />
                             )}
                         </VerticalRowField>
@@ -129,14 +140,15 @@ const LoginForm = () => {
                             errorMessage={
                                 isErrorVisible.password
                                     ? ([
-                                          errors.password?.message,
-                                          ...(apiErrors?.password || []),
-                                      ].filter(Boolean) as string[])
+                                        errors.password?.message,
+                                        ...(apiErrors?.password || []),
+                                    ].filter(Boolean) as string[])
                                     : []
                             }
                             rules={{ required: '必須項目です' }}>
-                            {({ value, onChange }) => (
+                            {({ value, onChange, id }) => (
                                 <input
+                                    id={id}
                                     type="password"
                                     value={value as string}
                                     onChange={e => {
@@ -147,7 +159,7 @@ const LoginForm = () => {
                                         }));
                                         setApiErrors({ password: [] });
                                     }}
-                                    className={`py-2 px-4 border rounded-lg ${isErrorVisible.password && (!!errors.password?.message || (!!apiErrors.password && apiErrors.password?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
+                                    className={`py-2 px-4 border rounded-lg ${isErrorVisible.password && (!!errors.password?.message || (!!apiErrors.password && apiErrors.password?.length > 0)) ? 'border-alert-main border-2' : 'border-gray-main'}`}
                                 />
                             )}
                         </VerticalRowField>
@@ -175,7 +187,7 @@ const LoginForm = () => {
                     </div>
                     <div className="flex flex-col gap-y-4">
                         <Button
-                            type="submit"
+                            type={BUTTON_TYPE.SUBMIT}
                             onClick={() =>
                                 setIsErrorVisible({
                                     email: true,
@@ -184,8 +196,10 @@ const LoginForm = () => {
                             }>
                             ログイン
                         </Button>
-                        {!!apiStatus && (
-                            <p className="text-alert-main">{apiStatus}</p>
+                        {!!(resetStatusMessage ?? loginStatus) && (
+                            <p className="text-alert-main">
+                                {resetStatusMessage ?? loginStatus}
+                            </p>
                         )}
                     </div>
                 </form>
@@ -209,10 +223,14 @@ const LoginForm = () => {
                         他の方法でログイン
                     </h1>
                 </div>
-                {/* TODO: リンク？ */}
-                <Button type="button" variant="outlined" colorVariant="gray">
+                <ButtonLink
+                    href={`${(process.env.NEXT_PUBLIC_BACKEND_URL || 'https://localhost:8000').replace(/\/$/, '')}/auth/google/redirect`}
+                    variant={BUTTON_VARIANT.OUTLINED}
+                    colorVariant={COLOR_VARIANT.GRAY}
+                    isExternal={true}
+                >
                     Googleアカウントでログイン
-                </Button>
+                </ButtonLink>
             </div>
         </>
     );
@@ -220,9 +238,9 @@ const LoginForm = () => {
 
 const Login = () => {
     return (
-        <Suspense fallback={<LoadingAnimation />}>
+        <React.Suspense fallback={<AuthLoading />}>
             <LoginForm />
-        </Suspense>
+        </React.Suspense>
     );
 };
 

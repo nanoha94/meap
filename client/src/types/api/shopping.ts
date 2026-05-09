@@ -1,4 +1,4 @@
-import { IBaseApiIndexResponse } from './common';
+import { IBaseApiIndexResponse, IBaseApiResponse } from './common';
 
 //--------------------------------
 // レスポンス型
@@ -13,11 +13,14 @@ export type IGetShoppingCategoryIndexResponse = IBaseApiIndexResponse<
     IShoppingCategory[]
 >;
 
+// 買い物アイテム作成
+export type IPostShoppingItemResponse = IBaseApiResponse;
+
 //--------------------------------
 // リクエストデータ型
 //--------------------------------
 // 買い物アイテム更新
-export interface IPutShoppingItemRequestData {
+export interface IPutShoppingItemRequest {
     id: string;
     name: string;
     isPinned: boolean;
@@ -28,20 +31,23 @@ export interface IPutShoppingItemRequestData {
 }
 
 // 買い物アイテム作成
-export interface IPostShoppingItemRequestData {
+export interface IPostShoppingItemRequest {
     name: string;
     categoryId: string;
     tags: { id?: string; name: string }[];
+    order: number;
+    isPinned: boolean;
+    isChecked: boolean;
 }
 
 // 買い物カテゴリー作成
-export interface IPostShoppingCategoryRequestData {
+export interface IPostShoppingCategoryRequest {
     name: string;
     order: number;
 }
 
 // 買い物カテゴリー更新
-export interface IPutShoppingCategoryRequestData {
+export interface IPutShoppingCategoryRequest {
     id: string;
     name: string;
     order: number;
@@ -50,7 +56,6 @@ export interface IPutShoppingCategoryRequestData {
 //--------------------------------
 // データ型
 //--------------------------------
-// 買い物アイテム
 export interface IShoppingItem {
     id: string;
     name: string;
@@ -61,7 +66,6 @@ export interface IShoppingItem {
     order: number;
 }
 
-// 買い物カテゴリー
 export interface IShoppingCategory {
     id: string;
     name: string;
@@ -69,7 +73,6 @@ export interface IShoppingCategory {
     order: number;
 }
 
-// 買い物タグ
 export interface IShoppingTag {
     id: string;
     name: string;

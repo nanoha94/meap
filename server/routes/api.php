@@ -1,30 +1,42 @@
 <?php
 
-use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\ImageController;
 use App\Http\Controllers\Api\IngredientCategoryController;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\IngredientUnitController;
 use App\Http\Controllers\Api\InvitationController;
 use App\Http\Controllers\Api\MasterController;
-use App\Http\Controllers\Api\ShoppingCategoryController;
-use App\Http\Controllers\Api\ShoppingItemController;
-use App\Http\Controllers\Api\MealPlanController;
-use App\Http\Controllers\Api\ShoppingTagController;
 use App\Http\Controllers\Api\MealCategoryController;
+use App\Http\Controllers\Api\MealPlanController;
 use App\Http\Controllers\Api\RecipeCategoryController;
 use App\Http\Controllers\Api\RecipeController;
-use App\Http\Controllers\Api\ImageController;
+use App\Http\Controllers\Api\ShoppingCategoryController;
+use App\Http\Controllers\Api\ShoppingItemController;
+use App\Http\Controllers\Api\ShoppingTagController;
+use App\Http\Controllers\Api\UserController;
+use Illuminate\Support\Facades\Route;
+
+// 認証のみ必要（メール認証不要）
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/user', [UserController::class, 'show']);
+    Route::put('/user', [UserController::class, 'update']);
+    Route::delete('/user', [UserController::class, 'destroy']);
+});
 
 // メール認証済みユーザーのみアクセス可能
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
-    // meal-plans
-    Route::apiResource('/meal-plans', MealPlanController::class);
-    Route::apiResource('/meal-categories', MealCategoryController::class)->only(['index', 'store', 'destroy']);
+    Route::get('/meal-plans/{date}', [MealPlanController::class, 'show']);
+    Route::apiResource('meal-plans', MealPlanController::class)->except(['show']);
+    Route::delete('/meal-plans/{mealPlanId}/meals/{mealId}', [MealPlanController::class, 'destroyMeal'])
+        ->name('meal-plans.meals.destroy');
+    Route::apiResource('/meal-categories', MealCategoryController::class)->only(['index']);
+    Route::post('/meal-categories/bulk', [MealCategoryController::class, 'bulkStore']);
     Route::put('/meal-categories/bulk', [MealCategoryController::class, 'bulkUpdate']);
+    Route::delete('/meal-categories/bulk', [MealCategoryController::class, 'bulkDestroy']);
 
     // recipes
     Route::apiResource('/recipes', RecipeController::class);
-    Route::apiResource('/recipe-categories', RecipeCategoryController::class)->only(['index', 'store']);
+    Route::apiResource('/recipe-categories', RecipeCategoryController::class)->only(['index']);
+    Route::post('/recipe-categories/bulk', [RecipeCategoryController::class, 'bulkStore']);
     Route::put('/recipe-categories/bulk', [RecipeCategoryController::class, 'bulkUpdate']);
     Route::delete('/recipe-categories/bulk', [RecipeCategoryController::class, 'bulkDestroy']);
 
@@ -37,6 +49,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::post('/ingredient-categories/bulk', [IngredientCategoryController::class, 'bulkStore']);
     Route::put('/ingredient-categories/bulk', [IngredientCategoryController::class, 'bulkUpdate']);
     Route::delete('/ingredient-categories/bulk', [IngredientCategoryController::class, 'bulkDestroy']);
+    Route::get('/ingredient-units', [IngredientUnitController::class, 'index']);
 
     // invitations
     Route::post('invitations', [InvitationController::class, 'store']);
@@ -45,18 +58,10 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
     // users
     Route::get('/users', [UserController::class, 'index']);
-    Route::get('/user',  function (Request $request) {
-        $user = $request->user();
-        return [
-            'name' => $user->name,
-            'email' => $user->email,
-            'email_verified_at' => $user->email_verified_at,
-            'avatar_seed' => $user->avatar_seed,
-        ];
-    });
 
     // shopping
-    Route::apiResource('/shopping-items', ShoppingItemController::class)->only(['index', 'store']);
+    Route::apiResource('/shopping-items', ShoppingItemController::class)->only(['index']);
+    Route::post('/shopping-items/bulk', [ShoppingItemController::class, 'bulkStore']);
     Route::put('/shopping-items/bulk', [ShoppingItemController::class, 'bulkUpdate']);
     Route::delete('/shopping-items/bulk', [ShoppingItemController::class, 'bulkDestroy']);
     Route::apiResource('/shopping-categories', ShoppingCategoryController::class)->only(['index']);

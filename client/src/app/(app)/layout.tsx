@@ -1,10 +1,15 @@
-import { FooterNavigation, SideNavigation } from '@/components/common';
-import { IGetUserResponse, IGetMasterResponse } from '@/types/api';
-import { apiClient } from '@/lib/apiClient';
-import { DataHandler, RedirectHandler } from '@/components/handlers';
 import { cookies } from 'next/headers';
+
+import {
+    DataHandler,
+    FooterNavigation,
+    RedirectHandler,
+    SideNavigation,
+    VerifiedHandler,
+} from '@/components';
+import { fetchData } from '@/lib/apiClient';
+import { IGetMasterResponse, IGetUserResponse } from '@/types';
 import { handleAuthRedirect } from '@/utils';
-import { defaultMasterData } from '@/models/master';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,34 +18,43 @@ interface Props {
 }
 
 const AppLayout = async ({ children }: Props) => {
-    let user: IGetUserResponse;
-    let masterData: IGetMasterResponse = { data: defaultMasterData };
+    let user: IGetUserResponse | null = null;
+    let masterData: IGetMasterResponse | null = null;
 
-    try {
-        user = await apiClient('/user');
-        handleAuthRedirect(user, false);
+    // まずuserを取得して認証チェック
+    const { data: userData, errorMessage: userError } =
+        await fetchData<IGetUserResponse>('/user');
 
-        masterData = await apiClient('/master');
-    } catch (error) {
-        console.error('Failed to fetch data:', error);
+    if (userError || !userData?.success) {
         handleAuthRedirect(null, false);
+    } else {
+        user = userData;
+        handleAuthRedirect(user.data, false);
+
+        // 認証が成功した場合のみmasterDataを取得
+        const { data: masterDataResult } =
+            await fetchData<IGetMasterResponse>('/master');
+        if (masterDataResult) {
+            masterData = masterDataResult;
+        }
     }
 
     // RSCでクッキーを取得する正しい方法
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const redirectPath = cookieStore.get('redirectPath')?.value;
 
     return (
         <div className="min-h-screen h-full flex flex-col">
-            {redirectPath && <RedirectHandler redirectPath={redirectPath} />}
-            <DataHandler user={user!} masterData={masterData} />
-            <div className="flex h-full mb-20 md:mb-0">
-                <SideNavigation user={user!} className="z-10 hidden md:block" />
-                <div className="flex-1 min-h-screen h-full bg-primary-background md:ml-[160px]">
+            <div className="flex h-[calc(100vh-80px)] md:h-full mb-20 md:mb-0">
+                <SideNavigation className="z-10 hidden md:block" />
+                <div className="flex-1 h-[calc(100vh-80px)] md:h-screen bg-primary-background md:w-[calc(100vw-160px)] md:ml-[160px] overflow-y-auto">
                     {children}
                 </div>
             </div>
             <FooterNavigation className="md:hidden" />
+            {redirectPath && <RedirectHandler redirectPath={redirectPath} />}
+            <VerifiedHandler />
+            <DataHandler user={user!.data} masterData={masterData?.data ?? null} />
         </div>
     );
 };

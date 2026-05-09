@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignUuid('color_id')->constrained('colors', 'id')->cascadeOnDelete();
             $table->string('name');
             $table->integer('order');
+            $table->boolean('is_default')->default(false);
             $table->timestamps();
         });
     }

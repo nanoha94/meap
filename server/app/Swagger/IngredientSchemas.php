@@ -4,7 +4,7 @@ namespace App\Swagger;
 
 /**
  * @OA\Schema(
- *     schema="Ingredient",
+ *     schema="IngredientItem",
  *     required={"id", "name"},
  *     @OA\Property(property="id", type="string", description="ID", example="1"),
  *     @OA\Property(property="name", type="string", description="食材名", example="牛肉"),

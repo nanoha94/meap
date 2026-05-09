@@ -33,7 +33,6 @@ trait ApiResponse
             'message' => $message,
             'data' => $data,
         ];
-
         if ($warning) {
             $response['warning'] = $warning;
         }
@@ -71,15 +70,26 @@ trait ApiResponse
 
     /**
      * データ一覧取得レスポンスを返す
+     *
+     * @param  mixed  $data
+     * @param  int  $total
+     * @param  string  $message
+     * @param  int|null  $limit  ページネーション用。指定時のみレスポンスに含める
+     * @param  int|null  $offset ページネーション用。指定時のみレスポンスに含める
      */
-    protected function indexResponse(mixed $data, ?int $total = null, string $message = ''): JsonResponse
+    protected function indexResponse(mixed $data, int $total, string $message = '', ?int $limit = null, ?int $offset = null): JsonResponse
     {
         $response = [
             'data' => $data,
+            'total' => $total,
         ];
 
-        if ($total !== null) {
-            $response['total'] = $total;
+        if ($limit !== null) {
+            $response['limit'] = $limit;
+        }
+
+        if ($offset !== null) {
+            $response['offset'] = $offset;
         }
 
         return response()->json([

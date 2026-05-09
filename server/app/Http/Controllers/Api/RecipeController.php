@@ -32,11 +32,19 @@ class RecipeController extends ApiController
      *     summary="料理一覧を取得",
      *     tags={"Recipes"},
      *     security={{"sanctum":{}}},
-     *     @OA\Parameter(ref="#/components/parameters/RecipePageParam"),
-     *     @OA\Parameter(ref="#/components/parameters/RecipePerPageParam"),
+     *     @OA\Parameter(ref="#/components/parameters/RecipeLimitParam"),
+     *     @OA\Parameter(ref="#/components/parameters/RecipeOffsetParam"),
+     *     @OA\Parameter(ref="#/components/parameters/RecipeSortParam"),
+     *     @OA\Parameter(ref="#/components/parameters/RecipeOrderParam"),
+     *     @OA\Parameter(ref="#/components/parameters/RecipeRecipeNameParam"),
+     *     @OA\Parameter(ref="#/components/parameters/RecipeIngredientNameParam"),
+     *     @OA\Parameter(ref="#/components/parameters/RecipeCategoryIdsParam"),
+     *     @OA\Parameter(ref="#/components/parameters/RecipeLastPlannedDateFromParam"),
+     *     @OA\Parameter(ref="#/components/parameters/RecipeLastPlannedDateToParam"),
      *     @OA\Response(response=200, ref="#/components/responses/RecipeIndexSuccess"),
      *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
-     *     @OA\Response(response=404, ref="#/components/responses/NotFound")
+     *     @OA\Response(response=404, ref="#/components/responses/NotFound"),
+     *     @OA\Response(response=422, ref="#/components/responses/ValidationErrors")
      * )
      */
     public function index(RecipeIndexRequest $request): JsonResponse
@@ -50,14 +58,23 @@ class RecipeController extends ApiController
                 $group = $user->groups()->first();
 
                 // ページネーションのパラメータを取得（デフォルト値も設定）
-                $perPage = $request->input('per_page', 15);
-                $page = $request->input('page', 1);
+                $limit = $request->input('limit', 15);
+                $offset = $request->input('offset', 0);
+                // 並び替えパラメータ
+                $sort = $request->input('sort', 'created_at');
+                $order = $request->input('order', 'desc');
 
-                // TODO: 将来的に無限スクロール対応を検討（現在は全件取得）
-                $res = $this->recipeService->index($group);
-                $total = count($res);
-                $message = __('api.list_retrieved', ['attribute' => __('api.attributes.recipe'), 'count' => $total]);
-                return $this->indexResponse($res, $total, $message);
+                $filters = $request->only([
+                    'recipe_name',
+                    'ingredient_name',
+                    'category_ids',
+                    'last_planned_date_from',
+                    'last_planned_date_to',
+                ]);
+
+                $result = $this->recipeService->index($group, $limit, $offset, $sort, $order, $filters);
+                $message = __('api.list_retrieved', ['attribute' => __('api.attributes.recipe'), 'count' => $result['total']]);
+                return $this->indexResponse($result['data'], $result['total'], $message, $limit, $offset);
             },
             $request,
             $failedMessage,
@@ -84,9 +101,9 @@ class RecipeController extends ApiController
 
         return $this->executeWithExceptionHandling(
             function () use ($request) {
-                $res = $this->recipeService->create($request->validated(), $this->getUserGroup($request));
+                $this->recipeService->create($request->validated(), $this->getUserGroup($request));
                 $message = __('api.created', ['attribute' => __('api.attributes.recipe'), 'name' => $request->name]);
-                return $this->createdResponse($res, $message);
+                return $this->createdResponse(null, $message);
             },
             $request,
             $failedMessage,
@@ -143,13 +160,13 @@ class RecipeController extends ApiController
 
         return $this->executeWithExceptionHandling(
             function () use ($request, $id) {
-                $res = $this->recipeService->update(
+                $this->recipeService->update(
                     $id,
                     $request->validated(),
                     $this->getUserGroup($request)
                 );
-                $message = __('api.updated', ['attribute' => __('api.attributes.recipe'), 'name' => $res['name']]);
-                return $this->updatedResponse($res, $message);
+                $message = __('api.updated', ['attribute' => __('api.attributes.recipe'), 'name' => $request->name]);
+                return $this->updatedResponse(null, $message);
             },
             $request,
             $failedMessage,

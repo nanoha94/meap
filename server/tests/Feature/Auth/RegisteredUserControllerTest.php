@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use App\Models\Group;
 use App\Models\Color;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
@@ -100,12 +101,6 @@ test('2-5-3: デフォルトデータの自動作成確認', function () {
         'is_default' => true,
     ]);
 
-    // デフォルトの料理分類が作成されていることを確認
-    $this->assertDatabaseHas('menu_categories', [
-        'group_id' => $groupId,
-        'name' => '主食',
-    ]);
-
     // デフォルトの献立カテゴリが作成されていることを確認
     $this->assertDatabaseHas('meal_categories', [
         'group_id' => $groupId,
@@ -192,7 +187,7 @@ test('2-5-7: 名前未入力', function () {
     $response->assertStatus(422);
     $response->assertJsonValidationErrors('name');
     $responseData = $response->json();
-    $this->assertContains('nameは必ず指定してください。', $responseData['errors']['name']);
+    $this->assertContains('名前は必ず指定してください。', $responseData['errors']['name']);
     $this->assertGuest();
 });
 
@@ -206,7 +201,7 @@ test('2-5-8: メールアドレス未入力', function () {
     $response->assertStatus(422);
     $response->assertJsonValidationErrors('email');
     $responseData = $response->json();
-    $this->assertContains('emailは必ず指定してください。', $responseData['errors']['email']);
+    $this->assertContains('メールアドレスは必ず指定してください。', $responseData['errors']['email']);
     $this->assertGuest();
 });
 
@@ -220,7 +215,7 @@ test('2-5-9: パスワード未入力', function () {
     $response->assertStatus(422);
     $response->assertJsonValidationErrors('password');
     $responseData = $response->json();
-    $this->assertContains('passwordは必ず指定してください。', $responseData['errors']['password']);
+    $this->assertContains('パスワードは必ず指定してください。', $responseData['errors']['password']);
     $this->assertGuest();
 });
 
@@ -234,7 +229,7 @@ test('2-5-10: パスワード確認未入力', function () {
     $response->assertStatus(422);
     $response->assertJsonValidationErrors('password');
     $responseData = $response->json();
-    $this->assertContains('passwordが一致しません。', $responseData['errors']['password']);
+    $this->assertContains('パスワードが一致しません。', $responseData['errors']['password']);
     $this->assertGuest();
 });
 
@@ -249,7 +244,7 @@ test('2-5-11: パスワード確認不一致', function () {
     $response->assertStatus(422);
     $response->assertJsonValidationErrors('password');
     $responseData = $response->json();
-    $this->assertContains('passwordが一致しません。', $responseData['errors']['password']);
+    $this->assertContains('パスワードが一致しません。', $responseData['errors']['password']);
     $this->assertGuest();
 });
 
@@ -264,7 +259,7 @@ test('2-5-12: 無効なメール形式', function () {
     $response->assertStatus(422);
     $response->assertJsonValidationErrors('email');
     $responseData = $response->json();
-    $this->assertContains('emailには、有効なメールアドレスを指定してください。', $responseData['errors']['email']);
+    $this->assertContains('メールアドレスには、有効なメールアドレスを指定してください。', $responseData['errors']['email']);
     $this->assertGuest();
 });
 
@@ -279,7 +274,7 @@ test('2-5-13: メールアドレスが大文字', function () {
     $response->assertStatus(422);
     $response->assertJsonValidationErrors('email');
     $responseData = $response->json();
-    $this->assertContains('emailは、小文字のみで指定してください。', $responseData['errors']['email']);
+    $this->assertContains('メールアドレスは、小文字のみで指定してください。', $responseData['errors']['email']);
     $this->assertGuest();
 });
 
@@ -296,7 +291,7 @@ test('2-5-14: 名前が255文字超過', function () {
     $response->assertStatus(422);
     $response->assertJsonValidationErrors('name');
     $responseData = $response->json();
-    $this->assertContains('nameは、255文字以内で指定してください。', $responseData['errors']['name']);
+    $this->assertContains('名前は、255文字以内で指定してください。', $responseData['errors']['name']);
     $this->assertGuest();
 });
 
@@ -313,7 +308,7 @@ test('2-5-15: メールアドレスが255文字超過', function () {
     $response->assertStatus(422);
     $response->assertJsonValidationErrors('email');
     $responseData = $response->json();
-    $this->assertContains('emailは、255文字以内で指定してください。', $responseData['errors']['email']);
+    $this->assertContains('メールアドレスは、255文字以内で指定してください。', $responseData['errors']['email']);
     $this->assertGuest();
 });
 
@@ -328,7 +323,7 @@ test('2-5-16: パスワードが短すぎる', function () {
     $response->assertStatus(422);
     $response->assertJsonValidationErrors('password');
     $responseData = $response->json();
-    $this->assertContains('passwordは、8文字以上で指定してください。', $responseData['errors']['password']);
+    $this->assertContains('パスワードは、8文字以上で指定してください。', $responseData['errors']['password']);
     $this->assertGuest();
 });
 
@@ -343,7 +338,7 @@ test('2-5-17: パスワードに英字が含まれない', function () {
     $response->assertStatus(422);
     $response->assertJsonValidationErrors('password');
     $responseData = $response->json();
-    $this->assertContains('passwordは、1文字以上の文字を含めてください。', $responseData['errors']['password']);
+    $this->assertContains('パスワードは、1文字以上の文字を含めてください。', $responseData['errors']['password']);
     $this->assertGuest();
 });
 
@@ -358,7 +353,7 @@ test('2-5-18: パスワードに数字が含まれない', function () {
     $response->assertStatus(422);
     $response->assertJsonValidationErrors('password');
     $responseData = $response->json();
-    $this->assertContains('passwordは、1文字以上の数字を含めてください。', $responseData['errors']['password']);
+    $this->assertContains('パスワードは、1文字以上の数字を含めてください。', $responseData['errors']['password']);
     $this->assertGuest();
 });
 
@@ -373,7 +368,7 @@ test('2-5-19: パスワードに記号が含まれない', function () {
     $response->assertStatus(422);
     $response->assertJsonValidationErrors('password');
     $responseData = $response->json();
-    $this->assertContains('passwordは、1文字以上の記号を含めてください。', $responseData['errors']['password']);
+    $this->assertContains('パスワードは、1文字以上の記号を含めてください。', $responseData['errors']['password']);
     $this->assertGuest();
 });
 
@@ -391,7 +386,7 @@ test('2-5-20: 重複メールアドレス', function () {
     $response->assertStatus(422);
     $response->assertJsonValidationErrors('email');
     $responseData = $response->json();
-    $this->assertContains('emailの値は既に存在しています。', $responseData['errors']['email']);
+    $this->assertContains('メールアドレスの値は既に存在しています。', $responseData['errors']['email']);
     $this->assertGuest();
 });
 
@@ -463,93 +458,10 @@ test('2-5-23: トランザクション処理中の例外', function () {
     $this->assertEquals(1, $userCount, '重複メールアドレスにより新しいユーザーは作成されない');
 });
 
-test('2-5-24: バリデーションエラー（パスワード不一致）', function () {
-    $response = $this->post('/register', [
-        'name' => 'Test User',
-        'email' => 'test@example.com',
-        'password' => 'Password1!',
-        'password_confirmation' => 'DifferentPassword!', // パスワード確認が一致しない
-    ]);
-
-    // バリデーションエラーが返されることを確認
-    $response->assertStatus(422);
-
-    // 認証されていないことを確認
-    $this->assertFalse(Auth::check());
-
-    // ユーザーが作成されていないことを確認
-    $user = User::where('email', 'test@example.com')->first();
-    $this->assertNull($user, 'バリデーションエラーによりユーザーは作成されない');
-});
-
-test('2-5-25: 無効な名前（空文字）', function () {
-    $response = $this->post('/register', [
-        'name' => '', // 空の名前（required制約違反）
-        'email' => 'test@example.com',
-        'password' => 'Password1!',
-        'password_confirmation' => 'Password1!',
-    ]);
-
-    // バリデーションエラーが返されることを確認
-    $response->assertStatus(422);
-
-    // 認証されていないことを確認
-    $this->assertFalse(Auth::check());
-
-    // ユーザーが作成されていないことを確認
-    $user = User::where('email', 'test@example.com')->first();
-    $this->assertNull($user, 'バリデーションエラーによりユーザーは作成されない');
-});
-
-test('2-5-26: 無効なメールアドレス形式', function () {
-    $response = $this->post('/register', [
-        'name' => 'Test User',
-        'email' => 'invalid-email-format', // 無効なメールアドレス形式
-        'password' => 'Password1!',
-        'password_confirmation' => 'Password1!',
-    ]);
-
-    // バリデーションエラーが返されることを確認
-    $response->assertStatus(422);
-
-    // 認証されていないことを確認
-    $this->assertFalse(Auth::check());
-
-    // ユーザーが作成されていないことを確認
-    $user = User::where('name', 'Test User')->first();
-    $this->assertNull($user, 'バリデーションエラーによりユーザーは作成されない');
-});
-
-test('2-5-27: 弱いパスワード', function () {
-    $response = $this->post('/register', [
-        'name' => 'Test User',
-        'email' => 'test@example.com',
-        'password' => '123', // 弱いパスワード（短すぎる）
-        'password_confirmation' => '123',
-    ]);
-
-    // バリデーションエラーが返されることを確認
-    $response->assertStatus(422);
-
-    // 認証されていないことを確認
-    $this->assertFalse(Auth::check());
-
-    // ユーザーが作成されていないことを確認
-    $user = User::where('email', 'test@example.com')->first();
-    $this->assertNull($user, 'バリデーションエラーによりユーザーは作成されない');
-});
-
-test('2-5-28: 既にログイン済みユーザーの登録試行', function () {
-    // 事前にユーザーを作成してログイン
-    $existingUser = User::create([
-        'name' => 'Existing User',
-        'email' => 'existing@example.com',
-        'password' => Hash::make('password'),
-        'avatar_seed' => User::generateUniqueCustomId(),
-    ]);
-
-    // ユーザーをログイン状態にする
-    $this->actingAs($existingUser);
+test('2-5-24: 【store】 グループ作成失敗', function () {
+    // 2-5-22 と同様: Group::createGroup() 内で呼ばれる DB::transaction() で例外を発生させる
+    DB::shouldReceive('transaction')
+        ->andThrow(new \Exception('Group creation failed'));
 
     $response = $this->post('/register', [
         'name' => 'Test User',
@@ -558,12 +470,85 @@ test('2-5-28: 既にログイン済みユーザーの登録試行', function () 
         'password_confirmation' => 'Password1!',
     ]);
 
-    // 409 Conflict（既にログイン済み）が返されることを確認
-    $response->assertStatus(409);
+    $response->assertStatus(500);
+    $this->assertGuest();
+    \Mockery::close();
+});
 
-    // 新しいユーザーが作成されていないことを確認
-    $user = User::where('email', 'test@example.com')->first();
-    $this->assertNull($user, '既にログイン済みのため新しいユーザーは作成されない');
+test('2-5-25: 【store】 GroupUserMapping 作成失敗', function () {
+    // InvitationControllerTest 3-3-29 と同様: commit 時に例外で「マッピング永続化失敗」を再現
+    DB::shouldReceive('commit')->andThrow(new \Exception('Attach failed'));
+
+    $response = $this->post('/register', [
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+        'password' => 'Password1!',
+        'password_confirmation' => 'Password1!',
+    ]);
+
+    $response->assertStatus(500);
+    $this->assertGuest();
+    \Mockery::close();
+});
+
+test('2-5-26: 【store】 アバターシード生成失敗', function () {
+    // generateUniqueCustomId() 内の User::where()->exists() が DB select を発行するため、
+    // 実接続を partial で select のみ例外にし「アバターシード生成失敗」を再現
+    $connection = \Mockery::mock($this->app['db']->connection())->makePartial();
+    $connection->shouldReceive('select')->andThrow(new \Exception('Avatar seed generation failed'));
+    DB::shouldReceive('connection')->andReturn($connection);
+
+    $response = $this->post('/register', [
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+        'password' => 'Password1!',
+        'password_confirmation' => 'Password1!',
+    ]);
+
+    $response->assertStatus(500);
+    $this->assertGuest();
+    \Mockery::close();
+});
+
+test('2-5-27: 【store】 メール認証イベント発火失敗', function () {
+    Event::listen(Registered::class, function () {
+        throw new \Exception('Event dispatch failed');
+    });
+
+    $response = $this->post('/register', [
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+        'password' => 'Password1!',
+        'password_confirmation' => 'Password1!',
+    ]);
+
+    $response->assertStatus(500);
+    $this->assertGuest();
+
+    // 後続テストへ影響しないようリスナーを解除
+    Event::forget(Registered::class);
+});
+
+test('2-5-28: 【store】 自動ログイン失敗', function () {
+    $guard = \Mockery::mock();
+    $guard->shouldReceive('check')->andReturn(false);
+    $guard->shouldReceive('user')->andReturn(null);
+
+    Auth::shouldReceive('login')
+        ->andThrow(new \Exception('Login failed'));
+    Auth::shouldReceive('userResolver')->andReturn(fn ($guard = null) => null);
+    Auth::shouldReceive('guard')->andReturn($guard);
+
+    $response = $this->post('/register', [
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+        'password' => 'Password1!',
+        'password_confirmation' => 'Password1!',
+    ]);
+
+    $response->assertStatus(500);
+    $this->assertGuest();
+    \Mockery::close();
 });
 
 test('2-5-29: レスポンス形式確認', function () {

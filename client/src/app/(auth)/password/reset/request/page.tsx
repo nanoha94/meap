@@ -1,11 +1,11 @@
 'use client';
-import { useAuth } from '@/hooks/api';
 import React from 'react';
-import { Button } from '@/components/common';
-import { SubmitHandler, useForm } from 'react-hook-form';
 import Link from 'next/link';
-import LoadingAnimation from '@/components/common/LoadingAnimation';
-import { VerticalRowField } from '@/components/react-hook-form';
+import { SubmitHandler, useForm } from 'react-hook-form';
+
+import { Button, ButtonLink, VerticalRowField } from '@/components';
+import { BUTTON_TYPE, BUTTON_VARIANT, COLOR_VARIANT } from '@/constants';
+import { useAuth } from '@/hooks';
 
 interface FormInputs {
     email: string;
@@ -14,7 +14,7 @@ interface FormInputs {
 type visibleErrorFields = 'email';
 
 const Page = () => {
-    const { isLoading, passwordResetRequest } = useAuth();
+    const { passwordResetRequest } = useAuth();
 
     const {
         handleSubmit,
@@ -36,6 +36,10 @@ const Page = () => {
         Record<visibleErrorFields, boolean>
     >({ email: false });
 
+    /**
+     * パスワード再設定リクエストフォームの送信
+     * @param data フォームの入力値
+     */
     const onSubmit: SubmitHandler<FormInputs> = (data: FormInputs) => {
         passwordResetRequest({
             email: data.email,
@@ -46,7 +50,6 @@ const Page = () => {
 
     return (
         <>
-            {isLoading && <LoadingAnimation />}
             <div className="flex flex-col gap-y-10">
                 <div className="relative w-full text-center">
                     <span className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-px bg-gray-main" />
@@ -60,6 +63,7 @@ const Page = () => {
                     ご登録のメールアドレスを入力してください。
                 </p>
                 <form
+                    noValidate
                     onSubmit={handleSubmit(onSubmit)}
                     className="flex flex-col gap-y-10">
                     {/* Email Address */}
@@ -70,9 +74,9 @@ const Page = () => {
                         errorMessage={
                             isErrorVisible.email
                                 ? ([
-                                      errors.email?.message,
-                                      ...(apiErrors?.email || []),
-                                  ].filter(Boolean) as string[])
+                                    errors.email?.message,
+                                    ...(apiErrors?.email || []),
+                                ].filter(Boolean) as string[])
                                 : []
                         }
                         rules={{
@@ -83,8 +87,9 @@ const Page = () => {
                                     'メールアドレスの形式で入力してください',
                             },
                         }}>
-                        {({ value, onChange }) => (
+                        {({ value, onChange, id }) => (
                             <input
+                                id={id}
                                 type="email"
                                 value={value as string}
                                 onChange={e => {
@@ -96,14 +101,14 @@ const Page = () => {
                                     setApiErrors({ email: [] });
                                 }}
                                 autoFocus
-                                className={`py-2 px-4 border rounded-lg ${isErrorVisible.email && (!!errors.email?.message || (!!apiErrors.email && apiErrors.email?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
+                                className={`py-2 px-4 border rounded-lg ${isErrorVisible.email && (!!errors.email?.message || (!!apiErrors.email && apiErrors.email?.length > 0)) ? 'border-alert-main border-2' : 'border-gray-main'}`}
                             />
                         )}
                     </VerticalRowField>
 
                     <div className="flex flex-col gap-y-4">
                         <Button
-                            type="submit"
+                            type={BUTTON_TYPE.SUBMIT}
                             onClick={() => setIsErrorVisible({ email: true })}>
                             送信
                         </Button>
@@ -132,10 +137,14 @@ const Page = () => {
                         他の方法でログイン
                     </h1>
                 </div>
-                {/* TODO: リンク？ */}
-                <Button type="button" variant="outlined" colorVariant="gray">
+                <ButtonLink
+                    href={`${(process.env.NEXT_PUBLIC_BACKEND_URL || 'https://localhost:8000').replace(/\/$/, '')}/auth/google/redirect`}
+                    variant={BUTTON_VARIANT.OUTLINED}
+                    colorVariant={COLOR_VARIANT.GRAY}
+                    isExternal={true}
+                >
                     Googleアカウントでログイン
-                </Button>
+                </ButtonLink>
             </div>
         </>
     );

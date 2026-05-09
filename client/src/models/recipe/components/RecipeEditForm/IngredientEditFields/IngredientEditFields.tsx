@@ -1,29 +1,41 @@
 'use client';
 import React from 'react';
-import { TextButton } from '@/components/common';
-import { Control, useFieldArray, useFormContext } from 'react-hook-form';
-import { ChevronRight } from 'lucide-react';
-import { DIALOG_NAME, TMP_ID_PREFIX } from '@/constants';
-import { useIngredientStore } from '@/models/ingredient/hooks';
-import { closestCenter, DndContext, DragOverlay } from '@dnd-kit/core';
-import IngredientItemList from './IngredientItemList';
-import { defaultIngredientItem } from '@/models/ingredient/constants';
-import { createDefaultData } from '@/utils';
-import { IIngredientItem } from '@/types/api';
-import IngredientEditDialogButton from './IngredientEditDialogButton';
 import { arrayMove } from '@dnd-kit/sortable';
-import { getItemsInCategory } from '@/utils';
-import { useItemAndCategoryDnd } from '@/hooks/useItemAndCategoryDnd';
+import { closestCenter, DndContext, DragOverlay } from '@dnd-kit/core';
+import { ChevronRight } from 'lucide-react';
+import { Control, useFieldArray, useFormContext } from 'react-hook-form';
+
+import {
+    DialogField,
+    GrippableHorizontalItem,
+    IngredientCategoryEditForm,
+    TextButton,
+} from '@/components';
+import { COLOR_VARIANT, TMP_ID_PREFIX } from '@/constants';
+import { useDialog, useItemAndCategoryDnd } from '@/hooks';
+import { defaultIngredientItem, useIngredientStore, formatIngredient } from '@/models/ingredient';
 import { RecipeEditFormData } from '@/models/recipe/types';
+import { IIngredientItem } from '@/types';
+import { createDefaultData, getItemsInCategory } from '@/utils';
+import IngredientItemList from './IngredientItemList';
 
 interface Props {
     control: Control<RecipeEditFormData>;
+    errors: Record<string, string> | null;
 }
 
-const IngredientEditFields = ({ control }: Props) => {
+const IngredientEditFields = ({ control, errors }: Props) => {
+    // constant value
     const prefix = TMP_ID_PREFIX.INGREDIENT_ITEM;
-    const { categories, openDialog } = useIngredientStore();
-    const [tmpItems, setTmpItems] = React.useState<IIngredientItem[]>([]);
+
+    // store
+    const categories = useIngredientStore(state => state.categories);
+
+    // hook
+    const { openDialog } = useDialog();
+    /** ドラッグ中のみ setTmpItems で上書き。null のときは watch と同一（effect で watch に追従させない） */
+    const [tmpItemsDrag, setTmpItems] =
+        React.useState<IIngredientItem[] | null>(null);
     const dndContextId = React.useId();
     const { getValues, watch } = useFormContext<RecipeEditFormData>();
     const { replace, update, remove } = useFieldArray<
@@ -33,76 +45,8 @@ const IngredientEditFields = ({ control }: Props) => {
         control,
         name: 'ingredients',
     });
-    const watchFields = watch('ingredients');
-
-    /**
-     * ドラッグオーバー
-     */
-    const customHandleDragOver = React.useCallback(
-        (
-            activeId: string,
-            activeItem: IIngredientItem,
-            overCategoryId: string,
-        ) => {
-            // 別カテゴリーへの移動の場合
-            if (activeItem.categoryId !== overCategoryId) {
-                // 移動元のカテゴリーに属するアイテムを取得
-                const itemsInCategory = getItemsInCategory(
-                    tmpItems,
-                    activeItem.categoryId,
-                );
-
-                // 移動元のカテゴリーにアイテムがなくなった場合、空の食材を追加
-                const updatedItems =
-                    itemsInCategory.length <= 1
-                        ? createItemsWithEmpty(activeItem.categoryId, tmpItems)
-                        : tmpItems;
-
-                // tmpItemsを更新
-                setTmpItems(
-                    updatedItems.map(v =>
-                        v.id === activeId
-                            ? {
-                                  ...activeItem,
-                                  categoryId: overCategoryId,
-                              }
-                            : v,
-                    ),
-                );
-            }
-        },
-        [tmpItems, categories],
-    );
-
-    /**
-     * ドラッグ終了
-     */
-    const customHandleDragEnd = React.useCallback(
-        (activeIndex: number | undefined, overIndex: number | undefined) => {
-            // 並び替えたtmpItemsを更新
-            const array =
-                activeIndex !== undefined && overIndex !== undefined
-                    ? arrayMove(tmpItems, activeIndex, overIndex)
-                    : tmpItems;
-            replace(array);
-        },
-        [tmpItems],
-    );
-
-    const {
-        activeId,
-        sensors,
-        activeItem,
-        activeCategory,
-        handleDragStart,
-        handleDragOver,
-        handleDragEnd,
-    } = useItemAndCategoryDnd({
-        currentItems: tmpItems,
-        categories,
-        onDragOver: customHandleDragOver,
-        onDragEnd: customHandleDragEnd,
-    });
+    const watchFields = watch('ingredients') ?? [];
+    const tmpItems = tmpItemsDrag ?? watchFields;
 
     /**
      * 空の材料を含むアイテムリストを生成
@@ -130,8 +74,77 @@ const IngredientEditFields = ({ control }: Props) => {
                 .flat();
             return newItems;
         },
-        [categories, tmpItems],
+        [categories, tmpItems, prefix],
     );
+
+    /**
+     * ドラッグオーバー
+     */
+    const customHandleDragOver = React.useCallback(
+        (
+            activeId: string,
+            activeItem: IIngredientItem,
+            overCategoryId: string,
+        ) => {
+            // 別カテゴリーへの移動の場合
+            if (activeItem.categoryId !== overCategoryId) {
+                // 移動元のカテゴリーに属するアイテムを取得
+                const itemsInCategory = getItemsInCategory(
+                    tmpItems,
+                    activeItem.categoryId,
+                );
+
+                // 移動元のカテゴリーにアイテムがなくなった場合、空の食材を追加
+                const updatedItems =
+                    itemsInCategory.length <= 1
+                        ? createItemsWithEmpty(activeItem.categoryId, tmpItems)
+                        : tmpItems;
+
+                // ドラッグ中の表示用リストを更新
+                setTmpItems(
+                    updatedItems.map(v =>
+                        v.id === activeId
+                            ? {
+                                ...activeItem,
+                                categoryId: overCategoryId,
+                            }
+                            : v,
+                    ),
+                );
+            }
+        },
+        [tmpItems, createItemsWithEmpty],
+    );
+
+    /**
+     * ドラッグ終了
+     */
+    const customHandleDragEnd = React.useCallback(
+        (activeIndex: number | undefined, overIndex: number | undefined) => {
+            // 並び替えたtmpItemsを更新
+            const array =
+                activeIndex !== undefined && overIndex !== undefined
+                    ? arrayMove(tmpItems, activeIndex, overIndex)
+                    : tmpItems;
+            replace(array);
+            setTmpItems(null);
+        },
+        [tmpItems, replace],
+    );
+
+    const {
+        sensors,
+        activeItem,
+        activeCategory,
+        handleDragStart,
+        handleDragOver,
+        handleDragEnd,
+    } = useItemAndCategoryDnd({
+        currentItems: tmpItems,
+        categories,
+        onDragOver: customHandleDragOver,
+        onDragEnd: customHandleDragEnd,
+    });
 
     /**
      * 空の食材を追加
@@ -142,7 +155,7 @@ const IngredientEditFields = ({ control }: Props) => {
             replace(items);
             return items;
         },
-        [tmpItems],
+        [createItemsWithEmpty, replace, tmpItems],
     );
 
     /**
@@ -152,7 +165,7 @@ const IngredientEditFields = ({ control }: Props) => {
         (index: number, item: IIngredientItem) => {
             update(index, item);
         },
-        [tmpItems],
+        [update],
     );
 
     /**
@@ -173,11 +186,11 @@ const IngredientEditFields = ({ control }: Props) => {
                 remove(index);
             }
         },
-        [tmpItems],
+        [tmpItems, remove, update],
     );
 
     /**
-     * tmpItemsをfieldsの内容で更新
+     * カテゴリ構成に合わせて空行を補い、フォーム値を replace（tmpItems は watch から導出）
      */
     React.useEffect(() => {
         const ingredients = getValues('ingredients');
@@ -207,19 +220,8 @@ const IngredientEditFields = ({ control }: Props) => {
                 })
                 .flat();
             replace(filledItems);
-            setTmpItems(filledItems);
         }
-    }, [categories]);
-
-    /**
-     * ドラッグ中でない場合、tmpItemsをfieldsの内容で更新
-     * @returns void
-     */
-    React.useEffect(() => {
-        if (!activeId) {
-            setTmpItems(watchFields);
-        }
-    }, [watchFields, activeId]);
+    }, [categories, getValues, prefix, replace]);
 
     return (
         <div className="flex flex-col gap-y-5">
@@ -244,10 +246,8 @@ const IngredientEditFields = ({ control }: Props) => {
                             return (
                                 <IngredientItemList
                                     key={`${category.id}-${itemsKey}`}
-                                    control={control}
                                     category={category}
                                     items={items}
-                                    offsetIndex={offsetIndex}
                                     addEmptyItem={() =>
                                         addEmptyItem(category.id)
                                     }
@@ -258,29 +258,40 @@ const IngredientEditFields = ({ control }: Props) => {
                                         index: number,
                                         item: IIngredientItem,
                                     ) => updateItem(offsetIndex + index, item)}
+                                    errors={localIndex =>
+                                        errors?.[
+                                        `ingredients.${offsetIndex + localIndex}.name`
+                                        ] ?? ''
+                                    }
                                 />
                             );
                         })}
                         <DragOverlay>
                             {activeItem && (
-                                <IngredientEditDialogButton
-                                    item={activeItem}
-                                    isDisabled={true}
-                                    placeholder={`${activeCategory?.name}を設定`}
-                                    onDelete={() => {}}
-                                />
+                                <GrippableHorizontalItem
+                                    hasDeleteButton={true}
+                                    isDisabledDeleteButton={true}
+                                    onDelete={() => { }}>
+                                    <DialogField
+                                        value={formatIngredient(activeItem)}
+                                        placeholder={`${activeCategory?.name}を設定`}
+                                        hasError={false}
+                                        onOpenDialog={() => { }}
+                                    />
+                                </GrippableHorizontalItem>
                             )}
                         </DragOverlay>
                     </DndContext>
                 )}
             </div>
             <TextButton
-                colorVariant="secondary"
-                onClick={() =>
-                    openDialog(DIALOG_NAME.INGREDIENT_CATEGORY_SETTING, {
-                        onAction: () => {},
-                    })
-                }>
+                colorVariant={COLOR_VARIANT.SECONDARY}
+                onClick={() => {
+                    openDialog({
+                        title: '材料カテゴリーを設定',
+                        children: <IngredientCategoryEditForm />,
+                    });
+                }}>
                 材料カテゴリーの追加・編集
                 <ChevronRight size={20} />
             </TextButton>

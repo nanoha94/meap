@@ -4,10 +4,11 @@ namespace App\Http\Requests\Api;
 
 use App\Http\Requests\Api\BaseApiRequest;
 use App\Models\IngredientUnit;
+use App\Models\Recipe;
+use Illuminate\Support\Str;
 
 class RecipeUpdateRequest extends BaseApiRequest
 {
-
     /**
      * Get the validation rules that apply to the request.
      *
@@ -34,6 +35,9 @@ class RecipeUpdateRequest extends BaseApiRequest
             'steps.*.imageId' => 'uuid|nullable',
             'steps.*.order' => 'integer|min:0|required',
             'memo' => 'string|max:255|nullable',
+            'servingCount' => 'integer|min:1|nullable',
+            'cookingTime' => 'integer|min:0|nullable',
+            'ownerUserId' => 'uuid|required',
         ];
     }
 
@@ -77,6 +81,12 @@ class RecipeUpdateRequest extends BaseApiRequest
             'steps.*.order.required' => __('validation.required', ['attribute' => 'steps.*.order']),
             'memo.string' => __('validation.string', ['attribute' => 'memo']),
             'memo.max' => __('validation.max.string', ['attribute' => 'memo', 'max' => 255]),
+            'servingCount.integer' => __('validation.integer', ['attribute' => 'servingCount']),
+            'servingCount.min' => __('validation.min.numeric', ['attribute' => 'servingCount', 'min' => 1]),
+            'cookingTime.integer' => __('validation.integer', ['attribute' => 'cookingTime']),
+            'cookingTime.min' => __('validation.min.numeric', ['attribute' => 'cookingTime', 'min' => 0]),
+            'ownerUserId.uuid' => __('validation.uuid', ['attribute' => 'ownerUserId']),
+            'ownerUserId.required' => __('validation.required', ['attribute' => 'ownerUserId']),
         ];
     }
 
@@ -97,7 +107,7 @@ class RecipeUpdateRequest extends BaseApiRequest
             }
 
             foreach ($ingredients as $index => $ingredient) {
-                if (!empty($ingredient['unitId'])) {
+                if (!empty($ingredient['unitId']) && Str::isUuid($ingredient['unitId'])) {
                     $unit = IngredientUnit::find($ingredient['unitId']);
 
                     if ($unit && $unit->requires_quantity && empty($ingredient['quantity'])) {
@@ -109,6 +119,18 @@ class RecipeUpdateRequest extends BaseApiRequest
                         );
                     }
                 }
+            }
+
+            $seen = [];
+            foreach ($ingredients as $index => $ingredient) {
+                $key = ($ingredient['name'] ?? '') . '|' . ($ingredient['unitId'] ?? '');
+                if (in_array($key, $seen, true)) {
+                    $validator->errors()->add(
+                        "ingredients.{$index}.name",
+                        __('validation.duplicate_ingredient')
+                    );
+                }
+                $seen[] = $key;
             }
         });
     }

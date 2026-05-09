@@ -16,12 +16,48 @@ class MealPlanStoreRequest extends BaseApiRequest
     {
         return [
             'date' => 'date_format:Y-m-d|required',
-            'mealCategoryId' => 'uuid|required',
-            'menu' => 'array|min:1|required',
-            'menu.*.recipeIds' => 'array|min:1|required',
-            'menu.*.recipeIds.*' => 'uuid|required',
-            'menu.*.categoryId' => 'uuid|required',
+            'meals' => 'array|min:1|required',
+            'meals.*.id' => 'uuid|nullable',
+            'meals.*.categoryId' => 'uuid|required',
+            'meals.*.order' => 'integer|min:0|required',
+            'meals.*.recipes' => 'array|min:1|required',
+            'meals.*.recipes.*.id' => 'uuid|required',
+            'meals.*.recipes.*.order' => 'integer|min:0|required',
         ];
+    }
+
+    /**
+     * Configure the validator (distinct per meal: 同一 meal 内の recipes.*.id の重複チェック).
+     */
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            $meals = $this->input('meals', []);
+            if (! is_array($meals)) {
+                return;
+            }
+            foreach ($meals as $mealIndex => $meal) {
+                $recipes = $meal['recipes'] ?? [];
+                if (! is_array($recipes)) {
+                    continue;
+                }
+                $seen = [];
+                foreach ($recipes as $idx => $item) {
+                    $id = is_array($item) ? ($item['id'] ?? null) : null;
+                    if ($id === null) {
+                        continue;
+                    }
+                    if (isset($seen[$id])) {
+                        $validator->errors()->add(
+                            "meals.{$mealIndex}.recipes.{$idx}.id",
+                            __('validation.distinct', ['attribute' => 'meals.*.recipes.*.id'])
+                        );
+                    } else {
+                        $seen[$id] = $idx;
+                    }
+                }
+            }
+        });
     }
 
     /**
@@ -34,18 +70,24 @@ class MealPlanStoreRequest extends BaseApiRequest
         return [
             'date.date_format' => __('validation.date_format', ['attribute' => 'date', 'format' => 'Y-m-d']),
             'date.required' => __('validation.required', ['attribute' => 'date']),
-            'mealCategoryId.uuid' => __('validation.uuid', ['attribute' => 'mealCategoryId']),
-            'mealCategoryId.required' => __('validation.required', ['attribute' => 'mealCategoryId']),
-            'menu.array' => __('validation.array', ['attribute' => 'menu']),
-            'menu.min' => __('validation.min.array', ['attribute' => 'menu', 'min' => 1]),
-            'menu.required' => __('validation.required', ['attribute' => 'menu']),
-            'menu.*.recipeIds.array' => __('validation.array', ['attribute' => 'menu.*.recipeIds']),
-            'menu.*.recipeIds.min' => __('validation.min.array', ['attribute' => 'menu.*.recipeIds', 'min' => 1]),
-            'menu.*.recipeIds.required' => __('validation.required', ['attribute' => 'menu.*.recipeIds']),
-            'menu.*.recipeIds.*.uuid' => __('validation.uuid', ['attribute' => 'menu.*.recipeIds.*']),
-            'menu.*.recipeIds.*.required' => __('validation.required', ['attribute' => 'menu.*.recipeIds.*']),
-            'menu.*.categoryId.uuid' => __('validation.uuid', ['attribute' => 'menu.*.categoryId']),
-            'menu.*.categoryId.required' => __('validation.required', ['attribute' => 'menu.*.categoryId']),
+            'meals.array' => __('validation.array', ['attribute' => 'meals']),
+            'meals.min' => __('validation.min.array', ['attribute' => 'meals', 'min' => 1]),
+            'meals.required' => __('validation.required', ['attribute' => 'meals']),
+            'meals.*.id.uuid' => __('validation.uuid', ['attribute' => 'meals.*.id']),
+            'meals.*.categoryId.uuid' => __('validation.uuid', ['attribute' => 'meals.*.categoryId']),
+            'meals.*.categoryId.required' => __('validation.required', ['attribute' => 'meals.*.categoryId']),
+            'meals.*.order.integer' => __('validation.integer', ['attribute' => 'meals.*.order']),
+            'meals.*.order.min' => __('validation.min.numeric', ['attribute' => 'meals.*.order', 'min' => 0]),
+            'meals.*.order.required' => __('validation.required', ['attribute' => 'meals.*.order']),
+            'meals.*.recipes.array' => __('validation.array', ['attribute' => 'meals.*.recipes']),
+            'meals.*.recipes.min' => __('validation.min.array', ['attribute' => 'meals.*.recipes', 'min' => 1]),
+            'meals.*.recipes.required' => __('validation.required', ['attribute' => 'meals.*.recipes']),
+            'meals.*.recipes.*.id.uuid' => __('validation.uuid', ['attribute' => 'meals.*.recipes.*.id']),
+            'meals.*.recipes.*.id.required' => __('validation.required', ['attribute' => 'meals.*.recipes.*.id']),
+            'meals.*.recipes.*.order.integer' => __('validation.integer', ['attribute' => 'meals.*.recipes.*.order']),
+            'meals.*.recipes.*.order.min' => __('validation.min.numeric', ['attribute' => 'meals.*.recipes.*.order', 'min' => 0]),
+            'meals.*.recipes.*.order.required' => __('validation.required', ['attribute' => 'meals.*.recipes.*.order']),
+            'meals.*.recipes.*.id.distinct' => __('validation.distinct', ['attribute' => 'meals.*.recipes.*.id']),
         ];
     }
 

@@ -44,7 +44,7 @@ class InvitationJoinRequest extends BaseApiRequest
         $this->invitationToken = $foundToken;
 
         // 3. 自己招待チェック → 403 Forbidden
-        if ($this->invitationToken->inviter_id === $user->id) {
+        if ($this->invitationToken->inviter_user_id === $user->id) {
             throw new HttpException(
                 HttpStatusCode::FORBIDDEN->value,
                 __('api.invitation.self_invitation_error')
@@ -68,19 +68,31 @@ class InvitationJoinRequest extends BaseApiRequest
             if ($currentGroup->group_size > 1) {
                 throw new HttpException(
                     HttpStatusCode::CONFLICT->value,
-                    __('api.invitation.already_in_another_group')
+                    __('api.invitation.already_in_another_group'),
+                    null,
+                    ['X-Error-Type' => 'already_in_another_group']
                 );
             }
 
-            // データがあるかチェック
-            // TODO: 買い物データ以外もチェックする
+            // ユーザー作成データ（シードのデフォルトを除く）が残っていないかチェック
             if (
-                $currentGroup->shoppingItems()->exists() ||
-                $currentGroup->shoppingCategories()->where('is_default', 0)->exists()
+                $currentGroup->shoppingItems()->exists()
+                || $currentGroup->shoppingCategories()->where('is_default', false)->exists()
+                || $currentGroup->shoppingTags()->exists()
+                || $currentGroup->mealPlans()->exists()
+                || $currentGroup->mealCategories()->where('is_default', false)->exists()
+                || $currentGroup->recipes()->exists()
+                || $currentGroup->recipeCategories()->exists()
+                || $currentGroup->ingredients()->exists()
+                || $currentGroup->ingredientCategories()->where('is_default', false)->exists()
+                || $currentGroup->ingredientUnits()->where('is_default', false)->exists()
+                || $currentGroup->images()->exists()
             ) {
                 throw new HttpException(
                     HttpStatusCode::CONFLICT->value,
-                    __('api.invitation.has_existing_data')
+                    __('api.invitation.has_existing_data'),
+                    null,
+                    ['X-Error-Type' => 'has_existing_data']
                 );
             }
         }

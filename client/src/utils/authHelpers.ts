@@ -1,5 +1,6 @@
-import { IGetUserResponse } from '@/types/api';
 import { redirect } from 'next/navigation';
+
+import { ILoginUser } from '@/types';
 
 /**
  * 認証状態に基づいてリダイレクト
@@ -7,7 +8,7 @@ import { redirect } from 'next/navigation';
  * @param isAuthPage 認証ページかどうか
  */
 export function handleAuthRedirect(
-    user: IGetUserResponse | null,
+    user: ILoginUser | null,
     isAuthPage: boolean = false,
 ): void {
     if (user) {

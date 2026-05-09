@@ -45,24 +45,28 @@ class RegisterUserRequest extends BaseAuthRequest
      */
     public function messages(): array
     {
+        $name = __('validation.attributes.name');
+        $email = __('validation.attributes.email');
+        $password = __('validation.attributes.password');
+
         return [
-            'name.required' => __('validation.required', ['attribute' => 'name']),
-            'name.string' => __('validation.string', ['attribute' => 'name']),
-            'name.max' => __('validation.max', ['attribute' => 'name']),
-            'email.required' => __('validation.required', ['attribute' => 'email']),
-            'email.string' => __('validation.string', ['attribute' => 'email']),
-            'email.lowercase' => __('validation.lowercase', ['attribute' => 'email']),
-            'email.email' => __('validation.email', ['attribute' => 'email']),
-            'email.max' => __('validation.max', ['attribute' => 'email', 'string' => 255]),
-            'email.unique' => __('validation.unique', ['attribute' => 'email']),
-            'password.required' => __('validation.required', ['attribute' => 'password']),
-            'password.confirmed' => __('validation.password.confirmed', ['attribute' => 'password']),
-            'password.min' => __('validation.min', ['attribute' => 'password', 'string' => 8]),
-            'password.letters' => __('validation.password.letters', ['attribute' => 'password']),
-            'password.mixed' => __('validation.password.mixed', ['attribute' => 'password']),
-            'password.numbers' => __('validation.password.numbers', ['attribute' => 'password']),
-            'password.symbols' => __('validation.password.symbols', ['attribute' => 'password']),
-            'password.uncompromised' => __('validation.password.uncompromised', ['attribute' => 'password']),
+            'name.required' => __('validation.required', ['attribute' => $name]),
+            'name.string' => __('validation.string', ['attribute' => $name]),
+            'name.max' => __('validation.max', ['attribute' => $name]),
+            'email.required' => __('validation.required', ['attribute' => $email]),
+            'email.string' => __('validation.string', ['attribute' => $email]),
+            'email.lowercase' => __('validation.lowercase', ['attribute' => $email]),
+            'email.email' => __('validation.email', ['attribute' => $email]),
+            'email.max' => __('validation.max', ['attribute' => $email, 'string' => 255]),
+            'email.unique' => __('validation.unique', ['attribute' => $email]),
+            'password.required' => __('validation.required', ['attribute' => $password]),
+            'password.confirmed' => __('validation.password.confirmed', ['attribute' => $password]),
+            'password.min' => __('validation.min', ['attribute' => $password, 'string' => 8]),
+            'password.letters' => __('validation.password.letters', ['attribute' => $password]),
+            'password.mixed' => __('validation.password.mixed', ['attribute' => $password]),
+            'password.numbers' => __('validation.password.numbers', ['attribute' => $password]),
+            'password.symbols' => __('validation.password.symbols', ['attribute' => $password]),
+            'password.uncompromised' => __('validation.password.uncompromised', ['attribute' => $password]),
         ];
     }
 

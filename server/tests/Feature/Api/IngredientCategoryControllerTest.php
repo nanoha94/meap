@@ -218,18 +218,10 @@ test('3-2-7: 【一括作成】 正常な食材カテゴリ一括作成', functi
         'order' => 1
     ]);
 
-    // レスポンス構造の確認
+    // レスポンス構造の確認（簡略化: success + message のみ）
     $response->assertJsonStructure([
         'success',
-        'message',
-        'data' => [
-            '*' => [
-                'id',
-                'name',
-                'isDefault',
-                'order'
-            ]
-        ]
+        'message'
     ]);
 
     // Content-Typeがapplication/jsonであることを確認
@@ -570,12 +562,14 @@ test('3-2-19: 【一括作成】 バリデーションエラー（order 値が�
 // ===== bulkUpdate() メソッドのテストケース =====
 
 test('3-2-20: 【一括更新】 正常な食材カテゴリ一括更新', function () {
-    // テスト用のカテゴリをAPIで作成
-    $response1 = $this->actingAs($this->user)->post('/ingredient-categories/bulk', ['data' => [['name' => '野菜', 'order' => 0]]]);
-    $category1Id = $response1->json('data.0.id');
+    // テスト用のカテゴリをAPIで作成（store は data を返さないため index で ID 取得）
+    $this->actingAs($this->user)->post('/ingredient-categories/bulk', ['data' => [['name' => '野菜', 'order' => 0]]]);
+    $indexRes1 = $this->actingAs($this->user)->get('/ingredient-categories');
+    $category1Id = collect($indexRes1->json('data'))->firstWhere('name', '野菜')['id'];
 
-    $response2 = $this->actingAs($this->user)->post('/ingredient-categories/bulk', ['data' => [['name' => '肉類', 'order' => 1]]]);
-    $category2Id = $response2->json('data.0.id');
+    $this->actingAs($this->user)->post('/ingredient-categories/bulk', ['data' => [['name' => '肉類', 'order' => 1]]]);
+    $indexRes2 = $this->actingAs($this->user)->get('/ingredient-categories');
+    $category2Id = collect($indexRes2->json('data'))->firstWhere('name', '肉類')['id'];
 
     $data = [
         'data' => [
@@ -612,18 +606,10 @@ test('3-2-20: 【一括更新】 正常な食材カテゴリ一括更新', funct
         'order' => 0
     ]);
 
-    // レスポンス構造の確認
+    // レスポンス構造の確認（簡略化: success + message のみ）
     $response->assertJsonStructure([
         'success',
-        'message',
-        'data' => [
-            '*' => [
-                'id',
-                'name',
-                'isDefault',
-                'order'
-            ]
-        ]
+        'message'
     ]);
 
     // Content-Typeがapplication/jsonであることを確認
@@ -726,9 +712,10 @@ test('3-2-23: 【一括更新】 データベース接続エラー', function ()
 });
 
 test('3-2-24: 【一括更新】 部分的な一括更新失敗', function () {
-    // テスト用のカテゴリをAPIで作成
-    $response1 = $this->actingAs($this->user)->post('/ingredient-categories/bulk', ['data' => [['name' => '野菜', 'order' => 0]]]);
-    $category1Id = $response1->json('data.0.id');
+    // テスト用のカテゴリをAPIで作成（store は data を返さないため index で ID 取得）
+    $this->actingAs($this->user)->post('/ingredient-categories/bulk', ['data' => [['name' => '野菜', 'order' => 0]]]);
+    $indexRes1 = $this->actingAs($this->user)->get('/ingredient-categories');
+    $category1Id = collect($indexRes1->json('data'))->firstWhere('name', '野菜')['id'];
 
     $this->actingAs($this->user)->post('/ingredient-categories/bulk', ['data' => [['name' => '肉類', 'order' => 1]]]);
 
@@ -795,7 +782,7 @@ test('3-2-25: 【一括更新】 ID が存在しない', function () {
 });
 
 test('3-2-26: 【一括更新】 グループ外のカテゴリ更新試行', function () {
-    // 他のグループのユーザーとカテゴリをAPIで作成
+    // 他のグループのユーザーとカテゴリをAPIで作成（store は data を返さないため index で ID 取得）
     $otherUser = User::factory()->create(['email_verified_at' => now()]);
     $otherGroup = Group::create(['group_size' => 1]);
     DB::table('group_user_mappings')->insert([
@@ -803,8 +790,9 @@ test('3-2-26: 【一括更新】 グループ外のカテゴリ更新試行', fu
         'group_id' => $otherGroup->id
     ]);
 
-    $otherResponse = $this->actingAs($otherUser)->post('/ingredient-categories/bulk', ['data' => [['name' => '他のグループのカテゴリ', 'order' => 0]]]);
-    $otherCategoryId = $otherResponse->json('data.0.id');
+    $this->actingAs($otherUser)->post('/ingredient-categories/bulk', ['data' => [['name' => '他のグループのカテゴリ', 'order' => 0]]]);
+    $otherIndexRes = $this->actingAs($otherUser)->get('/ingredient-categories');
+    $otherCategoryId = collect($otherIndexRes->json('data'))->firstWhere('name', '他のグループのカテゴリ')['id'];
 
     $data = [
         'data' => [
@@ -1178,12 +1166,14 @@ test('3-2-37: 【一括更新】 バリデーションエラー（order 値が�
 // ===== bulkDestroy() メソッドのテストケース =====
 
 test('3-2-38: 【一括削除】 正常な食材カテゴリ一括削除', function () {
-    // テスト用のカテゴリをAPIで作成
-    $response1 = $this->actingAs($this->user)->post('/ingredient-categories/bulk', ['data' => [['name' => '野菜', 'order' => 0]]]);
-    $category1Id = $response1->json('data.0.id');
+    // テスト用のカテゴリをAPIで作成（store は data を返さないため index で ID 取得）
+    $this->actingAs($this->user)->post('/ingredient-categories/bulk', ['data' => [['name' => '野菜', 'order' => 0]]]);
+    $indexRes1 = $this->actingAs($this->user)->get('/ingredient-categories');
+    $category1Id = collect($indexRes1->json('data'))->firstWhere('name', '野菜')['id'];
 
-    $response2 = $this->actingAs($this->user)->post('/ingredient-categories/bulk', ['data' => [['name' => '肉類', 'order' => 1]]]);
-    $category2Id = $response2->json('data.0.id');
+    $this->actingAs($this->user)->post('/ingredient-categories/bulk', ['data' => [['name' => '肉類', 'order' => 1]]]);
+    $indexRes2 = $this->actingAs($this->user)->get('/ingredient-categories');
+    $category2Id = collect($indexRes2->json('data'))->firstWhere('name', '肉類')['id'];
 
     $data = [
         'ids' => [$category1Id, $category2Id]
@@ -1216,15 +1206,18 @@ test('3-2-38: 【一括削除】 正常な食材カテゴリ一括削除', funct
 });
 
 test('3-2-39: 【一括削除】 削除後の order 整理確認', function () {
-    // テスト用のカテゴリをAPIで作成
-    $response1 = $this->actingAs($this->user)->post('/ingredient-categories/bulk', ['data' => [['name' => '野菜', 'order' => 0]]]);
-    $category1Id = $response1->json('data.0.id');
+    // テスト用のカテゴリをAPIで作成（store は data を返さないため index で ID 取得）
+    $this->actingAs($this->user)->post('/ingredient-categories/bulk', ['data' => [['name' => '野菜', 'order' => 0]]]);
+    $indexRes1 = $this->actingAs($this->user)->get('/ingredient-categories');
+    $category1Id = collect($indexRes1->json('data'))->firstWhere('name', '野菜')['id'];
 
-    $response2 = $this->actingAs($this->user)->post('/ingredient-categories/bulk', ['data' => [['name' => '肉類', 'order' => 1]]]);
-    $category2Id = $response2->json('data.0.id');
+    $this->actingAs($this->user)->post('/ingredient-categories/bulk', ['data' => [['name' => '肉類', 'order' => 1]]]);
+    $indexRes2 = $this->actingAs($this->user)->get('/ingredient-categories');
+    $category2Id = collect($indexRes2->json('data'))->firstWhere('name', '肉類')['id'];
 
-    $response3 = $this->actingAs($this->user)->post('/ingredient-categories/bulk', ['data' => [['name' => '調味料', 'order' => 2]]]);
-    $category3Id = $response3->json('data.0.id');
+    $this->actingAs($this->user)->post('/ingredient-categories/bulk', ['data' => [['name' => '調味料', 'order' => 2]]]);
+    $indexRes3 = $this->actingAs($this->user)->get('/ingredient-categories');
+    $category3Id = collect($indexRes3->json('data'))->firstWhere('name', '調味料')['id'];
 
     $data = [
         'ids' => [$category2Id] // 中間のカテゴリを削除
@@ -1370,9 +1363,10 @@ test('3-2-43: 【一括削除】 データベース接続エラー', function ()
 });
 
 test('3-2-44: 【一括削除】 部分的な一括削除失敗', function () {
-    // テスト用のカテゴリをAPIで作成
-    $response1 = $this->actingAs($this->user)->post('/ingredient-categories/bulk', ['data' => [['name' => '野菜', 'order' => 0]]]);
-    $category1Id = $response1->json('data.0.id');
+    // テスト用のカテゴリをAPIで作成（store は data を返さないため index で ID 取得）
+    $this->actingAs($this->user)->post('/ingredient-categories/bulk', ['data' => [['name' => '野菜', 'order' => 0]]]);
+    $indexRes1 = $this->actingAs($this->user)->get('/ingredient-categories');
+    $category1Id = collect($indexRes1->json('data'))->firstWhere('name', '野菜')['id'];
 
     $this->actingAs($this->user)->post('/ingredient-categories/bulk', ['data' => [['name' => '肉類', 'order' => 1]]]);
 
@@ -1422,7 +1416,7 @@ test('3-2-45: 【一括削除】 ID が存在しない', function () {
 });
 
 test('3-2-46: 【一括削除】 グループ外のカテゴリ削除試行', function () {
-    // 他のグループのユーザーとカテゴリをAPIで作成
+    // 他のグループのユーザーとカテゴリをAPIで作成（store は data を返さないため index で ID 取得）
     $otherUser = User::factory()->create(['email_verified_at' => now()]);
     $otherGroup = Group::create(['group_size' => 1]);
     DB::table('group_user_mappings')->insert([
@@ -1430,8 +1424,9 @@ test('3-2-46: 【一括削除】 グループ外のカテゴリ削除試行', fu
         'group_id' => $otherGroup->id
     ]);
 
-    $otherResponse = $this->actingAs($otherUser)->post('/ingredient-categories/bulk', ['data' => [['name' => '他のグループのカテゴリ', 'order' => 0]]]);
-    $otherCategoryId = $otherResponse->json('data.0.id');
+    $this->actingAs($otherUser)->post('/ingredient-categories/bulk', ['data' => [['name' => '他のグループのカテゴリ', 'order' => 0]]]);
+    $otherIndexRes = $this->actingAs($otherUser)->get('/ingredient-categories');
+    $otherCategoryId = collect($otherIndexRes->json('data'))->firstWhere('name', '他のグループのカテゴリ')['id'];
 
     $data = [
         'ids' => [$otherCategoryId]

@@ -1,20 +1,26 @@
 'use client';
-import { TextButton } from '@/components/common';
-import { Control, Controller, useFormContext } from 'react-hook-form';
-import { IRecipeCategory } from '@/types/api';
-import { Check, ChevronRight } from 'lucide-react';
 import React from 'react';
-import { useRecipeStore } from '../../hooks/recipeStores';
-import { colors, DIALOG_NAME } from '@/constants';
-import { RecipeEditFormData } from '../../types';
+import { ChevronRight } from 'lucide-react';
+import { Control, Controller, useFormContext } from 'react-hook-form';
+
+import { CheckboxField, RecipeCategoryEditForm, TextButton } from '@/components';
+import { COLOR_VARIANT } from '@/constants';
+import { useDialog } from '@/hooks';
+import { useRecipeStore } from '@/models/recipe/hooks';
+import { RecipeEditFormData } from '@/models/recipe/types';
+import { IRecipeCategory } from '@/types';
 
 interface Props {
     control: Control<RecipeEditFormData>;
 }
 
 const CategoryEditFields = ({ control }: Props) => {
-    const { categories, openDialog } = useRecipeStore();
+    // store
+    const categories = useRecipeStore(state => state.categories);
+
+    // hook
     const { setValue } = useFormContext<RecipeEditFormData>();
+    const { openDialog } = useDialog();
 
     /**
      * カテゴリーのチェック状態を変更
@@ -46,27 +52,6 @@ const CategoryEditFields = ({ control }: Props) => {
         }
     };
 
-    /**
-     * カテゴリーのラベルの背景色を返す
-     * @param isChecked チェックされているかどうか
-     * @returns カテゴリーのラベルの背景色
-     */
-    const wrapperColorClass = (isChecked: boolean) => {
-        return isChecked
-            ? 'border-primary-main bg-primary-light'
-            : 'border-gray-main bg-gray-light';
-    };
-
-    /**
-     * カテゴリーのチェックボックスの背景色を返す
-     * @param isChecked チェックされているかどうか
-     * @returns カテゴリーのチェックボックスの背景色
-     */
-    const boxColorClass = (isChecked: boolean) => {
-        return isChecked
-            ? 'bg-primary-main border-[transparent]'
-            : 'bg-white border-gray-main';
-    };
 
     return (
         <>
@@ -84,42 +69,7 @@ const CategoryEditFields = ({ control }: Props) => {
                                             v => v.id === category.id,
                                         );
                                         return (
-                                            <div key={category.id}>
-                                                <input
-                                                    type="checkbox"
-                                                    id={`checkbox-${category.id}`}
-                                                    checked={isChecked}
-                                                    onChange={() =>
-                                                        handleChange(
-                                                            category,
-                                                            value,
-                                                        )
-                                                    }
-                                                    className="hidden"
-                                                />
-                                                <label
-                                                    htmlFor={`checkbox-${category.id}`}
-                                                    className={`py-1 px-2 w-fit h-full flex items-center gap-x-2 whitespace-nowrap cursor-pointer border rounded ${wrapperColorClass(isChecked)} transition-opacity hover:opacity-70`}>
-                                                    <div
-                                                        className={`relative w-4 h-4 rounded border-[1.5px] transition-colors ${boxColorClass(
-                                                            isChecked,
-                                                        )}`}>
-                                                        {isChecked && (
-                                                            <Check
-                                                                strokeWidth={
-                                                                    3.5
-                                                                }
-                                                                color={
-                                                                    colors.white
-                                                                }
-                                                                size={16}
-                                                                className="absolute top-1/2 -translate-y-1/2 left-0"
-                                                            />
-                                                        )}
-                                                    </div>
-                                                    {category.name}
-                                                </label>
-                                            </div>
+                                            <CheckboxField key={category.id} id={`checkbox-${category.id}`} checked={isChecked} onChange={() => handleChange(category, value)} label={category.name} />
                                         );
                                     })}
                                 </div>
@@ -136,12 +86,13 @@ const CategoryEditFields = ({ control }: Props) => {
                     )}
                 </div>
                 <TextButton
-                    colorVariant="secondary"
-                    onClick={() =>
-                        openDialog(DIALOG_NAME.RECIPE_CATEGORY_SETTING, {
-                            onAction: () => {},
-                        })
-                    }>
+                    colorVariant={COLOR_VARIANT.SECONDARY}
+                    onClick={() => {
+                        openDialog({
+                            title: '料理カテゴリーを設定',
+                            children: <RecipeCategoryEditForm />,
+                        });
+                    }}>
                     カテゴリーの追加・編集
                     <ChevronRight size={20} />
                 </TextButton>

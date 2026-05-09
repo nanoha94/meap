@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class MealCategory extends Model
 {
@@ -17,14 +18,25 @@ class MealCategory extends Model
         'color_id',
         'name',
         'order',
+        'is_default',
     ];
 
-    public function group()
+    protected $casts = [
+        'is_default' => 'boolean',
+    ];
+
+    /**
+     * グループを取得する
+     */
+    public function group(): BelongsTo
     {
         return $this->belongsTo(Group::class);
     }
 
-    public function color()
+    /**
+     * 色を取得する
+     */
+    public function color(): BelongsTo
     {
         return $this->belongsTo(Color::class);
     }

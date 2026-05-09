@@ -43,9 +43,30 @@ class RecipeService extends AbstractDomainService
         return $group->recipes();
     }
 
+    /**
+     * 前回献立日を算出するサブクエリ（SELECT 用は " as last_planned_date" を付与して使用）
+     */
+    protected function getLastPlannedDateSubquery(): string
+    {
+        return '(SELECT MAX(mp.date) FROM meal_recipe_mappings mrm ' .
+            'JOIN meals m ON mrm.meal_id = m.id JOIN meal_plans mp ON m.meal_plan_id = mp.id ' .
+            'WHERE mrm.recipe_id = recipes.id)';
+    }
+
     protected function getSelectColumns(): array
     {
-        return ['id', 'group_id', 'name', 'url', 'memo'];
+        return [
+            'id',
+            'group_id',
+            'owner_user_id',
+            'name',
+            'url',
+            'memo',
+            'serving_count',
+            'cooking_time',
+            DB::raw($this->getLastPlannedDateSubquery() . ' as last_planned_date'),
+            'status',
+        ];
     }
 
     protected function getWithColumns(): array
@@ -53,16 +74,119 @@ class RecipeService extends AbstractDomainService
         return ['categories', 'ingredients', 'ingredientCategories', 'ingredientUnits', 'steps.images', 'thumbnails', 'group'];
     }
 
+    /**
+     * レシピ一覧取得（並び替え対応）
+     *
+     * @param Group $group
+     * @param int|null $limit
+     * @param int|null $offset
+     * @param string|null $sort
+     * @param string|null $order
+     * @param array $filters
+     * @return array
+     */
+    public function index(Group $group, ?int $limit = 15, ?int $offset = 0, ?string $sort = 'created_at', ?string $order = 'desc', array $filters = []): array
+    {
+        $query = $this->getGroupRelation($group)
+            ->select($this->getSelectColumns())
+            ->with($this->getWithColumns());
+
+        // フィルタ条件
+        if (!empty($filters['recipe_name'])) {
+            $keywords = preg_split('/[\s　]+/u', trim($filters['recipe_name']), -1, PREG_SPLIT_NO_EMPTY);
+            foreach ($keywords as $keyword) {
+                $query->where('recipes.name', 'ilike', '%' . $keyword . '%');
+            }
+        }
+
+        if (!empty($filters['ingredient_name'])) {
+            $keywords = preg_split('/[\s　]+/u', trim($filters['ingredient_name']), -1, PREG_SPLIT_NO_EMPTY);
+            foreach ($keywords as $keyword) {
+                $query->whereHas('ingredients', function ($q) use ($keyword) {
+                    $q->where('ingredients.name', 'ilike', '%' . $keyword . '%');
+                });
+            }
+        }
+
+        if (!empty($filters['category_ids'])) {
+            $query->whereHas('categories', function ($q) use ($filters) {
+                $q->whereIn('recipe_categories.id', $filters['category_ids']);
+            });
+        }
+
+        $lastPlannedDateSubquery = $this->getLastPlannedDateSubquery();
+        if (!empty($filters['last_planned_date_from'])) {
+            $query->whereRaw("{$lastPlannedDateSubquery} >= ?", [$filters['last_planned_date_from']]);
+        }
+        if (!empty($filters['last_planned_date_to'])) {
+            $query->whereRaw("{$lastPlannedDateSubquery} <= ?", [$filters['last_planned_date_to']]);
+        }
+
+        // 並び替えロジック
+        switch ($sort) {
+            case 'name':
+                $query->orderBy('name', $order);
+                break;
+            case 'last_planned_date':
+                if (strtolower($order) === 'desc') {
+                    $query->orderByRaw('last_planned_date DESC NULLS LAST');
+                } else {
+                    $query->orderByRaw('last_planned_date ASC NULLS LAST');
+                }
+                break;
+            default:
+                // created_at などそのまま指定されるカラムは orderBy で対応
+                $query->orderBy($sort ?? 'created_at', $order ?? 'desc');
+                break;
+        }
+
+        $total = $query->count();
+        $items = $query->skip($offset)->take($limit)->get();
+        $data = $items->map(fn($item) => $this->formatIndexResponse($item))->toArray();
+
+        return ['data' => $data, 'total' => $total];
+    }
+
     protected function getCreateFields(): array
     {
-        return ['name' => 'name', 'url' => 'url', 'memo' => 'memo'];
+        return [
+            'name' => 'name',
+            'url' => 'url',
+            'memo' => 'memo',
+            'serving_count' => 'servingCount',
+            'cooking_time' => 'cookingTime',
+            'owner_user_id' => 'ownerUserId',
+        ];
     }
 
     protected function getUpdateFields(): array
     {
-        return ['name' => 'name', 'url' => 'url', 'memo' => 'memo'];
+        return [
+            'name' => 'name',
+            'url' => 'url',
+            'memo' => 'memo',
+            'serving_count' => 'servingCount',
+            'cooking_time' => 'cookingTime',
+            'owner_user_id' => 'ownerUserId',
+        ];
     }
 
+    /**
+     * レシピ一覧用フォーマット
+     * @param Recipe $recipe
+     * @return array
+     */
+    public function formatRecipeListItem(Recipe $recipe): array
+    {
+        return [
+            'id' => $recipe->id,
+            'name' => $recipe->name,
+            'categories' => $this->formatRecipeCategories($recipe->categories),
+            'thumbnail' => $this->imageService->formatImage($recipe->thumbnails->first()),
+            'lastPlannedDate' => $recipe->last_planned_date ?? null,
+            'cookingTime' => $recipe->cooking_time,
+        ];
+    }
 
     protected function formatIndexResponse(Model|Collection $item): array
     {
@@ -74,38 +198,7 @@ class RecipeService extends AbstractDomainService
             $item->load('group');
         }
 
-        return [
-            'id' => $item->id,
-            'name' => $item->name,
-            'thumbnail' => $this->imageService->formatImage($item->thumbnails->first()),
-            'url' => $item->url,
-            'steps' => $this->formatRecipeSteps($item->steps->sortBy('pivot.order')),
-            'memo' => $item->memo,
-            'categories' => $this->formatRecipeCategories($item->categories),
-            'ingredients' => $this->formatRecipeIngredients($item, $item->group),
-        ];
-    }
-
-    protected function formatStoreResponse(Model $item): array
-    {
-        // 型チェック
-        $this->typeCheck($item, Recipe::class);
-
-        // groupが読み込まれていない場合は読み込む
-        if (!$item->relationLoaded('group')) {
-            $item->load('group');
-        }
-
-        return [
-            'id' => $item->id,
-            'name' => $item->name,
-            'thumbnail' => $this->imageService->formatImage($item->thumbnails->first()),
-            'url' => $item->url,
-            'steps' => $this->formatRecipeSteps($item->steps->sortBy('pivot.order')),
-            'memo' => $item->memo,
-            'categories' => $this->formatRecipeCategories($item->categories),
-            'ingredients' => $this->formatRecipeIngredients($item, $item->group),
-        ];
+        return $this->formatRecipeListItem($item);
     }
 
     protected function formatShowResponse(Model $item): array
@@ -113,55 +206,35 @@ class RecipeService extends AbstractDomainService
         // 型チェック
         $this->typeCheck($item, Recipe::class);
 
-        // groupが読み込まれていない場合は読み込む
-        if (!$item->relationLoaded('group')) {
-            $item->load('group');
-        }
-
         return [
             'id' => $item->id,
             'name' => $item->name,
             'thumbnail' => $this->imageService->formatImage($item->thumbnails->first()),
             'url' => $item->url,
-            'steps' => $this->formatRecipeSteps($item->steps->sortBy('pivot.order')),
+            'steps' => $this->formatRecipeSteps($item->steps->sortBy('order')),
             'memo' => $item->memo,
+            'servingCount' => $item->serving_count,
             'categories' => $this->formatRecipeCategories($item->categories),
             'ingredients' => $this->formatRecipeIngredients($item, $item->group),
-        ];
-    }
-
-    protected function formatUpdateResponse(Model $item): array
-    {
-        // 型チェック
-        $this->typeCheck($item, Recipe::class);
-
-        // groupが読み込まれていない場合は読み込む
-        if (!$item->relationLoaded('group')) {
-            $item->load('group');
-        }
-
-        return [
-            'id' => $item->id,
-            'name' => $item->name,
-            'thumbnail' => $this->imageService->formatImage($item->thumbnails->first()),
-            'url' => $item->url,
-            'steps' => $this->formatRecipeSteps($item->steps->sortBy('pivot.order')),
-            'memo' => $item->memo,
-            'categories' => $this->formatRecipeCategories($item->categories),
-            'ingredients' => $this->formatRecipeIngredients($item, $item->group),
+            'ownerUserId' => $item->owner_user_id,
+            'status' => $item->status,
+            'publishedRecipeId' => $item->published_recipe_id,
         ];
     }
 
     /**
      * レシピを作成（サムネイル、カテゴリ、食材、手順を含む）
      */
-    public function create(array $data, Group $group): array
+    public function create(array $data, Group $group): void
     {
-        return DB::transaction(function () use ($data, $group) {
+        DB::transaction(function () use ($data, $group) {
             $createData = [];
             foreach ($this->getCreateFields() as $field => $dataKey) {
                 $createData[$field] = $data[$dataKey] ?? null;
             }
+
+            // TODO: published_recipe_idはセカンドリリースで設定するため、ファーストリリースではnullを設定
+            $createData['published_recipe_id'] = null;
 
             $item = $this->getGroupRelation($group)->create($createData);
 
@@ -182,18 +255,14 @@ class RecipeService extends AbstractDomainService
 
             // 手順を紐づけ
             if (!empty($data['steps'])) {
-                $this->syncSteps($item, $data['steps'], $group);
+                $this->updateSteps($item, $data['steps'], $group);
             }
-
-            $item = $item->fresh(['categories', 'ingredients', 'thumbnails', 'steps.images', 'group']);
-
-            return $this->formatStoreResponse($item);
         });
     }
 
-    public function update(string $id, array $data, Group $group): array
+    public function update(string $id, array $data, Group $group): void
     {
-        return DB::transaction(function () use ($id, $data, $group) {
+        DB::transaction(function () use ($id, $data, $group) {
             // 更新対象を取得
             $currentItem = $this->findItemsByIds([$id], $group)->first();
             $updateData = [];
@@ -239,12 +308,8 @@ class RecipeService extends AbstractDomainService
 
             // 手順を紐づけ
             if (!empty($data['steps'])) {
-                $this->syncSteps($currentItem, $data['steps'], $group);
+                $this->updateSteps($currentItem, $data['steps'], $group);
             }
-
-            $item = $currentItem->fresh(['categories', 'ingredients', 'thumbnails', 'steps.images', 'group']);
-
-            return $this->formatUpdateResponse($item);
         });
     }
 
@@ -292,14 +357,14 @@ class RecipeService extends AbstractDomainService
             'id' => $item->id,
             'instruction' => $item->instruction,
             'image' => $this->imageService->formatImage($item->images->first()),
-            'order' => $item->pivot->order,
+            'order' => $item->order,
         ])->toArray();
     }
 
     /**
      * レシピのカテゴリー情報をフォーマット
      */
-    private function formatRecipeCategories(Collection $categories): array
+    public function formatRecipeCategories(Collection $categories): array
     {
         // 型チェック
         $this->typeCheck($categories, Collection::class);
@@ -315,7 +380,7 @@ class RecipeService extends AbstractDomainService
     /**
      * レシピの食材情報をフォーマット
      */
-    private function formatRecipeIngredients(Recipe $recipe, Group $group): array
+    public function formatRecipeIngredients(Recipe $recipe, Group $group): array
     {
         // グループの全カテゴリを取得（order順でソート）
         $categories = $group->ingredientCategories()
@@ -340,7 +405,7 @@ class RecipeService extends AbstractDomainService
                 return [
                     'id' => $item->id,
                     'name' => $item->name,
-                    'quantity' => $item->pivot->quantity,
+                    'quantity' => $item->pivot->quantity !== null ? (float) $item->pivot->quantity : null,
                     'unit' => [
                         'id' => $item->pivot->unit_id,
                         'name' => $unit->name,
@@ -428,27 +493,28 @@ class RecipeService extends AbstractDomainService
 
         $ids = $this->findOrCreateIds($ingredientData, $group, Ingredient::class);
 
-        $data = [];
-        foreach ($ingredients as $idx => $item) {
-            if (isset($ids[$idx])) {
-                $data[$ids[$idx]] = [
-                    'quantity' => $item['quantity'] ?? null,
-                    'unit_id' => $item['unitId'],
-                    'category_id' => $item['categoryId'],
-                    'order' => $item['order'] ?? 0
-                ];
-            }
-        }
+        // sync() は ingredient_id キーのため同一材料×異単位の複数行を表現できないので、detach()とattach()で紐づける
+        $recipe->ingredients()->detach();
 
-        $recipe->ingredients()->sync($data);
+        foreach ($ingredients as $idx => $item) {
+            if (!isset($ids[$idx])) {
+                continue;
+            }
+            $recipe->ingredients()->attach($ids[$idx], [
+                'quantity' => $item['quantity'] ?? null,
+                'unit_id' => $item['unitId'],
+                'category_id' => $item['categoryId'],
+                'order' => $item['order'] ?? 0,
+            ]);
+        }
     }
 
     /**
-     * 手順の同期処理
+     * 手順の更新処理
      * 
      * 既存の手順の更新・削除と新規手順の追加を処理します。
      * リクエストで渡された手順のIDの有無で処理を分岐：
-     * - IDあり：既存手順として更新（instructionと画像の変更を検知）
+     * - IDあり：既存手順として更新（instruction、order、画像の変更を検知）
      * - IDなし：新規手順として作成
      * - リクエストに含まれない既存手順：削除対象
      * 
@@ -456,7 +522,7 @@ class RecipeService extends AbstractDomainService
      * @param array $steps 手順データの配列（各要素: id?, instruction, imageId?, order?）
      * @param Group $group グループモデル
      */
-    private function syncSteps(Recipe $recipe, array $requestSteps, Group $group): void
+    private function updateSteps(Recipe $recipe, array $requestSteps, Group $group): void
     {
         // 画像を事前にロード
         $recipe->load(['steps.images']);
@@ -472,8 +538,6 @@ class RecipeService extends AbstractDomainService
         // リクエストで指定された手順をキー化
         $requestStepsById = collect($requestSteps)->keyBy('id');
 
-        // 同期データ
-        $syncData = [];
         // 削除対象の画像ID
         $imagesToDelete = [];
 
@@ -483,17 +547,11 @@ class RecipeService extends AbstractDomainService
 
             if ($requestStep) {
                 // 更新対象：instructionを更新
-                $step->update(['instruction' => $requestStep['instruction']]);
+                $step->update(['instruction' => $requestStep['instruction'], 'order' => $requestStep['order'] ?? 0]);
 
                 // 画像の変更処理
                 $newImageId = $requestStep['imageId'] ?? null;
                 $currentImageId = $step->images->first()?->id;
-
-                // 新しい画像IDが指定されている場合、先に存在確認を行う
-                // これにより、存在しない画像の場合は古い画像を削除する前にエラーになる
-                if (!empty($newImageId)) {
-                    $this->imageService->findImagesByIds([$newImageId], $group);
-                }
 
                 // 画像が変更された場合（null/空文字列も含む）
                 if ($newImageId !== $currentImageId) {
@@ -508,8 +566,6 @@ class RecipeService extends AbstractDomainService
                         $this->attachStepImage($step, $newImageId, $group);
                     }
                 }
-
-                $syncData[$step->id] = ['order' => $requestStep['order'] ?? 0];
             } else {
                 // 削除対象に追加（画像はあとでまとめて削除する）
                 if ($step->images->isNotEmpty()) {
@@ -525,7 +581,8 @@ class RecipeService extends AbstractDomainService
             if (empty($requestStep['id'])) {
                 $step = RecipeStep::create([
                     'recipe_id' => $recipe->id,
-                    'instruction' => $requestStep['instruction']
+                    'instruction' => $requestStep['instruction'],
+                    'order' => $requestStep['order'] ?? ($index + 1)
                 ]);
 
                 // 画像を紐づけ
@@ -533,8 +590,6 @@ class RecipeService extends AbstractDomainService
                 if ($imageId) {
                     $this->attachStepImage($step, $imageId, $group);
                 }
-
-                $syncData[$step->id] = ['order' => $requestStep['order'] ?? ($index + 1)];
             }
         }
 
@@ -542,21 +597,14 @@ class RecipeService extends AbstractDomainService
         if (!empty($imagesToDelete)) {
             $this->imageService->deleteImages(array_unique($imagesToDelete), $recipe->id, $group);
         }
-
-        // 中間テーブルのorderを同期
-        if (!empty($syncData)) {
-            $recipe->steps()->sync($syncData);
-        }
     }
 
     /**
      * 手順に画像を紐づける
+     * 注: 画像の存在確認は呼び出し元で事前に行うこと（updateStepsでは533行目で一括検証済み）
      */
     private function attachStepImage(RecipeStep $step, string $imageId, Group $group): void
     {
-        // 画像の存在とグループスコープを検証
-        $this->imageService->findImagesByIds([$imageId], $group);
-
         $step->images()->attach($imageId, [
             'group_id' => $group->id,
             'related_model' => RecipeStep::class,

@@ -1,6 +1,8 @@
 'use client';
 import {
+    DND_SORTABLE_LIST_TYPE,
     DRAG_ACTIVATION_DISTANCE,
+    DndSortableListType,
     TOUCH_ACTIVATION_DELAY,
     TOUCH_ACTIVATION_TOLERANCE,
 } from '@/constants';
@@ -12,11 +14,16 @@ import {
     useSensor,
     useSensors,
 } from '@dnd-kit/core';
-import { SortableContext } from '@dnd-kit/sortable';
+import {
+    rectSortingStrategy,
+    SortableContext,
+    verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 import Sortable from '../dnd/Sortable';
 import React from 'react';
 
 interface Props<T extends { id: string }> {
+    type: DndSortableListType;
     items: T[];
     prefix: string;
     onDragEnd: (oldIndex: number, newIndex: number) => void;
@@ -24,6 +31,7 @@ interface Props<T extends { id: string }> {
 }
 
 const DndSortableList = <T extends { id: string }>({
+    type,
     items,
     prefix,
     onDragEnd,
@@ -70,7 +78,13 @@ const DndSortableList = <T extends { id: string }>({
     return (
         <DndContext id={id} onDragEnd={handleDragEnd} sensors={sensors}>
             {!!items && items.length > 0 && (
-                <SortableContext items={itemIds}>
+                <SortableContext
+                    items={itemIds}
+                    strategy={
+                        type === DND_SORTABLE_LIST_TYPE.GRID
+                            ? rectSortingStrategy
+                            : verticalListSortingStrategy
+                    }>
                     {items.map((item, index) => (
                         <Sortable key={item.id} id={itemIds[index]}>
                             {renderItem(item, index)}

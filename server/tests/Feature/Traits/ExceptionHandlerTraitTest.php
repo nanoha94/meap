@@ -98,7 +98,7 @@ beforeEach(function () {
     };
 });
 
-test('1-3-1: ValidationExceptionの処理をテスト', function () {
+test('1-3-1: 【handleException】 ValidationException 処理テスト', function () {
     $request = Request::create('/api/users', 'POST');
 
     $request->setUserResolver(function () {
@@ -154,7 +154,7 @@ test('1-3-2: HttpExceptionの処理をテスト', function () {
     expect($responseData['message'])->toBe('HTTPエラーが発生しました');
 });
 
-test('1-3-3: ModelNotFoundExceptionの処理をテスト', function () {
+test('1-3-3: 【handleException】 ModelNotFoundException 処理テスト', function () {
     $request = Request::create('/api/users/1', 'GET');
 
     $request->setUserResolver(function () {
@@ -181,7 +181,7 @@ test('1-3-3: ModelNotFoundExceptionの処理をテスト', function () {
     expect($responseData['message'])->toBe('ユーザーが見つかりませんでした');
 });
 
-test('1-3-4: QueryExceptionの処理をテスト', function () {
+test('1-3-4: 【handleException】 QueryException 処理テスト', function () {
     $request = Request::create('/api/users', 'GET');
 
     $request->setUserResolver(function () {
@@ -211,7 +211,7 @@ test('1-3-4: QueryExceptionの処理をテスト', function () {
     expect($responseData['message'])->toBe('データベースエラーが発生しました');
 });
 
-test('1-3-5: 汎用例外の処理をテスト', function () {
+test('1-3-5: 【handleGenericException】 汎用例外処理テスト', function () {
     $request = Request::create('/api/process', 'POST');
 
     $request->setUserResolver(function () {
@@ -237,7 +237,7 @@ test('1-3-5: 汎用例外の処理をテスト', function () {
     expect($responseData['message'])->toBe('システムエラーが発生しました');
 });
 
-test('1-3-6: カスタムステータスコードの処理をテスト', function () {
+test('1-3-6: 【getExceptionStatusCode】 カスタムステータスコードテスト', function () {
     $request = Request::create('/api/test', 'GET');
 
     $request->setUserResolver(function () {

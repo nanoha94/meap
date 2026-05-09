@@ -23,16 +23,20 @@ return [
         'show' => '献立詳細取得',
         'update' => '献立更新',
         'destroy' => '献立削除',
+        'destroy_meal' => '献立の1食削除',
     ],
     'meal_category' => [
         'index' => '献立カテゴリ一覧取得',
-        'store' => '献立カテゴリ作成',
+        'bulk_store' => '献立カテゴリ一括作成',
         'bulk_update' => '献立カテゴリ一括更新',
-        'destroy' => '献立カテゴリ削除',
+        'bulk_destroy' => '献立カテゴリ一括削除',
     ],
     'image' => [
         'bulk_upload' => '画像一括アップロード',
         'bulk_destroy' => '画像一括削除',
+        'delete_images_by_group' => 'グループ配下画像一括削除',
+        'delete_images_by_user' => 'ユーザー配下画像一括削除',
+        'download_remote' => 'リモート画像ダウンロード',
     ],
     'invitation' => [
         'store' => '招待トークン作成',
@@ -54,18 +58,21 @@ return [
     'shopping_item' => [
         'index' => '買い物アイテム一覧取得',
         'store' => '買い物アイテム作成',
+        'bulk_store' => '買い物アイテム一括作成',
         'bulk_update' => '買い物アイテム一括更新',
         'bulk_destroy' => '買い物アイテム一括削除',
         'tag_processing' => '買い物アイテムタグ処理',
     ],
     'recipe_category' => [
         'index' => '料理カテゴリー一覧取得',
-        'store' => '料理カテゴリー作成',
+        'bulk_store' => '料理カテゴリー一括作成',
         'bulk_update' => '料理カテゴリー一括更新',
         'bulk_destroy' => '料理カテゴリー一括削除',
     ],
     'users' => [
         'index' => 'ユーザー一覧取得',
+        'update' => 'プロフィール更新',
+        'destroy' => 'アカウント削除',
     ],
 
     'master' => [

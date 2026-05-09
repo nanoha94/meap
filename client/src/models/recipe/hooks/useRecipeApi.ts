@@ -1,16 +1,25 @@
-import { useSnackbars } from '@/contexts';
-import { useRouter } from 'next/navigation';
-import { useRecipeStore } from './recipeStores';
-import axios from '@/lib/axios';
-import { TIMEOUT_MS, TMP_ID_PREFIX } from '@/constants';
+"use client";
 import React from 'react';
+import { useRouter } from 'next/navigation';
+
+import { TIMEOUT_MS, TMP_ID_PREFIX } from '@/constants';
+import { useApiErrorHandler, useSnackbars } from '@/hooks';
+import axios from '@/lib/axios';
+import { useImageApi } from '@/models/image';
+import { useGlobalStore } from '@/stores';
 import {
+    IDeleteRecipeResponse,
+    IGetRecipeIndexRequest,
+    IGetRecipeIndexResponse,
     IPostPutRecipeRequest,
     IPostRecipeResponse,
+    IPutRecipeResponse,
     IRecipeStep,
-} from '@/types/api';
-import { useImageApi } from '@/models/image/hooks/useImageApi';
-import { RecipeStepEditFormData } from '../types';
+} from '@/types';
+import { RecipeFilterFormData, RecipeStepEditFormData } from '../types';
+import { useRecipeListStateStore } from './useRecipeListStateStore';
+import { RECIPES_PER_PAGE, sortOptions } from '../constants';
+import { getBrowserQueryString } from '../utils';
 
 /**
  * 手順をフォーマット
@@ -34,10 +43,28 @@ export const formatStepItems = (
 };
 
 export const useRecipeApi = () => {
-    const { isLoadings, setIsLoadings } = useRecipeStore();
+    // store
+    const incrementLoadingCount = useGlobalStore(
+        (state) => state.incrementLoadingCount,
+    );
+    const decrementLoadingCount = useGlobalStore(
+        (state) => state.decrementLoadingCount,
+    );
+    const listSortOptions = useRecipeListStateStore(state => state.listSortOptions);
+    const listFilterOptions = useRecipeListStateStore(state => state.listFilterOptions);
+    const listCurrentPage = useRecipeListStateStore(state => state.listCurrentPage);
+
+    // hook
     const { bulkUploadImage } = useImageApi();
     const router = useRouter();
     const { addSnackbar } = useSnackbars();
+    const { handleApiError } = useApiErrorHandler();
+
+    // 重複リクエスト防止用のフラグ
+    const isFetchRequestRef = React.useRef(false);
+    const isStoreRequestRef = React.useRef(false);
+    const isUpdateRequestRef = React.useRef(false);
+    const isDeleteRequestRef = React.useRef(false);
 
     /**
      * 手順画像のアップロード
@@ -81,31 +108,109 @@ export const useRecipeApi = () => {
                 ...step,
                 image: step.image
                     ? {
-                          ...step.image,
-                          id: uploadedImageMap.get(index) ?? step.image.id,
-                      }
+                        ...step.image,
+                        id: uploadedImageMap.get(index) ?? step.image.id,
+                    }
                     : null,
             }));
 
             return stepsWithImageIds;
         },
-        [],
+        [bulkUploadImage],
     );
 
+    /**
+     * レシピ一覧を取得する（ストアデータは更新しない）
+     * @param sortOptionId 並び替えオプションID
+     * @param filterOptions フィルターオプション
+     * @param page ページ番号
+     * @returns レシピ一覧
+     */
+    const fetchRecipes = React.useCallback(
+        async (sortOptionId?: string, filterOptions?: RecipeFilterFormData, page?: number) => {
+            // 重複リクエスト防止
+            if (isFetchRequestRef.current) {
+                return;
+            }
+
+            // パラメータをセット
+            const params: IGetRecipeIndexRequest = {
+                sort: sortOptions.find(v => v.id === sortOptionId)?.sort ?? sortOptions[0].sort,
+                order: sortOptions.find(v => v.id === sortOptionId)?.order ?? sortOptions[0].order,
+                recipe_name: filterOptions?.recipeName,
+                ingredient_name: filterOptions?.ingredientName,
+                category_ids: filterOptions?.categoryIds ? filterOptions?.categoryIds : [],
+                last_planned_date_from: filterOptions?.lastPlannedDateFrom,
+                last_planned_date_to: filterOptions?.lastPlannedDateTo,
+                limit: RECIPES_PER_PAGE,
+                offset: ((page ?? 1) - 1) * RECIPES_PER_PAGE,
+            };
+
+            try {
+                isFetchRequestRef.current = true;
+                incrementLoadingCount();
+
+                const { data: responseData } = await axios.get<IGetRecipeIndexResponse>(
+                    '/recipes',
+                    {
+                        params,
+                        timeout: TIMEOUT_MS,
+                    },
+                );
+                if (responseData.success) {
+                    return {
+                        recipes: responseData.data,
+                        pageSize: Math.ceil((responseData?.total ?? 0) / RECIPES_PER_PAGE),
+                        currentPage: page ?? 1,
+                    };
+                }
+                addSnackbar(
+                    'error',
+                    responseData.message || 'レシピ一覧の取得に失敗しました',
+                );
+                return {
+                    recipes: [],
+                    pageSize: 0,
+                    currentPage: page ?? 1,
+                };
+            } catch (error) {
+                handleApiError(error);
+                return {
+                    recipes: [],
+                    pageSize: 0,
+                    currentPage: 1,
+                };
+            } finally {
+                isFetchRequestRef.current = false;
+                decrementLoadingCount();
+            }
+        },
+        [incrementLoadingCount, decrementLoadingCount, handleApiError, addSnackbar],
+    );
+
+    /**
+     * レシピを作成する
+     * @param data 作成するレシピデータ
+     * @param thumbnail サムネイル画像
+     * @param steps 手順リスト
+     * @returns void
+     */
     const storeRecipe = React.useCallback(
         async (
             data: IPostPutRecipeRequest,
             thumbnail: File | null,
             steps: RecipeStepEditFormData[],
         ) => {
-            const sendData: IPostPutRecipeRequest = data;
-
-            if (isLoadings.recipe) {
+            // 重複リクエスト防止
+            if (isStoreRequestRef.current) {
                 return;
             }
 
+            const sendData: IPostPutRecipeRequest = data;
+
             try {
-                setIsLoadings('recipe', true);
+                isStoreRequestRef.current = true;
+                incrementLoadingCount();
 
                 // サムネイル画像のアップロード
                 if (thumbnail) {
@@ -122,51 +227,71 @@ export const useRecipeApi = () => {
                 }
 
                 // APIリクエスト
-                const res = await axios.post<IPostRecipeResponse>(
+                const { data: responseData } = await axios.post<IPostRecipeResponse>(
                     `/recipes`,
                     sendData,
                     {
                         timeout: TIMEOUT_MS,
                     },
                 );
-
-                // レスポンスデータ
-                const responseData: IPostRecipeResponse = res.data;
                 if (responseData.success) {
-                    router.push('/recipe/');
+                    router.push(`/recipe?${getBrowserQueryString(listSortOptions, listFilterOptions, listCurrentPage)}`);
+                    router.refresh();
                     addSnackbar(
                         'success',
-                        responseData.message ??
-                            'リクエストが正常に完了しました',
+                        responseData.message ||
+                        'リクエストが正常に完了しました',
+                    );
+                } else {
+                    addSnackbar(
+                        'error',
+                        responseData.message || 'レシピの保存に失敗しました',
                     );
                 }
             } catch (error) {
-                if (error.code === 'ECONNABORTED') {
-                    addSnackbar('error', 'リクエストがタイムアウトしました');
-                } else {
-                    console.error(error.response?.data.message);
-                    addSnackbar('error', error.response?.data.message);
-                }
+                handleApiError(error);
             } finally {
-                setIsLoadings('recipe', false);
+                isStoreRequestRef.current = false;
+                decrementLoadingCount();
             }
         },
-        [],
+        [
+            listSortOptions,
+            listFilterOptions,
+            listCurrentPage,
+            router,
+            incrementLoadingCount,
+            decrementLoadingCount,
+            bulkUploadImage,
+            uploadStepImages,
+            addSnackbar,
+            handleApiError,
+        ],
     );
 
+    /**
+     * レシピを更新する
+     * @param data 更新するレシピデータ
+     * @param thumbnail サムネイル画像
+     * @param steps 手順リスト
+     * @returns void
+     */
     const updateRecipe = React.useCallback(
         async (
             data: IPostPutRecipeRequest,
             thumbnail: File | null,
             steps: RecipeStepEditFormData[],
         ) => {
-            const sendData: IPostPutRecipeRequest = data;
-            if (isLoadings.recipe) {
+            // 重複リクエスト防止
+            if (isUpdateRequestRef.current) {
                 return;
             }
 
+            const sendData: IPostPutRecipeRequest = data;
+
             try {
-                setIsLoadings('recipe', true);
+                isUpdateRequestRef.current = true;
+                incrementLoadingCount();
 
                 // サムネイル画像のアップロード
                 if (thumbnail) {
@@ -183,59 +308,77 @@ export const useRecipeApi = () => {
                 }
 
                 // APIリクエスト
-                const res = await axios.put(`/recipes/${data.id}`, sendData, {
-                    timeout: TIMEOUT_MS,
-                });
-
-                // レスポンスデータ
-                const responseData: IPostRecipeResponse = res.data;
+                const { data: responseData } = await axios.put<IPutRecipeResponse>(
+                    `/recipes/${data.id}`,
+                    sendData,
+                    {
+                        timeout: TIMEOUT_MS,
+                    },
+                );
                 if (responseData.success) {
                     router.push(`/recipe/${data.id}`);
+                    router.refresh();
                     addSnackbar(
                         'success',
-                        responseData.message ??
-                            'リクエストが正常に完了しました',
+                        responseData.message ||
+                        'リクエストが正常に完了しました',
+                    );
+                } else {
+                    addSnackbar(
+                        'error',
+                        responseData.message || 'レシピの更新に失敗しました',
                     );
                 }
             } catch (error) {
-                if (error.code === 'ECONNABORTED') {
-                    addSnackbar('error', 'リクエストがタイムアウトしました');
-                } else {
-                    console.error(error.response?.data.message);
-                    addSnackbar('error', error.response?.data.message);
-                }
+                handleApiError(error);
             } finally {
-                setIsLoadings('recipe', false);
+                isUpdateRequestRef.current = false;
+                decrementLoadingCount();
             }
         },
-        [],
+        [incrementLoadingCount, decrementLoadingCount, bulkUploadImage, uploadStepImages, router, addSnackbar, handleApiError],
     );
 
-    const deleteRecipe = React.useCallback(async (id: string, name: string) => {
-        if (isLoadings.recipe) {
+    /**
+     * レシピを削除する
+     * @param id 削除するレシピのID
+     * @returns void
+     */
+    const deleteRecipe = React.useCallback(async (id: string) => {
+        // 重複リクエスト防止
+        if (isDeleteRequestRef.current) {
             return;
         }
 
         try {
-            setIsLoadings('recipe', true);
-            const res = await axios.delete(`/recipes/${id}`);
-            if (res.data) {
-                addSnackbar('success', `${name}を削除しました`);
+            isDeleteRequestRef.current = true;
+            incrementLoadingCount();
+            const { data: responseData } = await axios.delete<IDeleteRecipeResponse>(
+                `/recipes/${id}`,
+                {
+                    timeout: TIMEOUT_MS,
+                },
+            );
+            if (responseData.success) {
                 router.push('/recipe/');
+                router.refresh();
+                addSnackbar('success', responseData.message || 'リクエストが正常に完了しました');
+            } else {
+                addSnackbar(
+                    'error',
+                    responseData.message || 'レシピの削除に失敗しました',
+                );
             }
         } catch (error) {
-            if (error.code === 'ECONNABORTED') {
-                addSnackbar('error', 'リクエストがタイムアウトしました');
-            } else {
-                console.error(error.response?.data.message);
-                addSnackbar('error', error.response?.data.message);
-            }
+            handleApiError(error);
         } finally {
-            setIsLoadings('recipe', false);
+            isDeleteRequestRef.current = false;
+            decrementLoadingCount();
         }
-    }, []);
+    }, [incrementLoadingCount, decrementLoadingCount, router, addSnackbar, handleApiError]);
 
     return {
+        fetchRecipes,
         storeRecipe,
         updateRecipe,
         deleteRecipe,

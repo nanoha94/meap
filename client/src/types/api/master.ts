@@ -1,13 +1,14 @@
-import { ICourseType } from './course';
-import { IIngredientUnit } from './ingredient';
-import { IRecipeCategory } from './recipe';
-import { IShoppingTag } from './shopping';
+import { IBaseApiResponseWithData, IMealCategory, IIngredientCategory, IIngredientUnit,IRecipeCategory,IShoppingCategory, IShoppingTag,IUser } from '../api';
 
-export interface IGetMasterResponse {
-    data: {
-        recipeCategories: IRecipeCategory[];
-        ingredientUnits: IIngredientUnit[];
-        courseTypes: ICourseType[];
-        shoppingTags: IShoppingTag[];
-    };
+export type IGetMasterResponse = IBaseApiResponseWithData<IMaster>;
+
+export interface IMaster {
+    users: IUser[];
+    recipeCategories: IRecipeCategory[];
+    ingredientCategories: IIngredientCategory[];
+    ingredientUnits: IIngredientUnit[];
+    mealCategories: IMealCategory[];
+    shoppingCategories: IShoppingCategory[];
+    shoppingTags: IShoppingTag[];
 }
+

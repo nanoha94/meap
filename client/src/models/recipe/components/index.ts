@@ -1,4 +1,3 @@
-export { default as HeaderRecipeDeleteButton } from './HeaderButton/HeaderRecipeDeleteButton';
-export { default as RecipeCategorySettingDialog } from './RecipeCategorySettingDialog/RecipeCategorySettingDialog';
-export { default as RecipeEditForm } from './RecipeEditForm/RecipeEditForm';
-export { default as RecipeList } from './RecipeList/RecipeList';
+export { default as IngredientEditFields } from './RecipeEditForm/IngredientEditFields/IngredientEditFields';
+export { default as StepEditFields } from './RecipeEditForm/StepEditFields/StepEditFields';
+export { default as CategoryEditFields } from './RecipeEditForm/CategoryEditFields';

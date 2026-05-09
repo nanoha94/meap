@@ -17,10 +17,12 @@ class IngredientUnit extends Model
         'name',
         'position',
         'requires_quantity',
-        'order'
+        'order',
+        'is_default',
     ];
 
     protected $casts = [
         'requires_quantity' => 'boolean',
+        'is_default' => 'boolean',
     ];
 }

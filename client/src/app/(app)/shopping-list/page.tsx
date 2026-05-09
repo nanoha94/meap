@@ -1,63 +1,18 @@
+import React, { Suspense } from 'react';
 import ShoppingListPage from '@/pages/shopping/ShoppingListPage';
-import { Suspense } from 'react';
-import {
-    IGetShoppingCategoryIndexResponse,
-    IGetShoppingItemIndexResponse,
-} from '@/types/api';
-import { Header, Loading } from '@/components/common';
-import { apiClient } from '@/lib/apiClient';
-import { SnackbarHandler } from '@/components/handlers';
-import { TIMEOUT_MS } from '@/constants';
-import HeaderButton from '@/models/shopping/components/HeaderButton/HeaderButton';
+
+import { Loading } from '@/components';
+import { fetchData } from '@/lib/apiClient';
+import { IGetShoppingItemIndexResponse } from '@/types';
 
 async function ShoppingListsWithData() {
-    let items: IGetShoppingItemIndexResponse | null = null;
-    let categories: IGetShoppingCategoryIndexResponse | null = null;
-    let errorMessage: string = '';
-    try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
-
-        // 2つのリクエストを並列実行
-        [items, categories] = await Promise.all([
-            apiClient<IGetShoppingItemIndexResponse>('/shopping-items', {
-                signal: controller.signal,
-            }),
-            apiClient<IGetShoppingCategoryIndexResponse>(
-                '/shopping-categories',
-                {
-                    signal: controller.signal,
-                },
-            ),
-        ]);
-
-        clearTimeout(timeoutId);
-    } catch (error) {
-        console.error(error);
-        // エラーオブジェクトから安全に文字列を抽出
-        errorMessage =
-            error instanceof Error
-                ? error.message
-                : typeof error === 'string'
-                  ? error
-                  : 'データの取得に失敗しました';
-    }
+    const { data: items, errorMessage } = await fetchData<IGetShoppingItemIndexResponse>('/shopping-items');
 
     return (
-        <>
-            {errorMessage && (
-                <SnackbarHandler type="error" message={errorMessage} />
-            )}
-            <Header title="買い物リスト">
-                <HeaderButton />
-            </Header>
-            <main>
-                <ShoppingListPage
-                    fetchItems={items?.data ?? []}
-                    fetchCategories={categories?.data ?? []}
-                />
-            </main>
-        </>
+        <ShoppingListPage
+            fetchItems={items?.data ?? []}
+            errorMessage={errorMessage}
+        />
     );
 }
 

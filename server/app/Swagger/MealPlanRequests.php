@@ -3,43 +3,111 @@
 namespace App\Swagger;
 
 /**
- * @OA\RequestBody(
- *     request="MealPlanRequest",
- *     description="※新規作成時はid不要",
- *     required=true,
- *     @OA\JsonContent(
- *         type="object",
- *         required={"date", "categoryId"},
- *         @OA\Property(property="date", type="string", format="date", description="日付", example="2023-10-05"),
- *         @OA\Property(property="mealCategoryId", type="string", description="種別ID", example="1"),
- *         @OA\Property(
- *             property="menu",
- *             type="array",
- *             description="献立メニュー",
- *             @OA\Items(
- *                 type="object",
- *                 @OA\Property(property="categoryId", type="string", description="メニュー種別ID", example="1"),
- *                 @OA\Property(
- *                     property="recipeIds",
- *                     type="array",
- *                     description="料理ID",
- *                     @OA\Items(type="string", description="料理ID", example="1")
+ * 献立作成リクエスト（POST /meal-plans）
+ *
+ * @OA\Schema(
+ *     schema="MealPlanStoreRequest",
+ *     required={"date", "meals"},
+ *     @OA\Property(property="date", type="string", format="date", description="献立の日付（Y-m-d）", example="2025-02-03"),
+ *     @OA\Property(property="meals", type="array", description="献立メニュー",
+ *         @OA\Items(
+ *             type="object",
+ *             required={"categoryId", "recipes", "order"},
+ *             @OA\Property(property="id", type="string", format="uuid", description="メニューID（新規の場合は不要）", example="a0fbbf74-1816-406e-99b7-7ef1e3e365f4", nullable=true),
+ *             @OA\Property(property="categoryId", type="string", format="uuid", description="献立カテゴリID", example="a0fbbf74-1816-406e-99b7-7ef1e3e365f4"),
+ *             @OA\Property(property="order", type="integer", description="表示順（0以上）", example=0),
+ *             @OA\Property(property="recipes", type="array", description="料理一覧（1件以上必須）。各要素の order が1食内の並び順（0始まり）",
+ *                 minItems=1,
+ *                 @OA\Items(
+ *                     type="object",
+ *                     required={"id", "order"},
+ *                     @OA\Property(property="id", type="string", format="uuid", description="レシピID", example="a0fbbf74-1816-406e-99b7-7ef1e3e365f4"),
+ *                     @OA\Property(property="order", type="integer", description="1食内の並び順（0以上）", example=0)
  *                 )
  *             )
  *         )
  *     )
  * )
+ *
+ * 献立更新リクエスト（PUT /meal-plans/{id}）
+ *
+ * @OA\Schema(
+ *     schema="MealPlanUpdateRequest",
+ *     required={"meals"},
+ *     @OA\Property(property="meals", type="array", description="献立メニュー",
+ *         @OA\Items(
+ *             type="object",
+ *             required={"categoryId", "recipes", "order"},
+ *             @OA\Property(property="id", type="string", format="uuid", description="メニューID（新規の場合は不要）", example="a0fbbf74-1816-406e-99b7-7ef1e3e365f4", nullable=true),
+ *             @OA\Property(property="categoryId", type="string", format="uuid", description="献立カテゴリID", example="a0fbbf74-1816-406e-99b7-7ef1e3e365f4"),
+ *             @OA\Property(property="order", type="integer", description="表示順（0以上）", example=0),
+ *             @OA\Property(property="recipes", type="array", description="料理一覧（1件以上必須）。各要素の order が1食内の並び順（0始まり）",
+ *                 minItems=1,
+ *                 @OA\Items(
+ *                     type="object",
+ *                     required={"id", "order"},
+ *                     @OA\Property(property="id", type="string", format="uuid", description="レシピID", example="a0fbbf74-1816-406e-99b7-7ef1e3e365f4"),
+ *                     @OA\Property(property="order", type="integer", description="1食内の並び順（0以上）", example=0)
+ *                 )
+ *             )
+ *         )
+ *     )
+ * )
+ *
+ * @OA\RequestBody(
+ *     request="MealPlanStoreRequest",
+ *     description="献立作成。date は必須。meals は1件以上必須。",
+ *     required=true,
+ *     @OA\JsonContent(ref="#/components/schemas/MealPlanStoreRequest")
+ * )
+ * @OA\RequestBody(
+ *     request="MealPlanUpdateRequest",
+ *     description="献立更新。meals は1件以上必須。",
+ *     required=true,
+ *     @OA\JsonContent(ref="#/components/schemas/MealPlanUpdateRequest")
+ * )
+ *
+ * 献立カテゴリ作成/更新リクエスト
+ *
+ * @OA\Schema(
+ *     schema="MealCategoryRequest",
+ *     required={"name", "colorId"},
+ *     @OA\Property(property="name", type="string", description="カテゴリ名", example="朝食"),
+ *     @OA\Property(property="colorId", type="string", description="色ID", example="1"),
+ *     @OA\Property(property="order", type="integer", description="ソート順", example=1)
+ * )
+ *
  * @OA\RequestBody(
  *     request="MealCategoryRequest",
  *     description="※新規作成時はid不要",
  *     required=true,
- *     @OA\JsonContent(
- *         type="object",
- *         required={"name", "colorId"},
- *         @OA\Property(property="name", type="string", description="カテゴリ名", example="朝食"),
- *         @OA\Property(property="colorId", type="string", description="色ID", example="1"),
- *         @OA\Property(property="order", type="integer", description="ソート順", example=1)
+ *     @OA\JsonContent(ref="#/components/schemas/MealCategoryRequest")
+ * )
+ *
+ * 献立カテゴリ一括作成リクエスト（POST /meal-categories/bulk）
+ *
+ * @OA\Schema(
+ *     schema="MealCategoryBulkStoreRequest",
+ *     required={"data"},
+ *     @OA\Property(
+ *         property="data",
+ *         type="array",
+ *         description="作成する献立カテゴリの配列（1件以上）",
+ *         minItems=1,
+ *         @OA\Items(
+ *             type="object",
+ *             required={"name", "colorId", "order"},
+ *             @OA\Property(property="name", type="string", description="カテゴリ名", example="朝食"),
+ *             @OA\Property(property="colorId", type="string", format="uuid", description="色ID", example="a0fbbf74-1816-406e-99b7-7ef1e3e365f4"),
+ *             @OA\Property(property="order", type="integer", description="ソート順（0以上）", example=1)
+ *         )
  *     )
+ * )
+ * @OA\RequestBody(
+ *     request="MealCategoryBulkStoreRequest",
+ *     description="献立カテゴリ一括作成。data は1件以上必須。",
+ *     required=true,
+ *     @OA\JsonContent(ref="#/components/schemas/MealCategoryBulkStoreRequest")
  * )
  * @OA\RequestBody(
  *     request="MealCategoryBulkUpdateRequest",
@@ -53,22 +121,25 @@ namespace App\Swagger;
  *         )
  *     )
  * )
+ *
+ * 献立カテゴリ一括削除リクエスト（DELETE /meal-categories/bulk）
+ *
+ * @OA\Schema(
+ *     schema="MealCategoryBulkDestroyRequest",
+ *     required={"ids"},
+ *     @OA\Property(
+ *         property="ids",
+ *         type="array",
+ *         description="削除する献立カテゴリのID配列（1件以上）",
+ *         minItems=1,
+ *         @OA\Items(type="string", format="uuid", description="献立カテゴリID", example="a0fbbf74-1816-406e-99b7-7ef1e3e365f4")
+ *     )
+ * )
  * @OA\RequestBody(
  *     request="MealCategoryBulkDestroyRequest",
+ *     description="献立カテゴリ一括削除。ids は1件以上必須。",
  *     required=true,
- *     @OA\JsonContent(
- *         type="object",
- *         @OA\Property(
- *             property="ids",
- *             type="array",
- *             description="削除する献立カテゴリのID配列",
- *             @OA\Items(
- *                 type="string",
- *                 description="献立カテゴリID",
- *                 example="2"
- *             )
- *         )
- *     )
+ *     @OA\JsonContent(ref="#/components/schemas/MealCategoryBulkDestroyRequest")
  * )
  */
 

@@ -1,6 +1,8 @@
-import { Header } from '@/components/common';
-import { colors } from '@/constants/colors';
+import React from 'react';
 import { LoaderCircle } from 'lucide-react';
+
+import { Header } from '@/components';
+import { colors } from '@/constants';
 
 const Loading = () => {
     return (

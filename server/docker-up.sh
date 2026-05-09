@@ -8,6 +8,6 @@ sleep 5
 echo "--------------------------------------------------------------------------------------"
 echo "Swagger UI  :  https://localhost:8000/api/documentation"
 echo "Laravel     :  https://localhost:8000/"
-echo "php MyAdmin :  https://localhost:8080/"
+echo "PgAdmin     :  https://localhost:8080/"
 echo "Mailpit     :  http://localhost:8025/"
 echo "--------------------------------------------------------------------------------------"

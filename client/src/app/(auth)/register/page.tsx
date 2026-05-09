@@ -1,11 +1,16 @@
 'use client';
-import Link from 'next/link';
-import { useAuth } from '@/hooks/api';
+
 import React from 'react';
+import Link from 'next/link';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import { Button } from '@/components/common';
-import LoadingAnimation from '@/components/common/LoadingAnimation';
-import { VerticalRowField } from '@/components/react-hook-form';
+
+import { Button, ButtonLink, VerticalRowField } from '@/components';
+import {
+    BUTTON_TYPE,
+    BUTTON_VARIANT,
+    COLOR_VARIANT,
+} from '@/constants';
+import { useAuth } from '@/hooks';
 
 interface FormInputs {
     name: string;
@@ -21,7 +26,7 @@ type visibleErrorFields =
     | 'passwordConfirmation';
 
 const Page = () => {
-    const { isLoading, register } = useAuth();
+    const { register } = useAuth();
 
     const {
         handleSubmit,
@@ -50,6 +55,10 @@ const Page = () => {
         passwordConfirmation: false,
     });
 
+    /**
+     * アカウント登録フォームの送信
+     * @param data フォームの入力値
+     */
     const onSubmit: SubmitHandler<FormInputs> = (data: FormInputs) => {
         register({
             name: data.name,
@@ -62,7 +71,6 @@ const Page = () => {
 
     return (
         <>
-            {isLoading && <LoadingAnimation />}
             <div className="flex flex-col gap-y-10">
                 <div className="relative w-full text-center">
                     <span className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-px bg-gray-main" />
@@ -71,21 +79,21 @@ const Page = () => {
                     </h1>
                 </div>
                 <p>
-                    {/* TODO: リンク設定 */}
                     <Link
-                        href="#"
+                        href="/terms"
                         className="text-primary-main underline transition-opacity hover:text-opacity-70">
                         利用規約
                     </Link>
-                    と{/* TODO: リンク設定 */}
+                    と
                     <Link
-                        href="#"
+                        href="/privacy"
                         className="text-primary-main underline transition-opacity hover:text-opacity-70">
                         プライバシーポリシー
                     </Link>
                     に同意の上、ご登録ください
                 </p>
                 <form
+                    noValidate
                     onSubmit={handleSubmit(onSubmit)}
                     className="flex flex-col gap-y-10">
                     <div className="flex flex-col gap-y-4">
@@ -97,16 +105,17 @@ const Page = () => {
                             errorMessage={
                                 isErrorVisible.name
                                     ? ([
-                                          errors.name?.message,
-                                          ...(apiErrors?.name || []),
-                                      ].filter(Boolean) as string[])
+                                        errors.name?.message,
+                                        ...(apiErrors?.name || []),
+                                    ].filter(Boolean) as string[])
                                     : []
                             }
                             rules={{
                                 required: '必須項目です',
                             }}>
-                            {({ value, onChange }) => (
+                            {({ value, onChange, id }) => (
                                 <input
+                                    id={id}
                                     type="text"
                                     value={value as string}
                                     onChange={e => {
@@ -117,7 +126,7 @@ const Page = () => {
                                         }));
                                         setApiErrors({ name: [] });
                                     }}
-                                    className={`py-2 px-4 border rounded-lg ${isErrorVisible.name && (!!errors.name?.message || (!!apiErrors.name && apiErrors.name?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
+                                    className={`py-2 px-4 border rounded-lg ${isErrorVisible.name && (!!errors.name?.message || (!!apiErrors.name && apiErrors.name?.length > 0)) ? 'border-alert-main border-2' : 'border-gray-main'}`}
                                 />
                             )}
                         </VerticalRowField>
@@ -130,9 +139,9 @@ const Page = () => {
                             errorMessage={
                                 isErrorVisible.email
                                     ? ([
-                                          errors.email?.message,
-                                          ...(apiErrors?.email || []),
-                                      ].filter(Boolean) as string[])
+                                        errors.email?.message,
+                                        ...(apiErrors?.email || []),
+                                    ].filter(Boolean) as string[])
                                     : []
                             }
                             rules={{
@@ -143,8 +152,9 @@ const Page = () => {
                                         'メールアドレスの形式で入力してください',
                                 },
                             }}>
-                            {({ value, onChange }) => (
+                            {({ value, onChange, id }) => (
                                 <input
+                                    id={id}
                                     type="email"
                                     value={value as string}
                                     onChange={e => {
@@ -155,7 +165,7 @@ const Page = () => {
                                         }));
                                         setApiErrors({ email: [] });
                                     }}
-                                    className={`py-2 px-4 border rounded-lg ${isErrorVisible.email && (!!errors.email?.message || (!!apiErrors.email && apiErrors.email?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
+                                    className={`py-2 px-4 border rounded-lg ${isErrorVisible.email && (!!errors.email?.message || (!!apiErrors.email && apiErrors.email?.length > 0)) ? 'border-alert-main border-2' : 'border-gray-main'}`}
                                 />
                             )}
                         </VerticalRowField>
@@ -164,17 +174,19 @@ const Page = () => {
                             control={control}
                             name="password"
                             label="パスワード"
+                            memo="8文字以上で、英字・数字・記号をそれぞれ1文字以上含めてください。"
                             errorMessage={
                                 isErrorVisible.password
                                     ? ([
-                                          errors.password?.message,
-                                          ...(apiErrors?.password || []),
-                                      ].filter(Boolean) as string[])
+                                        errors.password?.message,
+                                        ...(apiErrors?.password || []),
+                                    ].filter(Boolean) as string[])
                                     : []
                             }
                             rules={{ required: '必須項目です' }}>
-                            {({ value, onChange }) => (
+                            {({ value, onChange, id }) => (
                                 <input
+                                    id={id}
                                     type="password"
                                     value={value as string}
                                     onChange={e => {
@@ -185,7 +197,7 @@ const Page = () => {
                                         }));
                                         setApiErrors({ password: [] });
                                     }}
-                                    className={`py-2 px-4 border rounded-lg ${isErrorVisible.password && (!!errors.password?.message || (!!apiErrors.password && apiErrors.password?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
+                                    className={`py-2 px-4 border rounded-lg ${isErrorVisible.password && (!!errors.password?.message || (!!apiErrors.password && apiErrors.password?.length > 0)) ? 'border-alert-main border-2' : 'border-gray-main'}`}
                                 />
                             )}
                         </VerticalRowField>
@@ -195,18 +207,20 @@ const Page = () => {
                             control={control}
                             name="passwordConfirmation"
                             label="パスワード（確認用）"
+                            memo="上記のパスワードと同じ内容を入力してください。"
                             errorMessage={
                                 isErrorVisible.passwordConfirmation
                                     ? ([
-                                          errors.passwordConfirmation?.message,
-                                          ...(apiErrors?.passwordConfirmation ||
-                                              []),
-                                      ].filter(Boolean) as string[])
+                                        errors.passwordConfirmation?.message,
+                                        ...(apiErrors?.passwordConfirmation ||
+                                            []),
+                                    ].filter(Boolean) as string[])
                                     : []
                             }
                             rules={{ required: '必須項目です' }}>
-                            {({ value, onChange }) => (
+                            {({ value, onChange, id }) => (
                                 <input
+                                    id={id}
                                     type="password"
                                     value={value as string}
                                     onChange={e => {
@@ -219,13 +233,13 @@ const Page = () => {
                                             passwordConfirmation: [],
                                         });
                                     }}
-                                    className={`py-2 px-4 border rounded-lg ${isErrorVisible.passwordConfirmation && (!!errors.passwordConfirmation?.message || (!!apiErrors.passwordConfirmation && apiErrors.passwordConfirmation?.length > 0)) ? 'border-alert-main' : 'border-gray-main'}`}
+                                    className={`py-2 px-4 border rounded-lg ${isErrorVisible.passwordConfirmation && (!!errors.passwordConfirmation?.message || (!!apiErrors.passwordConfirmation && apiErrors.passwordConfirmation?.length > 0)) ? 'border-alert-main border-2' : 'border-gray-main'}`}
                                 />
                             )}
                         </VerticalRowField>
                     </div>
                     <Button
-                        type="submit"
+                        type={BUTTON_TYPE.SUBMIT}
                         onClick={() =>
                             setIsErrorVisible({
                                 name: true,
@@ -252,10 +266,14 @@ const Page = () => {
                         他の方法でログイン
                     </h1>
                 </div>
-                {/* TODO: リンク？ */}
-                <Button type="button" variant="outlined" colorVariant="gray">
+                <ButtonLink
+                    href={`${(process.env.NEXT_PUBLIC_BACKEND_URL || 'https://localhost:8000').replace(/\/$/, '')}/auth/google/redirect`}
+                    variant={BUTTON_VARIANT.OUTLINED}
+                    colorVariant={COLOR_VARIANT.GRAY}
+                    isExternal={true}
+                >
                     Googleアカウントでログイン
-                </Button>
+                </ButtonLink>
             </div>
         </>
     );

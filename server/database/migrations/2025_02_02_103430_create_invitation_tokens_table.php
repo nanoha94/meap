@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('invitation_tokens', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('inviter_id')->constrained('users', 'id')->cascadeOnDelete();
+            $table->foreignUuid('inviter_user_id')->constrained('users', 'id')->cascadeOnDelete();
             $table->string('token')->unique();
             $table->timestamp('expires_at');
             $table->timestamps();
@@ -27,7 +27,7 @@ return new class extends Migration
     {
         // invitation_tokensテーブルの外部キー制約を削除
         Schema::table('invitation_tokens', function (Blueprint $table) {
-            $table->dropForeign(['inviter_id']);
+            $table->dropForeign(['inviter_user_id']);
         });
         Schema::dropIfExists('invitation_tokens');
     }
