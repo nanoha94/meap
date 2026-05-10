@@ -15,7 +15,8 @@
         "laravel/framework": "^11.31",
         "laravel/sanctum": "^4.0",
         "laravel/socialite": "^5.26",
-        "laravel/tinker": "^2.9"
+        "laravel/tinker": "^2.9",
+        "resend/resend-php": "^1.3"
     },
     "require-dev": {
         "askdkc/breezejp": "^2.3",
