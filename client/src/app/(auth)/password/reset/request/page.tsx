@@ -4,7 +4,12 @@ import Link from 'next/link';
 import { SubmitHandler, useForm } from 'react-hook-form';
 
 import { Button, ButtonLink, VerticalRowField } from '@/components';
-import { BUTTON_TYPE, BUTTON_VARIANT, COLOR_VARIANT } from '@/constants';
+import {
+    BUTTON_TYPE,
+    BUTTON_VARIANT,
+    COLOR_VARIANT,
+    LINK_TO,
+} from '@/constants';
 import { useAuth } from '@/hooks';
 
 interface FormInputs {
@@ -119,12 +124,12 @@ const Page = () => {
                 </form>
                 <div className="flex flex-col items-center gap-y-4">
                     <Link
-                        href="/register"
+                        href={LINK_TO.REGISTER}
                         className="font-bold text-primary-main underline transition-opacity hover:text-opacity-70">
                         アカウント登録はこちら
                     </Link>
                     <Link
-                        href="/login"
+                        href={LINK_TO.LOGIN}
                         className="font-bold text-primary-main underline transition-opacity hover:text-opacity-70">
                         ログインはこちら
                     </Link>

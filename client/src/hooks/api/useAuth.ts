@@ -4,7 +4,7 @@ import React from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import axios, { isAxiosError } from '@/lib/axios';
 
-import { API_STATUS_CODE, INTERNAL_LINKS } from '@/constants';
+import { API_STATUS_CODE, LINK_TO } from '@/constants';
 import { useGlobalStore } from '@/stores';
 import { useApiErrorHandler } from './useApiErrorHandler';
 import { useSnackbars } from '../useSnackbars';
@@ -86,9 +86,9 @@ export const useAuth = () => {
             // CSRFトークンを取得
             await csrf();
 
-            await axios.post('/register', props);
+            await axios.post(LINK_TO.REGISTER, props);
             // ユーザー登録成功時にメール認証ページにリダイレクト
-            router.push('/email/verify');
+            router.push(LINK_TO.EMAIL_VERIFY);
         } catch (error) {
             if (error.response?.status === API_STATUS_CODE.UNPROCESSABLE_ENTITY) {
                 setErrors(error.response.data.errors);
@@ -129,9 +129,9 @@ export const useAuth = () => {
             // CSRFトークンを取得
             await csrf();
 
-            await axios.post(INTERNAL_LINKS.LOGIN, props);
+            await axios.post(LINK_TO.LOGIN, props);
             // ログイン成功時にトップ画面にリダイレクト
-            window.location.href = '/plan';
+            window.location.href = LINK_TO.PLAN.TOP;
         } catch (error) {
             if (error.response?.status === API_STATUS_CODE.UNPROCESSABLE_ENTITY) {
                 setErrors(error.response.data.errors);
@@ -177,7 +177,7 @@ export const useAuth = () => {
             // CSRFトークンを取得
             await csrf();
 
-            const response = await axios.post('/password/reset/request', { email });
+            const response = await axios.post(LINK_TO.PASSWORD_RESET_REQUEST, { email });
             setStatus(response.data.message);
         } catch (error) {
             if (error.response?.status === API_STATUS_CODE.UNPROCESSABLE_ENTITY) {
@@ -224,7 +224,7 @@ export const useAuth = () => {
 
             const response = await axios.post('/password/reset', { token: params?.token, ...props });
             // パスワードリセット成功時にリセットトークンをクエリパラメータに追加してログインページにリダイレクト
-            router.push(INTERNAL_LINKS.LOGIN + '?reset=' + btoa(response.data.message));
+            router.push(LINK_TO.LOGIN + '?reset=' + btoa(response.data.message));
         } catch (error) {
             if (error.response?.status === API_STATUS_CODE.UNPROCESSABLE_ENTITY) {
                 setErrors(error.response.data.errors);
@@ -269,7 +269,7 @@ export const useAuth = () => {
                 error.response?.status === API_STATUS_CODE.UNAUTHORIZED
             ) {
                 if (typeof window !== 'undefined') {
-                    window.location.href = INTERNAL_LINKS.LOGIN;
+                    window.location.href = LINK_TO.LOGIN;
                 }
                 return;
             }
@@ -306,11 +306,11 @@ export const useAuth = () => {
             }
 
             // ログインページへ遷移（Laravel側でCookieは削除される）
-            window.location.href = INTERNAL_LINKS.LOGIN;
+            window.location.href = LINK_TO.LOGIN;
         } catch (error) {
             handleApiError(error);
             // エラーが発生してもログインページへ遷移
-            window.location.href = INTERNAL_LINKS.LOGIN;
+            window.location.href = LINK_TO.LOGIN;
         } finally {
             // 重複リクエスト防止用のフラグをリセット
             isLogoutRequestRef.current = false;

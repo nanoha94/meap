@@ -1,3 +1,5 @@
+import { LINK_TO } from './links';
+
 // アイコンタイプの定数定義
 export const NAVIGATION_ICON_TYPES = {
     CALENDAR: 'calendar',
@@ -17,22 +19,22 @@ export interface NavigationItem {
 
 export const navigationItems: NavigationItem[] = [
     {
-        link: '/plan',
+        link: LINK_TO.PLAN.TOP,
         name: '献立表',
         iconType: NAVIGATION_ICON_TYPES.CALENDAR,
     },
     {
-        link: '/recipe',
+        link: LINK_TO.RECIPE.TOP,
         name: '料理/レシピ',
         iconType: NAVIGATION_ICON_TYPES.COOKING_POT,
     },
     {
-        link: '/shopping-list',
+        link: LINK_TO.SHOPPING_LIST,
         name: '買い物リスト',
         iconType: NAVIGATION_ICON_TYPES.BOOK_OPEN_CHECK,
     },
     {
-        link: '/settings',
+        link: LINK_TO.SETTINGS.TOP,
         name: '設定',
         iconType: NAVIGATION_ICON_TYPES.SETTINGS,
     },

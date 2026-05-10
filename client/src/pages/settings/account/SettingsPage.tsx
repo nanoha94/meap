@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight } from 'lucide-react';
+import Link from 'next/link';
 
-import { Header } from "@/components";
-import { colors } from "@/constants";
-import { useAlertDialog, useAuth } from "@/hooks";
-import { useUserApi } from "@/models/user";
+import { Header } from '@/components';
+import { LINK_TO, colors } from '@/constants';
+import { useAlertDialog, useAuth } from '@/hooks';
+import { useUserApi } from '@/models/user';
 
 type NavigationItemWithHref = {
     label: string;
@@ -29,7 +29,7 @@ const SettingsPage = () => {
     const navigationItems: NavigationItem[] = [
         {
             label: 'アカウント設定',
-            href: '/settings/account',
+            href: LINK_TO.SETTINGS.ACCOUNT,
             colorClass: 'text-black'
         },
         {

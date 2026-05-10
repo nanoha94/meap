@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { LogOut } from 'lucide-react';
 import { NavigationIcon } from '.';
 
-import { navigationItems } from '@/constants';
+import { LINK_TO, navigationItems } from '@/constants';
 import { useAuth } from '@/hooks';
 import { useRecipeListStateStore } from '@/models/recipe';
 import { useUserStore, iconAvatar } from '@/models/user';
@@ -32,8 +32,8 @@ const SideNavigation = ({ className }: Props) => {
     }
 
     const formattedLink = (link: string) =>
-        link === '/recipe'
-            ? `/recipe?${getBrowserQueryString(listSortOptions, listFilterOptions, listCurrentPage)}`
+        link === LINK_TO.RECIPE.TOP
+            ? `${LINK_TO.RECIPE.TOP}?${getBrowserQueryString(listSortOptions, listFilterOptions, listCurrentPage)}`
             : link;
 
     return (
@@ -41,7 +41,7 @@ const SideNavigation = ({ className }: Props) => {
             className={`fixed top-0 left-0 w-[160px] h-full bg-white ${className ?? ''}`}
             style={{ boxShadow: '5px 0 8px 0 rgba(0, 0, 0, 10%)' }}>
             <div className="py-3 flex flex-col border-b border-gray-border">
-                <Link href="/" className="w-fit mx-auto block">
+                <Link href={LINK_TO.LP} className="w-fit mx-auto block">
                     <Image
                         src="/images/meap-logo2.png"
                         alt="meap"
@@ -55,7 +55,7 @@ const SideNavigation = ({ className }: Props) => {
             <div className="py-3 flex flex-col border-b border-gray-border">
                 {loginUser && (
                     <Link
-                        href="/settings/account"
+                        href={LINK_TO.SETTINGS.ACCOUNT}
                         key={loginUser.id}
                         className="py-2 px-3 w-full mx-auto flex flex-col items-center gap-y-1 transition-colors hover:bg-gray-light ">
                         <div className="w-14 h-auto aspect-square rounded-full overflow-hidden">

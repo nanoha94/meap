@@ -7,7 +7,13 @@ import { useRouter } from 'next/navigation';
 import { ChevronRight, SlidersHorizontal } from 'lucide-react';
 
 import { Button, RecipeFilterForm, TextButton } from '@/components';
-import { BUTTON_TYPE, BUTTON_VARIANT, COLOR_VARIANT, colors } from '@/constants';
+import {
+    BUTTON_TYPE,
+    BUTTON_VARIANT,
+    COLOR_VARIANT,
+    LINK_TO,
+    colors,
+} from '@/constants';
 import { useDialog } from '@/hooks';
 import { RecipeFilterFormData, sortOptions, useRecipeApi } from '@/models/recipe';
 import { IRecipe, IRecipeListItem } from '@/types';
@@ -180,7 +186,7 @@ const RecipeSelect = ({ initFetchedRecipes, defaultItems, onSave }: Props) => {
                         <TextButton
                             type={BUTTON_TYPE.BUTTON}
                             colorVariant={COLOR_VARIANT.SECONDARY}
-                            onClick={() => { router.push('/recipe/new'); closeDialog(false); }}>
+                            onClick={() => { router.push(LINK_TO.RECIPE.NEW); closeDialog(false); }}>
                             料理/レシピを追加
                             <ChevronRight size={20} />
                         </TextButton>
@@ -191,7 +197,7 @@ const RecipeSelect = ({ initFetchedRecipes, defaultItems, onSave }: Props) => {
                         <TextButton
                             type={BUTTON_TYPE.BUTTON}
                             colorVariant={COLOR_VARIANT.SECONDARY}
-                            onClick={() => { router.push('/recipe/new'); closeDialog(false); }}>
+                            onClick={() => { router.push(LINK_TO.RECIPE.NEW); closeDialog(false); }}>
                             料理/レシピを追加
                             <ChevronRight size={20} />
                         </TextButton>

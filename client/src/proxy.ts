@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+import { LINK_TO } from '@/constants';
 import { normalizePathnameForMatch } from '@/utils/pathname';
 
 // (auth) シェル配下の RSC レイアウトが現在のパスを参照できるよう、
@@ -25,12 +26,12 @@ export function proxy(request: NextRequest) {
         request.cookies.has('XSRF-TOKEN');
 
     // /settings/account: 招待トークンがある場合のみ、未ログイン時のリダイレクト処理を行う
-    if (pathname === '/settings/account') {
+    if (pathname === LINK_TO.SETTINGS.ACCOUNT) {
         const redirectPath = `${pathname}${searchParams}`;
 
         // 条件なしにリダイレクトパスをセット
         const response = !hasAuthCookie
-            ? NextResponse.redirect(new URL('/login', baseUrl))
+            ? NextResponse.redirect(new URL(LINK_TO.LOGIN, baseUrl))
             : NextResponse.next();
 
         // /settings/account?token=XXXの場合で未承認の場合のみリダイレクトパスをCookieに設定

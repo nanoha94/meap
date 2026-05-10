@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import { LoginLinks } from '@/components';
+import { LINK_TO } from '@/constants';
 
 export const metadata: Metadata = {
     title: 'プライバシーポリシー',
@@ -18,7 +19,7 @@ const Page = () => {
                 <div className="flex justify-center px-4 sm:px-6">
                     <div className="flex w-full max-w-5xl items-center justify-between gap-4 py-3">
                         <Link
-                            href="/"
+                            href={LINK_TO.LP}
                             className="flex items-center gap-2 text-primary-main transition-opacity hover:opacity-80">
                             <Image
                                 src="/images/meap-logo2.png"

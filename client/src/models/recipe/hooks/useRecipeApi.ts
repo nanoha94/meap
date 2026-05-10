@@ -1,8 +1,8 @@
-"use client";
+'use client';
 import React from 'react';
 import { useRouter } from 'next/navigation';
 
-import { TIMEOUT_MS, TMP_ID_PREFIX } from '@/constants';
+import { LINK_TO, TIMEOUT_MS, TMP_ID_PREFIX } from '@/constants';
 import { useApiErrorHandler, useSnackbars } from '@/hooks';
 import axios from '@/lib/axios';
 import { useImageApi } from '@/models/image';
@@ -235,7 +235,7 @@ export const useRecipeApi = () => {
                     },
                 );
                 if (responseData.success) {
-                    router.push(`/recipe?${getBrowserQueryString(listSortOptions, listFilterOptions, listCurrentPage)}`);
+                    router.push(`${LINK_TO.RECIPE.TOP}?${getBrowserQueryString(listSortOptions, listFilterOptions, listCurrentPage)}`);
                     router.refresh();
                     addSnackbar(
                         'success',
@@ -316,7 +316,7 @@ export const useRecipeApi = () => {
                     },
                 );
                 if (responseData.success) {
-                    router.push(`/recipe/${data.id}`);
+                    router.push(`${LINK_TO.RECIPE.TOP}/${data.id}`);
                     router.refresh();
                     addSnackbar(
                         'success',
@@ -360,7 +360,7 @@ export const useRecipeApi = () => {
                 },
             );
             if (responseData.success) {
-                router.push('/recipe/');
+                router.push(LINK_TO.RECIPE.TOP);
                 router.refresh();
                 addSnackbar('success', responseData.message || 'リクエストが正常に完了しました');
             } else {

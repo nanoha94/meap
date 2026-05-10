@@ -1,11 +1,12 @@
-"use client";
-import React from "react";
-import { useRouter } from "next/navigation";
+'use client';
 
-import { TIMEOUT_MS } from "@/constants";
-import { useApiErrorHandler, useSnackbars } from "@/hooks";
-import axios from "@/lib/axios";
-import { useGlobalStore } from "@/stores";
+import React from 'react';
+import { useRouter } from 'next/navigation';
+
+import { LINK_TO, TIMEOUT_MS } from '@/constants';
+import { useApiErrorHandler, useSnackbars } from '@/hooks';
+import axios from '@/lib/axios';
+import { useGlobalStore } from '@/stores';
 import {
     IDeleteMealPlanResponse,
     IGetMealPlanIndexRequest,
@@ -13,7 +14,7 @@ import {
     IPostMealPlanResponse,
     IPostPutMealPlanRequest,
     IPutMealPlanResponse,
-} from "@/types";
+} from '@/types';
 import { MealPlanFilterFormData } from "../types";
 
 export const useMealPlanApi = () => {
@@ -197,7 +198,7 @@ export const useMealPlanApi = () => {
                     'success',
                     responseData.message || 'リクエストが正常に完了しました',
                 );
-                router.push('/plan/');
+                router.push(LINK_TO.PLAN.TOP);
             } else {
                 addSnackbar(
                     'error',

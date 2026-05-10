@@ -1,14 +1,15 @@
-"use client";
+'use client';
 
-import { TIMEOUT_MS } from "@/constants";
-import { useApiErrorHandler, useSnackbars } from "@/hooks";
-import axios from "@/lib/axios";
-import { useGlobalStore } from "@/stores";
-import React from "react";
-import { IBaseApiResponse, IPutUserRequest } from "@/types";
-import { useRouter } from "next/navigation";
-import { useImageApi } from "@/models/image";
-import { useUserStore } from "@/models/user";
+import React from 'react';
+import { useRouter } from 'next/navigation';
+
+import { LINK_TO, TIMEOUT_MS } from '@/constants';
+import { useApiErrorHandler, useSnackbars } from '@/hooks';
+import axios from '@/lib/axios';
+import { useImageApi } from '@/models/image';
+import { useUserStore } from '@/models/user';
+import { useGlobalStore } from '@/stores';
+import { IBaseApiResponse, IPutUserRequest } from '@/types';
 
 export const useUserApi = () => {
     // store
@@ -97,11 +98,11 @@ export const useUserApi = () => {
                     responseData.message || 'リクエストが正常に完了しました',
                 );
 
-                if (typeof window !== "undefined") {
+                if (typeof window !== 'undefined') {
                     sessionStorage.clear();
                 }
 
-                window.location.href = "/login";
+                window.location.href = LINK_TO.LOGIN;
             } else {
                 addSnackbar(
                     'error',

@@ -9,12 +9,12 @@ import {
     Users,
     UtensilsCrossed,
 } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 
 import { LoginLinks } from '@/components';
-import { COLOR_VARIANT } from '@/constants';
+import { COLOR_VARIANT, LINK_TO } from '@/constants';
 import { getLinkButtonClassName } from '@/utils';
-import Image from 'next/image';
 
 export const metadata = {
     title: { absolute: 'meap — レシピと献立をまとめて管理' },
@@ -101,7 +101,7 @@ const Home = () => {
                 <div className="flex justify-center px-4 sm:px-6">
                     <div className="flex w-full max-w-5xl items-center justify-between gap-4 py-3">
                         <Link
-                            href="/"
+                            href={LINK_TO.LP}
                             className="flex items-center gap-2 text-primary-main transition-opacity hover:opacity-80">
                             <Image
                                 src="/images/meap-logo2.png"
@@ -140,14 +140,14 @@ const Home = () => {
                             className="flex flex-wrap items-center gap-3"
                             style={{ scrollMarginTop: '6rem' }}>
                             <Link
-                                href="/register"
+                                href={LINK_TO.REGISTER}
                                 className={getLinkButtonClassName(
                                     COLOR_VARIANT.PRIMARY,
                                 )}>
                                 無料で登録する
                             </Link>
                             <Link
-                                href="/login"
+                                href={LINK_TO.LOGIN}
                                 className={getLinkButtonClassName(
                                     COLOR_VARIANT.GRAY,
                                 )}>
@@ -334,7 +334,7 @@ const Home = () => {
                             登録後はレシピ一覧など、アプリ内の機能へ進めます。
                         </p>
                         <Link
-                            href="/register"
+                            href={LINK_TO.REGISTER}
                             className="inline-flex items-center justify-center rounded-lg bg-secondary-main px-6 py-3 text-base font-semibold text-white shadow-card transition hover:bg-secondary-main/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary-main">
                             アカウントを作成
                         </Link>

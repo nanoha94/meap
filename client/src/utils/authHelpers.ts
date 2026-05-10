@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 
-import { INTERNAL_LINKS, SESSION_REQUIRED_PATHS_IN_AUTH_SHELL } from '@/constants';
+import { LINK_TO, SESSION_REQUIRED_PATHS_IN_AUTH_SHELL } from '@/constants';
 import { ILoginUser } from '@/types';
 import { normalizePathnameForMatch } from '@/utils/pathname';
 
@@ -39,21 +39,21 @@ export function handleAuthRedirect(
     if (user) {
         if (user.email_verified_at && isAuthPage) {
             // 認証済みユーザーが認証ページにアクセスした場合
-            redirect('/plan');
+            redirect(LINK_TO.PLAN.TOP);
         }
         // メール未認証ユーザーが保護されたページにアクセスした場合のみ
         else if (!user.email_verified_at && !isAuthPage) {
-            redirect('/email/verify');
+            redirect(LINK_TO.EMAIL_VERIFY);
         }
         // メール未認証ユーザーが認証ページにアクセスした場合は何もしない
     } else {
         // 未ログインユーザーが保護されたページにアクセスした場合
         if (!isAuthPage) {
-            redirect(INTERNAL_LINKS.LOGIN);
+            redirect(LINK_TO.LOGIN);
         }
         // (auth) シェル内でもセッション必須とするパスにアクセスした場合
         else if (pathnameRequiresSessionInAuthShell(options?.pathname)) {
-            redirect(INTERNAL_LINKS.LOGIN);
+            redirect(LINK_TO.LOGIN);
         }
     }
 }

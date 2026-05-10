@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { NavigationIcon } from '.';
 
-import { navigationItems } from '@/constants';
+import { LINK_TO, navigationItems } from '@/constants';
 import { useRecipeListStateStore } from '@/models/recipe';
 import { getBrowserQueryString } from '@/models/recipe/utils';
 
@@ -32,8 +32,8 @@ const FooterNavigation = ({ className }: Props) => {
     // }
 
     const formattedLink = (link: string) =>
-        link === '/recipe'
-            ? `/recipe?${getBrowserQueryString(listSortOptions, listFilterOptions, listCurrentPage)}`
+        link === LINK_TO.RECIPE.TOP
+            ? `${LINK_TO.RECIPE.TOP}?${getBrowserQueryString(listSortOptions, listFilterOptions, listCurrentPage)}`
             : link;
 
     return (

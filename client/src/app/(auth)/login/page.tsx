@@ -5,7 +5,12 @@ import React from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
 import { AuthLoading, Button, ButtonLink, VerticalRowField } from '@/components';
-import { BUTTON_TYPE, BUTTON_VARIANT, COLOR_VARIANT } from '@/constants';
+import {
+    BUTTON_TYPE,
+    BUTTON_VARIANT,
+    COLOR_VARIANT,
+    LINK_TO,
+} from '@/constants';
 import { useAuth } from '@/hooks';
 
 interface FormInputs {
@@ -205,12 +210,12 @@ const LoginForm = () => {
                 </form>
                 <div className="flex flex-col items-center gap-y-4">
                     <Link
-                        href="/register"
+                        href={LINK_TO.REGISTER}
                         className="font-bold text-primary-main underline transition-opacity hover:text-opacity-70">
                         アカウント登録はこちら
                     </Link>
                     <Link
-                        href="/password/reset/request"
+                        href={LINK_TO.PASSWORD_RESET_REQUEST}
                         className="font-bold text-primary-main underline transition-opacity hover:text-opacity-70">
                         パスワードをお忘れの方はこちら
                     </Link>

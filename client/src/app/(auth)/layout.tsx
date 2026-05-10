@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import { SnackbarHandler } from '@/components';
+import { LINK_TO } from '@/constants';
 import { fetchData } from '@/lib/apiClient';
 import { IGetUserResponse } from '@/types';
 import { handleAuthRedirect } from '@/utils';
@@ -43,7 +44,7 @@ const AuthLayout = async ({ children }: Props) => {
                 <SnackbarHandler type="error" message={errorMessage} />
             )}
             <div className="max-w-xl mx-auto pt-10 pb-20 px-5 flex flex-col gap-y-16">
-                <Link href="/" className="w-[60%] mx-auto block">
+                <Link href={LINK_TO.LP} className="w-[60%] mx-auto block">
                     <Image src="/images/meap-logo.png" alt="meap" width={297} height={307} loading="eager" className="w-full h-auto" />
                 </Link>
                 {children}
