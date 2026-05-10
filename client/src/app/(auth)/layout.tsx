@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { headers } from 'next/headers';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -22,13 +23,15 @@ interface Props {
 }
 
 const AuthLayout = async ({ children }: Props) => {
+    const headerList = await headers();
+    const pathname = headerList.get('x-pathname') ?? '';
+
     const { data: user, errorMessage } = await fetchData<IGetUserResponse>(
         '/user',
         { suppressUnauthorizedLog: true },
     );
-    if (user) {
-        handleAuthRedirect(user.data, true);
-    }
+
+    handleAuthRedirect(user?.data ?? null, true, { pathname });
 
     // 認証エラー（AUTHENTICATION_REQUIRED）はログインページでは表示しない
     const shouldShowError =
@@ -41,7 +44,7 @@ const AuthLayout = async ({ children }: Props) => {
             )}
             <div className="max-w-xl mx-auto pt-10 pb-20 px-5 flex flex-col gap-y-16">
                 <Link href="/" className="w-[60%] mx-auto block">
-                    <Image src="/images/meap-logo.png" alt="meap" width={297} height={307} className="w-full h-auto" />
+                    <Image src="/images/meap-logo.png" alt="meap" width={297} height={307} loading="eager" className="w-full h-auto" />
                 </Link>
                 {children}
             </div>

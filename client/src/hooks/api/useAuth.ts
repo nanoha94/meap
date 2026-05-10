@@ -2,9 +2,9 @@
 
 import React from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import axios from '@/lib/axios';
+import axios, { isAxiosError } from '@/lib/axios';
 
-import { API_STATUS_CODE } from '@/constants';
+import { API_STATUS_CODE, INTERNAL_LINKS } from '@/constants';
 import { useGlobalStore } from '@/stores';
 import { useApiErrorHandler } from './useApiErrorHandler';
 import { useSnackbars } from '../useSnackbars';
@@ -129,7 +129,7 @@ export const useAuth = () => {
             // CSRFトークンを取得
             await csrf();
 
-            await axios.post('/login/', props);
+            await axios.post(INTERNAL_LINKS.LOGIN, props);
             // ログイン成功時にトップ画面にリダイレクト
             window.location.href = '/plan';
         } catch (error) {
@@ -224,7 +224,7 @@ export const useAuth = () => {
 
             const response = await axios.post('/password/reset', { token: params?.token, ...props });
             // パスワードリセット成功時にリセットトークンをクエリパラメータに追加してログインページにリダイレクト
-            router.push('/login?reset=' + btoa(response.data.message));
+            router.push(INTERNAL_LINKS.LOGIN + '?reset=' + btoa(response.data.message));
         } catch (error) {
             if (error.response?.status === API_STATUS_CODE.UNPROCESSABLE_ENTITY) {
                 setErrors(error.response.data.errors);
@@ -264,6 +264,15 @@ export const useAuth = () => {
             const response = await axios.post('/email/verification-notification');
             setMessage(response.data.message);
         } catch (error) {
+            if (
+                isAxiosError(error) &&
+                error.response?.status === API_STATUS_CODE.UNAUTHORIZED
+            ) {
+                if (typeof window !== 'undefined') {
+                    window.location.href = INTERNAL_LINKS.LOGIN;
+                }
+                return;
+            }
             handleApiError(error);
         } finally {
             // 重複リクエスト防止用のフラグをリセット
@@ -297,11 +306,11 @@ export const useAuth = () => {
             }
 
             // ログインページへ遷移（Laravel側でCookieは削除される）
-            window.location.href = '/login';
+            window.location.href = INTERNAL_LINKS.LOGIN;
         } catch (error) {
             handleApiError(error);
             // エラーが発生してもログインページへ遷移
-            window.location.href = '/login';
+            window.location.href = INTERNAL_LINKS.LOGIN;
         } finally {
             // 重複リクエスト防止用のフラグをリセット
             isLogoutRequestRef.current = false;

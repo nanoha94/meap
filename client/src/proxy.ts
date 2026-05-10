@@ -1,38 +1,63 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+import { normalizePathnameForMatch } from '@/utils/pathname';
+
+// (auth) シェル配下の RSC レイアウトが現在のパスを参照できるよう、
+// リクエストヘッダに正規化済み x-pathname を付与してそのまま通過させる
+const forwardWithPathnameHeader = (request: NextRequest) => {
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set(
+        'x-pathname',
+        normalizePathnameForMatch(request.nextUrl.pathname),
+    );
+    return NextResponse.next({ request: { headers: requestHeaders } });
+};
+
 export function proxy(request: NextRequest) {
     const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_URL;
     const pathname = request.nextUrl.pathname;
     const searchParams = request.nextUrl.search;
     const token = request.nextUrl.searchParams.get('token');
 
-    const redirectPath = `${pathname}${searchParams}`;
-
     const hasAuthCookie =
         request.cookies.has('laravel_session') ||
         request.cookies.has('XSRF-TOKEN');
 
-    // 条件なしにリダイレクトパスをセット
-    const response = !hasAuthCookie
-        ? NextResponse.redirect(new URL('/login', baseUrl))
-        : NextResponse.next();
+    // /settings/account: 招待トークンがある場合のみ、未ログイン時のリダイレクト処理を行う
+    if (pathname === '/settings/account') {
+        const redirectPath = `${pathname}${searchParams}`;
 
-    // /settings/account?token=XXXの場合で未承認の場合のみリダイレクトパスをCookieに設定
-    if (token && !hasAuthCookie) {
-        response.cookies.set('redirectPath', redirectPath, {
-            path: '/',
-            maxAge: 3600, // 1時間有効
-            sameSite: 'lax', // メール認証後バックエンド→フロントのリダイレクト時にも送るため
-            secure: true,
-        });
+        // 条件なしにリダイレクトパスをセット
+        const response = !hasAuthCookie
+            ? NextResponse.redirect(new URL('/login', baseUrl))
+            : NextResponse.next();
+
+        // /settings/account?token=XXXの場合で未承認の場合のみリダイレクトパスをCookieに設定
+        if (token && !hasAuthCookie) {
+            response.cookies.set('redirectPath', redirectPath, {
+                path: '/',
+                maxAge: 3600, // 1時間有効
+                sameSite: 'lax', // メール認証後バックエンド→フロントのリダイレクト時にも送るため
+                secure: true,
+            });
+        }
+
+        return response;
     }
 
-    return response;
+    // (auth) 配下のパス（matcher で限定）: AuthLayout から headers() で参照する
+    // 正規化済み x-pathname を付与してそのまま通す。リダイレクト判定は AuthLayout 側で
+    // handleAuthRedirect に集約する。
+    return forwardWithPathnameHeader(request);
 }
 
-// 招待トークンがある場合のみ、未ログイン時のリダイレクト処理を行う
-// その他は、AuthLayout/AppLayoutで認証チェックして適宜リダイレクトする
 export const config = {
-    matcher: ['/settings/account'],
+    matcher: [
+        '/settings/account',
+        '/login',
+        '/register',
+        '/email/:path*',
+        '/password/:path*',
+    ],
 };
