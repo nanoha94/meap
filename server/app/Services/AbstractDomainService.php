@@ -16,6 +16,11 @@ abstract class AbstractDomainService
 {
     use TypeCheck;
 
+    /**
+     * true のサービスは create / bulkCreate / bulkUpdate / delete / bulkDelete 成功後にマスターキャッシュを破棄する
+     */
+    protected bool $forgetsMasterCacheOnWrite = false;
+
     abstract protected function getResourceName(): string;
     abstract protected function getGroupRelation(Group $group): HasMany | BelongsToMany;
 
@@ -103,35 +108,33 @@ abstract class AbstractDomainService
 
     public function index(Group $group): array
     {
-        return DB::transaction(function () use ($group) {
-            $relation = $this->getGroupRelation($group);
-            $query = $relation;
+        $relation = $this->getGroupRelation($group);
+        $query = $relation;
 
-            // BelongsToManyリレーションの場合はselect()を使わない
-            // select()を使うとテーブル名のプレフィックスが必要になるため
-            if (!($relation instanceof BelongsToMany) && $this->getSelectColumns()) {
-                $query = $query->select($this->getSelectColumns());
-            }
+        // BelongsToManyリレーションの場合はselect()を使わない
+        // select()を使うとテーブル名のプレフィックスが必要になるため
+        if (!($relation instanceof BelongsToMany) && $this->getSelectColumns()) {
+            $query = $query->select($this->getSelectColumns());
+        }
 
-            if ($this->getWithColumns()) {
-                $query->with($this->getWithColumns());
-            }
+        if ($this->getWithColumns()) {
+            $query->with($this->getWithColumns());
+        }
 
-            if ($this->getOrderBy()) {
-                $query->orderBy($this->getOrderBy());
-            }
+        if ($this->getOrderBy()) {
+            $query->orderBy($this->getOrderBy());
+        }
 
-            $items = $query->get();
+        $items = $query->get();
 
-            // getのあとにgroupByを適用する
-            if ($this->getGroupBy()) {
-                $items = $items->groupBy($this->getGroupBy())->values();
-            }
+        // getのあとにgroupByを適用する
+        if ($this->getGroupBy()) {
+            $items = $items->groupBy($this->getGroupBy())->values();
+        }
 
-            return $items->map(function ($item) {
-                return $this->formatIndexResponse($item);
-            })->toArray();
-        });
+        return $items->map(function ($item) {
+            return $this->formatIndexResponse($item);
+        })->toArray();
     }
 
     /**
@@ -150,6 +153,7 @@ abstract class AbstractDomainService
 
             $this->getGroupRelation($group)->create($createData);
         });
+        $this->forgetMasterGroupCacheIfNeeded($group);
     }
 
     /**
@@ -161,7 +165,7 @@ abstract class AbstractDomainService
      */
     public function bulkCreate(array $data, Group $group): array
     {
-        return DB::transaction(function () use ($data, $group) {
+        $result = DB::transaction(function () use ($data, $group) {
             $result = [];
             foreach ($data as $item) {
                 $createData = [];
@@ -173,6 +177,9 @@ abstract class AbstractDomainService
 
             return $result;
         });
+        $this->forgetMasterGroupCacheIfNeeded($group);
+
+        return $result;
     }
 
     /**
@@ -220,7 +227,7 @@ abstract class AbstractDomainService
      */
     public function bulkUpdate(array $data, Group $group): array
     {
-        return DB::transaction(function () use ($data, $group) {
+        $result = DB::transaction(function () use ($data, $group) {
             $requestedIds = array_column($data, 'id');
             $items = $this->findItemsByIds($requestedIds, $group);
             $result = [];
@@ -237,6 +244,9 @@ abstract class AbstractDomainService
 
             return $result;
         });
+        $this->forgetMasterGroupCacheIfNeeded($group);
+
+        return $result;
     }
 
     /**
@@ -249,7 +259,7 @@ abstract class AbstractDomainService
      */
     public function delete(string $id, Group $group): Model
     {
-        return DB::transaction(function () use ($id, $group) {
+        $deletedItem = DB::transaction(function () use ($id, $group) {
             $item = $this->findItemsByIds([$id], $group)->first();
 
             // 削除前の検証
@@ -268,6 +278,9 @@ abstract class AbstractDomainService
 
             return $deletedItem;
         });
+        $this->forgetMasterGroupCacheIfNeeded($group);
+
+        return $deletedItem;
     }
 
     /**
@@ -279,7 +292,7 @@ abstract class AbstractDomainService
      */
     public function bulkDelete(array $ids, Group $group): int
     {
-        return DB::transaction(function () use ($ids, $group) {
+        $count = DB::transaction(function () use ($ids, $group) {
             $items = $this->findItemsByIds($ids, $group);
 
             // 削除前の検証
@@ -295,6 +308,9 @@ abstract class AbstractDomainService
 
             return $items->count();
         });
+        $this->forgetMasterGroupCacheIfNeeded($group);
+
+        return $count;
     }
 
     /**
@@ -345,5 +361,13 @@ abstract class AbstractDomainService
         foreach ($remainingItems as $index => $item) {
             $item->update(['order' => $index]);
         }
+    }
+
+    private function forgetMasterGroupCacheIfNeeded(Group $group): void
+    {
+        if (!$this->forgetsMasterCacheOnWrite) {
+            return;
+        }
+        MasterService::forgetGroupCache($group);
     }
 }

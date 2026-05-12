@@ -378,8 +378,11 @@ test('3-12-10: 【一覧取得】 グループが存在しない', function () {
 });
 
 test('3-12-11: 【一覧取得】 データベース接続エラー', function () {
-    // データベース接続を無効化してエラーを発生させる
-    DB::shouldReceive('connection')->andThrow(new \Exception('Database connection failed'));
+    $this->mock(\App\Services\IngredientUnitService::class, function ($mock) {
+        $mock->shouldReceive('index')
+            ->once()
+            ->andThrow(new \Exception('Database connection failed'));
+    });
 
     $response = $this->actingAs($this->user)->get('/ingredient-units');
 

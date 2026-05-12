@@ -159,6 +159,8 @@ export async function fetchData<T>(
     let errorMessage: string = '';
     let statusCode: number | undefined;
 
+    const { signal: parentSignal, ...restOptions } = options;
+
     // タイムアウトタイマー
     let timeoutId: NodeJS.Timeout | null = null;
 
@@ -166,28 +168,41 @@ export async function fetchData<T>(
         const controller = new AbortController();
         timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
+        // parentSignalが存在する場合は、controller.signalとparentSignalを結合する
+        const combinedSignal =
+            parentSignal != null
+                ? AbortSignal.any([controller.signal, parentSignal])
+                : controller.signal;
+
         data = await apiClient<T>(path, {
-            ...options,
-            signal: controller.signal,
+            ...restOptions,
+            signal: combinedSignal,
         });
     } catch (error) {
+        // エラーログを抑制する条件
         const suppressFetchLog =
-            (options.suppressUnauthorizedLog &&
+            (restOptions.suppressUnauthorizedLog &&
                 error instanceof ApiClientError &&
                 error.message === 'AUTHENTICATION_REQUIRED') ||
-            (options.suppressNotFoundLog &&
+            (restOptions.suppressNotFoundLog &&
                 error instanceof ApiClientError &&
                 error.statusCode === API_STATUS_CODE.NOT_FOUND);
+        // エラーログを抑制しない場合はエラーログを出力
         if (!suppressFetchLog) {
             console.error(`[fetchData] エラー発生: ${path}`, error);
         }
+        // エラーオブジェクトからエラーメッセージとステータスコードを取得
         if (error instanceof ApiClientError) {
             errorMessage = error.message;
             statusCode = error.statusCode;
-        } else if (error instanceof Error && error.name === 'AbortError') {
+        }
+        // AbortErrorの場合はタイムアウトエラーとして扱う
+        else if (error instanceof Error && error.name === 'AbortError') {
             errorMessage =
                 'リクエストがタイムアウトしました。再度お試しください。';
-        } else {
+        }
+        // エラーオブジェクトからエラーメッセージを取得
+        else {
             errorMessage =
                 error instanceof Error
                     ? error.message

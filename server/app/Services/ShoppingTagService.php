@@ -14,6 +14,8 @@ class ShoppingTagService extends AbstractDomainService
 {
     use AutoComplement;
 
+    protected bool $forgetsMasterCacheOnWrite = true;
+
     protected function getSelectColumns(): array
     {
         return ['id', 'name'];
@@ -55,6 +57,10 @@ class ShoppingTagService extends AbstractDomainService
         }
 
         $tagIds = $this->findOrCreateIds($tags, $group, ShoppingTag::class);
+        if ($this->autoComplementCreatedInLastFindOrCreate) {
+            MasterService::forgetGroupCache($group);
+        }
+
         return empty($tagIds) ? [] : array_values($tagIds);
     }
 }

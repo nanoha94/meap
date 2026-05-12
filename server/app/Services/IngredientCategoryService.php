@@ -13,6 +13,8 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class IngredientCategoryService extends AbstractDomainService
 {
+    protected bool $forgetsMasterCacheOnWrite = true;
+
     protected function getUpdateFields(): array
     {
         return [

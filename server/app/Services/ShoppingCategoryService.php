@@ -13,6 +13,8 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class ShoppingCategoryService extends AbstractDomainService
 {
+    protected bool $forgetsMasterCacheOnWrite = true;
+
     protected function getSelectColumns(): array
     {
         return ['id', 'name', 'is_default', 'order'];

@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\DB;
 
 class UserService extends AbstractDomainService
 {
+    protected bool $forgetsMasterCacheOnWrite = true;
+
     public function __construct(
         private readonly ImageService $imageService,
     ) {}
@@ -106,6 +108,10 @@ class UserService extends AbstractDomainService
                 $user->update($updateData);
             }
         });
+
+        foreach ($user->groups()->get() as $group) {
+            MasterService::forgetGroupCache($group);
+        }
     }
 
     /**
@@ -116,6 +122,8 @@ class UserService extends AbstractDomainService
      */
     public function deleteAccount(User $user): void
     {
+        $groups = $user->groups()->get();
+
         DB::transaction(function () use ($user) {
             $user->tokens()->delete();
             $group = $user->groups()->first();
@@ -125,5 +133,9 @@ class UserService extends AbstractDomainService
                 $group->refreshGroupSize();
             }
         });
+
+        foreach ($groups as $group) {
+            MasterService::forgetGroupCache($group);
+        }
     }
 }

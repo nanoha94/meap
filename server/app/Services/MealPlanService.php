@@ -41,16 +41,6 @@ class MealPlanService extends AbstractDomainService
         return ['id', 'date'];
     }
 
-    protected function getWithColumns(): array
-    {
-        return [
-            'meals.mealCategory.color',
-            'meals.recipes.thumbnails',
-            'meals.recipes.ingredients',
-            'meals.recipes.ingredientUnits'
-        ];
-    }
-
     protected function getGroupBy(): string | null
     {
         return 'date';
@@ -77,29 +67,24 @@ class MealPlanService extends AbstractDomainService
      */
     public function indexForDateRange(Group $group, string $dateFrom, string $dateTo, bool $includeIngredients = false): array
     {
-        return DB::transaction(function () use ($group, $dateFrom, $dateTo, $includeIngredients) {
-            $query = $this->getGroupRelation($group)
-                ->select($this->getSelectColumns())
-                ->whereBetween('date', [$dateFrom, $dateTo]);
+        $query = $this->getGroupRelation($group)
+            ->select($this->getSelectColumns())
+            ->whereBetween('date', [$dateFrom, $dateTo])
+            ->with($this->mealPlanEagerLoads($includeIngredients));
 
-            if ($this->getWithColumns()) {
-                $query->with($this->getWithColumns());
-            }
+        if ($this->getOrderBy()) {
+            $query->orderBy($this->getOrderBy());
+        }
 
-            if ($this->getOrderBy()) {
-                $query->orderBy($this->getOrderBy());
-            }
+        $items = $query->get();
 
-            $items = $query->get();
+        if ($this->getGroupBy()) {
+            $items = $items->groupBy($this->getGroupBy())->values();
+        }
 
-            if ($this->getGroupBy()) {
-                $items = $items->groupBy($this->getGroupBy())->values();
-            }
-
-            return $items->map(function ($item) use ($includeIngredients, $group) {
-                return $this->formatIndexResponse($item, $includeIngredients, $group);
-            })->toArray();
-        });
+        return $items->map(function ($item) use ($includeIngredients, $group) {
+            return $this->formatIndexResponse($item, $includeIngredients, $group);
+        })->toArray();
     }
 
     /**
@@ -112,30 +97,56 @@ class MealPlanService extends AbstractDomainService
      */
     public function showByDate(string $date, Group $group): array
     {
-        return DB::transaction(function () use ($group, $date) {
-            $item = $this->getGroupRelation($group)
-                ->where('date', $date)
-                ->select($this->getSelectColumns());
+        $item = $this->getGroupRelation($group)
+            ->where('date', $date)
+            ->select($this->getSelectColumns())
+            ->with($this->mealPlanEagerLoads(false));
 
-            if ($this->getWithColumns()) {
-                $item->with($this->getWithColumns());
-            }
+        if ($this->getOrderBy()) {
+            $item->orderBy($this->getOrderBy());
+        }
 
-            if ($this->getOrderBy()) {
-                $item->orderBy($this->getOrderBy());
-            }
+        $result = $item->first();
 
-            $result = $item->first();
+        if ($result === null) {
+            throw new HttpException(
+                HttpStatusCode::NOT_FOUND->value,
+                __('api.not_found', ['attribute' => $this->getResourceName()])
+            );
+        }
 
-            if ($result === null) {
-                throw new HttpException(
-                    HttpStatusCode::NOT_FOUND->value,
-                    __('api.not_found', ['attribute' => $this->getResourceName()])
-                );
-            }
+        return $this->formatShowResponse($result);
+    }
 
-            return $this->formatShowResponse($result);
-        });
+    /**
+     * 献立取得用 eager load（レスポンス未使用の mealCategory は載せない。食材は必要時のみ）
+     *
+     * @return array<string, callable(\Illuminate\Database\Eloquent\Builder): void> Laravel の with() 用クロージャ
+     */
+    private function mealPlanEagerLoads(bool $includeIngredients): array
+    {
+        $loads = [
+            'meals' => function ($query): void {
+                $query->select(['id', 'meal_plan_id', 'category_id', 'order']);
+            },
+            'meals.recipes' => function ($query): void {
+                $query->select(['recipes.id', 'recipes.name']);
+            },
+            'meals.recipes.thumbnails' => function ($query): void {
+                $query->select(['images.id', 'images.src', 'images.width', 'images.height']);
+            },
+        ];
+
+        if ($includeIngredients) {
+            $loads['meals.recipes.ingredients'] = function ($query): void {
+                $query->select(['ingredients.id', 'ingredients.name']);
+            };
+            $loads['meals.recipes.ingredientUnits'] = function ($query): void {
+                $query->select(['ingredient_units.id']);
+            };
+        }
+
+        return $loads;
     }
 
     protected function formatIndexResponse(Model|Collection $items, bool $includeIngredients = false, ?Group $group = null): array

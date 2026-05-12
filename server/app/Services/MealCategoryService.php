@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class MealCategoryService extends AbstractDomainService
 {
+    protected bool $forgetsMasterCacheOnWrite = true;
+
     protected function getUpdateFields(): array
     {
         return [

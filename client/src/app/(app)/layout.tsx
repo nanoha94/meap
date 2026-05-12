@@ -7,7 +7,11 @@ import {
     SideNavigation,
     VerifiedHandler,
 } from '@/components';
-import { fetchData } from '@/lib/apiClient';
+import {
+    fetchData,
+    fetchDataParallel,
+    type FetchDataResult,
+} from '@/lib/apiClient';
 import { IGetMasterResponse, IGetUserResponse } from '@/types';
 import { handleAuthRedirect } from '@/utils';
 
@@ -21,21 +25,40 @@ const AppLayout = async ({ children }: Props) => {
     let user: IGetUserResponse | null = null;
     let masterData: IGetMasterResponse | null = null;
 
-    // まずuserを取得して認証チェック
-    const { data: userData, errorMessage: userError } =
-        await fetchData<IGetUserResponse>('/user');
+    const { data: parallelData, errorMessage: parallelError } =
+        await fetchDataParallel<
+            [
+                FetchDataResult<IGetUserResponse>,
+                FetchDataResult<IGetMasterResponse>,
+            ]
+        >([
+            signal =>
+                fetchData<IGetUserResponse>('/user', {
+                    suppressUnauthorizedLog: true,
+                    signal,
+                }),
+            signal =>
+                fetchData<IGetMasterResponse>('/master', {
+                    suppressUnauthorizedLog: true,
+                    signal,
+                }),
+        ]);
 
-    if (userError || !userData?.success) {
+    if (parallelError || !parallelData) {
         handleAuthRedirect(null, false);
     } else {
-        user = userData;
-        handleAuthRedirect(user.data, false);
+        const [{ data: userData, errorMessage: userError }, { data: masterDataResult }] =
+            parallelData;
 
-        // 認証が成功した場合のみmasterDataを取得
-        const { data: masterDataResult } =
-            await fetchData<IGetMasterResponse>('/master');
-        if (masterDataResult) {
-            masterData = masterDataResult;
+        if (userError || !userData?.success) {
+            handleAuthRedirect(null, false);
+        } else {
+            user = userData;
+            handleAuthRedirect(user.data, false);
+
+            if (masterDataResult) {
+                masterData = masterDataResult;
+            }
         }
     }
 

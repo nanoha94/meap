@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class IngredientUnitService extends AbstractDomainService
 {
+    protected bool $forgetsMasterCacheOnWrite = true;
 
     protected function getResourceName(): string
     {

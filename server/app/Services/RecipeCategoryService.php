@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class RecipeCategoryService extends AbstractDomainService
 {
+    protected bool $forgetsMasterCacheOnWrite = true;
 
     protected function getSelectColumns(): array
     {

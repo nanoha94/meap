@@ -183,7 +183,11 @@ test('3-8-6: 【一覧取得】 グループが存在しない', function () {
 });
 
 test('3-8-7: 【一覧取得】 データベース接続エラー', function () {
-    DB::shouldReceive('connection')->andThrow(new \Exception('Database connection failed'));
+    $this->mock(\App\Services\ShoppingCategoryService::class, function ($mock) {
+        $mock->shouldReceive('index')
+            ->once()
+            ->andThrow(new \Exception('Database connection failed'));
+    });
 
     $response = $this->actingAs($this->user)->get('/shopping-categories');
 

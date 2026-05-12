@@ -8,6 +8,11 @@ use InvalidArgumentException;
 trait AutoComplement
 {
     /**
+     * 直近の findOrCreateIds 呼び出しで新規レコードを作成したか（マスターキャッシュ無効化などに利用）
+     */
+    protected bool $autoComplementCreatedInLastFindOrCreate = false;
+
+    /**
      * アイテムのIDを取得し、存在しない場合は作成する
      * @param array|null $items アイテムの配列 [{id: string, name: string}]
      * @param Group $group グループモデル
@@ -22,6 +27,8 @@ trait AutoComplement
         if (empty($items)) {
             return [];
         }
+
+        $this->autoComplementCreatedInLastFindOrCreate = false;
 
         $ids = [];
         foreach ($items as $idx => $item) {
@@ -56,6 +63,7 @@ trait AutoComplement
                         'group_id' => $group->id,
                         'name' => $item['name']
                     ]);
+                    $this->autoComplementCreatedInLastFindOrCreate = true;
                     $ids[$idx] = $newItem->id;
                 }
             }

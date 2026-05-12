@@ -225,7 +225,11 @@ test('3-6-7: 【一覧取得】 グループが存在しない', function () {
 });
 
 test('3-6-8: 【一覧取得】 データベース接続エラー', function () {
-    DB::shouldReceive('connection')->andThrow(new \Exception('Database connection failed'));
+    $this->mock(\App\Services\RecipeCategoryService::class, function ($mock) {
+        $mock->shouldReceive('index')
+            ->once()
+            ->andThrow(new \Exception('Database connection failed'));
+    });
 
     $response = $this->actingAs($this->user)->get('/recipe-categories');
 
