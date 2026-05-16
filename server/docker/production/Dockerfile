@@ -39,8 +39,11 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
+# Debian 同梱のデフォルトサイト（Welcome to nginx!）を完全に除去
 RUN rm -f /etc/nginx/sites-enabled/default \
-    && mkdir -p /var/log/supervisor
+    /etc/nginx/sites-available/default \
+    && rm -f /etc/nginx/conf.d/*.conf \
+    && mkdir -p /var/log/supervisor /etc/nginx/conf.d
 
 WORKDIR /var/www/html
 
@@ -48,7 +51,8 @@ COPY docker/production/php/zz-production.ini /usr/local/etc/php/conf.d/zz-produc
 COPY docker/production/supervisord.conf /etc/supervisor/supervisord.conf
 COPY docker/production/nginx/default.conf /etc/nginx/templates/default.conf
 COPY docker/production/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh \
+    && sed 's/__PORT__/8080/g' /etc/nginx/templates/default.conf > /etc/nginx/conf.d/default.conf
 
 COPY . /var/www/html
 
@@ -58,4 +62,6 @@ RUN composer install --no-interaction --no-dev --optimize-autoloader \
 
 EXPOSE 8080
 
+# Railway: Start Command 空でも ENTRYPOINT が使われるよう CMD を明示
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+CMD []

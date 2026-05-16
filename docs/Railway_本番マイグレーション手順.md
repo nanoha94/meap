@@ -26,8 +26,8 @@ Railway サービス設定の **Start Command は空のまま**にしてくだ�
 
 - `DB_CONNECTION=pgsql`
 - private 接続を使う場合:
-    - `DB_HOST=postgres.railway.internal`（または `RAILWAY_PRIVATE_DOMAIN`）
-    - `DB_PORT=5432`
+  - `DB_HOST=postgres.railway.internal`（または `RAILWAY_PRIVATE_DOMAIN`）
+  - `DB_PORT=5432`
 - `RAILWAY_TCP_PROXY_PORT` は public 接続向け。private host と混在させない
 - 本番で `migrate:reset` / `migrate:fresh` は実行しない
 
@@ -113,3 +113,36 @@ php artisan migrate:status --no-interaction
 
 - private host と public port の混在が主因になりやすい
 - `DB_HOST=postgres.railway.internal` と `DB_PORT=5432` の組み合わせを使用する
+
+### ルート URL が「Welcome to nginx!」のまま
+
+`https://dev.api.meap.blog/` などで Laravel ではなく **nginx の初期ページ** が出る場合、Laravel 用 nginx 設定が有効になっていない。
+
+Dashboard の設定（Root Directory=`server`、Dockerfile=`docker/production/Dockerfile`、Start Command 空）が合っていても、次を確認する。
+
+1. **デプロイログ**に `[meap] docker-entrypoint:` が出ているか（出ない＝ENTRYPOINT 未実行または別イメージ）
+2. **ビルドログ**が Dockerfile ビルドか（Nixpacks のみになっていないか）
+3. **カスタムドメイン**が正しい Railway サービスを向いているか
+4. コード変更後に **Redeploy** したか
+
+`railway ssh` 内:
+
+```bash
+head -5 /etc/nginx/conf.d/default.conf
+# → root /var/www/html/public; であること
+
+tr '\0' ' ' < /proc/1/cmdline; echo
+# → docker-entrypoint.sh または supervisord
+```
+
+再デプロイ後（PowerShell）:
+
+```powershell
+curl.exe -s -o NUL -w "%{http_code}" https://dev.api.meap.blog/up
+```
+
+`200` になれば API 側は復旧。
+
+### ログイン画面の 404 / CSRF エラー
+
+API の `/up` が `200` になってから、Vercel の `NEXT_PUBLIC_BACKEND_URL=https://dev.api.meap.blog`（末尾スラッシュなし）を確認し再デプロイする。Railway では `APP_URL` / `FRONTEND_URL` / `SANCTUM_STATEFUL_DOMAINS` / `SESSION_SECURE_COOKIE=true` を設定する。
