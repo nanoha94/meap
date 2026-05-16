@@ -58,7 +58,8 @@ COPY . /var/www/html
 
 RUN composer install --no-interaction --no-dev --optimize-autoloader \
     && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
-    && chmod -R ug+rwx /var/www/html/storage /var/www/html/bootstrap/cache
+    && chmod -R ug+rwx /var/www/html/storage /var/www/html/bootstrap/cache \
+    && rm -f /etc/nginx/sites-enabled/default /etc/nginx/sites-available/default
 
 EXPOSE 8080
 

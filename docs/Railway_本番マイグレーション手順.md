@@ -143,6 +143,26 @@ curl.exe -s -o NUL -w "%{http_code}" https://dev.api.meap.blog/up
 
 `200` になれば API 側は復旧。
 
+### SSH で localhost は 200 だが、カスタムドメインだけ 404 / Welcome to nginx
+
+コンテナ内の Laravel・nginx は正常で、**外からのルーティングだけが別先を向いている**状態。
+
+1. Railway ダッシュボードの **Settings → Networking → Public URL**（`*.up.railway.app`）で確認:
+
+```powershell
+curl.exe -s -o NUL -w "%{http_code}" https://<Public-URL>/up
+```
+
+Public URL が `200` で `dev.api.meap.blog` だけ `404` なら、**カスタムドメインの紐付け先サービス**を見直す。
+
+2. Cloudflare 等を使っている場合、DNS の CNAME 先が正しい Railway サービスか、プロキシキャッシュを疑う。
+
+3. SSH 内で Host ヘッダ付き確認:
+
+```bash
+curl -s -o /dev/null -w "%{http_code}\n" -H "Host: dev.api.meap.blog" "http://127.0.0.1:${PORT:-8080}/up"
+```
+
 ### ログイン画面の 404 / CSRF エラー
 
 API の `/up` が `200` になってから、Vercel の `NEXT_PUBLIC_BACKEND_URL=https://dev.api.meap.blog`（末尾スラッシュなし）を確認し再デプロイする。Railway では `APP_URL` / `FRONTEND_URL` / `SANCTUM_STATEFUL_DOMAINS` / `SESSION_SECURE_COOKIE=true` を設定する。

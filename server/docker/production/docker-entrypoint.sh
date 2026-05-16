@@ -3,6 +3,7 @@ set -e
 PORT="${PORT:-8080}"
 export PORT
 echo "[meap] docker-entrypoint: PORT=${PORT}"
+rm -f /etc/nginx/sites-enabled/default /etc/nginx/sites-available/default
 sed "s/__PORT__/${PORT}/g" /etc/nginx/templates/default.conf > /etc/nginx/conf.d/default.conf
 cd /var/www/html
 if [ ! -f public/index.php ]; then
