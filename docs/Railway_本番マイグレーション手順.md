@@ -10,6 +10,20 @@
 
 ## 重要な設定方針
 
+### デプロイ（Start Command）
+
+Railway サービス設定の **Start Command は空のまま**にしてください。
+
+本番イメージは `docker/production/Dockerfile` の `ENTRYPOINT`（`docker-entrypoint.sh`）で次を行います。
+
+- `PORT` を nginx 設定に反映
+- `php artisan config:cache` / `route:cache`
+- supervisord（nginx + php-fpm）起動
+
+ダッシュボードや `railway.json` で Start Command（例: `supervisord ...`）を指定すると、**ENTRYPOINT が実行されず** nginx 設定が生成されないため、ヘルスチェックが `service unavailable` になります。
+
+### データベース
+
 - `DB_CONNECTION=pgsql`
 - private 接続を使う場合:
     - `DB_HOST=postgres.railway.internal`（または `RAILWAY_PRIVATE_DOMAIN`）

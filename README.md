@@ -37,7 +37,11 @@ cd server
 ./vendor/bin/sail up -d
 ```
 
-## Railway 本番マイグレーション
+## Railway 本番
+
+- 本番 Docker デプロイでは **Start Command を設定しない**（`ENTRYPOINT` の `docker-entrypoint.sh` に任せる）。詳細は [docs/Railway_本番マイグレーション手順.md](docs/Railway_本番マイグレーション手順.md)。
+
+### マイグレーション
 
 本番環境でのマイグレーションは、必ず次のコマンドを使用してください。
 

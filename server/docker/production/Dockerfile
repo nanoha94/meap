@@ -3,6 +3,8 @@
 #   docker build -f docker/production/Dockerfile -t meap-api .
 #
 # Railway sets PORT; the entrypoint injects it into nginx listen.
+# Leave Railway "Start Command" empty — a custom start command replaces ENTRYPOINT
+# and skips docker-entrypoint.sh (nginx config + artisan cache never run).
 
 FROM php:8.3-fpm-bookworm
 
