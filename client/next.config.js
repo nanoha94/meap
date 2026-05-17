@@ -10,6 +10,15 @@ const nextConfig = {
                 port: '8000',
                 pathname: '/storage/**',
             },
+            ...(process.env.NEXT_PUBLIC_R2_HOSTNAME
+                ? [
+                      {
+                          protocol: 'https',
+                          hostname: process.env.NEXT_PUBLIC_R2_HOSTNAME,
+                          pathname: '/**',
+                      },
+                  ]
+                : []),
         ],
     },
 };

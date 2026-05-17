@@ -17,6 +17,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Image Storage Disk
+    |--------------------------------------------------------------------------
+    |
+    | Disk used by ImageService for uploads and URLs. Use "public" locally
+    | (storage/app/public + symlink) and "s3" for Cloudflare R2 in staging/production.
+    |
+    */
+
+    'image_disk' => env('IMAGE_DISK', 'public'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Filesystem Disks
     |--------------------------------------------------------------------------
     |

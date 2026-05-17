@@ -59,11 +59,11 @@ class ImageService
             );
         }
 
-        Storage::disk('public')->put($fullPath, $processed['binary']);
+        $this->imageDisk()->put($fullPath, $processed['binary']);
 
         return DB::transaction(function () use ($fullPath, $processed) {
             return Image::create([
-                'src' => Storage::disk('public')->url($fullPath),
+                'src' => $this->imageDisk()->url($fullPath),
                 'width' => $processed['width'],
                 'height' => $processed['height'],
             ]);
@@ -161,7 +161,7 @@ class ImageService
         }
 
         try {
-            Storage::disk('public')->put($fullPath, $processed['binary']);
+            $this->imageDisk()->put($fullPath, $processed['binary']);
         } catch (Throwable $e) {
             $logFail('storage_put_failed', ['exception' => $e->getMessage()]);
 
@@ -171,15 +171,15 @@ class ImageService
         try {
             return DB::transaction(function () use ($fullPath, $processed) {
                 return Image::create([
-                    'src' => Storage::disk('public')->url($fullPath),
+                    'src' => $this->imageDisk()->url($fullPath),
                     'width' => $processed['width'],
                     'height' => $processed['height'],
                 ]);
             });
         } catch (Throwable $e) {
             try {
-                if (Storage::disk('public')->exists($fullPath)) {
-                    Storage::disk('public')->delete($fullPath);
+                if ($this->imageDisk()->exists($fullPath)) {
+                    $this->imageDisk()->delete($fullPath);
                 }
             } catch (Throwable) {
                 // 掃除失敗は握り潰し（上位でログ済みの文脈に追加しない）
@@ -343,7 +343,7 @@ class ImageService
     /**
      * 画像情報をフォーマット
      */
-    public function formatImage($image): ?array
+    public function formatImage(?Image $image): ?array
     {
         if (!$image) {
             return null;
@@ -360,7 +360,7 @@ class ImageService
     /**
      * 画像の一括アップロードレスポンスをフォーマット
      */
-    public function formatBulkImageUploadResponse($images): array
+    public function formatBulkImageUploadResponse(Collection $images): array
     {
         return collect($images)
             ->map(fn($image) => $this->formatImage($image))
@@ -439,11 +439,16 @@ class ImageService
     /**
      * ImageManager インスタンスを取得
      *
-     * @return \Intervention\Image\ImageManagerInterface
+     * @return ImageManagerInterface
      */
     private function imageManager(): ImageManagerInterface
     {
         return ImageManager::usingDriver(GdDriver::class);
+    }
+
+    private function imageDisk(): \Illuminate\Contracts\Filesystem\Filesystem
+    {
+        return Storage::disk(config('filesystems.image_disk'));
     }
 
     /**
@@ -545,8 +550,8 @@ class ImageService
     private function deleteImageDirectory(string $relativePath): bool
     {
         try {
-            if (Storage::disk('public')->exists($relativePath)) {
-                Storage::disk('public')->deleteDirectory($relativePath);
+            if ($this->imageDisk()->exists($relativePath)) {
+                $this->imageDisk()->deleteDirectory($relativePath);
             }
             return true;
         } catch (Exception $e) {
