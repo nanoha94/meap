@@ -41,7 +41,7 @@ const SideNavigation = ({ className }: Props) => {
             className={`fixed top-0 left-0 w-[160px] h-full bg-white ${className ?? ''}`}
             style={{ boxShadow: '5px 0 8px 0 rgba(0, 0, 0, 10%)' }}>
             <div className="py-3 flex flex-col border-b border-gray-border">
-                <Link href={LINK_TO.LP} className="w-fit mx-auto block">
+                <Link href={LINK_TO.LP} prefetch={false} className="w-fit mx-auto block">
                     <Image
                         src="/images/meap-logo2.png"
                         alt="meap"
@@ -56,6 +56,7 @@ const SideNavigation = ({ className }: Props) => {
                 {loginUser && (
                     <Link
                         href={LINK_TO.SETTINGS.ACCOUNT}
+                        prefetch={false}
                         key={loginUser.id}
                         className="py-2 px-3 w-full mx-auto flex flex-col items-center gap-y-1 transition-colors hover:bg-gray-light ">
                         <div className="w-14 h-auto aspect-square rounded-full overflow-hidden">
@@ -91,6 +92,7 @@ const SideNavigation = ({ className }: Props) => {
                     <Link
                         key={idx}
                         href={formattedLink(v.link)}
+                        prefetch={false}
                         className={`py-3 px-4 flex-1 transition-colors hover:bg-gray-light ${pathname === v.link ? 'pointer-events-none' : ''}`}>
                         <div
                             className={`flex items-center gap-x-2 whitespace-nowrap ${pathname === v.link ? 'text-primary-main' : 'text-black'} `}>

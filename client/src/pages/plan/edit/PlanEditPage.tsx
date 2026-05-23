@@ -25,7 +25,6 @@ interface Props {
 
 const PlanEditPage = ({ selectedDate, fetchMealPlan, errorMessage }: Props) => {
     // store
-    const incrementLoadingCount = useGlobalStore(state => state.incrementLoadingCount);
     const resetLoadingCount = useGlobalStore(state => state.resetLoadingCount);
     const mealCategories = useMealStore(state => state.mealCategories);
 
@@ -141,7 +140,6 @@ const PlanEditPage = ({ selectedDate, fetchMealPlan, errorMessage }: Props) => {
      * @param date 日付
      */
     const handleChangeDate = (date: Date) => {
-        incrementLoadingCount();
         router.push(`/plan/edit?date=${dayjs(date).format('YYYY-MM-DD')}`);
     };
 

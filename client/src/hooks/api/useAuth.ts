@@ -130,20 +130,18 @@ export const useAuth = () => {
             await csrf();
 
             await axios.post(LINK_TO.LOGIN, props);
-            // ログイン成功時にトップ画面にリダイレクト
-            window.location.href = LINK_TO.PLAN.TOP;
+            // ログイン成功時にトップへクライアント遷移（フルリロードを避け layout SSR の二重実行を抑える）
+            router.push(LINK_TO.PLAN.TOP);
         } catch (error) {
             if (error.response?.status === API_STATUS_CODE.UNPROCESSABLE_ENTITY) {
                 setErrors(error.response.data.errors);
             } else {
                 handleApiError(error);
             }
-            // エラーの時は画面遷移がないのでローディングカウントを減らす
-            decrementLoadingCount();
         } finally {
             // 重複リクエスト防止用のフラグをリセット
             isLoginRequestRef.current = false;
-            // 画面遷移後にローディングカウントをリセットするので、ここでは減らさない
+            decrementLoadingCount();
         }
     };
 

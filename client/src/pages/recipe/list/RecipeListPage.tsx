@@ -52,7 +52,6 @@ const RecipeListPage = ({
     const setListPaging = useRecipeListStateStore(state => state.setListPaging);
     const setListSortOptions = useRecipeListStateStore(state => state.setListSortOptions);
     const setListFilterOptions = useRecipeListStateStore(state => state.setListFilterOptions);
-    const incrementLoadingCount = useGlobalStore(state => state.incrementLoadingCount);
     const resetLoadingCount = useGlobalStore(state => state.resetLoadingCount);
 
     // hook
@@ -88,9 +87,8 @@ const RecipeListPage = ({
             page: number,
         ) => {
             router.push(`/recipe?${getBrowserQueryString(sort, filter, page)}`);
-            incrementLoadingCount();
         },
-        [router, incrementLoadingCount],
+        [router],
     );
 
     /**
