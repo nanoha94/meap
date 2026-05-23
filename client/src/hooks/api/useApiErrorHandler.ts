@@ -1,5 +1,5 @@
 // client/src/hooks/api/useApiErrorHandler.ts
-import axios from 'axios';
+import { isAxiosError } from '@/lib/axios';
 
 import { useSnackbars } from '../useSnackbars';
 
@@ -8,7 +8,7 @@ export const useApiErrorHandler = () => {
 
     const handleApiError = (error: unknown): void => {
         // Axios 由来のエラーのみタイムアウト・レスポンスを判定（他API利用時と同様にタイムアウトはタイムアウトとして扱う）
-        if (axios.isAxiosError(error)) {
+        if (isAxiosError(error)) {
             // タイムアウトエラー
             if (error.code === 'ECONNABORTED') {
                 console.error(error.message);

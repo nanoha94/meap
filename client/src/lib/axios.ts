@@ -1,6 +1,6 @@
-import Axios from 'axios';
+import axios, { isAxiosError } from 'axios';
 
-const axios = Axios.create({
+const axiosInstance = axios.create({
     baseURL: process.env.NEXT_PUBLIC_BACKEND_URL,
     headers: {
         'X-Requested-With': 'XMLHttpRequest',
@@ -8,5 +8,5 @@ const axios = Axios.create({
     withCredentials: true,
 });
 
-export default axios;
-export const isAxiosError = Axios.isAxiosError.bind(Axios);
+export default axiosInstance;
+export { isAxiosError };
