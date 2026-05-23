@@ -12,23 +12,29 @@ Route::get('/health', function () {
     $timings = [];
     $start = microtime(true);
 
-    // 1) Laravel bootstrap (この時点で完了済み)
-    $timings['framework_boot_ms'] = round((microtime(true) - $start) * 1000, 1);
+    $dbHost = config('database.connections.pgsql.host') ?? 'unknown';
+    $timings['db_host'] = $dbHost;
 
-    // 2) DB connection + simple query
+    // 1) DNS resolution
+    $dnsStart = microtime(true);
+    $resolved = gethostbyname($dbHost);
+    $timings['dns_ms'] = round((microtime(true) - $dnsStart) * 1000, 1);
+    $timings['resolved_ip'] = $resolved;
+
+    // 2) DB connection + SELECT 1
     $dbStart = microtime(true);
     DB::select('SELECT 1');
-    $timings['db_select1_ms'] = round((microtime(true) - $dbStart) * 1000, 1);
+    $timings['db_connect_select1_ms'] = round((microtime(true) - $dbStart) * 1000, 1);
 
-    // 3) Session table read (database driver overhead)
-    $sessStart = microtime(true);
-    DB::table('sessions')->where('id', 'none')->first();
-    $timings['session_table_query_ms'] = round((microtime(true) - $sessStart) * 1000, 1);
+    // 3) Reuse connection: SELECT 1 again
+    $q2 = microtime(true);
+    DB::select('SELECT 1');
+    $timings['db_reuse_select1_ms'] = round((microtime(true) - $q2) * 1000, 1);
 
-    // 4) User table query
-    $userStart = microtime(true);
-    User::first();
-    $timings['user_query_ms'] = round((microtime(true) - $userStart) * 1000, 1);
+    // 4) Reuse: 3rd SELECT 1
+    $q3 = microtime(true);
+    DB::select('SELECT 1');
+    $timings['db_reuse_select1_2_ms'] = round((microtime(true) - $q3) * 1000, 1);
 
     $timings['total_ms'] = round((microtime(true) - $start) * 1000, 1);
 
