@@ -25,8 +25,9 @@ beforeEach(function () {
         Color::create($color);
     }
 
-    // ストレージをフェイクに設定
-    Storage::fake('public');
+    // ImageService が参照するディスクをフェイク（phpunit.xml で IMAGE_DISK=public を固定）
+    $this->imageDisk = config('filesystems.image_disk');
+    Storage::fake($this->imageDisk);
 
     // テスト用のユーザーとグループを作成
     $this->user = User::factory()->create([
@@ -91,7 +92,7 @@ test('3-1-1: 【一括アップロード】 正常な画像アップロード（
 
     // srcが正しい形式で保存されていることを確認
     $image = Image::where('width', 100)->where('height', 100)->first();
-    expect($image->src)->toContain("/storage/images/groups/{$this->group->id}/");
+    expect($image->src)->toContain("images/groups/{$this->group->id}/");
 });
 
 test('3-1-2: 【一括アップロード】 複数画像の一括アップロード', function () {
@@ -132,10 +133,10 @@ test('3-1-3: 【一括アップロード】 グループ ID 配下に直接保�
 
     // srcがグループID配下に直接保存されていることを確認（ディレクトリ分けなし）
     $image = Image::where('width', 100)->where('height', 100)->first();
-    expect($image->src)->toContain("/storage/images/groups/{$this->group->id}/");
+    expect($image->src)->toContain("images/groups/{$this->group->id}/");
     // ディレクトリ名が含まれていないことを確認
-    expect($image->src)->not->toContain("/storage/images/groups/{$this->group->id}/general/");
-    expect($image->src)->not->toContain("/storage/images/groups/{$this->group->id}/recipes/");
+    expect($image->src)->not->toContain("images/groups/{$this->group->id}/general/");
+    expect($image->src)->not->toContain("images/groups/{$this->group->id}/recipes/");
 });
 
 test('3-1-4: 【一括アップロード】 upload_path 指定時に指定パスに保存される', function () {
@@ -154,9 +155,9 @@ test('3-1-4: 【一括アップロード】 upload_path 指定時に指定パス
 
     // srcが指定パスに保存されていることを確認
     $image = Image::where('width', 100)->where('height', 100)->first();
-    expect($image->src)->toContain('/storage/images/users/');
+    expect($image->src)->toContain('images/users/');
     // グループID配下ではないことを確認
-    expect($image->src)->not->toContain("/storage/images/groups/{$this->group->id}/");
+    expect($image->src)->not->toContain("images/groups/{$this->group->id}/");
 });
 
 test('3-1-5: 【一括アップロード】 upload_path 未指定時にグループ ID 配下に保存される', function () {
@@ -175,7 +176,7 @@ test('3-1-5: 【一括アップロード】 upload_path 未指定時にグルー
 
     // srcがグループID配下に保存されていることを確認（従来動作）
     $image = Image::where('width', 100)->where('height', 100)->first();
-    expect($image->src)->toContain("/storage/images/groups/{$this->group->id}/");
+    expect($image->src)->toContain("images/groups/{$this->group->id}/");
 });
 
 test('3-1-6: 【一括アップロード】 アップロードした画像から Exif が削除される', function () {
@@ -202,10 +203,10 @@ test('3-1-6: 【一括アップロード】 アップロードした画像から
     $response->assertStatus(200);
 
     $dir = "images/groups/{$this->group->id}";
-    $stored = Storage::disk('public')->files($dir);
+    $stored = Storage::disk($this->imageDisk)->files($dir);
     expect($stored)->toHaveCount(1);
 
-    $bin = Storage::disk('public')->get($stored[0]);
+    $bin = Storage::disk($this->imageDisk)->get($stored[0]);
     $tmp = tempnam(sys_get_temp_dir(), 'jpeg');
     expect($tmp)->not->toBeFalse();
     file_put_contents($tmp, $bin);
@@ -297,11 +298,11 @@ test('3-1-9: 【一括アップロード】 PNG / WebP もリサイズと再保�
         expect($data[0]['height'])->toBe(1000);
 
         $dir = "images/groups/{$this->group->id}";
-        $paths = Storage::disk('public')->files($dir);
+        $paths = Storage::disk($this->imageDisk)->files($dir);
         $path = collect($paths)->first(fn ($p) => str_ends_with($p, '.' . $format['ext']));
         expect($path)->not->toBeNull();
 
-        $bin = Storage::disk('public')->get($path);
+        $bin = Storage::disk($this->imageDisk)->get($path);
         $info = @getimagesizefromstring($bin);
         expect($info)->not->toBeFalse();
         expect($info[2])->toBe($format['type']);
@@ -478,7 +479,7 @@ test('3-1-19: 【一括アップロード】 ImageService 例外', function () {
 test('3-1-20: 【一括アップロード】 ファイルアップロード失敗', function () {
     // ストレージの書き込みを失敗させる
     Storage::shouldReceive('disk')
-        ->with('public')
+        ->with(config('filesystems.image_disk'))
         ->andReturnSelf();
     Storage::shouldReceive('put')
         ->andThrow(new \Exception('File upload failed'));
