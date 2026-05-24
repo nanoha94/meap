@@ -67,10 +67,10 @@ const AppLayout = async ({ children }: Props) => {
     const redirectPath = cookieStore.get('redirectPath')?.value;
 
     return (
-        <div className="min-h-screen h-full flex flex-col">
-            <div className="flex h-[calc(100vh-80px)] md:h-full mb-20 md:mb-0">
+        <div className="min-h-dvh h-full flex flex-col">
+            <div className="flex h-[calc(100dvh-80px)] md:h-full mb-20 md:mb-0">
                 <SideNavigation className="z-10 hidden md:block" />
-                <div className="flex-1 h-[calc(100vh-80px)] md:h-screen bg-primary-background md:w-[calc(100vw-160px)] md:ml-[160px] overflow-y-auto">
+                <div className="flex-1 h-[calc(100dvh-80px)] md:h-dvh bg-primary-background md:w-[calc(100vw-160px)] md:ml-[160px] overflow-y-auto">
                     {children}
                 </div>
             </div>

@@ -21,7 +21,7 @@ const AlertDialog = () => {
             <div
                 onClick={e => e.stopPropagation()}
                 className="absolute top-10 left-1/2 -translate-x-1/2 max-h-[calc(100dvh-80px)] max-w-[500px] w-[calc(100%-40px)] overflow-y-auto bg-white rounded-xl">
-                <div className="px-5 py-12">
+                <div className="px-5 pt-12 pb-[calc(3rem+env(safe-area-inset-bottom,0px))]">
                     <div className="mb-7 px-5 py-2 w-full text-2xl font-bold text-center">
                         {currentDialog.config.title}
                     </div>

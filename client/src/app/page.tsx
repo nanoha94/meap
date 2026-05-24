@@ -93,7 +93,7 @@ const roadmapItems = [
 
 const Home = () => {
     return (
-        <div className="min-h-screen bg-primary-background text-black">
+        <div className="min-h-dvh bg-primary-background text-black">
             <header
                 className="sticky top-0 bg-white backdrop-blur-sm"
                 style={{ boxShadow: 'inset 0 -1px 3px 0 rgba(0, 0, 0, 10%)' }}

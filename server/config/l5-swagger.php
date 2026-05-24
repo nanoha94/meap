@@ -89,9 +89,11 @@ return [
             'views' => base_path('resources/views/vendor/l5-swagger'),
 
             /*
-             * Edit to set the api's base path
+             * Swagger UI の servers.url（Try it out の送信先ベース）。
+             * 既定「/」はドキュメントを開いたサイトと同一オリジンに向ける（開発・本番で APP_URL と一致させなくてよい）。
+             * コード生成などでファイルに絶対URLを焼きたいときのみ L5_SWAGGER_BASE_PATH（例 APP_URL と同値）を設定する。
              */
-            'base' => env('L5_SWAGGER_BASE_PATH', env('APP_URL', 'https://localhost:8000')),
+            'base' => env('L5_SWAGGER_BASE_PATH', '/'),
 
             /*
              * Absolute path to directories that should be excluded from scanning

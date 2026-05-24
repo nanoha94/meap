@@ -6,7 +6,7 @@ import { colors } from '@/constants';
 
 const Loading = () => {
     return (
-        <div className="h-screen flex flex-col">
+        <div className="h-dvh flex flex-col">
             <div className="flex-1 bg-primary-background">
                 <Header title="Loading..." />
                 <div className="py-20">
