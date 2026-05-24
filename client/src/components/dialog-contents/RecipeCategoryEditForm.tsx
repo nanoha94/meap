@@ -1,6 +1,8 @@
 'use client';
+
 import React from 'react';
 import { CirclePlus } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
 
 import {
@@ -20,6 +22,7 @@ interface FormData {
 }
 
 const RecipeCategoryEditForm: React.FC = () => {
+    const router = useRouter();
     const { closeDialog, updateCurrentDialogConfig } = useDialog();
     const { storeData, bulkUpdateRecipeCategories } = useRecipeCategoryApi();
     const prefix = TMP_ID_PREFIX.RECIPE_CATEGORY;
@@ -100,7 +103,7 @@ const RecipeCategoryEditForm: React.FC = () => {
     /**
      * フォームの送信
      */
-    const onSubmit = (data: FormData) => {
+    const onSubmit = async (data: FormData) => {
         try {
             // 空のアイテムを除いてデータ更新
             const filteredItems = data.categories.filter(
@@ -110,13 +113,16 @@ const RecipeCategoryEditForm: React.FC = () => {
                         v.name?.length > 0) ||
                     !v.id?.startsWith(prefix),
             );
-            bulkUpdateRecipeCategories(
+            const success = await bulkUpdateRecipeCategories(
                 filteredItems.map((v, idx) => ({
                     ...v,
                     order: idx,
                 })),
             );
-            closeDialog(false);
+            if (success) {
+                router.refresh();
+                closeDialog(false);
+            }
         } catch {
             // エラーの場合はダイアログを閉じない
             // エラーハンドリングはbulkUpdateRecipeCategoriesで行う

@@ -1,14 +1,14 @@
 "use client";
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { useForm, useWatch } from 'react-hook-form';
 
-import { EDIT_MODE, EditMode, TMP_ID_PREFIX } from '@/constants';
+import { EDIT_MODE, EditMode, LINK_TO, TMP_ID_PREFIX } from '@/constants';
 import { IIngredientItem, IPostPutRecipeRequest, IRecipe } from '@/types';
 import { DEFAULT_RECIPE_EDIT_FORM_DATA } from '../constants';
 import { RecipeEditFormData } from '../types';
 import { useRecipeApi } from './useRecipeApi';
-
 
 /**
  * 食材をフォーマット
@@ -122,6 +122,7 @@ export const useRecipeEditForm = (initialOwnerUserId: string, fetchedRecipe?: IR
         defaultValues: getDefaultValues(fetchedRecipe, initialOwnerUserId),
     });
     const { control, handleSubmit, reset } = methods;
+    const router = useRouter();
     const { storeRecipe, updateRecipe } = useRecipeApi();
     const watchedName = useWatch({ control, name: 'name' });
     const watchedUrl = useWatch({ control, name: 'url' });
@@ -231,14 +232,19 @@ export const useRecipeEditForm = (initialOwnerUserId: string, fetchedRecipe?: IR
             // stepsはstoreRecipe()/updateRecipe()でフォーマットする
         };
 
+        let id: string | null = null;
         if (editMode === EDIT_MODE.CREATE) {
-            await storeRecipe(sendData, data.thumbnail?.file ?? null, data.steps);
+            id = await storeRecipe(sendData, data.thumbnail?.file ?? null, data.steps);
         } else {
-            await updateRecipe(
+            id = await updateRecipe(
                 { ...sendData, id: data.id },
                 data.thumbnail?.file ?? null,
                 data.steps,
             );
+        }
+
+        if (id) {
+            router.push(`${LINK_TO.RECIPE.TOP}/${id}`);
         }
     };
 

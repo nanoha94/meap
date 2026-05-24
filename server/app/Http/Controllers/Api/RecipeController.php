@@ -101,9 +101,9 @@ class RecipeController extends ApiController
 
         return $this->executeWithExceptionHandling(
             function () use ($request) {
-                $this->recipeService->create($request->validated(), $this->getUserGroup($request));
+                $id = $this->recipeService->create($request->validated(), $this->getUserGroup($request));
                 $message = __('api.created', ['attribute' => __('api.attributes.recipe'), 'name' => $request->name]);
-                return $this->createdResponse(null, $message);
+                return $this->createdResponse(['id' => $id], $message);
             },
             $request,
             $failedMessage,

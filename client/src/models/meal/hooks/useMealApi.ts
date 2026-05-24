@@ -1,12 +1,12 @@
-"use client";
-import React from "react";
-import { useRouter } from "next/navigation";
+'use client';
 
-import { TIMEOUT_MS } from "@/constants";
-import { useApiErrorHandler, useSnackbars } from "@/hooks";
-import axios from "@/lib/axios";
-import { useGlobalStore } from "@/stores";
-import { IBaseApiResponse } from "@/types";
+import React from 'react';
+
+import { TIMEOUT_MS } from '@/constants';
+import { useApiErrorHandler, useSnackbars } from '@/hooks';
+import axios from '@/lib/axios';
+import { useGlobalStore } from '@/stores';
+import { IBaseApiResponse } from '@/types';
 
 export const useMealApi = () => {
     // store
@@ -14,7 +14,6 @@ export const useMealApi = () => {
     const decrementLoadingCount = useGlobalStore(state => state.decrementLoadingCount);
 
     // hook
-    const router = useRouter();
     const { addSnackbar } = useSnackbars();
     const { handleApiError } = useApiErrorHandler();
 
@@ -22,16 +21,14 @@ export const useMealApi = () => {
     const isDeleteRequestRef = React.useRef(false);
 
     /**
-     * 献立プラン作成
-     * @param data 作成する献立プランデータ
+     * 献立（meal）削除
+     * @param mealPlanId 献立プランID
+     * @param id 削除する献立のID
      */
     const deleteMeal = React.useCallback(
-        async (
-            mealPlanId: string, id: string
-        ) => {
-            // 重複リクエスト防止
+        async (mealPlanId: string, id: string): Promise<boolean> => {
             if (isDeleteRequestRef.current) {
-                return;
+                return false;
             }
 
             try {
@@ -48,21 +45,22 @@ export const useMealApi = () => {
                         'success',
                         responseData.message || 'リクエストが正常に完了しました',
                     );
-                    router.refresh();
-                } else {
-                    addSnackbar(
-                        'error',
-                        responseData.message || '献立の削除に失敗しました',
-                    );
+                    return true;
                 }
+                addSnackbar(
+                    'error',
+                    responseData.message || '献立の削除に失敗しました',
+                );
+                return false;
             } catch (error) {
                 handleApiError(error);
+                return false;
             } finally {
                 isDeleteRequestRef.current = false;
                 decrementLoadingCount();
             }
         },
-        [incrementLoadingCount, decrementLoadingCount, router, addSnackbar, handleApiError],
+        [incrementLoadingCount, decrementLoadingCount, addSnackbar, handleApiError],
     );
 
     return {

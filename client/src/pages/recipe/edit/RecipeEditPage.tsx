@@ -12,7 +12,7 @@ import {
     StyledSelect,
     VerticalRowField,
 } from '@/components';
-import { ALERT_DIALOG_CONFIGS, BUTTON_TYPE, COLOR_VARIANT, colors } from '@/constants';
+import { ALERT_DIALOG_CONFIGS, BUTTON_TYPE, COLOR_VARIANT, LINK_TO, colors } from '@/constants';
 import { useAlertDialog, useNavigationGuard, useSnackbars, useTextCopy } from '@/hooks';
 import {
     CategoryEditFields,
@@ -80,9 +80,12 @@ const RecipeEditPage = ({
             icon: <Trash2 size={20} strokeWidth={2} />,
             onClick: () => openAlertDialog(
                 RECIPE_ALERT_DIALOG_CONFIGS.deleteItem(fetchedRecipe.name),
-                () => {
-                    deleteRecipe(fetchedRecipe.id);
-                }
+                async () => {
+                    const success = await deleteRecipe(fetchedRecipe.id);
+                    if (success) {
+                        router.push(LINK_TO.RECIPE.TOP);
+                    }
+                },
             ),
             color: COLOR_VARIANT.ALERT,
         },

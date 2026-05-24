@@ -16,7 +16,7 @@ export type IGetRecipeIndexResponse = IBaseApiIndexResponse<IRecipe[]>;
 export type IGetRecipeShowResponse = IBaseApiResponseWithData<IRecipe>;
 
 // レシピ作成
-export type IPostRecipeResponse = IBaseApiResponse;
+export type IPostRecipeResponse = IBaseApiResponseWithData<{ id: string }>;
 
 // レシピ更新
 export type IPutRecipeResponse = IBaseApiResponse;

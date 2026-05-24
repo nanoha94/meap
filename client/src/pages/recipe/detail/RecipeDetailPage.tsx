@@ -1,10 +1,12 @@
 'use client';
+
 import React from 'react';
-import Image from 'next/image';
 import { Image as ImageIcon, Pencil, Trash2 } from 'lucide-react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 import { Header, HeaderTextButton } from '@/components';
-import { COLOR_VARIANT } from '@/constants';
+import { COLOR_VARIANT, LINK_TO } from '@/constants';
 import { useAlertDialog, useSnackbars } from '@/hooks';
 import { useIngredientStore } from '@/models/ingredient';
 import { RECIPE_ALERT_DIALOG_CONFIGS, useRecipeApi } from '@/models/recipe';
@@ -30,6 +32,7 @@ const RecipeDetailPage = ({
     const ingredientCategories = useIngredientStore(state => state.categories);
 
     // hook
+    const router = useRouter();
     const { addSnackbar } = useSnackbars();
     const { deleteRecipe } = useRecipeApi();
     const { openAlertDialog } = useAlertDialog();
@@ -43,8 +46,11 @@ const RecipeDetailPage = ({
         }
         openAlertDialog(
             RECIPE_ALERT_DIALOG_CONFIGS.deleteItem(fetchedRecipe.name),
-            () => {
-                deleteRecipe(fetchedRecipe.id);
+            async () => {
+                const success = await deleteRecipe(fetchedRecipe.id);
+                if (success) {
+                    router.push(LINK_TO.RECIPE.TOP);
+                }
             },
         );
     };

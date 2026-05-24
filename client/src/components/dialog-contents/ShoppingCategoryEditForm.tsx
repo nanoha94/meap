@@ -1,6 +1,8 @@
 'use client';
+
 import React from 'react';
 import { CirclePlus } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
 
 import {
@@ -26,6 +28,7 @@ const ShoppingCategoryEditForm: React.FC = () => {
     const categories = useShoppingStore(state => state.categories);
 
     // hook
+    const router = useRouter();
     const { closeDialog, updateCurrentDialogConfig } = useDialog();
     const { bulkUpdateShoppingCategories } =
         useShoppingCategoryApi();
@@ -96,7 +99,7 @@ const ShoppingCategoryEditForm: React.FC = () => {
     /**
      * フォームの送信
      */
-    const onSubmit = (data: FormData) => {
+    const onSubmit = async (data: FormData) => {
         try {
             // 空のアイテムを除いてデータ更新
             const filteredItems = data.categories.filter(
@@ -104,13 +107,16 @@ const ShoppingCategoryEditForm: React.FC = () => {
                     (v.id?.startsWith(prefix) && v.name.length > 0) ||
                     !v.id?.startsWith(prefix),
             );
-            bulkUpdateShoppingCategories(
+            const success = await bulkUpdateShoppingCategories(
                 filteredItems.map((v, idx) => ({
                     ...v,
                     order: idx,
                 })),
             );
-            closeDialog(false);
+            if (success) {
+                router.refresh();
+                closeDialog(false);
+            }
         } catch {
             // エラーの場合はダイアログを閉じない
             // エラーハンドリングはbulkUpdateShoppingCategoriesで行う

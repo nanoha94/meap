@@ -178,7 +178,7 @@ class MealPlanService extends AbstractDomainService
         ];
     }
 
-    public function create(array $data, Group $group): void
+    public function create(array $data, Group $group): ?string
     {
         DB::transaction(function () use ($data, $group) {
             // 献立カテゴリ・レシピの存在チェック
@@ -194,6 +194,8 @@ class MealPlanService extends AbstractDomainService
                 $this->createMeal($mealPlan, $mealData, $group);
             }
         });
+
+        return null;
     }
 
     public function update(string $id, array $data, Group $group): MealPlan

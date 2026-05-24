@@ -11,7 +11,6 @@ import {
 } from '@/types';
 import { DELETE_CHECK_FOR_JOIN_GROUP_DIALOG_CONFIGS, JOIN_ERROR_TYPE } from '../constants';
 import { useAccountNavigation } from './useAccountNavigation';
-import { useRouter } from 'next/navigation';
 
 export const useInvitationApi = () => {
     // store
@@ -19,7 +18,6 @@ export const useInvitationApi = () => {
     const decrementLoadingCount = useGlobalStore(state => state.decrementLoadingCount);
 
     //hook
-    const router = useRouter();
     const { addSnackbar } = useSnackbars();
     const { openAlertDialog } = useAlertDialog();
     const { removeTokenFromPath } = useAccountNavigation();
@@ -87,17 +85,17 @@ export const useInvitationApi = () => {
 
     /**
      * グループに参加する
-     * @param token 招待トークン
+     * @param invitationDetail 招待の詳細（トークンを含む）
      * @param isDelete 削除するかどうか
-     * @returns {Promise<{success: boolean, errorStatus: number, errorType?: string}>} 成功/失敗の情報
+     * @returns ビジネス上の参加成功時 true（router.refresh / ダイアログを閉じる等は呼び出し側）
      */
     const joinGroup = async (
         invitationDetail: IInvitation,
         isDelete: boolean,
-    ): Promise<void> => {
+    ): Promise<boolean> => {
         // 重複リクエスト防止
         if (isJoinRequestRef.current) {
-            return;
+            return false;
         }
 
         try {
@@ -118,22 +116,22 @@ export const useInvitationApi = () => {
             const responseData: IPostInvitationJoinResponse = res.data;
 
             if (responseData.success) {
-                router.refresh();
                 addSnackbar(
                     'success',
                     responseData.message || 'リクエストが正常に完了しました',
                 );
-            } else {
-                addSnackbar(
-                    'error',
-                    responseData.message || 'グループへの参加に失敗しました',
-                );
+                return true;
             }
+            addSnackbar(
+                'error',
+                responseData.message || 'グループへの参加に失敗しました',
+            );
+            return false;
         } catch (error) {
             // Axiosエラーでない場合はhandleApiErrorに委譲
             if (!isAxiosError(error)) {
                 handleApiError(error);
-                return;
+                return false;
             }
 
             // 409エラーかつerror_typeがある場合は、データ消去確認ダイアログを表示する（スナックバーは表示しない）
@@ -144,17 +142,29 @@ export const useInvitationApi = () => {
                 console.error(error.response?.data?.message);
 
                 const errorType = error.response?.data?.error_type as keyof typeof JOIN_ERROR_TYPE;
-                openAlertDialog(DELETE_CHECK_FOR_JOIN_GROUP_DIALOG_CONFIGS[errorType], () => {
-                    joinGroup(invitationDetail, true);
+
+                // ダイアログ表示中も他の参加処理を許可できるよう、この呼び出し分のロックだけ先に解放する（従来の finally タイミングに合わせる）
+                isJoinRequestRef.current = false;
+                decrementLoadingCount();
+
+                return await new Promise<boolean>(resolve => {
+                    openAlertDialog(
+                        DELETE_CHECK_FOR_JOIN_GROUP_DIALOG_CONFIGS[errorType],
+                        () => void joinGroup(invitationDetail, true).then(resolve),
+                        { onDismiss: () => resolve(false) },
+                    );
                 });
-            } else {
-                // 409以外のエラー（タイムアウト・その他のHTTPエラー）はhandleApiErrorに委譲
-                handleApiError(error);
             }
+
+            // 409以外のエラー（タイムアウト・その他のHTTPエラー）はhandleApiErrorに委譲
+            handleApiError(error);
+            return false;
         } finally {
-            // ローディングアニメーションを終了
-            isJoinRequestRef.current = false;
-            decrementLoadingCount();
+            // 409 競合ブランチでは先にロック解放済みなので二重 decrement しない
+            if (isJoinRequestRef.current) {
+                isJoinRequestRef.current = false;
+                decrementLoadingCount();
+            }
         }
     };
 

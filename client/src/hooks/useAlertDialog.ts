@@ -36,13 +36,19 @@ export const useAlertDialog = () => {
      * 既にダイアログが表示中の場合は、新しいダイアログを前面に表示
      * @param config ダイアログの設定
      * @param onAction アクションボタンが押されたときのコールバック
+     * @param options.onDismiss キャンセル（背景クリック含む）で閉じる直前に呼ぶ
      */
     const openAlertDialog = React.useCallback(
-        (config: AlertDialogConfig, onAction: () => void) => {
+        (
+            config: AlertDialogConfig,
+            onAction: () => void,
+            options?: { onDismiss?: () => void },
+        ) => {
             const newDialog: AlertDialogData = {
                 isOpen: true,
                 config,
                 onCancel: () => {
+                    options?.onDismiss?.();
                     closeAlertDialog();
                 },
                 onAction: () => {

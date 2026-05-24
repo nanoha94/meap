@@ -1,14 +1,17 @@
-"use client";
-import React from "react";
+'use client';
 
-import { useForm, useWatch } from "react-hook-form";
+import React from 'react';
 
-import { BUTTON_TYPE } from "@/constants";
-import { useDialog, useNavigationGuard } from "@/hooks";
-import { iconAvatar, useUserApi, useUserStore } from "@/models/user";
-import Button from "../Button";
-import { ImageEditField, VerticalRowField } from "../react-hook-form";
-import { ProfileEditFormData } from "@/models/user/types";
+import { useRouter } from 'next/navigation';
+
+import { useForm, useWatch } from 'react-hook-form';
+
+import { BUTTON_TYPE } from '@/constants';
+import { useDialog, useNavigationGuard } from '@/hooks';
+import { iconAvatar, useUserApi, useUserStore } from '@/models/user';
+import { ProfileEditFormData } from '@/models/user/types';
+import Button from '../Button';
+import { ImageEditField, VerticalRowField } from '../react-hook-form';
 
 
 const ProfileEditForm = () => {
@@ -16,6 +19,7 @@ const ProfileEditForm = () => {
     const loginUser = useUserStore(state => state.loginUser);
 
     // hook
+    const router = useRouter();
     const { closeDialog, updateCurrentDialogConfig } = useDialog();
     const { updateUser } = useUserApi();
 
@@ -62,10 +66,12 @@ const ProfileEditForm = () => {
      * @param data フォームのデータ
      */
     const onSubmit = async (data: ProfileEditFormData) => {
-        await updateUser({
+        const success = await updateUser({
             name: data.name,
             avatar_image_id: data.avatarImage?.id,
         }, data.avatarImage?.file ?? null);
+        if (!success) return;
+        router.refresh();
         closeDialog(false);
     };
 
