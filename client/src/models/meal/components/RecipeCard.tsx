@@ -18,9 +18,9 @@ type Props = {
 
 const RecipeCard = ({ recipe, isGrippable = false, hasDeleteButton = false, onDelete }: Props) => {
     return (
-        <div className="flex gap-x-2">
+        <div className="flex">
             {isGrippable && (
-                <SortableHandle>
+                <SortableHandle className="pr-2">
                     <GripVertical color={colors.gray.main} className="pt-1" />
                 </SortableHandle>
             )}

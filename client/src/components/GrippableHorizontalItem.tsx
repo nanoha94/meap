@@ -21,8 +21,8 @@ const GrippableHorizontalItem: React.FC<Props> = ({
     className = '',
 }) => {
     return (
-        <div className={`flex items-center gap-x-2 ${className ?? ''}`}>
-            <SortableHandle>
+        <div className={`flex items-center ${className ?? ''}`}>
+            <SortableHandle className="pr-2">
                 <GripVertical color={colors.gray.main} />
             </SortableHandle>
             {children}
@@ -30,7 +30,7 @@ const GrippableHorizontalItem: React.FC<Props> = ({
                 <button
                     type="button"
                     onClick={isDisabledDeleteButton ? undefined : onDelete}
-                    className="p-1 w-fit h-fit rounded-full hover:bg-gray-light transition-colors disabled:opacity-0 disabled:cursor-default"
+                    className="ml-2 p-1 w-fit h-fit rounded-full hover:bg-gray-light transition-colors disabled:opacity-0 disabled:cursor-default"
                     disabled={isDisabledDeleteButton}>
                     <Trash2 color={colors.alert.main} size={28} />
                 </button>
