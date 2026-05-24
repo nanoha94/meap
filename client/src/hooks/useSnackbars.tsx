@@ -22,15 +22,17 @@ export const useSnackbars = () => {
 
             // 100ms後に削除（アニメーション完了を待って削除）
             setTimeout(() => {
-                setSnackbars(prev => prev.filter(v => v.id !== id));
-
-                // スナックバーが空の場合、前回のメッセージをクリア
-                if (snackbars.length === 0) {
-                    previousMessageRef.current = null;
-                }
+                setSnackbars(prev => {
+                    const filtered = prev.filter(v => v.id !== id);
+                    // スナックバーが空の場合、前回のメッセージをクリア
+                    if (filtered.length === 0) {
+                        previousMessageRef.current = null;
+                    }
+                    return filtered;
+                });
             }, 100);
         },
-        [setSnackbars, snackbars],
+        [setSnackbars],
     );
 
     const addSnackbar = React.useCallback(

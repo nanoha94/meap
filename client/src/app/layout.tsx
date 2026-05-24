@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 
 import { AlertDialog, Dialog, LoadingAnimation, Snackbars } from '@/components';
 import { NOTO_SANS_JP } from '@/constants';
@@ -22,6 +22,10 @@ const RootLayout = ({ children }: RootLayoutProps) => {
             </body>
         </html>
     );
+};
+
+export const viewport: Viewport = {
+    viewportFit: 'cover',
 };
 
 export const metadata: Metadata = {

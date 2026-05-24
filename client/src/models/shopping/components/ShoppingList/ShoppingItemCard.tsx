@@ -87,13 +87,13 @@ const ShoppingItemCard = ({ item, syncPendingItems }: Props) => {
     return (
         <>
             <div className="relative py-3 px-1 w-full text-left flex items-center justify-between rounded bg-white shadow-card">
-                <div className="w-full flex items-center gap-x-4">
+                <div className="w-full flex items-center">
                     {isPinned && (
                         <div className="absolute -top-3 -left-3 bg-primary-main rounded-full p-1">
                             <Pin color={colors.white} size={20} />
                         </div>
                     )}
-                    <SortableHandle>
+                    <SortableHandle className="pr-4">
                         <GripVertical color={colors.gray.main} />
                     </SortableHandle>
                     <div className="flex-1">
@@ -126,10 +126,11 @@ const ShoppingItemCard = ({ item, syncPendingItems }: Props) => {
                             {name}
                         </label>
                     </div>
-                    <MenuButton
-                        actionButtons={actionButtonConfigs}
-                        placement="top-right"
-                    />
+                    <div className="ml-4">
+                        <MenuButton
+                            actionButtons={actionButtonConfigs}
+                            placement="top-right"
+                        /></div>
                 </div>
             </div>
         </>

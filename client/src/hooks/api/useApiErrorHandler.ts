@@ -1,4 +1,6 @@
 // client/src/hooks/api/useApiErrorHandler.ts
+import React from 'react';
+
 import { isAxiosError } from '@/lib/axios';
 
 import { useSnackbars } from '../useSnackbars';
@@ -6,7 +8,7 @@ import { useSnackbars } from '../useSnackbars';
 export const useApiErrorHandler = () => {
     const { addSnackbar } = useSnackbars();
 
-    const handleApiError = (error: unknown): void => {
+    const handleApiError = React.useCallback((error: unknown): void => {
         // Axios 由来のエラーのみタイムアウト・レスポンスを判定（他API利用時と同様にタイムアウトはタイムアウトとして扱う）
         if (isAxiosError(error)) {
             // タイムアウトエラー
@@ -28,7 +30,7 @@ export const useApiErrorHandler = () => {
         const message = error instanceof Error ? error.message : '予期せぬエラーが発生しました';
         console.error(message);
         addSnackbar('error', message);
-    };
+    }, [addSnackbar]);
 
     return { handleApiError };
 };
