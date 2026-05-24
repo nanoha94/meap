@@ -30,6 +30,10 @@ const borderColorClass = (type: 'success' | 'error') => {
 const Snackbars = () => {
     const { snackbars, removeSnackbar } = useSnackbars();
 
+    if (snackbars.length === 0) {
+        return null;
+    }
+
     return (
         <div className="fixed bottom-10 right-0 p-3 max-w-[600px] w-fit flex flex-col gap-y-2 justify-center">
             {snackbars?.map(v => (
