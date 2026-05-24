@@ -14,6 +14,8 @@ type Props = {
     className?: string;
     children: React.ReactNode;
     isExternal?: boolean;
+    /** 外部リンク（isExternal）を新しいタブで開くか。同一タブ完結させたいときは false。 */
+    openInNewTab?: boolean;
 };
 
 const ButtonLink = ({
@@ -23,6 +25,7 @@ const ButtonLink = ({
     className,
     children,
     isExternal = false,
+    openInNewTab = true,
 }: Props) => {
     const linkClassName = `${className ?? ''} block text-center appearance-none p-3 w-full font-bold rounded-lg transition-colors ${PRIMARY_BUTTON_COLOR_CLASS[variant][colorVariant]}`.trim();
 
@@ -31,8 +34,9 @@ const ButtonLink = ({
             <a
                 href={href}
                 className={linkClassName}
-                target="_blank"
-                rel="noopener noreferrer"
+                {...(openInNewTab
+                    ? ({ target: '_blank', rel: 'noopener noreferrer' } as const)
+                    : {})}
             >
                 {children}
             </a>

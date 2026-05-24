@@ -153,7 +153,8 @@ class SocialLoginController extends Controller
      */
     private function loginAndRedirect(Request $request, User $user): RedirectResponse
     {
-        Auth::guard('web')->login($user);
+        // ソーシャルログインの場合は remember を true にしておく
+        Auth::guard('web')->login($user, true);
         $request->session()->regenerate();
 
         return redirect(config('app.frontend_url') . '/plan');

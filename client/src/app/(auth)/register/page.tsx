@@ -272,6 +272,7 @@ const Page = () => {
                     variant={BUTTON_VARIANT.OUTLINED}
                     colorVariant={COLOR_VARIANT.GRAY}
                     isExternal={true}
+                    openInNewTab={false}
                 >
                     Googleアカウントでログイン
                 </ButtonLink>

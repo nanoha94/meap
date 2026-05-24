@@ -10,6 +10,7 @@ import {
     BUTTON_VARIANT,
     COLOR_VARIANT,
     LINK_TO,
+    OAUTH_ERROR_MESSAGES,
 } from '@/constants';
 import { useAuth } from '@/hooks';
 
@@ -64,6 +65,14 @@ const LoginForm = () => {
             return null;
         }
     }, [searchParams, errors]);
+
+    const oauthErrorMessage = React.useMemo(() => {
+        const code = searchParams?.get('error');
+        if (!code) {
+            return null;
+        }
+        return OAUTH_ERROR_MESSAGES[code] ?? null;
+    }, [searchParams]);
 
     // 入力エラーがあったとき、その後に入力内容が変更されればエラー有無に関わらずエラー内容を非表示にする
     const [isErrorVisible, setIsErrorVisible] = React.useState<
@@ -201,11 +210,17 @@ const LoginForm = () => {
                             }>
                             ログイン
                         </Button>
-                        {!!(resetStatusMessage ?? loginStatus) && (
-                            <p className="text-alert-main">
-                                {resetStatusMessage ?? loginStatus}
-                            </p>
-                        )}
+                        {!!(
+                            oauthErrorMessage ??
+                            resetStatusMessage ??
+                            loginStatus
+                        ) && (
+                                <p className="text-alert-main">
+                                    {oauthErrorMessage ??
+                                        resetStatusMessage ??
+                                        loginStatus}
+                                </p>
+                            )}
                     </div>
                 </form>
                 <div className="flex flex-col items-center gap-y-4">
@@ -233,6 +248,7 @@ const LoginForm = () => {
                     variant={BUTTON_VARIANT.OUTLINED}
                     colorVariant={COLOR_VARIANT.GRAY}
                     isExternal={true}
+                    openInNewTab={false}
                 >
                     Googleアカウントでログイン
                 </ButtonLink>
