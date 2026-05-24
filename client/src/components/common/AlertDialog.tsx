@@ -17,10 +17,10 @@ const AlertDialog = () => {
     return (
         <div
             onClick={currentDialog.onCancel}
-            className="fixed z-50 top-0 left-0 w-full h-screen bg-black/50">
+            className="fixed z-50 top-0 left-0 w-full h-dvh bg-black/50">
             <div
                 onClick={e => e.stopPropagation()}
-                className="absolute top-10 left-1/2 -translate-x-1/2 max-w-[500px] w-[calc(100%-40px)] bg-white rounded-xl">
+                className="absolute top-10 left-1/2 -translate-x-1/2 max-h-[calc(100dvh-80px)] max-w-[500px] w-[calc(100%-40px)] overflow-y-auto bg-white rounded-xl">
                 <div className="px-5 py-12">
                     <div className="mb-7 px-5 py-2 w-full text-2xl font-bold text-center">
                         {currentDialog.config.title}
