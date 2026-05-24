@@ -81,7 +81,7 @@ const AddShoppingItemButton = () => {
             {isOpen && (
                 <div
                     onClick={() => setIsOpen(false)}
-                    className="fixed z-50 top-0 left-0 w-full h-screen bg-black/50"
+                    className="fixed z-50 top-0 left-0 w-full h-dvh bg-black/50"
                 />
             )}
             <div

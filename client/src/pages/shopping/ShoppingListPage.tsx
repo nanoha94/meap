@@ -65,7 +65,7 @@ const ShoppingListPage: React.FC<Props> = ({ fetchItems, errorMessage }) => {
         <>
             <ShoppingListPageHeader />
             {/* 画面下部にスクロールバーを表示したいので、ここでoverflow-x-autoを指定 */}
-            <main className="pt-5 w-full pb-[60px] h-[calc(100vh-140px)] md:h-[calc(100vh-60px)] overflow-x-auto">
+            <main className="pt-5 w-full pb-[60px] h-[calc(100dvh-140px)] md:h-[calc(100dvh-60px)] overflow-x-auto">
                 <div className="px-5 md:px-10">
                     {/* 買い物リスト */}
                     <div className="mb-7">
