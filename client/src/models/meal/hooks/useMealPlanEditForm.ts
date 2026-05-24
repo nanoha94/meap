@@ -1,5 +1,6 @@
 "use client";
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { useFieldArray, useForm, useWatch } from 'react-hook-form';
 
 import { EDIT_MODE, EditMode, TMP_ID_PREFIX } from '@/constants';
@@ -44,6 +45,7 @@ export const useMealPlanEditForm = (selectedDate: string, fetchMealPlan?: IMealP
     const { control, handleSubmit, reset } = methods;
     const mealsFieldArray = useFieldArray({ control, name: 'meals' });
     const watchedMeals = useWatch({ control, name: 'meals' });
+    const router = useRouter();
     const { storeMealPlan, updateMealPlan } = useMealPlanApi();
 
     // state
@@ -67,7 +69,7 @@ export const useMealPlanEditForm = (selectedDate: string, fetchMealPlan?: IMealP
      * フォームの送信処理
      * @param data フォームのデータ
      */
-    const onSubmit = (data: MealPlanEditFormData) => {
+    const onSubmit = async (data: MealPlanEditFormData) => {
         const filteredMeals = data.meals.filter(
             (meal) => meal.recipeId && meal.recipeId.length > 0,
         );
@@ -108,10 +110,15 @@ export const useMealPlanEditForm = (selectedDate: string, fetchMealPlan?: IMealP
             })),
         };
 
+        let success: boolean = false;
         if (editMode === EDIT_MODE.CREATE) {
-            storeMealPlan({ ...sendData, date: selectedDate });
+            success = await storeMealPlan({ ...sendData, date: selectedDate });
         } else {
-            updateMealPlan({ ...sendData, id: data.id });
+            success = await updateMealPlan({ ...sendData, id: data.id });
+        }
+
+        if (success) {
+            router.push(`/plan?date=${selectedDate}`);
         }
     };
 

@@ -35,6 +35,8 @@ export const useDialog = () => {
     /**
      * 現在のダイアログを閉じる
      * キューから次のダイアログを自動的に表示
+     * @param isCheck 確認ダイアログを表示するかどうか
+     * @returns void
      */
     const closeDialog = React.useCallback(
         (isCheck?: boolean) => {

@@ -225,10 +225,10 @@ const FormFooter = ({ selectedItems, isDisabledSaveButton, closeDialog, handleSa
                 <div className="text-lg">選択中の料理</div>
                 <div className="flex gap-x-2">
                     {selectedItems.length > 0 ? selectedItems.map((item, index) => (
-                        <>
-                            <div key={index}>{item.name}</div>
+                        <React.Fragment key={item.id}>
+                            <div>{item.name}</div>
                             {index < selectedItems.length - 1 && <div>/</div>}
-                        </>
+                        </React.Fragment>
                     )) : <div>まだ選択されていません</div>}
                 </div>
             </div>

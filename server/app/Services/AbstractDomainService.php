@@ -143,7 +143,7 @@ abstract class AbstractDomainService
      * @param array $data 作成データ
      * @param Group $group グループモデル
      */
-    public function create(array $data, Group $group): void
+    public function create(array $data, Group $group): ?string
     {
         DB::transaction(function () use ($data, $group) {
             $createData = [];
@@ -154,6 +154,8 @@ abstract class AbstractDomainService
             $this->getGroupRelation($group)->create($createData);
         });
         $this->forgetMasterGroupCacheIfNeeded($group);
+
+        return null;
     }
 
     /**

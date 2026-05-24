@@ -9,7 +9,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { FormProvider } from 'react-hook-form';
 
 import { Header, HeaderTextButton, StyledDatePicker } from '@/components';
-import { ALERT_DIALOG_CONFIGS, BUTTON_TYPE, COLOR_VARIANT } from '@/constants';
+import { ALERT_DIALOG_CONFIGS, BUTTON_TYPE, COLOR_VARIANT, LINK_TO } from '@/constants';
 import { useAlertDialog, useItemAndCategoryDnd, useNavigationGuard, useSnackbars } from '@/hooks';
 import { MealCardField, RecipeCard, useMealStore, useMealPlanEditForm, useMealPlanApi } from '@/models/meal';
 import { useGlobalStore } from '@/stores';
@@ -52,15 +52,16 @@ const PlanEditPage = ({ selectedDate, fetchMealPlan, errorMessage }: Props) => {
         {
             label: '削除する',
             icon: <Trash2 size={20} strokeWidth={2} />,
-            onClick: () => openAlertDialog(MEAL_ALERT_DIALOG_CONFIGS.deleteItem(`${selectedDate}の献立すべて`), () => {
-                deleteMealPlan(fetchMealPlan?.id ?? '');
-            }),
+            onClick: () =>
+                openAlertDialog(MEAL_ALERT_DIALOG_CONFIGS.deleteItem(`${selectedDate}の献立すべて`), async () => {
+                    const success = await deleteMealPlan(fetchMealPlan?.id ?? '');
+                    if (success) router.push(LINK_TO.PLAN.TOP);
+                }),
             color: COLOR_VARIANT.ALERT,
             disabled: !fetchMealPlan?.id,
 
         },
     ];
-
 
     /**
      * ドラッグオーバー
@@ -190,15 +191,16 @@ const PlanEditPage = ({ selectedDate, fetchMealPlan, errorMessage }: Props) => {
                             onDragEnd={handleDragEnd}
                             onDragOver={handleDragOver}>
                             {mealCategories.map(category => {
-                                const items = getItemsInCategory(tmpItems, category.id);
+                                const currentItems = isPlanItemDragging ? tmpItems : fields;
+                                const items = getItemsInCategory(currentItems, category.id);
                                 const itemsKey = items.map(item => item.recipeId).join(',');
                                 return (
                                     <MealCardField
                                         key={`${category.id}-${itemsKey}`}
                                         mealCategory={category}
                                         mealPlanItems={items}
-                                        addItem={(item: IMealPlanItem) => insert(getInsertIndexForCategory(tmpItems, mealCategories, category.id), item)}
-                                        deleteItem={(item: IMealPlanItem) => remove(tmpItems.indexOf(item))}
+                                        addItem={(item: IMealPlanItem) => insert(getInsertIndexForCategory(fields, mealCategories, category.id), item)}
+                                        deleteItem={(item: IMealPlanItem) => remove(fields.indexOf(item))}
                                     />
                                 );
                             })}

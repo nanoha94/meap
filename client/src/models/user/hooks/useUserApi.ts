@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { useRouter } from 'next/navigation';
 
 import { LINK_TO, TIMEOUT_MS } from '@/constants';
 import { useApiErrorHandler, useSnackbars } from '@/hooks';
@@ -18,7 +17,6 @@ export const useUserApi = () => {
     const loginUser = useUserStore(state => state.loginUser);
 
     // hook
-    const router = useRouter();
     const { bulkUploadImage } = useImageApi();
     const { addSnackbar } = useSnackbars();
     const { handleApiError } = useApiErrorHandler();
@@ -30,12 +28,12 @@ export const useUserApi = () => {
     /**
      * ユーザー情報を更新する
      * @param data 更新するユーザー情報
-     * @returns void
+     * @returns 成功時 true、失敗時 false
      */
-    const updateUser = React.useCallback(async (data: IPutUserRequest, avatarImage: File | null): Promise<void> => {
+    const updateUser = React.useCallback(async (data: IPutUserRequest, avatarImage: File | null): Promise<boolean> => {
         // 重複リクエスト防止
         if (isUpdateRequestRef.current) {
-            return;
+            return false;
         }
 
         try {
@@ -56,25 +54,26 @@ export const useUserApi = () => {
                 timeout: TIMEOUT_MS,
             });
             if (responseData.success) {
-                router.refresh();
                 addSnackbar(
                     'success',
                     responseData.message || 'リクエストが正常に完了しました',
                 );
-            } else {
-                addSnackbar(
-                    'error',
-                    responseData.message || 'ユーザー情報の更新に失敗しました',
-                );
+                return true;
             }
+            addSnackbar(
+                'error',
+                responseData.message || 'ユーザー情報の更新に失敗しました',
+            );
+            return false;
         }
         catch (error) {
             handleApiError(error);
+            return false;
         } finally {
             isUpdateRequestRef.current = false;
             decrementLoadingCount();
         }
-    }, [incrementLoadingCount, decrementLoadingCount, handleApiError, bulkUploadImage, loginUser.id, router, addSnackbar]);
+    }, [incrementLoadingCount, decrementLoadingCount, handleApiError, bulkUploadImage, loginUser.id, addSnackbar]);
 
     /**
      * ユーザーを削除する

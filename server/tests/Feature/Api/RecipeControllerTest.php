@@ -978,8 +978,12 @@ test('3-7-33: 【新規作成】 正常な料理作成', function () {
         'message' => '料理/レシピ(カレーライス)を作成しました。'
     ]);
 
+    $recipeId = $response->json('data.id');
+    expect($recipeId)->toBeString();
+
     // データベースに保存されていることを確認
     $this->assertDatabaseHas('recipes', [
+        'id' => $recipeId,
         'group_id' => $this->group->id,
         'owner_user_id' => $this->user->id,
         'name' => 'カレーライス',
@@ -987,10 +991,13 @@ test('3-7-33: 【新規作成】 正常な料理作成', function () {
         'published_recipe_id' => null
     ]);
 
-    // レスポンス構造の確認（store は success + message のみ）
+    // レスポンス構造の確認（store は success、message、data.id）
     $response->assertJsonStructure([
         'success',
-        'message'
+        'message',
+        'data' => [
+            'id',
+        ]
     ]);
 
     // Content-Typeがapplication/jsonであることを確認
@@ -1012,13 +1019,25 @@ test('3-7-42: 【新規作成】 最小限のデータで料理作成', function
         'message' => '料理/レシピ(カレーライス)を作成しました。'
     ]);
 
+    $recipeId = $response->json('data.id');
+    expect($recipeId)->toBeString();
+
     // データベースに保存されていることを確認
     $this->assertDatabaseHas('recipes', [
+        'id' => $recipeId,
         'group_id' => $this->group->id,
         'owner_user_id' => $this->user->id,
         'name' => 'カレーライス',
         'status' => 'limited',
         'published_recipe_id' => null
+    ]);
+
+    $response->assertJsonStructure([
+        'success',
+        'message',
+        'data' => [
+            'id',
+        ]
     ]);
 });
 
@@ -1034,8 +1053,8 @@ test('3-7-43: 【新規作成】 料理にカテゴリを紐づけ', function ()
 
     $response->assertStatus(201);
 
-    // カテゴリが正しく紐づけられていることを確認（store は data を返さないため DB から ID 取得）
-    $recipeId = getRecipeIdAfterStore($this->group);
+    // カテゴリが正しく紐づけられていることを確認（レスポンスの data.id を使用）
+    $recipeId = $response->json('data.id');
     $recipe = Recipe::with('categories')->find($recipeId);
     expect($recipe->categories)->toHaveCount(1);
     expect($recipe->categories[0]->id)->toBe($this->recipeCategory->id);
@@ -1060,8 +1079,8 @@ test('3-7-44: 【新規作成】 料理に食材を紐づけ', function () {
 
     $response->assertStatus(201);
 
-    // 食材が正しく紐づけられていることを確認（store は data を返さないため DB から ID 取得）
-    $recipeId = getRecipeIdAfterStore($this->group);
+    // 食材が正しく紐づけられていることを確認（レスポンスの data.id を使用）
+    $recipeId = $response->json('data.id');
     $recipe = Recipe::with('ingredients')->find($recipeId);
     expect($recipe->ingredients)->toHaveCount(1);
 });
@@ -1094,8 +1113,8 @@ test('3-7-45: 【新規作成】 最小限の必須フィールドのみで食�
 
     $response->assertStatus(201);
 
-    // 食材が正しく紐づけられていることを確認（store は data を返さないため DB から ID 取得）
-    $recipeId = getRecipeIdAfterStore($this->group);
+    // 食材が正しく紐づけられていることを確認（レスポンスの data.id を使用）
+    $recipeId = $response->json('data.id');
     $recipe = Recipe::with('ingredients')->find($recipeId);
     expect($recipe->ingredients)->toHaveCount(1);
 });
@@ -1117,8 +1136,8 @@ test('3-7-46: 【新規作成】 料理に手順を紐づけ', function () {
 
     $response->assertStatus(201);
 
-    // 手順が正しく紐づけられていることを確認（store は data を返さないため DB から ID 取得）
-    $recipeId = getRecipeIdAfterStore($this->group);
+    // 手順が正しく紐づけられていることを確認（レスポンスの data.id を使用）
+    $recipeId = $response->json('data.id');
     $recipe = Recipe::with('steps')->find($recipeId);
     expect($recipe->steps)->toHaveCount(1);
     expect($recipe->steps[0]->order)->toBe(0);
@@ -1142,8 +1161,8 @@ test('3-7-47: 【新規作成】 最小限の必須フィールドのみで手�
 
     $response->assertStatus(201);
 
-    // 手順が正しく紐づけられていることを確認（store は data を返さないため DB から ID 取得）
-    $recipeId = getRecipeIdAfterStore($this->group);
+    // 手順が正しく紐づけられていることを確認（レスポンスの data.id を使用）
+    $recipeId = $response->json('data.id');
     $recipe = Recipe::with('steps')->find($recipeId);
     expect($recipe->steps)->toHaveCount(1);
     expect($recipe->steps[0]->instruction)->toBe('玉ねぎを切る');
@@ -1163,8 +1182,8 @@ test('3-7-48: 【新規作成】 料理に画像を紐づけ', function () {
 
     $response->assertStatus(201);
 
-    // 画像が正しく紐づけられていることを確認（store は data を返さないため DB から ID 取得）
-    $recipeId = getRecipeIdAfterStore($this->group);
+    // 画像が正しく紐づけられていることを確認（レスポンスの data.id を使用）
+    $recipeId = $response->json('data.id');
     $recipe = Recipe::with('thumbnails')->find($recipeId);
     expect($recipe->thumbnails)->toHaveCount(1);
 });
@@ -1200,8 +1219,8 @@ test('3-7-49: 【新規作成】 requires_quantity=true の食材単位で数量
         'message' => '料理/レシピ(カレーライス)を作成しました。'
     ]);
 
-    // 作成した料理を show API で取得して内容を検証
-    $recipeId = getRecipeIdAfterStore($this->group);
+    // 作成した料理を show API で取得して内容を検証（作成レスポンスの data.id を使用）
+    $recipeId = $response->json('data.id');
     $showResponse = $this->actingAs($this->user)->get("/recipes/{$recipeId}");
     $showResponse->assertStatus(200);
     $responseData = $showResponse->json('data');
@@ -1243,7 +1262,7 @@ test('3-7-50: 【新規作成】 requires_quantity=false の食材単位で数�
         'success' => true,
         'message' => '料理/レシピ(カレーライス)を作成しました。'
     ]);
-    $recipeId = getRecipeIdAfterStore($this->group);
+    $recipeId = $response->json('data.id');
     $showResponse = $this->actingAs($this->user)->get("/recipes/{$recipeId}");
     $showResponse->assertStatus(200);
     $responseData = $showResponse->json('data');
@@ -1281,7 +1300,7 @@ test('3-7-51: 【新規作成】 requires_quantity=false の食材単位で数�
         'success' => true,
         'message' => '料理/レシピ(カレーライス)を作成しました。'
     ]);
-    $recipeId = getRecipeIdAfterStore($this->group);
+    $recipeId = $response->json('data.id');
     $showResponse = $this->actingAs($this->user)->get("/recipes/{$recipeId}");
     $showResponse->assertStatus(200);
     $responseData = $showResponse->json('data');
@@ -1343,7 +1362,8 @@ test('3-7-52: 【新規作成】 すべての項目を含む料理作成', funct
         'message' => '料理/レシピ(スパイスカレー)を作成しました。'
     ]);
 
-    $recipeId = getRecipeIdAfterStore($this->group, 'スパイスカレー');
+    $recipeId = $response->json('data.id');
+    expect($recipeId)->toBeString();
 
     // データベースにすべての項目が正しく保存されていることを確認
     $this->assertDatabaseHas('recipes', [
@@ -1393,10 +1413,13 @@ test('3-7-52: 【新規作成】 すべての項目を含む料理作成', funct
     expect($recipe->steps[1]->order)->toBe(1);
     expect($recipe->steps[1]->images->first())->toBeNull();
 
-    // レスポンス構造の確認（store は success + message のみ）
+    // レスポンス構造の確認（store は success、message、data.id）
     $response->assertJsonStructure([
         'success',
-        'message'
+        'message',
+        'data' => [
+            'id',
+        ]
     ]);
 
     // Content-Typeがapplication/jsonであることを確認
@@ -2470,7 +2493,7 @@ test('3-7-53: 【新規作成】 serving_count が null でも正常に作成で
     $response = $this->actingAs($this->user)->post('/recipes', $data);
 
     $response->assertStatus(201);
-    $recipeId = getRecipeIdAfterStore($this->group);
+    $recipeId = $response->json('data.id');
     $showResponse = $this->actingAs($this->user)->get("/recipes/{$recipeId}");
     $showResponse->assertStatus(200);
     $this->assertNull($showResponse->json('data.servingCount'));
@@ -2513,7 +2536,7 @@ test('3-7-54: 【新規作成】 同一材料名で単位が異なる行は複�
 
     $response->assertStatus(201);
 
-    $recipeId = getRecipeIdAfterStore($this->group);
+    $recipeId = $response->json('data.id');
     $recipe = Recipe::with('ingredients')->find($recipeId);
     expect($recipe->ingredients)->toHaveCount(2);
 });

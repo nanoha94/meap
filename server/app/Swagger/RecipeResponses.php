@@ -31,6 +31,21 @@ namespace App\Swagger;
  *     @OA\Property(property="data", ref="#/components/schemas/Recipe")
  * )
  *
+ * レシピ作成レスポンス（success, message, data: { id }）
+ *
+ * @OA\Schema(
+ *     schema="RecipeStoreResponse",
+ *     required={"success", "message", "data"},
+ *     @OA\Property(property="success", type="boolean", example=true),
+ *     @OA\Property(property="message", type="string", example="レシピ(カレーライス)を作成しました。"),
+ *     @OA\Property(
+ *         property="data",
+ *         type="object",
+ *         required={"id"},
+ *         @OA\Property(property="id", type="string", description="作成されたレシピID", example="550e8400-e29b-41d4-a716-446655440001")
+ *     )
+ * )
+ *
  * 料理カテゴリ一覧取得レスポンス（BaseApiIndexResponse + data: RecipeCategory[]）
  *
  * @OA\Schema(
@@ -57,7 +72,7 @@ namespace App\Swagger;
  * @OA\Response(
  *     response="RecipeStoreSuccess",
  *     description="レシピ(カレーライス)を作成しました。",
- *     @OA\JsonContent(ref="#/components/schemas/BaseApiResponse")
+ *     @OA\JsonContent(ref="#/components/schemas/RecipeStoreResponse")
  * )
  * @OA\Response(
  *     response="RecipeShowSuccess",

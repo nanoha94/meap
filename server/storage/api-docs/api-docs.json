@@ -2523,6 +2523,37 @@
                 },
                 "type": "object"
             },
+            "RecipeStoreResponse": {
+                "required": [
+                    "success",
+                    "message",
+                    "data"
+                ],
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "レシピ(カレーライス)を作成しました。"
+                    },
+                    "data": {
+                        "required": [
+                            "id"
+                        ],
+                        "properties": {
+                            "id": {
+                                "description": "作成されたレシピID",
+                                "type": "string",
+                                "example": "550e8400-e29b-41d4-a716-446655440001"
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
             "RecipeCategoryIndexResponse": {
                 "allOf": [
                     {
@@ -3583,7 +3614,7 @@
                 "content": {
                     "application/json": {
                         "schema": {
-                            "$ref": "#/components/schemas/BaseApiResponse"
+                            "$ref": "#/components/schemas/RecipeStoreResponse"
                         }
                     }
                 }

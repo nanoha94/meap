@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { CirclePlus } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
 
 import {
@@ -20,6 +21,7 @@ interface FormData {
 }
 
 const IngredientCategoryEditForm: React.FC = () => {
+    const router = useRouter();
     const { closeDialog, updateCurrentDialogConfig } = useDialog();
     const { storeData, bulkUpdateIngredientCategories } =
         useIngredientCategoryApi();
@@ -88,7 +90,7 @@ const IngredientCategoryEditForm: React.FC = () => {
     /**
      * フォームの送信
      */
-    const onSubmit = (data: FormData) => {
+    const onSubmit = async (data: FormData) => {
         try {
             // 空のアイテムを除いてデータ更新
             const filteredItems = data.categories.filter(
@@ -96,13 +98,16 @@ const IngredientCategoryEditForm: React.FC = () => {
                     (v.id?.startsWith(prefix) && v.name.length > 0) ||
                     !v.id?.startsWith(prefix),
             );
-            bulkUpdateIngredientCategories(
+            const success = await bulkUpdateIngredientCategories(
                 filteredItems.map((v, idx) => ({
                     ...v,
                     order: idx,
                 })),
             );
-            closeDialog();
+            if (success) {
+                router.refresh();
+                closeDialog(false);
+            }
         } catch {
             // エラーの場合はダイアログを閉じない
             // エラーハンドリングはbulkUpdateIngredientCategoriesで行う

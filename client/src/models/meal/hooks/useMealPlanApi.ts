@@ -1,9 +1,8 @@
 'use client';
 
 import React from 'react';
-import { useRouter } from 'next/navigation';
 
-import { LINK_TO, TIMEOUT_MS } from '@/constants';
+import { TIMEOUT_MS } from '@/constants';
 import { useApiErrorHandler, useSnackbars } from '@/hooks';
 import axios from '@/lib/axios';
 import { useGlobalStore } from '@/stores';
@@ -23,7 +22,6 @@ export const useMealPlanApi = () => {
     const decrementLoadingCount = useGlobalStore(state => state.decrementLoadingCount);
 
     // hook
-    const router = useRouter();
     const { addSnackbar } = useSnackbars();
     const { handleApiError } = useApiErrorHandler();
 
@@ -87,10 +85,10 @@ export const useMealPlanApi = () => {
     const storeMealPlan = React.useCallback(
         async (
             data: IPostPutMealPlanRequest,
-        ) => {
+        ): Promise<boolean> => {
             // 重複リクエスト防止
             if (isStoreRequestRef.current) {
-                return;
+                return false;
             }
 
             const sendData: IPostPutMealPlanRequest = data;
@@ -111,36 +109,38 @@ export const useMealPlanApi = () => {
                 // レスポンスデータ
                 const responseData: IPostMealPlanResponse = res.data;
                 if (responseData.success) {
-                    router.refresh();
                     addSnackbar(
                         'success',
                         responseData.message ||
                         'リクエストが正常に完了しました',
                     );
+                    return true;
                 } else {
                     addSnackbar(
                         'error',
                         responseData.message || '献立プランの作成に失敗しました',
                     );
+                    return false;
                 }
             } catch (error) {
                 handleApiError(error);
+                return false;
             } finally {
                 isStoreRequestRef.current = false;
                 decrementLoadingCount();
             }
         },
-        [incrementLoadingCount, decrementLoadingCount, router, addSnackbar, handleApiError],
+        [incrementLoadingCount, decrementLoadingCount, addSnackbar, handleApiError],
     );
 
     /**
      * 献立プラン更新
      * @param data 更新する献立プランデータ
      */
-    const updateMealPlan = React.useCallback(async (data: IPostPutMealPlanRequest) => {
+    const updateMealPlan = React.useCallback(async (data: IPostPutMealPlanRequest): Promise<boolean> => {
         // 重複リクエスト防止
         if (isUpdateRequestRef.current) {
-            return;
+            return false;
         }
 
         try {
@@ -157,33 +157,38 @@ export const useMealPlanApi = () => {
             );
 
             if (responseData.success) {
-                router.refresh();
                 addSnackbar(
                     'success',
                     responseData.message ||
                     'リクエストが正常に完了しました',
                 );
-            } else {
-                addSnackbar(
-                    'error',
-                    responseData.message || '献立プランの更新に失敗しました',
-                );
+                return true;
             }
+            addSnackbar(
+                'error',
+                responseData.message || '献立プランの更新に失敗しました',
+            );
+            return false;
         } catch (error) {
             handleApiError(error);
+            return false;
         } finally {
             isUpdateRequestRef.current = false;
             decrementLoadingCount();
         }
     },
-        [incrementLoadingCount, decrementLoadingCount, router, addSnackbar, handleApiError],
+        [incrementLoadingCount, decrementLoadingCount, addSnackbar, handleApiError],
     );
 
     /**
      * 献立プラン削除
      * @param id 削除する献立プランのID
      */
-    const deleteMealPlan = React.useCallback(async (id: string) => {
+    const deleteMealPlan = React.useCallback(async (id: string): Promise<boolean> => {
+        if (isDeleteRequestRef.current) {
+            return false;
+        }
+
         try {
             isDeleteRequestRef.current = true;
             incrementLoadingCount();
@@ -198,22 +203,21 @@ export const useMealPlanApi = () => {
                     'success',
                     responseData.message || 'リクエストが正常に完了しました',
                 );
-                router.push(LINK_TO.PLAN.TOP);
-            } else {
-                addSnackbar(
-                    'error',
-                    responseData.message || '献立プランの削除に失敗しました',
-                );
+                return true;
             }
-        }
-        catch (error) {
+            addSnackbar(
+                'error',
+                responseData.message || '献立プランの削除に失敗しました',
+            );
+            return false;
+        } catch (error) {
             handleApiError(error);
-        }
-        finally {
+            return false;
+        } finally {
             isDeleteRequestRef.current = false;
             decrementLoadingCount();
         }
-    }, [incrementLoadingCount, decrementLoadingCount, router, addSnackbar, handleApiError]);
+    }, [incrementLoadingCount, decrementLoadingCount, addSnackbar, handleApiError]);
 
     return {
         fetchMealPlans, storeMealPlan, updateMealPlan, deleteMealPlan

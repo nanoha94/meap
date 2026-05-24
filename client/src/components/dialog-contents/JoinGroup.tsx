@@ -1,13 +1,16 @@
 'use client';
+
 import React from 'react';
+
 import dayjs from 'dayjs';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components';
 import { BUTTON_VARIANT, COLOR_VARIANT } from '@/constants';
 import { useDialog } from '@/hooks';
 import { useAccountNavigation, useInvitationApi, iconAvatar } from '@/models/user';
 import { IInvitation } from '@/types';
-import Image from 'next/image';
 
 interface Props {
     invitationDetail: IInvitation | null;
@@ -16,6 +19,7 @@ interface Props {
 
 const JoinGroup: React.FC<Props> = ({ invitationDetail, isDelete = false }) => {
     const { joinGroup } = useInvitationApi();
+    const router = useRouter();
     const { removeTokenFromPath } = useAccountNavigation();
     const { closeDialog } = useDialog();
 
@@ -44,9 +48,12 @@ const JoinGroup: React.FC<Props> = ({ invitationDetail, isDelete = false }) => {
     const handleJoinGroup = React.useCallback(async () => {
         if (!invitationDetail) return;
 
-        joinGroup(invitationDetail, isDelete);
+        const succeeded = await joinGroup(invitationDetail, isDelete);
+        if (!succeeded) return;
+
+        router.refresh();
         closeDialog(false);
-    }, [invitationDetail, joinGroup, closeDialog, isDelete]);
+    }, [invitationDetail, joinGroup, closeDialog, isDelete, router]);
 
 
     return (

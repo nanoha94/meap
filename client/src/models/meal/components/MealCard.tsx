@@ -1,10 +1,12 @@
 'use client';
+
 import { Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { MenuButton } from "@/components";
-import { ActionButton, IMealCategory, IMealPlanItem } from "@/types";
 import { useAlertDialog } from "@/hooks";
+import { ActionButton, IMealCategory, IMealPlanItem } from "@/types";
 import RecipeCard from "./RecipeCard";
 import { MEAL_ALERT_DIALOG_CONFIGS } from "../constants";
 import { useMealApi } from "../hooks/useMealApi";
@@ -20,6 +22,7 @@ interface Props {
  * 献立カード（表示専用）
  */
 const MealCard = ({ mealPlanId, mealPlanItems, mealCategory, editPagePath }: Props) => {
+    const router = useRouter();
     const { openAlertDialog } = useAlertDialog();
     const { deleteMeal } = useMealApi();
     /**
@@ -35,9 +38,12 @@ const MealCard = ({ mealPlanId, mealPlanItems, mealCategory, editPagePath }: Pro
             label: '削除する',
             icon: <Trash2 />,
             onClick: () => {
-                openAlertDialog(MEAL_ALERT_DIALOG_CONFIGS.deleteItem(mealCategory.name), () => {
+                openAlertDialog(MEAL_ALERT_DIALOG_CONFIGS.deleteItem(mealCategory.name), async () => {
                     // mealPlanItemsは同じ値が入って来るので、先頭のidを使用
-                    deleteMeal(mealPlanId, mealPlanItems[0].id);
+                    const success = await deleteMeal(mealPlanId, mealPlanItems[0].id);
+                    if (success) {
+                        router.refresh();
+                    }
                 });
             },
         },

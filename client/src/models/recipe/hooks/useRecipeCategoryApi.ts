@@ -1,6 +1,6 @@
-"use client";
+'use client';
+
 import React from 'react';
-import { useRouter } from 'next/navigation';
 
 import { TIMEOUT_MS, TMP_ID_PREFIX } from '@/constants';
 import { useApiErrorHandler, useSnackbars } from '@/hooks';
@@ -17,7 +17,6 @@ export const useRecipeCategoryApi = () => {
     const decrementLoadingCount = useGlobalStore(state => state.decrementLoadingCount);
 
     // hook
-    const router = useRouter();
     const { addSnackbar } = useSnackbars();
     const { handleApiError } = useApiErrorHandler();
 
@@ -110,13 +109,18 @@ export const useRecipeCategoryApi = () => {
         [storeCategories],
     );
 
+    /**
+     * レシピカテゴリーを一括更新
+     * @param categories 更新するレシピカテゴリー
+     * @returns 成功時 true、それ以外は false
+     */
     const bulkUpdateRecipeCategories = React.useCallback(
         async (categories: IRecipeCategory[]) => {
             // 重複リクエスト防止
             // 更新データがない場合は処理を終了
             if (isBulkUpdateRequestRef.current ||
                 JSON.stringify(categories) === JSON.stringify(storeCategories)) {
-                return;
+                return false;
             }
 
             // 重複リクエスト防止用のフラグをセット
@@ -142,6 +146,12 @@ export const useRecipeCategoryApi = () => {
                 requests.push(updateRequest);
             }
 
+            if (requests.length === 0) {
+                isBulkUpdateRequestRef.current = false;
+                decrementLoadingCount();
+                return false;
+            }
+
             // すべてのリクエストを並列実行
             try {
                 const results = await Promise.allSettled(requests);
@@ -151,7 +161,7 @@ export const useRecipeCategoryApi = () => {
                 );
                 if (rejected.length > 0) {
                     rejected.forEach(r => handleApiError(r.reason));
-                    return;
+                    return false;
                 }
 
                 const businessErrorMessages = results
@@ -166,13 +176,14 @@ export const useRecipeCategoryApi = () => {
                     Array.from(new Set(businessErrorMessages)).forEach(msg =>
                         addSnackbar('error', msg),
                     );
-                    return;
+                    return false;
                 }
 
-                router.refresh();
                 addSnackbar('success', 'レシピカテゴリーを更新しました');
+                return true;
             } catch (error) {
                 handleApiError(error);
+                return false;
             } finally {
                 isBulkUpdateRequestRef.current = false;
                 decrementLoadingCount();
@@ -184,7 +195,6 @@ export const useRecipeCategoryApi = () => {
             decrementLoadingCount,
             addSnackbar,
             handleApiError,
-            router,
             generateCreateUpdateRequest,
             generateDeleteRequest,
         ],

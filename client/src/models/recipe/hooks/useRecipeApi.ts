@@ -1,8 +1,7 @@
 'use client';
 import React from 'react';
-import { useRouter } from 'next/navigation';
 
-import { LINK_TO, TIMEOUT_MS, TMP_ID_PREFIX } from '@/constants';
+import { TIMEOUT_MS, TMP_ID_PREFIX } from '@/constants';
 import { useApiErrorHandler, useSnackbars } from '@/hooks';
 import axios from '@/lib/axios';
 import { useImageApi } from '@/models/image';
@@ -16,10 +15,8 @@ import {
     IPutRecipeResponse,
     IRecipeStep,
 } from '@/types';
-import { RecipeFilterFormData, RecipeStepEditFormData } from '../types';
-import { useRecipeListStateStore } from './useRecipeListStateStore';
 import { RECIPES_PER_PAGE, sortOptions } from '../constants';
-import { getBrowserQueryString } from '../utils';
+import { RecipeFilterFormData, RecipeStepEditFormData } from '../types';
 
 /**
  * 手順をフォーマット
@@ -50,13 +47,8 @@ export const useRecipeApi = () => {
     const decrementLoadingCount = useGlobalStore(
         (state) => state.decrementLoadingCount,
     );
-    const listSortOptions = useRecipeListStateStore(state => state.listSortOptions);
-    const listFilterOptions = useRecipeListStateStore(state => state.listFilterOptions);
-    const listCurrentPage = useRecipeListStateStore(state => state.listCurrentPage);
-
     // hook
     const { bulkUploadImage } = useImageApi();
-    const router = useRouter();
     const { addSnackbar } = useSnackbars();
     const { handleApiError } = useApiErrorHandler();
 
@@ -193,17 +185,17 @@ export const useRecipeApi = () => {
      * @param data 作成するレシピデータ
      * @param thumbnail サムネイル画像
      * @param steps 手順リスト
-     * @returns void
+     * @returns 成功時はレシピ ID / 失敗時は null
      */
     const storeRecipe = React.useCallback(
         async (
             data: IPostPutRecipeRequest,
             thumbnail: File | null,
             steps: RecipeStepEditFormData[],
-        ) => {
+        ): Promise<string | null> => {
             // 重複リクエスト防止
             if (isStoreRequestRef.current) {
-                return;
+                return null;
             }
 
             const sendData: IPostPutRecipeRequest = data;
@@ -235,31 +227,27 @@ export const useRecipeApi = () => {
                     },
                 );
                 if (responseData.success) {
-                    router.push(`${LINK_TO.RECIPE.TOP}?${getBrowserQueryString(listSortOptions, listFilterOptions, listCurrentPage)}`);
-                    router.refresh();
                     addSnackbar(
                         'success',
                         responseData.message ||
                         'リクエストが正常に完了しました',
                     );
-                } else {
-                    addSnackbar(
-                        'error',
-                        responseData.message || 'レシピの保存に失敗しました',
-                    );
+                    return responseData.data.id ?? null;
                 }
+                addSnackbar(
+                    'error',
+                    responseData.message || 'レシピの保存に失敗しました',
+                );
+                return null;
             } catch (error) {
                 handleApiError(error);
+                return null;
             } finally {
                 isStoreRequestRef.current = false;
                 decrementLoadingCount();
             }
         },
         [
-            listSortOptions,
-            listFilterOptions,
-            listCurrentPage,
-            router,
             incrementLoadingCount,
             decrementLoadingCount,
             bulkUploadImage,
@@ -274,17 +262,17 @@ export const useRecipeApi = () => {
      * @param data 更新するレシピデータ
      * @param thumbnail サムネイル画像
      * @param steps 手順リスト
-     * @returns void
+     * @returns 成功時はレシピ ID / 失敗時は null
      */
     const updateRecipe = React.useCallback(
         async (
             data: IPostPutRecipeRequest,
             thumbnail: File | null,
             steps: RecipeStepEditFormData[],
-        ) => {
+        ): Promise<string | null> => {
             // 重複リクエスト防止
             if (isUpdateRequestRef.current) {
-                return;
+                return null;
             }
 
             const sendData: IPostPutRecipeRequest = data;
@@ -316,38 +304,38 @@ export const useRecipeApi = () => {
                     },
                 );
                 if (responseData.success) {
-                    router.push(`${LINK_TO.RECIPE.TOP}/${data.id}`);
-                    router.refresh();
                     addSnackbar(
                         'success',
                         responseData.message ||
                         'リクエストが正常に完了しました',
                     );
-                } else {
-                    addSnackbar(
-                        'error',
-                        responseData.message || 'レシピの更新に失敗しました',
-                    );
+                    return data.id ?? null;
                 }
+                addSnackbar(
+                    'error',
+                    responseData.message || 'レシピの更新に失敗しました',
+                );
+                return null;
             } catch (error) {
                 handleApiError(error);
+                return null;
             } finally {
                 isUpdateRequestRef.current = false;
                 decrementLoadingCount();
             }
         },
-        [incrementLoadingCount, decrementLoadingCount, bulkUploadImage, uploadStepImages, router, addSnackbar, handleApiError],
+        [incrementLoadingCount, decrementLoadingCount, bulkUploadImage, uploadStepImages, addSnackbar, handleApiError],
     );
 
     /**
      * レシピを削除する
      * @param id 削除するレシピのID
-     * @returns void
+     * @returns 成功時は true / 失敗時は false
      */
-    const deleteRecipe = React.useCallback(async (id: string) => {
+    const deleteRecipe = React.useCallback(async (id: string): Promise<boolean> => {
         // 重複リクエスト防止
         if (isDeleteRequestRef.current) {
-            return;
+            return false;
         }
 
         try {
@@ -360,22 +348,22 @@ export const useRecipeApi = () => {
                 },
             );
             if (responseData.success) {
-                router.push(LINK_TO.RECIPE.TOP);
-                router.refresh();
                 addSnackbar('success', responseData.message || 'リクエストが正常に完了しました');
-            } else {
-                addSnackbar(
-                    'error',
-                    responseData.message || 'レシピの削除に失敗しました',
-                );
+                return true;
             }
+            addSnackbar(
+                'error',
+                responseData.message || 'レシピの削除に失敗しました',
+            );
+            return false;
         } catch (error) {
             handleApiError(error);
+            return false;
         } finally {
             isDeleteRequestRef.current = false;
             decrementLoadingCount();
         }
-    }, [incrementLoadingCount, decrementLoadingCount, router, addSnackbar, handleApiError]);
+    }, [incrementLoadingCount, decrementLoadingCount, addSnackbar, handleApiError]);
 
     return {
         fetchRecipes,
