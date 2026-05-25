@@ -11,7 +11,7 @@ export const useMonthlyCalendar = (
         month: number,
     },
     onDateSelect?: (date: Dayjs | ((prev: Dayjs) => Dayjs)) => void,
-    onMonthChange?: (year: number, month: number) => void,
+    onMonthChange?: (year: number, month: number, day?: number) => void,
 ) => {
       // 曜日のリスト
       const dayOfWeeks = React.useMemo(
@@ -72,7 +72,7 @@ export const useMonthlyCalendar = (
     const moveToToday = React.useCallback(() => {
         const now = dayjs();
         onDateSelectRef.current?.(now);
-        onMonthChangeRef.current?.(now.year(), now.month() + 1);
+        onMonthChangeRef.current?.(now.year(), now.month() + 1, now.date());
     }, []);
 
     /**

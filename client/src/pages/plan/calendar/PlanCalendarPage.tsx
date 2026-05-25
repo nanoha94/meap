@@ -104,8 +104,14 @@ const PlanCalendarPage = ({ fetchMealPlans, errorMessage, year, month, date }: P
                     dots={dots}
                     year={year}
                     month={month}
-                    onMonthChange={(y, m) => {
-                        const newDate = dayjs().year(y).month(m - 1).date(1).format('YYYY-MM-DD');
+                    onMonthChange={(y, m, dayOverride) => {
+                        const inTargetMonth = dayjs().year(y).month(m - 1);
+                        const lastDay = inTargetMonth.endOf('month').date();
+                        const dayNum =
+                            dayOverride !== undefined
+                                ? Math.min(dayOverride, lastDay)
+                                : Math.min(selectedDate.date(), lastDay);
+                        const newDate = inTargetMonth.date(dayNum).format('YYYY-MM-DD');
                         router.push(`/plan?date=${newDate}`);
                     }}
                     selectedDate={selectedDate}

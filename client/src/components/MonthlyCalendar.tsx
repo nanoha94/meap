@@ -12,7 +12,7 @@ interface Props {
     /** 表示月（URL と同期する場合に page から渡す） */
     year: number;
     month: number;
-    onMonthChange: (year: number, month: number) => void;
+    onMonthChange: (year: number, month: number, day?: number) => void;
     selectedDate: Dayjs;
     onDateSelect: (date: Dayjs | ((prev: Dayjs) => Dayjs)) => void;
 }
