@@ -12,14 +12,14 @@ export const useTextCopy = () => {
      * テキストをコピーする
      * @param link コピーするテキスト
      */
-    const copyToClipboard = async (link: string) => {
+    const copyToClipboard = React.useCallback(async (link: string) => {
         try {
             await navigator.clipboard.writeText(link);
             setIsCopied(true);
         } catch (err) {
             console.error(err);
         }
-    };
+    }, []);
 
     // テキストをコピーしたら10秒後にリセットする
     React.useEffect(() => {

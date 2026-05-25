@@ -1,3 +1,5 @@
+import React from 'react';
+
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 export const useAccountNavigation = () => {
@@ -8,11 +10,11 @@ export const useAccountNavigation = () => {
     /**
      * パスからトークンを削除
      */
-    const removeTokenFromPath = () => {
+    const removeTokenFromPath = React.useCallback(() => {
         const newParams = new URLSearchParams(searchParams?.toString());
         newParams.delete('token');
         router.replace(`${pathname}?${newParams.toString()}`);
-    };
+    }, [searchParams, router, pathname]);
 
     return { removeTokenFromPath };
 };

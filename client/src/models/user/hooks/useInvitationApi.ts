@@ -31,57 +31,64 @@ export const useInvitationApi = () => {
     // 重複リクエスト防止用のフラグ
     const isFetchRequestRef = React.useRef(false);
     const isJoinRequestRef = React.useRef(false);
+    /** useCallback 内からの再帰呼び出し用（宣言順の ESLint 回避） */
+    const joinGroupRef = React.useRef<
+        ((invitationDetail: IInvitation, isDelete: boolean) => Promise<boolean>) | null
+    >(null);
 
     /**
      * 招待トークンを取得する
      * @returns {Promise<{success: boolean}>} 成功/失敗とタイムアウトかどうかの情報
      */
-    const fetchInvitationToken = async (
-        onError?: () => void,
-    ): Promise<{
-        success: boolean;
-    }> => {
-        // 重複リクエスト防止
-        if (isFetchRequestRef.current) {
-            return { success: false };
-        }
-
-        try {
-            isFetchRequestRef.current = true;
-            setIsFetching(true);
-
-            // 招待トークン発行
-            const res = await axios.post<IPostInvitaionResponse>(
-                '/invitations',
-                {
-                    timeout: TIMEOUT_MS,
-                },
-            );
-
-            // レスポンスデータ
-            const responseData: IPostInvitaionResponse = res.data;
-
-            if (responseData.success) {
-                setInvitationLink(
-                    `${process.env.NEXT_PUBLIC_FRONTEND_URL}/settings/account?token=${responseData.data.token}`,
-                );
-                setTokenExpiresAt(responseData.data.expires_at);
-                return { success: true };
+    const fetchInvitationToken = React.useCallback(
+        async (
+            onError?: () => void,
+        ): Promise<{
+            success: boolean;
+        }> => {
+            // 重複リクエスト防止
+            if (isFetchRequestRef.current) {
+                return { success: false };
             }
-            addSnackbar(
-                'error',
-                responseData.message || '招待リンクの発行に失敗しました',
-            );
-            return { success: false };
-        } catch (error) {
-            handleApiError(error);
-            onError?.();
-            return { success: false };
-        } finally {
-            isFetchRequestRef.current = false;
-            setIsFetching(false);
-        }
-    };
+
+            try {
+                isFetchRequestRef.current = true;
+                setIsFetching(true);
+
+                // 招待トークン発行
+                const res = await axios.post<IPostInvitaionResponse>(
+                    '/invitations',
+                    {
+                        timeout: TIMEOUT_MS,
+                    },
+                );
+
+                // レスポンスデータ
+                const responseData: IPostInvitaionResponse = res.data;
+
+                if (responseData.success) {
+                    setInvitationLink(
+                        `${process.env.NEXT_PUBLIC_FRONTEND_URL}/settings/account?token=${responseData.data.token}`,
+                    );
+                    setTokenExpiresAt(responseData.data.expires_at);
+                    return { success: true };
+                }
+                addSnackbar(
+                    'error',
+                    responseData.message || '招待リンクの発行に失敗しました',
+                );
+                return { success: false };
+            } catch (error) {
+                handleApiError(error);
+                onError?.();
+                return { success: false };
+            } finally {
+                isFetchRequestRef.current = false;
+                setIsFetching(false);
+            }
+        },
+        [addSnackbar, handleApiError],
+    );
 
     /**
      * グループに参加する
@@ -89,84 +96,105 @@ export const useInvitationApi = () => {
      * @param isDelete 削除するかどうか
      * @returns ビジネス上の参加成功時 true（router.refresh / ダイアログを閉じる等は呼び出し側）
      */
-    const joinGroup = async (
-        invitationDetail: IInvitation,
-        isDelete: boolean,
-    ): Promise<boolean> => {
-        // 重複リクエスト防止
-        if (isJoinRequestRef.current) {
-            return false;
-        }
-
-        try {
-            isJoinRequestRef.current = true;
-            incrementLoadingCount();
-
-            const res = await axios.post<IPostInvitationJoinResponse>(
-                `/invitations/${invitationDetail.token}/join`,
-                {
-                    isDelete,
-                    timeout: TIMEOUT_MS,
-                },
-            );
-            // URLからトークンを削除
-            removeTokenFromPath();
-
-            // レスポンスデータ
-            const responseData: IPostInvitationJoinResponse = res.data;
-
-            if (responseData.success) {
-                addSnackbar(
-                    'success',
-                    responseData.message || 'リクエストが正常に完了しました',
-                );
-                return true;
-            }
-            addSnackbar(
-                'error',
-                responseData.message || 'グループへの参加に失敗しました',
-            );
-            return false;
-        } catch (error) {
-            // Axiosエラーでない場合はhandleApiErrorに委譲
-            if (!isAxiosError(error)) {
-                handleApiError(error);
+    const joinGroup = React.useCallback(
+        async (
+            invitationDetail: IInvitation,
+            isDelete: boolean,
+        ): Promise<boolean> => {
+            // 重複リクエスト防止
+            if (isJoinRequestRef.current) {
                 return false;
             }
 
-            // 409エラーかつerror_typeがある場合は、データ消去確認ダイアログを表示する（スナックバーは表示しない）
-            if (
-                error.response?.status === API_STATUS_CODE.CONFLICT &&
-                error.response?.data?.error_type != null
-            ) {
-                console.error(error.response?.data?.message);
+            try {
+                isJoinRequestRef.current = true;
+                incrementLoadingCount();
 
-                const errorType = error.response?.data?.error_type as keyof typeof JOIN_ERROR_TYPE;
+                const res = await axios.post<IPostInvitationJoinResponse>(
+                    `/invitations/${invitationDetail.token}/join`,
+                    {
+                        isDelete,
+                        timeout: TIMEOUT_MS,
+                    },
+                );
+                // URLからトークンを削除
+                removeTokenFromPath();
 
-                // ダイアログ表示中も他の参加処理を許可できるよう、この呼び出し分のロックだけ先に解放する（従来の finally タイミングに合わせる）
-                isJoinRequestRef.current = false;
-                decrementLoadingCount();
+                // レスポンスデータ
+                const responseData: IPostInvitationJoinResponse = res.data;
 
-                return await new Promise<boolean>(resolve => {
-                    openAlertDialog(
-                        DELETE_CHECK_FOR_JOIN_GROUP_DIALOG_CONFIGS[errorType],
-                        () => void joinGroup(invitationDetail, true).then(resolve),
-                        { onDismiss: () => resolve(false) },
+                if (responseData.success) {
+                    addSnackbar(
+                        'success',
+                        responseData.message || 'リクエストが正常に完了しました',
                     );
-                });
-            }
+                    return true;
+                }
+                addSnackbar(
+                    'error',
+                    responseData.message || 'グループへの参加に失敗しました',
+                );
+                return false;
+            } catch (error) {
+                // Axiosエラーでない場合はhandleApiErrorに委譲
+                if (!isAxiosError(error)) {
+                    handleApiError(error);
+                    return false;
+                }
 
-            // 409以外のエラー（タイムアウト・その他のHTTPエラー）はhandleApiErrorに委譲
-            handleApiError(error);
-            return false;
-        } finally {
-            // 409 競合ブランチでは先にロック解放済みなので二重 decrement しない
-            if (isJoinRequestRef.current) {
-                isJoinRequestRef.current = false;
-                decrementLoadingCount();
+                // 409エラーかつerror_typeがある場合は、データ消去確認ダイアログを表示する（スナックバーは表示しない）
+                if (
+                    error.response?.status === API_STATUS_CODE.CONFLICT &&
+                    error.response?.data?.error_type != null
+                ) {
+                    console.error(error.response?.data?.message);
+
+                    const errorType = error.response?.data?.error_type as keyof typeof JOIN_ERROR_TYPE;
+
+                    // ダイアログ表示中も他の参加処理を許可できるよう、この呼び出し分のロックだけ先に解放する（従来の finally タイミングに合わせる）
+                    isJoinRequestRef.current = false;
+                    decrementLoadingCount();
+
+                    return await new Promise<boolean>(resolve => {
+                        openAlertDialog(
+                            DELETE_CHECK_FOR_JOIN_GROUP_DIALOG_CONFIGS[errorType],
+                            () => {
+                                const retryJoinGroup = joinGroupRef.current;
+                                if (retryJoinGroup) {
+                                    void retryJoinGroup(invitationDetail, true).then(resolve);
+                                } else {
+                                    resolve(false);
+                                }
+                            },
+                            { onDismiss: () => resolve(false) },
+                        );
+                    });
+                }
+
+                // 409以外のエラー（タイムアウト・その他のHTTPエラー）はhandleApiErrorに委譲
+                handleApiError(error);
+                return false;
+            } finally {
+                // 409 競合ブランチでは先にロック解放済みなので二重 decrement しない
+                if (isJoinRequestRef.current) {
+                    isJoinRequestRef.current = false;
+                    decrementLoadingCount();
+                }
             }
-        }
-    };
+        },
+        [
+            addSnackbar,
+            decrementLoadingCount,
+            handleApiError,
+            incrementLoadingCount,
+            openAlertDialog,
+            removeTokenFromPath,
+        ],
+    );
+
+    React.useLayoutEffect(() => {
+        joinGroupRef.current = joinGroup;
+    }, [joinGroup]);
 
     return {
         isFetching,
