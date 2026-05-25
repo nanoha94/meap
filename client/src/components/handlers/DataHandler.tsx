@@ -87,8 +87,6 @@ const DataHandler = ({ user, masterData }: Props) => {
     /**
      * 買い物カテゴリーをストアにセット
      */
-    // eslint-disable-next-line no-console -- デバッグ用（問題解決後は削除）
-    console.log('[DataHandler] masterData?.shoppingCategories:', masterData?.shoppingCategories);
     React.useEffect(() => {
         if (masterData?.shoppingCategories && masterData.shoppingCategories.length > 0) {
             setShoppingCategories(masterData.shoppingCategories);

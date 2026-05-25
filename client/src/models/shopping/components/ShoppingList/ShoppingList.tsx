@@ -18,8 +18,6 @@ const ShoppingList = React.forwardRef<ShoppingListHandle, object>((_, ref) => {
     const storeItems = useShoppingStore(state => state.items);
     const serverItems = useShoppingStore(state => state.serverItems);
     const categories = useShoppingStore(state => state.categories);
-    // eslint-disable-next-line no-console -- デバッグ用（問題解決後は削除）
-    console.log('[ShoppingList] categories:', categories.length, categories);
 
     // hook
     const { updateShoppingItems } = useShoppingItemApi();
