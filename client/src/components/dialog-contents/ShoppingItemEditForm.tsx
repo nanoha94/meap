@@ -30,6 +30,9 @@ const ShoppingItemEditForm: React.FC<Props> = ({
 }) => {
     //store
     const categories = useShoppingStore(state => state.categories);
+    // ステージング等で categories が空になる原因調査用（問題解決後は削除してください）
+    // eslint-disable-next-line no-console -- ランタイムでストア状態を確認するため
+    console.log('[ShoppingItemEditForm] categories:', categories.length, categories);
     const items = useShoppingStore(state => state.items);
 
     // hook 
