@@ -8,6 +8,7 @@ import { getApiErrorMessageFromSettledResult } from '@/lib/apiResponse';
 import axios from '@/lib/axios';
 import { useGlobalStore } from '@/stores';
 import {
+    IGetIngredientCategoryIndexResponse,
     IIngredientCategory,
     IPostIngredientCategoryRequest,
     IPutIngredientCategoryRequest,
@@ -17,6 +18,7 @@ import { useIngredientStore } from '../hooks';
 export const useIngredientCategoryApi = () => {
     // store
     const storeCategories = useIngredientStore(state => state.categories);
+    const setCategories = useIngredientStore(state => state.setCategories);
     const incrementLoadingCount = useGlobalStore(state => state.incrementLoadingCount);
     const decrementLoadingCount = useGlobalStore(state => state.decrementLoadingCount);
 
@@ -26,6 +28,34 @@ export const useIngredientCategoryApi = () => {
 
     // 重複リクエスト防止用のフラグ
     const isBulkUpdateRequestRef = React.useRef(false);
+
+    /**
+     * 食材カテゴリー一覧を取得してストアに反映する
+     * @returns ストア反映に成功したとき true
+     */
+    const fetchIngredientCategories = React.useCallback(async (): Promise<boolean> => {
+        try {
+            const { data } = await axios.get<IGetIngredientCategoryIndexResponse>(
+                '/ingredient-categories',
+                { timeout: TIMEOUT_MS },
+            );
+            if (data.success && data.data) {
+                setCategories(data.data);
+                return true;
+            }
+            addSnackbar(
+                'error',
+                '食材カテゴリーの再取得に失敗しました。表示が古い場合はページを再読み込みしてください。',
+            );
+            return false;
+        } catch {
+            addSnackbar(
+                'error',
+                '食材カテゴリーの再取得に失敗しました。表示が古い場合はページを再読み込みしてください。',
+            );
+            return false;
+        }
+    }, [addSnackbar, setCategories]);
 
     /**
      * 食材カテゴリーを一括削除用リクエストを生成
@@ -190,6 +220,7 @@ export const useIngredientCategoryApi = () => {
                 }
 
                 addSnackbar('success', '食材カテゴリーを更新しました');
+                await fetchIngredientCategories();
                 return true;
             } catch (error) {
                 handleApiError(error);
@@ -207,10 +238,12 @@ export const useIngredientCategoryApi = () => {
             generateCreateUpdateRequest,
             handleApiError,
             addSnackbar,
+            fetchIngredientCategories,
         ],
     );
 
     return {
+        fetchIngredientCategories,
         storeData: { categories: storeCategories },
         bulkUpdateIngredientCategories,
     };

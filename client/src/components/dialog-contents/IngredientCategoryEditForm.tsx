@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { CirclePlus } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
 
 import {
@@ -21,7 +20,6 @@ interface FormData {
 }
 
 const IngredientCategoryEditForm: React.FC = () => {
-    const router = useRouter();
     const { closeDialog, updateCurrentDialogConfig } = useDialog();
     const { storeData, bulkUpdateIngredientCategories } =
         useIngredientCategoryApi();
@@ -105,7 +103,6 @@ const IngredientCategoryEditForm: React.FC = () => {
                 })),
             );
             if (success) {
-                router.refresh();
                 closeDialog(false);
             }
         } catch {

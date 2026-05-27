@@ -1,16 +1,17 @@
 'use client';
+
 import React from 'react';
 import dayjs, { type Dayjs } from 'dayjs';
 import 'dayjs/locale/ja';
+import { ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 import { Header, MonthlyCalendar, TextButton } from '@/components';
+import { COLOR_VARIANT } from '@/constants';
 import { getDayOfWeekTextColor } from '@/constants/calendar';
 import { useSnackbars } from '@/hooks';
 import { IMealPlan } from '@/types';
 import { MealCard, useMealStore } from '@/models/meal';
-import { COLOR_VARIANT } from '@/constants';
-import { ChevronRight } from 'lucide-react';
 
 interface Props {
     fetchMealPlans: IMealPlan[];
@@ -104,8 +105,14 @@ const PlanCalendarPage = ({ fetchMealPlans, errorMessage, year, month, date }: P
                     dots={dots}
                     year={year}
                     month={month}
-                    onMonthChange={(y, m) => {
-                        const newDate = dayjs().year(y).month(m - 1).date(1).format('YYYY-MM-DD');
+                    onMonthChange={(y, m, dayOverride) => {
+                        const inTargetMonth = dayjs().year(y).month(m - 1);
+                        const lastDay = inTargetMonth.endOf('month').date();
+                        const dayNum =
+                            dayOverride !== undefined
+                                ? Math.min(dayOverride, lastDay)
+                                : Math.min(selectedDate.date(), lastDay);
+                        const newDate = inTargetMonth.date(dayNum).format('YYYY-MM-DD');
                         router.push(`/plan?date=${newDate}`);
                     }}
                     selectedDate={selectedDate}

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useForm, useWatch } from 'react-hook-form';
 
 import { EDIT_MODE, EditMode, LINK_TO, TMP_ID_PREFIX } from '@/constants';
-import { IIngredientItem, IPostPutRecipeRequest, IRecipe } from '@/types';
+import { IImageWithFile, IIngredientItem, IPostPutRecipeRequest, IRecipe } from '@/types';
 import { DEFAULT_RECIPE_EDIT_FORM_DATA } from '../constants';
 import { RecipeEditFormData } from '../types';
 import { useRecipeApi } from './useRecipeApi';
@@ -94,6 +94,7 @@ const normalizeStepsForCompare = (steps: RecipeEditFormData['steps'] | IRecipe['
         .map((step, index) => ({
             instruction: step.instruction,
             imageId: step.image?.id ?? null,
+            hasImageFile: !!(step.image as IImageWithFile | null)?.file,
             order: index,
         }));
 
@@ -111,6 +112,7 @@ const normalizeRecipeForCompare = (recipe: Omit<RecipeEditFormData, 'id' | 'cook
         memo: recipe.memo ?? '',
         servingCount: recipe.servingCount ?? null,
         thumbnailId: recipe.thumbnail?.id ?? null,
+        hasThumbnailFile: !!recipe.thumbnail?.file,
         categoryIds: recipe.categories.map(category => category.id).sort(),
         ingredients: formatIngredientItems(recipe.ingredients),
         steps: normalizeStepsForCompare(recipe.steps),
@@ -137,9 +139,12 @@ export const useRecipeEditForm = (initialOwnerUserId: string, fetchedRecipe?: IR
         ? EDIT_MODE.UPDATE
         : EDIT_MODE.CREATE;
 
+    const prevRecipeIdRef = React.useRef<string | undefined>(fetchedRecipe?.id);
+
     React.useEffect(() => {
-        if (fetchedRecipe) {
+        if (fetchedRecipe && fetchedRecipe.id !== prevRecipeIdRef.current) {
             reset(getDefaultValues(fetchedRecipe, initialOwnerUserId));
+            prevRecipeIdRef.current = fetchedRecipe.id;
         }
     }, [fetchedRecipe, reset, initialOwnerUserId]);
 

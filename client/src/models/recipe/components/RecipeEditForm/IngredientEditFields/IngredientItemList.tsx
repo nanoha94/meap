@@ -65,9 +65,11 @@ const IngredientItemList = ({
             // 空の食材がない場合は、新しい入力項目を追加
             else {
                 const newItems = addEmptyItem();
-                index =
-                    newItems.filter(v => v.categoryId === category.id).length - 1;
-                editItem = newItems[index];
+                const categoryItems = newItems.filter(
+                    v => v.categoryId === category.id,
+                );
+                index = categoryItems.length - 1;
+                editItem = categoryItems[index];
             }
         }
         // 既存アイテム編集の場合

@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { CirclePlus } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
 
 import {
@@ -28,7 +27,6 @@ const ShoppingCategoryEditForm: React.FC = () => {
     const categories = useShoppingStore(state => state.categories);
 
     // hook
-    const router = useRouter();
     const { closeDialog, updateCurrentDialogConfig } = useDialog();
     const { bulkUpdateShoppingCategories } =
         useShoppingCategoryApi();
@@ -114,7 +112,6 @@ const ShoppingCategoryEditForm: React.FC = () => {
                 })),
             );
             if (success) {
-                router.refresh();
                 closeDialog(false);
             }
         } catch {

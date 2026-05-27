@@ -11,7 +11,7 @@ export const useMonthlyCalendar = (
         month: number,
     },
     onDateSelect?: (date: Dayjs | ((prev: Dayjs) => Dayjs)) => void,
-    onMonthChange?: (year: number, month: number) => void,
+    onMonthChange?: (year: number, month: number, day?: number) => void,
 ) => {
       // 曜日のリスト
       const dayOfWeeks = React.useMemo(
@@ -54,47 +54,64 @@ export const useMonthlyCalendar = (
             ...Array.from({ length: extraNulls }).map(() => null),
         ];
     }, [startOfMonth, endOfMonth, startOfWeek]);
-    
-    /**
-     * 今日に移動（表示月を今月にして、選択日も今日にする）
-     */
-    const moveToToday = () => {
-        const now = dayjs();
-        onDateSelect?.(now);
-        if (onMonthChange) {
-            onMonthChange(now.year(), now.month() + 1);
-        }
-    };
 
-    /**
-     * 次の月に移動
-     */
-    const moveToNextMonth = () => {
-        if (onMonthChange && current.year !== undefined && current.month !== undefined) {
-            const next = dayjs().year(current.year).month(current.month - 1).add(1, 'month');
-            onMonthChange(next.year(), next.month() + 1);
-        } else {
-            onDateSelect?.(prev => prev.add(1, 'month'));
-        }
-    };
-
-    /**
-     * 前の月に移動
-     */
-    const moveToPreviousMonth = () => {
-        if (onMonthChange && current.year !== undefined && current.month !== undefined) {
-            const prev = dayjs().year(current.year).month(current.month - 1).add(-1, 'month');
-            onMonthChange(prev.year(), prev.month() + 1);
-        } else {
-            onDateSelect?.(prev => prev.add(-1, 'month'));
-        }
-    };
-
-    /** 親が毎レンダーで新しい onDateSelect を渡すと effect がループするため ref で参照する */
+    /** 親が毎レンダーで新しいコールバックを渡すと effect / 安定した参照が必要な箇所でズレるため ref で参照する */
     const onDateSelectRef = React.useRef(onDateSelect);
     React.useEffect(() => {
         onDateSelectRef.current = onDateSelect;
     }, [onDateSelect]);
+
+    const onMonthChangeRef = React.useRef(onMonthChange);
+    React.useEffect(() => {
+        onMonthChangeRef.current = onMonthChange;
+    }, [onMonthChange]);
+
+    /**
+     * 今日に移動（表示月を今月にして、選択日も今日にする）
+     */
+    const moveToToday = React.useCallback(() => {
+        const now = dayjs();
+        onDateSelectRef.current?.(now);
+        onMonthChangeRef.current?.(now.year(), now.month() + 1, now.date());
+    }, []);
+
+    /**
+     * 次の月に移動
+     */
+    const moveToNextMonth = React.useCallback(() => {
+        if (
+            onMonthChangeRef.current &&
+            current.year !== undefined &&
+            current.month !== undefined
+        ) {
+            const next = dayjs()
+                .year(current.year)
+                .month(current.month - 1)
+                .add(1, 'month');
+            onMonthChangeRef.current(next.year(), next.month() + 1);
+        } else {
+            onDateSelectRef.current?.((prev) => prev.add(1, 'month'));
+        }
+    }, [current.year, current.month]);
+
+    /**
+     * 前の月に移動
+     */
+    const moveToPreviousMonth = React.useCallback(() => {
+        if (
+            onMonthChangeRef.current &&
+            current.year !== undefined &&
+            current.month !== undefined
+        ) {
+            const prev = dayjs()
+                .year(current.year)
+                .month(current.month - 1)
+                .add(-1, 'month');
+            onMonthChangeRef.current(prev.year(), prev.month() + 1);
+        } else {
+            onDateSelectRef.current?.((prev) => prev.add(-1, 'month'));
+        }
+    }, [current.year, current.month]);
 
     // URL と同期時は表示月が変わっても「日」はそのまま維持（同じ日付を新月中で有効な範囲に収める）
     React.useEffect(() => {

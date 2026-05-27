@@ -26,14 +26,12 @@ export const useImageApi = () => {
                 formData.append('upload_path', uploadPath);
             }
 
+            // Content-Type は付けない（FormData 時にブラウザが boundary 付きで付与する）
             const res = await axios.post<IUploadImageResponse>(
                 `/images/upload-bulk`,
                 formData,
                 {
                     timeout: TIMEOUT_MS,
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                    },
                 },
             );
             const responseData: IUploadImageResponse = res.data;
