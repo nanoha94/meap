@@ -94,7 +94,7 @@ export const useInvitationApi = () => {
      * グループに参加する
      * @param invitationDetail 招待の詳細（トークンを含む）
      * @param isDelete 削除するかどうか
-     * @returns ビジネス上の参加成功時 true（router.refresh / ダイアログを閉じる等は呼び出し側）
+     * @returns ビジネス上の参加成功時 true（ダイアログを閉じる等は呼び出し側）
      */
     const joinGroup = React.useCallback(
         async (

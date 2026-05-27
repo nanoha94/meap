@@ -139,9 +139,12 @@ export const useRecipeEditForm = (initialOwnerUserId: string, fetchedRecipe?: IR
         ? EDIT_MODE.UPDATE
         : EDIT_MODE.CREATE;
 
+    const prevRecipeIdRef = React.useRef<string | undefined>(fetchedRecipe?.id);
+
     React.useEffect(() => {
-        if (fetchedRecipe) {
+        if (fetchedRecipe && fetchedRecipe.id !== prevRecipeIdRef.current) {
             reset(getDefaultValues(fetchedRecipe, initialOwnerUserId));
+            prevRecipeIdRef.current = fetchedRecipe.id;
         }
     }, [fetchedRecipe, reset, initialOwnerUserId]);
 

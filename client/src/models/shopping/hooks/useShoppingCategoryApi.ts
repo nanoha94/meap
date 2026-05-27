@@ -8,6 +8,7 @@ import { getApiErrorMessageFromSettledResult } from '@/lib/apiResponse';
 import axios from '@/lib/axios';
 import { useGlobalStore } from '@/stores';
 import {
+    IGetShoppingCategoryIndexResponse,
     IPostShoppingCategoryRequest,
     IPutShoppingCategoryRequest,
     IShoppingCategory,
@@ -19,6 +20,7 @@ export const useShoppingCategoryApi = () => {
     const incrementLoadingCount = useGlobalStore(state => state.incrementLoadingCount);
     const decrementLoadingCount = useGlobalStore(state => state.decrementLoadingCount);
     const storeCategories = useShoppingStore(state => state.categories);
+    const setCategories = useShoppingStore(state => state.setCategories);
 
     // hook
     const { addSnackbar } = useSnackbars();
@@ -120,6 +122,34 @@ export const useShoppingCategoryApi = () => {
     );
 
     /**
+     * 買い物カテゴリー一覧を取得してストアに反映する
+     * @returns ストア反映に成功したとき true
+     */
+    const fetchShoppingCategories = React.useCallback(async (): Promise<boolean> => {
+        try {
+            const { data } = await axios.get<IGetShoppingCategoryIndexResponse>(
+                '/shopping-categories',
+                { timeout: TIMEOUT_MS },
+            );
+            if (data.success && data.data) {
+                setCategories(data.data);
+                return true;
+            }
+            addSnackbar(
+                'error',
+                '買い物カテゴリーの再取得に失敗しました。表示が古い場合はページを再読み込みしてください。',
+            );
+            return false;
+        } catch {
+            addSnackbar(
+                'error',
+                '買い物カテゴリーの再取得に失敗しました。表示が古い場合はページを再読み込みしてください。',
+            );
+            return false;
+        }
+    }, [addSnackbar, setCategories]);
+
+    /**
      * 買い物カテゴリーを一括更新
      * @param categories 更新する買い物カテゴリー
      * @returns 成功時 true、それ以外は false
@@ -191,6 +221,7 @@ export const useShoppingCategoryApi = () => {
                 }
 
                 addSnackbar('success', '買い物カテゴリーを更新しました');
+                await fetchShoppingCategories();
                 return true;
             } catch (error) {
                 handleApiError(error);
@@ -204,6 +235,7 @@ export const useShoppingCategoryApi = () => {
             storeCategories,
             incrementLoadingCount,
             decrementLoadingCount,
+            fetchShoppingCategories,
             generateDeleteRequest,
             generateCreateUpdateRequest,
             handleApiError,
@@ -212,6 +244,7 @@ export const useShoppingCategoryApi = () => {
     );
 
     return {
+        fetchShoppingCategories,
         bulkUpdateShoppingCategories,
     };
 };

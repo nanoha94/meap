@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { CirclePlus } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
 
 import {
@@ -22,7 +21,6 @@ interface FormData {
 }
 
 const RecipeCategoryEditForm: React.FC = () => {
-    const router = useRouter();
     const { closeDialog, updateCurrentDialogConfig } = useDialog();
     const { storeData, bulkUpdateRecipeCategories } = useRecipeCategoryApi();
     const prefix = TMP_ID_PREFIX.RECIPE_CATEGORY;
@@ -120,7 +118,6 @@ const RecipeCategoryEditForm: React.FC = () => {
                 })),
             );
             if (success) {
-                router.refresh();
                 closeDialog(false);
             }
         } catch {
@@ -168,7 +165,7 @@ const RecipeCategoryEditForm: React.FC = () => {
                                             type="text"
                                             placeholder="カテゴリー名を入力"
                                             autoFocus
-                                            className="py-2 px-4 flex-1 outline-none bg-white rounded-lg border border-gray-main"
+                                            className="w-full py-2 px-4 flex-1 outline-none bg-white rounded-lg border border-gray-main"
                                         />
                                     )}
                                 />

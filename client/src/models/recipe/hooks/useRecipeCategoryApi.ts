@@ -7,12 +7,18 @@ import { useApiErrorHandler, useSnackbars } from '@/hooks';
 import { getApiErrorMessageFromSettledResult } from '@/lib/apiResponse';
 import axios from '@/lib/axios';
 import { useGlobalStore } from '@/stores';
-import { IPostRecipeCategoryRequest, IPutRecipeCategoryRequest, IRecipeCategory } from '@/types';
+import {
+    IGetRecipeCategoryIndexResponse,
+    IPostRecipeCategoryRequest,
+    IPutRecipeCategoryRequest,
+    IRecipeCategory,
+} from '@/types';
 import { useRecipeStore } from '../hooks';
 
 export const useRecipeCategoryApi = () => {
     // store
     const storeCategories = useRecipeStore(state => state.categories);
+    const setCategories = useRecipeStore(state => state.setCategories);
     const incrementLoadingCount = useGlobalStore(state => state.incrementLoadingCount);
     const decrementLoadingCount = useGlobalStore(state => state.decrementLoadingCount);
 
@@ -110,6 +116,34 @@ export const useRecipeCategoryApi = () => {
     );
 
     /**
+     * レシピカテゴリー一覧を取得してストアに反映する
+     * @returns ストア反映に成功したとき true
+     */
+    const fetchRecipeCategories = React.useCallback(async (): Promise<boolean> => {
+        try {
+            const { data } = await axios.get<IGetRecipeCategoryIndexResponse>(
+                '/recipe-categories',
+                { timeout: TIMEOUT_MS },
+            );
+            if (data.success && data.data) {
+                setCategories(data.data);
+                return true;
+            }
+            addSnackbar(
+                'error',
+                'レシピカテゴリーの再取得に失敗しました。表示が古い場合はページを再読み込みしてください。',
+            );
+            return false;
+        } catch {
+            addSnackbar(
+                'error',
+                'レシピカテゴリーの再取得に失敗しました。表示が古い場合はページを再読み込みしてください。',
+            );
+            return false;
+        }
+    }, [addSnackbar, setCategories]);
+
+    /**
      * レシピカテゴリーを一括更新
      * @param categories 更新するレシピカテゴリー
      * @returns 成功時 true、それ以外は false
@@ -180,6 +214,7 @@ export const useRecipeCategoryApi = () => {
                 }
 
                 addSnackbar('success', 'レシピカテゴリーを更新しました');
+                await fetchRecipeCategories();
                 return true;
             } catch (error) {
                 handleApiError(error);
@@ -197,10 +232,12 @@ export const useRecipeCategoryApi = () => {
             handleApiError,
             generateCreateUpdateRequest,
             generateDeleteRequest,
+            fetchRecipeCategories,
         ],
     );
 
     return {
+        fetchRecipeCategories,
         storeData: { categories: storeCategories },
         bulkUpdateRecipeCategories,
     };
