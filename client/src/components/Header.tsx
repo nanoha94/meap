@@ -23,7 +23,7 @@ const Header = ({ title, maxWidth = '1000px', leftContent, rightContent, hasBack
     const handleBackClick = () => (onBackClick ? onBackClick() : router.back());
     return (
         <header
-            className="bg-white"
+            className="sticky z-[100] top-0 bg-white"
             style={{ boxShadow: 'inset 0 -1px 3px 0 rgba(0, 0, 0, 10%)' }}>
             <div className={`py-3 px-4 sm:px-6 lg:px-10 max-w-[${maxWidth}] mx-auto min-h-[60px] flex items-center justify-between gap-x-10 ${className ?? ''}`}>
                 <div className="flex items-center gap-x-4">
