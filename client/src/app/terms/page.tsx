@@ -14,7 +14,7 @@ const Page = () => {
     return (
         <div className="min-h-dvh bg-primary-background text-black">
             <header
-                className="sticky z-[100] top-0 bg-white backdrop-blur-sm"
+                className="sticky z-30 top-0 bg-white backdrop-blur-sm"
                 style={{ boxShadow: 'inset 0 -1px 3px 0 rgba(0, 0, 0, 10%)' }}>
                 <div className="flex justify-center px-4 sm:px-6">
                     <div className="flex w-full max-w-5xl items-center justify-between gap-4 py-3">

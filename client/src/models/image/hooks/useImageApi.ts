@@ -5,20 +5,43 @@ import { TIMEOUT_MS } from '@/constants';
 import { useApiErrorHandler, useSnackbars } from '@/hooks';
 import axios from '@/lib/axios';
 import { IUploadImageResponse } from '@/types';
+import {
+    compressImage,
+    ImageCompressionError,
+} from '@/utils/imageCompression';
 
 export const useImageApi = () => {
     const { addSnackbar } = useSnackbars();
     const { handleApiError } = useApiErrorHandler();
+
     const bulkUploadImage = React.useCallback(async (files: File[], uploadPath?: string) => {
         try {
+            const validFiles = files.filter((file): file is File => Boolean(file));
+
+            let compressedFiles: File[];
+            try {
+                compressedFiles = await Promise.all(
+                    validFiles.map(file => compressImage(file)),
+                );
+            } catch (error) {
+                const message =
+                    error instanceof ImageCompressionError
+                        ? error.message
+                        : '画像の圧縮に失敗しました';
+                addSnackbar('error', message);
+                return {
+                    success: false,
+                    message,
+                    data: [],
+                    total: 0,
+                };
+            }
+
             // FormDataを作成してファイルを追加
             const formData = new FormData();
 
-            // ファイル配列を追加（nullやundefinedを除外）
-            files.forEach(file => {
-                if (file) {
-                    formData.append('images[]', file);
-                }
+            compressedFiles.forEach(file => {
+                formData.append('images[]', file);
             });
 
             // upload_path が指定されていれば FormData に追加

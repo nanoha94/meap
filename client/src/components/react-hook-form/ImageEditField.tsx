@@ -4,8 +4,12 @@ import Image from 'next/image';
 import { Control, Controller, FieldValues, Path } from 'react-hook-form';
 import { ImagePlus, Trash2 } from 'lucide-react';
 
-import { MAX_IMAGE_SIZE } from '@/constants';
+import { useSnackbars } from '@/hooks';
 import { IImageWithFile, ImageEditFieldStyleConfig } from '@/types';
+import {
+    ImageCompressionError,
+    validateOriginalImageSize,
+} from '@/utils/imageCompression';
 
 interface Props<T extends FieldValues> {
     control: Control<T>;
@@ -30,6 +34,7 @@ const ImageEditField = <T extends FieldValues>({
     styleConfig: styleConfigOverride,
     className,
 }: Props<T>) => {
+    const { addSnackbar } = useSnackbars();
     const styleConfig = { ...defaultStyleConfig, ...styleConfigOverride };
     const fileInputRef = React.useRef<HTMLInputElement>(null);
     // nameプロパティから一意のIDを生成（配列のインデックスやネストされたパスに対応）
@@ -39,7 +44,7 @@ const ImageEditField = <T extends FieldValues>({
     );
 
     /**
-     * サムネイル画像を変更
+     * サムネイル画像を変更（サイズ検証後、元ファイルをフォームへ反映。圧縮はアップロード時）
      * @param file 画像ファイル
      * @returns void
      */
@@ -48,33 +53,40 @@ const ImageEditField = <T extends FieldValues>({
         onChange: (value: IImageWithFile) => void,
         currentValue: IImageWithFile | null | undefined,
     ) => {
-        // 画像サイズが大きすぎる場合はエラー通知し、画像は元のままにする
-        if (file && file.size > MAX_IMAGE_SIZE) {
-            alert(
-                `画像サイズが大きすぎます（最大${MAX_IMAGE_SIZE / 1024 / 1024}MB）`,
-            );
+        if (!file) {
             return;
         }
 
-        // 画像を設定
-        if (file) {
-            const objectUrl = URL.createObjectURL(file);
-            const img = new window.Image();
-
-            img.onload = () => {
-                // 古いobjectURLを解放
-                if (currentValue?.file && currentValue?.src) {
-                    URL.revokeObjectURL(currentValue.src);
-                }
-                onChange({
-                    file,
-                    src: objectUrl,
-                    width: img.width,
-                    height: img.height,
-                });
-            };
-            img.src = objectUrl;
+        try {
+            validateOriginalImageSize(file);
+        } catch (error) {
+            const message =
+                error instanceof ImageCompressionError
+                    ? error.message
+                    : '画像の選択に失敗しました';
+            addSnackbar('error', message);
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
+            return;
         }
+
+        const objectUrl = URL.createObjectURL(file);
+        const img = new window.Image();
+
+        img.onload = () => {
+            // 古いobjectURLを解放
+            if (currentValue?.file && currentValue?.src) {
+                URL.revokeObjectURL(currentValue.src);
+            }
+            onChange({
+                file,
+                src: objectUrl,
+                width: img.width,
+                height: img.height,
+            });
+        };
+        img.src = objectUrl;
     };
 
     /**

@@ -7,6 +7,7 @@ export * from './dialogs';
 export * from './dnd';
 export * from './fonts';
 export * from './form';
+export * from './image';
 export * from './links';
 export * from './navigation';
 export * from './tmpIdPrefix';
