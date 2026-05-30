@@ -9,7 +9,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { FormProvider } from 'react-hook-form';
 
 import { Header, HeaderTextButton, StyledDatePicker } from '@/components';
-import { ALERT_DIALOG_CONFIGS, BUTTON_TYPE, COLOR_VARIANT, LINK_TO } from '@/constants';
+import { BUTTON_TYPE, COLOR_VARIANT, LINK_TO } from '@/constants';
 import { useAlertDialog, useItemAndCategoryDnd, useNavigationGuard, useSnackbars } from '@/hooks';
 import { MealCardField, RecipeCard, useMealStore, useMealPlanEditForm, useMealPlanApi } from '@/models/meal';
 import { useGlobalStore } from '@/stores';
@@ -36,14 +36,6 @@ const PlanEditPage = ({ selectedDate, fetchMealPlan, errorMessage }: Props) => {
     const [tmpItems, setTmpItems] = React.useState<IMealPlanItem[]>([]);
     const [isPlanItemDragging, setIsPlanItemDragging] = React.useState(false);
     useNavigationGuard(!isDisabledSendButton);
-
-    const handleBackClick = React.useCallback(() => {
-        if (isDisabledSendButton) {
-            router.back();
-        } else {
-            openAlertDialog(ALERT_DIALOG_CONFIGS.unsavedChanges(), () => router.back());
-        }
-    }, [isDisabledSendButton, router, openAlertDialog]);
 
     /**
      * ヘッダーメニューボタン押下時に開くアクションボタン設定
@@ -164,7 +156,7 @@ const PlanEditPage = ({ selectedDate, fetchMealPlan, errorMessage }: Props) => {
 
     return (
         <>
-            <Header hasBackButton={true} onBackClick={handleBackClick} leftContent={
+            <Header hasBackButton={true} onBackClick={() => router.back()} leftContent={
                 <div className="items-center gap-x-4 whitespace-nowrap w-[300px] hidden md:flex">
                     <StyledDatePicker
                         value={(() => {

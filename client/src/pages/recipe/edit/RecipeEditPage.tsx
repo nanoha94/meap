@@ -12,7 +12,7 @@ import {
     StyledSelect,
     VerticalRowField,
 } from '@/components';
-import { ALERT_DIALOG_CONFIGS, BUTTON_TYPE, COLOR_VARIANT, LINK_TO, colors } from '@/constants';
+import { BUTTON_TYPE, COLOR_VARIANT, LINK_TO, colors } from '@/constants';
 import { useAlertDialog, useNavigationGuard, useSnackbars, useTextCopy } from '@/hooks';
 import {
     CategoryEditFields,
@@ -62,14 +62,6 @@ const RecipeEditPage = ({
     const router = useRouter();
     useNavigationGuard(!isDisabledSendButton);
 
-    const handleBackClick = () => {
-        if (isDisabledSendButton) {
-            router.back();
-        } else {
-            openAlertDialog(ALERT_DIALOG_CONFIGS.unsavedChanges(), () => router.back());
-        }
-    };
-
     /**
      * ヘッダーのアクションボタン設定
      */
@@ -107,7 +99,7 @@ const RecipeEditPage = ({
             <Header
                 maxWidth="1200px"
                 hasBackButton={true}
-                onBackClick={handleBackClick}
+                onBackClick={() => router.back()}
                 leftContent={
                     <div className="items-center gap-x-4 whitespace-nowrap w-[300px] hidden md:flex">
                         <span>編集責任者</span>

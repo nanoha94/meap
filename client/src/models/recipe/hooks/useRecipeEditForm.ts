@@ -46,7 +46,9 @@ const buildDuplicateIngredientErrors = (
     const seen = new Set<string>();
     const out: Record<string, string> = {};
     items.forEach((ingredient, index) => {
-        const key = `${ingredient.name ?? ''}|${ingredient.unit?.id ?? ''}`;
+        const name = ingredient.name ?? '';
+        if (name === '') return;
+        const key = `${name}|${ingredient.unit?.id ?? ''}`;
         if (seen.has(key)) {
             out[`ingredients.${index}.name`] = '同じ材料名と単位の組み合わせが重複しています。';
         } else {
