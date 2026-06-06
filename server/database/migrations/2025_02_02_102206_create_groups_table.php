@@ -14,6 +14,9 @@ return new class extends Migration
         Schema::create('groups', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->integer('group_size');
+            $table->string('plan')->default('free');
+            $table->unsignedInteger('ai_usage_count')->default(0);
+            $table->timestamp('ai_usage_reset_at')->nullable();
             $table->timestamps();
         });
     }

@@ -17,6 +17,14 @@ return [
         'update' => 'Recipe update',
         'destroy' => 'Recipe deletion',
     ],
+    'ai' => [
+        'recipe' => [
+            'parse' => 'AI recipe image parsing',
+        ],
+        'usage' => [
+            'show' => 'AI usage status retrieval',
+        ],
+    ],
     'meal_plan' => [
         'index' => 'Meal plan list retrieval',
         'store' => 'Meal plan creation',

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\RecipeSource;
 use App\Models\Group;
 use App\Models\Ingredient;
 use App\Models\Recipe;
@@ -66,6 +67,8 @@ class RecipeService extends AbstractDomainService
             'cooking_time',
             DB::raw($this->getLastPlannedDateSubquery() . ' as last_planned_date'),
             'status',
+            'source',
+            'published_recipe_id',
         ];
     }
 
@@ -218,6 +221,7 @@ class RecipeService extends AbstractDomainService
             'ingredients' => $this->formatRecipeIngredients($item, $item->group),
             'ownerUserId' => $item->owner_user_id,
             'status' => $item->status,
+            'source' => $item->source->value,
             'publishedRecipeId' => $item->published_recipe_id,
         ];
     }
@@ -237,6 +241,7 @@ class RecipeService extends AbstractDomainService
 
             // TODO: published_recipe_idはセカンドリリースで設定するため、ファーストリリースではnullを設定
             $createData['published_recipe_id'] = null;
+            $createData['source'] = $this->resolveSourceForCreate($data);
 
             $item = $this->getGroupRelation($group)->create($createData);
 
@@ -272,6 +277,9 @@ class RecipeService extends AbstractDomainService
             $updateData = [];
             foreach ($this->getUpdateFields() as $field => $dataKey) {
                 $updateData[$field] = $data[$dataKey] ?? null;
+            }
+            if ($this->shouldMarkAsAiImported($data)) {
+                $updateData['source'] = RecipeSource::AI_IMPORTED->value;
             }
             $currentItem->update($updateData);
 
@@ -436,6 +444,24 @@ class RecipeService extends AbstractDomainService
             ->toArray();
 
         return $result;
+    }
+
+    /**
+     * 新規作成時の source を解決する（明示的に ai_imported の場合のみ、それ以外は manual）
+     */
+    private function resolveSourceForCreate(array $data): string
+    {
+        return $this->shouldMarkAsAiImported($data)
+            ? RecipeSource::AI_IMPORTED->value
+            : RecipeSource::MANUAL->value;
+    }
+
+    /**
+     * source を ai_imported に昇格すべきか（manual → ai_imported のみ許可、逆方向は不可）
+     */
+    private function shouldMarkAsAiImported(array $data): bool
+    {
+        return RecipeSource::tryFrom($data['source'] ?? '') === RecipeSource::AI_IMPORTED;
     }
 
     /**

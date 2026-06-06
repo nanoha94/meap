@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\GroupPlan;
 use App\Services\ImageService;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -29,6 +30,14 @@ class Group extends Model
 
     protected $fillable = [
         'group_size',
+        'plan',
+        'ai_usage_count',
+        'ai_usage_reset_at',
+    ];
+
+    protected $casts = [
+        'plan' => GroupPlan::class,
+        'ai_usage_reset_at' => 'datetime',
     ];
 
     // Groupを作成
@@ -37,6 +46,9 @@ class Group extends Model
         return DB::transaction(function () {
             $group = self::create([
                 'group_size' => 1,
+                'plan' => GroupPlan::FREE,
+                'ai_usage_count' => 0,
+                'ai_usage_reset_at' => now()->addMonth(),
             ]);
 
             // デフォルトの買い物カテゴリを追加

@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Api\AiRecipeController;
+use App\Http\Controllers\Api\AiUsageController;
 use App\Http\Controllers\Api\ImageController;
 use App\Http\Controllers\Api\IngredientCategoryController;
 use App\Http\Controllers\Api\IngredientUnitController;
@@ -69,6 +71,11 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::put('/shopping-categories/bulk', [ShoppingCategoryController::class, 'bulkUpdate']);
     Route::delete('/shopping-categories/bulk', [ShoppingCategoryController::class, 'bulkDestroy']);
     Route::apiResource('/shopping-tags', ShoppingTagController::class)->only(['index']);
+
+    // ai
+    Route::get('/ai/usage', [AiUsageController::class, 'show']);
+    Route::post('/ai/recipes/parse', [AiRecipeController::class, 'parse'])
+        ->middleware('throttle:ai');
 
     // master
     Route::get('/master', MasterController::class);

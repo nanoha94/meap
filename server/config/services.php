@@ -41,4 +41,19 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | AI Providers
+    |--------------------------------------------------------------------------
+    |
+    | 機能ごとに AI プロバイダーを切り替え可能。.env の AI_*_PROVIDER で指定。
+    | 現時点では openai のみ対応。
+    |
+    */
+    'ai' => [
+        'vision_provider' => env('AI_VISION_PROVIDER', 'openai'),
+        'image_provider' => env('AI_IMAGE_PROVIDER', 'openai'),
+        'text_provider' => env('AI_TEXT_PROVIDER', 'openai'),
+    ],
+
 ];

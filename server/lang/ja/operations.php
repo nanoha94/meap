@@ -17,6 +17,14 @@ return [
         'update' => 'レシピ更新',
         'destroy' => 'レシピ削除',
     ],
+    'ai' => [
+        'recipe' => [
+            'parse' => 'AIレシピ画像解析',
+        ],
+        'usage' => [
+            'show' => 'AI利用状況取得',
+        ],
+    ],
     'meal_plan' => [
         'index' => '献立一覧取得',
         'store' => '献立作成',

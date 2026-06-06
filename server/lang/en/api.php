@@ -60,6 +60,17 @@ return [
         'join_failed' => 'Failed to join the group.',
     ],
 
+    'ai' => [
+        'recipe' => [
+            'parsed' => 'Recipe information extracted from image successfully.',
+            'parse_failed' => 'Failed to parse recipe from image.',
+        ],
+        'usage' => [
+            'monthly_limit_exceeded' => 'Monthly AI usage limit has been reached.',
+            'rate_limit_exceeded' => 'This feature is temporarily unavailable due to multiple requests in a short time. Please try again later.',
+        ],
+    ],
+
     'attributes' => [
         'user' => 'User',
         'meal_plan' => 'Meal plan',
@@ -71,6 +82,7 @@ return [
         'ingredient_category' => 'Ingredient category',
         'ingredient_unit' => 'Ingredient unit',
         'image' => 'Image',
+        'ai_usage' => 'AI usage status',
         'master' => 'Master data',
         'shopping' => [
             'category' => 'Shopping category',

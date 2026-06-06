@@ -84,10 +84,24 @@ echo "実行中: UserControllerTest.php"
 
 echo ""
 echo "=========================================="
-echo "📖 詳細ドキュメント: tests/docs/03_Api/11_IngredientUnitController_TEST_SPECIFICATIONS.md"
+echo "📖 詳細ドキュメント: tests/docs/03_Api/12_IngredientUnitController_TEST_SPECIFICATIONS.md"
 echo ""
 echo "実行中: IngredientUnitControllerTest.php"
 ./vendor/bin/sail test tests/Feature/Api/IngredientUnitControllerTest.php --stop-on-failure
+
+echo ""
+echo "=========================================="
+echo "📖 詳細ドキュメント: tests/docs/03_Api/13_AiRecipeController_TEST_SPECIFICATIONS.md"
+echo ""
+echo "実行中: AiRecipeControllerTest.php"
+./vendor/bin/sail test tests/Feature/Api/AiRecipeControllerTest.php --stop-on-failure
+
+echo ""
+echo "=========================================="
+echo "📖 詳細ドキュメント: tests/docs/03_Api/14_AiUsageController_TEST_SPECIFICATIONS.md"
+echo ""
+echo "実行中: AiUsageControllerTest.php"
+./vendor/bin/sail test tests/Feature/Api/AiUsageControllerTest.php --stop-on-failure
 
 echo ""
 echo "=========================================="

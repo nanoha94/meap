@@ -11,6 +11,79 @@
         }
     ],
     "paths": {
+        "/ai/recipes/parse": {
+            "post": {
+                "tags": [
+                    "AI"
+                ],
+                "summary": "画像からレシピ情報をAI解析",
+                "operationId": "04fc82a615017469b91c0ae1c0427db9",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "image"
+                                ],
+                                "properties": {
+                                    "image": {
+                                        "description": "解析対象のレシピ画像（jpeg/png/webp、10MB以下）",
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/AiRecipeParseSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationErrors"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/AiUsageLimitExceeded"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/ai/usage": {
+            "get": {
+                "tags": [
+                    "AI"
+                ],
+                "summary": "AI利用状況を取得",
+                "operationId": "88152af3dd644d7f05c513016089431c",
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/AiUsageShowSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationErrors"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/images/upload-bulk": {
             "post": {
                 "tags": [
@@ -1389,6 +1462,145 @@
                         "description": "総件数",
                         "type": "integer",
                         "example": 10
+                    }
+                },
+                "type": "object"
+            },
+            "AiRecipeParseResponse": {
+                "required": [
+                    "success",
+                    "message",
+                    "data"
+                ],
+                "properties": {
+                    "success": {
+                        "description": "AIレシピ画像解析レスポンス（success, message, data: ParsedRecipe）",
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "画像からレシピ情報を読み取りました。"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/ParsedRecipe"
+                    }
+                },
+                "type": "object"
+            },
+            "ParsedRecipeIngredient": {
+                "required": [
+                    "name",
+                    "unitName",
+                    "categoryName"
+                ],
+                "properties": {
+                    "name": {
+                        "description": "材料名",
+                        "type": "string",
+                        "example": "玉ねぎ"
+                    },
+                    "quantity": {
+                        "description": "数量",
+                        "type": "number",
+                        "example": 1,
+                        "nullable": true
+                    },
+                    "unitName": {
+                        "description": "単位名",
+                        "type": "string",
+                        "example": "個"
+                    },
+                    "categoryName": {
+                        "description": "材料カテゴリ名",
+                        "type": "string",
+                        "example": "野菜"
+                    }
+                },
+                "type": "object"
+            },
+            "ParsedRecipeStep": {
+                "required": [
+                    "instruction"
+                ],
+                "properties": {
+                    "instruction": {
+                        "description": "調理手順",
+                        "type": "string",
+                        "example": "玉ねぎをみじん切りにする"
+                    }
+                },
+                "type": "object"
+            },
+            "ParsedRecipe": {
+                "required": [
+                    "name",
+                    "url",
+                    "ingredients",
+                    "steps"
+                ],
+                "properties": {
+                    "name": {
+                        "description": "料理名",
+                        "type": "string",
+                        "example": "カレーライス"
+                    },
+                    "servingCount": {
+                        "description": "人数",
+                        "type": "integer",
+                        "example": 4,
+                        "nullable": true
+                    },
+                    "url": {
+                        "description": "URL",
+                        "type": "string",
+                        "example": ""
+                    },
+                    "ingredients": {
+                        "description": "材料一覧",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ParsedRecipeIngredient"
+                        }
+                    },
+                    "steps": {
+                        "description": "手順一覧",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ParsedRecipeStep"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "AiUsageStatus": {
+                "required": [
+                    "plan",
+                    "usageCount",
+                    "usageLimit",
+                    "resetsAt"
+                ],
+                "properties": {
+                    "plan": {
+                        "description": "現在の料金プラン",
+                        "type": "string",
+                        "example": "free"
+                    },
+                    "usageCount": {
+                        "description": "現在のAI利用回数",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "usageLimit": {
+                        "description": "現在の料金プランのAI利用上限",
+                        "type": "integer",
+                        "example": 3
+                    },
+                    "resetsAt": {
+                        "description": "次回リセット日時",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-05-15T00:00:00+09:00"
                     }
                 },
                 "type": "object"
@@ -3201,6 +3413,107 @@
             }
         },
         "responses": {
+            "AiRecipeParseSuccess": {
+                "description": "画像からレシピ情報を読み取りました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/AiRecipeParseResponse"
+                        }
+                    }
+                }
+            },
+            "AiUsageLimitExceeded": {
+                "description": "AI利用回数の上限超過（月次）または短時間の連続リクエスト",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "oneOf": [
+                                {
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "error_code"
+                                    ],
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "今月のAI利用回数の上限に達しました。"
+                                        },
+                                        "error_type": {
+                                            "type": "string",
+                                            "example": "ai_monthly_limit_exceeded"
+                                        },
+                                        "error_code": {
+                                            "type": "integer",
+                                            "example": 429
+                                        }
+                                    },
+                                    "type": "object"
+                                },
+                                {
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "error_code"
+                                    ],
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "短時間で複数回リクエストしているので機能を一時停止しています。時間をおいて試してください。"
+                                        },
+                                        "error_type": {
+                                            "type": "string",
+                                            "example": "ai_rate_limit_exceeded"
+                                        },
+                                        "error_code": {
+                                            "type": "integer",
+                                            "example": 429
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "AiUsageShowSuccess": {
+                "description": "AI利用状況を取得しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "required": [
+                                "success",
+                                "message",
+                                "data"
+                            ],
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "AI利用状況を取得しました。"
+                                },
+                                "data": {
+                                    "$ref": "#/components/schemas/AiUsageStatus"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
             "UserLoginSuccess": {
                 "description": "ログインに成功しました",
                 "content": {
@@ -4533,6 +4846,10 @@
         {
             "name": "Images",
             "description": "画像関連のAPI"
+        },
+        {
+            "name": "AI",
+            "description": "AI機能関連のAPI"
         },
         {
             "name": "Master",

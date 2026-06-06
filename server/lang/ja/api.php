@@ -59,6 +59,17 @@ return [
         'join_failed' => 'グループへの参加に失敗しました。',
     ],
 
+    'ai' => [
+        'recipe' => [
+            'parsed' => '画像からレシピ情報を読み取りました。',
+            'parse_failed' => '画像からのレシピ読み取りに失敗しました。',
+        ],
+        'usage' => [
+            'monthly_limit_exceeded' => '今月のAI利用回数の上限に達しました。',
+            'rate_limit_exceeded' => '短時間で複数回リクエストしているので機能を一時停止しています。時間をおいて試してください。',
+        ],
+    ],
+
     'attributes' => [
         'user' => 'ユーザー',
         'meal_plan' => '献立',
@@ -70,6 +81,7 @@ return [
         'ingredient_category' => '食材カテゴリー',
         'ingredient_unit' => '食材単位',
         'image' => '画像',
+        'ai_usage' => 'AI利用状況',
         'master' => 'マスターデータ',
         'shopping' => [
             'category' => '買い物カテゴリー',

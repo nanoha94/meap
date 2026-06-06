@@ -23,6 +23,7 @@ return new class extends Migration
             $table->integer('serving_count')->nullable();
             $table->integer('cooking_time')->nullable();
             $table->string('status')->default('limited');
+            $table->string('source')->default('manual');
             $table->timestamps();
         });
     }

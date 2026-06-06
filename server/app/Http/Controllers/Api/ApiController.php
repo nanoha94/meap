@@ -60,6 +60,10 @@ use Illuminate\Http\Request;
  *     name="Images",
  *     description="画像関連のAPI"
  * )
+ * @OA\Tag(
+ *     name="AI",
+ *     description="AI機能関連のAPI"
+ * )
  */
 
 abstract class ApiController extends Controller

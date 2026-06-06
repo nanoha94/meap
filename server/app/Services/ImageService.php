@@ -529,7 +529,7 @@ class ImageService
 
     /**
      * getimagesize / getimagesizefromstring の IMAGETYPE_* から、保存用拡張子を返す
-     * （mimes: jpeg,png,jpg,gif,webp に合わせる）
+     * （mimes: jpeg,png,gif,webp に合わせる）
      */
     private function imageTypeToExtension(int $imageType): ?string
     {
