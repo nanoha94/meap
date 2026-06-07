@@ -1,15 +1,16 @@
-"use client";
+'use client';
 
 import React from 'react';
+import { Brain, Copy, Save, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Controller, FormProvider } from 'react-hook-form';
-import { Copy, Save, Trash2 } from 'lucide-react';
 
 import {
     Header,
     HeaderTextButton,
     ImageEditField,
     StyledSelect,
+    TextButton,
     VerticalRowField,
 } from '@/components';
 import { BUTTON_TYPE, COLOR_VARIANT, LINK_TO, colors } from '@/constants';
@@ -19,6 +20,8 @@ import {
     IngredientEditFields,
     RECIPE_ALERT_DIALOG_CONFIGS,
     StepEditFields,
+    useRecipeAiApi,
+    useRecipeAiImport,
     useRecipeApi,
     useRecipeEditForm,
 } from '@/models/recipe';
@@ -48,6 +51,8 @@ const RecipeEditPage = ({
     const { addSnackbar } = useSnackbars();
     const { openAlertDialog } = useAlertDialog();
     const { deleteRecipe } = useRecipeApi();
+    const { parseRecipeFromImage } = useRecipeAiApi();
+    const { convertToFormData, applyParsedRecipeToForm } = useRecipeAiImport();
     const {
         control,
         methods,
@@ -60,7 +65,80 @@ const RecipeEditPage = ({
     );
     const { isTextCopied, copyToClipboard } = useTextCopy();
     const router = useRouter();
+    const aiImportFileInputRef = React.useRef<HTMLInputElement>(null);
     useNavigationGuard(!isDisabledSendButton);
+
+    /**
+     * AI 読み込みで上書きされる項目に入力済みの内容があるか判定する
+     * （memo / url / thumbnail / categories は上書きしない）
+     */
+    const hasFormContentForAiImport = React.useCallback((): boolean => {
+        const values = methods.getValues();
+        return !!(
+            values.name?.trim() ||
+            values.servingCount ||
+            values.ingredients?.some(ingredient => ingredient.name?.trim()) ||
+            values.steps?.some(
+                step => step.instruction?.trim() || step.image?.src,
+            )
+        );
+    }, [methods]);
+
+    /**
+     * 選択した画像を AI 解析し、結果をフォームへ反映する
+     */
+    const executeAiImport = React.useCallback(
+        async (file: File) => {
+            const parsed = await parseRecipeFromImage(file);
+            if (!parsed) {
+                return;
+            }
+
+            const formData = convertToFormData(parsed);
+            applyParsedRecipeToForm(formData, methods);
+        },
+        [parseRecipeFromImage, convertToFormData, applyParsedRecipeToForm, methods],
+    );
+
+    /**
+     * AI 読み込み用の画像選択後の処理
+     */
+    const handleAiImportFileSelected = React.useCallback(
+        (file: File) => {
+            const proceed = () => {
+                void executeAiImport(file);
+            };
+
+            if (hasFormContentForAiImport()) {
+                openAlertDialog(
+                    RECIPE_ALERT_DIALOG_CONFIGS.aiImportOverwrite(),
+                    proceed,
+                );
+                return;
+            }
+
+            proceed();
+        },
+        [hasFormContentForAiImport, openAlertDialog, executeAiImport],
+    );
+
+    /**
+     * AI 読み込み用ファイル input の change イベント
+     */
+    const handleAiImportFileChange = React.useCallback(
+        (event: React.ChangeEvent<HTMLInputElement>) => {
+            const file = event.target.files?.[0];
+            if (aiImportFileInputRef.current) {
+                aiImportFileInputRef.current.value = '';
+            }
+            if (!file) {
+                return;
+            }
+
+            handleAiImportFileSelected(file);
+        },
+        [handleAiImportFileSelected],
+    );
 
     /**
      * ヘッダーのアクションボタン設定
@@ -143,11 +221,38 @@ const RecipeEditPage = ({
                         onSubmit={onSubmit}
                     >
                         {/* サムネイル画像 */}
-                        <ImageEditField control={control} name="thumbnail" className=' md:hidden' />
+                        <div className="flex flex-col items-center gap-y-3 md:hidden">
+                            <ImageEditField control={control} name="thumbnail" />
+                        </div>
                         <div className="pt-5 px-5 md:px-10 grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-14">
                             {/* サムネイル画像 */}
-                            <ImageEditField control={control} name="thumbnail" className='hidden md:block' />
+                            <div className="flex-col items-center gap-y-3 hidden md:flex">
+                                <ImageEditField control={control} name="thumbnail" />
+                                <TextButton
+                                    type={BUTTON_TYPE.BUTTON}
+                                    colorVariant={COLOR_VARIANT.SECONDARY}
+                                    className="w-full justify-center"
+                                    onClick={() => aiImportFileInputRef.current?.click()}>
+                                    <Brain size={20} strokeWidth={2} />
+                                    <span className='mb-1'>[AI] 画像からレシピを読み込む</span>
+                                </TextButton>
+                                <input
+                                    ref={aiImportFileInputRef}
+                                    type="file"
+                                    accept="image/jpeg,image/png,image/webp"
+                                    hidden
+                                    onChange={handleAiImportFileChange}
+                                />
+                            </div>
                             <div className="flex-1 flex flex-col gap-y-8">
+                                <TextButton
+                                    type={BUTTON_TYPE.BUTTON}
+                                    colorVariant={COLOR_VARIANT.SECONDARY}
+                                    className="w-full justify-center md:hidden"
+                                    onClick={() => aiImportFileInputRef.current?.click()}>
+                                    <Brain size={20} strokeWidth={2} />
+                                    <span className='mb-1'>[AI] 画像からレシピを読み込む</span>
+                                </TextButton>
                                 {/* 料理名 */}
                                 <VerticalRowField
                                     control={control}

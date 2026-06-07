@@ -7,6 +7,7 @@ use App\Enums\HttpStatusCode;
 use App\Interfaces\AiRecipeParserInterface;
 use App\Traits\LoggingTrait;
 use OpenAI\Laravel\Facades\OpenAI;
+use finfo;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;
 
@@ -69,7 +70,7 @@ class OpenAiRecipeParser implements AiRecipeParserInterface
         } catch (Throwable $e) {
             $this->logWarning(
                 __METHOD__,
-                'ai.recipe.parse',
+                __('operations.ai.recipe.parse'),
                 'OpenAI Vision API call failed.',
                 [
                     'exception_message' => $e->getMessage(),
@@ -88,7 +89,7 @@ class OpenAiRecipeParser implements AiRecipeParserInterface
         if (! is_string($content) || $content === '') {
             $this->logWarning(
                 __METHOD__,
-                'ai.recipe.parse',
+                __('operations.ai.recipe.parse'),
                 'OpenAI Vision API returned empty content.',
             );
 
@@ -103,7 +104,7 @@ class OpenAiRecipeParser implements AiRecipeParserInterface
         } catch (Throwable $e) {
             $this->logWarning(
                 __METHOD__,
-                'ai.recipe.parse',
+                __('operations.ai.recipe.parse'),
                 'Failed to decode OpenAI JSON response.',
                 [
                     'exception_message' => $e->getMessage(),
@@ -160,7 +161,6 @@ class OpenAiRecipeParser implements AiRecipeParserInterface
 {
   "name": "料理名（string）",
   "servingCount": 人数（integer または null）,
-  "url": "URL（string、なければ空文字）",
   "ingredients": [
     {
       "name": "材料名（string）",

@@ -20,10 +20,9 @@ namespace App\Swagger;
  *
  * @OA\Schema(
  *     schema="ParsedRecipe",
- *     required={"name", "url", "ingredients", "steps"},
+ *     required={"name", "ingredients", "steps"},
  *     @OA\Property(property="name", type="string", description="料理名", example="カレーライス"),
  *     @OA\Property(property="servingCount", type="integer", nullable=true, description="人数", example=4),
- *     @OA\Property(property="url", type="string", description="URL", example=""),
  *     @OA\Property(
  *         property="ingredients",
  *         type="array",

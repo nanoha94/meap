@@ -35,7 +35,6 @@ beforeEach(function () {
     $this->parsedRecipe = new ParsedRecipe(
         name: 'テストレシピ',
         servingCount: 2,
-        url: 'https://example.com',
         ingredients: [
             new ParsedRecipeIngredient(
                 name: '玉ねぎ',
@@ -75,7 +74,6 @@ test('3-12-1: 【AIレシピ画像解析】 正常に画像を解析できる', 
         'data' => [
             'name' => 'テストレシピ',
             'servingCount' => 2,
-            'url' => 'https://example.com',
             'ingredients' => [
                 [
                     'name' => '玉ねぎ',

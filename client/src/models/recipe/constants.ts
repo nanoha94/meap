@@ -13,6 +13,16 @@ export const RECIPE_ALERT_DIALOG_CONFIGS = {
         alertMessage: '',
         actionButtonText: '削除',
     }),
+    // AI 画像読み込みでフォームを上書き
+    aiImportOverwrite: (): AlertDialogConfig => ({
+        title: '上書き確認',
+        message: [
+            '入力済みの内容があります。',
+            '画像から読み取ったレシピで上書きしますか？',
+        ],
+        alertMessage: '',
+        actionButtonText: '上書き',
+    }),
 };
 
 /** デフォルト設定 */

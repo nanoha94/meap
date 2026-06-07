@@ -11,7 +11,6 @@ readonly class ParsedRecipe
     public function __construct(
         public string $name,
         public ?int $servingCount,
-        public string $url,
         public array $ingredients,
         public array $steps,
     ) {}
@@ -21,7 +20,6 @@ readonly class ParsedRecipe
         return [
             'name' => $this->name,
             'servingCount' => $this->servingCount,
-            'url' => $this->url,
             'ingredients' => array_map(
                 fn (ParsedRecipeIngredient $ingredient) => $ingredient->toArray(),
                 $this->ingredients,
@@ -50,7 +48,6 @@ readonly class ParsedRecipe
         return new self(
             name: (string) ($data['name'] ?? ''),
             servingCount: $servingCount === null || $servingCount === '' ? null : (int) $servingCount,
-            url: (string) ($data['url'] ?? ''),
             ingredients: $ingredients,
             steps: $steps,
         );
