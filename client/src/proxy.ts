@@ -23,28 +23,34 @@ export function proxy(request: NextRequest) {
 
     const hasAuthCookie =
         request.cookies.has('laravel_session') ||
-        request.cookies.has('XSRF-TOKEN');
+        request.cookies.has('XSRF-TOKEN') ||
+        request.cookies
+            .getAll()
+            .some((c) => c.name.startsWith('remember_web_'));
 
     // /settings/account: 招待トークンがある場合のみ、未ログイン時のリダイレクト処理を行う
     if (pathname === LINK_TO.SETTINGS.ACCOUNT) {
-        const redirectPath = `${pathname}${searchParams}`;
+        if (!hasAuthCookie) {
+            const response = NextResponse.redirect(
+                new URL(LINK_TO.LOGIN, baseUrl),
+            );
 
-        // 条件なしにリダイレクトパスをセット
-        const response = !hasAuthCookie
-            ? NextResponse.redirect(new URL(LINK_TO.LOGIN, baseUrl))
-            : NextResponse.next();
+            // /settings/account?token=XXXの場合のみリダイレクトパスをCookieに設定
+            if (token) {
+                const redirectPath = `${pathname}${searchParams}`;
+                response.cookies.set('redirectPath', redirectPath, {
+                    path: '/',
+                    maxAge: 3600, // 1時間有効
+                    sameSite: 'lax', // メール認証後バックエンド→フロントのリダイレクト時にも送るため
+                    secure: true,
+                });
+            }
 
-        // /settings/account?token=XXXの場合で未承認の場合のみリダイレクトパスをCookieに設定
-        if (token && !hasAuthCookie) {
-            response.cookies.set('redirectPath', redirectPath, {
-                path: '/',
-                maxAge: 3600, // 1時間有効
-                sameSite: 'lax', // メール認証後バックエンド→フロントのリダイレクト時にも送るため
-                secure: true,
-            });
+            return response;
         }
 
-        return response;
+        // ログイン済み: リクエストヘッダーを引き継いでそのまま通過
+        return forwardWithPathnameHeader(request);
     }
 
     // (auth) 配下のパス（matcher で限定）: AuthLayout から headers() で参照する
