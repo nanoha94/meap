@@ -35,7 +35,7 @@ interface Props {
 }
 
 const lineTitleWrapperStyle =
-    "relative w-full mx-auto flex justify-center after:content-[''] after:absolute after:top-1/2 after:left-0 after:translate-y-[-50%] after:block after:w-full after:h-[1px] after:bg-gray-main";
+    "relative w-full mx-auto flex justify-center after:content-[''] after:absolute after:top-1/2 after:inset-x-0 after:translate-y-[-50%] after:block after:h-[1px] after:bg-gray-main";
 
 const lineTitleStyle = 'z-10 px-5 text-xl md:text-2xl bg-primary-background';
 
@@ -234,7 +234,7 @@ const RecipeEditPage = ({
                 }
                 actionButtons={headerActionButtonConfigs}
             />
-            <main className="pb-[60px] max-w-[1200px] mx-auto">
+            <main className="pb-[60px] max-w-[1200px] mx-auto overflow-x-hidden">
                 <FormProvider {...methods}>
                     <form
                         id="recipe-edit-form"
@@ -246,7 +246,7 @@ const RecipeEditPage = ({
                         </div>
                         <div className="pt-5 px-5 md:px-10 grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-14">
                             {/* サムネイル画像 */}
-                            <div className="flex-col items-center gap-y-3 hidden md:flex">
+                            <div className="min-w-0 flex-col items-center gap-y-3 hidden md:flex">
                                 <ImageEditField control={control} name="thumbnail" />
                                 {LoadRecipeAiButton}
                                 <input
@@ -271,7 +271,7 @@ const RecipeEditPage = ({
                                             value={(value as string) ?? ''}
                                             placeholder="料理名を入力"
                                             onChange={e => onChange(e)}
-                                            className="py-2 px-4 border rounded-lg "
+                                            className="py-2 px-4 w-full min-w-0 border rounded-lg "
                                         />
                                     )}
                                 </VerticalRowField>
@@ -290,12 +290,12 @@ const RecipeEditPage = ({
                                             rows={5}
                                             placeholder="メモを入力"
                                             onChange={e => onChange(e)}
-                                            className="py-2 px-4 border rounded-lg"
+                                            className="py-2 px-4 w-full min-w-0 border rounded-lg"
                                         />
                                     )}
                                 </VerticalRowField>
                             </div>
-                            <div className="flex-1 flex flex-col gap-y-8">
+                            <div className="flex-1 flex flex-col gap-y-8 min-w-0">
                                 <div className={lineTitleWrapperStyle}>
                                     <span className={lineTitleStyle}>材料</span>
                                 </div>
@@ -305,7 +305,7 @@ const RecipeEditPage = ({
                                     name="servingCount"
                                     label="分量目安">
                                     {({ value, onChange, id }) => (
-                                        <div className="flex items-center gap-x-2">
+                                        <div className="flex items-center gap-x-2 min-w-0">
                                             <input
                                                 id={id}
                                                 type="number"
@@ -313,7 +313,7 @@ const RecipeEditPage = ({
                                                 min={1}
                                                 placeholder="分量目安を入力"
                                                 onChange={e => onChange(e)}
-                                                className="py-2 px-4 flex-1 border rounded-lg"
+                                                className="py-2 px-4 flex-1 min-w-0 border rounded-lg"
                                             />
                                             人分
                                         </div>
@@ -322,7 +322,7 @@ const RecipeEditPage = ({
                                 {/* 材料 */}
                                 <IngredientEditFields control={control} errors={errors} />
                             </div>
-                            <div className="flex-1 flex flex-col gap-y-8">
+                            <div className="flex-1 flex flex-col gap-y-8 min-w-0">
                                 <div className={lineTitleWrapperStyle}>
                                     <span className={lineTitleStyle}>作り方</span>
                                 </div>
@@ -334,15 +334,15 @@ const RecipeEditPage = ({
                                     memo="※外部に公開する際には空にしてください"
                                 >
                                     {({ value, onChange, id }) => (
-                                        <div className="flex flex-col gap-y-2">
-                                            <div className="flex items-center gap-x-2">
+                                        <div className="flex flex-col gap-y-2 min-w-0">
+                                            <div className="flex items-center gap-x-2 min-w-0">
                                                 <input
                                                     id={id}
                                                     type="text"
                                                     value={(value as string) ?? ''}
                                                     placeholder="レシピURLを入力"
                                                     onChange={e => onChange(e)}
-                                                    className="py-2 px-4 flex-1 border rounded-lg "
+                                                    className="py-2 px-4 flex-1 min-w-0 border rounded-lg "
                                                 />
                                                 <button
                                                     type="button"
