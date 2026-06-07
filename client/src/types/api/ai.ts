@@ -4,6 +4,7 @@ import { IBaseApiResponseWithData } from './common';
 // レスポンス型
 //--------------------------------
 export type IAiRecipeParseResponse = IBaseApiResponseWithData<IParsedRecipe>;
+export type IAiUsageStatusResponse = IBaseApiResponseWithData<IAiUsageStatus>;
 
 //--------------------------------
 // データ型
@@ -24,4 +25,11 @@ export interface IParsedRecipe {
     servingCount: number | null;
     ingredients: IParsedRecipeIngredient[];
     steps: IParsedRecipeStep[];
+}
+
+export interface IAiUsageStatus {
+    plan: string;
+    usageCount: number;
+    usageLimit: number;
+    resetsAt: string | null;
 }

@@ -3,7 +3,7 @@
 import React from 'react';
 
 import { TIMEOUT_MS } from '@/constants';
-import { useApiErrorHandler, useSnackbars } from '@/hooks';
+import { useAiUsageApi, useApiErrorHandler, useSnackbars } from '@/hooks';
 import axios from '@/lib/axios';
 import { useGlobalStore } from '@/stores';
 import { IAiRecipeParseResponse, IParsedRecipe } from '@/types';
@@ -12,10 +12,6 @@ import { IAiRecipeParseResponse, IParsedRecipe } from '@/types';
  * @name useRecipeAiApi
  * @returns useRecipeAiApi
  * @description 画像からレシピ情報を AI 解析する
- * @example
- * const { parseRecipeFromImage } = useRecipeAiApi();
- * const recipe = await parseRecipeFromImage(file);
- * console.log(recipe);
  */
 export const useRecipeAiApi = () => {
     const incrementLoadingCount = useGlobalStore(
@@ -26,6 +22,13 @@ export const useRecipeAiApi = () => {
     );
     const { addSnackbar } = useSnackbars();
     const { handleApiError } = useApiErrorHandler();
+    const {
+        aiUsageStatus,
+        isAiLimitReached,
+        incrementUsageCount,
+    } = useAiUsageApi();
+
+    // 重複リクエスト防止用のフラグ
     const isParseRequestRef = React.useRef(false);
 
     /**
@@ -59,6 +62,7 @@ export const useRecipeAiApi = () => {
                         responseData.message ||
                         '画像からレシピ情報を読み取りました。',
                     );
+                    incrementUsageCount();
                     return responseData.data;
                 }
 
@@ -81,10 +85,13 @@ export const useRecipeAiApi = () => {
             decrementLoadingCount,
             addSnackbar,
             handleApiError,
+            incrementUsageCount,
         ],
     );
 
     return {
         parseRecipeFromImage,
+        isAiLimitReached,
+        aiUsageStatus,
     };
 };

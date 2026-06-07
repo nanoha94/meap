@@ -51,7 +51,7 @@ const RecipeEditPage = ({
     const { addSnackbar } = useSnackbars();
     const { openAlertDialog } = useAlertDialog();
     const { deleteRecipe } = useRecipeApi();
-    const { parseRecipeFromImage } = useRecipeAiApi();
+    const { parseRecipeFromImage, isAiLimitReached, aiUsageStatus } = useRecipeAiApi();
     const { convertToFormData, applyParsedRecipeToForm } = useRecipeAiImport();
     const {
         control,
@@ -67,6 +67,26 @@ const RecipeEditPage = ({
     const router = useRouter();
     const aiImportFileInputRef = React.useRef<HTMLInputElement>(null);
     useNavigationGuard(!isDisabledSendButton);
+
+    const LoadRecipeAiButton = React.useMemo(() => (
+        <div className='w-full flex flex-col gap-y-1'>
+            <TextButton
+                type={BUTTON_TYPE.BUTTON}
+                colorVariant={COLOR_VARIANT.SECONDARY}
+                className="w-full justify-center"
+                disabled={isAiLimitReached}
+                onClick={() => aiImportFileInputRef.current?.click()}>
+                <Brain size={20} strokeWidth={2} />
+                <span className='mb-1'>[AI] 画像からレシピを読み込む</span>
+            </TextButton>
+            {isAiLimitReached && aiUsageStatus ? (
+                <p className="ml-auto text-sm text-alert-main text-right">
+                    ※AI利用回数の上限に達しました（{aiUsageStatus?.usageCount}/{aiUsageStatus?.usageLimit}回）
+                </p>
+            ) : null
+            }
+        </div>
+    ), [isAiLimitReached, aiUsageStatus]);
 
     /**
      * AI 読み込みで上書きされる項目に入力済みの内容があるか判定する
@@ -228,14 +248,7 @@ const RecipeEditPage = ({
                             {/* サムネイル画像 */}
                             <div className="flex-col items-center gap-y-3 hidden md:flex">
                                 <ImageEditField control={control} name="thumbnail" />
-                                <TextButton
-                                    type={BUTTON_TYPE.BUTTON}
-                                    colorVariant={COLOR_VARIANT.SECONDARY}
-                                    className="w-full justify-center"
-                                    onClick={() => aiImportFileInputRef.current?.click()}>
-                                    <Brain size={20} strokeWidth={2} />
-                                    <span className='mb-1'>[AI] 画像からレシピを読み込む</span>
-                                </TextButton>
+                                {LoadRecipeAiButton}
                                 <input
                                     ref={aiImportFileInputRef}
                                     type="file"
@@ -245,14 +258,7 @@ const RecipeEditPage = ({
                                 />
                             </div>
                             <div className="flex-1 flex flex-col gap-y-8">
-                                <TextButton
-                                    type={BUTTON_TYPE.BUTTON}
-                                    colorVariant={COLOR_VARIANT.SECONDARY}
-                                    className="w-full justify-center md:hidden"
-                                    onClick={() => aiImportFileInputRef.current?.click()}>
-                                    <Brain size={20} strokeWidth={2} />
-                                    <span className='mb-1'>[AI] 画像からレシピを読み込む</span>
-                                </TextButton>
+                                <div className="md:hidden">{LoadRecipeAiButton}</div>
                                 {/* 料理名 */}
                                 <VerticalRowField
                                     control={control}
