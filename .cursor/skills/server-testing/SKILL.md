@@ -98,8 +98,11 @@ server/tests/
 
 \`\`\`bash
 cd server
-./tests/sh/{XX}_run_{category}_tests.sh
+./vendor/bin/sail test tests/Feature/{Category}/{Name}Test.php --stop-on-failure
 \`\`\`
+
+- `{Category}` は `Traits` / `Auth` / `Api` / `Services` のいずれか（`server/tests/Feature/` 配下のディレクトリ名）
+- `{Name}` は仕様書ファイル名の `{コントローラー名}` 部分と一致させる（例: `07_RecipeController` → `RecipeControllerTest.php`）
 ```
 
 ## テストコード（*Test.php）の書式
@@ -209,11 +212,14 @@ $response->assertHeader('Content-Type', 'application/json');
 
 ```bash
 cd server
+
+# 個別ファイル実行（TEST_SPECIFICATIONS.md の「テスト実行方法」と同じ形式）
+./vendor/bin/sail test tests/Feature/Api/RecipeControllerTest.php --stop-on-failure
+
+# カテゴリ一括実行（任意）
 ./tests/sh/00_run_all_tests.sh          # 全テスト
 ./tests/sh/01_run_traits_tests.sh       # Traits テスト
 ./tests/sh/02_run_auth_tests.sh         # Auth テスト
 ./tests/sh/03_run_api_tests.sh          # API テスト
-
-# 個別ファイル実行
-./vendor/bin/sail test tests/Feature/Api/RecipeControllerTest.php --stop-on-failure
+./tests/sh/04_run_services_tests.sh     # Services テスト
 ```

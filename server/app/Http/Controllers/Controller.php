@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Api\BaseApiRequest;
 use App\Traits\ExceptionHandlerTrait;
 use Exception;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,7 +18,7 @@ abstract class Controller
      * 例外処理をラップして実行
      * 
      * @param callable $callback 実行する処理
-     * @param Request $request リクエストオブジェクト
+     * @param Request|FormRequest|BaseApiRequest $request リクエストオブジェクト
      * @param string $defaultMessage デフォルトエラーメッセージ
      * @param string $operation 操作名
      * @param array $additionalContext 追加のコンテキスト情報
@@ -24,7 +26,7 @@ abstract class Controller
      */
     protected function executeWithExceptionHandling(
         callable $callback,
-        Request $request,
+        Request|FormRequest|BaseApiRequest $request,
         string $defaultMessage,
         string $operation,
         array $additionalContext = []

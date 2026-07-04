@@ -325,22 +325,6 @@ class ImageService
     }
 
     /**
-     * 指定ディレクトリ配下の Image 行を削除し、storage 上のディレクトリを削除
-     *
-     * @param string $relativeDir storage public 基準。例: images/groups/{id}, images/users/{id}
-     * @param string $operation logWarning 用の操作名（翻訳済み）
-     */
-    private function purgeImagesUnder(string $relativeDir, string $operation): void
-    {
-        Image::where('src', 'like', '%' . $relativeDir . '/%')->delete();
-        if (!$this->deleteImageDirectory($relativeDir)) {
-            $this->logWarning(__METHOD__, $operation, __('api.image.file_delete_failed'), [
-                'directory' => $relativeDir,
-            ]);
-        }
-    }
-
-    /**
      * 画像情報をフォーマット
      */
     public function formatImage(?Image $image): ?array
@@ -378,6 +362,22 @@ class ImageService
             ->filter(fn($file) => $file && $file->isValid())
             ->values()
             ->toArray();
+    }
+
+    /**
+     * 指定ディレクトリ配下の Image 行を削除し、storage 上のディレクトリを削除
+     *
+     * @param string $relativeDir storage public 基準。例: images/groups/{id}, images/users/{id}
+     * @param string $operation logWarning 用の操作名（翻訳済み）
+     */
+    private function purgeImagesUnder(string $relativeDir, string $operation): void
+    {
+        Image::where('src', 'like', '%' . $relativeDir . '/%')->delete();
+        if (!$this->deleteImageDirectory($relativeDir)) {
+            $this->logWarning(__METHOD__, $operation, __('api.image.file_delete_failed'), [
+                'directory' => $relativeDir,
+            ]);
+        }
     }
 
     /**

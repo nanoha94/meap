@@ -58,7 +58,7 @@ function postAiRecipeParse($test, User $user, ?UploadedFile $file = null, bool $
 
 // ===== parse() メソッドのテストケース =====
 
-test('3-12-1: 【AIレシピ画像解析】 正常に画像を解析できる', function () {
+test('3-13-1: 【AIレシピ画像解析】 正常に画像を解析できる', function () {
     $this->mock(AiRecipeParserInterface::class, function ($mock) {
         $mock->shouldReceive('parseImage')
             ->once()
@@ -89,10 +89,10 @@ test('3-12-1: 【AIレシピ画像解析】 正常に画像を解析できる', 
     ]);
 
     $this->group->refresh();
-    expect($this->group->ai_usage_count)->toBe(1);
+    expect($this->group->ai_monthly_remaining)->toBe(2);
 });
 
-test('3-12-2: 【AIレシピ画像解析】 未認証', function () {
+test('3-13-2: 【AIレシピ画像解析】 未認証', function () {
     $response = $this->post('/ai/recipes/parse', [
         'image' => UploadedFile::fake()->image('recipe.jpg'),
     ]);
@@ -101,7 +101,7 @@ test('3-12-2: 【AIレシピ画像解析】 未認証', function () {
     $response->assertJson(['success' => false, 'message' => '認証が必要です。']);
 });
 
-test('3-12-3: 【AIレシピ画像解析】 バリデーションエラー（image 未指定）', function () {
+test('3-13-3: 【AIレシピ画像解析】 バリデーションエラー（image 未指定）', function () {
     $response = postAiRecipeParse($this, $this->user, withoutImage: true);
 
     $response->assertStatus(422);
@@ -111,7 +111,7 @@ test('3-12-3: 【AIレシピ画像解析】 バリデーションエラー（ima
     expect($responseData['errors']['image'])->toContain('imageは必ず指定してください。');
 });
 
-test('3-12-4: 【AIレシピ画像解析】 バリデーションエラー（image が画像ファイルでない）', function () {
+test('3-13-4: 【AIレシピ画像解析】 バリデーションエラー（image が画像ファイルでない）', function () {
     $file = UploadedFile::fake()->create('recipe.pdf', 100, 'application/pdf');
 
     $response = postAiRecipeParse($this, $this->user, $file);
@@ -123,7 +123,7 @@ test('3-12-4: 【AIレシピ画像解析】 バリデーションエラー（ima
     expect($responseData['errors']['image'])->toContain('imageには画像ファイルを指定してください。');
 });
 
-test('3-12-5: 【AIレシピ画像解析】 バリデーションエラー（image の MIME 形式不正）', function () {
+test('3-13-5: 【AIレシピ画像解析】 バリデーションエラー（image の MIME 形式不正）', function () {
     $file = UploadedFile::fake()->create('recipe.gif', 100, 'image/gif');
 
     $response = postAiRecipeParse($this, $this->user, $file);
@@ -135,7 +135,7 @@ test('3-12-5: 【AIレシピ画像解析】 バリデーションエラー（ima
     expect($responseData['errors']['image'])->toContain('imageにはjpeg,png,webpタイプのファイルを指定してください。');
 });
 
-test('3-12-6: 【AIレシピ画像解析】 バリデーションエラー（image のファイルサイズ超過）', function () {
+test('3-13-6: 【AIレシピ画像解析】 バリデーションエラー（image のファイルサイズ超過）', function () {
     $file = UploadedFile::fake()->create('large.jpg', 11000);
 
     $response = postAiRecipeParse($this, $this->user, $file);
@@ -147,7 +147,7 @@ test('3-12-6: 【AIレシピ画像解析】 バリデーションエラー（ima
     expect($responseData['errors']['image'])->toContain('imageには、10240 kb以下のファイルを指定してください。');
 });
 
-test('3-12-7: 【AIレシピ画像解析】 グループに所属していない', function () {
+test('3-13-7: 【AIレシピ画像解析】 グループに所属していない', function () {
     $user = User::factory()->create([
         'email_verified_at' => now(),
     ]);
@@ -161,10 +161,11 @@ test('3-12-7: 【AIレシピ画像解析】 グループに所属していない
     ]);
 });
 
-test('3-12-8: 【AIレシピ画像解析】 月次利用上限超過', function () {
+test('3-13-8: 【AIレシピ画像解析】 月次利用上限超過', function () {
     $this->group->update([
         'plan' => GroupPlan::FREE,
-        'ai_usage_count' => 3,
+        'ai_monthly_remaining' => 0,
+        'ai_pack_remaining' => 0,
         'ai_usage_reset_at' => now()->addMonth(),
     ]);
 
@@ -178,7 +179,7 @@ test('3-12-8: 【AIレシピ画像解析】 月次利用上限超過', function 
     ]);
 });
 
-test('3-12-9: 【AIレシピ画像解析】 AI 解析失敗時に利用回数が返却される', function () {
+test('3-13-9: 【AIレシピ画像解析】 AI 解析失敗時に利用回数が返却される', function () {
     $this->mock(AiRecipeParserInterface::class, function ($mock) {
         $mock->shouldReceive('parseImage')
             ->once()
@@ -190,10 +191,10 @@ test('3-12-9: 【AIレシピ画像解析】 AI 解析失敗時に利用回数が
     $response->assertStatus(502);
 
     $this->group->refresh();
-    expect($this->group->ai_usage_count)->toBe(0);
+    expect($this->group->ai_monthly_remaining)->toBe(3);
 });
 
-test('3-12-10: 【AIレシピ画像解析】 短時間の連続リクエストでレート制限', function () {
+test('3-13-10: 【AIレシピ画像解析】 短時間の連続リクエストでレート制限', function () {
     config(['ai.rate_limit_per_minute' => 2]);
 
     $this->mock(AiRecipeParserInterface::class, function ($mock) {

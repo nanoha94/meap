@@ -97,5 +97,5 @@ ShoppingItemController のテストケースの詳細仕様を示します。買
 
 ```bash
 cd server
-./tests/sh/03_run_api_tests.sh
+./vendor/bin/sail test tests/Feature/Api/ShoppingItemControllerTest.php --stop-on-failure
 ```

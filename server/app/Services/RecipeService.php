@@ -357,23 +357,6 @@ class RecipeService extends AbstractDomainService
     }
 
     /**
-     * レシピの手順情報をフォーマット
-     */
-    private function formatRecipeSteps(Collection $steps): array
-    {
-        // 型チェック
-        $this->typeCheck($steps, Collection::class);
-        $this->typeCheckCollection($steps, RecipeStep::class);
-
-        return $steps->map(fn($item) => [
-            'id' => $item->id,
-            'instruction' => $item->instruction,
-            'image' => $this->imageService->formatImage($item->images->first()),
-            'order' => $item->order,
-        ])->toArray();
-    }
-
-    /**
      * レシピのカテゴリー情報をフォーマット
      */
     public function formatRecipeCategories(Collection $categories): array
@@ -444,6 +427,23 @@ class RecipeService extends AbstractDomainService
             ->toArray();
 
         return $result;
+    }
+
+    /**
+     * レシピの手順情報をフォーマット
+     */
+    private function formatRecipeSteps(Collection $steps): array
+    {
+        // 型チェック
+        $this->typeCheck($steps, Collection::class);
+        $this->typeCheckCollection($steps, RecipeStep::class);
+
+        return $steps->map(fn($item) => [
+            'id' => $item->id,
+            'instruction' => $item->instruction,
+            'image' => $this->imageService->formatImage($item->images->first()),
+            'order' => $item->order,
+        ])->toArray();
     }
 
     /**

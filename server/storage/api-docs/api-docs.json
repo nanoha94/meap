@@ -84,6 +84,185 @@
                 ]
             }
         },
+        "/billing/subscribe/{subscriptionType}": {
+            "post": {
+                "tags": [
+                    "Billing"
+                ],
+                "summary": "サブスクリプション開始（Stripe Checkout）",
+                "operationId": "80b628423d85476e645bbb0d2d46ad0f",
+                "parameters": [
+                    {
+                        "name": "subscriptionType",
+                        "in": "path",
+                        "description": "サブスクリプション種別",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "standard"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/BillingCheckoutSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationErrors"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/billing/portal": {
+            "post": {
+                "tags": [
+                    "Billing"
+                ],
+                "summary": "Stripe Customer Portal セッション作成",
+                "operationId": "403d87d9cabba8a98d943b54dac32b5a",
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/BillingPortalSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationErrors"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/billing/packs/{packType}": {
+            "post": {
+                "tags": [
+                    "Billing"
+                ],
+                "summary": "買い切りパック購入（Stripe Checkout）",
+                "operationId": "d10b5968ff09636048928870d55c5529",
+                "parameters": [
+                    {
+                        "name": "packType",
+                        "in": "path",
+                        "description": "パック種別",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "light",
+                                "value"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/BillingCheckoutSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationErrors"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/billing/subscription/resume": {
+            "post": {
+                "tags": [
+                    "Billing"
+                ],
+                "summary": "予定されているプラン変更を取り消してサブスクリプションを継続",
+                "operationId": "e7832d6e45497815e04f2520e36e76d2",
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/BillingResumeSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationErrors"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/billing/status": {
+            "get": {
+                "tags": [
+                    "Billing"
+                ],
+                "summary": "課金・サブスクリプション状態を取得",
+                "operationId": "9fcec735f222406430c24626a5647bcc",
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/BillingStatusSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationErrors"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/billing/invoices": {
+            "get": {
+                "tags": [
+                    "Billing"
+                ],
+                "summary": "請求履歴と次回お支払い予定を取得",
+                "operationId": "4bbd4b060143f401dc23e31595144285",
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/BillingInvoicesSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationErrors"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/images/upload-bulk": {
             "post": {
                 "tags": [
@@ -1535,7 +1714,6 @@
             "ParsedRecipe": {
                 "required": [
                     "name",
-                    "url",
                     "ingredients",
                     "steps"
                 ],
@@ -1550,11 +1728,6 @@
                         "type": "integer",
                         "example": 4,
                         "nullable": true
-                    },
-                    "url": {
-                        "description": "URL",
-                        "type": "string",
-                        "example": ""
                     },
                     "ingredients": {
                         "description": "材料一覧",
@@ -1576,8 +1749,9 @@
             "AiUsageStatus": {
                 "required": [
                     "plan",
-                    "usageCount",
-                    "usageLimit",
+                    "monthlyRemaining",
+                    "monthlyLimit",
+                    "packRemaining",
                     "resetsAt"
                 ],
                 "properties": {
@@ -1586,21 +1760,48 @@
                         "type": "string",
                         "example": "free"
                     },
-                    "usageCount": {
-                        "description": "現在のAI利用回数",
+                    "monthlyRemaining": {
+                        "description": "月間枠の残り回数",
                         "type": "integer",
-                        "example": 1
+                        "example": 2
                     },
-                    "usageLimit": {
-                        "description": "現在の料金プランのAI利用上限",
+                    "monthlyLimit": {
+                        "description": "月間枠の上限回数",
                         "type": "integer",
                         "example": 3
                     },
+                    "packRemaining": {
+                        "description": "買い切りパックの残り回数",
+                        "type": "integer",
+                        "example": 0
+                    },
                     "resetsAt": {
-                        "description": "次回リセット日時",
+                        "description": "次回リセット日時（フリー: 月次、有料: Stripe 課金周期）",
                         "type": "string",
                         "format": "date-time",
-                        "example": "2025-05-15T00:00:00+09:00"
+                        "example": "2025-05-15T00:00:00+09:00",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "AiUsageStatusResponse": {
+                "required": [
+                    "success",
+                    "message",
+                    "data"
+                ],
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "AI利用状況を取得しました。"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/AiUsageStatus"
                     }
                 },
                 "type": "object"
@@ -1656,6 +1857,353 @@
                         "type": "string",
                         "format": "password",
                         "example": "password"
+                    }
+                },
+                "type": "object"
+            },
+            "BillingCheckoutData": {
+                "required": [
+                    "checkoutUrl"
+                ],
+                "properties": {
+                    "checkoutUrl": {
+                        "description": "Stripe Checkout URL",
+                        "type": "string",
+                        "example": "https://checkout.stripe.com/c/pay/cs_test_xxx"
+                    }
+                },
+                "type": "object"
+            },
+            "BillingPortalData": {
+                "required": [
+                    "portalUrl"
+                ],
+                "properties": {
+                    "portalUrl": {
+                        "description": "Stripe Customer Portal URL",
+                        "type": "string",
+                        "example": "https://billing.stripe.com/p/session/test_xxx"
+                    }
+                },
+                "type": "object"
+            },
+            "BillingInvoiceLine": {
+                "required": [
+                    "description",
+                    "quantity",
+                    "amount"
+                ],
+                "properties": {
+                    "description": {
+                        "description": "明細の説明",
+                        "type": "string",
+                        "example": "Standard Plan",
+                        "nullable": true
+                    },
+                    "quantity": {
+                        "description": "数量",
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
+                    },
+                    "amount": {
+                        "description": "金額（最小通貨単位）",
+                        "type": "integer",
+                        "example": 580
+                    }
+                },
+                "type": "object"
+            },
+            "BillingUpcomingInvoice": {
+                "required": [
+                    "date",
+                    "lines",
+                    "subtotal",
+                    "tax",
+                    "total",
+                    "amountDue"
+                ],
+                "properties": {
+                    "date": {
+                        "description": "請求予定日",
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "lines": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/BillingInvoiceLine"
+                        }
+                    },
+                    "subtotal": {
+                        "description": "小計（最小通貨単位）",
+                        "type": "integer",
+                        "example": 580
+                    },
+                    "tax": {
+                        "description": "税額（最小通貨単位）",
+                        "type": "integer",
+                        "example": 0
+                    },
+                    "total": {
+                        "description": "合計（最小通貨単位）",
+                        "type": "integer",
+                        "example": 580
+                    },
+                    "amountDue": {
+                        "description": "支払予定額（最小通貨単位）",
+                        "type": "integer",
+                        "example": 580
+                    }
+                },
+                "type": "object"
+            },
+            "BillingPastInvoice": {
+                "required": [
+                    "id",
+                    "date",
+                    "total",
+                    "invoiceUrl"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "Stripe Invoice ID",
+                        "type": "string",
+                        "example": "in_1ABC123"
+                    },
+                    "date": {
+                        "description": "請求日",
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "total": {
+                        "description": "合計（最小通貨単位）",
+                        "type": "integer",
+                        "example": 580
+                    },
+                    "invoiceUrl": {
+                        "description": "請求書URL",
+                        "type": "string",
+                        "example": "https://invoice.stripe.com/i/acct_xxx/test_xxx",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "BillingInvoices": {
+                "required": [
+                    "upcomingInvoice",
+                    "pastInvoices"
+                ],
+                "properties": {
+                    "upcomingInvoice": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/BillingUpcomingInvoice"
+                            }
+                        ],
+                        "nullable": true
+                    },
+                    "pastInvoices": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/BillingPastInvoice"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "PendingPlanChange": {
+                "required": [
+                    "nextPlan",
+                    "changesAt"
+                ],
+                "properties": {
+                    "nextPlan": {
+                        "description": "変更先プラン",
+                        "type": "string",
+                        "example": "free"
+                    },
+                    "changesAt": {
+                        "description": "プラン変更予定日時",
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "BillingStatus": {
+                "required": [
+                    "plan",
+                    "isSubscribed",
+                    "subscriptionStatus",
+                    "subscriptionEndsAt",
+                    "pendingPlanChange",
+                    "pmType",
+                    "pmLastFour",
+                    "pmExpMonth",
+                    "pmExpYear"
+                ],
+                "properties": {
+                    "plan": {
+                        "description": "現在の料金プラン",
+                        "type": "string",
+                        "example": "free"
+                    },
+                    "isSubscribed": {
+                        "description": "有効なサブスクリプションがあるか",
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "subscriptionStatus": {
+                        "description": "Stripe サブスクリプション状態",
+                        "type": "string",
+                        "example": "active",
+                        "nullable": true
+                    },
+                    "subscriptionEndsAt": {
+                        "description": "サブスクリプション終了日時",
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "pendingPlanChange": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/PendingPlanChange"
+                            }
+                        ],
+                        "nullable": true,
+                        "description": "予定されているプラン変更（解約予定など）"
+                    },
+                    "pmType": {
+                        "description": "登録済み支払い方法の種類",
+                        "type": "string",
+                        "example": "card",
+                        "nullable": true
+                    },
+                    "pmLastFour": {
+                        "description": "登録済み支払い方法の下4桁",
+                        "type": "string",
+                        "example": "4242",
+                        "nullable": true
+                    },
+                    "pmExpMonth": {
+                        "description": "登録済み支払い方法の有効期限（月）",
+                        "type": "integer",
+                        "example": 12,
+                        "nullable": true
+                    },
+                    "pmExpYear": {
+                        "description": "登録済み支払い方法の有効期限（年）",
+                        "type": "integer",
+                        "example": 2028,
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "BillingCheckoutResponse": {
+                "required": [
+                    "success",
+                    "message",
+                    "data"
+                ],
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Stripe Checkout セッションを作成しました。"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/BillingCheckoutData"
+                    }
+                },
+                "type": "object"
+            },
+            "BillingPortalResponse": {
+                "required": [
+                    "success",
+                    "message",
+                    "data"
+                ],
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Stripe Customer Portal セッションを作成しました。"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/BillingPortalData"
+                    }
+                },
+                "type": "object"
+            },
+            "BillingInvoicesResponse": {
+                "required": [
+                    "success",
+                    "message",
+                    "data"
+                ],
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "請求履歴を取得しました。"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/BillingInvoices"
+                    }
+                },
+                "type": "object"
+            },
+            "BillingStatusResponse": {
+                "required": [
+                    "success",
+                    "message",
+                    "data"
+                ],
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "課金・サブスクリプション状態を取得しました。"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/BillingStatus"
+                    }
+                },
+                "type": "object"
+            },
+            "BillingResumeResponse": {
+                "required": [
+                    "success",
+                    "message",
+                    "data"
+                ],
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "プラン変更予定を取り消しました。"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/BillingStatus"
                     }
                 },
                 "type": "object"
@@ -3491,25 +4039,7 @@
                 "content": {
                     "application/json": {
                         "schema": {
-                            "required": [
-                                "success",
-                                "message",
-                                "data"
-                            ],
-                            "properties": {
-                                "success": {
-                                    "type": "boolean",
-                                    "example": true
-                                },
-                                "message": {
-                                    "type": "string",
-                                    "example": "AI利用状況を取得しました。"
-                                },
-                                "data": {
-                                    "$ref": "#/components/schemas/AiUsageStatus"
-                                }
-                            },
-                            "type": "object"
+                            "$ref": "#/components/schemas/AiUsageStatusResponse"
                         }
                     }
                 }
@@ -3606,6 +4136,56 @@
                                 }
                             },
                             "type": "object"
+                        }
+                    }
+                }
+            },
+            "BillingCheckoutSuccess": {
+                "description": "Stripe Checkout セッションを作成しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/BillingCheckoutResponse"
+                        }
+                    }
+                }
+            },
+            "BillingPortalSuccess": {
+                "description": "Stripe Customer Portal セッションを作成しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/BillingPortalResponse"
+                        }
+                    }
+                }
+            },
+            "BillingInvoicesSuccess": {
+                "description": "請求履歴を取得しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/BillingInvoicesResponse"
+                        }
+                    }
+                }
+            },
+            "BillingStatusSuccess": {
+                "description": "課金・サブスクリプション状態を取得しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/BillingStatusResponse"
+                        }
+                    }
+                }
+            },
+            "BillingResumeSuccess": {
+                "description": "プラン変更予定を取り消しました。",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/BillingResumeResponse"
                         }
                     }
                 }
@@ -4850,6 +5430,10 @@
         {
             "name": "AI",
             "description": "AI機能関連のAPI"
+        },
+        {
+            "name": "Billing",
+            "description": "課金・サブスクリプション関連のAPI"
         },
         {
             "name": "Master",

@@ -213,5 +213,5 @@ RecipeController のテストケースの詳細仕様を示します。料理の
 
 ```bash
 cd server
-./tests/sh/03_run_api_tests.sh
+./vendor/bin/sail test tests/Feature/Api/RecipeControllerTest.php --stop-on-failure
 ```

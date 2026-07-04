@@ -8,7 +8,7 @@ import { IMealCategory, IMealPlan } from "@/types";
 
 import MealCategoryCard from "./MealCategoryCard";
 
-export type DayMealPlanSectionProps = {
+interface Props {
     date: Dayjs;
     mealPlan: IMealPlan | undefined;
     mealCategories: IMealCategory[];
@@ -34,7 +34,7 @@ const DayMealPlanSection = ({
     handleChange,
     handleSelectAll,
     handleUnselectAll,
-}: DayMealPlanSectionProps) => {
+}: Props) => {
     if (!mealPlan) {
         return (
             <div className="px-3 flex flex-col gap-y-3">

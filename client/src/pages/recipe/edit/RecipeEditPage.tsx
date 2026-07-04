@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Controller, FormProvider } from 'react-hook-form';
 
 import {
+    AiUsageLimitUpsell,
     Header,
     HeaderTextButton,
     ImageEditField,
@@ -26,7 +27,9 @@ import {
     useRecipeEditForm,
 } from '@/models/recipe';
 import { useUserStore } from '@/models/user';
+import { useAiUsageStore } from '@/stores';
 import { ActionButton, IRecipe } from '@/types';
+import { isAiLimitReached as isAiLimitReachedUtil } from '@/utils';
 
 
 interface Props {
@@ -46,12 +49,13 @@ const RecipeEditPage = ({
     // store
     const loginUser = useUserStore(state => state.loginUser);
     const users = useUserStore(state => state.users);
+    const aiUsageStatus = useAiUsageStore(state => state.aiUsageStatus);
 
     // hook
     const { addSnackbar } = useSnackbars();
     const { openAlertDialog } = useAlertDialog();
     const { deleteRecipe } = useRecipeApi();
-    const { parseRecipeFromImage, isAiLimitReached, aiUsageStatus } = useRecipeAiApi();
+    const { parseRecipeFromImage } = useRecipeAiApi();
     const { convertToFormData, applyParsedRecipeToForm } = useRecipeAiImport();
     const {
         control,
@@ -68,6 +72,8 @@ const RecipeEditPage = ({
     const aiImportFileInputRef = React.useRef<HTMLInputElement>(null);
     useNavigationGuard(!isDisabledSendButton);
 
+    const isAiLimitReached = isAiLimitReachedUtil(aiUsageStatus);
+
     const LoadRecipeAiButton = React.useMemo(() => (
         <div className='w-full flex flex-col gap-y-1'>
             <TextButton
@@ -79,12 +85,18 @@ const RecipeEditPage = ({
                 <Brain size={20} strokeWidth={2} />
                 <span className='mb-1'>[AI] 画像からレシピを読み込む</span>
             </TextButton>
-            {isAiLimitReached && aiUsageStatus ? (
-                <p className="ml-auto text-sm text-alert-main text-right">
-                    ※AI利用回数の上限に達しました（{aiUsageStatus?.usageCount}/{aiUsageStatus?.usageLimit}回）
+            {isAiLimitReached ? (
+                <AiUsageLimitUpsell />
+            ) : aiUsageStatus && (
+                <p className="ml-auto flex flex-wrap justify-end text-sm text-alert-main">
+                    <span>※AI利用回数</span>
+                    <span>（月間残り{aiUsageStatus.monthlyRemaining}/{aiUsageStatus.monthlyLimit}回
+                        {aiUsageStatus.packRemaining >= 0
+                            ? `、買い切り残り ${aiUsageStatus.packRemaining} 回`
+                            : ''}）
+                    </span>
                 </p>
-            ) : null
-            }
+            )}
         </div>
     ), [isAiLimitReached, aiUsageStatus]);
 

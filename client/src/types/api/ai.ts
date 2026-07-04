@@ -29,7 +29,8 @@ export interface IParsedRecipe {
 
 export interface IAiUsageStatus {
     plan: string;
-    usageCount: number;
-    usageLimit: number;
+    monthlyRemaining: number;
+    monthlyLimit: number;
+    packRemaining: number;
     resetsAt: string | null;
 }

@@ -45,5 +45,5 @@
 
 ```bash
 cd server
-./tests/sh/02_run_auth_tests.sh
+./vendor/bin/sail test tests/Feature/Auth/RegisteredUserControllerTest.php --stop-on-failure
 ```

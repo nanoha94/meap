@@ -33,5 +33,5 @@ Auth 関連のコントローラーテストファイル群で実装されてい
 
 ```bash
 cd server
-./tests/sh/02_run_auth_tests.sh
+./vendor/bin/sail test tests/Feature/Auth/AuthenticatedSessionControllerTest.php --stop-on-failure
 ```

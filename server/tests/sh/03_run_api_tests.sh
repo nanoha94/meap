@@ -105,6 +105,20 @@ echo "実行中: AiUsageControllerTest.php"
 
 echo ""
 echo "=========================================="
+echo "📖 詳細ドキュメント: tests/docs/03_Api/15_BillingController_TEST_SPECIFICATIONS.md"
+echo ""
+echo "実行中: BillingControllerTest.php"
+./vendor/bin/sail test tests/Feature/Api/BillingControllerTest.php --stop-on-failure
+
+echo ""
+echo "=========================================="
+echo "📖 詳細ドキュメント: tests/docs/03_Api/16_MasterController_TEST_SPECIFICATIONS.md"
+echo ""
+echo "実行中: MasterControllerTest.php"
+./vendor/bin/sail test tests/Feature/Api/MasterControllerTest.php --stop-on-failure
+
+echo ""
+echo "=========================================="
 echo "📋 APIテスト結果確認:"
 echo "=========================================="
 

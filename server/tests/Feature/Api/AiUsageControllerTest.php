@@ -28,7 +28,7 @@ beforeEach(function () {
 
 // ===== show() メソッドのテストケース =====
 
-test('3-13-1: 【AI利用状況取得】 正常に利用状況を取得できる', function () {
+test('3-14-1: 【AI利用状況取得】 正常に利用状況を取得できる', function () {
     $response = $this->actingAs($this->user)->get('/ai/usage');
 
     $response->assertStatus(200);
@@ -41,35 +41,38 @@ test('3-13-1: 【AI利用状況取得】 正常に利用状況を取得できる
         'message',
         'data' => [
             'plan',
-            'usageCount',
-            'usageLimit',
+            'monthlyRemaining',
+            'monthlyLimit',
+            'packRemaining',
             'resetsAt',
         ],
     ]);
 
-    expect($response->json('data.usageCount'))->toBe(0);
-    expect($response->json('data.usageLimit'))->toBe(3);
+    expect($response->json('data.monthlyRemaining'))->toBe(3);
+    expect($response->json('data.monthlyLimit'))->toBe(3);
+    expect($response->json('data.packRemaining'))->toBe(0);
+    expect($response->json('data.resetsAt'))->not->toBeNull();
 });
 
-test('3-13-2: 【AI利用状況取得】 リセット待ちの古い利用回数を同期して返す', function () {
+test('3-14-2: 【AI利用状況取得】 リセット待ちのフリー枠を同期して返す', function () {
     $resetAt = now()->copy()->subMonths(2)->startOfDay();
 
     $this->group->update([
-        'ai_usage_count' => 3,
+        'ai_monthly_remaining' => 0,
         'ai_usage_reset_at' => $resetAt,
     ]);
 
     $response = $this->actingAs($this->user)->get('/ai/usage');
 
     $response->assertStatus(200);
-    expect($response->json('data.usageCount'))->toBe(0);
+    expect($response->json('data.monthlyRemaining'))->toBe(3);
     expect($response->json('data.resetsAt'))->not->toBeNull();
 
     $this->group->refresh();
-    expect($this->group->ai_usage_count)->toBe(0);
+    expect($this->group->ai_monthly_remaining)->toBe(3);
 });
 
-test('3-13-3: 【AI利用状況取得】 未認証', function () {
+test('3-14-3: 【AI利用状況取得】 未認証', function () {
     $response = $this->get('/ai/usage');
 
     $response->assertStatus(401);

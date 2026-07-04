@@ -333,13 +333,13 @@ const Page = () => {
                         </p>
                         <div className="p-4 bg-white rounded-md shadow-card">
                             <dl className="grid grid-cols-[120px_1fr] items-start gap-x-3 gap-y-1">
-                                <dt className="font-semibold">屋号</dt>
+                                <dt className="font-bold">屋号</dt>
                                 <dd className="font-mono">nanoha code</dd>
-                                <dt className="font-semibold">住所</dt>
+                                <dt className="font-bold">住所</dt>
                                 <dd className="font-mono">
                                     〒980-0021 宮城県仙台市青葉区中央4丁目8-17 小林ビル1階
                                 </dd>
-                                <dt className="font-semibold">メールアドレス</dt>
+                                <dt className="font-bold">メールアドレス</dt>
                                 <dd className="font-mono">
                                     {/* TODO: サポート用メールアドレスを記載 */}
                                     meap.support@example.com

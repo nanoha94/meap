@@ -195,7 +195,7 @@ const Home = () => {
                     className="flex justify-center px-4 pb-16 pt-12 sm:px-6 sm:pb-24 sm:pt-16"
                     aria-labelledby="hero-heading">
                     <div className="w-full max-w-5xl">
-                        <p className="mb-3 text-lg font-semibold text-secondary-main">
+                        <p className="mb-3 text-lg font-bold text-secondary-main">
                             日々の献立づくりをもう少しラクに
                         </p>
                         <h1
@@ -245,7 +245,7 @@ const Home = () => {
                             </p>
 
                             <div className="mb-12">
-                                <h3 className="mb-4 text-lg font-semibold text-secondary-main sm:text-xl">
+                                <h3 className="mb-4 text-lg font-bold text-secondary-main sm:text-xl">
                                     こんなことで困っていませんか？
                                 </h3>
                                 <ul className="list-none">
@@ -264,7 +264,7 @@ const Home = () => {
                             </div>
 
                             <div>
-                                <h3 className="mb-4 text-lg font-semibold text-secondary-main sm:text-xl">
+                                <h3 className="mb-4 text-lg font-bold text-secondary-main sm:text-xl">
                                     使い方はシンプル、3 ステップ
                                 </h3>
                                 <ol className="grid list-none gap-6 sm:grid-cols-3">
@@ -290,7 +290,7 @@ const Home = () => {
                                                         <p className="mb-1 text-base font-medium uppercase tracking-wide text-gray-main">
                                                             Step {step}
                                                         </p>
-                                                        <p className="mb-2 text-lg font-semibold leading-snug">
+                                                        <p className="mb-2 text-lg font-bold leading-snug">
                                                             {title}
                                                         </p>
                                                         <p className="text-base leading-relaxed text-gray-main">
@@ -337,7 +337,7 @@ const Home = () => {
                                                     aria-hidden
                                                 />
                                             </div>
-                                            <h3 className="mb-2 text-lg font-semibold sm:text-xl">
+                                            <h3 className="mb-2 text-lg font-bold sm:text-xl">
                                                 {title}
                                             </h3>
                                             <p className="text-base leading-relaxed text-gray-main">
@@ -369,7 +369,7 @@ const Home = () => {
                             <div className="mb-12 overflow-hidden rounded-xl border border-gray-border bg-white p-6 shadow-card sm:p-8">
                                 <div className="grid items-center gap-8 lg:grid-cols-2">
                                     <div>
-                                        <h3 className="mb-3 text-lg font-semibold sm:text-xl">
+                                        <h3 className="mb-3 text-lg font-bold sm:text-xl">
                                             画像からレシピを読み込み
                                         </h3>
                                         <p className="mb-4 text-base leading-relaxed text-gray-main">
@@ -384,7 +384,7 @@ const Home = () => {
                                                 <li
                                                     key={text}
                                                     className="flex items-start gap-3 text-base leading-relaxed text-black">
-                                                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-light text-sm font-semibold text-primary-main">
+                                                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-light text-sm font-bold text-primary-main">
                                                         {index + 1}
                                                     </span>
                                                     {text}
@@ -441,10 +441,10 @@ const Home = () => {
                             </div>
 
                             <div>
-                                <p className="mb-1 text-base font-semibold uppercase tracking-wide text-secondary-main">
+                                <p className="mb-1 text-base font-bold uppercase tracking-wide text-secondary-main">
                                     Coming Soon
                                 </p>
-                                <h3 className="mb-2 text-lg font-semibold sm:text-xl">
+                                <h3 className="mb-2 text-lg font-bold sm:text-xl">
                                     今後追加予定のAI機能
                                 </h3>
                                 <p className="mb-6 text-base leading-relaxed text-gray-main">
@@ -463,7 +463,7 @@ const Home = () => {
                                                         aria-hidden
                                                     />
                                                 </div>
-                                                <h4 className="mb-2 text-lg font-semibold sm:text-xl">
+                                                <h4 className="mb-2 text-lg font-bold sm:text-xl">
                                                     {title}
                                                 </h4>
                                                 <p className="text-base leading-relaxed text-gray-main">
@@ -509,7 +509,7 @@ const Home = () => {
                                                 ? 'border-secondary-main bg-secondary-background'
                                                 : 'border-gray-border bg-primary-background'
                                                 }`}>
-                                            <h3 className="mb-1 text-lg font-semibold sm:text-xl">
+                                            <h3 className="mb-1 text-lg font-bold sm:text-xl">
                                                 {name}
                                             </h3>
                                             <p className="mb-4">
@@ -541,7 +541,7 @@ const Home = () => {
                             </ul>
 
                             <div className="rounded-xl border border-gray-border bg-primary-background p-6 shadow-card">
-                                <h3 className="mb-2 text-lg font-semibold sm:text-xl">
+                                <h3 className="mb-2 text-lg font-bold sm:text-xl">
                                     追加パック（都度購入）
                                 </h3>
                                 <p className="mb-4 text-base leading-relaxed text-gray-main">
@@ -552,13 +552,13 @@ const Home = () => {
                                         <li
                                             key={count}
                                             className="rounded-lg border border-gray-border bg-white px-5 py-3 text-base">
-                                            <span className="font-semibold">
+                                            <span className="font-bold">
                                                 {count}回パック
                                             </span>
                                             <span className="mx-2 text-gray-main">
                                                 |
                                             </span>
-                                            <span className="font-semibold text-secondary-main">
+                                            <span className="font-bold text-secondary-main">
                                                 {price}円
                                             </span>
                                         </li>
@@ -576,7 +576,7 @@ const Home = () => {
                     style={{ scrollMarginTop: '4rem' }}>
                     <div className="flex justify-center px-4 sm:px-6">
                         <div className="w-full max-w-5xl">
-                            <p className="mb-2 text-base font-semibold uppercase tracking-wide text-secondary-main">
+                            <p className="mb-2 text-base font-bold uppercase tracking-wide text-secondary-main">
                                 将来の機能（予定）
                             </p>
                             <h2
@@ -600,7 +600,7 @@ const Home = () => {
                                                     aria-hidden
                                                 />
                                             </div>
-                                            <h3 className="mb-2 text-lg font-semibold sm:text-xl">
+                                            <h3 className="mb-2 text-lg font-bold sm:text-xl">
                                                 {title}
                                             </h3>
                                             <p className="text-base leading-relaxed text-gray-main">
@@ -628,7 +628,7 @@ const Home = () => {
                         </p>
                         <Link
                             href={LINK_TO.REGISTER}
-                            className="inline-flex items-center justify-center rounded-lg bg-secondary-main px-6 py-3 text-base font-semibold text-white shadow-card transition hover:bg-secondary-main/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary-main">
+                            className="inline-flex items-center justify-center rounded-lg bg-secondary-main px-6 py-3 text-base font-bold text-white shadow-card transition hover:bg-secondary-main/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary-main">
                             アカウントを作成
                         </Link>
                     </div>

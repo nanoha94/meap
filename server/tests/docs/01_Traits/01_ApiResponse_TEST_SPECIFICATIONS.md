@@ -40,5 +40,5 @@
 
 ```bash
 cd server
-./tests/sh/01_run_traits_tests.sh
+./vendor/bin/sail test tests/Feature/Traits/ApiResponseTest.php --stop-on-failure
 ```

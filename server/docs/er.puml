@@ -79,8 +79,13 @@ entity groups #LightBlue {
     --
     * group_size : number / グループに属するユーザの数
     * plan : ENUM('free', 'standard', 'pro', 'pro_plus') / 料金プラン（デフォルト: 'free'）
-    * ai_usage_count : int / 課金周期内のAI利用回数（デフォルト: 0）
+    * ai_monthly_remaining : int / 月間枠の残り回数（デフォルト: 3）
     * ai_usage_reset_at : timestamp / AI利用回数の次回リセット日時
+    * ai_pack_remaining : int / 買い切りパックの残り回数（デフォルト: 0、失効なし）
+    * stripe_id : string / Stripe Customer ID（Laravel Cashier、nullable）
+    * pm_type : string / 登録済み支払い方法の種類（nullable）
+    * pm_last_four : string / 登録済み支払い方法の下4桁（nullable）
+    * trial_ends_at : timestamp / トライアル終了日時（nullable）
 }
 
 entity meal_recipe_mappings {

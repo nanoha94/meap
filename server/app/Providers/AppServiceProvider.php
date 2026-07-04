@@ -2,9 +2,11 @@
 
 namespace App\Providers;
 
-use App\Interfaces\AiRecipeParserInterface;
-use App\Services\Ai\OpenAiRecipeParser;
 use App\Enums\HttpStatusCode;
+use App\Interfaces\AiRecipeParserInterface;
+use App\Models\Group;
+use App\Services\Ai\OpenAiRecipeParser;
+use Laravel\Cashier\Cashier;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -22,6 +24,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        Cashier::ignoreRoutes();
+
         $this->app->bind(
             AiRecipeParserInterface::class,
             match (config('services.ai.vision_provider')) {
@@ -38,6 +42,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Cashier::useCustomerModel(Group::class);
+
         URL::forceRootUrl(Config::get('app.url'));
         URL::forceScheme('https');
 

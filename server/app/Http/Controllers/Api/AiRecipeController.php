@@ -50,7 +50,7 @@ class AiRecipeController extends ApiController
         return $this->executeWithExceptionHandling(
             function () use ($request) {
                 $group = $this->getUserGroup($request);
-                $this->aiUsageService->consumeUsage($group);
+                $fromPack = $this->aiUsageService->consumeUsage($group);
 
                 try {
                     $image = $request->file('image');
@@ -61,7 +61,7 @@ class AiRecipeController extends ApiController
 
                     return $this->showResponse($parsedRecipe->toArray(), $message);
                 } catch (Throwable $e) {
-                    $this->aiUsageService->refundUsage($group);
+                    $this->aiUsageService->refundUsage($group, $fromPack);
                     throw $e;
                 }
             },

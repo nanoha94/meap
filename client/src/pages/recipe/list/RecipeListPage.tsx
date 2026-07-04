@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import dayjs from 'dayjs';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -12,9 +11,10 @@ import { COLOR_VARIANT, LINK_TO, colors } from '@/constants';
 import { useDialog, useSnackbars } from '@/hooks';
 import { sortOptions, useRecipeListStateStore } from '@/models/recipe';
 import { RecipeFilterFormData } from '@/models/recipe/types';
-import { IRecipe } from '@/types';
-import { useGlobalStore } from '@/stores';
 import { getBrowserQueryString } from '@/models/recipe/utils';
+import { useGlobalStore } from '@/stores';
+import { IRecipe } from '@/types';
+import { formatDisplayDate } from '@/utils';
 import Pagination from '@/components/Pagination';
 
 function resolveRecipeSortOption(
@@ -204,7 +204,7 @@ const RecipeListPage = ({
                                                 .map(category => category.name)
                                                 .join('/')}
                                         </div>
-                                        <div className="text-xs text-black">前回の献立日：{v.lastPlannedDate ? dayjs(v.lastPlannedDate).format('YYYY/MM/DD') : '-'}</div>
+                                        <div className="text-xs text-black">前回の献立日：{v.lastPlannedDate ? formatDisplayDate(v.lastPlannedDate) : '-'}</div>
                                     </div>
                                 </Link>
                             ))}

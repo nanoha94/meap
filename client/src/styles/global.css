@@ -14,3 +14,15 @@ input::placeholder,
 select option[value=''] {
     color: var(--color-gray-placeholder);
 }
+
+@media (min-width: 640px) {
+    .sp-only-sm {
+        display: none;
+    }
+}
+
+@media (max-width: 639px) {
+    .pc-only-sm {
+        display: none;
+    }
+}

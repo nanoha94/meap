@@ -10,9 +10,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
+use Laravel\Cashier\Billable;
 
 class Group extends Model
 {
+    use Billable;
     use HasUuids;
     use HasFactory;
 
@@ -31,8 +33,9 @@ class Group extends Model
     protected $fillable = [
         'group_size',
         'plan',
-        'ai_usage_count',
+        'ai_monthly_remaining',
         'ai_usage_reset_at',
+        'ai_pack_remaining',
     ];
 
     protected $casts = [
@@ -47,7 +50,8 @@ class Group extends Model
             $group = self::create([
                 'group_size' => 1,
                 'plan' => GroupPlan::FREE,
-                'ai_usage_count' => 0,
+                'ai_monthly_remaining' => GroupPlan::FREE->monthlyLimit(),
+                'ai_pack_remaining' => 0,
                 'ai_usage_reset_at' => now()->addMonth(),
             ]);
 

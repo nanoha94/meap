@@ -27,6 +27,7 @@ const tailwindConfig = {
             },
             accent: {
                 main: '#A36062',
+                light: '#D69E9F',
                 background: '#F6F0F0',
             },
 

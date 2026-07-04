@@ -5,6 +5,7 @@ import {
     FooterNavigation,
     RedirectHandler,
     SideNavigation,
+    SnackbarHandler,
     VerifiedHandler,
 } from '@/components';
 import {
@@ -12,7 +13,7 @@ import {
     fetchDataParallel,
     type FetchDataResult,
 } from '@/lib/apiClient';
-import { IGetMasterResponse, IGetUserResponse } from '@/types';
+import { IAiUsageStatus, IAiUsageStatusResponse, IGetMasterResponse, IGetUserResponse } from '@/types';
 import { handleAuthRedirect } from '@/utils';
 
 export const dynamic = 'force-dynamic';
@@ -24,12 +25,15 @@ interface Props {
 const AppLayout = async ({ children }: Props) => {
     let user: IGetUserResponse | null = null;
     let masterData: IGetMasterResponse | null = null;
+    let aiUsageStatus: IAiUsageStatus | null = null;
+    let fetchErrorMessages: string[] = [];
 
     const { data: parallelData, errorMessage: parallelError } =
         await fetchDataParallel<
             [
                 FetchDataResult<IGetUserResponse>,
                 FetchDataResult<IGetMasterResponse>,
+                FetchDataResult<IAiUsageStatusResponse>,
             ]
         >([
             signal =>
@@ -42,13 +46,21 @@ const AppLayout = async ({ children }: Props) => {
                     suppressUnauthorizedLog: true,
                     signal,
                 }),
+            signal =>
+                fetchData<IAiUsageStatusResponse>('/ai/usage', {
+                    suppressUnauthorizedLog: true,
+                    signal,
+                }),
         ]);
 
     if (parallelError || !parallelData) {
         handleAuthRedirect(null, false);
     } else {
-        const [{ data: userData, errorMessage: userError }, { data: masterDataResult }] =
-            parallelData;
+        const [
+            { data: userData, errorMessage: userError },
+            { data: masterDataResult, errorMessage: masterError },
+            { data: aiUsageResponse, errorMessage: aiUsageError },
+        ] = parallelData;
 
         if (userError || !userData?.success) {
             handleAuthRedirect(null, false);
@@ -56,9 +68,24 @@ const AppLayout = async ({ children }: Props) => {
             user = userData;
             handleAuthRedirect(user.data, false);
 
-            if (masterDataResult) {
+            if (masterDataResult?.success) {
                 masterData = masterDataResult;
             }
+
+            if (aiUsageResponse?.success) {
+                aiUsageStatus = aiUsageResponse.data;
+            }
+
+            fetchErrorMessages = [
+                masterError ||
+                (masterDataResult && !masterDataResult.success
+                    ? masterDataResult.message
+                    : ''),
+                aiUsageError ||
+                (aiUsageResponse && !aiUsageResponse.success
+                    ? aiUsageResponse.message
+                    : ''),
+            ].filter(Boolean);
         }
     }
 
@@ -76,8 +103,15 @@ const AppLayout = async ({ children }: Props) => {
             </div>
             <FooterNavigation className="md:hidden" />
             {redirectPath && <RedirectHandler redirectPath={redirectPath} />}
+            {fetchErrorMessages.map((message, index) => (
+                <SnackbarHandler key={index} type="error" message={message} />
+            ))}
             <VerifiedHandler />
-            <DataHandler user={user!.data} masterData={masterData?.data ?? null} />
+            <DataHandler
+                user={user!.data}
+                masterData={masterData?.data ?? null}
+                aiUsageStatus={aiUsageStatus}
+            />
         </div>
     );
 };

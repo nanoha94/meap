@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AiRecipeController;
 use App\Http\Controllers\Api\AiUsageController;
+use App\Http\Controllers\Api\BillingController;
 use App\Http\Controllers\Api\ImageController;
 use App\Http\Controllers\Api\IngredientCategoryController;
 use App\Http\Controllers\Api\IngredientUnitController;
@@ -76,6 +77,16 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/ai/usage', [AiUsageController::class, 'show']);
     Route::post('/ai/recipes/parse', [AiRecipeController::class, 'parse'])
         ->middleware('throttle:ai');
+
+    // billing
+    Route::get('/billing/status', [BillingController::class, 'status']);
+    Route::get('/billing/invoices', [BillingController::class, 'invoices']);
+    Route::post('/billing/subscribe/{subscriptionType}', [BillingController::class, 'subscribe'])
+        ->where('subscriptionType', 'standard');
+    Route::post('/billing/portal', [BillingController::class, 'portal']);
+    Route::post('/billing/subscription/resume', [BillingController::class, 'resume']);
+    Route::post('/billing/packs/{packType}', [BillingController::class, 'purchasePack'])
+        ->where('packType', 'light|value');
 
     // master
     Route::get('/master', MasterController::class);

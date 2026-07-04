@@ -16,5 +16,5 @@
 
 ```bash
 cd server
-./tests/sh/01_run_traits_tests.sh
+./vendor/bin/sail test tests/Feature/Traits/ClearsSessionCookiesTest.php --stop-on-failure
 ```

@@ -25,6 +25,14 @@ return [
             'show' => 'AI利用状況取得',
         ],
     ],
+    'billing' => [
+        'subscribe' => 'サブスクリプション開始',
+        'portal' => 'Customer Portal セッション作成',
+        'purchase_pack' => '買い切りパック購入',
+        'status' => '課金・サブスクリプション状態取得',
+        'invoices' => '請求履歴取得',
+        'resume' => 'プラン変更予定取り消し',
+    ],
     'meal_plan' => [
         'index' => '献立一覧取得',
         'store' => '献立作成',

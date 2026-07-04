@@ -3,6 +3,8 @@
 namespace App\Traits;
 
 use App\Enums\HttpStatusCode;
+use App\Http\Requests\Api\BaseApiRequest;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -21,7 +23,7 @@ trait ExceptionHandlerTrait
      */
     protected function handleException(
         Throwable $e,
-        Request $request,
+        Request|FormRequest|BaseApiRequest $request,
         string $defaultMessage,
         string $operation,
         array $additionalContext = [],
@@ -83,7 +85,7 @@ trait ExceptionHandlerTrait
      */
     private function handleGenericException(
         Throwable $e,
-        Request $request,
+        Request|FormRequest|BaseApiRequest $request,
         string $defaultMessage,
         string $operation,
         array $additionalContext = []

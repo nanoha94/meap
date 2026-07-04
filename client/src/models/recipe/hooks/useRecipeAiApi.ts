@@ -22,11 +22,7 @@ export const useRecipeAiApi = () => {
     );
     const { addSnackbar } = useSnackbars();
     const { handleApiError } = useApiErrorHandler();
-    const {
-        aiUsageStatus,
-        isAiLimitReached,
-        incrementUsageCount,
-    } = useAiUsageApi();
+    const { fetchAiUsageStatus } = useAiUsageApi();
 
     // 重複リクエスト防止用のフラグ
     const isParseRequestRef = React.useRef(false);
@@ -62,7 +58,7 @@ export const useRecipeAiApi = () => {
                         responseData.message ||
                         '画像からレシピ情報を読み取りました。',
                     );
-                    incrementUsageCount();
+                    await fetchAiUsageStatus();
                     return responseData.data;
                 }
 
@@ -85,13 +81,11 @@ export const useRecipeAiApi = () => {
             decrementLoadingCount,
             addSnackbar,
             handleApiError,
-            incrementUsageCount,
+            fetchAiUsageStatus,
         ],
     );
 
     return {
         parseRecipeFromImage,
-        isAiLimitReached,
-        aiUsageStatus,
     };
 };
