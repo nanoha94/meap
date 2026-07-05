@@ -30,7 +30,7 @@ class ImageBulkUploadRequest extends BaseApiRequest
     {
         return [
             'images' => 'array|min:1|max:20|required',
-            'images.*' => 'file|image|mimes:jpeg,png,jpg,gif,webp|max:10240|required',
+            'images.*' => 'file|image|mimes:jpeg,png,gif,webp|max:10240|required',
             'upload_path' => [
                 'sometimes',
                 'nullable',
@@ -65,7 +65,7 @@ class ImageBulkUploadRequest extends BaseApiRequest
             'images.required' => __('validation.required', ['attribute' => 'images']),
             'images.*.file' => __('validation.file', ['attribute' => 'images.*']),
             'images.*.image' => __('validation.image', ['attribute' => 'images.*']),
-            'images.*.mimes' => __('validation.mimes', ['attribute' => 'images.*', 'values' => 'png,jpeg,jpg,gif,webp']),
+            'images.*.mimes' => __('validation.mimes', ['attribute' => 'images.*', 'values' => 'jpeg,png,gif,webp']),
             'images.*.max' => __('validation.max.file', ['attribute' => 'images.*', 'max' => 10240]),
             'images.*.required' => __('validation.required', ['attribute' => 'images.*']),
             'upload_path.string' => __('validation.string', ['attribute' => 'upload_path']),

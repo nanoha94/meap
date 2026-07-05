@@ -118,37 +118,6 @@ class MealPlanService extends AbstractDomainService
         return $this->formatShowResponse($result);
     }
 
-    /**
-     * 献立取得用 eager load（レスポンス未使用の mealCategory は載せない。食材は必要時のみ）
-     *
-     * @return array<string, callable(\Illuminate\Database\Eloquent\Builder): void> Laravel の with() 用クロージャ
-     */
-    private function mealPlanEagerLoads(bool $includeIngredients): array
-    {
-        $loads = [
-            'meals' => function ($query): void {
-                $query->select(['id', 'meal_plan_id', 'category_id', 'order']);
-            },
-            'meals.recipes' => function ($query): void {
-                $query->select(['recipes.id', 'recipes.name']);
-            },
-            'meals.recipes.thumbnails' => function ($query): void {
-                $query->select(['images.id', 'images.src', 'images.width', 'images.height']);
-            },
-        ];
-
-        if ($includeIngredients) {
-            $loads['meals.recipes.ingredients'] = function ($query): void {
-                $query->select(['ingredients.id', 'ingredients.name']);
-            };
-            $loads['meals.recipes.ingredientUnits'] = function ($query): void {
-                $query->select(['ingredient_units.id']);
-            };
-        }
-
-        return $loads;
-    }
-
     protected function formatIndexResponse(Model|Collection $items, bool $includeIngredients = false, ?Group $group = null): array
     {
         // 型チェック（groupBy により 1 日分の MealPlan の Collection が渡る）
@@ -263,6 +232,37 @@ class MealPlanService extends AbstractDomainService
 
             return $meal;
         });
+    }
+
+    /**
+     * 献立取得用 eager load（レスポンス未使用の mealCategory は載せない。食材は必要時のみ）
+     *
+     * @return array<string, callable(\Illuminate\Database\Eloquent\Builder): void> Laravel の with() 用クロージャ
+     */
+    private function mealPlanEagerLoads(bool $includeIngredients): array
+    {
+        $loads = [
+            'meals' => function ($query): void {
+                $query->select(['id', 'meal_plan_id', 'category_id', 'order']);
+            },
+            'meals.recipes' => function ($query): void {
+                $query->select(['recipes.id', 'recipes.name']);
+            },
+            'meals.recipes.thumbnails' => function ($query): void {
+                $query->select(['images.id', 'images.src', 'images.width', 'images.height']);
+            },
+        ];
+
+        if ($includeIngredients) {
+            $loads['meals.recipes.ingredients'] = function ($query): void {
+                $query->select(['ingredients.id', 'ingredients.name']);
+            };
+            $loads['meals.recipes.ingredientUnits'] = function ($query): void {
+                $query->select(['ingredient_units.id']);
+            };
+        }
+
+        return $loads;
     }
 
     /**

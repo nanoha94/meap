@@ -34,7 +34,8 @@ const DialogPanel = ({ dialog }: DialogPanelProps) => {
             className="fixed z-50 top-0 left-0 w-full h-dvh bg-black/50">
             <div
                 onClick={e => e.stopPropagation()}
-                className={`absolute top-10 left-1/2 -translate-x-1/2 ${config.maxWidth ? `max-w-[${config.maxWidth}px]` : 'max-w-[500px]'} w-[calc(100%-40px)] max-h-[calc(100dvh-80px)] flex flex-col bg-white rounded-xl overflow-visible`}>
+                className="absolute top-10 left-1/2 -translate-x-1/2 w-[calc(100%-40px)] max-h-[calc(100dvh-80px)] flex flex-col bg-white rounded-xl overflow-visible"
+                style={{ maxWidth: config.maxWidth ?? 500 }}>
                 <div className="px-5 py-3 flex justify-between items-center gap-x-5 text-xl border-b border-gray-border">
                     {config.title}
                     <div className="flex items-center gap-x-4">

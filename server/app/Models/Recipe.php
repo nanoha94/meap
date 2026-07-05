@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\RecipeSource;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -25,6 +26,11 @@ class Recipe extends Model
         'serving_count',
         'cooking_time',
         'status',
+        'source',
+    ];
+
+    protected $casts = [
+        'source' => RecipeSource::class,
     ];
 
     /**

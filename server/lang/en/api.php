@@ -60,6 +60,31 @@ return [
         'join_failed' => 'Failed to join the group.',
     ],
 
+    'ai' => [
+        'recipe' => [
+            'parsed' => 'Recipe information extracted from image successfully.',
+            'parse_failed' => 'Failed to parse recipe from image.',
+        ],
+        'usage' => [
+            'monthly_limit_exceeded' => 'Monthly AI usage limit has been reached.',
+            'rate_limit_exceeded' => 'This feature is temporarily unavailable due to multiple requests in a short time. Please try again later.',
+        ],
+    ],
+
+    'billing' => [
+        'checkout_created' => 'Stripe Checkout session created successfully.',
+        'portal_created' => 'Stripe Customer Portal session created successfully.',
+        'subscribe_failed' => 'Failed to start subscription.',
+        'portal_failed' => 'Failed to create Customer Portal session.',
+        'purchase_pack_failed' => 'Failed to process one-time pack purchase.',
+        'already_subscribed' => 'Already subscribed to a plan.',
+        'no_billing_account' => 'No billing account found. Please subscribe or purchase a pack first.',
+        'price_not_configured' => 'Stripe price configuration is incomplete.',
+        'resume_success' => 'Scheduled plan change has been canceled.',
+        'resume_failed' => 'Failed to cancel scheduled plan change.',
+        'no_pending_plan_change' => 'No scheduled plan change to cancel.',
+    ],
+
     'attributes' => [
         'user' => 'User',
         'meal_plan' => 'Meal plan',
@@ -71,6 +96,9 @@ return [
         'ingredient_category' => 'Ingredient category',
         'ingredient_unit' => 'Ingredient unit',
         'image' => 'Image',
+        'ai_usage' => 'AI usage status',
+        'billing_status' => 'Billing and subscription status',
+        'billing_invoices' => 'Billing invoices',
         'master' => 'Master data',
         'shopping' => [
             'category' => 'Shopping category',

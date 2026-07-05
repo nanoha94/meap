@@ -43,6 +43,7 @@ entity recipes #LightBlue {
     * serving_count : int / 分量（○○人分）
     * cooking_time : int / 調理時間（分）
     * status: ENUM('limited', 'public') / 公開状態（デフォルト: 'limited'）
+    * source : ENUM('manual', 'ai_imported') / 作成元（デフォルト: 'manual'）
     * group_id : string <<FK>>
     * owner_user_id : string <<FK>>
     * published_recipe_id : string <<FK>> / 公開レシピID（1対1の関係）
@@ -75,7 +76,16 @@ entity recipe_categories #LightBlue {
 
 entity groups #LightBlue {
     * id : string <<generated>>
+    --
     * group_size : number / グループに属するユーザの数
+    * plan : ENUM('free', 'standard', 'pro', 'pro_plus') / 料金プラン（デフォルト: 'free'）
+    * ai_monthly_remaining : int / 月間枠の残り回数（デフォルト: 3）
+    * ai_usage_reset_at : timestamp / AI利用回数の次回リセット日時
+    * ai_pack_remaining : int / 買い切りパックの残り回数（デフォルト: 0、失効なし）
+    * stripe_id : string / Stripe Customer ID（Laravel Cashier、nullable）
+    * pm_type : string / 登録済み支払い方法の種類（nullable）
+    * pm_last_four : string / 登録済み支払い方法の下4桁（nullable）
+    * trial_ends_at : timestamp / トライアル終了日時（nullable）
 }
 
 entity meal_recipe_mappings {

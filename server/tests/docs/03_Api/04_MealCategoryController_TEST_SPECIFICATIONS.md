@@ -70,5 +70,5 @@ MealCategoryController のテストケースの詳細仕様を示します。献
 
 ```bash
 cd server
-./tests/sh/03_run_api_tests.sh
+./vendor/bin/sail test tests/Feature/Api/MealCategoryControllerTest.php --stop-on-failure
 ```

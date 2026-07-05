@@ -28,5 +28,5 @@ Google アカウントによるソーシャルログイン機能のテストス�
 
 ```bash
 cd server
-./tests/sh/02_run_auth_tests.sh
+./vendor/bin/sail test tests/Feature/Auth/SocialLoginControllerTest.php --stop-on-failure
 ```

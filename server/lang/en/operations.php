@@ -17,6 +17,22 @@ return [
         'update' => 'Recipe update',
         'destroy' => 'Recipe deletion',
     ],
+    'ai' => [
+        'recipe' => [
+            'parse' => 'AI recipe image parsing',
+        ],
+        'usage' => [
+            'show' => 'AI usage status retrieval',
+        ],
+    ],
+    'billing' => [
+        'subscribe' => 'Start subscription',
+        'portal' => 'Create Customer Portal session',
+        'purchase_pack' => 'Purchase one-time pack',
+        'status' => 'Retrieve billing and subscription status',
+        'invoices' => 'Retrieve billing invoices',
+        'resume' => 'Cancel scheduled plan change',
+    ],
     'meal_plan' => [
         'index' => 'Meal plan list retrieval',
         'store' => 'Meal plan creation',

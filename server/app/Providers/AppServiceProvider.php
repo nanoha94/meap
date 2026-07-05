@@ -2,11 +2,20 @@
 
 namespace App\Providers;
 
+use App\Enums\HttpStatusCode;
+use App\Interfaces\AiRecipeParserInterface;
+use App\Models\Group;
+use App\Services\Ai\OpenAiRecipeParser;
+use Laravel\Cashier\Cashier;
 use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use InvalidArgumentException;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -15,7 +24,17 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        Cashier::ignoreRoutes();
+
+        $this->app->bind(
+            AiRecipeParserInterface::class,
+            match (config('services.ai.vision_provider')) {
+                'openai' => OpenAiRecipeParser::class,
+                default => throw new InvalidArgumentException(
+                    'Unsupported AI vision provider: ' . config('services.ai.vision_provider'),
+                ),
+            },
+        );
     }
 
     /**
@@ -23,6 +42,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Cashier::useCustomerModel(Group::class);
+
         URL::forceRootUrl(Config::get('app.url'));
         URL::forceScheme('https');
 
@@ -37,6 +58,25 @@ class AppServiceProvider extends ServiceProvider
                 ->letters() // 英字を含む
                 ->numbers() // 数字を含む
                 ->symbols(); // 記号を含む
+        });
+
+        // AI API のレートリミットを設定（短期間の連続呼び出しを防止）
+        // routes/api.php で throttle:ai ミドルウェアが適用されたルートで有効
+        RateLimiter::for('ai', function (Request $request) {
+            $limit = config('ai.rate_limit_per_minute', 3);
+
+            return Limit::perMinute($limit)
+                ->by($request->user()?->id ?: $request->ip())
+                ->response(function (Request $request, array $headers) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => __('api.ai.usage.rate_limit_exceeded'),
+                        'error_type' => 'ai_rate_limit_exceeded',
+                        'error_code' => HttpStatusCode::TOO_MANY_REQUESTS->value,
+                        'error_description' => HttpStatusCode::TOO_MANY_REQUESTS->getDescription(),
+                        'errors' => [],
+                    ], HttpStatusCode::TOO_MANY_REQUESTS->value, $headers);
+                });
         });
     }
 }

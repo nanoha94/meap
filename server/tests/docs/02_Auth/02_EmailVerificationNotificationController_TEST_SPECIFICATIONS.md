@@ -18,5 +18,5 @@
 
 ```bash
 cd server
-./tests/sh/02_run_auth_tests.sh
+./vendor/bin/sail test tests/Feature/Auth/EmailVerificationNotificationControllerTest.php --stop-on-failure
 ```

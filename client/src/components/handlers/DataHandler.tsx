@@ -2,15 +2,17 @@
 import React from 'react';
 
 import { useIngredientStore } from '@/models/ingredient';
-import { useRecipeStore } from '@/models/recipe';
-import { useUserStore } from '@/models/user';
-import { useShoppingStore } from '@/models/shopping';
-import { ILoginUser, IMaster } from '@/types';
 import { useMealStore } from '@/models/meal';
+import { useRecipeStore } from '@/models/recipe';
+import { useShoppingStore } from '@/models/shopping';
+import { useUserStore } from '@/models/user';
+import { useAiUsageStore } from '@/stores';
+import { IAiUsageStatus, ILoginUser, IMaster } from '@/types';
 
 interface Props {
     user: ILoginUser;
     masterData: IMaster | null;
+    aiUsageStatus: IAiUsageStatus | null;
 }
 
 /**
@@ -19,8 +21,9 @@ interface Props {
  * @param masterData マスターデータ
  * @returns void
  */
-const DataHandler = ({ user, masterData }: Props) => {
+const DataHandler = ({ user, masterData, aiUsageStatus }: Props) => {
     // store
+    const setAiUsageStatus = useAiUsageStore(state => state.setAiUsageStatus);
     const setIngredientCategories = useIngredientStore(state => state.setCategories);
     const setIngredientUnits = useIngredientStore(state => state.setUnits);
     const setRecipeCategories = useRecipeStore(state => state.setCategories);
@@ -28,6 +31,15 @@ const DataHandler = ({ user, masterData }: Props) => {
     const setShoppingCategories = useShoppingStore(state => state.setCategories);
     const setLoginUser = useUserStore(state => state.setLoginUser);
     const setUsers = useUserStore(state => state.setUsers);
+
+    /**
+     * AI 利用状況をストアにセット
+     */
+    React.useEffect(() => {
+        if (aiUsageStatus) {
+            setAiUsageStatus(aiUsageStatus);
+        }
+    }, [aiUsageStatus, setAiUsageStatus]);
 
     /**
      * ユーザー情報をストアにセット

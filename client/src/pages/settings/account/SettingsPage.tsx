@@ -33,6 +33,11 @@ const SettingsPage = () => {
             colorClass: 'text-black'
         },
         {
+            label: 'プラン管理',
+            href: LINK_TO.SETTINGS.BILLING,
+            colorClass: 'text-black'
+        },
+        {
             label: 'ログアウト',
             onClick: logout,
             colorClass: 'text-black'

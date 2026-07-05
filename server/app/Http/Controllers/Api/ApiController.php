@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\BaseApiRequest;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
 
 /**
@@ -60,6 +62,14 @@ use Illuminate\Http\Request;
  *     name="Images",
  *     description="画像関連のAPI"
  * )
+ * @OA\Tag(
+ *     name="AI",
+ *     description="AI機能関連のAPI"
+ * )
+ * @OA\Tag(
+ *     name="Billing",
+ *     description="課金・サブスクリプション関連のAPI"
+ * )
  */
 
 abstract class ApiController extends Controller
@@ -67,7 +77,7 @@ abstract class ApiController extends Controller
     /**
      * ユーザーのグループを取得
      */
-    protected function getUserGroup(Request $request)
+    protected function getUserGroup(Request|FormRequest|BaseApiRequest $request)
     {
         return $request->user()->groups()->first();
     }

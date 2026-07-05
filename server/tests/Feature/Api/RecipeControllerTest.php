@@ -961,9 +961,65 @@ test('3-7-32: 【一覧取得】 RecipeService 例外', function () {
     ]);
 });
 
+test('3-7-33: 【一覧取得】 バリデーションエラー（recipe_name が 255 文字超過）', function () {
+    $response = $this->actingAs($this->user)->get('/recipes?' . http_build_query([
+        'recipe_name' => str_repeat('a', 256),
+    ]));
+    $response->assertStatus(422);
+    $response->assertJsonValidationErrors(['recipe_name']);
+});
+
+test('3-7-34: 【一覧取得】 バリデーションエラー（ingredient_name が 255 文字超過）', function () {
+    $response = $this->actingAs($this->user)->get('/recipes?' . http_build_query([
+        'ingredient_name' => str_repeat('a', 256),
+    ]));
+    $response->assertStatus(422);
+    $response->assertJsonValidationErrors(['ingredient_name']);
+});
+
+test('3-7-35: 【一覧取得】 バリデーションエラー（category_ids が配列でない）', function () {
+    $response = $this->actingAs($this->user)->get('/recipes?category_ids=not_array');
+    $response->assertStatus(422);
+    $response->assertJsonValidationErrors(['category_ids']);
+});
+
+test('3-7-36: 【一覧取得】 バリデーションエラー（category_ids.* が UUID 形式でない）', function () {
+    $response = $this->actingAs($this->user)->get('/recipes?category_ids[]=not-a-uuid');
+    $response->assertStatus(422);
+    $response->assertJsonValidationErrors(['category_ids.0']);
+});
+
+test('3-7-37: 【一覧取得】 バリデーションエラー（category_ids.* が存在しない ID）', function () {
+    $nonExistentId = (string) Str::uuid();
+    $response = $this->actingAs($this->user)->get('/recipes?category_ids[]=' . $nonExistentId);
+    $response->assertStatus(422);
+    $response->assertJsonValidationErrors(['category_ids.0']);
+});
+
+test('3-7-38: 【一覧取得】 バリデーションエラー（last_planned_date_from が日付形式でない）', function () {
+    $response = $this->actingAs($this->user)->get('/recipes?last_planned_date_from=invalid-date');
+    $response->assertStatus(422);
+    $response->assertJsonValidationErrors(['last_planned_date_from']);
+});
+
+test('3-7-39: 【一覧取得】 バリデーションエラー（last_planned_date_to が日付形式でない）', function () {
+    $response = $this->actingAs($this->user)->get('/recipes?last_planned_date_to=invalid-date');
+    $response->assertStatus(422);
+    $response->assertJsonValidationErrors(['last_planned_date_to']);
+});
+
+test('3-7-40: 【一覧取得】 バリデーションエラー（last_planned_date_to が last_planned_date_from より前）', function () {
+    $response = $this->actingAs($this->user)->get('/recipes?' . http_build_query([
+        'last_planned_date_from' => '2024-06-10',
+        'last_planned_date_to' => '2024-06-01',
+    ]));
+    $response->assertStatus(422);
+    $response->assertJsonValidationErrors(['last_planned_date_to']);
+});
+
 // ===== store() メソッドのテストケース =====
 
-test('3-7-33: 【新規作成】 正常な料理作成', function () {
+test('3-7-41: 【新規作成】 正常な料理作成', function () {
     $data = [
         'name' => 'カレーライス',
         'servingCount' => 4,

@@ -59,6 +59,31 @@ return [
         'join_failed' => 'グループへの参加に失敗しました。',
     ],
 
+    'ai' => [
+        'recipe' => [
+            'parsed' => '画像からレシピ情報を読み取りました。',
+            'parse_failed' => '画像からのレシピ読み取りに失敗しました。',
+        ],
+        'usage' => [
+            'monthly_limit_exceeded' => '今月のAI利用回数の上限に達しました。',
+            'rate_limit_exceeded' => '短時間で複数回リクエストしているので機能を一時停止しています。時間をおいて試してください。',
+        ],
+    ],
+
+    'billing' => [
+        'checkout_created' => 'Stripe Checkout セッションを作成しました。',
+        'portal_created' => 'Stripe Customer Portal セッションを作成しました。',
+        'subscribe_failed' => 'サブスクリプションの開始に失敗しました。',
+        'portal_failed' => 'Customer Portal セッションの作成に失敗しました。',
+        'purchase_pack_failed' => '買い切りパックの購入処理に失敗しました。',
+        'already_subscribed' => 'すでにサブスクリプションに加入しています。',
+        'no_billing_account' => '課金情報が登録されていません。先にサブスクリプションまたは買い切りパックを購入してください。',
+        'price_not_configured' => 'Stripe の価格設定が完了していません。',
+        'resume_success' => 'プラン変更予定を取り消しました。',
+        'resume_failed' => 'プラン変更予定の取り消しに失敗しました。',
+        'no_pending_plan_change' => '取り消すプラン変更予定がありません。',
+    ],
+
     'attributes' => [
         'user' => 'ユーザー',
         'meal_plan' => '献立',
@@ -70,6 +95,9 @@ return [
         'ingredient_category' => '食材カテゴリー',
         'ingredient_unit' => '食材単位',
         'image' => '画像',
+        'ai_usage' => 'AI利用状況',
+        'billing_status' => '課金・サブスクリプション状態',
+        'billing_invoices' => '請求履歴',
         'master' => 'マスターデータ',
         'shopping' => [
             'category' => '買い物カテゴリー',

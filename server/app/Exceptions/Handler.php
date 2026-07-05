@@ -6,6 +6,7 @@ use App\Enums\HttpStatusCode;
 use App\Traits\ExceptionHandlerTrait;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
 use Throwable;
 
@@ -34,6 +35,11 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Throwable $exception)
     {
+        // throttle 等が返すレスポンス付き例外はそのまま返す
+        if ($exception instanceof HttpResponseException) {
+            return $exception->getResponse();
+        }
+
         // AuthenticationExceptionの場合は401を返す
         if ($exception instanceof AuthenticationException) {
             return response()->json([

@@ -2,10 +2,14 @@ import React from 'react';
 
 import {
     CalendarDays,
+    Camera,
     ChefHat,
+    ImageIcon,
+    Lightbulb,
     Share2,
     ShoppingCart,
     Smartphone,
+    Sparkles,
     Users,
     UtensilsCrossed,
 } from 'lucide-react';
@@ -19,7 +23,7 @@ import { getLinkButtonClassName } from '@/utils';
 export const metadata = {
     title: { absolute: 'meap — レシピと献立をまとめて管理' },
     description:
-        'レシピの保存・整理や献立づくりをサポートするアプリ。まずは無料で始められます。',
+        'レシピの保存・整理や献立づくりをサポートするアプリ。写真からAIでレシピを読み込める機能も。まずは無料で始められます。',
 };
 
 const painPoints = [
@@ -76,6 +80,57 @@ const featureItems = [
     },
 ] as const;
 
+const aiComingSoonItems = [
+    {
+        icon: ImageIcon,
+        title: 'AIでレシピ画像を生成',
+        body:
+            'レシピの内容から、料理のイメージ画像をAIが生成します。サムネイルがないレシピも、見た目の分かりやすいレシピ帳に整えられます。',
+    },
+    {
+        icon: Lightbulb,
+        title: 'AIでレシピを提案',
+        body:
+            '手持ちの食材や好みの条件をもとに、AIが新しいレシピを提案します。献立に迷ったときのヒントとして活用できます。',
+    },
+    {
+        icon: Sparkles,
+        title: 'AIで献立を提案',
+        body:
+            '人数や期間、好みのジャンルなどを指定すると、AIが数日分の献立をまとめて提案します。毎週の献立づくりをさらにラクにします。',
+    },
+] as const;
+
+const pricingPlans = [
+    {
+        name: 'フリー',
+        price: '無料',
+        priceNote: null,
+        highlight: false,
+        features: [
+            'レシピの作成・管理・共有',
+            '買い物リスト・献立',
+            'AI機能 月3回まで',
+        ],
+    },
+    {
+        name: 'スタンダード',
+        price: '480円',
+        priceNote: '/ 月',
+        highlight: true,
+        features: [
+            'フリーの全機能',
+            'AI機能 月30回まで',
+            '今後追加されるAI機能も利用可能',
+        ],
+    },
+] as const;
+
+const addonPacks = [
+    { count: 10, price: 200 },
+    { count: 30, price: 500 },
+] as const;
+
 const roadmapItems = [
     {
         icon: Smartphone,
@@ -88,6 +143,24 @@ const roadmapItems = [
         title: 'レシピの外部公開・インポート',
         body:
             'レシピを外部に公開できるようにするとともに、他者が公開したレシピを自分のライブラリに取り込み、再利用できる機能を構想しています。',
+    },
+    {
+        icon: ImageIcon,
+        title: 'AIでレシピ画像を生成',
+        body:
+            'レシピの内容からサムネイル用の料理画像をAIが生成する機能を開発中です。',
+    },
+    {
+        icon: Lightbulb,
+        title: 'AIでレシピを提案',
+        body:
+            '手持ちの食材や好みの条件をもとに、AIが新しいレシピを提案する機能を構想しています。',
+    },
+    {
+        icon: Sparkles,
+        title: 'AIで献立を提案',
+        body:
+            '人数や期間を指定すると、AIが数日分の献立をまとめて提案する機能を構想しています。',
     },
 ] as const;
 
@@ -122,7 +195,7 @@ const Home = () => {
                     className="flex justify-center px-4 pb-16 pt-12 sm:px-6 sm:pb-24 sm:pt-16"
                     aria-labelledby="hero-heading">
                     <div className="w-full max-w-5xl">
-                        <p className="mb-3 text-lg font-semibold text-secondary-main">
+                        <p className="mb-3 text-lg font-bold text-secondary-main">
                             日々の献立づくりをもう少しラクに
                         </p>
                         <h1
@@ -172,7 +245,7 @@ const Home = () => {
                             </p>
 
                             <div className="mb-12">
-                                <h3 className="mb-4 text-lg font-semibold text-secondary-main sm:text-xl">
+                                <h3 className="mb-4 text-lg font-bold text-secondary-main sm:text-xl">
                                     こんなことで困っていませんか？
                                 </h3>
                                 <ul className="list-none">
@@ -191,7 +264,7 @@ const Home = () => {
                             </div>
 
                             <div>
-                                <h3 className="mb-4 text-lg font-semibold text-secondary-main sm:text-xl">
+                                <h3 className="mb-4 text-lg font-bold text-secondary-main sm:text-xl">
                                     使い方はシンプル、3 ステップ
                                 </h3>
                                 <ol className="grid list-none gap-6 sm:grid-cols-3">
@@ -217,7 +290,7 @@ const Home = () => {
                                                         <p className="mb-1 text-base font-medium uppercase tracking-wide text-gray-main">
                                                             Step {step}
                                                         </p>
-                                                        <p className="mb-2 text-lg font-semibold leading-snug">
+                                                        <p className="mb-2 text-lg font-bold leading-snug">
                                                             {title}
                                                         </p>
                                                         <p className="text-base leading-relaxed text-gray-main">
@@ -246,8 +319,10 @@ const Home = () => {
                                 className="mb-2 text-2xl font-bold sm:text-3xl">
                                 便利な機能
                             </h2>
-                            <p className="mb-10 max-w-2xl text-lg leading-relaxed text-gray-main">
-                                ログイン後に使える、meap の主な機能です。献立表・料理/レシピ・買い物リストを行き来しながら、同じアプリ内で献立づくりから買い物のメモまでまとめて扱えます。家族やグループと共有すれば、買い物や調理の役割分担もしやすくなります。
+                            <p className="mb-10 text-lg leading-relaxed text-gray-main">
+                                ログイン後に使える、meap の主な機能です。<br />
+                                献立表・料理/レシピ・買い物リストを行き来しながら、同じアプリ内で献立づくりから買い物のメモまでまとめて扱えます。<br />
+                                家族やグループと共有すれば、買い物や調理の役割分担もしやすくなります。
                             </p>
                             <ul className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
                                 {featureItems.map(
@@ -262,7 +337,7 @@ const Home = () => {
                                                     aria-hidden
                                                 />
                                             </div>
-                                            <h3 className="mb-2 text-lg font-semibold sm:text-xl">
+                                            <h3 className="mb-2 text-lg font-bold sm:text-xl">
                                                 {title}
                                             </h3>
                                             <p className="text-base leading-relaxed text-gray-main">
@@ -277,13 +352,231 @@ const Home = () => {
                 </section>
 
                 <section
+                    id="ai-features"
+                    className="border-t border-gray-light bg-accent-background py-16 sm:py-20"
+                    aria-labelledby="ai-features-heading"
+                    style={{ scrollMarginTop: '4rem' }}>
+                    <div className="flex justify-center px-4 sm:px-6">
+                        <div className="w-full max-w-5xl">
+                            <h2
+                                id="ai-features-heading"
+                                className="mb-2 text-2xl font-bold sm:text-3xl">
+                                AI機能
+                            </h2>
+                            <p className="mb-10 text-lg leading-relaxed text-gray-main">
+                                レシピの登録から献立づくりまで、日々の献立作成・料理をサポートするAI機能を提供しています。<br />手入力の手間を減らすレシピ画像の読み取りや、今後追加予定の画像生成・レシピ提案・献立提案など、料理まわりの作業をAIがお手伝いします。</p>
+
+                            <div className="mb-12 overflow-hidden rounded-xl border border-gray-border bg-white p-6 shadow-card sm:p-8">
+                                <div className="grid items-center gap-8 lg:grid-cols-2">
+                                    <div>
+                                        <h3 className="mb-3 text-lg font-bold sm:text-xl">
+                                            画像からレシピを読み込み
+                                        </h3>
+                                        <p className="mb-4 text-base leading-relaxed text-gray-main">
+                                            レシピ編集画面の「画像から読み込み」ボタンから、カメラや画像ファイルを選択するだけ。AIが内容を読み取り、フォームに自動入力します。
+                                        </p>
+                                        <ol className="list-none space-y-3">
+                                            {[
+                                                '料理本やWebのスクリーンショットを撮影・選択',
+                                                'AIが材料・手順・料理名などを読み取り',
+                                                '内容を確認・修正して保存',
+                                            ].map((text, index) => (
+                                                <li
+                                                    key={text}
+                                                    className="flex items-start gap-3 text-base leading-relaxed text-black">
+                                                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-light text-sm font-bold text-primary-main">
+                                                        {index + 1}
+                                                    </span>
+                                                    {text}
+                                                </li>
+                                            ))}
+                                        </ol>
+                                    </div>
+                                    <div
+                                        className="flex items-center justify-center rounded-xl border border-dashed border-gray-border bg-primary-background p-8"
+                                        aria-hidden>
+                                        <div className="flex items-start gap-4">
+                                            <div className="flex flex-col items-center gap-2">
+                                                <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-white shadow-card">
+                                                    <Camera
+                                                        className="h-7 w-7 text-primary-main"
+                                                        strokeWidth={1.75}
+                                                    />
+                                                </div>
+                                                <p className="text-center text-sm text-gray-main">
+                                                    撮影
+                                                </p>
+                                            </div>
+                                            <span className="mt-4 text-2xl text-gray-main">
+                                                →
+                                            </span>
+                                            <div className="flex flex-col items-center gap-2">
+                                                <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-white shadow-card">
+                                                    <Sparkles
+                                                        className="h-7 w-7 text-secondary-main"
+                                                        strokeWidth={1.75}
+                                                    />
+                                                </div>
+                                                <p className="text-center text-sm text-gray-main">
+                                                    AI読み取り
+                                                </p>
+                                            </div>
+                                            <span className="mt-4 text-2xl text-gray-main">
+                                                →
+                                            </span>
+                                            <div className="flex flex-col items-center gap-2">
+                                                <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-white shadow-card">
+                                                    <ChefHat
+                                                        className="h-7 w-7 text-primary-main"
+                                                        strokeWidth={1.75}
+                                                    />
+                                                </div>
+                                                <p className="text-center text-sm text-gray-main">
+                                                    レシピ登録
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <p className="mb-1 text-base font-bold uppercase tracking-wide text-secondary-main">
+                                    Coming Soon
+                                </p>
+                                <h3 className="mb-2 text-lg font-bold sm:text-xl">
+                                    今後追加予定のAI機能
+                                </h3>
+                                <p className="mb-6 text-base leading-relaxed text-gray-main">
+                                    今後開発を予定しているAI機能です。内容は予告なく変更になる可能性があります。
+                                </p>
+                                <ul className="grid gap-6 sm:grid-cols-3">
+                                    {aiComingSoonItems.map(
+                                        ({ icon: Icon, title, body }) => (
+                                            <li
+                                                key={title}
+                                                className="rounded-xl border border-gray-border bg-white p-6 shadow-card">
+                                                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-primary-light text-primary-main">
+                                                    <Icon
+                                                        className="h-5 w-5"
+                                                        strokeWidth={1.75}
+                                                        aria-hidden
+                                                    />
+                                                </div>
+                                                <h4 className="mb-2 text-lg font-bold sm:text-xl">
+                                                    {title}
+                                                </h4>
+                                                <p className="text-base leading-relaxed text-gray-main">
+                                                    {body}
+                                                </p>
+                                            </li>
+                                        ),
+                                    )}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section
+                    id="pricing"
+                    className="border-t border-gray-light bg-white py-16 sm:py-20"
+                    aria-labelledby="pricing-heading"
+                    style={{ scrollMarginTop: '4rem' }}>
+                    <div className="flex justify-center px-4 sm:px-6">
+                        <div className="w-full max-w-5xl">
+                            <h2
+                                id="pricing-heading"
+                                className="mb-2 text-2xl font-bold sm:text-3xl">
+                                まずは月3回、無料でお試し
+                            </h2>
+                            <p className="mb-10 text-lg leading-relaxed text-gray-main">
+                                AI機能はグループ（世帯）単位で利用回数を管理します。<br />1人がプランに加入すれば、家族全員がAI機能を使えます。
+                            </p>
+
+                            <ul className="mb-10 grid gap-6 sm:grid-cols-2">
+                                {pricingPlans.map(
+                                    ({
+                                        name,
+                                        price,
+                                        priceNote,
+                                        highlight,
+                                        features,
+                                    }) => (
+                                        <li
+                                            key={name}
+                                            className={`rounded-xl border p-6 shadow-card ${highlight
+                                                ? 'border-secondary-main bg-secondary-background'
+                                                : 'border-gray-border bg-primary-background'
+                                                }`}>
+                                            <h3 className="mb-1 text-lg font-bold sm:text-xl">
+                                                {name}
+                                            </h3>
+                                            <p className="mb-4">
+                                                <span className="text-3xl font-bold">
+                                                    {price}
+                                                </span>
+                                                {priceNote && (
+                                                    <span className="text-base text-gray-main">
+                                                        {priceNote}
+                                                    </span>
+                                                )}
+                                            </p>
+                                            <ul className="list-none space-y-2">
+                                                {features.map((feature) => (
+                                                    <li
+                                                        key={feature}
+                                                        className="flex items-start gap-2 text-base leading-relaxed text-black">
+                                                        <span
+                                                            className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-secondary-main"
+                                                            aria-hidden
+                                                        />
+                                                        {feature}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </li>
+                                    ),
+                                )}
+                            </ul>
+
+                            <div className="rounded-xl border border-gray-border bg-primary-background p-6 shadow-card">
+                                <h3 className="mb-2 text-lg font-bold sm:text-xl">
+                                    追加パック（都度購入）
+                                </h3>
+                                <p className="mb-4 text-base leading-relaxed text-gray-main">
+                                    月の上限を使い切ったときに、追加でAI機能を購入できます。フリープランの方もご利用いただけます。
+                                </p>
+                                <ul className="flex flex-wrap gap-4">
+                                    {addonPacks.map(({ count, price }) => (
+                                        <li
+                                            key={count}
+                                            className="rounded-lg border border-gray-border bg-white px-5 py-3 text-base">
+                                            <span className="font-bold">
+                                                {count}回パック
+                                            </span>
+                                            <span className="mx-2 text-gray-main">
+                                                |
+                                            </span>
+                                            <span className="font-bold text-secondary-main">
+                                                {price}円
+                                            </span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section
                     id="roadmap"
                     className="border-t border-gray-light bg-accent-background py-16 sm:py-20"
                     aria-labelledby="roadmap-heading"
                     style={{ scrollMarginTop: '4rem' }}>
                     <div className="flex justify-center px-4 sm:px-6">
                         <div className="w-full max-w-5xl">
-                            <p className="mb-2 text-base font-semibold uppercase tracking-wide text-secondary-main">
+                            <p className="mb-2 text-base font-bold uppercase tracking-wide text-secondary-main">
                                 将来の機能（予定）
                             </p>
                             <h2
@@ -294,7 +587,7 @@ const Home = () => {
                             <p className="mb-10 max-w-2xl text-lg leading-relaxed text-gray-main">
                                 開発の進捗や優先順位により内容・時期は変わる可能性があります。<br />詳細が決まり次第、情報を発信していきます。
                             </p>
-                            <ul className="grid gap-6 sm:grid-cols-2">
+                            <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                                 {roadmapItems.map(
                                     ({ icon: Icon, title, body }) => (
                                         <li
@@ -307,7 +600,7 @@ const Home = () => {
                                                     aria-hidden
                                                 />
                                             </div>
-                                            <h3 className="mb-2 text-lg font-semibold sm:text-xl">
+                                            <h3 className="mb-2 text-lg font-bold sm:text-xl">
                                                 {title}
                                             </h3>
                                             <p className="text-base leading-relaxed text-gray-main">
@@ -335,7 +628,7 @@ const Home = () => {
                         </p>
                         <Link
                             href={LINK_TO.REGISTER}
-                            className="inline-flex items-center justify-center rounded-lg bg-secondary-main px-6 py-3 text-base font-semibold text-white shadow-card transition hover:bg-secondary-main/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary-main">
+                            className="inline-flex items-center justify-center rounded-lg bg-secondary-main px-6 py-3 text-base font-bold text-white shadow-card transition hover:bg-secondary-main/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary-main">
                             アカウントを作成
                         </Link>
                     </div>

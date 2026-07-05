@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import dayjs from 'dayjs';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { ChevronRight, SlidersHorizontal } from 'lucide-react';
@@ -17,6 +16,7 @@ import {
 import { useDialog } from '@/hooks';
 import { RecipeFilterFormData, sortOptions, useRecipeApi } from '@/models/recipe';
 import { IRecipe, IRecipeListItem } from '@/types';
+import { formatDisplayDate } from '@/utils';
 
 import Pagination from '../Pagination';
 import { StyledSelect } from '../form-fields';
@@ -178,7 +178,7 @@ const RecipeSelect = ({ initFetchedRecipes, defaultItems, onSave }: Props) => {
                                     </div>
                                     <div className="p-2 flex flex-col gap-y-1">
                                         <div className="text-sm">{v.name}</div>
-                                        <div className="text-xs">前回の献立日：{v.lastPlannedDate ? dayjs(v.lastPlannedDate).format('YYYY/MM/DD') : '-'}</div>
+                                        <div className="text-xs">前回の献立日：{v.lastPlannedDate ? formatDisplayDate(v.lastPlannedDate) : '-'}</div>
                                     </div>
                                 </button>
                             ))}

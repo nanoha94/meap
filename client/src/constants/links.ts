@@ -10,7 +10,14 @@ export const LINK_TO = {
     },
     SETTINGS: {
         TOP: '/settings',
-        ACCOUNT: '/settings/account'
+        ACCOUNT: '/settings/account',
+        BILLING: '/settings/billing',
+    },
+    HELP: {
+        PLAN_CHANGE: '/help/plan-change',
+    },
+    BILLING: {
+        SUCCESS: '/billing/success',
     },
     SHOPPING_LIST: '/shopping-list',
     EMAIL_VERIFY: '/email/verify',

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\GroupPlan;
 use App\Services\ImageService;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -9,9 +10,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
+use Laravel\Cashier\Billable;
 
 class Group extends Model
 {
+    use Billable;
     use HasUuids;
     use HasFactory;
 
@@ -29,6 +32,15 @@ class Group extends Model
 
     protected $fillable = [
         'group_size',
+        'plan',
+        'ai_monthly_remaining',
+        'ai_usage_reset_at',
+        'ai_pack_remaining',
+    ];
+
+    protected $casts = [
+        'plan' => GroupPlan::class,
+        'ai_usage_reset_at' => 'datetime',
     ];
 
     // Groupを作成
@@ -37,6 +49,10 @@ class Group extends Model
         return DB::transaction(function () {
             $group = self::create([
                 'group_size' => 1,
+                'plan' => GroupPlan::FREE,
+                'ai_monthly_remaining' => GroupPlan::FREE->monthlyLimit(),
+                'ai_pack_remaining' => 0,
+                'ai_usage_reset_at' => now()->addMonth(),
             ]);
 
             // デフォルトの買い物カテゴリを追加

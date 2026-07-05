@@ -7,6 +7,12 @@ export type RecipeEditFormData = Omit<IRecipe, 'thumbnail' | 'steps' | 'lastPlan
     steps: RecipeStepEditFormData[];
 };
 
+// AI 解析結果をレシピ編集フォーム用データへ変換する（AI画像解析に関係する項目のみ抽出した型）
+export type RecipeAiImportFormData = Pick<
+    RecipeEditFormData,
+    'name' | 'servingCount' | 'ingredients' | 'steps'
+>;
+
 // レシピ手順編集画面のフォーム型 (imageを編集用の型に差し替える)
 export type RecipeStepEditFormData = Omit<IRecipeStep, 'image'> & {
     image: IImageWithFile | null;

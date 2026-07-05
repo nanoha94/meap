@@ -37,6 +37,15 @@ cd server
 ./vendor/bin/sail up -d
 ```
 
+## Stripe 課金（Webhook）
+
+サブスク・パック購入の反映には Webhook が必要です。
+
+- **ローカル:** 課金テスト中は `stripe listen --forward-to http://localhost:8001/stripe/webhook` を起動
+- **本番（Railway）:** `stripe listen` は**不要**。Stripe Dashboard で Webhook エンドポイントを登録する
+
+詳細は [docs/Stripe_課金_Webhook_手順.md](docs/Stripe_課金_Webhook_手順.md) を参照。
+
 ## Railway 本番
 
 - 本番 Docker デプロイでは **Start Command を設定しない**（`ENTRYPOINT` の `docker-entrypoint.sh` に任せる）。詳細は [docs/Railway_本番マイグレーション手順.md](docs/Railway_本番マイグレーション手順.md)。
