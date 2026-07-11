@@ -12,6 +12,7 @@ export type IAiUsageStatusResponse = IBaseApiResponseWithData<IAiUsageStatus>;
 export interface IParsedRecipeIngredient {
     name: string;
     quantity: number | null;
+    quantityDisplay: string | null;
     unitName: string;
     categoryName: string;
 }

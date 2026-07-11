@@ -7,3 +7,4 @@ export * from './dndHelpers';
 export * from './focusHelpers';
 export * from './getLinkButtonClassName';
 export * from './pathname';
+export * from './quantity';

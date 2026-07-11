@@ -1,10 +1,12 @@
 'use client';
-import { Control, Controller, FieldValues, Path } from 'react-hook-form';
+import { Control, Controller, FieldValues, Path, RegisterOptions } from 'react-hook-form';
 
 interface Props<T extends FieldValues> {
     control: Control<T>;
+    rules?: RegisterOptions<T>;
     name: Path<T>;
     label: string;
+    errorMessage?: string[];
     children: (fieldProps: {
         value: unknown;
         onChange: (v: unknown) => void;
@@ -14,8 +16,10 @@ interface Props<T extends FieldValues> {
 
 const HorizontalRowField = <T extends FieldValues>({
     control,
+    rules,
     name,
     label,
+    errorMessage,
     children,
 }: Props<T>) => {
     return (
@@ -23,13 +27,24 @@ const HorizontalRowField = <T extends FieldValues>({
             <label className="after:content-['：']" htmlFor={name}>
                 {label}
             </label>
-            <Controller
-                control={control}
-                name={name}
-                render={({ field: { onChange, value } }) =>
-                    children({ value, onChange, id: name })
-                }
-            />
+            <div className="flex flex-col gap-y-1">
+                <Controller
+                    control={control}
+                    name={name}
+                    rules={rules}
+                    render={({ field: { onChange, value } }) =>
+                        children({ value, onChange, id: name })
+                    }
+                />
+                {errorMessage?.map(
+                    (v, idx) =>
+                        !!v && (
+                            <p key={idx} className="text-sm text-alert-main">
+                                {v}
+                            </p>
+                        ),
+                )}
+            </div>
         </div>
     );
 };

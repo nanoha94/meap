@@ -1680,9 +1680,15 @@
                         "example": "玉ねぎ"
                     },
                     "quantity": {
-                        "description": "数量",
+                        "description": "数量（計算用）。レスポンス不変条件: requiresQuantity=false または数量なしのとき null。数量ありのときは quantityDisplay とペアで非 null",
                         "type": "number",
-                        "example": 1,
+                        "example": 0.5,
+                        "nullable": true
+                    },
+                    "quantityDisplay": {
+                        "description": "数量の表示表記（正規化済み）。レスポンス不変条件: requiresQuantity=false または数量なしのとき null。数量ありのときは quantity とペアで非 null 非空文字列",
+                        "type": "string",
+                        "example": "1/2",
                         "nullable": true
                     },
                     "unitName": {
@@ -2366,9 +2372,15 @@
                         "example": "牛肉"
                     },
                     "quantity": {
-                        "description": "量",
+                        "description": "量（計算・加算用）。レスポンス専用の派生値。requiresQuantity=false または数量なしのとき null",
                         "type": "number",
                         "example": 1.5,
+                        "nullable": true
+                    },
+                    "quantityDisplay": {
+                        "description": "数量の表示表記（正規化済み）。レスポンスでは quantity とペアで返る（requiresQuantity=false または数量なしのとき両方 null）",
+                        "type": "string",
+                        "example": "1/2",
                         "nullable": true
                     },
                     "unit": {
@@ -3129,10 +3141,11 @@
                                     "type": "string",
                                     "example": "牛肉"
                                 },
-                                "quantity": {
-                                    "description": "量",
-                                    "type": "number",
-                                    "example": 1.5,
+                                "quantityDisplay": {
+                                    "description": "数量の表示表記。分数、小数、整数が指定可能。例: 1/2, 0.5, 200",
+                                    "type": "string",
+                                    "maxLength": 50,
+                                    "example": "1/2",
                                     "nullable": true
                                 },
                                 "unitId": {

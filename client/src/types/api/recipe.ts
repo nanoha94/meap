@@ -56,7 +56,7 @@ export interface IPostPutRecipeRequest {
     ingredients?: {
         id?: string;
         name: string;
-        quantity: number | null;
+        quantityDisplay?: string | null;
         unitId: string;
         categoryId: string;
         order?: number;

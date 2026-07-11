@@ -62,7 +62,8 @@ entity recipe_ingredient_mappings {
     * ingredient_id : string <<FK>>
     * category_id : string <<FK>>
     * unit_id : string <<FK>>
-    * quantity : float
+    * quantity : float / 数量（計算・加算用）
+    * quantity_display : string / 数量の表示表記（例: "1/2", "0.5"。nullable）
     * order : int / ソート順
 }
 
@@ -250,7 +251,8 @@ entity published_recipe_ingredient_mappings #LightGreen {
     * ingredient_id : string <<FK>>
     * category_id : string <<FK>>
     --
-    * quantity : float / 数量
+    * quantity : float / 数量（計算用）
+    * quantity_display : string / 数量の表示表記（例: "1/2", "0.5"。nullable）
     * unit_name : string / 単位（"g", "ml"など）
     * unit_position : ENUM('prefix', 'suffix') / 'prefix'（数字の前）または'suffix'（数字の後）
     * order : int / 表示順

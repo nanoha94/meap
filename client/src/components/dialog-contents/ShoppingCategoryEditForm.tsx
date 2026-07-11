@@ -11,9 +11,10 @@ import {
     TextButton,
 } from '@/components';
 import { BUTTON_TYPE, BUTTON_VARIANT, COLOR_VARIANT, DND_SORTABLE_LIST_TYPE, TMP_ID_PREFIX } from '@/constants';
-import { useDialog, useNavigationGuard } from '@/hooks';
+import { useDialog, useFocusItem, useNavigationGuard } from '@/hooks';
 import { useShoppingCategoryApi, useShoppingStore } from '@/models/shopping';
 import { IShoppingCategory } from '@/types';
+import { focusItemById } from '@/utils';
 
 interface FormData {
     categories: IShoppingCategory[];
@@ -45,6 +46,7 @@ const ShoppingCategoryEditForm: React.FC = () => {
      * カテゴリーの監視
      */
     const watchedCategories = useWatch({ control, name: 'categories' });
+    const { setFocusTargetId } = useFocusItem(watchedCategories);
 
     /**
     * 送信ボタンの無効化判定
@@ -71,14 +73,8 @@ const ShoppingCategoryEditForm: React.FC = () => {
 
         if (emptyItem.length > 0) {
             // 空のアイテムがある場合、最初の空アイテムにフォーカスを当てる
-            const emptyIndex = watchedCategories.findIndex(
-                item => item.id === emptyItem[0].id,
-            );
-            const inputElement = document.querySelector(
-                `[data-item-id="${prefix}${emptyIndex}"]`,
-            ) as HTMLInputElement;
-            if (inputElement) {
-                inputElement.focus();
+            if (emptyItem[0].id) {
+                focusItemById(emptyItem[0].id);
             }
             return;
         }
@@ -92,6 +88,7 @@ const ShoppingCategoryEditForm: React.FC = () => {
 
         // 末尾に追加
         append(newItem);
+        setFocusTargetId(newItem.id);
     };
 
     /**
@@ -151,10 +148,10 @@ const ShoppingCategoryEditForm: React.FC = () => {
                                     render={({ field }) => (
                                         <input
                                             {...field}
-                                            data-item-id={`${TMP_ID_PREFIX.SHOPPING_CATEGORY}${index}`}
+                                            data-item-id={watchedCategories[index]?.id}
                                             type="text"
                                             placeholder="カテゴリー名を入力"
-                                            className="py-2 px-4 flex-1 outline-none bg-white rounded-lg border border-gray-main"
+                                            className="py-2 px-4 flex-1 outline-black bg-white rounded-lg border border-gray-main"
                                         />
                                     )}
                                 />

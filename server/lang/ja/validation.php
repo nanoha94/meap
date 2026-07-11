@@ -162,6 +162,7 @@ return [
     'id_must_be_string' => 'IDは文字列でなければなりません。',
     'specified_id_does_not_exist' => '指定されたIDは存在しません。',
     'required_when_unit_requires_quantity' => '選択した単位では:attributeの指定が必須です。',
+    'invalid_quantity_display' => '数量は整数・小数・分数で入力してください（例: 2、1.5、1/2、1と1/2）',
     'duplicate_ingredient' => '同じ材料名と単位の組み合わせが重複しています。',
 
     /*

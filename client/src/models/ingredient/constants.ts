@@ -25,6 +25,7 @@ export const defaultIngredientItem: IIngredientItem = {
     id: `${TMP_ID_PREFIX.INGREDIENT_ITEM}${Date.now()}`,
     name: '',
     quantity: null,
+    quantityDisplay: null,
     unit: {
         id: '',
         name: '',

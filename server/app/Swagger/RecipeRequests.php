@@ -22,7 +22,14 @@ namespace App\Swagger;
  *             type="object",
  *             @OA\Property(property="id", type="string", nullable=true, description="ID（更新時）", example="1"),
  *             @OA\Property(property="name", type="string", description="食材名", example="牛肉"),
- *             @OA\Property(property="quantity", type="number", nullable=true, description="量", example=1.5),
+ *             @OA\Property(
+ *                 property="quantityDisplay",
+ *                 type="string",
+ *                 nullable=true,
+ *                 maxLength=50,
+ *                 description="数量の表示表記。分数、小数、整数が指定可能。例: 1/2, 0.5, 200",
+ *                 example="1/2"
+ *             ),
  *             @OA\Property(property="unitId", type="string", description="単位ID", example="1"),
  *             @OA\Property(property="categoryId", type="string", description="カテゴリID", example="1"),
  *             @OA\Property(property="order", type="integer", nullable=true, description="並び順", example=1)

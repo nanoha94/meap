@@ -11,9 +11,10 @@ import {
     TextButton,
 } from '@/components';
 import { BUTTON_TYPE, BUTTON_VARIANT, COLOR_VARIANT, DND_SORTABLE_LIST_TYPE, TMP_ID_PREFIX } from '@/constants';
-import { useDialog } from '@/hooks';
+import { useDialog, useFocusItem } from '@/hooks';
 import { DEFAULT_RECIPE_CATEGORY, useRecipeCategoryApi } from '@/models/recipe';
 import { IRecipeCategory } from '@/types';
+import { focusItemById } from '@/utils';
 
 
 interface FormData {
@@ -40,6 +41,7 @@ const RecipeCategoryEditForm: React.FC = () => {
      * カテゴリーの監視
      */
     const watchedCategories = useWatch({ control, name: 'categories' });
+    const { setFocusTargetId } = useFocusItem(watchedCategories);
 
     /**
      * 送信ボタンの無効化判定
@@ -64,14 +66,8 @@ const RecipeCategoryEditForm: React.FC = () => {
 
         if (emptyItem.length > 0) {
             // 空のアイテムがある場合、最初の空アイテムにフォーカスを当てる
-            const emptyIndex = watchedCategories.findIndex(
-                item => item.id === emptyItem[0].id,
-            );
-            const inputElement = document.querySelector(
-                `[data-item-id="${prefix}${emptyIndex}"]`,
-            ) as HTMLInputElement;
-            if (inputElement) {
-                inputElement.focus();
+            if (emptyItem[0].id) {
+                focusItemById(emptyItem[0].id);
             }
             return;
         }
@@ -83,7 +79,8 @@ const RecipeCategoryEditForm: React.FC = () => {
 
         // 末尾に追加
         append(newItem);
-    }, [watchedCategories, append, prefix]);
+        setFocusTargetId(newItem.id);
+    }, [watchedCategories, append, prefix, setFocusTargetId]);
 
     /**
      * カテゴリーを削除
@@ -161,11 +158,15 @@ const RecipeCategoryEditForm: React.FC = () => {
                                     render={({ field }) => (
                                         <input
                                             {...field}
-                                            data-item-id={`${prefix}${index}`}
+                                            data-item-id={watchedCategories[index]?.id}
                                             type="text"
                                             placeholder="カテゴリー名を入力"
-                                            autoFocus
-                                            className="w-full py-2 px-4 flex-1 outline-none bg-white rounded-lg border border-gray-main"
+                                            autoFocus={
+                                                index === 0 &&
+                                                watchedCategories?.length === 1 &&
+                                                watchedCategories[0].name === ''
+                                            }
+                                            className="w-full py-2 px-4 flex-1 outline-black bg-white rounded-lg border border-gray-main"
                                         />
                                     )}
                                 />

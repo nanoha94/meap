@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Requests\Api\AiRecipeParseRequest;
 use App\Interfaces\AiRecipeParserInterface;
+use App\Services\Ai\AiRecipeService;
 use App\Services\AiUsageService;
 use Illuminate\Http\JsonResponse;
 use Throwable;
@@ -13,6 +14,7 @@ class AiRecipeController extends ApiController
     public function __construct(
         private readonly AiRecipeParserInterface $recipeParser,
         private readonly AiUsageService $aiUsageService,
+        private readonly AiRecipeService $aiRecipeService,
     ) {}
 
     /**
@@ -57,9 +59,10 @@ class AiRecipeController extends ApiController
                     $base64Image = base64_encode((string) file_get_contents($image->getRealPath()));
 
                     $parsedRecipe = $this->recipeParser->parseImage($base64Image);
+                    $normalizedRecipe = $this->aiRecipeService->normalizeParsedRecipe($parsedRecipe, $group);
                     $message = __('api.ai.recipe.parsed');
 
-                    return $this->showResponse($parsedRecipe->toArray(), $message);
+                    return $this->showResponse($normalizedRecipe->toArray(), $message);
                 } catch (Throwable $e) {
                     $this->aiUsageService->refundUsage($group, $fromPack);
                     throw $e;

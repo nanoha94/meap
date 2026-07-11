@@ -167,6 +167,7 @@ return [
     'ulid' => 'The :attribute field must be a valid ULID.',
     'uuid' => 'The :attribute field must be a valid UUID.',
     'required_when_unit_requires_quantity' => 'The :attribute field is required for the selected unit.',
+    'invalid_quantity_display' => 'The quantity must be an integer, decimal, or fraction (e.g. 2, 1.5, 1/2, 1 1/2).',
     'duplicate_ingredient' => 'The same ingredient name and unit combination appears more than once.',
 
     /*

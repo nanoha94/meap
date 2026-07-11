@@ -106,7 +106,15 @@ const ProfileEditForm = () => {
                     name="name"
                     label="ユーザー名">
                     {({ value, onChange, id }) => (
-                        <input type="text" id={id} value={value as string} placeholder="ユーザー名を入力" onChange={e => onChange(e.target.value)} className="py-2 px-4 border rounded-lg outline-none border-gray-main" />
+                        <input
+                            autoFocus
+                            type="text"
+                            id={id}
+                            value={value as string}
+                            placeholder="ユーザー名を入力"
+                            onChange={e => onChange(e.target.value)}
+                            className="py-2 px-4 border rounded-lg outline-black border-gray-main"
+                        />
                     )}
                 </VerticalRowField>
             </div>

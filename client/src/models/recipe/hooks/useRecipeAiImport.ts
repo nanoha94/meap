@@ -12,7 +12,11 @@ import {
     IParsedRecipe,
     IParsedRecipeIngredient,
 } from '@/types';
-import { createDefaultData, getItemsInCategory } from '@/utils';
+import {
+    createDefaultData,
+    formatQuantityDisplay,
+    getItemsInCategory,
+} from '@/utils';
 import { DEFAULT_RECIPE_STEP } from '../constants';
 import { RecipeAiImportFormData, RecipeEditFormData, RecipeStepEditFormData } from '../types';
 
@@ -106,12 +110,24 @@ const buildIngredientsFromParsed = (
                 findMasterByName(categories, ingredient.categoryName) ??
                 fallbackCategory;
 
+            const requiresQuantity = matchedUnit?.requiresQuantity;
+            let quantity: number | null = null;
+            let quantityDisplay: string | null = null;
+
+            if (requiresQuantity) {
+                quantity = ingredient.quantity;
+                quantityDisplay =
+                    ingredient.quantityDisplay ??
+                    (quantity != null
+                        ? formatQuantityDisplay(quantity, null)
+                        : null);
+            }
+
             return {
                 ...createDefaultData(defaultIngredientItem, prefix),
                 name: ingredient.name,
-                quantity: matchedUnit?.requiresQuantity
-                    ? ingredient.quantity
-                    : null,
+                quantity,
+                quantityDisplay,
                 unit: matchedUnit ?? null,
                 categoryId: matchedCategory?.id ?? '',
                 order: index,

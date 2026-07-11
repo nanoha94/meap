@@ -39,6 +39,7 @@ export interface IIngredientItem {
     id: string; // 新規作成時はidなしも許容
     name: string;
     quantity: number | null;
+    quantityDisplay: string | null;
     unit: IIngredientUnit | null;
     categoryId: string;
     order?: number;

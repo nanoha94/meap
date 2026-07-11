@@ -4,6 +4,7 @@ import React from "react";
 import { Dayjs } from "dayjs";
 
 import { getDayOfWeekTextColor } from "@/constants";
+import { ShoppingItemBulkCreateFormItem } from "@/models/shopping/types";
 import { IMealCategory, IMealPlan } from "@/types";
 
 import MealCategoryCard from "./MealCategoryCard";
@@ -13,12 +14,13 @@ interface Props {
     mealPlan: IMealPlan | undefined;
     mealCategories: IMealCategory[];
     isChecked: (
-        checkedName: string,
+        name: string,
         recipe: { id: string; name: string },
         mealId: string,
     ) => boolean;
     handleChange: (
-        checkedName: string,
+        name: string,
+        ingredient: ShoppingItemBulkCreateFormItem["ingredient"],
         recipe: { id: string; name: string },
         mealId: string,
     ) => void;

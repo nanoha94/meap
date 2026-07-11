@@ -125,6 +125,7 @@ const ShoppingItemEditForm: React.FC<Props> = ({
                     label="アイテム名/量">
                     {({ value, onChange, id }) => (
                         <input
+                            autoFocus
                             id={id}
                             type="text"
                             value={value as string}
@@ -132,7 +133,7 @@ const ShoppingItemEditForm: React.FC<Props> = ({
                             onChange={e => {
                                 onChange(e);
                             }}
-                            className="py-2 px-4 border rounded-lg outline-none border-gray-main"
+                            className="py-2 px-4 border rounded-lg outline-black border-gray-main"
                         />
                     )}
                 </VerticalRowField>

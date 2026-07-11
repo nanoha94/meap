@@ -6,6 +6,7 @@ import { useForm, useWatch } from 'react-hook-form';
 
 import { EDIT_MODE, EditMode, LINK_TO, TMP_ID_PREFIX } from '@/constants';
 import { IImageWithFile, IIngredientItem, IPostPutRecipeRequest, IRecipe } from '@/types';
+import { normalizeQuantityFromDisplay } from '@/utils';
 import { DEFAULT_RECIPE_EDIT_FORM_DATA } from '../constants';
 import { RecipeEditFormData } from '../types';
 import { useRecipeApi } from './useRecipeApi';
@@ -25,14 +26,17 @@ export const formatIngredientItems = (
             return {
                 ...(v.id && !isNew ? { id: v.id } : {}),
                 name: v.name,
-                quantity: v.quantity,
+                quantityDisplay: normalizeQuantityFromDisplay(
+                    v.quantityDisplay,
+                    v.unit?.requiresQuantity ?? true,
+                    v.quantity,
+                ).quantityDisplay,
                 unitId: v.unit?.id ?? '',
                 categoryId: v.categoryId,
                 order: idx,
             };
         });
 };
-
 
 /**
  * 材料の name + unitId が同一の行を検出し、重複行に対応するエラーキーを返す（サーバー側と同じキー形式）
@@ -149,6 +153,17 @@ export const useRecipeEditForm = (initialOwnerUserId: string, fetchedRecipe?: IR
             prevRecipeIdRef.current = fetchedRecipe.id;
         }
     }, [fetchedRecipe, reset, initialOwnerUserId]);
+
+    // DataHandler で loginUser が後から入るため、新規作成時は ownerUserId を同期する
+    React.useEffect(() => {
+        if (
+            editMode === EDIT_MODE.CREATE &&
+            initialOwnerUserId &&
+            !methods.getValues('ownerUserId')
+        ) {
+            methods.setValue('ownerUserId', initialOwnerUserId);
+        }
+    }, [editMode, initialOwnerUserId, methods]);
 
     const errors = React.useMemo((): Record<string, string> | null => {
         const next: Record<string, string> = {};

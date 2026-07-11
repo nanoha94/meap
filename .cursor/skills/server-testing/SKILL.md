@@ -222,4 +222,5 @@ cd server
 ./tests/sh/02_run_auth_tests.sh         # Auth テスト
 ./tests/sh/03_run_api_tests.sh          # API テスト
 ./tests/sh/04_run_services_tests.sh     # Services テスト
+./tests/sh/05_run_helpers_tests.sh      # Helpers テスト
 ```
