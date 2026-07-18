@@ -57,8 +57,12 @@ class AiRecipeController extends ApiController
                 try {
                     $image = $request->file('image');
                     $base64Image = base64_encode((string) file_get_contents($image->getRealPath()));
+                    $unitNames = $group->ingredientUnits()
+                        ->orderBy('order')
+                        ->pluck('name')
+                        ->all();
 
-                    $parsedRecipe = $this->recipeParser->parseImage($base64Image);
+                    $parsedRecipe = $this->recipeParser->parseImage($base64Image, $unitNames);
                     $normalizedRecipe = $this->aiRecipeService->normalizeParsedRecipe($parsedRecipe, $group);
                     $message = __('api.ai.recipe.parsed');
 

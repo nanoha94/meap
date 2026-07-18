@@ -294,7 +294,8 @@ const RecipeEditPage = ({
                                     control={control}
                                     name="memo"
                                     label="メモ"
-                                    memo="※外部には公開されません"
+                                // TODO: 外部公開機能実装時にコメントアウトを解除
+                                // memo="※外部には公開されません"
                                 >
                                     {({ value, onChange }) => (
                                         <textarea
@@ -343,7 +344,8 @@ const RecipeEditPage = ({
                                     control={control}
                                     name="url"
                                     label="レシピURL"
-                                    memo="※外部に公開する際には空にしてください"
+                                // TODO: 外部公開機能実装時にコメントアウトを解除
+                                // memo="※外部に公開する際には空にしてください"
                                 >
                                     {({ value, onChange, id }) => (
                                         <div className="flex flex-col gap-y-2 min-w-0">

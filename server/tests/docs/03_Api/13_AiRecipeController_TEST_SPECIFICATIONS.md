@@ -12,7 +12,7 @@ AI レシピ画像解析 API（`POST /ai/recipes/parse`）のテスト。AI 利�
 | 3-13-2 | 【AIレシピ画像解析】 quantityDisplay がレスポンスに含まれる | 正常系 | パーサーが quantityDisplay 付きの材料を返す（`1/2`、`1と1/2` など） | HTTP 200、ingredients[].quantityDisplay が返る | `AiRecipeController::parse()` |
 | 3-13-3 | 【AIレシピ画像解析】 適量の材料は quantity / quantityDisplay が両方 null | 正常系 | パーサーが適量単位の材料を返す | HTTP 200、DB 単位マスタの requires_quantity に基づき ingredients[].quantity と quantityDisplay が null | `AiRecipeController::parse()` |
 | 3-13-4 | 【AIレシピ画像解析】 quantity のみの分数は quantityDisplay が補完される | 正常系 | パーサーが quantity=0.5、quantityDisplay=null の材料を返す | HTTP 200、ingredients[].quantity=0.5、quantityDisplay="1/2" | `AiRecipeController::parse()` |
-| 3-13-5 | 【AIレシピ画像解析】 quantity と display が矛盾する場合は quantity を優先する | 正常系 | パーサーが quantity=1、quantityDisplay="1/2"、unitName=大さじ の材料を返す | HTTP 200、ingredients[].quantity=1、quantityDisplay="1" | `AiRecipeController::parse()` |
+| 3-13-5 | 【AIレシピ画像解析】 quantity と display が矛盾する場合は display を優先する | 正常系 | パーサーが quantity=1、quantityDisplay="1/2"、unitName=大さじ の材料を返す | HTTP 200、ingredients[].quantity=0.5、quantityDisplay="1/2" | `AiRecipeController::parse()` |
 | 3-13-6 | 【AIレシピ画像解析】 未認証 | 異常系 | 認証なし | HTTP 401 | `AiRecipeController::parse()` |
 | 3-13-7 | 【AIレシピ画像解析】 バリデーションエラー（image 未指定） | 異常系 | image を送信しない | HTTP 422、image のバリデーションエラー | `AiRecipeController::parse()` |
 | 3-13-8 | 【AIレシピ画像解析】 バリデーションエラー（image が画像ファイルでない） | 異常系 | PDF ファイルを送信 | HTTP 422、image のバリデーションエラー | `AiRecipeController::parse()` |

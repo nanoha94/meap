@@ -29,7 +29,7 @@
 | 5-1-19 | 【normalizeQuantityPair】 quantity のみのとき display を補完する | 正常系 | `(1.0, null, true)` | quantity=1.0, quantityDisplay=`"1"` | `Quantity::normalizeQuantityPair()` |
 | 5-1-20 | 【normalizeQuantityPair】 不正 display は quantity から補完する | 正常系 | `(0.5, "abc", true)` | quantity=0.5, quantityDisplay=`"1/2"` | `Quantity::normalizeQuantityPair()` |
 | 5-1-21 | 【normalizeQuantityPair】 数量なしは両方 null | 正常系 | `(null, null, true)` | quantity=null, quantityDisplay=null | `Quantity::normalizeQuantityPair()` |
-| 5-1-22 | 【normalizeQuantityPair】 quantity と display が矛盾する場合は quantity を優先する | 正常系 | `(1.0, "1/2", true)`, `(1.5, "2 1/2", true)` | (1.0, `"1"`), (1.5, `"1 1/2"`) | `Quantity::normalizeQuantityPair()` |
+| 5-1-22 | 【normalizeQuantityPair】 quantity と display が矛盾する場合は display を優先する | 正常系 | `(1.0, "1/2", true)`, `(1.5, "2 1/2", true)`, `(0.5, "1と1/2", true)` | (0.5, `"1/2"`), (2.5, `"2 1/2"`), (1.5, `"1と1/2"`) | `Quantity::normalizeQuantityPair()` |
 | 5-1-23 | 【normalizeQuantityPair】 quantity と display が一致する場合は display から導出する | 正常系 | `(0.5, "1/2", true)` | quantity=0.5, quantityDisplay=`"1/2"` | `Quantity::normalizeQuantityPair()` |
 | 5-1-24 | 【stripUnitFromDisplay】 単位マスタの position に応じて単位名を除去する | 正常系 | prefix: `("大さじ1", "大さじ", "prefix")` ほか。suffix: `("1個", "個", "suffix")`, `("200g", "g", "suffix")` ほか。`unitPosition` が `null` のときは除去しない | prefix は数値部分のみ、suffix は数値部分のみ | `Quantity::stripUnitFromDisplay()` |
 | 5-1-25 | 【parseQuantityDisplayToNumber】 全角スペース区切りの帯分数をパースする | 正常系 | `"1\u30001/2"`（U+3000 全角スペース） | 1.5 | `Quantity::parseQuantityDisplayToNumber()` |

@@ -235,7 +235,7 @@ test('3-13-4: 【AIレシピ画像解析】 quantity のみの分数は quantity
     ]);
 });
 
-test('3-13-5: 【AIレシピ画像解析】 quantity と display が矛盾する場合は quantity を優先する', function () {
+test('3-13-5: 【AIレシピ画像解析】 quantity と display が矛盾する場合は display を優先する', function () {
     $parsedRecipeWithConflict = ParsedRecipe::fromArray([
         'name' => '矛盾レシピ',
         'servingCount' => 2,
@@ -268,8 +268,8 @@ test('3-13-5: 【AIレシピ画像解析】 quantity と display が矛盾する
             'ingredients' => [
                 [
                     'name' => '塩',
-                    'quantity' => 1,
-                    'quantityDisplay' => '1',
+                    'quantity' => 0.5,
+                    'quantityDisplay' => '1/2',
                     'unitName' => '大さじ',
                     'categoryName' => '調味料',
                 ],

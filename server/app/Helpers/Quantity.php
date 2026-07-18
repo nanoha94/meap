@@ -239,11 +239,6 @@ class Quantity
             $parsed = self::parseQuantityDisplayToNumber($trimmed);
 
             if ($parsed !== null) {
-                // display バリデーションなし（AI 解析など）では quantity と display が矛盾する場合、quantity を優先する
-                if (! $validateDisplay && $quantity !== null && ! self::isNearlyEqual($parsed, $quantity)) {
-                    return self::pairFromQuantity($quantity, $separatorHint);
-                }
-
                 return [
                     'quantity' => $parsed,
                     'quantityDisplay' => self::normalizeQuantityDisplay($trimmed, $parsed),

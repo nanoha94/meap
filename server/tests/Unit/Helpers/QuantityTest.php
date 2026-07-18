@@ -158,15 +158,20 @@ test('5-1-21: 【normalizeQuantityPair】 数量なしは両方 null', function 
     ]);
 });
 
-test('5-1-22: 【normalizeQuantityPair】 quantity と display が矛盾する場合は quantity を優先する', function () {
+test('5-1-22: 【normalizeQuantityPair】 quantity と display が矛盾する場合は display を優先する', function () {
     expect(Quantity::normalizeQuantityPair(1.0, '1/2', true))->toBe([
-        'quantity' => 1.0,
-        'quantityDisplay' => '1',
+        'quantity' => 0.5,
+        'quantityDisplay' => '1/2',
     ]);
 
     expect(Quantity::normalizeQuantityPair(1.5, '2 1/2', true))->toBe([
+        'quantity' => 2.5,
+        'quantityDisplay' => '2 1/2',
+    ]);
+
+    expect(Quantity::normalizeQuantityPair(0.5, '1と1/2', true))->toBe([
         'quantity' => 1.5,
-        'quantityDisplay' => '1 1/2',
+        'quantityDisplay' => '1と1/2',
     ]);
 });
 

@@ -178,7 +178,7 @@ test('4-4-6: 【normalizeParsedRecipe】 帯分数 display の「と」区切り
     expect($ingredient->quantityDisplay)->toBe('1と1/2');
 });
 
-test('4-4-7: 【normalizeParsedRecipe】 quantity と display が矛盾する場合は quantity を優先する', function () {
+test('4-4-7: 【normalizeParsedRecipe】 quantity と display が矛盾する場合は display を優先する', function () {
     $parsedRecipe = ParsedRecipe::fromArray([
         'name' => '矛盾レシピ',
         'servingCount' => 2,
@@ -197,8 +197,8 @@ test('4-4-7: 【normalizeParsedRecipe】 quantity と display が矛盾する場
     $normalized = $this->service->normalizeParsedRecipe($parsedRecipe, $this->group);
     $ingredient = $normalized->ingredients[0];
 
-    expect($ingredient->quantity)->toBe(1.0);
-    expect($ingredient->quantityDisplay)->toBe('1');
+    expect($ingredient->quantity)->toBe(0.5);
+    expect($ingredient->quantityDisplay)->toBe('1/2');
 });
 
 test('4-4-8: 【normalizeParsedRecipe】 quantityDisplay に混入した prefix 単位名を除去する', function () {
@@ -245,6 +245,37 @@ test('4-4-9: 【normalizeParsedRecipe】 quantityDisplay に混入した suffix 
 
     expect($ingredient->quantity)->toBe(1.0);
     expect($ingredient->quantityDisplay)->toBe('1');
+});
+
+test('4-4-11: 【normalizeParsedRecipe】 帯分数 display の分数部分だけ quantity に入っている場合は display を優先する', function () {
+    $parsedRecipe = ParsedRecipe::fromArray([
+        'name' => '照り煮',
+        'servingCount' => 2,
+        'ingredients' => [
+            [
+                'name' => 'サラダ油',
+                'quantity' => 0.5,
+                'quantityDisplay' => '1/2',
+                'unitName' => '大さじ',
+                'categoryName' => '調味料',
+            ],
+            [
+                'name' => 'しょうゆ',
+                'quantity' => 0.5,
+                'quantityDisplay' => '1と1/2',
+                'unitName' => '大さじ',
+                'categoryName' => '調味料',
+            ],
+        ],
+        'steps' => [],
+    ]);
+
+    $normalized = $this->service->normalizeParsedRecipe($parsedRecipe, $this->group);
+
+    expect($normalized->ingredients[0]->quantity)->toBe(0.5);
+    expect($normalized->ingredients[0]->quantityDisplay)->toBe('1/2');
+    expect($normalized->ingredients[1]->quantity)->toBe(1.5);
+    expect($normalized->ingredients[1]->quantityDisplay)->toBe('1と1/2');
 });
 
 test('4-4-10: 【normalizeParsedRecipe】 全角 quantityDisplay を半角に正規化する', function () {

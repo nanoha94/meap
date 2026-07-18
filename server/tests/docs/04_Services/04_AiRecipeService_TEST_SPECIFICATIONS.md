@@ -14,10 +14,11 @@ AI レシピ画像解析結果（`ParsedRecipe`）を、グループの単位マ
 | 4-4-4 | 【normalizeParsedRecipe】 DB に存在しない unitName は requires_quantity=true として正規化する | 正常系 | quantity=200、quantityDisplay=null、unitName=グラム（DB 未登録） | quantity=200、quantityDisplay="200"、unitName は入力のまま | `AiRecipeService::normalizeParsedRecipe()` |
 | 4-4-5 | 【normalizeParsedRecipe】 帯分数 display のスペース区切りを保持する | 正常系 | quantity=1.5、quantityDisplay="1 1/2"、unitName=個 | quantity=1.5、quantityDisplay="1 1/2" | `AiRecipeService::normalizeParsedRecipe()` |
 | 4-4-6 | 【normalizeParsedRecipe】 帯分数 display の「と」区切りを保持する | 正常系 | quantity=1.5、quantityDisplay="1と1/2"、unitName=大さじ | quantity=1.5、quantityDisplay="1と1/2" | `AiRecipeService::normalizeParsedRecipe()` |
-| 4-4-7 | 【normalizeParsedRecipe】 quantity と display が矛盾する場合は quantity を優先する | 正常系 | quantity=1、quantityDisplay="1/2"、unitName=大さじ | quantity=1、quantityDisplay="1" | `AiRecipeService::normalizeParsedRecipe()` |
+| 4-4-7 | 【normalizeParsedRecipe】 quantity と display が矛盾する場合は display を優先する | 正常系 | quantity=1、quantityDisplay="1/2"、unitName=大さじ | quantity=0.5、quantityDisplay="1/2" | `AiRecipeService::normalizeParsedRecipe()` |
 | 4-4-8 | 【normalizeParsedRecipe】 quantityDisplay に混入した prefix 単位名を除去する | 正常系 | quantity=1、quantityDisplay="大さじ1"、unitName=大さじ | quantity=1、quantityDisplay="1" | `AiRecipeService::normalizeParsedRecipe()` |
 | 4-4-9 | 【normalizeParsedRecipe】 quantityDisplay に混入した suffix 単位名を除去する | 正常系 | quantity=1、quantityDisplay="1個"、unitName=個 | quantity=1、quantityDisplay="1" | `AiRecipeService::normalizeParsedRecipe()` |
 | 4-4-10 | 【normalizeParsedRecipe】 全角 quantityDisplay を半角に正規化する | 正常系 | quantity=1.5、quantityDisplay="１と１／２"、unitName=大さじ | quantity=1.5、quantityDisplay="1と1/2" | `AiRecipeService::normalizeParsedRecipe()` |
+| 4-4-11 | 【normalizeParsedRecipe】 帯分数 display の分数部分だけ quantity に入っている場合は display を優先する | 正常系 | サラダ油 quantity=0.5 display="1/2"、しょうゆ quantity=0.5 display="1と1/2"、いずれも unitName=大さじ | サラダ油は 0.5/"1/2"、しょうゆは 1.5/"1と1/2" | `AiRecipeService::normalizeParsedRecipe()` |
 
 ## テスト実行方法
 
