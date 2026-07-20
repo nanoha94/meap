@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Requests\Api\AiRecipeParseRequest;
+use App\Http\Requests\Api\AiRecipeParseUrlRequest;
 use App\Interfaces\AiRecipeParserInterface;
 use App\Services\Ai\AiRecipeService;
 use App\Services\AiUsageService;
@@ -19,7 +20,7 @@ class AiRecipeController extends ApiController
 
     /**
      * @OA\Post(
-     *     path="/ai/recipes/parse",
+     *     path="/ai/recipes/parse-img",
      *     summary="画像からレシピ情報をAI解析",
      *     tags={"AI"},
      *     security={{"sanctum":{}}},
@@ -44,10 +45,10 @@ class AiRecipeController extends ApiController
      *     @OA\Response(response=429, ref="#/components/responses/AiUsageLimitExceeded")
      * )
      */
-    public function parse(AiRecipeParseRequest $request): JsonResponse
+    public function parseImage(AiRecipeParseRequest $request): JsonResponse
     {
-        $operation = __('operations.ai.recipe.parse');
-        $failedMessage = __('api.ai.recipe.parse_failed');
+        $operation = __('operations.ai.recipe.parse_img');
+        $failedMessage = __('api.ai.recipe.parse_img_failed');
 
         return $this->executeWithExceptionHandling(
             function () use ($request) {
@@ -64,7 +65,65 @@ class AiRecipeController extends ApiController
 
                     $parsedRecipe = $this->recipeParser->parseImage($base64Image, $unitNames);
                     $normalizedRecipe = $this->aiRecipeService->normalizeParsedRecipe($parsedRecipe, $group);
-                    $message = __('api.ai.recipe.parsed');
+                    $message = __('api.ai.recipe.parsed_img');
+
+                    return $this->showResponse($normalizedRecipe->toArray(), $message);
+                } catch (Throwable $e) {
+                    $this->aiUsageService->refundUsage($group, $fromPack);
+                    throw $e;
+                }
+            },
+            $request,
+            $failedMessage,
+            $operation
+        );
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/ai/recipes/parse-url",
+     *     summary="URLからレシピ情報をAI解析",
+     *     tags={"AI"},
+     *     security={{"sanctum":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"url"},
+     *             @OA\Property(
+     *                 property="url",
+     *                 type="string",
+     *                 format="uri",
+     *                 description="解析対象のレシピURL（2048文字以下）",
+     *                 example="https://example.com/recipe/123"
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=200, ref="#/components/responses/AiRecipeParseSuccess"),
+     *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
+     *     @OA\Response(response=422, ref="#/components/responses/ValidationErrors"),
+     *     @OA\Response(response=429, ref="#/components/responses/AiUsageLimitExceeded")
+     * )
+     */
+    public function parseUrl(AiRecipeParseUrlRequest $request): JsonResponse
+    {
+        $operation = __('operations.ai.recipe.parse_url');
+        $failedMessage = __('api.ai.recipe.parse_url_failed');
+
+        return $this->executeWithExceptionHandling(
+            function () use ($request) {
+                $group = $this->getUserGroup($request);
+                $fromPack = $this->aiUsageService->consumeUsage($group);
+
+                try {
+                    $url = $request->validated('url');
+                    $unitNames = $group->ingredientUnits()
+                        ->orderBy('order')
+                        ->pluck('name')
+                        ->all();
+
+                    $parsedRecipe = $this->recipeParser->parseUrl($url, $unitNames);
+                    $normalizedRecipe = $this->aiRecipeService->normalizeParsedRecipe($parsedRecipe, $group);
+                    $message = __('api.ai.recipe.parsed_url');
 
                     return $this->showResponse($normalizedRecipe->toArray(), $message);
                 } catch (Throwable $e) {

@@ -61,8 +61,10 @@ return [
 
     'ai' => [
         'recipe' => [
-            'parsed' => '画像からレシピ情報を読み取りました。',
-            'parse_failed' => '画像からのレシピ読み取りに失敗しました。',
+            'parsed_img' => '画像からレシピ情報を読み取りました。',
+            'parsed_url' => 'URLからレシピ情報を読み取りました。',
+            'parse_img_failed' => '画像からのレシピ読み取りに失敗しました。',
+            'parse_url_failed' => 'URLからのレシピ読み取りに失敗しました。',
         ],
         'usage' => [
             'monthly_limit_exceeded' => '今月のAI利用回数の上限に達しました。',

@@ -156,7 +156,7 @@ return [
     'unique' => ':attributeの値は既に存在しています。',
     'uploaded' => ':attributeのアップロードに失敗しました。',
     'uppercase' => ':attributeは、大文字のみで指定してください。',
-    'url' => ':attributeに正しい形式を指定してください。',
+    'url' => ':attributeに正しい形式のURLを指定してください。',
     'ulid' => ':attributeに有効なULIDを指定してください。',
     'uuid' => ':attributeに有効なUUIDを指定してください。',
     'id_must_be_string' => 'IDは文字列でなければなりません。',

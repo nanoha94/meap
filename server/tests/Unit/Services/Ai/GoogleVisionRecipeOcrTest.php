@@ -34,7 +34,7 @@ function expectGoogleVisionServerError(callable $callback): void
         test()->fail('Expected HttpException was not thrown.');
     } catch (HttpException $e) {
         expect($e->getStatusCode())->toBe(HttpStatusCode::BAD_GATEWAY->value);
-        expect($e->getMessage())->toBe(__('api.general.server_error'));
+        expect($e->getMessage())->toBe('サーバー内部エラーが発生しました。');
     }
 }
 

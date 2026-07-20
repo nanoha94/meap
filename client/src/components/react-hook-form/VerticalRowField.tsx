@@ -20,6 +20,7 @@ interface Props<T extends FieldValues> {
     children: (fieldProps: {
         value: unknown;
         onChange: (v: unknown) => void;
+        onBlur: () => void;
         id: string;
     }) => React.ReactElement;
 }
@@ -40,15 +41,15 @@ const VerticalRowField = <T extends FieldValues>({
                 {label}
                 {required && <span className="text-alert-main">（必須）</span>}
             </label>
-            {memo && <p className="text-xs">{memo}</p>}
+            {memo && <p className="text-xs whitespace-pre-line">{memo}</p>}
         </div>
         <div className="flex flex-col gap-y-1">
             <Controller
                 control={control}
                 name={name}
                 rules={rules}
-                render={({ field: { onChange, value } }) =>
-                    children({ value, onChange, id: name })
+                render={({ field: { onChange, onBlur, value } }) =>
+                    children({ value, onChange, onBlur, id: name })
                 }
             />
             {errorMessage?.map(

@@ -208,6 +208,29 @@ $response->assertJsonStructure(['success', 'message', 'data' => [...]]);
 $response->assertHeader('Content-Type', 'application/json');
 ```
 
+#### レスポンス `message` の検証
+
+API レスポンスの `message` やバリデーションエラー文言を検証するときは、**言語ファイルのキーを `__()` で参照しない**。期待する文言を **日本語のリテラル文字列** で書く。
+
+対象例: `assertJson` の `message`、`assertContains` のエラーメッセージ、`toThrow` の第2引数、モックの `andThrow(new HttpException(..., '...'))` など。
+
+```php
+// OK: 文言そのものを検証する
+$response->assertJson([
+    'success' => true,
+    'message' => '画像からレシピ情報を読み取りました。',
+]);
+$this->assertContains('同じ材料名と単位の組み合わせが重複しています。', $responseData['errors']['ingredients.1.name']);
+
+// NG: キーと lang ファイルが常に一致するため、文言の誤りを見逃しやすい
+$response->assertJson([
+    'success' => true,
+    'message' => __('api.ai.recipe.parsed_img'),
+]);
+```
+
+言語ファイル側の変更と API が返す実際の文言の不一致をテストで検知するため、**期待値にはユーザー向け文言を直接記述** する。
+
 ## テスト実行
 
 ```bash

@@ -133,7 +133,7 @@ const ShoppingItemEditForm: React.FC<Props> = ({
                             onChange={e => {
                                 onChange(e);
                             }}
-                            className="py-2 px-4 border rounded-lg outline-black border-gray-main"
+                            className="py-2 px-4 border rounded-lg border-gray-main"
                         />
                     )}
                 </VerticalRowField>

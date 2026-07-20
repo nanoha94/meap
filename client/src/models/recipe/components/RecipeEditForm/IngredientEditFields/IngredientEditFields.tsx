@@ -258,11 +258,16 @@ const IngredientEditFields = ({ control, errors }: Props) => {
                                         index: number,
                                         item: IIngredientItem,
                                     ) => updateItem(offsetIndex + index, item)}
-                                    errors={localIndex =>
-                                        errors?.[
-                                        `ingredients.${offsetIndex + localIndex}.name`
-                                        ] ?? ''
-                                    }
+                                    errors={localIndex => {
+                                        const idx = offsetIndex + localIndex;
+                                        return (
+                                            errors?.[`ingredients.${idx}.name`]
+                                            ?? errors?.[
+                                                `ingredients.${idx}.quantityDisplay`
+                                            ]
+                                            ?? ''
+                                        );
+                                    }}
                                 />
                             );
                         })}

@@ -7,22 +7,32 @@ use App\Enums\HttpStatusCode;
 use App\Interfaces\AiRecipeParserInterface;
 use App\Interfaces\RecipeOcrInterface;
 use App\Traits\LoggingTrait;
+use DOMDocument;
+use Illuminate\Support\Facades\Http;
 use OpenAI\Laravel\Facades\OpenAI;
 use finfo;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;
 
 /**
- * レシピ画像パーサー。
+ * レシピ画像・URL パーサー。
  *
- * 1. {@see RecipeOcrInterface} で画像からテキストを OCR 抽出
- * 2. OpenAI で抽出テキストを JSON に構造化
+ * 画像: {@see RecipeOcrInterface} で OCR 抽出 → OpenAI で JSON 構造化
+ * URL: HTML 取得 → テキスト抽出 → OpenAI で JSON 構造化
  *
- * 画像は OCR API 呼び出しのみに使用し、サーバーには保存しない（著作権配慮）。
+ * 画像・HTML は解析のみに使用し、サーバーには保存しない（著作権配慮）。
  */
 class OpenAiRecipeParser implements AiRecipeParserInterface
 {
     use LoggingTrait;
+
+    private const HTTP_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+
+    /** HTML レスポンスの最大バイト数（5MB） */
+    private const MAX_HTML_BYTES = 5 * 1024 * 1024;
+
+    /** OpenAI 構造化に渡す抽出テキストの最大文字数（トークン制限考慮） */
+    private const MAX_EXTRACTED_TEXT_LENGTH = 50000;
 
     private string $textModel;
 
@@ -43,25 +53,161 @@ class OpenAiRecipeParser implements AiRecipeParserInterface
     public function parseImage(string $base64Image, array $unitNames): ParsedRecipe
     {
         $mimeType = $this->detectMimeType($base64Image);
-        $ocrText = $this->extractTextFromImage($base64Image, $mimeType);
+        $ocrText = $this->recipeOcr->extract($base64Image, $mimeType);
 
-        return $this->structureRecipeFromText($ocrText, $unitNames);
+        return $this->structureRecipeFromText(
+            $ocrText,
+            $unitNames,
+            '以下はレシピ画像から書き写したテキストです。',
+        );
     }
 
     /**
-     * 画像からレシピのテキストを OCR 抽出する（第1段階）。
+     * URL 先の Web ページからレシピ情報を解析する。
+     *
+     * @param  list<string>  $unitNames
+     *
+     * @throws HttpException HTML 取得失敗時は 502、抽出テキスト空時は 400
      */
-    private function extractTextFromImage(string $base64Image, string $mimeType): string
+    public function parseUrl(string $url, array $unitNames): ParsedRecipe
     {
-        return $this->recipeOcr->extract($base64Image, $mimeType);
+        $html = $this->fetchHtmlFromUrl($url);
+        $pageText = $this->extractTextFromHtml($html);
+        $pageText = $this->truncateTextForTokenLimit($pageText);
+
+        if ($pageText === '') {
+            throw new HttpException(
+                HttpStatusCode::BAD_REQUEST->value,
+                __('api.general.validation_error'),
+            );
+        }
+
+        return $this->structureRecipeFromText(
+            $pageText,
+            $unitNames,
+            '以下はレシピWebページから抽出したテキストです。',
+        );
     }
 
     /**
-     * OCR 抽出テキストをレシピ JSON に構造化する（第2段階）。
+     * URL 先の HTML を HTTP GET で取得する。
+     *
+     * @throws HttpException
+     */
+    private function fetchHtmlFromUrl(string $url): string
+    {
+        try {
+            $response = Http::timeout(30)
+                ->withHeaders(['User-Agent' => self::HTTP_USER_AGENT])
+                ->get($url);
+        } catch (Throwable $e) {
+            $this->logWarning(
+                __METHOD__,
+                __('operations.ai.recipe.parse_img'),
+                'Failed to fetch recipe URL.',
+                [
+                    'url' => $url,
+                    'exception_message' => $e->getMessage(),
+                ],
+            );
+
+            throw new HttpException(
+                HttpStatusCode::BAD_GATEWAY->value,
+                __('api.general.server_error'),
+                $e,
+            );
+        }
+
+        if (! $response->successful()) {
+            $this->logWarning(
+                __METHOD__,
+                __('operations.ai.recipe.parse_img'),
+                'Recipe URL returned non-success status.',
+                [
+                    'url' => $url,
+                    'status' => $response->status(),
+                ],
+            );
+
+            throw new HttpException(
+                HttpStatusCode::BAD_GATEWAY->value,
+                __('api.general.server_error'),
+            );
+        }
+
+        $body = $response->body();
+
+        if ($body === '' || strlen($body) > self::MAX_HTML_BYTES) {
+            $this->logWarning(
+                __METHOD__,
+                __('operations.ai.recipe.parse_img'),
+                'Recipe URL response is empty or too large.',
+                [
+                    'url' => $url,
+                    'body_length' => strlen($body),
+                ],
+            );
+
+            throw new HttpException(
+                HttpStatusCode::BAD_GATEWAY->value,
+                __('api.general.server_error'),
+            );
+        }
+
+        return $body;
+    }
+
+    /**
+     * HTML から script / style を除去し、可視テキストを抽出する。
+     */
+    private function extractTextFromHtml(string $html): string
+    {
+        $dom = new DOMDocument();
+        $previousLibxmlSetting = libxml_use_internal_errors(true);
+
+        $dom->loadHTML(
+            '<?xml encoding="utf-8" ?>' . $html,
+            LIBXML_NOERROR | LIBXML_NOWARNING | LIBXML_NONET,
+        );
+
+        libxml_clear_errors();
+        libxml_use_internal_errors($previousLibxmlSetting);
+
+        foreach (['script', 'style', 'noscript'] as $tagName) {
+            $elements = $dom->getElementsByTagName($tagName);
+
+            for ($index = $elements->length - 1; $index >= 0; $index--) {
+                $element = $elements->item($index);
+                $element?->parentNode?->removeChild($element);
+            }
+        }
+
+        $text = $dom->textContent ?? '';
+        $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $text = preg_replace('/[ \t\x{00A0}]+/u', ' ', $text) ?? $text;
+        $text = preg_replace('/\R{3,}/u', "\n\n", $text) ?? $text;
+
+        return trim($text);
+    }
+
+    /**
+     * OpenAI 構造化のトークン制限を考慮して抽出テキストを切り詰める。
+     */
+    private function truncateTextForTokenLimit(string $text): string
+    {
+        if (mb_strlen($text) <= self::MAX_EXTRACTED_TEXT_LENGTH) {
+            return $text;
+        }
+
+        return mb_substr($text, 0, self::MAX_EXTRACTED_TEXT_LENGTH);
+    }
+
+    /**
+     * 抽出テキストをレシピ JSON に構造化する。
      *
      * @param  list<string>  $unitNames
      */
-    private function structureRecipeFromText(string $ocrText, array $unitNames): ParsedRecipe
+    private function structureRecipeFromText(string $text, array $unitNames, string $sourceDescription): ParsedRecipe
     {
         $decoded = $this->requestJsonCompletion(
             model: $this->textModel,
@@ -73,9 +219,9 @@ class OpenAiRecipeParser implements AiRecipeParserInterface
                 [
                     'role' => 'user',
                     'content' => <<<USER
-以下はレシピ画像から書き写したテキストです。このテキストだけを根拠に、指定の JSON 形式へ構造化してください。テキストにない情報は推測しないでください。
+{$sourceDescription}このテキストだけを根拠に、指定の JSON 形式へ構造化してください。テキストにない情報は推測しないでください。
 
-{$ocrText}
+{$text}
 USER,
                 ],
             ],
@@ -105,7 +251,7 @@ USER,
         } catch (Throwable $e) {
             $this->logWarning(
                 __METHOD__,
-                __('operations.ai.recipe.parse'),
+                __('operations.ai.recipe.parse_img'),
                 $failureContext,
                 [
                     'exception_message' => $e->getMessage(),
@@ -124,7 +270,7 @@ USER,
         if (! is_string($content) || $content === '') {
             $this->logWarning(
                 __METHOD__,
-                __('operations.ai.recipe.parse'),
+                __('operations.ai.recipe.parse_img'),
                 'OpenAI API returned empty content.',
             );
 
@@ -139,7 +285,7 @@ USER,
         } catch (Throwable $e) {
             $this->logWarning(
                 __METHOD__,
-                __('operations.ai.recipe.parse'),
+                __('operations.ai.recipe.parse_img'),
                 'Failed to decode OpenAI JSON response.',
                 [
                     'exception_message' => $e->getMessage(),
@@ -237,6 +383,7 @@ unitName のルール:
 - 「1枚(250g)」は括弧外を優先（quantityDisplay="1", unitName=枚）
 
 prefix 単位（大さじ・小さじ）:
+- 「大１」「大1」は「大さじ1」、「小１」「小1」は「小さじ1」の略記として解釈する
 - quantityDisplay には数値部分のみ（"1/2", "1と1/2" など。単位名は含めない）
 - 「1/2」と「1と1/2」は別表記。「と」を省略しない
 

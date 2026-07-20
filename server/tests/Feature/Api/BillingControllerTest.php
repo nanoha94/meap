@@ -335,7 +335,7 @@ test('3-15-16: 【サブスク開始】 既にサブスク済み', function () {
     $this->mock(BillingService::class, function ($mock) {
         $mock->shouldReceive('createSubscriptionCheckout')
             ->once()
-            ->andThrow(new HttpException(422, __('api.billing.already_subscribed')));
+            ->andThrow(new HttpException(422, 'すでにサブスクリプションに加入しています。'));
     });
 
     $response = $this->actingAs($this->user)->post('/billing/subscribe/standard');
@@ -429,7 +429,7 @@ test('3-15-22: 【Customer Portal】 課金アカウント未登録', function (
     $this->mock(BillingService::class, function ($mock) {
         $mock->shouldReceive('createPortalSession')
             ->once()
-            ->andThrow(new HttpException(422, __('api.billing.no_billing_account')));
+            ->andThrow(new HttpException(422, '課金情報が登録されていません。先にサブスクリプションまたは買い切りパックを購入してください。'));
     });
 
     $response = $this->actingAs($this->user)->post('/billing/portal');
@@ -543,7 +543,7 @@ test('3-15-28: 【プラン変更予定取り消し】 予定変更なし', func
     $this->mock(BillingService::class, function ($mock) {
         $mock->shouldReceive('resumeSubscription')
             ->once()
-            ->andThrow(new HttpException(422, __('api.billing.no_pending_plan_change')));
+            ->andThrow(new HttpException(422, '取り消すプラン変更予定がありません。'));
     });
 
     $response = $this->actingAs($this->user)->post('/billing/subscription/resume');

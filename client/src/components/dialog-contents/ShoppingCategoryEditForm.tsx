@@ -151,7 +151,7 @@ const ShoppingCategoryEditForm: React.FC = () => {
                                             data-item-id={watchedCategories[index]?.id}
                                             type="text"
                                             placeholder="カテゴリー名を入力"
-                                            className="py-2 px-4 flex-1 outline-black bg-white rounded-lg border border-gray-main"
+                                            className="py-2 px-4 flex-1 bg-white rounded-lg border border-gray-main"
                                         />
                                     )}
                                 />

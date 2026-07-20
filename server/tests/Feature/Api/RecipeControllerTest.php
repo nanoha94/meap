@@ -2210,7 +2210,7 @@ test('3-7-76: 【新規作成】 バリデーションエラー（ingredients.\*
     $response->assertJsonValidationErrors(['ingredients.0.quantityDisplay']);
 
     $responseData = $response->json();
-    $this->assertContains(__('validation.invalid_quantity_display'), $responseData['errors']['ingredients.0.quantityDisplay']);
+    $this->assertContains('数量は整数・小数・分数で入力してください（例: 2、1.5、1/2、1と1/2）', $responseData['errors']['ingredients.0.quantityDisplay']);
 });
 
 test('3-7-77: 【新規作成】 バリデーションエラー（ingredients.\*.quantityDisplay が文字列でない）', function () {
@@ -2875,7 +2875,7 @@ test('3-7-97: 【新規作成】 バリデーションエラー（ingredients �
     $response->assertJsonValidationErrors(['ingredients.1.name']);
 
     $responseData = $response->json();
-    $this->assertContains(__('validation.duplicate_ingredient'), $responseData['errors']['ingredients.1.name']);
+    $this->assertContains('同じ材料名と単位の組み合わせが重複しています。', $responseData['errors']['ingredients.1.name']);
 });
 
 test('3-7-98: 【新規作成】 存在しない食材単位 ID 指定', function () {
@@ -4942,7 +4942,7 @@ test('3-7-164: 【更新】 バリデーションエラー（ingredients.\*.quan
     $response->assertJsonValidationErrors(['ingredients.0.quantityDisplay']);
 
     $responseData = $response->json();
-    $this->assertContains(__('validation.invalid_quantity_display'), $responseData['errors']['ingredients.0.quantityDisplay']);
+    $this->assertContains('数量は整数・小数・分数で入力してください（例: 2、1.5、1/2、1と1/2）', $responseData['errors']['ingredients.0.quantityDisplay']);
 });
 
 test('3-7-165: 【更新】 バリデーションエラー（ingredients.\*.quantityDisplay が文字列でない）', function () {
@@ -5399,7 +5399,7 @@ test('3-7-185: 【更新】 バリデーションエラー（ingredients 同一 
     $response->assertJsonValidationErrors(['ingredients.1.name']);
 
     $responseData = $response->json();
-    $this->assertContains(__('validation.duplicate_ingredient'), $responseData['errors']['ingredients.1.name']);
+    $this->assertContains('同じ材料名と単位の組み合わせが重複しています。', $responseData['errors']['ingredients.1.name']);
 });
 
 test('3-7-186: 【更新】 存在しない食材単位 ID 指定', function () {

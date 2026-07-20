@@ -31,7 +31,7 @@ const DialogField = ({ value, placeholder, hasError, onOpenDialog }: Props) => {
                 type="text"
                 readOnly
                 placeholder={placeholder}
-                className={`py-2 px-4 w-full flex-1 bg-white rounded-lg border ${hasError ? 'border-alert-main border-2' : 'border-gray-main outline-black'} pointer-events-none`}
+                className={`py-2 px-4 w-full flex-1 bg-white rounded-lg border ${hasError ? 'border-alert-main border-2' : 'border-gray-main'} pointer-events-none`}
             />
             <div
                 className="absolute p-1 right-2 top-1/2 -translate-y-1/2 cursor-pointer rounded-full transition-colors group-hover:bg-gray-light"

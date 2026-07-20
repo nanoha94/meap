@@ -188,7 +188,7 @@ test('4-3-3: 【サブスク Checkout】 既にサブスク済みなら 422 を�
         $group->fresh(),
         $this->user,
         BillingSubscriptionType::STANDARD,
-    ))->toThrow(HttpException::class, __('api.billing.already_subscribed'));
+    ))->toThrow(HttpException::class, 'すでにサブスクリプションに加入しています。');
 });
 
 test('4-3-4: 【サブスク Checkout】 価格 ID 未設定なら 500 を投げる', function () {
@@ -203,7 +203,7 @@ test('4-3-4: 【サブスク Checkout】 価格 ID 未設定なら 500 を投げ
         $group,
         $this->user,
         BillingSubscriptionType::STANDARD,
-    ))->toThrow(HttpException::class, __('api.billing.price_not_configured'));
+    ))->toThrow(HttpException::class, 'Stripe の価格設定が完了していません。');
 });
 
 // ===== createPortalSession() メソッドのテストケース =====
@@ -228,7 +228,7 @@ test('4-3-6: 【Customer Portal】 Stripe 未登録なら 422 を投げる', fun
     $group = createBillingGroup(['stripe_id' => null]);
 
     expect(fn() => $this->service->createPortalSession($group))
-        ->toThrow(HttpException::class, __('api.billing.no_billing_account'));
+        ->toThrow(HttpException::class, '課金情報が登録されていません。先にサブスクリプションまたは買い切りパックを購入してください。');
 });
 
 // ===== createPackCheckout() メソッドのテストケース =====
@@ -297,7 +297,7 @@ test('4-3-10: 【パック Checkout】 価格 ID 未設定なら 500 を投げ�
     $group->shouldReceive('refresh')->once();
 
     expect(fn() => $this->service->createPackCheckout($group, $this->user, BillingPackType::LIGHT))
-        ->toThrow(HttpException::class, __('api.billing.price_not_configured'));
+        ->toThrow(HttpException::class, 'Stripe の価格設定が完了していません。');
 });
 
 test('4-3-11: 【パック Checkout】 価格 ID 未設定なら 500 を投げる（VALUE）', function () {
@@ -308,7 +308,7 @@ test('4-3-11: 【パック Checkout】 価格 ID 未設定なら 500 を投げ�
     $group->shouldReceive('refresh')->once();
 
     expect(fn() => $this->service->createPackCheckout($group, $this->user, BillingPackType::VALUE))
-        ->toThrow(HttpException::class, __('api.billing.price_not_configured'));
+        ->toThrow(HttpException::class, 'Stripe の価格設定が完了していません。');
 });
 
 // ===== getBillingStatus() メソッドのテストケース =====
@@ -635,7 +635,7 @@ test('4-3-25: 【プラン変更予定取り消し】 予定変更なしなら 4
     ]);
 
     expect(fn () => $this->service->resumeSubscription($group->fresh()))
-        ->toThrow(HttpException::class, __('api.billing.no_pending_plan_change'));
+        ->toThrow(HttpException::class, '取り消すプラン変更予定がありません。');
 });
 
 function mockUpcomingInvoice(array $overrides = []): Invoice

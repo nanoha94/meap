@@ -117,7 +117,7 @@ test('5-1-16: 【normalizeQuantityFromDisplay】 カスタム errorKey を Valid
         expect(false)->toBeTrue('ValidationException should have been thrown');
     } catch (ValidationException $e) {
         expect($e->errors())->toHaveKey('ingredients.0.quantityDisplay');
-        expect($e->errors()['ingredients.0.quantityDisplay'][0])->toBe(__('validation.invalid_quantity_display'));
+        expect($e->errors()['ingredients.0.quantityDisplay'][0])->toBe('数量は整数・小数・分数で入力してください（例: 2、1.5、1/2、1と1/2）');
     }
 });
 

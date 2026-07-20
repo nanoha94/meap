@@ -36,7 +36,7 @@ class GoogleVisionRecipeOcr implements RecipeOcrInterface
         if ($this->apiKey === '') {
             $this->logWarning(
                 __METHOD__,
-                __('operations.ai.recipe.parse'),
+                __('operations.ai.recipe.parse_img'),
                 'Google Cloud Vision API key is not configured.',
             );
 
@@ -72,7 +72,7 @@ class GoogleVisionRecipeOcr implements RecipeOcrInterface
         } catch (Throwable $e) {
             $this->logWarning(
                 __METHOD__,
-                __('operations.ai.recipe.parse'),
+                __('operations.ai.recipe.parse_img'),
                 'Google Cloud Vision OCR failed.',
                 [
                     'exception_message' => $e->getMessage(),
@@ -89,7 +89,7 @@ class GoogleVisionRecipeOcr implements RecipeOcrInterface
         if (! $response->successful()) {
             $this->logWarning(
                 __METHOD__,
-                __('operations.ai.recipe.parse'),
+                __('operations.ai.recipe.parse_img'),
                 'Google Cloud Vision API returned HTTP error.',
                 [
                     'status' => $response->status(),
@@ -111,7 +111,7 @@ class GoogleVisionRecipeOcr implements RecipeOcrInterface
         if (is_string($apiError) && $apiError !== '') {
             $this->logWarning(
                 __METHOD__,
-                __('operations.ai.recipe.parse'),
+                __('operations.ai.recipe.parse_img'),
                 'Google Cloud Vision API returned an error response.',
                 [
                     'error' => $apiError,
@@ -129,7 +129,7 @@ class GoogleVisionRecipeOcr implements RecipeOcrInterface
         if (! is_string($text) || $text === '') {
             $this->logWarning(
                 __METHOD__,
-                __('operations.ai.recipe.parse'),
+                __('operations.ai.recipe.parse_img'),
                 'Google Cloud Vision API returned empty content.',
             );
 

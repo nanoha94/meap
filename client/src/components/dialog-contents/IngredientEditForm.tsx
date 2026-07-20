@@ -56,7 +56,7 @@ const IngredientEditForm = ({
                             value={value as string}
                             placeholder="材料名を入力"
                             onChange={e => onChange(e.target.value)}
-                            className="py-2 px-4 border rounded-lg outline-black border-gray-main"
+                            className="py-2 px-4 border rounded-lg border-gray-main"
                         />
                     )}
                 </HorizontalRowField>
@@ -83,7 +83,7 @@ const IngredientEditForm = ({
                             disabled={isDisabledQuantity}
                             onChange={handleQuantityChange(onChange)}
                             onBlur={handleQuantityBlur(onChange)}
-                            className={`py-2 px-4 border rounded-lg outline-black ${errors.quantityDisplay ? 'border-alert-main border-2' : 'border-gray-main'}`}
+                            className={`py-2 px-4 border rounded-lg ${errors.quantityDisplay ? 'border-alert-main border-2' : 'border-gray-main'}`}
                             inputMode="decimal"
                         />
                     )}

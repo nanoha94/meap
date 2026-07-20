@@ -11,13 +11,13 @@
         }
     ],
     "paths": {
-        "/ai/recipes/parse": {
+        "/ai/recipes/parse-img": {
             "post": {
                 "tags": [
                     "AI"
                 ],
                 "summary": "画像からレシピ情報をAI解析",
-                "operationId": "04fc82a615017469b91c0ae1c0427db9",
+                "operationId": "097c4586b23d6fbec3005287966af671",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -31,6 +31,55 @@
                                         "description": "解析対象のレシピ画像（jpeg/png/webp、10MB以下）",
                                         "type": "string",
                                         "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/AiRecipeParseSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationErrors"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/AiUsageLimitExceeded"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/ai/recipes/parse-url": {
+            "post": {
+                "tags": [
+                    "AI"
+                ],
+                "summary": "URLからレシピ情報をAI解析",
+                "operationId": "6298cc77ce1b477f9135f45a99ce323f",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "url"
+                                ],
+                                "properties": {
+                                    "url": {
+                                        "description": "解析対象のレシピURL（2048文字以下）",
+                                        "type": "string",
+                                        "format": "uri",
+                                        "example": "https://example.com/recipe/123"
                                     }
                                 },
                                 "type": "object"
@@ -1653,7 +1702,7 @@
                 ],
                 "properties": {
                     "success": {
-                        "description": "AIレシピ画像解析レスポンス（success, message, data: ParsedRecipe）",
+                        "description": "AIレシピ解析レスポンス（画像・URL共通: success, message, data: ParsedRecipe）",
                         "type": "boolean",
                         "example": true
                     },
@@ -3975,7 +4024,7 @@
         },
         "responses": {
             "AiRecipeParseSuccess": {
-                "description": "画像からレシピ情報を読み取りました。",
+                "description": "レシピ情報をAI解析しました。",
                 "content": {
                     "application/json": {
                         "schema": {

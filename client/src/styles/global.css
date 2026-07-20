@@ -6,13 +6,21 @@
     --color-gray-placeholder: #9e9e9e;
 }
 
-body {
-    font-family: var(--font-noto-sans-jp), sans-serif;
-}
+@layer base {
+    body {
+        font-family: var(--font-noto-sans-jp), sans-serif;
+    }
 
-input::placeholder,
-select option[value=''] {
-    color: var(--color-gray-placeholder);
+    input::placeholder,
+    select option[value=''] {
+        color: var(--color-gray-placeholder);
+    }
+
+    input:not([type='checkbox']):not([type='radio']):not([type='file']):not([hidden]),
+    textarea,
+    select {
+        outline-color: #333333;
+    }
 }
 
 @media (min-width: 640px) {

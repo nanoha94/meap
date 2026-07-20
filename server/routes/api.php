@@ -75,7 +75,9 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
     // ai
     Route::get('/ai/usage', [AiUsageController::class, 'show']);
-    Route::post('/ai/recipes/parse', [AiRecipeController::class, 'parse'])
+    Route::post('/ai/recipes/parse-img', [AiRecipeController::class, 'parseImage'])
+        ->middleware('throttle:ai');
+    Route::post('/ai/recipes/parse-url', [AiRecipeController::class, 'parseUrl'])
         ->middleware('throttle:ai');
 
     // billing

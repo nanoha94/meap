@@ -166,7 +166,7 @@ const RecipeCategoryEditForm: React.FC = () => {
                                                 watchedCategories?.length === 1 &&
                                                 watchedCategories[0].name === ''
                                             }
-                                            className="w-full py-2 px-4 flex-1 outline-black bg-white rounded-lg border border-gray-main"
+                                            className="w-full py-2 px-4 flex-1 bg-white rounded-lg border border-gray-main"
                                         />
                                     )}
                                 />

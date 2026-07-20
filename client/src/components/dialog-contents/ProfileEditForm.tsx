@@ -113,7 +113,7 @@ const ProfileEditForm = () => {
                             value={value as string}
                             placeholder="ユーザー名を入力"
                             onChange={e => onChange(e.target.value)}
-                            className="py-2 px-4 border rounded-lg outline-black border-gray-main"
+                            className="py-2 px-4 border rounded-lg border-gray-main"
                         />
                     )}
                 </VerticalRowField>

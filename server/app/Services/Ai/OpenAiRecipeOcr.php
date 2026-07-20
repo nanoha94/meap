@@ -78,7 +78,7 @@ class OpenAiRecipeOcr implements RecipeOcrInterface
         } catch (Throwable $e) {
             $this->logWarning(
                 __METHOD__,
-                __('operations.ai.recipe.parse'),
+                __('operations.ai.recipe.parse_img'),
                 $failureContext,
                 [
                     'exception_message' => $e->getMessage(),
@@ -97,7 +97,7 @@ class OpenAiRecipeOcr implements RecipeOcrInterface
         if (! is_string($content) || $content === '') {
             $this->logWarning(
                 __METHOD__,
-                __('operations.ai.recipe.parse'),
+                __('operations.ai.recipe.parse_img'),
                 'OpenAI API returned empty content.',
             );
 
