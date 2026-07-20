@@ -934,7 +934,7 @@ test('3-11-23: 【削除】 正常なアカウント削除', function () {
     $this->assertDatabaseMissing('groups', ['id' => $groupId]);
 });
 
-test('3-11-26: 【削除】 アカウント削除時にユーザー配下の画像ディレクトリと images レコードが削除される', function () {
+test('3-11-24: 【削除】 アカウント削除時にユーザー配下の画像ディレクトリと images レコードが削除される', function () {
     Storage::fake('public');
 
     $user = User::factory()->create([
@@ -985,7 +985,7 @@ test('3-11-26: 【削除】 アカウント削除時にユーザー配下の画�
     expect(Storage::disk('public')->exists($dirPath))->toBeFalse();
 });
 
-test('3-11-27: 【削除】 アカウント削除後のレスポンスにクッキー削除が含まれる', function () {
+test('3-11-25: 【削除】 アカウント削除後のレスポンスにクッキー削除が含まれる', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -1015,7 +1015,7 @@ test('3-11-27: 【削除】 アカウント削除後のレスポンスにクッ�
     expect($xsrfCookies)->not->toBeEmpty();
 });
 
-test('3-11-24: 【削除】 未認証ユーザー', function () {
+test('3-11-26: 【削除】 未認証ユーザー', function () {
     $response = $this->delete('/user');
 
     $response->assertStatus(401);
@@ -1030,7 +1030,7 @@ test('3-11-24: 【削除】 未認証ユーザー', function () {
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-11-25: 【削除】 UserService 例外', function () {
+test('3-11-27: 【削除】 UserService 例外', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -1054,3 +1054,4 @@ test('3-11-25: 【削除】 UserService 例外', function () {
     ]);
     $response->assertHeader('Content-Type', 'application/json');
 });
+

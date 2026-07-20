@@ -56,7 +56,7 @@ const StepEditItem = ({
                             iconMdSize: 32,
                             imageRounded: 'rounded-lg',
                             containerClass: 'aspect-[4/3] bg-gray-light',
-                            labelClass: 'gap-y-1 text-gray-main',
+                            labelClass: 'gap-y-2 text-gray-main text-sm',
                             overlayIconContainerClass: 'gap-x-2.5',
                             overlayIconClass: 'p-1.5',
                         }}
@@ -76,7 +76,7 @@ const StepEditItem = ({
                                     onChange(e);
                                     adjustTextareaHeight(e.target);
                                 }}
-                                className={`flex-1 py-2 px-4  ${errorMessage ? 'border-alert-main border-2 outline-alert-main' : 'border outline-black'} rounded-lg resize-none overflow-hidden`}
+                                className={`flex-1 py-2 px-4  ${errorMessage ? 'border-alert-main border-2 outline-alert-main' : 'border border-gray-main'} rounded-lg resize-none overflow-hidden`}
                             />
                         )}
                     />

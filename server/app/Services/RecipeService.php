@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\RecipeSource;
+use App\Helpers\Quantity;
 use App\Models\Group;
 use App\Models\Ingredient;
 use App\Models\Recipe;
@@ -397,10 +398,16 @@ class RecipeService extends AbstractDomainService
             ->map(function ($item) use ($units, $categories) {
                 $unit = $units->get($item->pivot->unit_id);
                 $category = $categories->get($item->pivot->category_id);
+                $quantity = $item->pivot->quantity !== null ? (float) $item->pivot->quantity : null;
+                $quantityDisplay = $item->pivot->quantity_display;
+                if ($quantity !== null && ($quantityDisplay === null || $quantityDisplay === '')) {
+                    $quantityDisplay = Quantity::formatQuantityDisplay($quantity);
+                }
                 return [
                     'id' => $item->id,
                     'name' => $item->name,
-                    'quantity' => $item->pivot->quantity !== null ? (float) $item->pivot->quantity : null,
+                    'quantity' => $quantity,
+                    'quantityDisplay' => $quantityDisplay,
                     'unit' => [
                         'id' => $item->pivot->unit_id,
                         'name' => $unit->name,
@@ -506,8 +513,9 @@ class RecipeService extends AbstractDomainService
     {
         // 単位ID存在チェック
         $unitIds = collect($ingredients)->pluck('unitId')->filter()->unique()->toArray();
+        $units = collect();
         if (!empty($unitIds)) {
-            $this->ingredientUnitService->findItemsByIds($unitIds, $group);
+            $units = $this->ingredientUnitService->findItemsByIds($unitIds, $group)->keyBy('id');
         }
 
         // カテゴリID存在チェック
@@ -516,6 +524,7 @@ class RecipeService extends AbstractDomainService
             $this->ingredientCategoryService->findItemsByIds($categoryIds, $group);
         }
 
+        // 食材データを作成
         $ingredientData = collect($ingredients)->map(fn($item) => [
             'id' => $item['id'] ?? null,
             'name' => $item['name'],
@@ -530,8 +539,18 @@ class RecipeService extends AbstractDomainService
             if (!isset($ids[$idx])) {
                 continue;
             }
+
+            $unit = $units->get($item['unitId']);
+
+            ['quantity' => $quantity, 'quantityDisplay' => $quantityDisplay] = Quantity::normalizeQuantityFromDisplay(
+                $item['quantityDisplay'] ?? null,
+                $unit?->requires_quantity ?? true,
+                "ingredients.{$idx}.quantityDisplay",
+            );
+
             $recipe->ingredients()->attach($ids[$idx], [
-                'quantity' => $item['quantity'] ?? null,
+                'quantity' => $quantity,
+                'quantity_display' => $quantityDisplay,
                 'unit_id' => $item['unitId'],
                 'category_id' => $item['categoryId'],
                 'order' => $item['order'] ?? 0,

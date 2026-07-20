@@ -47,7 +47,7 @@ class Recipe extends Model
     public function ingredients()
     {
         return $this->belongsToMany(Ingredient::class, 'recipe_ingredient_mappings', 'recipe_id', 'ingredient_id')
-            ->withPivot('quantity', 'unit_id', 'category_id', 'order')
+            ->withPivot('quantity', 'quantity_display', 'unit_id', 'category_id', 'order')
             ->using(RecipeIngredientPivot::class);
     }
 

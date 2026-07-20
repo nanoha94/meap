@@ -7,7 +7,20 @@ namespace App\Swagger;
  *     schema="ParsedRecipeIngredient",
  *     required={"name", "unitName", "categoryName"},
  *     @OA\Property(property="name", type="string", description="材料名", example="玉ねぎ"),
- *     @OA\Property(property="quantity", type="number", nullable=true, description="数量", example=1),
+ *     @OA\Property(
+ *         property="quantity",
+ *         type="number",
+ *         nullable=true,
+ *         description="数量（計算用）。レスポンス不変条件: requiresQuantity=false または数量なしのとき null。数量ありのときは quantityDisplay とペアで非 null",
+ *         example=0.5
+ *     ),
+ *     @OA\Property(
+ *         property="quantityDisplay",
+ *         type="string",
+ *         nullable=true,
+ *         description="数量の表示表記（正規化済み）。レスポンス不変条件: requiresQuantity=false または数量なしのとき null。数量ありのときは quantity とペアで非 null 非空文字列",
+ *         example="1/2"
+ *     ),
  *     @OA\Property(property="unitName", type="string", description="単位名", example="個"),
  *     @OA\Property(property="categoryName", type="string", description="材料カテゴリ名", example="野菜")
  * )

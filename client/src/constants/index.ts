@@ -11,4 +11,5 @@ export * from './form';
 export * from './image';
 export * from './links';
 export * from './navigation';
+export * from './quantity';
 export * from './tmpIdPrefix';

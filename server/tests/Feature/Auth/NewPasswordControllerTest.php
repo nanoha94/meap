@@ -18,7 +18,7 @@ test('2-3-1: 正常なパスワードリセット', function () {
     ]);
 
     $response->assertStatus(200);
-    $response->assertJson(['message' => __('passwords.reset')]);
+    $response->assertJson(['message' => 'パスワードがリセットされました。']);
 });
 
 DB::shouldReceive('table->where->get->filter')

@@ -4,7 +4,10 @@ namespace App\Providers;
 
 use App\Enums\HttpStatusCode;
 use App\Interfaces\AiRecipeParserInterface;
+use App\Interfaces\RecipeOcrInterface;
 use App\Models\Group;
+use App\Services\Ai\GoogleVisionRecipeOcr;
+use App\Services\Ai\OpenAiRecipeOcr;
 use App\Services\Ai\OpenAiRecipeParser;
 use Laravel\Cashier\Cashier;
 use Illuminate\Auth\Notifications\ResetPassword;
@@ -27,14 +30,17 @@ class AppServiceProvider extends ServiceProvider
         Cashier::ignoreRoutes();
 
         $this->app->bind(
-            AiRecipeParserInterface::class,
-            match (config('services.ai.vision_provider')) {
-                'openai' => OpenAiRecipeParser::class,
+            RecipeOcrInterface::class,
+            match (config('services.ai.ocr_provider')) {
+                'openai' => OpenAiRecipeOcr::class,
+                'google' => GoogleVisionRecipeOcr::class,
                 default => throw new InvalidArgumentException(
-                    'Unsupported AI vision provider: ' . config('services.ai.vision_provider'),
+                    'Unsupported AI OCR provider: ' . config('services.ai.ocr_provider'),
                 ),
             },
         );
+
+        $this->app->bind(AiRecipeParserInterface::class, OpenAiRecipeParser::class);
     }
 
     /**

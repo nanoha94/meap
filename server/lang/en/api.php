@@ -62,8 +62,10 @@ return [
 
     'ai' => [
         'recipe' => [
-            'parsed' => 'Recipe information extracted from image successfully.',
-            'parse_failed' => 'Failed to parse recipe from image.',
+            'parsed_img' => 'Recipe information extracted from image successfully.',
+            'parsed_url' => 'Recipe information extracted from URL successfully.',
+            'parse_img_failed' => 'Failed to parse recipe from image.',
+            'parse_url_failed' => 'Failed to parse recipe from URL.',
         ],
         'usage' => [
             'monthly_limit_exceeded' => 'Monthly AI usage limit has been reached.',

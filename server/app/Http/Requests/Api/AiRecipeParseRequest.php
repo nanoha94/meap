@@ -37,6 +37,6 @@ class AiRecipeParseRequest extends BaseApiRequest
      */
     protected function getOperationKey(): string
     {
-        return __('operations.ai.recipe.parse');
+        return __('operations.ai.recipe.parse_img');
     }
 }

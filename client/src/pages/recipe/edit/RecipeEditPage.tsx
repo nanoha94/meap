@@ -10,19 +10,19 @@ import {
     Header,
     HeaderTextButton,
     ImageEditField,
+    RecipeImageImportForm,
+    RecipeUrlImportForm,
     StyledSelect,
     TextButton,
     VerticalRowField,
 } from '@/components';
 import { BUTTON_TYPE, COLOR_VARIANT, LINK_TO, colors } from '@/constants';
-import { useAlertDialog, useNavigationGuard, useSnackbars, useTextCopy } from '@/hooks';
+import { useAlertDialog, useDialog, useNavigationGuard, useSnackbars, useTextCopy } from '@/hooks';
 import {
     CategoryEditFields,
     IngredientEditFields,
     RECIPE_ALERT_DIALOG_CONFIGS,
     StepEditFields,
-    useRecipeAiApi,
-    useRecipeAiImport,
     useRecipeApi,
     useRecipeEditForm,
 } from '@/models/recipe';
@@ -54,36 +54,84 @@ const RecipeEditPage = ({
     // hook
     const { addSnackbar } = useSnackbars();
     const { openAlertDialog } = useAlertDialog();
+    const { openDialog } = useDialog();
     const { deleteRecipe } = useRecipeApi();
-    const { parseRecipeFromImage } = useRecipeAiApi();
-    const { convertToFormData, applyParsedRecipeToForm } = useRecipeAiImport();
     const {
         control,
         methods,
         onSubmit,
         errors,
+        setIsNameFocused,
         isDisabledSendButton,
+        hasFormContent,
+        importFromImage,
+        importFromUrl,
     } = useRecipeEditForm(
         fetchedRecipe?.ownerUserId || loginUser.id,
         fetchedRecipe,
     );
     const { isTextCopied, copyToClipboard } = useTextCopy();
     const router = useRouter();
-    const aiImportFileInputRef = React.useRef<HTMLInputElement>(null);
     useNavigationGuard(!isDisabledSendButton);
 
     const isAiLimitReached = isAiLimitReachedUtil(aiUsageStatus);
 
+    /**
+     * URL 読み込みダイアログを開く
+     */
+    const handleOpenUrlImportDialog = React.useCallback(() => {
+        openDialog({
+            title: 'URLからレシピを読み込む',
+            maxWidth: 560,
+            children: (
+                <RecipeUrlImportForm
+                    onImport={importFromUrl}
+                    hasFormContent={hasFormContent}
+                />
+            ),
+        });
+    }, [openDialog, importFromUrl, hasFormContent]);
+
+    /**
+     * 画像読み込みダイアログを開く
+     */
+    const handleOpenImageImportDialog = React.useCallback(() => {
+        openDialog({
+            title: '画像からレシピを読み込む',
+            maxWidth: 560,
+            children: (
+                <RecipeImageImportForm
+                    onImport={importFromImage}
+                    hasFormContent={hasFormContent}
+                />
+            ),
+        });
+    }, [openDialog, importFromImage, hasFormContent]);
+
+    /**
+  * レシピ AI 読み込みボタン
+  * @returns レシピ AI 読み込みボタン
+  * @description レシピ AI 読み込みボタン
+  */
     const LoadRecipeAiButton = React.useMemo(() => (
         <div className='w-full flex flex-col gap-y-1'>
             <TextButton
                 type={BUTTON_TYPE.BUTTON}
-                colorVariant={COLOR_VARIANT.SECONDARY}
+                colorVariant={COLOR_VARIANT.ACCENT}
                 className="w-full justify-center"
                 disabled={isAiLimitReached}
-                onClick={() => aiImportFileInputRef.current?.click()}>
+                onClick={handleOpenImageImportDialog}>
                 <Brain size={20} strokeWidth={2} />
-                <span className='mb-1'>[AI] 画像からレシピを読み込む</span>
+                <span className='mb-1'>画像からレシピを読み込む</span>
+            </TextButton>
+            <TextButton
+                type={BUTTON_TYPE.BUTTON}
+                colorVariant={COLOR_VARIANT.ACCENT}
+                className="w-full justify-center"
+                disabled={isAiLimitReached}
+                onClick={handleOpenUrlImportDialog}>
+                <Brain size={20} strokeWidth={2} />
+                <span className='mb-1'>URLからレシピを読み込む</span>
             </TextButton>
             {isAiLimitReached ? (
                 <AiUsageLimitUpsell />
@@ -98,79 +146,7 @@ const RecipeEditPage = ({
                 </p>
             )}
         </div>
-    ), [isAiLimitReached, aiUsageStatus]);
-
-    /**
-     * AI 読み込みで上書きされる項目に入力済みの内容があるか判定する
-     * （memo / url / thumbnail / categories は上書きしない）
-     */
-    const hasFormContentForAiImport = React.useCallback((): boolean => {
-        const values = methods.getValues();
-        return !!(
-            values.name?.trim() ||
-            values.servingCount ||
-            values.ingredients?.some(ingredient => ingredient.name?.trim()) ||
-            values.steps?.some(
-                step => step.instruction?.trim() || step.image?.src,
-            )
-        );
-    }, [methods]);
-
-    /**
-     * 選択した画像を AI 解析し、結果をフォームへ反映する
-     */
-    const executeAiImport = React.useCallback(
-        async (file: File) => {
-            const parsed = await parseRecipeFromImage(file);
-            if (!parsed) {
-                return;
-            }
-
-            const formData = convertToFormData(parsed);
-            applyParsedRecipeToForm(formData, methods);
-        },
-        [parseRecipeFromImage, convertToFormData, applyParsedRecipeToForm, methods],
-    );
-
-    /**
-     * AI 読み込み用の画像選択後の処理
-     */
-    const handleAiImportFileSelected = React.useCallback(
-        (file: File) => {
-            const proceed = () => {
-                void executeAiImport(file);
-            };
-
-            if (hasFormContentForAiImport()) {
-                openAlertDialog(
-                    RECIPE_ALERT_DIALOG_CONFIGS.aiImportOverwrite(),
-                    proceed,
-                );
-                return;
-            }
-
-            proceed();
-        },
-        [hasFormContentForAiImport, openAlertDialog, executeAiImport],
-    );
-
-    /**
-     * AI 読み込み用ファイル input の change イベント
-     */
-    const handleAiImportFileChange = React.useCallback(
-        (event: React.ChangeEvent<HTMLInputElement>) => {
-            const file = event.target.files?.[0];
-            if (aiImportFileInputRef.current) {
-                aiImportFileInputRef.current.value = '';
-            }
-            if (!file) {
-                return;
-            }
-
-            handleAiImportFileSelected(file);
-        },
-        [handleAiImportFileSelected],
-    );
+    ), [handleOpenImageImportDialog, handleOpenUrlImportDialog, isAiLimitReached, aiUsageStatus]);
 
     /**
      * ヘッダーのアクションボタン設定
@@ -261,13 +237,6 @@ const RecipeEditPage = ({
                             <div className="min-w-0 flex-col items-center gap-y-3 hidden md:flex">
                                 <ImageEditField control={control} name="thumbnail" />
                                 {LoadRecipeAiButton}
-                                <input
-                                    ref={aiImportFileInputRef}
-                                    type="file"
-                                    accept="image/jpeg,image/png,image/webp"
-                                    hidden
-                                    onChange={handleAiImportFileChange}
-                                />
                             </div>
                             <div className="flex-1 flex flex-col gap-y-8">
                                 <div className="md:hidden">{LoadRecipeAiButton}</div>
@@ -275,15 +244,22 @@ const RecipeEditPage = ({
                                 <VerticalRowField
                                     control={control}
                                     name="name"
-                                    label="料理名">
-                                    {({ value, onChange, id }) => (
+                                    label="料理名"
+                                    errorMessage={errors?.name ? [errors.name] : []}
+                                >
+                                    {({ value, onChange, onBlur, id }) => (
                                         <input
                                             id={id}
                                             type="text"
                                             value={(value as string) ?? ''}
                                             placeholder="料理名を入力"
+                                            autoFocus
                                             onChange={e => onChange(e)}
-                                            className="py-2 px-4 w-full min-w-0 border rounded-lg "
+                                            onBlur={() => {
+                                                onBlur();
+                                                setIsNameFocused(true);
+                                            }}
+                                            className={`py-2 px-4 w-full min-w-0 border rounded-lg ${errors?.name ? 'border-alert-main border-2' : 'border-gray-main'}`}
                                         />
                                     )}
                                 </VerticalRowField>
@@ -294,7 +270,8 @@ const RecipeEditPage = ({
                                     control={control}
                                     name="memo"
                                     label="メモ"
-                                    memo="※外部には公開されません"
+                                // TODO: 外部公開機能実装時にコメントアウトを解除
+                                // memo="※外部には公開されません"
                                 >
                                     {({ value, onChange }) => (
                                         <textarea
@@ -302,7 +279,7 @@ const RecipeEditPage = ({
                                             rows={5}
                                             placeholder="メモを入力"
                                             onChange={e => onChange(e)}
-                                            className="py-2 px-4 w-full min-w-0 border rounded-lg"
+                                            className="py-2 px-4 w-full min-w-0 border rounded-lg border-gray-main"
                                         />
                                     )}
                                 </VerticalRowField>
@@ -325,7 +302,7 @@ const RecipeEditPage = ({
                                                 min={1}
                                                 placeholder="分量目安を入力"
                                                 onChange={e => onChange(e)}
-                                                className="py-2 px-4 flex-1 min-w-0 border rounded-lg"
+                                                className="py-2 px-4 flex-1 min-w-0 border rounded-lg border-gray-main"
                                             />
                                             人分
                                         </div>
@@ -343,7 +320,8 @@ const RecipeEditPage = ({
                                     control={control}
                                     name="url"
                                     label="レシピURL"
-                                    memo="※外部に公開する際には空にしてください"
+                                // TODO: 外部公開機能実装時にコメントアウトを解除
+                                // memo="※外部に公開する際には空にしてください"
                                 >
                                     {({ value, onChange, id }) => (
                                         <div className="flex flex-col gap-y-2 min-w-0">
@@ -354,7 +332,7 @@ const RecipeEditPage = ({
                                                     value={(value as string) ?? ''}
                                                     placeholder="レシピURLを入力"
                                                     onChange={e => onChange(e)}
-                                                    className="py-2 px-4 flex-1 min-w-0 border rounded-lg "
+                                                    className="py-2 px-4 flex-1 min-w-0 border rounded-lg border-gray-main"
                                                 />
                                                 <button
                                                     type="button"

@@ -4,7 +4,6 @@ use App\Enums\HttpStatusCode;
 use App\Models\User;
 use App\Models\Group;
 use App\Traits\LoggingTrait;
-use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;

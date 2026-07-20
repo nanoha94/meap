@@ -4,6 +4,19 @@ import { RecipeEditFormData, RecipeStepEditFormData } from './types';
 
 export const RECIPES_PER_PAGE = 20;
 
+// AI 読み込みでフォームを上書きするアラートダイアログの設定
+const aiImportOverwriteConfig = (
+    source: 'image' | 'url',
+): AlertDialogConfig => ({
+    title: '上書き確認',
+    message: [
+        '入力済みの内容があります。',
+        `${source === 'image' ? '画像' : 'URL'}から読み取ったレシピで上書きしますか？`,
+    ],
+    alertMessage: '',
+    actionButtonText: '上書き',
+});
+
 // アラートダイアログの設定
 export const RECIPE_ALERT_DIALOG_CONFIGS = {
     // レシピを削除
@@ -13,16 +26,11 @@ export const RECIPE_ALERT_DIALOG_CONFIGS = {
         alertMessage: '',
         actionButtonText: '削除',
     }),
-    // AI 画像読み込みでフォームを上書き
-    aiImportOverwrite: (): AlertDialogConfig => ({
-        title: '上書き確認',
-        message: [
-            '入力済みの内容があります。',
-            '画像から読み取ったレシピで上書きしますか？',
-        ],
-        alertMessage: '',
-        actionButtonText: '上書き',
-    }),
+    // AI 読み込みでフォームを上書き
+    aiImportOverwrite: aiImportOverwriteConfig,
+    // AI URL 読み込みでフォームを上書き
+    aiUrlImportOverwrite: (): AlertDialogConfig =>
+        aiImportOverwriteConfig('url'),
 };
 
 /** デフォルト設定 */

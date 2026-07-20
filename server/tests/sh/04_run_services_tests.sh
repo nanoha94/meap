@@ -28,5 +28,19 @@ echo "実行中: BillingServiceTest.php"
 
 echo ""
 echo "=========================================="
+echo "📖 詳細ドキュメント: tests/docs/04_Services/04_AiRecipeService_TEST_SPECIFICATIONS.md"
+echo ""
+echo "実行中: AiRecipeServiceTest.php"
+./vendor/bin/sail test tests/Unit/Services/Ai/AiRecipeServiceTest.php --stop-on-failure
+
+echo ""
+echo "=========================================="
+echo "📖 詳細ドキュメント: tests/docs/04_Services/05_GoogleVisionRecipeOcr_TEST_SPECIFICATIONS.md"
+echo ""
+echo "実行中: GoogleVisionRecipeOcrTest.php"
+./vendor/bin/sail test tests/Unit/Services/Ai/GoogleVisionRecipeOcrTest.php --stop-on-failure
+
+echo ""
+echo "=========================================="
 echo "✅ Services関連テスト完了"
 echo "=========================================="

@@ -19,7 +19,8 @@ return [
     ],
     'ai' => [
         'recipe' => [
-            'parse' => 'AI recipe image parsing',
+            'parse_img' => 'AI recipe image parsing',
+            'parse_url' => 'AI recipe URL parsing',
         ],
         'usage' => [
             'show' => 'AI usage status retrieval',

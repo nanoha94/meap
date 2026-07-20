@@ -3,7 +3,7 @@
 namespace App\Swagger;
 
 /**
- * AIレシピ画像解析レスポンス（success, message, data: ParsedRecipe）
+ * AIレシピ解析レスポンス（画像・URL共通: success, message, data: ParsedRecipe）
  *
  * @OA\Schema(
  *     schema="AiRecipeParseResponse",
@@ -15,7 +15,7 @@ namespace App\Swagger;
  *
  * @OA\Response(
  *     response="AiRecipeParseSuccess",
- *     description="画像からレシピ情報を読み取りました。",
+ *     description="レシピ情報をAI解析しました。",
  *     @OA\JsonContent(ref="#/components/schemas/AiRecipeParseResponse")
  * )
  *

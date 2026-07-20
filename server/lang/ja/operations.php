@@ -19,7 +19,8 @@ return [
     ],
     'ai' => [
         'recipe' => [
-            'parse' => 'AIレシピ画像解析',
+            'parse_img' => 'AIレシピ画像解析',
+            'parse_url' => 'AIレシピURL解析',
         ],
         'usage' => [
             'show' => 'AI利用状況取得',

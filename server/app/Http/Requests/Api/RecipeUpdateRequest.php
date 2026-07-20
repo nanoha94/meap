@@ -27,7 +27,7 @@ class RecipeUpdateRequest extends BaseApiRequest
             'ingredients.*.name' => 'string|max:255|required',
             'ingredients.*.unitId' => 'uuid|required',
             'ingredients.*.categoryId' => 'uuid|required',
-            'ingredients.*.quantity' => 'numeric|nullable',
+            'ingredients.*.quantityDisplay' => 'nullable|string|max:50',
             'ingredients.*.order' => 'integer|min:0|nullable',
             'steps' => 'array|nullable',
             'steps.*.id' => 'uuid|nullable',
@@ -67,7 +67,8 @@ class RecipeUpdateRequest extends BaseApiRequest
             'ingredients.*.unitId.required' => __('validation.required', ['attribute' => 'ingredients.*.unitId']),
             'ingredients.*.categoryId.uuid' => __('validation.uuid', ['attribute' => 'ingredients.*.categoryId']),
             'ingredients.*.categoryId.required' => __('validation.required', ['attribute' => 'ingredients.*.categoryId']),
-            'ingredients.*.quantity.numeric' => __('validation.numeric', ['attribute' => 'ingredients.*.quantity']),
+            'ingredients.*.quantityDisplay.string' => __('validation.string', ['attribute' => 'ingredients.*.quantityDisplay']),
+            'ingredients.*.quantityDisplay.max' => __('validation.max.string', ['attribute' => 'ingredients.*.quantityDisplay', 'max' => 50]),
             'ingredients.*.order.integer' => __('validation.integer', ['attribute' => 'ingredients.*.order']),
             'ingredients.*.order.min' => __('validation.min.numeric', ['attribute' => 'ingredients.*.order', 'min' => 0]),
             'steps.array' => __('validation.array', ['attribute' => 'steps']),
@@ -108,13 +109,22 @@ class RecipeUpdateRequest extends BaseApiRequest
 
             foreach ($ingredients as $index => $ingredient) {
                 if (!empty($ingredient['unitId']) && Str::isUuid($ingredient['unitId'])) {
-                    $unit = IngredientUnit::find($ingredient['unitId']);
+                    $quantityDisplay = $ingredient['quantityDisplay'] ?? null;
 
-                    if ($unit && $unit->requires_quantity && empty($ingredient['quantity'])) {
+                    // 配列など型不正は rules() の string ルールに任せる（null は必須チェック対象）
+                    if ($quantityDisplay !== null && ! is_string($quantityDisplay)) {
+                        continue;
+                    }
+
+                    $unit = IngredientUnit::find($ingredient['unitId']);
+                    $hasDisplay = is_string($quantityDisplay) && trim($quantityDisplay) !== '';
+
+                    // 数量が必須で、表示表記が未指定の場合はエラー
+                    if ($unit && $unit->requires_quantity && ! $hasDisplay) {
                         $validator->errors()->add(
-                            "ingredients.{$index}.quantity",
+                            "ingredients.{$index}.quantityDisplay",
                             __('validation.required_when_unit_requires_quantity', [
-                                'attribute' => 'ingredients.*.quantity'
+                                'attribute' => 'ingredients.*.quantityDisplay',
                             ])
                         );
                     }

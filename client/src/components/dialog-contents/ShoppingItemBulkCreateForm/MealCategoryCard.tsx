@@ -7,18 +7,20 @@ import { TextButton } from "@/components";
 import { CheckboxField } from "@/components/form-fields";
 import { BUTTON_SIZE, BUTTON_TYPE, COLOR_VARIANT } from "@/constants";
 import { formatIngredient } from "@/models/ingredient";
+import { ShoppingItemBulkCreateFormItem } from "@/models/shopping/types";
 import { IMealCategory, IMealPlan } from "@/types";
 
 export type MealCategoryCardProps = {
     mealPlan: IMealPlan;
     mealCategory: IMealCategory;
     isChecked: (
-        checkedName: string,
+        name: string,
         recipe: { id: string; name: string },
         mealId: string,
     ) => boolean;
     handleChange: (
-        checkedName: string,
+        name: string,
+        ingredient: ShoppingItemBulkCreateFormItem["ingredient"],
         recipe: { id: string; name: string },
         mealId: string,
     ) => void;
@@ -81,6 +83,12 @@ const MealCategoryCard = ({
                                     onChange={() =>
                                         handleChange(
                                             formatIngredient(ingredient),
+                                            {
+                                                name: ingredient.name,
+                                                quantity: ingredient.quantity,
+                                                quantityDisplay: ingredient.quantityDisplay,
+                                                unit: ingredient.unit,
+                                            },
                                             { id: meal.recipeId, name: meal.recipeName },
                                             meal.id,
                                         )

@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignUuid('ingredient_id')->constrained('published_ingredients', 'id')->cascadeOnDelete();
             $table->foreignUuid('category_id')->constrained('published_ingredient_categories', 'id')->cascadeOnDelete();
             $table->float('quantity')->nullable();
+            $table->string('quantity_display', 50)->nullable();
             $table->string('unit_name');
             $table->string('unit_position');
             $table->integer('order');

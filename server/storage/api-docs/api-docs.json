@@ -11,13 +11,13 @@
         }
     ],
     "paths": {
-        "/ai/recipes/parse": {
+        "/ai/recipes/parse-img": {
             "post": {
                 "tags": [
                     "AI"
                 ],
                 "summary": "画像からレシピ情報をAI解析",
-                "operationId": "04fc82a615017469b91c0ae1c0427db9",
+                "operationId": "097c4586b23d6fbec3005287966af671",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -31,6 +31,55 @@
                                         "description": "解析対象のレシピ画像（jpeg/png/webp、10MB以下）",
                                         "type": "string",
                                         "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/AiRecipeParseSuccess"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationErrors"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/AiUsageLimitExceeded"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/ai/recipes/parse-url": {
+            "post": {
+                "tags": [
+                    "AI"
+                ],
+                "summary": "URLからレシピ情報をAI解析",
+                "operationId": "6298cc77ce1b477f9135f45a99ce323f",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "url"
+                                ],
+                                "properties": {
+                                    "url": {
+                                        "description": "解析対象のレシピURL（2048文字以下）",
+                                        "type": "string",
+                                        "format": "uri",
+                                        "example": "https://example.com/recipe/123"
                                     }
                                 },
                                 "type": "object"
@@ -1653,7 +1702,7 @@
                 ],
                 "properties": {
                     "success": {
-                        "description": "AIレシピ画像解析レスポンス（success, message, data: ParsedRecipe）",
+                        "description": "AIレシピ解析レスポンス（画像・URL共通: success, message, data: ParsedRecipe）",
                         "type": "boolean",
                         "example": true
                     },
@@ -1680,9 +1729,15 @@
                         "example": "玉ねぎ"
                     },
                     "quantity": {
-                        "description": "数量",
+                        "description": "数量（計算用）。レスポンス不変条件: requiresQuantity=false または数量なしのとき null。数量ありのときは quantityDisplay とペアで非 null",
                         "type": "number",
-                        "example": 1,
+                        "example": 0.5,
+                        "nullable": true
+                    },
+                    "quantityDisplay": {
+                        "description": "数量の表示表記（正規化済み）。レスポンス不変条件: requiresQuantity=false または数量なしのとき null。数量ありのときは quantity とペアで非 null 非空文字列",
+                        "type": "string",
+                        "example": "1/2",
                         "nullable": true
                     },
                     "unitName": {
@@ -2366,9 +2421,15 @@
                         "example": "牛肉"
                     },
                     "quantity": {
-                        "description": "量",
+                        "description": "量（計算・加算用）。レスポンス専用の派生値。requiresQuantity=false または数量なしのとき null",
                         "type": "number",
                         "example": 1.5,
+                        "nullable": true
+                    },
+                    "quantityDisplay": {
+                        "description": "数量の表示表記（正規化済み）。レスポンスでは quantity とペアで返る（requiresQuantity=false または数量なしのとき両方 null）",
+                        "type": "string",
+                        "example": "1/2",
                         "nullable": true
                     },
                     "unit": {
@@ -3129,10 +3190,11 @@
                                     "type": "string",
                                     "example": "牛肉"
                                 },
-                                "quantity": {
-                                    "description": "量",
-                                    "type": "number",
-                                    "example": 1.5,
+                                "quantityDisplay": {
+                                    "description": "数量の表示表記。分数、小数、整数が指定可能。例: 1/2, 0.5, 200",
+                                    "type": "string",
+                                    "maxLength": 50,
+                                    "example": "1/2",
                                     "nullable": true
                                 },
                                 "unitId": {
@@ -3962,7 +4024,7 @@
         },
         "responses": {
             "AiRecipeParseSuccess": {
-                "description": "画像からレシピ情報を読み取りました。",
+                "description": "レシピ情報をAI解析しました。",
                 "content": {
                     "application/json": {
                         "schema": {

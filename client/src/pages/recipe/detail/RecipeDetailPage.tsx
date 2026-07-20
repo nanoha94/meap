@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 import { Header, HeaderTextButton } from '@/components';
 import { COLOR_VARIANT, LINK_TO } from '@/constants';
 import { useAlertDialog, useSnackbars } from '@/hooks';
-import { useIngredientStore } from '@/models/ingredient';
+import { formatIngredientQuantity, useIngredientStore } from '@/models/ingredient';
 import { RECIPE_ALERT_DIALOG_CONFIGS, useRecipeApi } from '@/models/recipe';
 import { useUserStore } from '@/models/user';
 import { ActionButton, IImage, IRecipe } from '@/types';
@@ -161,17 +161,7 @@ const RecipeDetailPage = ({
                                                                     {ingredient.name}
                                                                 </div>
                                                                 <div>
-                                                                    {ingredient.unit
-                                                                        ?.position ===
-                                                                        'prefix' &&
-                                                                        ` ${ingredient.unit.name}`}
-                                                                    {
-                                                                        ingredient.quantity
-                                                                    }
-                                                                    {ingredient.unit
-                                                                        ?.position ===
-                                                                        'suffix' &&
-                                                                        ` ${ingredient.unit.name}`}
+                                                                    {formatIngredientQuantity(ingredient)}
                                                                 </div>
                                                             </li>
                                                         ))}

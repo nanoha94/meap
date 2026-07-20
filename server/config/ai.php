@@ -36,7 +36,8 @@ return [
     |
     */
     'models' => [
-        'vision' => env('AI_VISION_MODEL', 'gpt-4o'), // 画像解析
+        'ocr' => env('AI_OCR_MODEL', 'gpt-4o'), // Phase1 画像 OCR（OpenAI OCR 時のみ使用）
+        'text' => env('AI_TEXT_MODEL', 'gpt-4o'), // Phase2 テキスト構造化
     ],
 
 ];
