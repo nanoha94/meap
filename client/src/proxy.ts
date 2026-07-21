@@ -4,6 +4,51 @@ import type { NextRequest } from 'next/server';
 import { LINK_TO } from '@/constants';
 import { normalizePathnameForMatch } from '@/utils/pathname';
 
+const unauthorizedBasicAuthResponse = () =>
+    new NextResponse('Unauthorized', {
+        status: 401,
+        headers: {
+            'WWW-Authenticate': 'Basic realm="Develop"',
+        },
+    });
+
+/**
+ * Basic認証を検証する
+ */
+const verifyBasicAuth = (request: NextRequest): NextResponse | null => {
+    const user = process.env.NEXT_PUBLIC_BASIC_AUTH_USER;
+    const password = process.env.NEXT_PUBLIC_BASIC_AUTH_PASSWORD;
+
+    if (!user || !password) {
+        return null;
+    }
+
+    // 認証情報が存在しない場合は401エラーを返す
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader?.startsWith('Basic ')) {
+        return unauthorizedBasicAuthResponse();
+    }
+
+    // 認証情報が不正な場合は401エラーを返す
+    const decoded = Buffer.from(authHeader.slice(6), 'base64').toString(
+        'utf-8',
+    );
+    const separatorIndex = decoded.indexOf(':');
+    if (separatorIndex === -1) {
+        return unauthorizedBasicAuthResponse();
+    }
+
+    // 認証情報が一致しない場合は401エラーを返す
+    const providedUser = decoded.slice(0, separatorIndex);
+    const providedPassword = decoded.slice(separatorIndex + 1);
+
+    if (providedUser !== user || providedPassword !== password) {
+        return unauthorizedBasicAuthResponse();
+    }
+
+    return null;
+};
+
 // (auth) シェル配下の RSC レイアウトが現在のパスを参照できるよう、
 // リクエストヘッダに正規化済み x-pathname を付与してそのまま通過させる
 const forwardWithPathnameHeader = (request: NextRequest) => {
@@ -16,6 +61,11 @@ const forwardWithPathnameHeader = (request: NextRequest) => {
 };
 
 export function proxy(request: NextRequest) {
+    const basicAuthResponse = verifyBasicAuth(request);
+    if (basicAuthResponse) {
+        return basicAuthResponse;
+    }
+
     const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_URL;
     const pathname = request.nextUrl.pathname;
     const searchParams = request.nextUrl.search;
@@ -60,11 +110,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-    matcher: [
-        '/settings/account',
-        '/login',
-        '/register',
-        '/email/:path*',
-        '/password/:path*',
-    ],
+    matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
 };
