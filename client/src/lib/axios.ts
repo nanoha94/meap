@@ -5,11 +5,22 @@ type RetryableRequestConfig = InternalAxiosRequestConfig & {
     _retried?: boolean;
 };
 
+const basicAuthUser = process.env.NEXT_PUBLIC_BASIC_AUTH_USER;
+const basicAuthPassword = process.env.NEXT_PUBLIC_BASIC_AUTH_PASSWORD;
+
+const defaultHeaders: Record<string, string> = {
+    'X-Requested-With': 'XMLHttpRequest',
+};
+
+if (basicAuthUser && basicAuthPassword) {
+    defaultHeaders.Authorization = `Basic ${Buffer.from(
+        `${basicAuthUser}:${basicAuthPassword}`,
+    ).toString('base64')}`;
+}
+
 const axiosInstance = axios.create({
     baseURL: process.env.NEXT_PUBLIC_BACKEND_URL,
-    headers: {
-        'X-Requested-With': 'XMLHttpRequest',
-    },
+    headers: defaultHeaders,
     withCredentials: true,
     withXSRFToken: true,
 });
