@@ -54,7 +54,7 @@ const buildDuplicateIngredientErrors = (
     items.forEach((ingredient, index) => {
         const name = ingredient.name ?? '';
         if (name === '') return;
-        const key = `${name}|${ingredient.unit?.id ?? ''}`;
+        const key = `${name}|${ingredient.unit?.id ?? ''}|${ingredient.categoryId ?? ''}`;
         if (seen.has(key)) {
             out[`ingredients.${index}.name`] = '同じ材料名と単位の組み合わせが重複しています。';
         } else {
@@ -136,7 +136,11 @@ export const useRecipeEditForm = (initialOwnerUserId: string, fetchedRecipe?: IR
     const router = useRouter();
     const { storeRecipe, updateRecipe } = useRecipeApi();
     const { parseRecipeFromImage, parseRecipeFromUrl } = useRecipeAiApi();
-    const { convertToFormData, applyParsedRecipeToForm } = useRecipeAiImport();
+    const {
+        createMissingIngredientCategories,
+        convertToFormData,
+        applyParsedRecipeToForm,
+    } = useRecipeAiImport();
     const watchedName = useWatch({ control, name: 'name' });
     const watchedUrl = useWatch({ control, name: 'url' });
     const watchedMemo = useWatch({ control, name: 'memo' });
@@ -322,11 +326,18 @@ export const useRecipeEditForm = (initialOwnerUserId: string, fetchedRecipe?: IR
                 return false;
             }
 
+            await createMissingIngredientCategories(parsed.ingredients);
             const formData = convertToFormData(parsed);
             applyParsedRecipeToForm(formData, methods);
             return true;
         },
-        [parseRecipeFromImage, convertToFormData, applyParsedRecipeToForm, methods],
+        [
+            parseRecipeFromImage,
+            createMissingIngredientCategories,
+            convertToFormData,
+            applyParsedRecipeToForm,
+            methods,
+        ],
     );
 
     /**
@@ -339,12 +350,19 @@ export const useRecipeEditForm = (initialOwnerUserId: string, fetchedRecipe?: IR
                 return false;
             }
 
+            await createMissingIngredientCategories(parsed.ingredients);
             const formData = convertToFormData(parsed);
             applyParsedRecipeToForm(formData, methods);
             methods.setValue('url', url);
             return true;
         },
-        [parseRecipeFromUrl, convertToFormData, applyParsedRecipeToForm, methods],
+        [
+            parseRecipeFromUrl,
+            createMissingIngredientCategories,
+            convertToFormData,
+            applyParsedRecipeToForm,
+            methods,
+        ],
     );
 
     return {
