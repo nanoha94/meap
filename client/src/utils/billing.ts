@@ -37,7 +37,7 @@ export const getPlanActionButtonConfig = (
         if (pendingPlanChange) {
             return {
                 label: '変更を取り消す',
-                onClick: handlers.onResume,
+                onClick: () => handlers.onResume(),
                 variant: BUTTON_VARIANT.FILLED,
                 colorVariant: COLOR_VARIANT.PRIMARY,
                 disabled: false,
@@ -50,7 +50,7 @@ export const getPlanActionButtonConfig = (
     if (plan === BILLING_PLAN.STANDARD) {
         return {
             label: 'このプランを選択',
-            onClick: handlers.onSubscribe,
+            onClick: () => handlers.onSubscribe(),
             variant: BUTTON_VARIANT.FILLED,
             colorVariant: COLOR_VARIANT.PRIMARY,
             disabled: false,
@@ -59,7 +59,7 @@ export const getPlanActionButtonConfig = (
 
     return {
         label: 'ダウングレード',
-        onClick: handlers.onPortal,
+        onClick: () => handlers.onPortal(),
         variant: BUTTON_VARIANT.OUTLINED,
         colorVariant: COLOR_VARIANT.GRAY,
         disabled: false,

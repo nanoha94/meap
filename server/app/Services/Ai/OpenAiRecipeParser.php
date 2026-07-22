@@ -47,17 +47,30 @@ class OpenAiRecipeParser implements AiRecipeParserInterface
      *
      * @param  string  $base64Image  MIME プレフィックスなしの base64 文字列
      * @param  list<string>  $unitNames  グループの単位マスタ名一覧
+     * @param  list<string>  $categoryNames  グループの材料カテゴリーマスタ名一覧
      *
      * @throws HttpException API 失敗時は 502、画像不正時は 400
      */
-    public function parseImage(string $base64Image, array $unitNames): ParsedRecipe
+    public function parseImage(string $base64Image, array $unitNames, array $categoryNames = []): ParsedRecipe
     {
         $mimeType = $this->detectMimeType($base64Image);
         $ocrText = $this->recipeOcr->extract($base64Image, $mimeType);
+        $ocrText = preg_replace(
+            '/酉(?=[\s　]*(?:大さじ|小さじ|大[１1]|小[１1]|適量|\d))/u',
+            '酒',
+            $ocrText,
+        ) ?? $ocrText;
+
+        $this->logRecipeParseDiagnostic('ocr', [
+            'ocr_provider' => config('services.ai.ocr_provider'),
+            'ocr_model' => config('ai.models.ocr'),
+            'ocr_text' => $ocrText,
+        ]);
 
         return $this->structureRecipeFromText(
             $ocrText,
             $unitNames,
+            $categoryNames,
             '以下はレシピ画像から書き写したテキストです。',
         );
     }
@@ -66,10 +79,11 @@ class OpenAiRecipeParser implements AiRecipeParserInterface
      * URL 先の Web ページからレシピ情報を解析する。
      *
      * @param  list<string>  $unitNames
+     * @param  list<string>  $categoryNames  グループの材料カテゴリーマスタ名一覧
      *
      * @throws HttpException HTML 取得失敗時は 502、抽出テキスト空時は 400
      */
-    public function parseUrl(string $url, array $unitNames): ParsedRecipe
+    public function parseUrl(string $url, array $unitNames, array $categoryNames = []): ParsedRecipe
     {
         $html = $this->fetchHtmlFromUrl($url);
         $pageText = $this->extractTextFromHtml($html);
@@ -85,6 +99,7 @@ class OpenAiRecipeParser implements AiRecipeParserInterface
         return $this->structureRecipeFromText(
             $pageText,
             $unitNames,
+            $categoryNames,
             '以下はレシピWebページから抽出したテキストです。',
         );
     }
@@ -206,15 +221,16 @@ class OpenAiRecipeParser implements AiRecipeParserInterface
      * 抽出テキストをレシピ JSON に構造化する。
      *
      * @param  list<string>  $unitNames
+     * @param  list<string>  $categoryNames
      */
-    private function structureRecipeFromText(string $text, array $unitNames, string $sourceDescription): ParsedRecipe
+    private function structureRecipeFromText(string $text, array $unitNames, array $categoryNames, string $sourceDescription): ParsedRecipe
     {
         $decoded = $this->requestJsonCompletion(
             model: $this->textModel,
             messages: [
                 [
                     'role' => 'system',
-                    'content' => $this->structureSystemPrompt($unitNames),
+                    'content' => $this->structureSystemPrompt($unitNames, $categoryNames),
                 ],
                 [
                     'role' => 'user',
@@ -227,6 +243,13 @@ USER,
             ],
             failureContext: 'OpenAI recipe structuring failed.',
         );
+
+        $this->logRecipeParseDiagnostic('structure', [
+            'source_description' => $sourceDescription,
+            'text_model' => $this->textModel,
+            'input_text' => $text,
+            'structured_json' => $decoded,
+        ]);
 
         return ParsedRecipe::fromArray($decoded);
     }
@@ -333,10 +356,12 @@ USER,
      * 第2段階: OCR テキストを {@see ParsedRecipe} 形式へ構造化するプロンプト。
      *
      * @param  list<string>  $unitNames
+     * @param  list<string>  $categoryNames
      */
-    private function structureSystemPrompt(array $unitNames): string
+    private function structureSystemPrompt(array $unitNames, array $categoryNames): string
     {
         $unitList = implode(', ', $unitNames);
+        $categoryList = $categoryNames !== [] ? implode(', ', $categoryNames) : '（なし）';
 
         return <<<PROMPT
 あなたは OCR 抽出済みのレシピテキストを構造化するアシスタントです。入力テキストだけを根拠に、次の JSON スキーマで返してください。
@@ -350,7 +375,7 @@ USER,
       "quantity": 数量（number または null。計算用）,
       "quantityDisplay": "数量の表示表記（string または null）",
       "unitName": "単位名（string）",
-      "categoryName": "材料カテゴリ（string、例: 野菜, 肉, 調味料。不明なら空文字）"
+      "categoryName": "材料カテゴリ（string。見出し行または既存カテゴリー名。判別不可なら空文字）"
     }
   ],
   "steps": [
@@ -379,6 +404,31 @@ unitName のルール:
 - unitName は次から選ぶ: {$unitList}
 - リストにない単位は、最も近い単位を選ぶ
 
+categoryName の判定手順（厳守・最重要ルール）:
+1. テキストを上から走査し、見出し行（例: 「☆ソース」「☆調味料」「A」「たれ」「仕上げ」）の出現位置を記録する
+2. 各材料について、その材料がテキスト中で見出し行より「前」に出現するか「後」に出現するかで判定する
+3. 見出し行より前 → categoryName は必ず空文字にする。例外なし。
+4. 見出し行より後 → categoryName にその見出し名を使う（既存カテゴリーに一致すればその名前）
+5. 見出し行がない場合 → 空文字
+- 既存カテゴリー: {$categoryList}
+- 禁止: 材料の意味・種類・用途で categoryName を推測すること。しょうゆ・みりん・砂糖等であっても、見出し行より前にあれば categoryName は空文字。
+- 判定基準はテキスト内の行番号（出現順序）のみ。材料がどの食品カテゴリーに属するかは一切無関係。
+
+categoryName の具体例:
+入力テキスト:
+  サラダ油 大さじ1/2
+  しょうゆ 大さじ1と1/2
+  ☆調味料
+  酒 大さじ1
+  みりん 大さじ2
+正しい出力:
+  サラダ油 → categoryName: ""（☆調味料より前）
+  しょうゆ → categoryName: ""（☆調味料より前）
+  酒 → categoryName: "☆調味料"（☆調味料より後）
+  みりん → categoryName: "☆調味料"（☆調味料より後）
+誤った出力（これをやってはいけない）:
+  しょうゆ → categoryName: "☆調味料"（×意味で分類している。しょうゆは見出し行より前なので空文字が正解）
+
 括弧付き併記:
 - 「1枚(250g)」は括弧外を優先（quantityDisplay="1", unitName=枚）
 
@@ -392,5 +442,28 @@ prefix 単位（大さじ・小さじ）:
 
 不明な項目は null または空文字。JSON オブジェクトのみを返してください。
 PROMPT;
+    }
+
+    /**
+     * AI レシピ解析の切り分け調査用ログ（APP_DEBUG が true のときのみ）。
+     *
+     * @param  'ocr'|'structure'  $phase
+     * @param  array<string, mixed>  $context
+     */
+    private function logRecipeParseDiagnostic(string $phase, array $context = []): void
+    {
+        if (! config('app.debug')) {
+            return;
+        }
+
+        $this->logMessage(
+            'info',
+            __METHOD__,
+            __('operations.ai.recipe.parse_img'),
+            "AI recipe parse diagnostic ({$phase})",
+            null,
+            null,
+            array_merge(['phase' => $phase], $context),
+        );
     }
 }

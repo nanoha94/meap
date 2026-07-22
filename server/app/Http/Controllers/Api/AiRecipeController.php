@@ -62,8 +62,12 @@ class AiRecipeController extends ApiController
                         ->orderBy('order')
                         ->pluck('name')
                         ->all();
+                    $categoryNames = $group->ingredientCategories()
+                        ->orderBy('order')
+                        ->pluck('name')
+                        ->all();
 
-                    $parsedRecipe = $this->recipeParser->parseImage($base64Image, $unitNames);
+                    $parsedRecipe = $this->recipeParser->parseImage($base64Image, $unitNames, $categoryNames);
                     $normalizedRecipe = $this->aiRecipeService->normalizeParsedRecipe($parsedRecipe, $group);
                     $message = __('api.ai.recipe.parsed_img');
 
@@ -120,8 +124,12 @@ class AiRecipeController extends ApiController
                         ->orderBy('order')
                         ->pluck('name')
                         ->all();
+                    $categoryNames = $group->ingredientCategories()
+                        ->orderBy('order')
+                        ->pluck('name')
+                        ->all();
 
-                    $parsedRecipe = $this->recipeParser->parseUrl($url, $unitNames);
+                    $parsedRecipe = $this->recipeParser->parseUrl($url, $unitNames, $categoryNames);
                     $normalizedRecipe = $this->aiRecipeService->normalizeParsedRecipe($parsedRecipe, $group);
                     $message = __('api.ai.recipe.parsed_url');
 

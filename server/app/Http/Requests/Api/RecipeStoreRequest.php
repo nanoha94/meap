@@ -133,7 +133,7 @@ class RecipeStoreRequest extends BaseApiRequest
 
             $seen = [];
             foreach ($ingredients as $index => $ingredient) {
-                $key = ($ingredient['name'] ?? '') . '|' . ($ingredient['unitId'] ?? '');
+                $key = ($ingredient['name'] ?? '') . '|' . ($ingredient['unitId'] ?? '') . '|' . ($ingredient['categoryId'] ?? '');
                 if (in_array($key, $seen, true)) {
                     $validator->errors()->add(
                         "ingredients.{$index}.name",

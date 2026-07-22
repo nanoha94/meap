@@ -8,6 +8,7 @@ import { getApiErrorMessageFromSettledResult } from '@/lib/apiResponse';
 import axios from '@/lib/axios';
 import { useGlobalStore } from '@/stores';
 import {
+    IBaseApiResponse,
     IGetIngredientCategoryIndexResponse,
     IIngredientCategory,
     IPostIngredientCategoryRequest,
@@ -148,6 +149,47 @@ export const useIngredientCategoryApi = () => {
     );
 
     /**
+     * 食材カテゴリーを一括作成する
+     * @param names 作成する食材カテゴリー名
+     * @returns 作成とストア反映に成功したとき true
+     */
+    const bulkCreateIngredientCategories = React.useCallback(
+        async (names: string[]): Promise<boolean> => {
+            if (names.length === 0) {
+                return true;
+            }
+
+            const maxOrder = Math.max(
+                ...storeCategories.map(category => category.order),
+                -1,
+            );
+            const categories: IPostIngredientCategoryRequest[] = names.map(
+                (name, index) => ({
+                    name,
+                    order: maxOrder + 1 + index,
+                }),
+            );
+
+            try {
+                const { data } = await axios.post<IBaseApiResponse>(
+                    '/ingredient-categories/bulk',
+                    {
+                        data: categories,
+                        timeout: TIMEOUT_MS,
+                    },
+                );
+                if (!data.success) {
+                    return false;
+                }
+                return await fetchIngredientCategories();
+            } catch {
+                return false;
+            }
+        },
+        [fetchIngredientCategories, storeCategories],
+    );
+
+    /**
      * 食材カテゴリーを一括更新
      * @param categories 更新する食材カテゴリー
      * @returns 成功時 true、それ以外は false
@@ -243,6 +285,7 @@ export const useIngredientCategoryApi = () => {
     );
 
     return {
+        bulkCreateIngredientCategories,
         fetchIngredientCategories,
         storeData: { categories: storeCategories },
         bulkUpdateIngredientCategories,

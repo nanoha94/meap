@@ -4,7 +4,11 @@ import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 
 import { TMP_ID_PREFIX } from '@/constants';
-import { defaultIngredientItem, useIngredientStore } from '@/models/ingredient';
+import {
+    defaultIngredientItem,
+    useIngredientCategoryApi,
+    useIngredientStore,
+} from '@/models/ingredient';
 import {
     IIngredientCategory,
     IIngredientItem,
@@ -183,26 +187,51 @@ const buildStepsFromParsed = (
  * 画像から読み込んだ AI 解析結果をレシピ編集フォームへ反映するフック
  */
 export const useRecipeAiImport = () => {
-    const units = useIngredientStore(state => state.units);
     const categories = useIngredientStore(state => state.categories);
+    const { bulkCreateIngredientCategories } = useIngredientCategoryApi();
+
+    /**
+     * AI 解析結果に含まれる未登録カテゴリー名を一括作成する
+     * 作成失敗時は convertToFormData 側で isDefault カテゴリーへフォールバックする
+     */
+    const createMissingIngredientCategories = React.useCallback(
+        async (parsedIngredients: IParsedRecipeIngredient[]): Promise<void> => {
+            // マスターリストに存在しないカテゴリー名を抽出
+            const missingNames = parsedIngredients
+                .map(ingredient => ingredient.categoryName.trim())
+                .filter(
+                    name => name && !findMasterByName(categories, name),
+                )
+                .filter((name, index, names) => names.indexOf(name) === index); // 重複排除
+
+            // カテゴリー作成
+            await bulkCreateIngredientCategories(missingNames);
+        },
+        [categories, bulkCreateIngredientCategories],
+    );
 
     /**
      * AI 解析結果をレシピ編集フォーム用データへ変換する
      */
     const convertToFormData = React.useCallback(
         (parsed: IParsedRecipe): RecipeAiImportFormData => {
+            // createMissingIngredientCategories でストアが更新された直後に呼ばれるため、
+            // クロージャの値ではなく getState() で最新のストア値を取得する
+            const { units: latestUnits, categories: latestCategories } =
+                useIngredientStore.getState();
+
             return {
                 name: parsed.name,
                 servingCount: parsed.servingCount,
                 ingredients: buildIngredientsFromParsed(
                     parsed.ingredients,
-                    units,
-                    categories,
+                    latestUnits,
+                    latestCategories,
                 ),
                 steps: buildStepsFromParsed(parsed.steps),
             };
         },
-        [units, categories],
+        [],
     );
 
     /**
@@ -227,6 +256,7 @@ export const useRecipeAiImport = () => {
     );
 
     return {
+        createMissingIngredientCategories,
         convertToFormData,
         applyParsedRecipeToForm,
     };

@@ -12,8 +12,9 @@ interface AiRecipeParserInterface
      * 画像は解析のみに使用し、サーバーには保存しない。
      *
      * @param  list<string>  $unitNames  グループの単位マスタ名一覧
+     * @param  list<string>  $categoryNames  グループの材料カテゴリーマスタ名一覧
      */
-    public function parseImage(string $base64Image, array $unitNames): ParsedRecipe;
+    public function parseImage(string $base64Image, array $unitNames, array $categoryNames = []): ParsedRecipe;
 
     /**
      * URL 先の Web ページからレシピ情報を解析する。
@@ -21,6 +22,7 @@ interface AiRecipeParserInterface
      * HTML は解析のみに使用し、サーバーには保存しない。
      *
      * @param  list<string>  $unitNames  グループの単位マスタ名一覧
+     * @param  list<string>  $categoryNames  グループの材料カテゴリーマスタ名一覧
      */
-    public function parseUrl(string $url, array $unitNames): ParsedRecipe;
+    public function parseUrl(string $url, array $unitNames, array $categoryNames = []): ParsedRecipe;
 }
