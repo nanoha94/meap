@@ -49,6 +49,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Cashier::useCustomerModel(Group::class);
+        Cashier::calculateTaxes();
 
         URL::forceRootUrl(Config::get('app.url'));
         URL::forceScheme('https');
