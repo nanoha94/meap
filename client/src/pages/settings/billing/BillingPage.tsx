@@ -384,10 +384,18 @@ const UpcomingInvoiceSection = ({
                             <dt>小計</dt>
                             <dd>{formatYen(upcomingInvoice.subtotal)}</dd>
                         </div>
-                        <div className="flex items-center justify-between gap-x-8">
-                            <dt>消費税</dt>
-                            <dd>{formatYen(upcomingInvoice.tax)}</dd>
-                        </div>
+                        {upcomingInvoice.tax > 0 && (
+                            <>
+                                <div className="flex items-center justify-between gap-x-8">
+                                    <dt>合計（税抜き）</dt>
+                                    <dd>{formatYen(upcomingInvoice.subtotalExcludingTax)}</dd>
+                                </div>
+                                <div className="flex items-center justify-between gap-x-8">
+                                    <dt>消費税（10%）</dt>
+                                    <dd>{formatYen(upcomingInvoice.tax)}</dd>
+                                </div>
+                            </>
+                        )}
                         <div className="flex items-center justify-between gap-x-8">
                             <dt>合計</dt>
                             <dd>{formatYen(upcomingInvoice.total)}</dd>

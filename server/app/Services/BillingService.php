@@ -48,6 +48,8 @@ class BillingService
             ->checkout([
                 'success_url' => $urls['success'],
                 'cancel_url' => $urls['cancel'],
+                'automatic_tax' => ['enabled' => true],
+                'customer_update' => ['address' => 'auto'],
             ]);
 
         return $checkout->url;
@@ -90,6 +92,8 @@ class BillingService
         $checkout = $group->checkout([$this->priceId($packType->configKey()) => 1], [
             'success_url' => $urls['success'],
             'cancel_url' => $urls['cancel'],
+            'automatic_tax' => ['enabled' => true],
+            'customer_update' => ['address' => 'auto'],
             'metadata' => [
                 'type' => 'pack',
                 'group_id' => $group->id,
@@ -318,6 +322,7 @@ class BillingService
      *         date: string,
      *         lines: array<int, array{description: string|null, quantity: int|null, amount: int}>,
      *         subtotal: int,
+     *         subtotalExcludingTax: int,
      *         tax: int,
      *         total: int,
      *         amountDue: int,
@@ -332,9 +337,22 @@ class BillingService
 
         if ($group->hasStripeId()) {
             try {
-                $upcoming = $group->upcomingInvoice();
+                $subscription = $group->subscription(config('billing.subscription_type'));
+                $params = [];
+                if ($subscription?->stripe_id) {
+                    $params['subscription'] = $subscription->stripe_id;
+                    $params['automatic_tax'] = ['enabled' => true];
+                }
+                $upcoming = $group->upcomingInvoice($params);
                 if ($upcoming) {
                     $stripeInvoice = $upcoming->asStripeInvoice();
+                    $tax = $this->extractInvoiceTaxAmount($stripeInvoice);
+                    $total = $upcoming->rawTotal();
+                    $subtotalExcludingTax = (int) (
+                        $stripeInvoice->subtotal_excluding_tax
+                        ?? $stripeInvoice->total_excluding_tax
+                        ?? ($total - $tax)
+                    );
                     $upcomingInvoice = [
                         'date' => $upcoming->date()->toIso8601String(),
                         'lines' => collect($upcoming->invoiceLineItems())->map(fn($line) => [
@@ -343,8 +361,9 @@ class BillingService
                             'amount' => (int) $line->amount,
                         ])->toArray(),
                         'subtotal' => (int) ($stripeInvoice->subtotal ?? 0),
-                        'tax' => (int) ($stripeInvoice->tax ?? 0),
-                        'total' => $upcoming->rawTotal(),
+                        'subtotalExcludingTax' => $subtotalExcludingTax,
+                        'tax' => $tax,
+                        'total' => $total,
                         'amountDue' => $upcoming->rawAmountDue(),
                     ];
                 }
@@ -418,5 +437,21 @@ class BillingService
         }
 
         return $priceId;
+    }
+
+    /**
+     * Stripe Invoice から税額を取得する
+     * @param \Stripe\Invoice|object $stripeInvoice
+     * @return int
+     */
+    private function extractInvoiceTaxAmount(object $stripeInvoice): int
+    {
+        if (! empty($stripeInvoice->total_taxes)) {
+            return (int) collect($stripeInvoice->total_taxes)->sum(
+                fn ($tax) => (int) ($tax->amount ?? 0),
+            );
+        }
+
+        return (int) ($stripeInvoice->tax ?? 0);
     }
 }

@@ -641,9 +641,17 @@ test('4-3-25: 【プラン変更予定取り消し】 予定変更なしなら 4
 function mockUpcomingInvoice(array $overrides = []): Invoice
 {
     $date = \Illuminate\Support\Carbon::parse($overrides['date'] ?? '2024-02-01T00:00:00+00:00');
+    $tax = $overrides['tax'] ?? 53;
     $stripeInvoice = (object) [
         'subtotal' => $overrides['subtotal'] ?? 580,
-        'tax' => $overrides['tax'] ?? 58,
+        'subtotal_excluding_tax' => $overrides['subtotalExcludingTax'] ?? 527,
+        'total_taxes' => $overrides['totalTaxes'] ?? [
+            (object) [
+                'amount' => $tax,
+                'tax_behavior' => 'inclusive',
+                'type' => 'tax_rate_details',
+            ],
+        ],
     ];
 
     $lineItem = Mockery::mock();
@@ -656,8 +664,8 @@ function mockUpcomingInvoice(array $overrides = []): Invoice
     $mock->shouldReceive('date')->andReturn($date);
     $mock->shouldReceive('invoiceLineItems')->andReturn([$lineItem]);
     $mock->shouldReceive('asStripeInvoice')->andReturn($stripeInvoice);
-    $mock->shouldReceive('rawTotal')->andReturn($overrides['total'] ?? 638);
-    $mock->shouldReceive('rawAmountDue')->andReturn($overrides['amountDue'] ?? 638);
+    $mock->shouldReceive('rawTotal')->andReturn($overrides['total'] ?? 580);
+    $mock->shouldReceive('rawAmountDue')->andReturn($overrides['amountDue'] ?? 580);
 
     return $mock;
 }
@@ -704,9 +712,10 @@ test('4-3-26: 【請求履歴取得】 次回お支払い予定と過去請求�
                 ],
             ],
             'subtotal' => 580,
-            'tax' => 58,
-            'total' => 638,
-            'amountDue' => 638,
+            'subtotalExcludingTax' => 527,
+            'tax' => 53,
+            'total' => 580,
+            'amountDue' => 580,
         ],
         'pastInvoices' => [
             [
