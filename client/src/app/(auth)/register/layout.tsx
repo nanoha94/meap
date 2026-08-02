@@ -1,8 +1,6 @@
-import type { Metadata } from 'next';
+import { createPageMetadata, METADATA } from '@/constants';
 
-export const metadata: Metadata = {
-    title: 'アカウント登録',
-};
+export const metadata = createPageMetadata(METADATA.PAGE.REGISTER);
 
 interface Props {
     children: React.ReactNode;

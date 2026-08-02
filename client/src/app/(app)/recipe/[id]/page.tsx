@@ -1,12 +1,13 @@
 import React from 'react';
 import { Suspense } from 'react';
-import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 import { Loading } from '@/components';
 import { fetchData } from '@/lib/apiClient';
+import { createRecipeDetailMetadata } from '@/lib/recipeMetadata';
 import RecipeDetailPage from '@/pages/recipe/detail/RecipeDetailPage';
 import { IGetRecipeShowResponse } from '@/types';
+import { Metadata } from 'next';
 
 interface Props {
     params: Promise<{ id: string }>;
@@ -14,14 +15,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { id } = await params;
-    const { data: recipe } = await fetchData<IGetRecipeShowResponse>(
-        `/recipes/${id}`,
-        { suppressNotFoundLog: true },
-    );
-
-    return {
-        title: recipe?.data?.name ?? 'レシピ',
-    };
+    return createRecipeDetailMetadata(id);
 }
 
 interface PageWithDataProps {

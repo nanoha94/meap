@@ -1,4 +1,3 @@
-import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -11,13 +10,6 @@ import { handleAuthRedirect } from '@/utils';
 
 // 動的レンダリングを強制（クッキーを使用するため）
 export const dynamic = 'force-dynamic';
-
-export const metadata: Metadata = {
-    title: {
-        default: 'meap',
-        template: '%s | meap',
-    },
-};
 
 interface Props {
     children: React.ReactNode;

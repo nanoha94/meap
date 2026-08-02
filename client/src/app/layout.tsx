@@ -4,6 +4,7 @@ import type { Metadata, Viewport } from 'next';
 import { AlertDialog, Dialog, LoadingAnimation, Snackbars } from '@/components';
 import { NOTO_SANS_JP } from '@/constants';
 import '@/styles/global.css';
+import { METADATA } from '@/constants';
 
 interface RootLayoutProps {
     children: React.ReactNode;
@@ -29,18 +30,18 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-    metadataBase: new URL(
-        process.env.NEXT_PUBLIC_FRONTEND_URL ??
-        'http://localhost:3000',
-    ),
+    metadataBase: new URL(process.env.NEXT_PUBLIC_FRONTEND_URL ?? '',),
     title: {
-        default: 'meap',
-        template: '%s | meap',
+        default: METADATA.SITE_NAME,
+        template: `%s | ${METADATA.SITE_NAME}`,
     },
-    description: 'meapは、レシピ・献立・買い物リストをまとめて管理できるアプリです。',
+    description: METADATA.SITE_DESCRIPTION,
     openGraph: {
-        title: 'meap',
-        description: 'meapは、レシピ・献立・買い物リストをまとめて管理できるアプリです。',
+        title: METADATA.SITE_NAME,
+        description: METADATA.SITE_DESCRIPTION,
+        images: "ogp.jpg",
+        url: process.env.NEXT_PUBLIC_FRONTEND_URL,
+        locale: "ja_JP",
     },
 };
 

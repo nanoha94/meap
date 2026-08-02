@@ -1,8 +1,6 @@
-import type { Metadata } from 'next';
+import { createPageMetadata, METADATA } from '@/constants';
 
-export const metadata: Metadata = {
-    title: 'パスワード再設定',
-};
+export const metadata = createPageMetadata(METADATA.PAGE.PASSWORD_RESET);
 
 interface Props {
     children: React.ReactNode;

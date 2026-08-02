@@ -20,12 +20,6 @@ import { LoginLinks } from '@/components';
 import { COLOR_VARIANT, LINK_TO } from '@/constants';
 import { getLinkButtonClassName } from '@/utils';
 
-export const metadata = {
-    title: { absolute: 'meap — レシピと献立をまとめて管理' },
-    description:
-        'レシピの保存・整理や献立づくりをサポートするアプリ。写真からAIでレシピを読み込める機能も。まずは無料で始められます。',
-};
-
 const painPoints = [
     '買い物に時間がかかる',
     '食材を無駄にしてしまう',

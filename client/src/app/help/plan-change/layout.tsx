@@ -1,11 +1,11 @@
 import React from 'react';
-import type { Metadata } from 'next';
 
-export const metadata: Metadata = {
-    title: 'プラン変更の仕組み',
-    description:
-        'meap のプラン変更（アップグレード・ダウングレード・解約）について、料金の請求タイミングと AI 利用回数の変動ルールを具体例とともに説明します。',
-};
+import { createPageMetadata, METADATA } from '@/constants';
+
+export const metadata = createPageMetadata(
+    METADATA.PAGE.HELP_PLAN_CHANGE,
+    METADATA.PAGE_DESCRIPTION.HELP_PLAN_CHANGE,
+);
 
 interface LayoutProps {
     children: React.ReactNode;

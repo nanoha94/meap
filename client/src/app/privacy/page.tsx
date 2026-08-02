@@ -1,14 +1,9 @@
 import React from 'react';
-import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 
 import { LoginLinks } from '@/components';
 import { LINK_TO } from '@/constants';
-
-export const metadata: Metadata = {
-    title: 'プライバシーポリシー',
-};
 
 const Page = () => {
     return (

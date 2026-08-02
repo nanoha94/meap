@@ -1,9 +1,8 @@
 import React from 'react';
-import type { Metadata } from 'next';
 
-export const metadata: Metadata = {
-    title: '購入完了',
-};
+import { createPageMetadata, METADATA } from '@/constants';
+
+export const metadata = createPageMetadata(METADATA.PAGE.BILLING_SUCCESS);
 
 interface LayoutProps {
     children: React.ReactNode;

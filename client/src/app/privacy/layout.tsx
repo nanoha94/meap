@@ -1,11 +1,11 @@
 import React from 'react';
-import type { Metadata } from 'next';
 
-export const metadata: Metadata = {
-    title: 'プライバシーポリシー',
-    description:
-        'meap のプライバシーポリシー。お客様から取得する個人情報の項目、利用目的、第三者提供、安全管理措置、お問い合わせ窓口等について記載しています。',
-};
+import { createPageMetadata, METADATA } from '@/constants';
+
+export const metadata = createPageMetadata(
+    METADATA.PAGE.PRIVACY,
+    METADATA.PAGE_DESCRIPTION.PRIVACY,
+);
 
 interface LayoutProps {
     children: React.ReactNode;

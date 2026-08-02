@@ -1,9 +1,8 @@
 import React from 'react';
-import type { Metadata } from 'next';
 
-export const metadata: Metadata = {
-    title: '献立表',
-};
+import { createPageMetadata, METADATA } from '@/constants';
+
+export const metadata = createPageMetadata(METADATA.PAGE.PLAN);
 
 interface LayoutProps {
     children: React.ReactNode;

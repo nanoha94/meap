@@ -1,11 +1,11 @@
 import React from 'react';
-import type { Metadata } from 'next';
 
-export const metadata: Metadata = {
-    title: '利用規約',
-    description:
-        'meap の利用規約。本サービスをご利用いただく際の条件、お客様が登録するコンテンツの取扱い、グループ共有機能、禁止事項、免責事項等について記載しています。',
-};
+import { createPageMetadata, METADATA } from '@/constants';
+
+export const metadata = createPageMetadata(
+    METADATA.PAGE.TERMS,
+    METADATA.PAGE_DESCRIPTION.TERMS,
+);
 
 interface LayoutProps {
     children: React.ReactNode;

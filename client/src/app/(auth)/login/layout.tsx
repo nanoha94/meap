@@ -1,8 +1,6 @@
-import type { Metadata } from 'next';
+import { createPageMetadata, METADATA } from '@/constants';
 
-export const metadata: Metadata = {
-    title: 'ログイン',
-};
+export const metadata = createPageMetadata(METADATA.PAGE.LOGIN);
 
 interface Props {
     children: React.ReactNode;

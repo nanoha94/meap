@@ -1,8 +1,6 @@
-import type { Metadata } from 'next';
+import { createPageMetadata, METADATA } from '@/constants';
 
-export const metadata: Metadata = {
-    title: 'メールアドレスの確認',
-};
+export const metadata = createPageMetadata(METADATA.PAGE.EMAIL_VERIFY);
 
 interface Props {
     children: React.ReactNode;
