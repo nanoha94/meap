@@ -52,6 +52,7 @@ const RecipeListPage = ({
     const setListPaging = useRecipeListStateStore(state => state.setListPaging);
     const setListSortOptions = useRecipeListStateStore(state => state.setListSortOptions);
     const setListFilterOptions = useRecipeListStateStore(state => state.setListFilterOptions);
+    const incrementLoadingCount = useGlobalStore(state => state.incrementLoadingCount);
     const resetLoadingCount = useGlobalStore(state => state.resetLoadingCount);
 
     // hook
@@ -73,6 +74,17 @@ const RecipeListPage = ({
             [sortOptionId],
         );
 
+    const hasActiveFilter = React.useMemo(() => {
+        const filter = currentFilterOptions;
+        return Boolean(
+            filter.recipeName?.trim()
+            || filter.ingredientName?.trim()
+            || filter.categoryIds?.length
+            || filter.lastPlannedDateFrom?.trim()
+            || filter.lastPlannedDateTo?.trim(),
+        );
+    }, [currentFilterOptions]);
+
     /**
      * レシピ一覧ページに遷移する
      * @param sort 並び替えオプション
@@ -86,9 +98,10 @@ const RecipeListPage = ({
             filter: RecipeFilterFormData,
             page: number,
         ) => {
+            incrementLoadingCount();
             router.push(`/recipe?${getBrowserQueryString(sort, filter, page)}`);
         },
-        [router],
+        [router, incrementLoadingCount],
     );
 
     /**
@@ -98,16 +111,16 @@ const RecipeListPage = ({
         navigateToRecipeList(
             resolveRecipeSortOption(e.target.value),
             currentFilterOptions,
-            currentPage,
+            1,
         );
-    }, [navigateToRecipeList, currentFilterOptions, currentPage]);
+    }, [navigateToRecipeList, currentFilterOptions]);
 
     /**
      * 絞り込み条件変更処理（ストア更新・再取得・URLクエリ更新）
      */
     const handleChangeFilterOptions = React.useCallback((data: RecipeFilterFormData) => {
-        navigateToRecipeList(currentSortOption, data, currentPage);
-    }, [navigateToRecipeList, currentSortOption, currentPage]);
+        navigateToRecipeList(currentSortOption, data, 1);
+    }, [navigateToRecipeList, currentSortOption]);
 
     /**
      * ページ番号変更処理（ストア更新・再取得・URLクエリ更新）
@@ -165,7 +178,7 @@ const RecipeListPage = ({
                     <button type="button" onClick={() => {
                         openDialog({
                             title: '絞り込み条件',
-                            children: <RecipeFilterForm search={handleChangeFilterOptions} defaultValues={currentFilterOptions} />
+                            children: <RecipeFilterForm search={handleChangeFilterOptions} defaultValues={currentFilterOptions} suppressNavigationGuard />
                         });
                     }} className="py-1 px-2 flex items-center gap-x-2 rounded hover:bg-gray-light"><SlidersHorizontal color={colors.black} strokeWidth={1.5} />絞り込み</button>
                     <StyledSelect
@@ -177,7 +190,7 @@ const RecipeListPage = ({
                     />
                 </div>
                 {pageSize <= 0
-                    ? <p>登録されている料理/レシピはありません。</p>
+                    ? <p>{hasActiveFilter ? '条件に一致する料理/レシピはありません。' : '登録されている料理/レシピはありません。'}</p>
                     : <div className='flex flex-col gap-y-14'>
                         <div className="grid grid-cols-[repeat(auto-fill,_minmax(160px,_1fr))] gap-3">
                             {fetchedRecipes.map(v => (

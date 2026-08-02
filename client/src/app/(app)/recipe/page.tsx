@@ -6,7 +6,7 @@ import { Loading } from '@/components';
 import { fetchData } from '@/lib/apiClient';
 import { RECIPES_PER_PAGE, sortOptions } from '@/models/recipe';
 import { RecipeFilterFormData } from '@/models/recipe/types';
-import { getApiQueryString } from '@/models/recipe/utils';
+import { getApiQueryString, getBrowserQueryString } from '@/models/recipe/utils';
 import RecipeListPage from '@/pages/recipe/list/RecipeListPage';
 import { IGetRecipeIndexResponse } from '@/types';
 
@@ -90,11 +90,25 @@ const RecipePageWithData = async ({
 const Page = async ({ searchParams }: Props) => {
     const resolved = await Promise.resolve(searchParams);
     const { sort, order, recipe_name, ingredient_name, category_ids, last_planned_date_from, last_planned_date_to, page } = resolved;
+
+    const filterOptions: RecipeFilterFormData = {
+        recipeName: recipe_name ?? '',
+        ingredientName: ingredient_name ?? '',
+        categoryIds: category_ids?.split(',').map(id => id.trim()) ?? [],
+        lastPlannedDateFrom: last_planned_date_from ?? '',
+        lastPlannedDateTo: last_planned_date_to ?? '',
+    };
+
+    const sortOptions = {
+        sort: sort ?? defaultSort.sort,
+        order: order ?? defaultSort.order,
+    };
+
     if (!sort || !order || !page) {
-        redirect(`/recipe?sort=${sort ?? defaultSort.sort}&order=${order ?? defaultSort.order}&page=${page ?? 1}`);
+        redirect(`/recipe?${getBrowserQueryString(sortOptions, filterOptions, page ?? 1)}`);
     }
     if (page < 1) {
-        redirect(`/recipe?sort=${sort ?? defaultSort.sort}&order=${order ?? defaultSort.order}&page=1`);
+        redirect(`/recipe?${getBrowserQueryString(sortOptions, filterOptions, 1)}`);
     }
 
     return (
