@@ -168,7 +168,11 @@ return [
     'uuid' => 'The :attribute field must be a valid UUID.',
     'required_when_unit_requires_quantity' => 'The :attribute field is required for the selected unit.',
     'invalid_quantity_display' => 'The quantity must be an integer, decimal, or fraction (e.g. 2, 1.5, 1/2, 1 1/2).',
-    'duplicate_ingredient' => 'The same ingredient name and unit combination appears more than once.',
+    'duplicate_value' => 'The :attribute appears more than once.',
+    'id_or_name_required' => 'Either :id or :name must be specified for :attribute.',
+    'not_in_list' => 'The specified :attribute is not included in :list.',
+    'duplicate_combination' => 'The same combination of :fields appears more than once.',
+    'exactly_one_default_required' => 'Exactly one :attribute item must have :field set to :value.',
 
     /*
     |--------------------------------------------------------------------------
@@ -237,9 +241,11 @@ return [
             'unit_id' => 'unit ID',
             'category_id' => 'category ID',
             'quantity' => 'quantity',
+            'combination_fields' => 'ingredient name, unit, and category',
         ],
         'ingredient_category' => [
             'name' => 'ingredient category name',
+            'id' => 'ingredient category ID',
         ],
         'ingredient_unit' => [
             'name' => 'unit name',

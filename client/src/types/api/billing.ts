@@ -65,6 +65,7 @@ export interface IBillingUpcomingInvoice {
     date: string;
     lines: IBillingInvoiceLine[];
     subtotal: number;
+    subtotalExcludingTax: number;
     tax: number;
     total: number;
     amountDue: number;

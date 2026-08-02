@@ -63,14 +63,6 @@ class Group extends Model
             $category->order = 0;
             $category->save();
 
-            // デフォルトの食材カテゴリを追加
-            $ingredientCategory = new IngredientCategory();
-            $ingredientCategory->name = "食材";
-            $ingredientCategory->group_id = $group->id;
-            $ingredientCategory->is_default = true;
-            $ingredientCategory->order = 0;
-            $ingredientCategory->save();
-
             // デフォルトの献立カテゴリを追加
             $yellow = Color::where('name', 'イエロー')->first();
             $red = Color::where('name', 'レッド')->first();
@@ -210,14 +202,6 @@ class Group extends Model
     public function ingredients(): HasMany
     {
         return $this->hasMany(Ingredient::class);
-    }
-
-    /**
-     * 食材カテゴリを取得する
-     */
-    public function ingredientCategories(): HasMany
-    {
-        return $this->hasMany(IngredientCategory::class);
     }
 
     /**

@@ -27,11 +27,12 @@ namespace App\Swagger;
  *
  * @OA\Schema(
  *     schema="BillingUpcomingInvoice",
- *     required={"date", "lines", "subtotal", "tax", "total", "amountDue"},
+ *     required={"date", "lines", "subtotal", "subtotalExcludingTax", "tax", "total", "amountDue"},
  *     @OA\Property(property="date", type="string", format="date-time", description="請求予定日"),
  *     @OA\Property(property="lines", type="array", @OA\Items(ref="#/components/schemas/BillingInvoiceLine")),
  *     @OA\Property(property="subtotal", type="integer", description="小計（最小通貨単位）", example=580),
- *     @OA\Property(property="tax", type="integer", description="税額（最小通貨単位）", example=0),
+ *     @OA\Property(property="subtotalExcludingTax", type="integer", description="合計（税抜き）（最小通貨単位）", example=527),
+ *     @OA\Property(property="tax", type="integer", description="税額（最小通貨単位）", example=53),
  *     @OA\Property(property="total", type="integer", description="合計（最小通貨単位）", example=580),
  *     @OA\Property(property="amountDue", type="integer", description="支払予定額（最小通貨単位）", example=580)
  * )

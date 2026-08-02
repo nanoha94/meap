@@ -12,6 +12,9 @@ use Throwable;
 
 class AiRecipeController extends ApiController
 {
+    /** AI プロンプト用の食材カテゴリ名（レシピ内カテゴリの参考リスト） */
+    private const AI_CATEGORY_NAMES = ['食材', '調味料', 'その他'];
+
     public function __construct(
         private readonly AiRecipeParserInterface $recipeParser,
         private readonly AiUsageService $aiUsageService,
@@ -62,12 +65,7 @@ class AiRecipeController extends ApiController
                         ->orderBy('order')
                         ->pluck('name')
                         ->all();
-                    $categoryNames = $group->ingredientCategories()
-                        ->orderBy('order')
-                        ->pluck('name')
-                        ->all();
-
-                    $parsedRecipe = $this->recipeParser->parseImage($base64Image, $unitNames, $categoryNames);
+                    $parsedRecipe = $this->recipeParser->parseImage($base64Image, $unitNames, self::AI_CATEGORY_NAMES);
                     $normalizedRecipe = $this->aiRecipeService->normalizeParsedRecipe($parsedRecipe, $group);
                     $message = __('api.ai.recipe.parsed_img');
 
@@ -124,12 +122,7 @@ class AiRecipeController extends ApiController
                         ->orderBy('order')
                         ->pluck('name')
                         ->all();
-                    $categoryNames = $group->ingredientCategories()
-                        ->orderBy('order')
-                        ->pluck('name')
-                        ->all();
-
-                    $parsedRecipe = $this->recipeParser->parseUrl($url, $unitNames, $categoryNames);
+                    $parsedRecipe = $this->recipeParser->parseUrl($url, $unitNames, self::AI_CATEGORY_NAMES);
                     $normalizedRecipe = $this->aiRecipeService->normalizeParsedRecipe($parsedRecipe, $group);
                     $message = __('api.ai.recipe.parsed_url');
 

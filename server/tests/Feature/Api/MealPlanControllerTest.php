@@ -5,7 +5,6 @@ use App\Models\Group;
 use App\Models\MealPlan;
 use App\Models\Meal;
 use App\Models\IngredientUnit;
-use App\Models\IngredientCategory;
 use App\Models\Color;
 use App\Services\MealPlanService;
 use Carbon\Carbon;
@@ -202,10 +201,6 @@ beforeEach(function () {
         public function createRecipeWithIngredientsViaApi($testInstance, $user, $name = '人参の煮物')
         {
             $group = $user->groups()->first();
-            $ingredientCategory = IngredientCategory::firstOrCreate(
-                ['group_id' => $group->id, 'name' => 'テスト食材カテゴリ'],
-                ['order' => 0]
-            );
             $ingredientUnit = IngredientUnit::where('group_id', $group->id)->first();
 
             $requestData = [
@@ -216,14 +211,12 @@ beforeEach(function () {
                     [
                         'name' => '人参',
                         'unitId' => $ingredientUnit->id,
-                        'categoryId' => $ingredientCategory->id,
                         'quantityDisplay' => '200',
                         'order' => 0,
                     ],
                     [
                         'name' => '醤油',
                         'unitId' => $ingredientUnit->id,
-                        'categoryId' => $ingredientCategory->id,
                         'quantityDisplay' => '30',
                         'order' => 1,
                     ],
@@ -519,12 +512,7 @@ test('3-5-8: 【一覧取得】 include_ingredients=true で食材のレスポ�
 test('3-5-9: 【一覧取得】 include_ingredients=true で quantityDisplay が返る', function () {
     $user = $this->testData->createUserWithGroup();
     $mealCategory = $this->testData->createmealCategoryViaApi($this, $user);
-    $group = $user->groups()->first();
-    $ingredientCategory = IngredientCategory::firstOrCreate(
-        ['group_id' => $group->id, 'name' => 'テスト食材カテゴリ'],
-        ['order' => 0]
-    );
-    $ingredientUnit = IngredientUnit::where('group_id', $group->id)->first();
+    $ingredientUnit = IngredientUnit::where('group_id', $user->groups()->first()->id)->first();
 
     $createResponse = $this->actingAs($user)->post('/recipes', [
         'name' => '分数献立テスト',
@@ -534,7 +522,6 @@ test('3-5-9: 【一覧取得】 include_ingredients=true で quantityDisplay が
             [
                 'name' => '塩',
                 'unitId' => $ingredientUnit->id,
-                'categoryId' => $ingredientCategory->id,
                 'quantityDisplay' => '1/2',
                 'order' => 0,
             ],

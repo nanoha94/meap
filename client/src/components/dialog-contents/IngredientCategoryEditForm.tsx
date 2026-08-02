@@ -12,7 +12,7 @@ import {
 } from '@/components';
 import { BUTTON_TYPE, BUTTON_VARIANT, COLOR_VARIANT, DND_SORTABLE_LIST_TYPE, TMP_ID_PREFIX } from '@/constants';
 import { useDialog, useFocusItem } from '@/hooks';
-import { defaultIngredientCategory, useIngredientCategoryApi } from '@/models/ingredient';
+import { defaultIngredientCategory } from '@/models/ingredient';
 import { IIngredientCategory } from '@/types';
 import { focusItemById } from '@/utils';
 
@@ -20,10 +20,13 @@ interface FormData {
     categories: IIngredientCategory[];
 }
 
-const IngredientCategoryEditForm: React.FC = () => {
+interface Props {
+    categories: IIngredientCategory[];
+    onSave: (categories: IIngredientCategory[]) => void;
+}
+
+const IngredientCategoryEditForm: React.FC<Props> = ({ categories, onSave }) => {
     const { closeDialog, updateCurrentDialogConfig } = useDialog();
-    const { storeData, bulkUpdateIngredientCategories } =
-        useIngredientCategoryApi();
     const prefix = TMP_ID_PREFIX.INGREDIENT_CATEGORY;
 
     const { control, handleSubmit, reset } = useForm<FormData>({
@@ -48,8 +51,15 @@ const IngredientCategoryEditForm: React.FC = () => {
      * カテゴリーが変更されていない場合は送信ボタンを無効化
      */
     const isDisabledSendButton = React.useMemo(() => {
-        return JSON.stringify(watchedCategories.filter(item => item.name !== '')) === JSON.stringify(storeData.categories);
-    }, [watchedCategories, storeData.categories]);
+        const normalize = (items: IIngredientCategory[]) =>
+            items
+                .filter(item => item.name !== '')
+                .map((item, index) => ({ ...item, order: index }));
+        return (
+            JSON.stringify(normalize(watchedCategories ?? []))
+            === JSON.stringify(normalize(categories))
+        );
+    }, [watchedCategories, categories]);
 
     /**
      * 閉じる前確認の要否をフォーム状態に合わせて更新
@@ -85,35 +95,28 @@ const IngredientCategoryEditForm: React.FC = () => {
     /**
      * フォームの送信
      */
-    const onSubmit = async (data: FormData) => {
-        try {
-            // 空のアイテムを除いてデータ更新
-            const filteredItems = data.categories.filter(
-                v =>
-                    (v.id?.startsWith(prefix) && v.name.length > 0) ||
-                    !v.id?.startsWith(prefix),
-            );
-            const success = await bulkUpdateIngredientCategories(
-                filteredItems.map((v, idx) => ({
-                    ...v,
-                    order: idx,
-                })),
-            );
-            if (success) {
-                closeDialog(false);
-            }
-        } catch {
-            // エラーの場合はダイアログを閉じない
-            // エラーハンドリングはbulkUpdateIngredientCategoriesで行う
-        }
+    const onSubmit = (data: FormData) => {
+        // 空のアイテムを除いて親フォームへ反映
+        const filteredItems = data.categories.filter(
+            v =>
+                (v.id?.startsWith(prefix) && v.name.length > 0) ||
+                !v.id?.startsWith(prefix),
+        );
+        onSave(
+            filteredItems.map((category, index) => ({
+                ...category,
+                order: index,
+            })),
+        );
+        closeDialog(false);
     };
 
     // 初期化処理
     React.useEffect(() => {
-        if (storeData?.categories?.length > 0) {
-            reset({ categories: storeData.categories });
+        if (categories.length > 0) {
+            reset({ categories });
         }
-    }, [reset, storeData.categories]);
+    }, [reset, categories]);
 
     return (
         <form

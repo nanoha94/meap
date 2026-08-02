@@ -24,7 +24,7 @@ class ShoppingItemBulkUpdateRequest extends BaseApiRequest
             'data.*.order' => 'integer|min:0|required',
             'data.*.tags' => 'array|nullable',
             'data.*.tags.*.id' => 'uuid|nullable',
-            'data.*.tags.*.name' => 'string|max:255|required',
+            'data.*.tags.*.name' => 'string|max:255|nullable',
         ];
     }
 
@@ -59,6 +59,45 @@ class ShoppingItemBulkUpdateRequest extends BaseApiRequest
             'data.*.tags.*.name.max' => __('validation.max.string', ['attribute' => 'data.*.tags.*.name', 'max' => 255]),
             'data.*.tags.*.name.required' => __('validation.required', ['attribute' => 'data.*.tags.*.name']),
         ];
+    }
+
+    /**
+     * Configure the validator instance.
+     *
+     * @param  \Illuminate\Validation\Validator  $validator
+     * @return void
+     */
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            $data = $this->input('data', []);
+            if (! is_array($data)) {
+                return;
+            }
+
+            foreach ($data as $dataIndex => $item) {
+                $tags = $item['tags'] ?? [];
+                if (! is_array($tags)) {
+                    continue;
+                }
+
+                foreach ($tags as $tagIndex => $tag) {
+                    $hasId = ! empty($tag['id']);
+                    $hasName = isset($tag['name']) && is_string($tag['name']) && $tag['name'] !== '';
+                    if (! $hasId && ! $hasName) {
+                        $field = "data.{$dataIndex}.tags.{$tagIndex}.name";
+                        $validator->errors()->add(
+                            $field,
+                            __('validation.id_or_name_required', [
+                                'attribute' => __('validation.attributes.shopping.item.tag_name'),
+                                'id' => 'id',
+                                'name' => 'name',
+                            ])
+                        );
+                    }
+                }
+            }
+        });
     }
 
     /**

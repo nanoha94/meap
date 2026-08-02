@@ -1342,52 +1342,6 @@ test('3-3-34: 【グループ参加】 材料（ingredient）が存在する場�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-3-35: 【グループ参加】 is_default=false の材料カテゴリが存在する場合', function () {
-    $inviter = User::factory()->create([
-        'email_verified_at' => now()
-    ]);
-    $inviterGroup = Group::create([
-        'group_size' => 1
-    ]);
-    DB::table('group_user_mappings')->insert([
-        'user_id' => $inviter->id,
-        'group_id' => $inviterGroup->id
-    ]);
-
-    $user = User::factory()->create([
-        'email_verified_at' => now()
-    ]);
-    $userGroup = Group::createGroup();
-    DB::table('group_user_mappings')->insert([
-        'user_id' => $user->id,
-        'group_id' => $userGroup->id
-    ]);
-
-    $userGroup->ingredientCategories()->create([
-        'name' => 'ユーザーの食材カテゴリ',
-        'order' => 1,
-        'is_default' => false
-    ]);
-
-    $invitationTokenService = app(InvitationTokenService::class);
-    $plainToken = $invitationTokenService->generateToken();
-    InvitationToken::create([
-        'inviter_user_id' => $inviter->id,
-        'token' => Hash::make($plainToken),
-        'expires_at' => Carbon::now()->addHour()
-    ]);
-
-    $response = $this->actingAs($user)->post("/invitations/{$plainToken}/join");
-
-    $response->assertStatus(409);
-    $response->assertJson([
-        'success' => false,
-        'message' => 'すでに登録済みのデータがあります。'
-    ]);
-    $response->assertJsonPath('error_type', 'has_existing_data');
-    $response->assertHeader('Content-Type', 'application/json');
-});
-
 test('3-3-36: 【グループ参加】 is_default=false の材料単位が存在する場合', function () {
     $inviter = User::factory()->create([
         'email_verified_at' => now()

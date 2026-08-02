@@ -5,8 +5,9 @@ import { UseFormReturn } from 'react-hook-form';
 
 import { TMP_ID_PREFIX } from '@/constants';
 import {
+    createDefaultRecipeIngredientCategory,
+    defaultIngredientCategory,
     defaultIngredientItem,
-    useIngredientCategoryApi,
     useIngredientStore,
 } from '@/models/ingredient';
 import {
@@ -187,16 +188,21 @@ const buildStepsFromParsed = (
  * 画像から読み込んだ AI 解析結果をレシピ編集フォームへ反映するフック
  */
 export const useRecipeAiImport = () => {
-    const categories = useIngredientStore(state => state.categories);
-    const { bulkCreateIngredientCategories } = useIngredientCategoryApi();
-
     /**
-     * AI 解析結果に含まれる未登録カテゴリー名を一括作成する
-     * 作成失敗時は convertToFormData 側で isDefault カテゴリーへフォールバックする
+     * currentCategories をベースに、AI 解析結果の未登録カテゴリー名を加えた
+     * ingredientCategories 配列を返す（引数は変更しない）。
+     * カテゴリーが空の場合はデフォルト「食材」カテゴリーを補完する。
      */
     const createMissingIngredientCategories = React.useCallback(
-        async (parsedIngredients: IParsedRecipeIngredient[]): Promise<void> => {
-            // マスターリストに存在しないカテゴリー名を抽出
+        (
+            parsedIngredients: IParsedRecipeIngredient[],
+            currentCategories: IIngredientCategory[],
+        ): IIngredientCategory[] => {
+            const categories =
+                currentCategories.length > 0
+                    ? currentCategories
+                    : [createDefaultRecipeIngredientCategory()];
+
             const missingNames = parsedIngredients
                 .map(ingredient => ingredient.categoryName.trim())
                 .filter(
@@ -204,29 +210,45 @@ export const useRecipeAiImport = () => {
                 )
                 .filter((name, index, names) => names.indexOf(name) === index); // 重複排除
 
-            // カテゴリー作成
-            await bulkCreateIngredientCategories(missingNames);
+            if (missingNames.length === 0) {
+                return categories;
+            }
+
+            const prefix = TMP_ID_PREFIX.INGREDIENT_CATEGORY;
+            const startOrder = categories.length;
+
+            const newCategories = missingNames.map((name, index) => ({
+                ...createDefaultData(defaultIngredientCategory, prefix),
+                name,
+                isDefault: false,
+                order: startOrder + index,
+            }));
+
+            return [...categories, ...newCategories];
         },
-        [categories, bulkCreateIngredientCategories],
+        [],
     );
 
     /**
      * AI 解析結果をレシピ編集フォーム用データへ変換する
      */
     const convertToFormData = React.useCallback(
-        (parsed: IParsedRecipe): RecipeAiImportFormData => {
-            // createMissingIngredientCategories でストアが更新された直後に呼ばれるため、
+        (
+            parsed: IParsedRecipe,
+            ingredientCategories: IIngredientCategory[],
+        ): RecipeAiImportFormData => {
+            // createMissingIngredientCategories でストアが更新された直後に呼ばれた場合、
             // クロージャの値ではなく getState() で最新のストア値を取得する
-            const { units: latestUnits, categories: latestCategories } =
-                useIngredientStore.getState();
+            const { units: latestUnits } = useIngredientStore.getState();
 
             return {
                 name: parsed.name,
                 servingCount: parsed.servingCount,
+                ingredientCategories,
                 ingredients: buildIngredientsFromParsed(
                     parsed.ingredients,
                     latestUnits,
-                    latestCategories,
+                    ingredientCategories,
                 ),
                 steps: buildStepsFromParsed(parsed.steps),
             };
@@ -249,6 +271,7 @@ export const useRecipeAiImport = () => {
 
             setValue('name', formData.name);
             setValue('servingCount', formData.servingCount);
+            setValue('ingredientCategories', formData.ingredientCategories);
             setValue('ingredients', formData.ingredients);
             setValue('steps', formData.steps);
         },

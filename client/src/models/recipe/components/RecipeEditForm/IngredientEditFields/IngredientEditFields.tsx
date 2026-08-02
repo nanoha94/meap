@@ -13,9 +13,9 @@ import {
 } from '@/components';
 import { COLOR_VARIANT, TMP_ID_PREFIX } from '@/constants';
 import { useDialog, useItemAndCategoryDnd } from '@/hooks';
-import { defaultIngredientItem, useIngredientStore, formatIngredient } from '@/models/ingredient';
+import { defaultIngredientItem, formatIngredient } from '@/models/ingredient';
 import { RecipeEditFormData } from '@/models/recipe/types';
-import { IIngredientItem } from '@/types';
+import { IIngredientCategory, IIngredientItem } from '@/types';
 import { createDefaultData, getItemsInCategory } from '@/utils';
 import IngredientItemList from './IngredientItemList';
 
@@ -28,16 +28,13 @@ const IngredientEditFields = ({ control, errors }: Props) => {
     // constant value
     const prefix = TMP_ID_PREFIX.INGREDIENT_ITEM;
 
-    // store
-    const categories = useIngredientStore(state => state.categories);
-
     // hook
     const { openDialog } = useDialog();
     /** ドラッグ中のみ setTmpItems で上書き。null のときは watch と同一（effect で watch に追従させない） */
     const [tmpItemsDrag, setTmpItems] =
         React.useState<IIngredientItem[] | null>(null);
     const dndContextId = React.useId();
-    const { getValues, watch } = useFormContext<RecipeEditFormData>();
+    const { getValues, setValue, watch } = useFormContext<RecipeEditFormData>();
     const { replace, update, remove } = useFieldArray<
         RecipeEditFormData,
         'ingredients'
@@ -46,7 +43,39 @@ const IngredientEditFields = ({ control, errors }: Props) => {
         name: 'ingredients',
     });
     const watchFields = watch('ingredients') ?? [];
+    const watchedIngredientCategories = watch('ingredientCategories');
+    const ingredientCategories = React.useMemo(
+        () => watchedIngredientCategories ?? [],
+        [watchedIngredientCategories],
+    );
     const tmpItems = tmpItemsDrag ?? watchFields;
+
+    /**
+     * カテゴリー編集ダイアログで保存した内容を親フォームへ反映する
+     */
+    const handleSaveIngredientCategories = React.useCallback(
+        (newCategories: IIngredientCategory[]) => {
+            const newCategoryIds = new Set(newCategories.map(category => category.id));
+            const defaultCategory =
+                newCategories.find(category => category.isDefault)
+                ?? newCategories[0];
+
+            const currentIngredients = getValues('ingredients') ?? [];
+            const reassignedIngredients = currentIngredients.map(ingredient => {
+                if (newCategoryIds.has(ingredient.categoryId)) {
+                    return ingredient;
+                }
+                return {
+                    ...ingredient,
+                    categoryId: defaultCategory?.id ?? ingredient.categoryId,
+                };
+            });
+
+            setValue('ingredientCategories', newCategories);
+            replace(reassignedIngredients);
+        },
+        [getValues, replace, setValue],
+    );
 
     /**
      * 空の材料を含むアイテムリストを生成
@@ -61,7 +90,7 @@ const IngredientEditFields = ({ control, errors }: Props) => {
             };
 
             // カテゴリーに属する食材を整理し、空の食材を追加
-            const newItems = categories
+            const newItems = ingredientCategories
                 .map(category => {
                     const itemsInCategory = getItemsInCategory(
                         itemsToUse,
@@ -74,7 +103,7 @@ const IngredientEditFields = ({ control, errors }: Props) => {
                 .flat();
             return newItems;
         },
-        [categories, tmpItems, prefix],
+        [ingredientCategories, tmpItems, prefix],
     );
 
     /**
@@ -141,7 +170,7 @@ const IngredientEditFields = ({ control, errors }: Props) => {
         handleDragEnd,
     } = useItemAndCategoryDnd({
         currentItems: tmpItems,
-        categories,
+        categories: ingredientCategories,
         onDragOver: customHandleDragOver,
         onDragEnd: customHandleDragEnd,
     });
@@ -194,9 +223,9 @@ const IngredientEditFields = ({ control, errors }: Props) => {
      */
     React.useEffect(() => {
         const ingredients = getValues('ingredients');
-        if (categories.length > 0) {
+        if (ingredientCategories.length > 0) {
             // 各カテゴリーに属する食材を整理し、必要に応じて空の食材を追加
-            const filledItems: IIngredientItem[] = categories
+            const filledItems: IIngredientItem[] = ingredientCategories
                 .map(category => {
                     const itemsInCategory = getItemsInCategory(
                         ingredients,
@@ -221,7 +250,7 @@ const IngredientEditFields = ({ control, errors }: Props) => {
                 .flat();
             replace(filledItems);
         }
-    }, [categories, getValues, prefix, replace]);
+    }, [ingredientCategories, getValues, prefix, replace]);
 
     return (
         <div className="flex flex-col gap-y-5">
@@ -234,7 +263,7 @@ const IngredientEditFields = ({ control, errors }: Props) => {
                         onDragStart={handleDragStart}
                         onDragOver={handleDragOver}
                         onDragEnd={handleDragEnd}>
-                        {categories.map(category => {
+                        {ingredientCategories.map(category => {
                             const items = getItemsInCategory(
                                 tmpItems,
                                 category.id,
@@ -263,7 +292,7 @@ const IngredientEditFields = ({ control, errors }: Props) => {
                                         return (
                                             errors?.[`ingredients.${idx}.name`]
                                             ?? errors?.[
-                                                `ingredients.${idx}.quantityDisplay`
+                                            `ingredients.${idx}.quantityDisplay`
                                             ]
                                             ?? ''
                                         );
@@ -294,7 +323,12 @@ const IngredientEditFields = ({ control, errors }: Props) => {
                 onClick={() => {
                     openDialog({
                         title: '材料カテゴリーを設定',
-                        children: <IngredientCategoryEditForm />,
+                        children: (
+                            <IngredientCategoryEditForm
+                                categories={ingredientCategories}
+                                onSave={handleSaveIngredientCategories}
+                            />
+                        ),
                     });
                 }}>
                 材料カテゴリーの追加・編集

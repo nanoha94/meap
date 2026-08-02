@@ -49,6 +49,14 @@ trait AutoComplement
                     throw new InvalidArgumentException(__('api.not_found', ['attribute' => 'ID']));
                 }
             } else {
+                if (! isset($item['name']) || ! is_string($item['name']) || $item['name'] === '') {
+                    throw new InvalidArgumentException(__('validation.id_or_name_required', [
+                        'attribute' => 'item',
+                        'id' => 'id',
+                        'name' => 'name',
+                    ]));
+                }
+
                 // 新規アイテムの場合、同じ名前のアイテムが存在するか確認
                 $existingItem = $modelClass::where('group_id', $group->id)
                     ->where('name', $item['name'])

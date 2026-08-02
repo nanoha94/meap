@@ -2,10 +2,12 @@
 
 namespace App\Services;
 
+use App\Enums\HttpStatusCode;
 use App\Enums\RecipeSource;
 use App\Helpers\Quantity;
 use App\Models\Group;
 use App\Models\Ingredient;
+use App\Models\IngredientCategory;
 use App\Models\Recipe;
 use App\Models\RecipeCategory;
 use App\Models\RecipeStep;
@@ -14,24 +16,25 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class RecipeService extends AbstractDomainService
 {
     use AutoComplement;
+
+    private const DEFAULT_INGREDIENT_CATEGORY_NAME = '食材';
+
     protected ImageService $imageService;
     protected RecipeCategoryService $recipeCategoryService;
-    protected IngredientCategoryService $ingredientCategoryService;
     protected IngredientUnitService $ingredientUnitService;
 
     public function __construct(
         ImageService $imageService,
         RecipeCategoryService $recipeCategoryService,
-        IngredientCategoryService $ingredientCategoryService,
         IngredientUnitService $ingredientUnitService
     ) {
         $this->imageService = $imageService;
         $this->recipeCategoryService = $recipeCategoryService;
-        $this->ingredientCategoryService = $ingredientCategoryService;
         $this->ingredientUnitService = $ingredientUnitService;
     }
 
@@ -219,6 +222,7 @@ class RecipeService extends AbstractDomainService
             'memo' => $item->memo,
             'servingCount' => $item->serving_count,
             'categories' => $this->formatRecipeCategories($item->categories),
+            'ingredientCategories' => $this->formatIngredientCategories($item->ingredientCategories),
             'ingredients' => $this->formatRecipeIngredients($item, $item->group),
             'ownerUserId' => $item->owner_user_id,
             'status' => $item->status,
@@ -242,7 +246,7 @@ class RecipeService extends AbstractDomainService
 
             // TODO: published_recipe_idはセカンドリリースで設定するため、ファーストリリースではnullを設定
             $createData['published_recipe_id'] = null;
-            $createData['source'] = $this->resolveSourceForCreate($data);
+            $createData['source'] = $this->getSourceForCreate($data);
 
             $item = $this->getGroupRelation($group)->create($createData);
 
@@ -254,6 +258,13 @@ class RecipeService extends AbstractDomainService
             // カテゴリーを紐づけ
             if (!empty($data['categoryIds'])) {
                 $this->syncCategories($item, $data['categoryIds'], $group);
+            }
+
+            // 食材カテゴリーを作成
+            if (!empty($data['ingredientCategories'])) {
+                $this->syncIngredientCategories($item, $data['ingredientCategories']);
+            } else {
+                $this->createDefaultIngredientCategory($item);
             }
 
             // 食材を紐づけ
@@ -312,6 +323,11 @@ class RecipeService extends AbstractDomainService
             // カテゴリーを紐づけ
             if (!empty($data['categoryIds'])) {
                 $this->syncCategories($currentItem, $data['categoryIds'], $group);
+            }
+
+            // 食材カテゴリーを同期
+            if (array_key_exists('ingredientCategories', $data)) {
+                $this->syncIngredientCategories($currentItem, $data['ingredientCategories'] ?? []);
             }
 
             // 食材を紐づけ
@@ -374,16 +390,31 @@ class RecipeService extends AbstractDomainService
     }
 
     /**
+     * レシピの食材カテゴリー情報をフォーマット
+     */
+    public function formatIngredientCategories(Collection $categories): array
+    {
+        $this->typeCheck($categories, Collection::class);
+        $this->typeCheckCollection($categories, IngredientCategory::class);
+
+        return $categories->sortBy('order')->map(fn($item) => [
+            'id' => $item->id,
+            'name' => $item->name,
+            'isDefault' => $item->is_default,
+            'order' => $item->order,
+        ])->values()->toArray();
+    }
+
+    /**
      * レシピの食材情報をフォーマット
      */
     public function formatRecipeIngredients(Recipe $recipe, Group $group): array
     {
-        // グループの全カテゴリを取得（order順でソート）
-        $categories = $group->ingredientCategories()
-            ->select('id', 'name', 'order')
-            ->orderBy('order')
-            ->get()
-            ->keyBy('id');
+        if (!$recipe->relationLoaded('ingredientCategories')) {
+            $recipe->load('ingredientCategories');
+        }
+
+        $categories = $recipe->ingredientCategories->keyBy('id');
 
         // 必要なunit_idを収集
         $unitIds = $recipe->ingredientUnits->pluck('id')->toArray();
@@ -454,9 +485,9 @@ class RecipeService extends AbstractDomainService
     }
 
     /**
-     * 新規作成時の source を解決する（明示的に ai_imported の場合のみ、それ以外は manual）
+     * 新規作成時の source を取得する（明示的に ai_imported の場合のみ、それ以外は manual）
      */
-    private function resolveSourceForCreate(array $data): string
+    private function getSourceForCreate(array $data): string
     {
         return $this->shouldMarkAsAiImported($data)
             ? RecipeSource::AI_IMPORTED->value
@@ -507,6 +538,182 @@ class RecipeService extends AbstractDomainService
     }
 
     /**
+     * デフォルト食材カテゴリーを作成する
+     */
+    private function createDefaultIngredientCategory(Recipe $recipe): void
+    {
+        $recipe->ingredientCategories()->create([
+            'name' => self::DEFAULT_INGREDIENT_CATEGORY_NAME,
+            'is_default' => true,
+            'order' => 0,
+        ]);
+    }
+
+    /**
+     * 食材カテゴリーの同期処理
+     *
+     * - id あり：既存カテゴリーとして更新
+     * - id なし：新規カテゴリーとして作成（POST 時は isDefault をリクエストから使用）
+     * - リクエストに含まれない既存カテゴリー：削除（is_default: true は不可）
+     */
+    private function syncIngredientCategories(Recipe $recipe, array $categories): void
+    {
+        // DB 上の既存カテゴリー（id をキーとした Collection）
+        $existingCategories = $recipe->ingredientCategories()->get()->keyBy('id');
+        // リクエストで id が指定された既存カテゴリーの ID（id 省略の新規分は含まない）
+        $retainedCategoryIds = collect($categories)
+            ->pluck('id')
+            ->filter(fn($id) => $id !== null && $id !== '')
+            ->values()
+            ->all();
+        // リクエストに含まれない既存カテゴリー（= 削除対象）
+        $categoriesToDelete = $existingCategories->filter(
+            fn(IngredientCategory $category) => !in_array($category->id, $retainedCategoryIds, true)
+        );
+
+        // デフォルト食材カテゴリーは削除できない
+        foreach ($categoriesToDelete as $category) {
+            if ($category->is_default) {
+                throw new HttpException(
+                    HttpStatusCode::BAD_REQUEST->value,
+                    __('api.cannot_delete', [
+                        'name' => $category->name,
+                        'attribute' => __('api.attributes.ingredient_category'),
+                    ])
+                );
+            }
+        }
+
+        // デフォルト食材カテゴリー以外を削除
+        foreach ($categoriesToDelete as $category) {
+            $category->delete();
+        }
+
+        foreach ($categories as $categoryData) {
+            $categoryId = $categoryData['id'] ?? null;
+
+            if ($categoryId !== null && $categoryId !== '') {
+                // 既存カテゴリーが存在しない場合はエラー
+                if (!$existingCategories->has($categoryId)) {
+                    throw new HttpException(
+                        HttpStatusCode::NOT_FOUND->value,
+                        __('api.not_found', ['attribute' => __('api.attributes.ingredient_category')])
+                    );
+                }
+
+                // 既存カテゴリーを更新
+                $existingCategories->get($categoryId)->update([
+                    'name' => $categoryData['name'],
+                    'order' => $categoryData['order'],
+                ]);
+                continue;
+            }
+
+            // id 未指定：新規カテゴリーとして作成
+            $recipe->ingredientCategories()->create([
+                'name' => $categoryData['name'],
+                'order' => $categoryData['order'],
+                'is_default' => $categoryData['isDefault'] ?? false,
+            ]);
+        }
+
+        $this->ensureDefaultIngredientCategory($recipe);
+    }
+
+    /**
+     * レシピに is_default カテゴリーが存在するか
+     */
+    private function hasDefaultIngredientCategory(Recipe $recipe): bool
+    {
+        return $recipe->ingredientCategories()->where('is_default', true)->exists();
+    }
+
+    /**
+     * デフォルト食材カテゴリーが存在することを保証する
+     */
+    private function ensureDefaultIngredientCategory(Recipe $recipe): void
+    {
+        if ($this->hasDefaultIngredientCategory($recipe)) {
+            return;
+        }
+
+        $this->createDefaultIngredientCategory($recipe);
+    }
+
+    /**
+     * レシピ内カテゴリー名 → ID のマップを取得する
+     *
+     * @return array<string, string>
+     */
+    private function getIngredientCategoryNameIdMap(Recipe $recipe): array
+    {
+        return $recipe->ingredientCategories()->pluck('id', 'name')->all();
+    }
+
+    /**
+     * リクエストの食材データから、紐づけ先カテゴリーの ID を取得する
+     *
+     * - categoryId 指定時 → そのまま返す
+     * - categoryName 指定時 → レシピ内カテゴリー名で解決
+     * - 両方未指定時 → is_default カテゴリーへフォールバック
+     */
+    private function getCategoryIdForIngredient(Recipe $recipe, array $item): string
+    {
+        $categoryId = $item['categoryId'] ?? null;
+        if ($categoryId !== null && $categoryId !== '') {
+            return $categoryId;
+        }
+
+        $categoryName = $item['categoryName'] ?? null;
+        if ($categoryName !== null && $categoryName !== '') {
+            $categoryNameIdMap = $this->getIngredientCategoryNameIdMap($recipe);
+
+            if (isset($categoryNameIdMap[$categoryName])) {
+                return $categoryNameIdMap[$categoryName];
+            }
+
+            throw new HttpException(
+                HttpStatusCode::NOT_FOUND->value,
+                __('api.not_found', ['attribute' => __('api.attributes.ingredient_category')])
+            );
+        }
+
+        $defaultCategoryId = $recipe->ingredientCategories()
+            ->where('is_default', true)
+            ->value('id');
+
+        if ($defaultCategoryId) {
+            return $defaultCategoryId;
+        }
+
+        throw new HttpException(
+            HttpStatusCode::NOT_FOUND->value,
+            __('api.not_found', ['attribute' => __('api.attributes.ingredient_category')])
+        );
+    }
+
+    /**
+     * 食材の categoryId がレシピに属するか検証する
+     */
+    private function validateRecipeIngredientCategoryIds(Recipe $recipe, array $categoryIds): void
+    {
+        if (empty($categoryIds)) {
+            return;
+        }
+
+        $validCategoryIds = $recipe->ingredientCategories()->pluck('id')->all();
+
+        foreach ($categoryIds as $categoryId) {
+            if (!in_array($categoryId, $validCategoryIds, true)) {
+                throw new HttpException(
+                    HttpStatusCode::NOT_FOUND->value,
+                    __('api.not_found', ['attribute' => __('api.attributes.ingredient_category')])
+                );
+            }
+        }
+    }
+
+    /**
      * 食材の同期処理
      */
     private function syncIngredients(Recipe $recipe, array $ingredients, Group $group): void
@@ -518,16 +725,17 @@ class RecipeService extends AbstractDomainService
             $units = $this->ingredientUnitService->findItemsByIds($unitIds, $group)->keyBy('id');
         }
 
-        // カテゴリID存在チェック
-        $categoryIds = collect($ingredients)->pluck('categoryId')->filter()->unique()->toArray();
-        if (!empty($categoryIds)) {
-            $this->ingredientCategoryService->findItemsByIds($categoryIds, $group);
+        // カテゴリID存在チェック（レシピローカル）
+        $categoryIds = [];
+        foreach ($ingredients as $idx => $item) {
+            $categoryIds[$idx] = $this->getCategoryIdForIngredient($recipe, $item);
         }
+        $this->validateRecipeIngredientCategoryIds($recipe, array_values(array_unique($categoryIds)));
 
         // 食材データを作成
         $ingredientData = collect($ingredients)->map(fn($item) => [
             'id' => $item['id'] ?? null,
-            'name' => $item['name'],
+            'name' => $item['name'] ?? null,
         ])->toArray();
 
         $ids = $this->findOrCreateIds($ingredientData, $group, Ingredient::class);
@@ -552,7 +760,7 @@ class RecipeService extends AbstractDomainService
                 'quantity' => $quantity,
                 'quantity_display' => $quantityDisplay,
                 'unit_id' => $item['unitId'],
-                'category_id' => $item['categoryId'],
+                'category_id' => $categoryIds[$idx],
                 'order' => $item['order'] ?? 0,
             ]);
         }

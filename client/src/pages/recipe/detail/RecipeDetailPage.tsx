@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 import { Header, HeaderTextButton } from '@/components';
 import { COLOR_VARIANT, LINK_TO } from '@/constants';
 import { useAlertDialog, useSnackbars } from '@/hooks';
-import { formatIngredientQuantity, useIngredientStore } from '@/models/ingredient';
+import { formatIngredientQuantity } from '@/models/ingredient';
 import { RECIPE_ALERT_DIALOG_CONFIGS, useRecipeApi } from '@/models/recipe';
 import { useUserStore } from '@/models/user';
 import { ActionButton, IImage, IRecipe } from '@/types';
@@ -29,7 +29,6 @@ const RecipeDetailPage = ({
 }: Props) => {
     // store
     const loginUser = useUserStore(state => state.loginUser);
-    const ingredientCategories = useIngredientStore(state => state.categories);
 
     // hook
     const router = useRouter();
@@ -136,7 +135,7 @@ const RecipeDetailPage = ({
                         {fetchedRecipe?.ingredients &&
                             fetchedRecipe?.ingredients.length > 0 ? (
                             <div className="flex flex-col gap-y-5">
-                                {ingredientCategories?.map(
+                                {fetchedRecipe?.ingredientCategories?.map(
                                     category =>
                                         fetchedRecipe.ingredients.some(
                                             ingredient =>

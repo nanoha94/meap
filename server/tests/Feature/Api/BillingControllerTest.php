@@ -151,9 +151,10 @@ function sampleBillingInvoices(): array
                 ],
             ],
             'subtotal' => 580,
-            'tax' => 58,
-            'total' => 638,
-            'amountDue' => 638,
+            'subtotalExcludingTax' => 527,
+            'tax' => 53,
+            'total' => 580,
+            'amountDue' => 580,
         ],
         'pastInvoices' => [
             [

@@ -20,15 +20,6 @@ entity ingredient_units #LightBlue {
     * group_id : string <<FK>>
 }
 
-entity ingredient_categories #LightBlue {
-    * id : string <<generated>>
-    --
-    * name : string
-    * is_default : boolean / trueの場合、デフォルトカテゴリとして扱う
-    * order : int / ソート順
-    * group_id : string <<FK>>
-}
-
 entity recipe_category_mappings {
     * recipe_id : string <<FK>>
     * category_id : string <<FK>>
@@ -53,6 +44,15 @@ entity recipe_steps{
     * id : string <<generated>>
     --
     * instruction : string / 手順
+    * order : int / ソート順
+    * recipe_id : string <<FK>>
+}
+
+entity ingredient_categories {
+    * id : string <<generated>>
+    --
+    * name : string
+    * is_default : boolean / trueの場合、デフォルトカテゴリとして扱う（削除不可）
     * order : int / ソート順
     * recipe_id : string <<FK>>
 }
@@ -297,13 +297,13 @@ meal_recipe_mappings }o--|| meals : meal_id
 
 recipes ||--o{ recipe_steps : recipe_id
 users ||--o{ recipes : owner_user_id
+recipes ||--o{ ingredient_categories : recipe_id
 recipes ||--o{ recipe_ingredient_mappings : recipe_id
 recipe_ingredient_mappings }o--|| ingredients : ingredient_id
 recipe_ingredient_mappings }o--|| ingredient_categories : category_id
 ingredient_units }o--|| groups : group_id
 recipe_ingredient_mappings }o--|| ingredient_units : unit_id
 ingredients }o--|| groups : group_id
-ingredient_categories }o--|| groups : group_id
 
 recipes ||--o{ recipe_category_mappings : recipe_id
 recipe_category_mappings }o--|| recipe_categories : category_id
@@ -334,7 +334,7 @@ note right of meals
   １食ごとの献立を管理する。
 end note
 
-note left of meal_categories
+note right of meal_categories
   献立カテゴリを管理する。
   （朝食、昼食、夕食など）
 end note

@@ -60,6 +60,7 @@ export const DEFAULT_RECIPE_EDIT_FORM_DATA: RecipeEditFormData = {
     servingCount: null,
     thumbnail: null,
     categories: [],
+    ingredientCategories: [],
     ingredients: [],
     steps: [],
     cookingTime: null,

@@ -15,10 +15,10 @@ class IngredientCategory extends Model
     public $incrementing = false;
 
     protected $fillable = [
-        'group_id',
+        'recipe_id',
         'name',
         'is_default',
-        'order'
+        'order',
     ];
 
     protected $casts = [
@@ -26,19 +26,20 @@ class IngredientCategory extends Model
     ];
 
     /**
-     * グループを取得する
+     * レシピを取得する
      */
-    public function group(): BelongsTo
+    public function recipe(): BelongsTo
     {
-        return $this->belongsTo(Group::class);
+        return $this->belongsTo(Recipe::class);
     }
-
 
     /**
      * 食材を取得する
      */
     public function ingredients(): BelongsToMany
     {
-        return $this->belongsToMany(Ingredient::class, 'recipe_ingredient_mappings', 'category_id', 'ingredient_id');
+        return $this->belongsToMany(Ingredient::class, 'recipe_ingredient_mappings', 'category_id', 'ingredient_id')
+            ->withPivot('quantity', 'quantity_display', 'unit_id', 'order')
+            ->orderByPivot('order');
     }
 }

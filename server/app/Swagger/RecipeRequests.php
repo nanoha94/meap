@@ -17,32 +17,15 @@ namespace App\Swagger;
  *     @OA\Property(property="thumbnailId", type="string", nullable=true, description="サムネイル画像ID", example="1"),
  *     @OA\Property(property="categoryIds", type="array", description="料理カテゴリID", @OA\Items(type="string", example="1")),
  *     @OA\Property(property="ownerUserId", type="string", description="編集責任者のユーザーID", example="00000000-0000-0000-0000-000000000000"),
+ *     @OA\Property(property="source", type="string", nullable=true, enum={"manual", "ai_imported"}, description="レシピのソース（省略時は manual）", example="manual"),
+ *     @OA\Property(property="ingredientCategories", type="array", nullable=true, description="食材カテゴリ（省略時はデフォルト「食材」カテゴリを自動作成）",
+ *         @OA\Items(ref="#/components/schemas/RecipeIngredientCategory")
+ *     ),
  *     @OA\Property(property="ingredients", type="array", description="食材",
- *         @OA\Items(
- *             type="object",
- *             @OA\Property(property="id", type="string", nullable=true, description="ID（更新時）", example="1"),
- *             @OA\Property(property="name", type="string", description="食材名", example="牛肉"),
- *             @OA\Property(
- *                 property="quantityDisplay",
- *                 type="string",
- *                 nullable=true,
- *                 maxLength=50,
- *                 description="数量の表示表記。分数、小数、整数が指定可能。例: 1/2, 0.5, 200",
- *                 example="1/2"
- *             ),
- *             @OA\Property(property="unitId", type="string", description="単位ID", example="1"),
- *             @OA\Property(property="categoryId", type="string", description="カテゴリID", example="1"),
- *             @OA\Property(property="order", type="integer", nullable=true, description="並び順", example=1)
- *         )
+ *         @OA\Items(ref="#/components/schemas/RecipeIngredient")
  *     ),
  *     @OA\Property(property="steps", type="array", description="手順",
- *         @OA\Items(
- *             type="object",
- *             @OA\Property(property="id", type="string", description="手順ID", example="1", nullable=true),
- *             @OA\Property(property="instruction", type="string", description="手順", example="ハンバーグを作る"),
- *             @OA\Property(property="imageId", type="string", nullable=true, description="画像ID", example="1"),
- *             @OA\Property(property="order", type="integer", description="並び順", example=1)
- *         )
+ *         @OA\Items(ref="#/components/schemas/RecipeStepItem")
  *     )
  * )
  *

@@ -17,7 +17,7 @@ import {
 } from '@/components';
 import { BUTTON_TYPE, EDIT_MODE } from '@/constants';
 import { useDialog } from '@/hooks';
-import { useIngredientStore, formatIngredient } from '@/models/ingredient';
+import { formatIngredient } from '@/models/ingredient';
 import { IIngredientCategory, IIngredientItem } from '@/types';
 
 interface Props {
@@ -37,9 +37,6 @@ const IngredientItemList = ({
     removeItem,
     errors,
 }: Props) => {
-    // store
-    const categories = useIngredientStore(state => state.categories);
-
     // hook
     const { openDialog, closeDialog } = useDialog();
     const { setNodeRef: setDroppableNodeRef } = useDroppable({
@@ -78,16 +75,13 @@ const IngredientItemList = ({
             editItem = item;
         }
 
-        // 食材の編集ダイアログを開く
+        // 材料の編集ダイアログを開く
         if (editItem) {
             const editMode = editItem.name === '' ? EDIT_MODE.CREATE : EDIT_MODE.UPDATE;
-            const category = categories.find(
-                category => category.id === editItem?.categoryId,
-            );
             const title =
                 editMode === EDIT_MODE.CREATE
-                    ? `${category?.name ?? '材料'}を追加`
-                    : `${category?.name ?? '材料'}を編集`;
+                    ? `${category.name}を追加`
+                    : `${category.name}を編集`;
             const actionButtonText = editMode === EDIT_MODE.CREATE ? '追加' : '保存';
 
             openDialog({
@@ -102,7 +96,7 @@ const IngredientItemList = ({
                 />,
             });
         }
-    }, [items, category, addEmptyItem, updateItem, openDialog, closeDialog, categories]);
+    }, [items, category, addEmptyItem, updateItem, openDialog, closeDialog]);
 
     return (
         <>

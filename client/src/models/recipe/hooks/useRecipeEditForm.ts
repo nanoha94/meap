@@ -5,7 +5,15 @@ import { useRouter } from 'next/navigation';
 import { useForm, useWatch } from 'react-hook-form';
 
 import { EDIT_MODE, EditMode, LINK_TO, TMP_ID_PREFIX } from '@/constants';
-import { IImageWithFile, IIngredientItem, IPostPutRecipeRequest, IRecipe } from '@/types';
+import { createDefaultRecipeIngredientCategory } from '@/models/ingredient';
+import {
+    IImageWithFile,
+    IIngredientCategory,
+    IIngredientItem,
+    IPostPutRecipeRequest,
+    IParsedRecipe,
+    IRecipe,
+} from '@/types';
 import { normalizeQuantityFromDisplay } from '@/utils';
 import { DEFAULT_RECIPE_EDIT_FORM_DATA } from '../constants';
 import { RecipeEditFormData } from '../types';
@@ -14,17 +22,59 @@ import { useRecipeAiImport } from './useRecipeAiImport';
 import { useRecipeApi } from './useRecipeApi';
 
 /**
+ * 食材カテゴリーをフォーマット
+ * @param categories 食材カテゴリーリスト
+ * @param includeIsDefault POST 時のみ true にし、isDefault をリクエストに含める
+ * @returns フォーマットされた食材カテゴリー
+ */
+export const formatIngredientCategories = (
+    categories: IIngredientCategory[],
+    includeIsDefault: boolean = false,
+): NonNullable<IPostPutRecipeRequest['ingredientCategories']> => {
+    return categories
+        .filter(category => category.name.trim().length > 0)
+        .map((category, idx) => {
+            const isNew = category.id?.startsWith(TMP_ID_PREFIX.INGREDIENT_CATEGORY);
+            return {
+                ...(category.id && !isNew ? { id: category.id } : {}),
+                name: category.name,
+                order: idx,
+                ...(includeIsDefault ? { isDefault: category.isDefault ?? false } : {}),
+            };
+        });
+};
+
+/**
  * 食材をフォーマット
  * @param items 食材リスト
+ * @param categories 食材カテゴリーリスト
  * @returns フォーマットされた食材
  */
 export const formatIngredientItems = (
     items: IIngredientItem[],
+    categories: IIngredientCategory[] = [],
 ): IPostPutRecipeRequest['ingredients'] => {
+    const categoryById = new Map(
+        categories.map(category => [category.id, category]),
+    );
+
     return items
         .filter(v => v.name && v.name.length > 0)
         .map((v, idx) => {
             const isNew = v.id?.startsWith(TMP_ID_PREFIX.INGREDIENT_ITEM);
+            const category = categoryById.get(v.categoryId);
+            const isTmpCategory = v.categoryId?.startsWith(
+                TMP_ID_PREFIX.INGREDIENT_CATEGORY,
+            );
+
+            // id が指定されている場合は categoryId を使用し、指定されていない場合は categoryName を使用する
+            const categoryField =
+                v.categoryId && !isTmpCategory
+                    ? { categoryId: v.categoryId }
+                    : category?.name
+                        ? { categoryName: category.name }
+                        : {};
+
             return {
                 ...(v.id && !isNew ? { id: v.id } : {}),
                 name: v.name,
@@ -34,7 +84,7 @@ export const formatIngredientItems = (
                     v.quantity,
                 ).quantityDisplay,
                 unitId: v.unit?.id ?? '',
-                categoryId: v.categoryId,
+                ...categoryField,
                 order: idx,
             };
         });
@@ -74,6 +124,9 @@ const getDefaultValues = (fetchedRecipe?: IRecipe, initialOwnerUserId?: string):
     ...DEFAULT_RECIPE_EDIT_FORM_DATA,
     ...fetchedRecipe,
     ownerUserId: fetchedRecipe?.ownerUserId ?? initialOwnerUserId ?? '',
+    ingredientCategories: fetchedRecipe?.ingredientCategories?.length
+        ? fetchedRecipe.ingredientCategories
+        : [createDefaultRecipeIngredientCategory()],
     thumbnail: fetchedRecipe?.thumbnail
         ? {
             ...fetchedRecipe.thumbnail,
@@ -113,6 +166,8 @@ const normalizeStepsForCompare = (steps: RecipeEditFormData['steps'] | IRecipe['
  * @returns 比較用のデータ
  */
 const normalizeRecipeForCompare = (recipe: Omit<RecipeEditFormData, 'id' | 'cookingTime'>) => {
+    const ingredientCategories = recipe.ingredientCategories ?? [];
+
     return {
         ownerUserId: recipe.ownerUserId ?? '',
         name: recipe.name,
@@ -122,7 +177,8 @@ const normalizeRecipeForCompare = (recipe: Omit<RecipeEditFormData, 'id' | 'cook
         thumbnailId: recipe.thumbnail?.id ?? null,
         hasThumbnailFile: !!recipe.thumbnail?.file,
         categoryIds: recipe.categories.map(category => category.id).sort(),
-        ingredients: formatIngredientItems(recipe.ingredients),
+        ingredientCategories: formatIngredientCategories(ingredientCategories),
+        ingredients: formatIngredientItems(recipe.ingredients, ingredientCategories),
         steps: normalizeStepsForCompare(recipe.steps),
     };
 };
@@ -148,6 +204,7 @@ export const useRecipeEditForm = (initialOwnerUserId: string, fetchedRecipe?: IR
     const watchedThumbnail = useWatch({ control, name: 'thumbnail' });
     const watchedCategories = useWatch({ control, name: 'categories' });
     const watchedIngredients = useWatch({ control, name: 'ingredients' });
+    const watchedIngredientCategories = useWatch({ control, name: 'ingredientCategories' });
     const watchedSteps = useWatch({ control, name: 'steps' });
     const watchedOwnerUserId = useWatch({ control, name: 'ownerUserId' });
     const editMode: EditMode = fetchedRecipe
@@ -155,6 +212,7 @@ export const useRecipeEditForm = (initialOwnerUserId: string, fetchedRecipe?: IR
         : EDIT_MODE.CREATE;
 
     const prevRecipeIdRef = React.useRef<string | undefined>(fetchedRecipe?.id);
+    const isAiImportedRef = React.useRef<boolean>(false);
 
     React.useEffect(() => {
         if (fetchedRecipe && fetchedRecipe.id !== prevRecipeIdRef.current) {
@@ -239,6 +297,7 @@ export const useRecipeEditForm = (initialOwnerUserId: string, fetchedRecipe?: IR
                 servingCount: watchedServingCount ?? null,
                 thumbnail: watchedThumbnail ?? null,
                 categories: watchedCategories ?? [],
+                ingredientCategories: watchedIngredientCategories ?? [],
                 ingredients: watchedIngredients ?? [],
                 steps: watchedSteps ?? [],
             };
@@ -258,6 +317,7 @@ export const useRecipeEditForm = (initialOwnerUserId: string, fetchedRecipe?: IR
         watchedServingCount,
         watchedThumbnail,
         watchedCategories,
+        watchedIngredientCategories,
         watchedIngredients,
         watchedSteps,
         watchedOwnerUserId,
@@ -272,6 +332,8 @@ export const useRecipeEditForm = (initialOwnerUserId: string, fetchedRecipe?: IR
      * @param data フォームのデータ
      */
     const onSubmit = async (data: RecipeEditFormData) => {
+        const ingredientCategories = data.ingredientCategories ?? [];
+
         const sendData: IPostPutRecipeRequest = {
             name: data.name,
             url: data.url,
@@ -280,7 +342,12 @@ export const useRecipeEditForm = (initialOwnerUserId: string, fetchedRecipe?: IR
             thumbnailId: data.thumbnail?.id,
             categoryIds: data.categories.map(v => v.id),
             ownerUserId: data.ownerUserId,
-            ingredients: formatIngredientItems(data.ingredients),
+            ingredientCategories: formatIngredientCategories(
+                ingredientCategories,
+                editMode === EDIT_MODE.CREATE,
+            ),
+            ingredients: formatIngredientItems(data.ingredients, ingredientCategories),
+            ...(isAiImportedRef.current ? { source: 'ai_imported' } : {}),
             // stepsはstoreRecipe()/updateRecipe()でフォーマットする
         };
 
@@ -317,6 +384,28 @@ export const useRecipeEditForm = (initialOwnerUserId: string, fetchedRecipe?: IR
     }, [methods]);
 
     /**
+     * AI 解析結果をレシピ編集フォームへ反映する
+     */
+    const applyAiParsedRecipe = React.useCallback(
+        (parsed: IParsedRecipe): void => {
+            const currentCategories =
+                methods.getValues('ingredientCategories') ?? [];
+            const ingredientCategories = createMissingIngredientCategories(
+                parsed.ingredients,
+                currentCategories,
+            );
+            const formData = convertToFormData(parsed, ingredientCategories);
+            applyParsedRecipeToForm(formData, methods);
+        },
+        [
+            createMissingIngredientCategories,
+            convertToFormData,
+            applyParsedRecipeToForm,
+            methods,
+        ],
+    );
+
+    /**
      * 選択した画像を AI 解析し、結果をフォームへ反映する
      */
     const importFromImage = React.useCallback(
@@ -326,18 +415,11 @@ export const useRecipeEditForm = (initialOwnerUserId: string, fetchedRecipe?: IR
                 return false;
             }
 
-            await createMissingIngredientCategories(parsed.ingredients);
-            const formData = convertToFormData(parsed);
-            applyParsedRecipeToForm(formData, methods);
+            applyAiParsedRecipe(parsed);
+            isAiImportedRef.current = true;
             return true;
         },
-        [
-            parseRecipeFromImage,
-            createMissingIngredientCategories,
-            convertToFormData,
-            applyParsedRecipeToForm,
-            methods,
-        ],
+        [parseRecipeFromImage, applyAiParsedRecipe],
     );
 
     /**
@@ -350,19 +432,12 @@ export const useRecipeEditForm = (initialOwnerUserId: string, fetchedRecipe?: IR
                 return false;
             }
 
-            await createMissingIngredientCategories(parsed.ingredients);
-            const formData = convertToFormData(parsed);
-            applyParsedRecipeToForm(formData, methods);
+            applyAiParsedRecipe(parsed);
             methods.setValue('url', url);
+            isAiImportedRef.current = true;
             return true;
         },
-        [
-            parseRecipeFromUrl,
-            createMissingIngredientCategories,
-            convertToFormData,
-            applyParsedRecipeToForm,
-            methods,
-        ],
+        [parseRecipeFromUrl, applyAiParsedRecipe, methods],
     );
 
     return {
