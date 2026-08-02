@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 export const METADATA = {
     SITE_NAME: 'meap — レシピと献立をまとめて管理',
     SITE_DESCRIPTION:
-        'レシピの保存・整理や献立づくりをサポートするアプリ。写真からAIでレシピを読み込める機能も。まずは無料で始められます。',
+        'レシピの保存・整理や献立づくりをサポートするアプリ。写真やURLからAIでレシピを読み込める機能も。まずは無料で始められます。',
     OGP_IMAGE: '/ogp.jpg',
     PAGE: {
         RECIPE: '料理・レシピ',
