@@ -212,6 +212,7 @@ export const useRecipeEditForm = (initialOwnerUserId: string, fetchedRecipe?: IR
         : EDIT_MODE.CREATE;
 
     const prevRecipeIdRef = React.useRef<string | undefined>(fetchedRecipe?.id);
+    const isAiImportedRef = React.useRef<boolean>(false);
 
     React.useEffect(() => {
         if (fetchedRecipe && fetchedRecipe.id !== prevRecipeIdRef.current) {
@@ -346,6 +347,7 @@ export const useRecipeEditForm = (initialOwnerUserId: string, fetchedRecipe?: IR
                 editMode === EDIT_MODE.CREATE,
             ),
             ingredients: formatIngredientItems(data.ingredients, ingredientCategories),
+            ...(isAiImportedRef.current ? { source: 'ai_imported' } : {}),
             // stepsはstoreRecipe()/updateRecipe()でフォーマットする
         };
 
@@ -414,6 +416,7 @@ export const useRecipeEditForm = (initialOwnerUserId: string, fetchedRecipe?: IR
             }
 
             applyAiParsedRecipe(parsed);
+            isAiImportedRef.current = true;
             return true;
         },
         [parseRecipeFromImage, applyAiParsedRecipe],
@@ -431,6 +434,7 @@ export const useRecipeEditForm = (initialOwnerUserId: string, fetchedRecipe?: IR
 
             applyAiParsedRecipe(parsed);
             methods.setValue('url', url);
+            isAiImportedRef.current = true;
             return true;
         },
         [parseRecipeFromUrl, applyAiParsedRecipe, methods],

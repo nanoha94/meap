@@ -74,6 +74,7 @@ export interface IPostPutRecipeRequest {
         imageId?: string;
         order: number;
     }[];
+    source?: 'manual' | 'ai_imported';
 }
 
 // レシピカテゴリー作成

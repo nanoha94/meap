@@ -17,6 +17,7 @@ namespace App\Swagger;
  *     @OA\Property(property="thumbnailId", type="string", nullable=true, description="サムネイル画像ID", example="1"),
  *     @OA\Property(property="categoryIds", type="array", description="料理カテゴリID", @OA\Items(type="string", example="1")),
  *     @OA\Property(property="ownerUserId", type="string", description="編集責任者のユーザーID", example="00000000-0000-0000-0000-000000000000"),
+ *     @OA\Property(property="source", type="string", nullable=true, enum={"manual", "ai_imported"}, description="レシピのソース（省略時は manual）", example="manual"),
  *     @OA\Property(property="ingredientCategories", type="array", nullable=true, description="食材カテゴリ（省略時はデフォルト「食材」カテゴリを自動作成）",
  *         @OA\Items(ref="#/components/schemas/RecipeIngredientCategory")
  *     ),

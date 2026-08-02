@@ -3014,6 +3014,16 @@
                         "type": "string",
                         "example": "00000000-0000-0000-0000-000000000000"
                     },
+                    "source": {
+                        "description": "レシピのソース（省略時は manual）",
+                        "type": "string",
+                        "enum": [
+                            "manual",
+                            "ai_imported"
+                        ],
+                        "example": "manual",
+                        "nullable": true
+                    },
                     "ingredientCategories": {
                         "description": "食材カテゴリ（省略時はデフォルト「食材」カテゴリを自動作成）",
                         "type": "array",

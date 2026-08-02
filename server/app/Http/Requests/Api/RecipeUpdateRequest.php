@@ -43,6 +43,7 @@ class RecipeUpdateRequest extends BaseApiRequest
             'servingCount' => 'integer|min:1|nullable',
             'cookingTime' => 'integer|min:0|nullable',
             'ownerUserId' => 'uuid|required',
+            'source' => 'string|in:manual,ai_imported|nullable',
         ];
     }
 
