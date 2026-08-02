@@ -48,7 +48,7 @@ class BillingService
             ->checkout([
                 'success_url' => $urls['success'],
                 'cancel_url' => $urls['cancel'],
-                'billing_address_collection' => 'required',
+                'automatic_tax' => ['enabled' => true],
                 'customer_update' => ['address' => 'auto'],
             ]);
 
@@ -92,7 +92,7 @@ class BillingService
         $checkout = $group->checkout([$this->priceId($packType->configKey()) => 1], [
             'success_url' => $urls['success'],
             'cancel_url' => $urls['cancel'],
-            'billing_address_collection' => 'required',
+            'automatic_tax' => ['enabled' => true],
             'customer_update' => ['address' => 'auto'],
             'metadata' => [
                 'type' => 'pack',
@@ -442,39 +442,17 @@ class BillingService
     /**
      * Stripe Invoice から税額を取得する
      *
-     * Stripe API のバージョンによって税額の格納先が異なるため、複数のフィールドを順に参照する。
-     * 新 API では total_taxes、旧 API では tax。いずれも空の場合は税抜き金額との差分から算出する。
-     *
      * @param \Stripe\Invoice|object $stripeInvoice
      * @return int 税額（最小通貨単位）
      */
     private function extractInvoiceTaxAmount(object $stripeInvoice): int
     {
-        // 新 API: total_taxes 配列の amount を合算
         if (! empty($stripeInvoice->total_taxes)) {
-            $tax = (int) collect($stripeInvoice->total_taxes)->sum(
-                fn ($tax) => (int) ($tax->amount ?? 0),
+            return (int) collect($stripeInvoice->total_taxes)->sum(
+                fn($tax) => (int) ($tax->amount ?? 0),
             );
-
-            if ($tax > 0) {
-                return $tax;
-            }
         }
 
-        // 旧 API: tax フィールド（廃止予定だが後方互換のため残す）
-        $legacyTax = (int) ($stripeInvoice->tax ?? 0);
-        if ($legacyTax > 0) {
-            return $legacyTax;
-        }
-
-        // フォールバック: 税抜き金額があれば合計との差分から逆算（内税 Price の upcoming invoice 等）
-        $subtotalExcludingTax = (int) ($stripeInvoice->subtotal_excluding_tax ?? $stripeInvoice->total_excluding_tax ?? 0);
-        if ($subtotalExcludingTax <= 0) {
-            return 0;
-        }
-
-        $total = (int) ($stripeInvoice->total ?? $stripeInvoice->subtotal ?? 0);
-
-        return max(0, $total - $subtotalExcludingTax);
+        return (int) ($stripeInvoice->tax ?? 0);
     }
 }
