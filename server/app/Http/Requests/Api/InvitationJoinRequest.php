@@ -84,7 +84,6 @@ class InvitationJoinRequest extends BaseApiRequest
                 || $currentGroup->recipes()->exists()
                 || $currentGroup->recipeCategories()->exists()
                 || $currentGroup->ingredients()->exists()
-                || $currentGroup->ingredientCategories()->where('is_default', false)->exists()
                 || $currentGroup->ingredientUnits()->where('is_default', false)->exists()
                 || $currentGroup->images()->exists()
             ) {

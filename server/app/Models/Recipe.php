@@ -54,9 +54,9 @@ class Recipe extends Model
     /**
      * 食材カテゴリを取得する
      */
-    public function ingredientCategories()
+    public function ingredientCategories(): HasMany
     {
-        return $this->belongsToMany(IngredientCategory::class, 'recipe_ingredient_mappings', 'recipe_id', 'category_id');
+        return $this->hasMany(IngredientCategory::class, 'recipe_id')->orderBy('order');
     }
 
     /**

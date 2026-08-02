@@ -107,13 +107,6 @@ test('2-5-3: デフォルトデータの自動作成確認', function () {
         'name' => '昼食',
     ]);
 
-    // デフォルトの食材カテゴリが作成されていることを確認
-    $this->assertDatabaseHas('ingredient_categories', [
-        'group_id' => $groupId,
-        'name' => '食材',
-        'is_default' => true,
-    ]);
-
     // デフォルトの食材単位が作成されていることを確認
     $this->assertDatabaseHas('ingredient_units', [
         'group_id' => $groupId,

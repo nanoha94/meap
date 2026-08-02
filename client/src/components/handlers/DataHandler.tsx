@@ -24,7 +24,6 @@ interface Props {
 const DataHandler = ({ user, masterData, aiUsageStatus }: Props) => {
     // store
     const setAiUsageStatus = useAiUsageStore(state => state.setAiUsageStatus);
-    const setIngredientCategories = useIngredientStore(state => state.setCategories);
     const setIngredientUnits = useIngredientStore(state => state.setUnits);
     const setRecipeCategories = useRecipeStore(state => state.setCategories);
     const setMealCategories = useMealStore(state => state.setMealCategories);
@@ -68,15 +67,6 @@ const DataHandler = ({ user, masterData, aiUsageStatus }: Props) => {
         }
     }, [masterData?.recipeCategories, setRecipeCategories]);
 
-
-    /**
-     * 食材カテゴリーをストアにセット
-     */
-    React.useEffect(() => {
-        if (masterData?.ingredientCategories && masterData.ingredientCategories.length > 0) {
-            setIngredientCategories(masterData.ingredientCategories);
-        }
-    }, [masterData?.ingredientCategories, setIngredientCategories]);
 
     /**
      * 食材単位をストアにセット

@@ -14,13 +14,6 @@ echo "実行中: ImageControllerTest.php"
 
 echo ""
 echo "=========================================="
-echo "📖 詳細ドキュメント: tests/docs/03_Api/02_IngredientCategoryController_TEST_SPECIFICATIONS.md"
-echo ""
-echo "実行中: IngredientCategoryControllerTest.php"
-./vendor/bin/sail test tests/Feature/Api/IngredientCategoryControllerTest.php --stop-on-failure
-
-echo ""
-echo "=========================================="
 echo "📖 詳細ドキュメント: tests/docs/03_Api/03_InvitationController_TEST_SPECIFICATIONS.md"
 echo ""
 echo "実行中: InvitationControllerTest.php"

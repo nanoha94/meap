@@ -7,7 +7,7 @@ namespace App\Swagger;
  *
  * @OA\Schema(
  *     schema="Master",
- *     required={"users", "recipeCategories", "ingredientCategories", "ingredientUnits", "mealCategories", "shoppingCategories", "shoppingTags"},
+ *     required={"users", "recipeCategories", "ingredientUnits", "mealCategories", "shoppingCategories", "shoppingTags"},
  *     @OA\Property(
  *         property="users",
  *         type="array",
@@ -19,12 +19,6 @@ namespace App\Swagger;
  *         type="array",
  *         description="料理カテゴリ一覧",
  *         @OA\Items(ref="#/components/schemas/RecipeCategory")
- *     ),
- *     @OA\Property(
- *         property="ingredientCategories",
- *         type="array",
- *         description="食材カテゴリ一覧",
- *         @OA\Items(ref="#/components/schemas/IngredientCategory")
  *     ),
  *     @OA\Property(
  *         property="ingredientUnits",

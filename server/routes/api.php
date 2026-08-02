@@ -4,7 +4,6 @@ use App\Http\Controllers\Api\AiRecipeController;
 use App\Http\Controllers\Api\AiUsageController;
 use App\Http\Controllers\Api\BillingController;
 use App\Http\Controllers\Api\ImageController;
-use App\Http\Controllers\Api\IngredientCategoryController;
 use App\Http\Controllers\Api\IngredientUnitController;
 use App\Http\Controllers\Api\InvitationController;
 use App\Http\Controllers\Api\MasterController;
@@ -48,10 +47,6 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::delete('/images/bulk', [ImageController::class, 'bulkDestroy']);
 
     // ingredients
-    Route::apiResource('/ingredient-categories', IngredientCategoryController::class)->only(['index']);
-    Route::post('/ingredient-categories/bulk', [IngredientCategoryController::class, 'bulkStore']);
-    Route::put('/ingredient-categories/bulk', [IngredientCategoryController::class, 'bulkUpdate']);
-    Route::delete('/ingredient-categories/bulk', [IngredientCategoryController::class, 'bulkDestroy']);
     Route::get('/ingredient-units', [IngredientUnitController::class, 'index']);
 
     // invitations

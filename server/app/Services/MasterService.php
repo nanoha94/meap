@@ -10,7 +10,6 @@ class MasterService
     public function __construct(
         private UserService $userService,
         private RecipeCategoryService $recipeCategoryService,
-        private IngredientCategoryService $ingredientCategoryService,
         private IngredientUnitService $ingredientUnitService,
         private MealCategoryService $mealCategoryService,
         private ShoppingCategoryService $shoppingCategoryService,
@@ -25,7 +24,6 @@ class MasterService
             fn (): array => [
                 'users' => $this->userService->index($group),
                 'recipeCategories' => $this->recipeCategoryService->index($group),
-                'ingredientCategories' => $this->ingredientCategoryService->index($group),
                 'ingredientUnits' => $this->ingredientUnitService->index($group),
                 'mealCategories' => $this->mealCategoryService->index($group),
                 'shoppingCategories' => $this->shoppingCategoryService->index($group),

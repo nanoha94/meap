@@ -1,5 +1,5 @@
 import { IImage } from './image';
-import { IIngredientItem } from './ingredient';
+import { IIngredientCategory, IIngredientItem } from './ingredient';
 import {
     IBaseApiIndexResponse,
     IBaseApiResponse,
@@ -53,12 +53,19 @@ export interface IPostPutRecipeRequest {
     thumbnailId?: string | null;
     categoryIds: string[];
     ownerUserId: string;
+    ingredientCategories?: {
+        id?: string;
+        name: string;
+        isDefault?: boolean;
+        order: number;
+    }[];
     ingredients?: {
         id?: string;
         name: string;
         quantityDisplay?: string | null;
         unitId: string;
-        categoryId: string;
+        categoryId?: string;
+        categoryName?: string;
         order?: number;
     }[];
     steps?: {
@@ -107,6 +114,7 @@ export interface IRecipe {
     servingCount: number | null;
     thumbnail: IImage | null;
     categories: IRecipeCategory[];
+    ingredientCategories: IIngredientCategory[];
     ingredients: IIngredientItem[];
     steps: IRecipeStep[];
     lastPlannedDate: string | null;

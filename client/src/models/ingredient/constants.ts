@@ -1,8 +1,5 @@
 import { TMP_ID_PREFIX } from '@/constants';
-import {
-    IIngredientItem,
-    IPutIngredientCategoryRequest,
-} from '@/types';
+import { IIngredientCategory, IIngredientItem } from '@/types';
 
 // ローディング状態キー
 export const LOADING_STATE_KEYS = {
@@ -13,12 +10,21 @@ export const LOADING_STATE_KEYS = {
 // ------------------------------------------------------------
 // デフォルト設定
 // ------------------------------------------------------------
-// 食材カテゴリ―
-export const defaultIngredientCategory: IPutIngredientCategoryRequest = {
+// 食材カテゴリ―（新規追加用。レシピ新規作成時の初期カテゴリーは isDefault: true）
+export const defaultIngredientCategory: IIngredientCategory = {
     id: `${TMP_ID_PREFIX.INGREDIENT_CATEGORY}${Date.now()}`,
     name: '',
+    isDefault: false,
     order: 0,
 };
+
+/** レシピ新規作成時のデフォルト食材カテゴリー（「食材」） */
+export const createDefaultRecipeIngredientCategory = (): IIngredientCategory => ({
+    id: `${TMP_ID_PREFIX.INGREDIENT_CATEGORY}${Date.now()}`,
+    name: '食材',
+    isDefault: true,
+    order: 0,
+});
 
 // 食材アイテム
 export const defaultIngredientItem: IIngredientItem = {

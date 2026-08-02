@@ -163,7 +163,11 @@ return [
     'specified_id_does_not_exist' => '指定されたIDは存在しません。',
     'required_when_unit_requires_quantity' => '選択した単位では:attributeの指定が必須です。',
     'invalid_quantity_display' => '数量は整数・小数・分数で入力してください（例: 2、1.5、1/2、1と1/2）',
-    'duplicate_ingredient' => '同じ材料名と単位の組み合わせが重複しています。',
+    'duplicate_value' => ':attributeが重複しています。',
+    'id_or_name_required' => ':attributeには:idまたは:nameのいずれかを指定してください。',
+    'not_in_list' => '指定された:attributeは:listに含まれていません。',
+    'duplicate_combination' => '同じ:fieldsの組み合わせが重複しています。',
+    'exactly_one_default_required' => ':attributeには :field が :value の項目を1つだけ指定してください。',
 
     /*
     |--------------------------------------------------------------------------
@@ -305,9 +309,11 @@ return [
             'unit_id' => '単位ID',
             'category_id' => 'カテゴリID',
             'quantity' => '数量',
+            'combination_fields' => '材料名・単位・カテゴリー',
         ],
         'ingredient_category' => [
             'name' => '材料カテゴリ名',
+            'id' => '材料カテゴリID',
         ],
         'ingredient_unit' => [
             'name' => '単位名',

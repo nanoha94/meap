@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('ingredient_categories', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('group_id')->constrained('groups', 'id')->cascadeOnDelete();
+            $table->foreignUuid('recipe_id')->constrained('recipes', 'id')->cascadeOnDelete();
             $table->string('name');
             $table->boolean('is_default')->default(false);
             $table->integer('order')->default(0);
@@ -27,7 +27,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('ingredient_categories', function (Blueprint $table) {
-            $table->dropForeign(['group_id']);
+            $table->dropForeign(['recipe_id']);
         });
 
         Schema::dropIfExists('ingredient_categories');

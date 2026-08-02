@@ -19,8 +19,8 @@ namespace App\Swagger;
  *         description="買い物タグ配列",
  *         @OA\Items(
  *             type="object",
- *             @OA\Property(property="id", type="string", description="買い物タグID", example="1", nullable=true),
- *             @OA\Property(property="name", type="string", description="買い物タグ名", example="サラダ")
+ *             @OA\Property(property="id", type="string", description="買い物タグID（既存タグ参照時。指定時は name は省略可・無視される）", example="1", nullable=true),
+ *             @OA\Property(property="name", type="string", nullable=true, description="買い物タグ名（id 未指定時は必須。既存検索 or 新規作成）", example="サラダ")
  *         )
  *     ),
  *     @OA\Property(property="order", type="integer", nullable=true, description="順番（更新時）", example=1)

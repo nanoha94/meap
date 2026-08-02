@@ -43,7 +43,6 @@ test('3-16-1: 【マスターデータ取得】 正常にマスターデータ�
         'data' => [
             'users',
             'recipeCategories',
-            'ingredientCategories',
             'ingredientUnits',
             'mealCategories',
             'shoppingCategories',
@@ -56,7 +55,7 @@ test('3-16-1: 【マスターデータ取得】 正常にマスターデータ�
     expect($response->json('data.users.0.id'))->toBe($this->user->id);
 });
 
-test('3-16-2: 【マスターデータ取得】 レスポンスに全 7 種のキーが含まれる', function () {
+test('3-16-2: 【マスターデータ取得】 レスポンスに全 6 種のキーが含まれる', function () {
     $response = $this->actingAs($this->user)->get('/master');
 
     $response->assertStatus(200);
@@ -66,7 +65,6 @@ test('3-16-2: 【マスターデータ取得】 レスポンスに全 7 種の�
         'data' => [
             'users',
             'recipeCategories',
-            'ingredientCategories',
             'ingredientUnits',
             'mealCategories',
             'shoppingCategories',
@@ -78,7 +76,6 @@ test('3-16-2: 【マスターデータ取得】 レスポンスに全 7 種の�
     expect($data)->toHaveKeys([
         'users',
         'recipeCategories',
-        'ingredientCategories',
         'ingredientUnits',
         'mealCategories',
         'shoppingCategories',
