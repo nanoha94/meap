@@ -71,8 +71,11 @@ export const useMonthlyCalendar = (
      */
     const moveToToday = React.useCallback(() => {
         const now = dayjs();
-        onDateSelectRef.current?.(now);
-        onMonthChangeRef.current?.(now.year(), now.month() + 1, now.date());
+        if (onMonthChangeRef.current) {
+            onMonthChangeRef.current(now.year(), now.month() + 1, now.date());
+        } else {
+            onDateSelectRef.current?.(now);
+        }
     }, []);
 
     /**
