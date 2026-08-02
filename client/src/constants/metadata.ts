@@ -34,7 +34,30 @@ export const METADATA = {
     },
 } as const;
 
+export const formatPageTitle = (pageTitle: string) =>
+    `${pageTitle} | ${METADATA.SITE_NAME}`;
+
+export const buildTitleMetadata = (pageTitle: string): Pick<Metadata, 'title' | 'openGraph'> => {
+    const formattedTitle = formatPageTitle(pageTitle);
+
+    return {
+        title: { absolute: formattedTitle },
+        openGraph: { title: formattedTitle },
+    };
+};
+
 export const createPageMetadata = (
     title: string,
     description?: string,
-): Metadata => (description ? { title, description } : { title });
+): Metadata => {
+    const { title: titleMeta, openGraph } = buildTitleMetadata(title);
+
+    return {
+        title: titleMeta,
+        openGraph: {
+            ...openGraph,
+            ...(description ? { description } : {}),
+        },
+        ...(description ? { description } : {}),
+    };
+};
