@@ -189,7 +189,7 @@ const RecipeDetailPage = ({
                                     href={fetchedRecipe?.url}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="text-primary-main underline transition-colors hover:text-accent-main">
+                                    className="break-all text-primary-main underline transition-colors hover:text-accent-main">
                                     {fetchedRecipe?.url}
                                 </a>
                             </div>
