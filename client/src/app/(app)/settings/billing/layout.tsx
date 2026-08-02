@@ -1,8 +1,10 @@
 import React from 'react';
 
-import { createPageMetadata, METADATA } from '@/constants';
+import { createPageMetadata, LINK_TO, METADATA } from '@/constants';
 
-export const metadata = createPageMetadata(METADATA.PAGE.SETTINGS_BILLING);
+export const metadata = createPageMetadata(METADATA.PAGE.SETTINGS_BILLING, {
+    path: LINK_TO.SETTINGS.BILLING,
+});
 
 interface LayoutProps {
     children: React.ReactNode;

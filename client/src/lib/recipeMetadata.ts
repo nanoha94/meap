@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 
-import { buildTitleMetadata, METADATA } from '@/constants/metadata';
+import { createPageMetadata, METADATA } from '@/constants/metadata';
 import { fetchData } from '@/lib/apiClient';
 import { IGetRecipeShowResponse } from '@/types';
 
@@ -19,12 +19,12 @@ export const createRecipeDetailMetadata = async (
     const name = await fetchRecipeName(id);
     const pageTitle = name ?? METADATA.PAGE.RECIPE_DETAIL;
 
-    return buildTitleMetadata(pageTitle);
+    return createPageMetadata(pageTitle, { path: `/recipe/${id}` });
 };
 
 export const createRecipeEditMetadata = async (id: string): Promise<Metadata> => {
     const name = await fetchRecipeName(id);
     const pageTitle = name ? `${name}の編集` : METADATA.PAGE.RECIPE_EDIT;
 
-    return buildTitleMetadata(pageTitle);
+    return createPageMetadata(pageTitle, { path: `/recipe/${id}/edit` });
 };

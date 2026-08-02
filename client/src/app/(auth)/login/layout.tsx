@@ -1,6 +1,8 @@
-import { createPageMetadata, METADATA } from '@/constants';
+import { createPageMetadata, LINK_TO, METADATA } from '@/constants';
 
-export const metadata = createPageMetadata(METADATA.PAGE.LOGIN);
+export const metadata = createPageMetadata(METADATA.PAGE.LOGIN, {
+    path: LINK_TO.LOGIN,
+});
 
 interface Props {
     children: React.ReactNode;

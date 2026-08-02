@@ -1,8 +1,10 @@
 import React from 'react';
 
-import { createPageMetadata, METADATA } from '@/constants';
+import { createPageMetadata, LINK_TO, METADATA } from '@/constants';
 
-export const metadata = createPageMetadata(METADATA.PAGE.PLAN_EDIT);
+export const metadata = createPageMetadata(METADATA.PAGE.PLAN_EDIT, {
+    path: LINK_TO.PLAN.EDIT,
+});
 
 interface LayoutProps {
     children: React.ReactNode;

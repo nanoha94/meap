@@ -4,6 +4,7 @@ export const METADATA = {
     SITE_NAME: 'meap — レシピと献立をまとめて管理',
     SITE_DESCRIPTION:
         'レシピの保存・整理や献立づくりをサポートするアプリ。写真からAIでレシピを読み込める機能も。まずは無料で始められます。',
+    OGP_IMAGE: '/ogp.jpg',
     PAGE: {
         RECIPE: '料理・レシピ',
         RECIPE_NEW: 'レシピ作成',
@@ -34,30 +35,86 @@ export const METADATA = {
     },
 } as const;
 
-export const formatPageTitle = (pageTitle: string) =>
+type PageMetadataOptions = {
+    path: string;
+    description?: string;
+};
+
+const getFrontendBaseUrl = () =>
+    process.env.NEXT_PUBLIC_FRONTEND_URL ?? 'http://localhost:3000';
+
+const getPageUrl = (path: string) =>
+    new URL(path, getFrontendBaseUrl()).toString();
+
+const formatPageTitle = (pageTitle: string) =>
     `${pageTitle} | ${METADATA.SITE_NAME}`;
 
-export const buildTitleMetadata = (pageTitle: string): Pick<Metadata, 'title' | 'openGraph'> => {
-    const formattedTitle = formatPageTitle(pageTitle);
+/**
+ * サイトのOpen Graphメタデータを取得する
+ * @param title - ページのタイトル
+ * @param description - ページの説明
+ * @param path - ページのパス
+ * @returns NonNullable<Metadata['openGraph']>
+ */
+const getSiteOpenGraph = (
+    title: string = METADATA.SITE_NAME,
+    description: string = METADATA.SITE_DESCRIPTION,
+    path?: string,
+): NonNullable<Metadata['openGraph']> => ({
+    title,
+    description,
+    images: [{ url: METADATA.OGP_IMAGE, alt: METADATA.SITE_NAME }],
+    type: 'website',
+    locale: 'ja_JP',
+    ...(path ? { url: getPageUrl(path) } : {}),
+});
+
+/**
+ * サイトのTwitterメタデータを取得する
+ * @param title - ページのタイトル
+ * @param description - ページの説明
+ * @returns NonNullable<Metadata['twitter']>
+ */
+const getSiteTwitter = (
+    title: string = METADATA.SITE_NAME,
+    description: string = METADATA.SITE_DESCRIPTION,
+): NonNullable<Metadata['twitter']> => ({
+    card: 'summary_large_image',
+    title,
+    description,
+    images: [METADATA.OGP_IMAGE],
+});
+
+/**
+ * ページのメタデータを作成する
+ * @param title - ページのタイトル
+ * @param options - ページのオプション
+ * @param options.path - ページのパス
+ * @param options.description - ページの説明
+ * @returns Metadata
+ */
+export const createPageMetadata = (
+    title: string,
+    options: PageMetadataOptions,
+): Metadata => {
+    const formattedTitle = formatPageTitle(title);
+    const pageDescription = options.description ?? METADATA.SITE_DESCRIPTION;
 
     return {
         title: { absolute: formattedTitle },
-        openGraph: { title: formattedTitle },
+        description: pageDescription,
+        openGraph: getSiteOpenGraph(formattedTitle, pageDescription, options.path),
+        twitter: getSiteTwitter(formattedTitle, pageDescription),
     };
 };
 
-export const createPageMetadata = (
-    title: string,
-    description?: string,
-): Metadata => {
-    const { title: titleMeta, openGraph } = buildTitleMetadata(title);
-
-    return {
-        title: titleMeta,
-        openGraph: {
-            ...openGraph,
-            ...(description ? { description } : {}),
-        },
-        ...(description ? { description } : {}),
-    };
-};
+export const createRootSocialMetadata = (
+    path: string,
+): Pick<Metadata, 'openGraph' | 'twitter'> => ({
+    openGraph: getSiteOpenGraph(
+        METADATA.SITE_NAME,
+        METADATA.SITE_DESCRIPTION,
+        path,
+    ),
+    twitter: getSiteTwitter(),
+});

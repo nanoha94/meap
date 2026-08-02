@@ -1,11 +1,11 @@
 import React from 'react';
 
-import { createPageMetadata, METADATA } from '@/constants';
+import { createPageMetadata, LINK_TO, METADATA } from '@/constants';
 
-export const metadata = createPageMetadata(
-    METADATA.PAGE.TERMS,
-    METADATA.PAGE_DESCRIPTION.TERMS,
-);
+export const metadata = createPageMetadata(METADATA.PAGE.TERMS, {
+    path: LINK_TO.TERMS,
+    description: METADATA.PAGE_DESCRIPTION.TERMS,
+});
 
 interface LayoutProps {
     children: React.ReactNode;
