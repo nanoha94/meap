@@ -49,7 +49,7 @@ const ShoppingListPageHeader = () => {
                         colorVariant={COLOR_VARIANT.SECONDARY}
                         onClick={() => setIsOpen(true)}>
                         <CirclePlus size={20} strokeWidth={2} />
-                        アイテムを追加
+                        追加
                     </HeaderTextButton>}
                     actionButtons={actionButtonConfigs}
                     placement="top-10 right-0"

@@ -169,7 +169,7 @@ const RecipeListPage = ({
                         href={LINK_TO.RECIPE.NEW}
                         colorVariant={COLOR_VARIANT.SECONDARY}>
                         <CirclePlus size={20} />
-                        料理/レシピを追加
+                        追加
                     </HeaderTextButton>
                 }
             />
