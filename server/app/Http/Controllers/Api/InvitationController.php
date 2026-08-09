@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\ApiController;
 use App\Services\InvitationTokenService;
+use App\Services\MasterService;
 use App\Services\UserService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -158,6 +159,10 @@ class InvitationController extends ApiController
                     // グループサイズを更新
                     $joinGroup->refreshGroupSize();
                     $currentGroup->refreshGroupSize();
+
+                    // マスターキャッシュを破棄（参加先・離脱元の両方）
+                    MasterService::forgetGroupCache($joinGroup);
+                    MasterService::forgetGroupCache($currentGroup);
 
                     $message = __('api.invitation.joined_successfully');
 
