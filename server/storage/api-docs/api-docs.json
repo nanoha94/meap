@@ -1869,6 +1869,7 @@
                     "date",
                     "lines",
                     "subtotal",
+                    "subtotalExcludingTax",
                     "tax",
                     "total",
                     "amountDue"
@@ -1890,10 +1891,15 @@
                         "type": "integer",
                         "example": 580
                     },
+                    "subtotalExcludingTax": {
+                        "description": "合計（税抜き）（最小通貨単位）",
+                        "type": "integer",
+                        "example": 527
+                    },
                     "tax": {
                         "description": "税額（最小通貨単位）",
                         "type": "integer",
-                        "example": 0
+                        "example": 53
                     },
                     "total": {
                         "description": "合計（最小通貨単位）",
