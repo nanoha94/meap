@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { TIMEOUT_MS } from '@/constants';
+import { AI_TIMEOUT_MS } from '@/constants';
 import { useAiUsageApi, useApiErrorHandler, useSnackbars } from '@/hooks';
 import axios from '@/lib/axios';
 import { useGlobalStore } from '@/stores';
@@ -48,7 +48,7 @@ export const useRecipeAiApi = () => {
                         '/ai/recipes/parse-img',
                         formData,
                         {
-                            timeout: TIMEOUT_MS,
+                            timeout: AI_TIMEOUT_MS,
                         },
                     );
 
@@ -105,7 +105,7 @@ export const useRecipeAiApi = () => {
                         '/ai/recipes/parse-url',
                         body,
                         {
-                            timeout: TIMEOUT_MS,
+                            timeout: AI_TIMEOUT_MS,
                         },
                     );
 
