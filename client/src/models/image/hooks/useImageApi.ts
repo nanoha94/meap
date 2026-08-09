@@ -1,7 +1,7 @@
 "use client";
 import React from 'react';
 
-import { TIMEOUT_MS } from '@/constants';
+import { UPLOAD_TIMEOUT_MS } from '@/constants';
 import { useApiErrorHandler, useSnackbars } from '@/hooks';
 import axios from '@/lib/axios';
 import { IUploadImageResponse } from '@/types';
@@ -54,7 +54,7 @@ export const useImageApi = () => {
                 `/images/upload-bulk`,
                 formData,
                 {
-                    timeout: TIMEOUT_MS,
+                    timeout: UPLOAD_TIMEOUT_MS,
                 },
             );
             const responseData: IUploadImageResponse = res.data;

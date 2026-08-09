@@ -1,5 +1,11 @@
 export const TIMEOUT_MS = 30 * 1000; // 30秒
 
+/** 画像アップロード用。モバイル回線での大きめの multipart 送信を許容する */
+export const UPLOAD_TIMEOUT_MS = 120 * 1000;
+
+/** AI 解析用。OCR → 構造化の2段処理を許容する */
+export const AI_TIMEOUT_MS = 120 * 1000;
+
 export const API_STATUS_CODE = {
     // 成功レスポンス
     OK: 200,

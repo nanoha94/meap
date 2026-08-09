@@ -24,6 +24,7 @@ const heroBenefits = [
 
 const painPoints = [
     '毎日「今日なに作ろう」と考えるのがつらい',
+    'レシピが複数のサイトに散らばっていて、作るたびに探すのが面倒',
     '買い物のたびに何度もスーパーへ行ってしまう',
     '買った食材を使いきれず、無駄にしてしまう',
 ] as const;
@@ -76,7 +77,7 @@ const featureShowcaseItems = [
                 screenName: 'レシピ一覧',
                 src: '/images/lp/features-02.jpg',
                 imageWidth: 369,
-                imageHeight: 665,
+                imageHeight: 666,
             },
         ],
         layout: 'text-first',
@@ -114,7 +115,7 @@ const featureShowcaseItems = [
                 screenName: '買い物リスト',
                 src: '/images/lp/features-04.jpg',
                 imageWidth: 369,
-                imageHeight: 662,
+                imageHeight: 664,
             },
             {
                 screenName: '買い物リストに追加',
@@ -133,7 +134,14 @@ const featureShowcaseItems = [
             'グループ内で献立作成や買い物を分担',
             '全員のデータがリアルタイムに同期',
         ],
-        screenshots: [{ screenName: 'アカウント設定' }],
+        screenshots: [
+            {
+                screenName: 'アカウント設定',
+                src: '/images/lp/features-06.jpg',
+                imageWidth: 368,
+                imageHeight: 667,
+            },
+        ],
         layout: 'screenshot-first',
     },
 ] as const;
@@ -332,7 +340,7 @@ const Home = () => {
                                             className="relative rounded-2xl bg-accent-background px-5 py-4 text-base leading-relaxed sm:text-lg">
                                             {text}
                                             <span
-                                                className="absolute -left-[20px] top-1/2 h-0 w-0 -translate-y-1/2 border-y-[7px] border-r-[20px] border-y-transparent border-r-accent-background"
+                                                className="absolute -left-[20px] top-1/2 hidden h-0 w-0 -translate-y-1/2 border-y-[7px] border-r-[20px] border-y-transparent border-r-accent-background sm:block"
                                                 aria-hidden
                                             />
                                         </li>
@@ -354,7 +362,8 @@ const Home = () => {
                                 。
                             </p>
                             <p className="mt-3 text-center text-base leading-relaxed">
-                                買い物はまとめて1回に。食材を余らせず、作るときは献立表を見るだけです。
+                                買い物はまとめて1回に。食材を余らせず、作るときはレシピを見るだけです。<br />
+                                複数のサイトに散らばっているレシピもmeapでまとめて管理できます。
                             </p>
                         </div>
                     </div>
