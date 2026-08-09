@@ -90,10 +90,10 @@ class ImageService
     {
         $logFail = function (string $reason, array $extra = []) use ($url): void {
             $this->logWarning(
-                __METHOD__,
                 __('operations.image.download_remote'),
                 __('api.image.remote_download_failed'),
-                ['url' => $url, 'reason' => $reason] + $extra
+                ['url' => $url, 'reason' => $reason] + $extra,
+                __METHOD__,
             );
         };
 
@@ -267,11 +267,11 @@ class ImageService
         $imagesToProcess = [];
         foreach ($images as $image) {
             if (!preg_match($groupIdPattern, $image->src)) {
-                $this->logWarning(__METHOD__,  __('operations.image.bulk_destroy'), __('api.image.group_mismatch'), [
+                $this->logWarning(__('operations.image.bulk_destroy'), __('api.image.group_mismatch'), [
                     'image_id' => $image->id,
                     'image_src' => $image->src,
                     'expected_group_id' => $group->id
-                ]);
+                ], __METHOD__);
                 continue;
             }
             $imagesToProcess[] = $image;
@@ -374,9 +374,9 @@ class ImageService
     {
         Image::where('src', 'like', '%' . $relativeDir . '/%')->delete();
         if (!$this->deleteImageDirectory($relativeDir)) {
-            $this->logWarning(__METHOD__, $operation, __('api.image.file_delete_failed'), [
+            $this->logWarning($operation, __('api.image.file_delete_failed'), [
                 'directory' => $relativeDir,
-            ]);
+            ], __METHOD__);
         }
     }
 

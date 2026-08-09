@@ -117,13 +117,13 @@ class OpenAiRecipeParser implements AiRecipeParserInterface
                 ->get($url);
         } catch (Throwable $e) {
             $this->logWarning(
-                __METHOD__,
                 __('operations.ai.recipe.parse_img'),
                 'Failed to fetch recipe URL.',
                 [
                     'url' => $url,
                     'exception_message' => $e->getMessage(),
                 ],
+                __METHOD__,
             );
 
             throw new HttpException(
@@ -135,13 +135,13 @@ class OpenAiRecipeParser implements AiRecipeParserInterface
 
         if (! $response->successful()) {
             $this->logWarning(
-                __METHOD__,
                 __('operations.ai.recipe.parse_img'),
                 'Recipe URL returned non-success status.',
                 [
                     'url' => $url,
                     'status' => $response->status(),
                 ],
+                __METHOD__,
             );
 
             throw new HttpException(
@@ -154,13 +154,13 @@ class OpenAiRecipeParser implements AiRecipeParserInterface
 
         if ($body === '' || strlen($body) > self::MAX_HTML_BYTES) {
             $this->logWarning(
-                __METHOD__,
                 __('operations.ai.recipe.parse_img'),
                 'Recipe URL response is empty or too large.',
                 [
                     'url' => $url,
                     'body_length' => strlen($body),
                 ],
+                __METHOD__,
             );
 
             throw new HttpException(
@@ -273,12 +273,12 @@ USER,
             ]);
         } catch (Throwable $e) {
             $this->logWarning(
-                __METHOD__,
                 __('operations.ai.recipe.parse_img'),
                 $failureContext,
                 [
                     'exception_message' => $e->getMessage(),
                 ],
+                __METHOD__,
             );
 
             throw new HttpException(
@@ -292,9 +292,9 @@ USER,
 
         if (! is_string($content) || $content === '') {
             $this->logWarning(
-                __METHOD__,
                 __('operations.ai.recipe.parse_img'),
                 'OpenAI API returned empty content.',
+                callerMethod: __METHOD__,
             );
 
             throw new HttpException(
@@ -307,12 +307,12 @@ USER,
             $decoded = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
         } catch (Throwable $e) {
             $this->logWarning(
-                __METHOD__,
                 __('operations.ai.recipe.parse_img'),
                 'Failed to decode OpenAI JSON response.',
                 [
                     'exception_message' => $e->getMessage(),
                 ],
+                __METHOD__,
             );
 
             throw new HttpException(
@@ -458,12 +458,12 @@ PROMPT;
 
         $this->logMessage(
             'info',
-            __METHOD__,
             __('operations.ai.recipe.parse_img'),
             "AI recipe parse diagnostic ({$phase})",
             null,
             null,
             array_merge(['phase' => $phase], $context),
+            __METHOD__,
         );
     }
 }

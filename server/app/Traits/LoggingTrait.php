@@ -14,46 +14,46 @@ trait LoggingTrait
 {
     /**
      * 統一された情報ログを記録
-     * 
+     *
      * @param HttpStatusCode $statusCode ステータスコード
      * @param string $operation 実行中の操作
      * @param string $message 情報メッセージ
      * @param Request $request リクエストインスタンス
      * @param array $additionalContext 追加のコンテキスト情報
+     * @param string $callerMethod 呼び出し元のメソッド名
      */
     public function logInfo(
-        string $callerMethod = __METHOD__,
         HttpStatusCode $statusCode,
         string $operation,
         string $message,
         Request $request,
         array $additionalContext = [],
+        string $callerMethod = 'unknown',
     ): void {
-        $this->logMessage('info', $callerMethod, $operation, $message, $request, $statusCode->value, $additionalContext);
+        $this->logMessage('info', $operation, $message, $request, $statusCode->value, $additionalContext, $callerMethod);
     }
 
     /**
      * 統一された警告ログを記録
-     * 
-     * @param HttpStatusCode $statusCode ステータスコード
+     *
      * @param string $operation 実行中の操作
      * @param string $message 警告メッセージ
-     * @param Request $request リクエストインスタンス
      * @param array $additionalContext 追加のコンテキスト情報
+     * @param string $callerMethod 呼び出し元のメソッド名
      */
     public function logWarning(
-        string $callerMethod = __METHOD__,
         string $operation,
         string $message,
         array $additionalContext = [],
+        string $callerMethod = 'unknown',
     ): void {
-        $this->logMessage('warning', $callerMethod, $operation, $message, null, null, $additionalContext);
+        $this->logMessage('warning', $operation, $message, null, null, $additionalContext, $callerMethod);
     }
 
     /**
      * 統一されたエラーログを記録
      *
-     * @param HttpStatusCode $statusCode ステータスコード
+     * @param HttpStatusCode|int $statusCode ステータスコード
      * @param string $operation 実行中の操作
      * @param \Throwable $exception 発生した例外（ExceptionまたはError）
      * @param Request $request リクエストインスタンス
@@ -100,7 +100,7 @@ trait LoggingTrait
         $callerMethod = $this->getCallerMethod($exception);
 
 
-        $this->logMessage('error', $callerMethod, $operation, $errorMessage, $request, $errorCode, $errorContext);
+        $this->logMessage('error', $operation, $errorMessage, $request, $errorCode, $errorContext, $callerMethod);
     }
 
     /**
@@ -109,18 +109,19 @@ trait LoggingTrait
      * @param string $logLevel ログレベル
      * @param string $operation 実行中の操作
      * @param string $message ログメッセージ
-     * @param Request $request リクエストインスタンス
-     * @param int $httpStatusCode HTTPステータスコード
+     * @param Request|null $request リクエストインスタンス
+     * @param int|null $statusCode HTTPステータスコード
      * @param array $additionalContext 追加のコンテキスト情報
+     * @param string $callerMethod 呼び出し元のメソッド名
      */
     private function logMessage(
         string $logLevel,
-        string $callerMethod = __METHOD__,
         string $operation,
         string $message,
         Request | null $request = null,
         int | null $statusCode = null,
         array $additionalContext = [],
+        string $callerMethod = 'unknown',
     ): void {
         $user = $request?->user();
         $group = null;

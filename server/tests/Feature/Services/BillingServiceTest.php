@@ -64,6 +64,8 @@ function frontendCheckoutSessionOptions(): array
     return [
         'success_url' => $frontendUrl . '/billing/success?session_id={CHECKOUT_SESSION_ID}',
         'cancel_url' => $frontendUrl . '/settings/billing?checkout=canceled',
+        'automatic_tax' => ['enabled' => true],
+        'customer_update' => ['address' => 'auto'],
     ];
 }
 
@@ -115,8 +117,12 @@ function mockGroupForPackCheckout(
         ->with(
             [$priceId => 1],
             Mockery::on(function (array $sessionOptions) use ($group, $packType) {
-                return ($sessionOptions['success_url'] ?? null) === frontendCheckoutSessionOptions()['success_url']
-                    && ($sessionOptions['cancel_url'] ?? null) === frontendCheckoutSessionOptions()['cancel_url']
+                $checkoutOptions = frontendCheckoutSessionOptions();
+
+                return ($sessionOptions['success_url'] ?? null) === $checkoutOptions['success_url']
+                    && ($sessionOptions['cancel_url'] ?? null) === $checkoutOptions['cancel_url']
+                    && ($sessionOptions['automatic_tax'] ?? null) === $checkoutOptions['automatic_tax']
+                    && ($sessionOptions['customer_update'] ?? null) === $checkoutOptions['customer_update']
                     && ($sessionOptions['metadata']['type'] ?? null) === 'pack'
                     && ($sessionOptions['metadata']['group_id'] ?? null) === $group->id
                     && ($sessionOptions['metadata']['credits'] ?? null) === (string) $packType->credits();

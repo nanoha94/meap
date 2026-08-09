@@ -14,7 +14,7 @@ beforeEach(function () {
 
         public function testMethod($request)
         {
-            $this->logInfo(__METHOD__, HttpStatusCode::OK, 'テスト操作', 'テストメッセージ', $request, []);
+            $this->logInfo(HttpStatusCode::OK, 'テスト操作', 'テストメッセージ', $request, [], __METHOD__);
         }
 
         public function testErrorMethod($request)
@@ -25,14 +25,14 @@ beforeEach(function () {
 
         public function testWarningMethod($request)
         {
-            $this->logWarning(__METHOD__, 'テスト操作', 'テスト警告', []);
+            $this->logWarning('テスト操作', 'テスト警告', [], __METHOD__);
         }
 
         public function testMethodWithSensitiveData($request)
         {
-            $this->logInfo(__METHOD__, HttpStatusCode::OK, 'テスト操作', '機密情報を含むテスト', $request, [
+            $this->logInfo(HttpStatusCode::OK, 'テスト操作', '機密情報を含むテスト', $request, [
                 'sensitive_data' => 'password123'
-            ]);
+            ], __METHOD__);
         }
     };
 });
@@ -188,8 +188,8 @@ test('1-4-5: ログメッセージ統合テスト', function () {
     Log::shouldReceive('warning')->once();
     Log::shouldReceive('error')->once();
 
-    $this->dummy->logInfo('testMethod', HttpStatusCode::OK, 'テスト操作', 'テストメッセージ', $request, []);
-    $this->dummy->logWarning('testMethod', 'テスト操作', 'テストメッセージ', []);
+    $this->dummy->logInfo(HttpStatusCode::OK, 'テスト操作', 'テストメッセージ', $request, [], 'testMethod');
+    $this->dummy->logWarning('テスト操作', 'テストメッセージ', [], 'testMethod');
     $this->dummy->logError(HttpStatusCode::INTERNAL_SERVER_ERROR, 'テスト操作', new Exception('テストエラー'), $request, []);
 });
 

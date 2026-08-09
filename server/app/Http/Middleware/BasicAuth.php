@@ -18,8 +18,13 @@ class BasicAuth
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // CORS プリフライト、ヘルスチェック、Stripe Webhook は認証を除外
-        if ($request->isMethod('OPTIONS') || $request->is('up') || $request->is('stripe/*')) {
+        // CORS プリフライト、ヘルスチェック、Stripe Webhook、Google OAuth は認証を除外
+        if (
+            $request->isMethod('OPTIONS')
+            || $request->is('up')
+            || $request->is('stripe/*')
+            || $request->is('auth/google/*')
+        ) {
             return $next($request);
         }
 
