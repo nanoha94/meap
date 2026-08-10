@@ -24,9 +24,7 @@ class EnsureEmailIsVerified
             ($request->user() instanceof MustVerifyEmail &&
                 ! $request->user()->hasVerifiedEmail())
         ) {
-            if (!$request->expectsJson()) {
-                return $this->errorResponse('Your email address is not verified.', HttpStatusCode::CONFLICT);
-            }
+            return $this->errorResponse('Your email address is not verified.', HttpStatusCode::CONFLICT);
         }
 
         return $next($request);

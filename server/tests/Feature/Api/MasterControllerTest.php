@@ -106,7 +106,7 @@ test('3-16-4: 【マスターデータ取得】 メール未認証', function ()
         'email_verified_at' => null,
     ]);
 
-    $response = $this->actingAs($user)->get('/master');
+    $response = $this->actingAs($user)->getJson('/master');
 
     $response->assertStatus(409);
     $response->assertJson([
