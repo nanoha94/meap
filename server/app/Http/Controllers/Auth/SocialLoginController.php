@@ -90,21 +90,20 @@ class SocialLoginController extends Controller
             return $this->loginAndRedirect($request, $social->user);
         }
 
-        // 同一メールの既存ユーザーがいれば social_accounts を追加して連携（パスワード不要ログイン）
+        // 同一メールの既存ユーザーがいれば social_accounts を追加して連携（メール確認済みのみ）
         $user = User::query()->where('email', $email)->first();
 
         if ($user !== null) {
+            if ($user->email_verified_at === null) {
+                return redirect(config('app.frontend_url') . '/login?error=oauth_email_unverified');
+            }
+
             DB::transaction(function () use ($user, $providerId): void {
                 SocialAccount::create([
                     'user_id' => $user->id,
                     'provider' => self::PROVIDER_GOOGLE,
                     'provider_id' => $providerId,
                 ]);
-                // Google 連携時はメール確認済みとみなす（未確認の既存ユーザーもここで確定させる）
-                if ($user->email_verified_at === null) {
-                    $user->email_verified_at = now();
-                    $user->save();
-                }
             });
 
             return $this->loginAndRedirect($request, $user->fresh());
