@@ -51,18 +51,11 @@ export async function apiClient<T>(
         .map(c => `${c.name}=${c.value}`)
         .join('; ');
 
-    const basicAuthUser = process.env.NEXT_PUBLIC_BASIC_AUTH_USER;
-    const basicAuthPassword = process.env.NEXT_PUBLIC_BASIC_AUTH_PASSWORD;
-
     const defaultHeaders: HeadersInit = {
         Accept: 'application/json',
         'X-Requested-With': 'XMLHttpRequest',
         Referer: frontendUrl,
         ...(cookieHeader && { Cookie: cookieHeader }),
-        ...(basicAuthUser &&
-            basicAuthPassword && {
-                Authorization: `Basic ${Buffer.from(`${basicAuthUser}:${basicAuthPassword}`).toString('base64')}`,
-            }),
     };
 
     const { body, suppressUnauthorizedLog, suppressNotFoundLog, ...restOptions } =
