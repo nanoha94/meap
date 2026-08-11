@@ -21,6 +21,9 @@ return [
         'recipe' => [
             'parse_img' => 'AI recipe image parsing',
             'parse_url' => 'AI recipe URL parsing',
+            'url_fetch_failed' => 'Failed to fetch recipe URL.',
+            'url_fetch_non_success' => 'Recipe URL returned non-success status.',
+            'url_fetch_invalid_body' => 'Recipe URL response is empty or too large.',
         ],
         'usage' => [
             'show' => 'AI usage status retrieval',

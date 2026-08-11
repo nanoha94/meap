@@ -4,11 +4,12 @@ namespace App\Services\Ai;
 
 use App\Data\ParsedRecipe;
 use App\Enums\HttpStatusCode;
+use App\Exceptions\SafeUrlFetchException;
+use App\Helpers\SafeUrlFetcher;
 use App\Interfaces\AiRecipeParserInterface;
 use App\Interfaces\RecipeOcrInterface;
 use App\Traits\LoggingTrait;
 use DOMDocument;
-use Illuminate\Support\Facades\Http;
 use OpenAI\Laravel\Facades\OpenAI;
 use finfo;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -112,17 +113,42 @@ class OpenAiRecipeParser implements AiRecipeParserInterface
     private function fetchHtmlFromUrl(string $url): string
     {
         try {
-            $response = Http::timeout(30)
-                ->withHeaders(['User-Agent' => self::HTTP_USER_AGENT])
-                ->get($url);
-        } catch (Throwable $e) {
+            return SafeUrlFetcher::fetch(
+                $url,
+                timeoutSeconds: 30,
+                headers: ['User-Agent' => self::HTTP_USER_AGENT],
+                maxBytes: self::MAX_HTML_BYTES,
+            );
+        } catch (SafeUrlFetchException $e) {
+            if ($e->type === SafeUrlFetchException::TYPE_VALIDATION) {
+                throw new HttpException(
+                    HttpStatusCode::BAD_REQUEST->value,
+                    __('api.general.validation_error'),
+                );
+            }
+
+            $logContext = [
+                'url' => $url,
+                'reason' => $e->type,
+                'exception_message' => $e->getPrevious()?->getMessage(),
+            ];
+
+            if ($e->httpStatus !== null) {
+                $logContext['status'] = $e->httpStatus;
+            }
+
+            if ($e->bodyLength !== null) {
+                $logContext['body_length'] = $e->bodyLength;
+            }
+
             $this->logWarning(
-                __('operations.ai.recipe.parse_img'),
-                'Failed to fetch recipe URL.',
-                [
-                    'url' => $url,
-                    'exception_message' => $e->getMessage(),
-                ],
+                __('operations.ai.recipe.parse_url'),
+                match ($e->type) {
+                    SafeUrlFetchException::TYPE_REQUEST => __('operations.ai.recipe.url_fetch_failed'),
+                    SafeUrlFetchException::TYPE_RESPONSE => __('operations.ai.recipe.url_fetch_non_success'),
+                    default => __('operations.ai.recipe.url_fetch_invalid_body'),
+                },
+                $logContext,
                 __METHOD__,
             );
 
@@ -132,44 +158,6 @@ class OpenAiRecipeParser implements AiRecipeParserInterface
                 $e,
             );
         }
-
-        if (! $response->successful()) {
-            $this->logWarning(
-                __('operations.ai.recipe.parse_img'),
-                'Recipe URL returned non-success status.',
-                [
-                    'url' => $url,
-                    'status' => $response->status(),
-                ],
-                __METHOD__,
-            );
-
-            throw new HttpException(
-                HttpStatusCode::BAD_GATEWAY->value,
-                __('api.general.server_error'),
-            );
-        }
-
-        $body = $response->body();
-
-        if ($body === '' || strlen($body) > self::MAX_HTML_BYTES) {
-            $this->logWarning(
-                __('operations.ai.recipe.parse_img'),
-                'Recipe URL response is empty or too large.',
-                [
-                    'url' => $url,
-                    'body_length' => strlen($body),
-                ],
-                __METHOD__,
-            );
-
-            throw new HttpException(
-                HttpStatusCode::BAD_GATEWAY->value,
-                __('api.general.server_error'),
-            );
-        }
-
-        return $body;
     }
 
     /**
