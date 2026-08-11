@@ -173,6 +173,8 @@ return [
     'not_in_list' => 'The specified :attribute is not included in :list.',
     'duplicate_combination' => 'The same combination of :fields appears more than once.',
     'exactly_one_default_required' => 'Exactly one :attribute item must have :field set to :value.',
+    'url_https_required' => 'The :attribute field must be a URL that starts with https.',
+    'url_not_accessible' => 'The specified URL is not accessible.',
 
     /*
     |--------------------------------------------------------------------------

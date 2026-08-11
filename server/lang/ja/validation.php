@@ -168,6 +168,8 @@ return [
     'not_in_list' => '指定された:attributeは:listに含まれていません。',
     'duplicate_combination' => '同じ:fieldsの組み合わせが重複しています。',
     'exactly_one_default_required' => ':attributeには :field が :value の項目を1つだけ指定してください。',
+    'url_https_required' => ':attributeはhttpsで始まるURLを指定してください。',
+    'url_not_accessible' => '指定されたURLにはアクセスできません。',
 
     /*
     |--------------------------------------------------------------------------

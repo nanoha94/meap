@@ -13,4 +13,6 @@ export const OAUTH_ERROR_MESSAGES: Record<string, string> = {
     oauth_failed: 'Google認証に失敗しました。もう一度お試しください。',
     oauth_no_email:
         'Googleアカウントからメールアドレスを取得できませんでした。',
+    oauth_email_unverified:
+        '同じメールアドレスのアカウントが未認証のため、Google連携できません。メール認証後に再度お試しください。',
 };

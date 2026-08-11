@@ -21,6 +21,9 @@ return [
         'recipe' => [
             'parse_img' => 'AIレシピ画像解析',
             'parse_url' => 'AIレシピURL解析',
+            'url_fetch_failed' => 'レシピ URL の取得に失敗しました。',
+            'url_fetch_non_success' => 'レシピ URL が成功以外のステータスを返しました。',
+            'url_fetch_invalid_body' => 'レシピ URL のレスポンスが空、またはサイズ上限を超えています。',
         ],
         'usage' => [
             'show' => 'AI利用状況取得',

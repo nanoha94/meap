@@ -97,7 +97,7 @@ test('3-15-3: 【課金状態取得】 メール未認証', function () {
         'email_verified_at' => null,
     ]);
 
-    $response = $this->actingAs($user)->get('/billing/status');
+    $response = $this->actingAs($user)->getJson('/billing/status');
 
     $response->assertStatus(409);
     $response->assertJson([
@@ -221,7 +221,7 @@ test('3-15-8: 【請求履歴取得】 メール未認証', function () {
         'email_verified_at' => null,
     ]);
 
-    $response = $this->actingAs($user)->get('/billing/invoices');
+    $response = $this->actingAs($user)->getJson('/billing/invoices');
 
     $response->assertStatus(409);
     $response->assertJson([
@@ -303,7 +303,7 @@ test('3-15-13: 【サブスク開始】 メール未認証', function () {
         'email_verified_at' => null,
     ]);
 
-    $response = $this->actingAs($user)->post('/billing/subscribe/standard');
+    $response = $this->actingAs($user)->postJson('/billing/subscribe/standard');
 
     $response->assertStatus(409);
     $response->assertJson([
@@ -403,7 +403,7 @@ test('3-15-20: 【Customer Portal】 メール未認証', function () {
         'email_verified_at' => null,
     ]);
 
-    $response = $this->actingAs($user)->post('/billing/portal');
+    $response = $this->actingAs($user)->postJson('/billing/portal');
 
     $response->assertStatus(409);
     $response->assertJson([
@@ -517,7 +517,7 @@ test('3-15-26: 【プラン変更予定取り消し】 メール未認証', func
         'email_verified_at' => null,
     ]);
 
-    $response = $this->actingAs($user)->post('/billing/subscription/resume');
+    $response = $this->actingAs($user)->postJson('/billing/subscription/resume');
 
     $response->assertStatus(409);
     $response->assertJson([
@@ -641,7 +641,7 @@ test('3-15-33: 【パック購入】 メール未認証', function () {
         'email_verified_at' => null,
     ]);
 
-    $response = $this->actingAs($user)->post('/billing/packs/light');
+    $response = $this->actingAs($user)->postJson('/billing/packs/light');
 
     $response->assertStatus(409);
     $response->assertJson([

@@ -488,7 +488,43 @@ test('3-13-19: 【AIレシピURL解析】 バリデーションエラー（url �
     expect($responseData['errors']['url'])->toContain('urlは、2048文字以内で指定してください。');
 });
 
-test('3-13-20: 【AIレシピURL解析】 グループに所属していない', function () {
+test('3-13-20: 【AIレシピURL解析】 バリデーションエラー（url が http スキーム）', function () {
+    $response = postAiRecipeParseUrl($this, $this->user, [
+        'url' => 'http://example.com/recipe/123',
+    ]);
+
+    $response->assertStatus(422);
+    $response->assertJsonValidationErrors(['url']);
+
+    $responseData = $response->json();
+    expect($responseData['errors']['url'])->toContain('urlはhttpsで始まるURLを指定してください。');
+});
+
+test('3-13-21: 【AIレシピURL解析】 バリデーションエラー（url が localhost）', function () {
+    $response = postAiRecipeParseUrl($this, $this->user, [
+        'url' => 'https://localhost/recipe/123',
+    ]);
+
+    $response->assertStatus(422);
+    $response->assertJsonValidationErrors(['url']);
+
+    $responseData = $response->json();
+    expect($responseData['errors']['url'])->toContain('指定されたURLにはアクセスできません。');
+});
+
+test('3-13-22: 【AIレシピURL解析】 バリデーションエラー（url がメタデータ IP）', function () {
+    $response = postAiRecipeParseUrl($this, $this->user, [
+        'url' => 'https://169.254.169.254/latest/meta-data',
+    ]);
+
+    $response->assertStatus(422);
+    $response->assertJsonValidationErrors(['url']);
+
+    $responseData = $response->json();
+    expect($responseData['errors']['url'])->toContain('指定されたURLにはアクセスできません。');
+});
+
+test('3-13-23: 【AIレシピURL解析】 グループに所属していない', function () {
     $user = User::factory()->create([
         'email_verified_at' => now(),
     ]);
@@ -502,7 +538,7 @@ test('3-13-20: 【AIレシピURL解析】 グループに所属していない',
     ]);
 });
 
-test('3-13-21: 【AIレシピURL解析】 月次利用上限超過', function () {
+test('3-13-24: 【AIレシピURL解析】 月次利用上限超過', function () {
     $this->group->update([
         'plan' => GroupPlan::FREE,
         'ai_monthly_remaining' => 0,
@@ -520,7 +556,7 @@ test('3-13-21: 【AIレシピURL解析】 月次利用上限超過', function ()
     ]);
 });
 
-test('3-13-22: 【AIレシピURL解析】 AI 解析失敗時に利用回数が返却される', function () {
+test('3-13-25: 【AIレシピURL解析】 AI 解析失敗時に利用回数が返却される', function () {
     $this->mock(AiRecipeParserInterface::class, function ($mock) {
         $mock->shouldReceive('parseUrl')
             ->once()
@@ -539,7 +575,7 @@ test('3-13-22: 【AIレシピURL解析】 AI 解析失敗時に利用回数が�
     expect($this->group->ai_monthly_remaining)->toBe(3);
 });
 
-test('3-13-23: 【AIレシピURL解析】 短時間の連続リクエストでレート制限', function () {
+test('3-13-26: 【AIレシピURL解析】 短時間の連続リクエストでレート制限', function () {
     config(['ai.rate_limit_per_minute' => 2]);
 
     $this->mock(AiRecipeParserInterface::class, function ($mock) {

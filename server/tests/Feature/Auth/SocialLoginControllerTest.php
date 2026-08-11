@@ -183,30 +183,7 @@ test('2-7-5: 【コールバック】 同一メール既存ユーザーに Socia
         ->exists())->toBeTrue();
 });
 
-test('2-7-6: 【コールバック】 メール未確認の既存ユーザーに紐付け時 email_verified_at を設定', function () {
-    $user = User::factory()->create([
-        'email'             => 'unverified@example.com',
-        'email_verified_at' => null,
-    ]);
-    $group = Group::createGroup();
-    $group->users()->attach($user->id);
-
-    $socialiteUser = mockSocialiteUser([
-        'id'    => 'verify-google-id',
-        'email' => 'unverified@example.com',
-    ]);
-    mockSocialiteCallback($socialiteUser);
-
-    $response = $this->get('/auth/google/callback');
-
-    $response->assertStatus(302);
-    $this->assertAuthenticatedAs($user, 'web');
-
-    $user->refresh();
-    expect($user->email_verified_at)->not->toBeNull();
-});
-
-test('2-7-7: 【コールバック】 Google から名前が空の場合メールのローカルパートを使用', function () {
+test('2-7-6: 【コールバック】 Google から名前が空の場合メールのローカルパートを使用', function () {
     $socialiteUser = mockSocialiteUser([
         'id'    => 'noname-google-id',
         'name'  => '',
@@ -223,7 +200,7 @@ test('2-7-7: 【コールバック】 Google から名前が空の場合メー�
     expect($user->name)->toBe('localpart');
 });
 
-test('2-7-8: 【コールバック】 セッション再生成の確認', function () {
+test('2-7-7: 【コールバック】 セッション再生成の確認', function () {
     $socialiteUser = mockSocialiteUser([
         'id'    => 'session-google-id',
         'email' => 'session@example.com',
@@ -240,7 +217,7 @@ test('2-7-8: 【コールバック】 セッション再生成の確認', functi
     expect(session()->getId())->not->toBe($oldSessionId);
 });
 
-test('2-7-9: 【コールバック】 新規ユーザー作成時に Google アバターを取り込み avatar_image_id を設定', function () {
+test('2-7-8: 【コールバック】 新規ユーザー作成時に Google アバターを取り込み avatar_image_id を設定', function () {
     $avatarUrl = 'https://lh3.googleusercontent.com/a/test-avatar';
 
     $oneByOnePng = base64_decode(
@@ -286,7 +263,7 @@ test('2-7-9: 【コールバック】 新規ユーザー作成時に Google ア�
     expect(Storage::disk('public')->exists($relativePath))->toBeTrue();
 });
 
-test('2-7-10: 【コールバック】 Google CDN のアバター URL は高解像度（=s512-c）に正規化されてダウンロードされる', function () {
+test('2-7-9: 【コールバック】 Google CDN のアバター URL は高解像度（=s512-c）に正規化されてダウンロードされる', function () {
     $originalUrl   = 'https://lh3.googleusercontent.com/a/ACg8oc-test-avatar=s96-c';
     $normalizedUrl = 'https://lh3.googleusercontent.com/a/ACg8oc-test-avatar=s512-c';
 
@@ -321,6 +298,31 @@ test('2-7-10: 【コールバック】 Google CDN のアバター URL は高解�
     expect($user)->not->toBeNull();
     $user->refresh();
     expect($user->avatar_image_id)->not->toBeNull();
+});
+
+test('2-7-10: 【コールバック】 メール未確認の既存ユーザーへの自動リンク拒否', function () {
+    $user = User::factory()->create([
+        'email'             => 'unverified@example.com',
+        'email_verified_at' => null,
+    ]);
+    $group = Group::createGroup();
+    $group->users()->attach($user->id);
+
+    $socialiteUser = mockSocialiteUser([
+        'id'    => 'verify-google-id',
+        'email' => 'unverified@example.com',
+    ]);
+    mockSocialiteCallback($socialiteUser);
+
+    $response = $this->get('/auth/google/callback');
+
+    $response->assertStatus(302);
+    $response->assertRedirect(config('app.frontend_url') . '/login?error=oauth_email_unverified');
+    $this->assertGuest();
+
+    $user->refresh();
+    expect($user->email_verified_at)->toBeNull();
+    expect(SocialAccount::where('user_id', $user->id)->count())->toBe(0);
 });
 
 test('2-7-11: 【コールバック】 InvalidStateException でエラーリダイレクト', function () {
