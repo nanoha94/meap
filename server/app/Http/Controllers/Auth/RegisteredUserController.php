@@ -66,6 +66,7 @@ class RegisteredUserController extends Controller
 
                 event(new Registered($user));
                 Auth::login($user);
+                $request->session()->regenerate();
                 $message = __('auth.success', ['attribute' => __('auth.attributes.register')]);
                 return $this->successResponse(null, $message);
             },

@@ -8,6 +8,7 @@ use App\Traits\LoggingTrait;
 use App\Enums\HttpStatusCode;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
@@ -39,6 +40,10 @@ class NewPasswordController extends Controller
                             'password' => Hash::make($request->string('password')),
                             'remember_token' => Str::random(60),
                         ])->save();
+
+                        DB::table(config('session.table'))
+                            ->where('user_id', $user->id)
+                            ->delete();
 
                         event(new PasswordReset($user));
                     }
