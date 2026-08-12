@@ -51,11 +51,20 @@ export async function apiClient<T>(
         .map(c => `${c.name}=${c.value}`)
         .join('; ');
 
+    // ステージング等の API Basic 認証（サーバー専用 env。バンドルに出さない）
+    const basicUser = process.env.BASIC_AUTH_USER;
+    const basicPassword = process.env.BASIC_AUTH_PASSWORD;
+    const basicAuthHeader =
+        basicUser && basicPassword
+            ? `Basic ${Buffer.from(`${basicUser}:${basicPassword}`).toString('base64')}`
+            : null;
+
     const defaultHeaders: HeadersInit = {
         Accept: 'application/json',
         'X-Requested-With': 'XMLHttpRequest',
         Referer: frontendUrl,
         ...(cookieHeader && { Cookie: cookieHeader }),
+        ...(basicAuthHeader && { Authorization: basicAuthHeader }),
     };
 
     const { body, suppressUnauthorizedLog, suppressNotFoundLog, ...restOptions } =
