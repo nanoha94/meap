@@ -3,11 +3,12 @@
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Facades\DB;
 
 uses(RefreshDatabase::class);
 
-test('2-3-1: 正常なパスワードリセット', function () {
+// ===== store() メソッドのテストケース =====
+
+test('2-3-1: 【store】 正常なパスワードリセット', function () {
     $user = User::factory()->create();
     $token = Password::createToken($user);
 
@@ -21,10 +22,48 @@ test('2-3-1: 正常なパスワードリセット', function () {
     $response->assertJson(['message' => 'パスワードがリセットされました。']);
 });
 
-DB::shouldReceive('table->where->get->filter')
-    ->andReturn(collect([])); // Return an empty collection for invalid token
+test('2-3-2: 【store】 パスワードリセット後に旧セッションが無効化される', function () {
+    config(['session.driver' => 'database']);
 
-test('2-3-2: トークン未入力', function () {
+    $user = User::factory()->create();
+    $token = Password::createToken($user);
+
+    $loginResponse = $this->post('/login', [
+        'email' => $user->email,
+        'password' => 'password',
+    ]);
+    $loginResponse->assertStatus(200);
+
+    $sessionCookieName = config('session.cookie');
+    $sessionCookieValue = $loginResponse->getCookie($sessionCookieName)->getValue();
+
+    $this->assertDatabaseHas('sessions', ['user_id' => $user->id]);
+
+    $this->getJson('/user')->assertStatus(200);
+
+    $this->withoutMiddleware(\Illuminate\Auth\Middleware\RedirectIfAuthenticated::class)
+        ->post('/password/reset', [
+            'token' => $token,
+            'password' => 'NewPassword1!',
+            'password_confirmation' => 'NewPassword1!',
+        ])
+        ->assertStatus(200);
+
+    $this->assertDatabaseMissing('sessions', ['user_id' => $user->id]);
+
+    $this->flushSession();
+    $this->app['auth']->forgetGuards();
+
+    $this->withCookie($sessionCookieName, $sessionCookieValue)
+        ->getJson('/user')
+        ->assertStatus(401)
+        ->assertJson([
+            'success' => false,
+            'message' => '認証が必要です。',
+        ]);
+});
+
+test('2-3-3: 【store】 バリデーションエラー（トークン未入力）', function () {
     $response = $this->postJson('/password/reset', [
         'password' => 'NewPassword1!',
         'password_confirmation' => 'NewPassword1!',
@@ -36,7 +75,7 @@ test('2-3-2: トークン未入力', function () {
     $this->assertContains('tokenは必ず指定してください。', $responseData['errors']['token']);
 });
 
-test('2-3-3: パスワード未入力', function () {
+test('2-3-4: 【store】 バリデーションエラー（パスワード未入力）', function () {
     $user = User::factory()->create();
     $token = Password::createToken($user);
 
@@ -51,7 +90,7 @@ test('2-3-3: パスワード未入力', function () {
     $this->assertContains('passwordは必ず指定してください。', $responseData['errors']['password']);
 });
 
-test('2-3-4: パスワード確認未入力', function () {
+test('2-3-5: 【store】 バリデーションエラー（パスワード確認未入力）', function () {
     $user = User::factory()->create();
     $token = Password::createToken($user);
 
@@ -66,7 +105,7 @@ test('2-3-4: パスワード確認未入力', function () {
     $this->assertContains('password_confirmationは必ず指定してください。', $responseData['errors']['password_confirmation']);
 });
 
-test('2-3-5: パスワード確認不一致', function () {
+test('2-3-6: 【store】 バリデーションエラー（パスワード確認不一致）', function () {
     $user = User::factory()->create();
     $token = Password::createToken($user);
 
@@ -82,7 +121,7 @@ test('2-3-5: パスワード確認不一致', function () {
     $this->assertContains('passwordが一致しません。', $responseData['errors']['password']);
 });
 
-test('2-3-6: パスワードが短すぎる', function () {
+test('2-3-7: 【store】 バリデーションエラー（パスワードが短すぎる）', function () {
     $user = User::factory()->create();
     $token = Password::createToken($user);
 
@@ -98,7 +137,7 @@ test('2-3-6: パスワードが短すぎる', function () {
     $this->assertContains('passwordは、8文字以上で指定してください。', $responseData['errors']['password']);
 });
 
-test('2-3-7: パスワードに英字が含まれない', function () {
+test('2-3-8: 【store】 バリデーションエラー（パスワードに英字が含まれない）', function () {
     $user = User::factory()->create();
     $token = Password::createToken($user);
 
@@ -114,7 +153,7 @@ test('2-3-7: パスワードに英字が含まれない', function () {
     $this->assertContains('passwordは、1文字以上の文字を含めてください。', $responseData['errors']['password']);
 });
 
-test('2-3-8: パスワードに数字が含まれない', function () {
+test('2-3-9: 【store】 バリデーションエラー（パスワードに数字が含まれない）', function () {
     $user = User::factory()->create();
     $token = Password::createToken($user);
 
@@ -130,7 +169,7 @@ test('2-3-8: パスワードに数字が含まれない', function () {
     $this->assertContains('passwordは、1文字以上の数字を含めてください。', $responseData['errors']['password']);
 });
 
-test('2-3-9: パスワードに記号が含まれない', function () {
+test('2-3-10: 【store】 バリデーションエラー（パスワードに記号が含まれない）', function () {
     $user = User::factory()->create();
     $token = Password::createToken($user);
 
@@ -146,8 +185,8 @@ test('2-3-9: パスワードに記号が含まれない', function () {
     $this->assertContains('passwordは、1文字以上の記号を含めてください。', $responseData['errors']['password']);
 });
 
-test('2-3-10: 無効なトークン', function () {
-    $user = User::factory()->create();
+test('2-3-11: 【store】 無効なトークン', function () {
+    User::factory()->create();
 
     $response = $this->postJson('/password/reset', [
         'token' => 'invalid-token',
@@ -159,7 +198,7 @@ test('2-3-10: 無効なトークン', function () {
     $response->assertJson(['message' => '指定されたパスワードリセットトークンは無効です。']);
 });
 
-test('2-3-11: ユーザーが存在しない', function () {
+test('2-3-12: 【store】 ユーザーが存在しない', function () {
     $user = User::factory()->create();
     $token = Password::createToken($user);
     $user->delete();
