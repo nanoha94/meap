@@ -19,6 +19,7 @@ Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
 
 // 認証状態をコントローラーで制御するので、middlewareを指定しない
 Route::post('/register', [RegisteredUserController::class, 'store'])
+    ->middleware('throttle:6,1')
     ->name('register');
 
 Route::post('/password/reset/request', [PasswordResetLinkController::class, 'store'])

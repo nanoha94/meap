@@ -30,7 +30,12 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\SetLocale::class,
         ]);
         $middleware->prepend(\App\Http\Middleware\BasicAuth::class);
-        $middleware->trustProxies(at: '*');
+
+        $trustedProxies = env('TRUSTED_PROXIES');
+        $proxies = ($trustedProxies === null || $trustedProxies === '')
+            ? ['127.0.0.1', '::1']
+            : array_values(array_filter(array_map('trim', explode(',', $trustedProxies))));
+        $middleware->trustProxies(at: $proxies);
 
         //
     })
