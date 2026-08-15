@@ -4,7 +4,7 @@ namespace App\Swagger;
 
 /**
  * @OA\RequestBody(
- *     request="ImageBulkUploadRequest",
+ *     request="ImageGroupBulkUploadRequest",
  *     required=true,
  *     @OA\MediaType(
  *         mediaType="multipart/form-data",
@@ -44,17 +44,20 @@ namespace App\Swagger;
  *     )
  * )
  * @OA\RequestBody(
- *     request="ImageBulkDestroyRequest",
+ *     request="ImageUserUploadRequest",
  *     required=true,
  *     @OA\MediaType(
- *         mediaType="application/json",
+ *         mediaType="multipart/form-data",
  *         @OA\Schema(
- *             required={"ids"},
- *             @OA\Property(property="ids", type="array", @OA\Items(type="string")),
- *             @OA\Property(property="related_id", type="string", format="uuid", description="画像が紐づいているエンティティのID"),
+ *             required={"image"},
+ *             @OA\Property(
+ *                 property="image",
+ *                 type="string",
+ *                 format="binary",
+ *                 description="画像ファイル（必須）"
+ *             )
  *         )
  *     )
  * )
  */
-
 class ImageRequests {}

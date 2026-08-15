@@ -6,7 +6,6 @@ import { LINK_TO, TIMEOUT_MS } from '@/constants';
 import { useApiErrorHandler, useSnackbars } from '@/hooks';
 import axios from '@/lib/axios';
 import { useImageApi } from '@/models/image';
-import { useUserStore } from '@/models/user';
 import { useGlobalStore } from '@/stores';
 import { IBaseApiResponse, IPutUserRequest } from '@/types';
 
@@ -14,12 +13,11 @@ export const useUserApi = () => {
     // store
     const incrementLoadingCount = useGlobalStore(state => state.incrementLoadingCount);
     const decrementLoadingCount = useGlobalStore(state => state.decrementLoadingCount);
-    const loginUser = useUserStore(state => state.loginUser);
 
     // hook
-    const { bulkUploadImage } = useImageApi();
     const { addSnackbar } = useSnackbars();
     const { handleApiError } = useApiErrorHandler();
+    const { uploadUserImage } = useImageApi();
 
     // 重複リクエスト防止用のフラグ
     const isUpdateRequestRef = React.useRef(false);
@@ -42,10 +40,9 @@ export const useUserApi = () => {
 
             // アバター画像のアップロード
             if (avatarImage) {
-                const uploadPath = `users/${loginUser.id}`;
-                const images = await bulkUploadImage([avatarImage], uploadPath);
-                if (images.success) {
-                    data.avatar_image_id = images.data[0]?.id;
+                const response = await uploadUserImage(avatarImage);
+                if (response.success) {
+                    data.avatar_image_id = response.data?.id;
                 }
             }
 
@@ -73,7 +70,7 @@ export const useUserApi = () => {
             isUpdateRequestRef.current = false;
             decrementLoadingCount();
         }
-    }, [incrementLoadingCount, decrementLoadingCount, handleApiError, bulkUploadImage, loginUser.id, addSnackbar]);
+    }, [incrementLoadingCount, decrementLoadingCount, handleApiError, addSnackbar, uploadUserImage]);
 
     /**
      * ユーザーを削除する

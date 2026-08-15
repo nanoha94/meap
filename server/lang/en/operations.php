@@ -52,6 +52,7 @@ return [
         'bulk_destroy' => 'Meal category bulk deletion',
     ],
     'image' => [
+        'upload' => 'Image upload',
         'bulk_upload' => 'Bulk image upload',
         'bulk_destroy' => 'Bulk image deletion',
         'delete_images_by_group' => 'Delete images by group',
@@ -91,6 +92,8 @@ return [
     ],
     'users' => [
         'index' => 'User list retrieval',
+        'update' => 'Profile update',
+        'destroy' => 'Account deletion',
     ],
 
     'master' => [

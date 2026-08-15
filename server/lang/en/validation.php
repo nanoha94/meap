@@ -198,6 +198,9 @@ return [
             'no_traversal' => 'The upload path must not contain "..".',
             'no_absolute' => 'The upload path must not be an absolute path.',
         ],
+        'ownerUserId' => [
+            'not_in_group' => 'The ownerUserId must belong to a user in the same group.',
+        ],
     ],
 
     /*

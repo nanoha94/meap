@@ -1,0 +1,78 @@
+==========================================
+🚀 MEAP アプリケーション 全テスト実行
+==========================================
+📖 認証テスト仕様: tests/docs/01_AUTHENTICATION_TEST_SPECIFICATIONS.md
+📖 ログテスト仕様: tests/docs/02_TRAIT_TEST_SPECIFICATIONS.md
+
+==========================================
+[1] Traits関連テスト実行
+==========================================
+==========================================
+📝 Traits関連テスト実行
+==========================================
+📖 詳細ドキュメント: tests/docs/Traits/01_ApiResponse_TEST_SPECIFICATIONS.md
+
+実行中: ApiResponseTest.php
+
+   PASS  Tests\Feature\Traits\ApiResponseTest
+  ✓ 1-1-1: 【successResponse】 成功レスポンステスト                                  4.21s  
+  ✓ 1-1-2: 【successResponseWithWarning】 警告付き成功レスポンステスト                   0.10s  
+  ✓ 1-1-3: 【successResponseWithWarning】 警告なし成功レスポンステスト                   0.09s  
+  ✓ 1-1-4: 【createdResponse】 データ作成成功レスポンステスト                             0.07s  
+  ✓ 1-1-5: 【updatedResponse】 データ更新成功レスポンステスト                             0.06s  
+  ✓ 1-1-6: 【deletedResponse】 データ削除成功レスポンステスト                             0.06s  
+  ✓ 1-1-7: 【indexResponse】 データ一覧取得レスポンステスト                               0.09s  
+  ✓ 1-1-8: 【indexResponse】 limit/offset 指定時のデータ一覧取得レスポンステスト              0.07s  
+  ✓ 1-1-9: 【showResponse】 データ詳細取得レスポンステスト                                0.08s  
+  ✓ 1-1-10: 【errorResponse】 エラーレスポンステスト                                  0.18s  
+  ✓ 1-1-11: 【errorResponse】 エラー詳細付きエラーレスポンステスト                           0.10s  
+  ✓ 1-1-12: 【errorResponse】 エラータイプ付きエラーレスポンステスト                          0.09s  
+  ✓ 1-1-13: 【notFoundResponse】 データ未発見エラーレスポンステスト                         0.09s  
+  ✓ 1-1-14: 【unauthorizedResponse】 認証エラーレスポンステスト                         0.09s  
+  ✓ 1-1-15: 【forbiddenResponse】 権限エラーレスポンステスト                            0.09s  
+  ✓ 1-1-16: 【serverErrorResponse】 サーバーエラーレスポンステスト                        0.09s  
+  ✓ 1-1-17: 【databaseErrorResponse】 データベースエラーレスポンステスト                    0.08s  
+
+  Tests:    17 passed (53 assertions)
+  Duration: 9.44s
+
+
+==========================================
+📖 詳細ドキュメント: tests/docs/Traits/02_AutoComplement_TEST_SPECIFICATIONS.md
+
+実行中: AutoComplementTest.php
+
+   PASS  Tests\Feature\Traits\AutoComplementTest
+  ✓ 1-2-1: 既存アイテム ID 取得テスト                                               6.22s  
+  ✓ 1-2-2: 新規アイテム作成テスト                                                   0.08s  
+  ✓ 1-2-3: 既存アイテム名での新規作成テスト                                              0.07s  
+  ✓ 1-2-4: 空のアイテムリストテスト                                                  0.09s  
+  ✓ 1-2-5: 【findOrCreateIds】 無効な ID データ型テスト                              0.16s  
+  ✓ 1-2-6: 存在しないIDテスト                                                    0.09s  
+  ✓ 1-2-7: インデックス付き戻り値テスト                                                0.11s  
+
+  Tests:    7 passed (14 assertions)
+  Duration: 9.60s
+
+
+==========================================
+📖 詳細ドキュメント: tests/docs/Traits/03_ExceptionHandlerTrait_TEST_SPECIFICATIONS.md
+
+実行中: ExceptionHandlerTraitTest.php
+
+   PASS  Tests\Feature\Traits\ExceptionHandlerTraitTest
+  ✓ 1-3-1: 【handleException】 ValidationException 処理テスト                   3.36s  
+  ✓ 1-3-2: HttpExceptionの処理をテスト                                          0.10s  
+  ✓ 1-3-3: 【handleException】 ModelNotFoundException 処理テスト                0.09s  
+  ✓ 1-3-4: 【handleException】 QueryException 処理テスト                        0.09s  
+  ✓ 1-3-5: 【handleGenericException】 汎用例外処理テスト                            0.09s  
+  ✓ 1-3-6: 【getExceptionStatusCode】 カスタムステータスコードテスト                      0.09s  
+
+  Tests:    6 passed (24 assertions)
+  Duration: 7.24s
+
+
+==========================================
+📖 詳細ドキュメント: tests/docs/Traits/04_LoggingTrait_TEST_SPECIFICATIONS.md
+
+実行中: LoggingTraitTest.php

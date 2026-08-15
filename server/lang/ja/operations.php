@@ -52,6 +52,7 @@ return [
         'bulk_destroy' => '献立カテゴリ一括削除',
     ],
     'image' => [
+        'upload' => '画像アップロード',
         'bulk_upload' => '画像一括アップロード',
         'bulk_destroy' => '画像一括削除',
         'delete_images_by_group' => 'グループ配下画像一括削除',

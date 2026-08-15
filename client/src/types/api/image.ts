@@ -1,10 +1,11 @@
-import { IBaseApiIndexResponse } from './common';
+import { IBaseApiIndexResponse, IBaseApiResponseWithData } from './common';
 
 //--------------------------------
 // レスポンス型
 //--------------------------------
 // 画像アップロード
 export type IUploadImageResponse = IBaseApiIndexResponse<IImage>;
+export type IUploadImageSingleResponse = IBaseApiResponseWithData<IImage>;
 
 //--------------------------------
 // データ型

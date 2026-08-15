@@ -4,7 +4,6 @@ namespace App\Http\Requests\Api;
 
 use App\Http\Requests\Api\BaseApiRequest;
 use App\Models\IngredientUnit;
-use App\Models\Recipe;
 use Illuminate\Support\Str;
 
 class RecipeUpdateRequest extends BaseApiRequest
@@ -115,6 +114,17 @@ class RecipeUpdateRequest extends BaseApiRequest
     public function withValidator($validator)
     {
         $validator->after(function ($validator) {
+            $ownerUserId = $this->input('ownerUserId');
+            if (is_string($ownerUserId) && Str::isUuid($ownerUserId)) {
+                $group = $this->user()?->groups()->first();
+                if ($group && ! $group->users()->where('users.id', $ownerUserId)->exists()) {
+                    $validator->errors()->add(
+                        'ownerUserId',
+                        __('validation.custom.ownerUserId.not_in_group')
+                    );
+                }
+            }
+
             $ingredients = $this->input('ingredients', []);
             $ingredientCategories = $this->input('ingredientCategories', []);
 

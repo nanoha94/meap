@@ -36,12 +36,14 @@ return [
 
     'image' => [
         'bulk_uploaded' => ':count image(s) uploaded successfully.',
+        'uploaded' => 'Image uploaded successfully.',
         'upload_failed' => 'Failed to upload and save image.',
         'remote_download_failed' => 'Failed to fetch image from remote URL.',
         'bulk_deleted' => ':count image(s) deleted successfully.',
         'bulk_deletion_failed' => 'Bulk image deletion failed.',
         'deletion_failed' => 'Image deletion failed.',
         'group_mismatch' => 'Group ID does not match.',
+        'related_entity_not_found' => 'The specified related entity was not found.',
         'file_delete_failed' => 'Failed to delete image file.',
         'still_in_use' => 'Image cannot be deleted because it is still in use by other models.',
     ],

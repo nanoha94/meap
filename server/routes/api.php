@@ -43,8 +43,8 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::delete('/recipe-categories/bulk', [RecipeCategoryController::class, 'bulkDestroy']);
 
     // images
-    Route::post('/images/upload-bulk', [ImageController::class, 'bulkUpload']);
-    Route::delete('/images/bulk', [ImageController::class, 'bulkDestroy']);
+    Route::post('/images/groups/upload-bulk', [ImageController::class, 'bulkUploadForGroup']);
+    Route::post('/images/users/upload', [ImageController::class, 'uploadForUser']);
 
     // ingredients
     Route::get('/ingredient-units', [IngredientUnitController::class, 'index']);

@@ -312,15 +312,15 @@
                 ]
             }
         },
-        "/images/upload-bulk": {
+        "/images/groups/upload-bulk": {
             "post": {
                 "tags": [
                     "Images"
                 ],
-                "summary": "画像をアップロード（単一または複数対応）",
-                "operationId": "2190b812dc7d2b98a5bdd11d2ba8ff60",
+                "summary": "グループ画像をアップロード（単一または複数対応）",
+                "operationId": "09159ff67d1c566131302d8ce187bef0",
                 "requestBody": {
-                    "$ref": "#/components/requestBodies/ImageBulkUploadRequest"
+                    "$ref": "#/components/requestBodies/ImageGroupBulkUploadRequest"
                 },
                 "responses": {
                     "200": {
@@ -340,19 +340,19 @@
                 ]
             }
         },
-        "/images/bulk": {
-            "delete": {
+        "/images/users/upload": {
+            "post": {
                 "tags": [
                     "Images"
                 ],
-                "summary": "画像を一括削除",
-                "operationId": "fa5655d50cd1f2c7f82184051accfafd",
+                "summary": "ユーザー画像をアップロード",
+                "operationId": "f3b654ff84adc22b56c00a74c7a7a233",
                 "requestBody": {
-                    "$ref": "#/components/requestBodies/ImageBulkDestroyRequest"
+                    "$ref": "#/components/requestBodies/ImageUserUploadRequest"
                 },
                 "responses": {
                     "200": {
-                        "$ref": "#/components/responses/ImageDeleteBulkSuccess"
+                        "$ref": "#/components/responses/ImageUploadSuccess"
                     },
                     "401": {
                         "$ref": "#/components/responses/Unauthorized"
@@ -2210,6 +2210,27 @@
                         "type": "object"
                     }
                 ]
+            },
+            "UploadImageSingleResponse": {
+                "required": [
+                    "success",
+                    "message",
+                    "data"
+                ],
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "画像をアップロードしました。"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/Image"
+                    }
+                },
+                "type": "object"
             },
             "Image": {
                 "properties": {
@@ -4272,12 +4293,12 @@
                     }
                 }
             },
-            "ImageDeleteBulkSuccess": {
-                "description": "画像一括削除成功",
+            "ImageUploadSuccess": {
+                "description": "画像アップロード成功",
                 "content": {
                     "application/json": {
                         "schema": {
-                            "$ref": "#/components/schemas/BaseApiResponse"
+                            "$ref": "#/components/schemas/UploadImageSingleResponse"
                         }
                     }
                 }
@@ -4925,7 +4946,7 @@
                     }
                 }
             },
-            "ImageBulkUploadRequest": {
+            "ImageGroupBulkUploadRequest": {
                 "required": true,
                 "content": {
                     "multipart/form-data": {
@@ -4965,25 +4986,19 @@
                     }
                 }
             },
-            "ImageBulkDestroyRequest": {
+            "ImageUserUploadRequest": {
                 "required": true,
                 "content": {
-                    "application/json": {
+                    "multipart/form-data": {
                         "schema": {
                             "required": [
-                                "ids"
+                                "image"
                             ],
                             "properties": {
-                                "ids": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "string"
-                                    }
-                                },
-                                "related_id": {
-                                    "description": "画像が紐づいているエンティティのID",
+                                "image": {
+                                    "description": "画像ファイル（必須）",
                                     "type": "string",
-                                    "format": "uuid"
+                                    "format": "binary"
                                 }
                             },
                             "type": "object"

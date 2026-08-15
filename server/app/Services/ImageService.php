@@ -246,9 +246,11 @@ class ImageService
      * 指定されたrelatedIdとの紐づけを解除します。
      * imagesテーブルからは削除せず、紐づけ解除のみを行います。
      * 
+     * 呼び出し元が認可済みの related_id を渡すこと。本メソッドは mapping 解除と画像 src のグループ一致のみ行う。
+     *
      * @param array $imageIds 削除する画像IDの配列
      * @param string $relatedId 紐づけを解除するエンティティのID（必須）
-     * @param \App\Models\Group $group ユーザーの所属グループ（安全性チェック用）
+     * @param \App\Models\Group $group 画像 src のグループ一致検証および mapping 削除用
      * @return int 紐づけ解除された画像の数
      */
     public function deleteImages(array $imageIds, string $relatedId, Group $group): int
@@ -260,8 +262,7 @@ class ImageService
         // 指定されたIDの画像を取得し、グループIDがパスに含まれているかチェック
         $images = Image::whereIn('id', $imageIds)->get();
         $escapedGroupId = preg_quote($group->id, '/');
-        // 旧形式(images/{group_id}/...)と現形式(images/groups/{group_id}/...)の両方を許可
-        $groupIdPattern = "/images\\/(groups\\/)?{$escapedGroupId}\\//";
+        $groupIdPattern = "/images\\/groups\\/{$escapedGroupId}\\//";
 
         // 削除対象の画像を抽出（グループチェック）
         $imagesToProcess = [];
@@ -558,4 +559,5 @@ class ImageService
             return false;
         }
     }
+
 }

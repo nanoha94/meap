@@ -7066,3 +7066,93 @@ test('3-7-264: 【削除】 データベース接続エラー', function () {
     // レスポンス構造の確認
     $response->assertJsonStructure(['success', 'message']);
 });
+
+test('3-7-265: 【新規作成】 他グループユーザーを ownerUserId に指定', function () {
+    $otherUser = User::factory()->create(['email_verified_at' => now()]);
+    $otherGroup = Group::create(['group_size' => 1]);
+    DB::table('group_user_mappings')->insert([
+        'user_id' => $otherUser->id,
+        'group_id' => $otherGroup->id,
+    ]);
+
+    $response = $this->actingAs($this->user)->post('/recipes', [
+        'name' => 'カレーライス',
+        'servingCount' => 4,
+        'ownerUserId' => $otherUser->id,
+    ]);
+
+    $response->assertStatus(422);
+    $response->assertJsonValidationErrors(['ownerUserId']);
+
+    $responseData = $response->json();
+    $this->assertContains(
+        'ownerUserIdは同じグループに所属するユーザーを指定してください。',
+        $responseData['errors']['ownerUserId']
+    );
+});
+
+test('3-7-266: 【更新】 同一グループなら ownerUserId を変更できる', function () {
+    $otherUser = User::factory()->create(['email_verified_at' => now()]);
+    $this->group->users()->attach($otherUser->id);
+
+    $createResponse = $this->actingAs($this->user)->post('/recipes', [
+        'name' => 'カレーライス',
+        'servingCount' => 4,
+        'ownerUserId' => $this->user->id,
+    ]);
+    $recipeId = $createResponse->json('data.id');
+
+    $response = $this->actingAs($this->user)->put("/recipes/{$recipeId}", [
+        'name' => 'カレーライス',
+        'servingCount' => 4,
+        'ownerUserId' => $otherUser->id,
+    ]);
+
+    $response->assertStatus(200);
+    $response->assertJson([
+        'success' => true,
+        'message' => '料理/レシピ(カレーライス)を更新しました。',
+    ]);
+
+    $this->assertDatabaseHas('recipes', [
+        'id' => $recipeId,
+        'owner_user_id' => $otherUser->id,
+    ]);
+
+    $recipe = Recipe::find($recipeId);
+    expect($recipe->owner_user_id)->toBe($otherUser->id);
+});
+
+test('3-7-267: 【更新】 他グループユーザーを ownerUserId に指定', function () {
+    $otherUser = User::factory()->create(['email_verified_at' => now()]);
+    $otherGroup = Group::create(['group_size' => 1]);
+    DB::table('group_user_mappings')->insert([
+        'user_id' => $otherUser->id,
+        'group_id' => $otherGroup->id,
+    ]);
+
+    $createResponse = $this->actingAs($this->user)->post('/recipes', [
+        'name' => 'カレーライス',
+        'servingCount' => 4,
+        'ownerUserId' => $this->user->id,
+    ]);
+    $recipeId = $createResponse->json('data.id');
+
+    $response = $this->actingAs($this->user)->put("/recipes/{$recipeId}", [
+        'name' => 'カレーライス',
+        'servingCount' => 4,
+        'ownerUserId' => $otherUser->id,
+    ]);
+
+    $response->assertStatus(422);
+    $response->assertJsonValidationErrors(['ownerUserId']);
+
+    $responseData = $response->json();
+    $this->assertContains(
+        'ownerUserIdは同じグループに所属するユーザーを指定してください。',
+        $responseData['errors']['ownerUserId']
+    );
+
+    $recipe = Recipe::find($recipeId);
+    expect($recipe->owner_user_id)->toBe($this->user->id);
+});

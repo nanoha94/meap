@@ -239,6 +239,8 @@ class RecipeService extends AbstractDomainService
     public function create(array $data, Group $group): string
     {
         return DB::transaction(function () use ($data, $group) {
+            $this->assertOwnerUserInGroup($data['ownerUserId'] ?? '', $group);
+
             $createData = [];
             foreach ($this->getCreateFields() as $field => $dataKey) {
                 $createData[$field] = $data[$dataKey] ?? null;
@@ -868,5 +870,20 @@ class RecipeService extends AbstractDomainService
             'image_type' => 'image',
             'order' => 0
         ]);
+    }
+
+    /**
+     * ownerUserId が同一グループ所属ユーザーであることを検証する
+     *
+     * @throws HttpException グループ外ユーザーの場合
+     */
+    private function assertOwnerUserInGroup(string $ownerUserId, Group $group): void
+    {
+        if ($ownerUserId === '' || ! $group->users()->where('users.id', $ownerUserId)->exists()) {
+            throw new HttpException(
+                HttpStatusCode::UNPROCESSABLE_ENTITY->value,
+                __('validation.custom.ownerUserId.not_in_group')
+            );
+        }
     }
 }

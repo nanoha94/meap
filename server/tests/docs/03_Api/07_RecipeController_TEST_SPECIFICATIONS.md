@@ -272,6 +272,9 @@ RecipeController のテストケースの詳細仕様を示します。料理の
 | 3-7-262 | 【削除】 他グループの料理削除 | 異常系 | 他グループの料理 ID を提供 | HTTP 404 Not Found | `RecipeController::destroy()` |
 | 3-7-263 | 【削除】 同一グループの他ユーザーの料理削除 | 異常系 | 同一グループ内の他ユーザーの料理 ID を提供 | HTTP 403 Forbidden | `RecipeController::destroy()` |
 | 3-7-264 | 【削除】 データベース接続エラー | 異常系 | 認証済みユーザー | HTTP 500 Internal Server Error | `RecipeController::destroy()` |
+| 3-7-265 | 【新規作成】 他グループユーザーを ownerUserId に指定 | 異常系 | 他グループ所属ユーザーの ID を ownerUserId に指定 | HTTP 422 Validation Error | `RecipeController::store()` |
+| 3-7-266 | 【更新】 同一グループなら ownerUserId を変更できる | 正常系 | 同一グループ内の別ユーザーを ownerUserId に指定 | HTTP 200 JSON success、DB 上の owner_user_id が更新される | `RecipeController::update()` |
+| 3-7-267 | 【更新】 他グループユーザーを ownerUserId に指定 | 異常系 | 他グループ所属ユーザーの ID を ownerUserId に指定 | HTTP 422 Validation Error、DB 上の owner_user_id は維持 | `RecipeController::update()` |
 
 ## テスト実行方法
 

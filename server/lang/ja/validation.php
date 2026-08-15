@@ -193,6 +193,9 @@ return [
             'no_traversal' => 'アップロードパスに「..」を含めることはできません。',
             'no_absolute' => 'アップロードパスに絶対パスは指定できません。',
         ],
+        'ownerUserId' => [
+            'not_in_group' => 'ownerUserIdは同じグループに所属するユーザーを指定してください。',
+        ],
     ],
 
     /*

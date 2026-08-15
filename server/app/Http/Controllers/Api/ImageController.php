@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\ApiController;
-use App\Http\Requests\Api\ImageBulkUploadRequest;
-use App\Http\Requests\Api\ImageBulkDestroyRequest;
+use App\Http\Requests\Api\ImageGroupBulkUploadRequest;
+use App\Http\Requests\Api\ImageUserUploadRequest;
 use App\Services\ImageService;
 use Illuminate\Http\JsonResponse;
 
@@ -19,17 +19,17 @@ class ImageController extends ApiController
 
     /**
      * @OA\Post(
-     *     path="/images/upload-bulk",
-     *     summary="画像をアップロード（単一または複数対応）",
+     *     path="/images/groups/upload-bulk",
+     *     summary="グループ画像をアップロード（単一または複数対応）",
      *     tags={"Images"},
      *     security={{"sanctum":{}}},
-     *     @OA\RequestBody(ref="#/components/requestBodies/ImageBulkUploadRequest"),
+     *     @OA\RequestBody(ref="#/components/requestBodies/ImageGroupBulkUploadRequest"),
      *     @OA\Response(response=200, ref="#/components/responses/ImageUploadBulkSuccess"),
      *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
      *     @OA\Response(response=422, ref="#/components/responses/ValidationErrors")
      * )
      */
-    public function bulkUpload(ImageBulkUploadRequest $request): JsonResponse
+    public function bulkUploadForGroup(ImageGroupBulkUploadRequest $request): JsonResponse
     {
         $operation = __('operations.image.bulk_upload');
         $failedMessage = __('api.image.upload_failed');
@@ -37,13 +37,11 @@ class ImageController extends ApiController
         return $this->executeWithExceptionHandling(
             function () use ($request) {
                 $group = $this->getUserGroup($request);
-                $validated = $request->validated();
 
                 // 画像ファイルを取得
                 $imageFiles = $this->imageService->getValidImageFiles($request, 20);
 
-                // upload_path 指定時はそのパスを使用、未指定時は groups/{group_id} 配下に保存
-                $uploadPath = $validated['upload_path'] ?? 'groups/' . $group->id;
+                $uploadPath = 'groups/' . $group->id;
 
                 // 画像をアップロード
                 $uploadedImages = collect($imageFiles)
@@ -62,32 +60,31 @@ class ImageController extends ApiController
     }
 
     /**
-     * @OA\Delete(
-     *     path="/images/bulk",
-     *     summary="画像を一括削除",
+     * @OA\Post(
+     *     path="/images/users/upload",
+     *     summary="ユーザー画像をアップロード",
      *     tags={"Images"},
      *     security={{"sanctum":{}}},
-     *     @OA\RequestBody(ref="#/components/requestBodies/ImageBulkDestroyRequest"),
-     *     @OA\Response(response=200, ref="#/components/responses/ImageDeleteBulkSuccess"),
+     *     @OA\RequestBody(ref="#/components/requestBodies/ImageUserUploadRequest"),
+     *     @OA\Response(response=200, ref="#/components/responses/ImageUploadSuccess"),
      *     @OA\Response(response=401, ref="#/components/responses/Unauthorized"),
      *     @OA\Response(response=422, ref="#/components/responses/ValidationErrors")
      * )
      */
-    public function bulkDestroy(ImageBulkDestroyRequest $request): JsonResponse
+    public function uploadForUser(ImageUserUploadRequest $request): JsonResponse
     {
-        $operation = __('operations.image.bulk_destroy');
-        $failedMessage = __('api.image.bulk_deletion_failed');
+        $operation = __('operations.image.upload');
+        $failedMessage = __('api.image.upload_failed');
 
         return $this->executeWithExceptionHandling(
             function () use ($request) {
-                $group = $this->getUserGroup($request);
-                $validated = $request->validated();
-                $imageIds = $validated['ids'];
-                $relatedId = $validated['related_id'];
-                $deletedCount = $this->imageService->deleteImages($imageIds, $relatedId, $group);
-                $message = __('api.image.bulk_deleted', ['count' => $deletedCount]);
+                $user = $request->user();
+                $file = $request->file('image');
+                $image = $this->imageService->uploadAndSaveImage($file, 'users/' . $user->id);
+                $data = $this->imageService->formatImage($image);
+                $message = __('api.image.uploaded');
 
-                return $this->deletedResponse($message);
+                return $this->showResponse($data, $message);
             },
             $request,
             $failedMessage,

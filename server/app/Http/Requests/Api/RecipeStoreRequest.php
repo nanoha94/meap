@@ -117,6 +117,17 @@ class RecipeStoreRequest extends BaseApiRequest
     public function withValidator($validator)
     {
         $validator->after(function ($validator) {
+            $ownerUserId = $this->input('ownerUserId');
+            if (is_string($ownerUserId) && Str::isUuid($ownerUserId)) {
+                $group = $this->user()?->groups()->first();
+                if ($group && ! $group->users()->where('users.id', $ownerUserId)->exists()) {
+                    $validator->errors()->add(
+                        'ownerUserId',
+                        __('validation.custom.ownerUserId.not_in_group')
+                    );
+                }
+            }
+
             $ingredients = $this->input('ingredients', []);
             $ingredientCategories = $this->input('ingredientCategories', []);
 

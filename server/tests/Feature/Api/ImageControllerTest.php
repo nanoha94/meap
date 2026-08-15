@@ -4,7 +4,6 @@ use App\Models\User;
 use App\Models\Group;
 use App\Models\Image;
 use App\Models\Color;
-use App\Models\Recipe;
 use App\Services\ImageService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -48,12 +47,12 @@ beforeEach(function () {
     $this->user->load('groups');
 });
 
-// ===== bulkUpload() メソッドのテストケース =====
+// ===== bulkUploadForGroup() メソッドのテストケース =====
 
 test('3-1-1: 【一括アップロード】 正常な画像アップロード（1 枚）', function () {
     $file = UploadedFile::fake()->image('test.jpg', 100, 100);
 
-    $response = $this->actingAs($this->user)->post('/images/upload-bulk', [
+    $response = $this->actingAs($this->user)->post('/images/groups/upload-bulk', [
         'images' => [$file]
     ]);
 
@@ -102,7 +101,7 @@ test('3-1-2: 【一括アップロード】 複数画像の一括アップロー
         UploadedFile::fake()->image('test3.jpg', 100, 100)
     ];
 
-    $response = $this->actingAs($this->user)->post('/images/upload-bulk', [
+    $response = $this->actingAs($this->user)->post('/images/groups/upload-bulk', [
         'images' => $files
     ]);
 
@@ -119,7 +118,7 @@ test('3-1-2: 【一括アップロード】 複数画像の一括アップロー
 test('3-1-3: 【一括アップロード】 グループ ID 配下に直接保存されることを確認', function () {
     $file = UploadedFile::fake()->image('test.jpg', 100, 100);
 
-    $response = $this->actingAs($this->user)->post('/images/upload-bulk', [
+    $response = $this->actingAs($this->user)->post('/images/groups/upload-bulk', [
         'images' => [$file]
     ]);
 
@@ -139,31 +138,29 @@ test('3-1-3: 【一括アップロード】 グループ ID 配下に直接保�
     expect($image->src)->not->toContain("images/groups/{$this->group->id}/recipes/");
 });
 
-test('3-1-4: 【一括アップロード】 upload_path 指定時に指定パスに保存される', function () {
+test('3-1-4: 【一括アップロード】 upload_path を送っても無視され groups 配下に保存される', function () {
     $file = UploadedFile::fake()->image('test.jpg', 100, 100);
 
-    $response = $this->actingAs($this->user)->post('/images/upload-bulk', [
+    $response = $this->actingAs($this->user)->post('/images/groups/upload-bulk', [
         'images' => [$file],
-        'upload_path' => 'users'
+        'upload_path' => 'users',
     ]);
 
     $response->assertStatus(200);
     $response->assertJson([
         'success' => true,
-        'message' => '画像を1件アップロードしました。'
+        'message' => '画像を1件アップロードしました。',
     ]);
 
-    // srcが指定パスに保存されていることを確認
     $image = Image::where('width', 100)->where('height', 100)->first();
-    expect($image->src)->toContain('images/users/');
-    // グループID配下ではないことを確認
-    expect($image->src)->not->toContain("images/groups/{$this->group->id}/");
+    expect($image->src)->toContain("images/groups/{$this->group->id}/");
+    expect($image->src)->not->toContain('images/users/');
 });
 
 test('3-1-5: 【一括アップロード】 upload_path 未指定時にグループ ID 配下に保存される', function () {
     $file = UploadedFile::fake()->image('test.jpg', 100, 100);
 
-    $response = $this->actingAs($this->user)->post('/images/upload-bulk', [
+    $response = $this->actingAs($this->user)->post('/images/groups/upload-bulk', [
         'images' => [$file]
         // upload_path を指定しない
     ]);
@@ -196,7 +193,7 @@ test('3-1-6: 【一括アップロード】 アップロードした画像から
         true
     );
 
-    $response = $this->actingAs($this->user)->post('/images/upload-bulk', [
+    $response = $this->actingAs($this->user)->post('/images/groups/upload-bulk', [
         'images' => [$file]
     ]);
 
@@ -240,7 +237,7 @@ test('3-1-6: 【一括アップロード】 アップロードした画像から
 test('3-1-7: 【一括アップロード】 長辺 2000px を超える画像は 2000px に縮小される', function () {
     $file = UploadedFile::fake()->image('test.jpg', 3000, 1500);
 
-    $response = $this->actingAs($this->user)->post('/images/upload-bulk', [
+    $response = $this->actingAs($this->user)->post('/images/groups/upload-bulk', [
         'images' => [$file]
     ]);
 
@@ -259,7 +256,7 @@ test('3-1-7: 【一括アップロード】 長辺 2000px を超える画像は 
 test('3-1-8: 【一括アップロード】 長辺 2000px 以下の画像はそのままのサイズで保存される', function () {
     $file = UploadedFile::fake()->image('test.jpg', 1000, 500);
 
-    $response = $this->actingAs($this->user)->post('/images/upload-bulk', [
+    $response = $this->actingAs($this->user)->post('/images/groups/upload-bulk', [
         'images' => [$file]
     ]);
 
@@ -287,7 +284,7 @@ test('3-1-9: 【一括アップロード】 PNG / WebP もリサイズと再保�
     foreach ($formats as $format) {
         $file = UploadedFile::fake()->image("test.{$format['ext']}", 3000, 1500);
 
-        $response = $this->actingAs($this->user)->post('/images/upload-bulk', [
+        $response = $this->actingAs($this->user)->post('/images/groups/upload-bulk', [
             'images' => [$file]
         ]);
 
@@ -312,7 +309,7 @@ test('3-1-9: 【一括アップロード】 PNG / WebP もリサイズと再保�
 test('3-1-10: 【一括アップロード】 未認証ユーザー', function () {
     $file = UploadedFile::fake()->image('test.jpg', 100, 100);
 
-    $response = $this->post('/images/upload-bulk', [
+    $response = $this->post('/images/groups/upload-bulk', [
         'images' => [$file]
     ]);
 
@@ -324,7 +321,7 @@ test('3-1-10: 【一括アップロード】 未認証ユーザー', function ()
 });
 
 test('3-1-11: 【一括アップロード】 バリデーションエラー（ファイル配列バリデーション）', function () {
-    $response = $this->actingAs($this->user)->post('/images/upload-bulk', [
+    $response = $this->actingAs($this->user)->post('/images/groups/upload-bulk', [
         'images' => 'not_an_array'
     ]);
 
@@ -337,7 +334,7 @@ test('3-1-11: 【一括アップロード】 バリデーションエラー（�
 });
 
 test('3-1-12: 【一括アップロード】 バリデーションエラー（最小ファイル数制限）', function () {
-    $response = $this->actingAs($this->user)->post('/images/upload-bulk', [
+    $response = $this->actingAs($this->user)->post('/images/groups/upload-bulk', [
         'images' => []
     ]);
 
@@ -356,7 +353,7 @@ test('3-1-13: 【一括アップロード】 バリデーションエラー（�
         $files[] = UploadedFile::fake()->image("test{$i}.jpg", 100, 100);
     }
 
-    $response = $this->actingAs($this->user)->post('/images/upload-bulk', [
+    $response = $this->actingAs($this->user)->post('/images/groups/upload-bulk', [
         'images' => $files
     ]);
 
@@ -372,7 +369,7 @@ test('3-1-14: 【一括アップロード】 バリデーションエラー（�
     // 10MBを超えるファイルを作成
     $file = UploadedFile::fake()->create('large.jpg', 11000); // 11MB
 
-    $response = $this->actingAs($this->user)->post('/images/upload-bulk', [
+    $response = $this->actingAs($this->user)->post('/images/groups/upload-bulk', [
         'images' => [$file]
     ]);
 
@@ -384,41 +381,6 @@ test('3-1-14: 【一括アップロード】 バリデーションエラー（�
     $this->assertContains('images.*には、10240 kb以下のファイルを指定してください。', $responseData['errors']['images.0']);
 });
 
-test('3-1-15: 【一括アップロード】 バリデーションエラー（upload_path パストラバーサル）', function () {
-    $file = UploadedFile::fake()->image('test.jpg', 100, 100);
-
-    $response = $this->actingAs($this->user)->post('/images/upload-bulk', [
-        'images' => [$file],
-        'upload_path' => '../etc'
-    ]);
-
-    $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['upload_path']);
-
-    // エラーメッセージの確認
-    $responseData = $response->json();
-    $this->assertContains('アップロードパスに「..」を含めることはできません。', $responseData['errors']['upload_path']);
-});
-
-test('3-1-16: 【一括アップロード】 バリデーションエラー（upload_path 最大文字数超過）', function () {
-    $file = UploadedFile::fake()->image('test.jpg', 100, 100);
-
-    // 256文字のパスを作成（制限は255文字）
-    $longPath = str_repeat('a', 256);
-
-    $response = $this->actingAs($this->user)->post('/images/upload-bulk', [
-        'images' => [$file],
-        'upload_path' => $longPath
-    ]);
-
-    $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['upload_path']);
-
-    // エラーメッセージの確認
-    $responseData = $response->json();
-    $this->assertContains('upload_pathは、255文字以内で指定してください。', $responseData['errors']['upload_path']);
-});
-
 test('3-1-17: 【一括アップロード】 グループが存在しない', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
@@ -427,7 +389,7 @@ test('3-1-17: 【一括アップロード】 グループが存在しない', fu
 
     $file = UploadedFile::fake()->image('test.jpg', 100, 100);
 
-    $response = $this->actingAs($user)->post('/images/upload-bulk', [
+    $response = $this->actingAs($user)->post('/images/groups/upload-bulk', [
         'images' => [$file]
     ]);
 
@@ -447,7 +409,7 @@ test('3-1-18: 【一括アップロード】 ImageService 例外（データベ�
 
     $file = UploadedFile::fake()->image('test.jpg', 100, 100);
 
-    $response = $this->actingAs($this->user)->post('/images/upload-bulk', [
+    $response = $this->actingAs($this->user)->post('/images/groups/upload-bulk', [
         'images' => [$file]
     ]);
 
@@ -466,7 +428,7 @@ test('3-1-19: 【一括アップロード】 ImageService 例外', function () {
 
     $file = UploadedFile::fake()->image('test.jpg', 100, 100);
 
-    $response = $this->actingAs($this->user)->post('/images/upload-bulk', [
+    $response = $this->actingAs($this->user)->post('/images/groups/upload-bulk', [
         'images' => [$file]
     ]);
 
@@ -486,7 +448,7 @@ test('3-1-20: 【一括アップロード】 ファイルアップロード失�
 
     $file = UploadedFile::fake()->image('test.jpg', 100, 100);
 
-    $response = $this->actingAs($this->user)->post('/images/upload-bulk', [
+    $response = $this->actingAs($this->user)->post('/images/groups/upload-bulk', [
         'images' => [$file]
     ]);
 
@@ -496,544 +458,101 @@ test('3-1-20: 【一括アップロード】 ファイルアップロード失�
     ]);
 });
 
-// ===== bulkDestroy() メソッドのテストケース =====
+// ===== uploadForUser() メソッドのテストケース =====
 
-test('3-1-21: 【一括削除】 正常な画像削除（1 枚）', function () {
-    // 画像をアップロードAPIで作成
-    $file = UploadedFile::fake()->image('test.jpg', 100, 100);
-    $uploadResponse = $this->actingAs($this->user)->post('/images/upload-bulk', [
-        'images' => [$file]
-    ]);
-    $imageId = $uploadResponse->json('data.0.id');
-    $relatedId = \Illuminate\Support\Str::uuid()->toString();
+test('3-1-21: 【アップロード】 正常な画像アップロード', function () {
+    $file = UploadedFile::fake()->image('avatar.jpg', 100, 100);
 
-    // image_mappingsに紐づけを作成
-    DB::table('image_mappings')->insert([
-        'image_id' => $imageId,
-        'group_id' => $this->group->id,
-        'related_model' => Recipe::class,
-        'related_id' => $relatedId,
-        'image_type' => 'thumbnail',
-        'order' => 0
-    ]);
-
-    $response = $this->actingAs($this->user)->delete('/images/bulk', [
-        'ids' => [$imageId],
-        'related_id' => $relatedId
+    $response = $this->actingAs($this->user)->post('/images/users/upload', [
+        'image' => $file,
     ]);
 
     $response->assertStatus(200);
     $response->assertJson([
         'success' => true,
-        'message' => '画像を1件削除しました。'
+        'message' => '画像をアップロードしました。',
     ]);
 
-    // レスポンス構造の確認
     $response->assertJsonStructure([
         'success',
-        'message'
+        'message',
+        'data' => [
+            'id',
+            'src',
+            'width',
+            'height',
+        ],
     ]);
 
-    // 画像レコードは残ることを確認（紐づけ解除のみ）
+    $data = $response->json('data');
+    expect($data)->toHaveKeys(['id', 'src', 'width', 'height']);
+    expect($data['width'])->toBe(100);
+    expect($data['height'])->toBe(100);
+
     $this->assertDatabaseHas('images', [
-        'id' => $imageId
+        'width' => 100,
+        'height' => 100,
     ]);
 
-    // 紐づけが解除されていることを確認
-    $mappingCount = DB::table('image_mappings')
-        ->where('image_id', $imageId)
-        ->where('related_id', $relatedId)
-        ->count();
-    expect($mappingCount)->toBe(0);
+    $image = Image::where('width', 100)->where('height', 100)->first();
+    expect($image->src)->toContain("images/users/{$this->user->id}/");
 });
 
-test('3-1-22: 【一括削除】 複数画像の一括削除', function () {
-    // 複数の画像をアップロードAPIで作成
-    $files = [
-        UploadedFile::fake()->image('test1.jpg', 100, 100),
-        UploadedFile::fake()->image('test2.jpg', 100, 100),
-        UploadedFile::fake()->image('test3.jpg', 100, 100)
-    ];
-    $uploadResponse = $this->actingAs($this->user)->post('/images/upload-bulk', [
-        'images' => $files
-    ]);
-    $imageIds = collect($uploadResponse->json('data'))->pluck('id')->toArray();
-    $relatedId = \Illuminate\Support\Str::uuid()->toString();
-
-    // image_mappingsに紐づけを作成
-    foreach ($imageIds as $imageId) {
-        DB::table('image_mappings')->insert([
-            'image_id' => $imageId,
-            'group_id' => $this->group->id,
-            'related_model' => Recipe::class,
-            'related_id' => $relatedId,
-            'image_type' => 'thumbnail',
-            'order' => 0
-        ]);
-    }
-
-    $response = $this->actingAs($this->user)->delete('/images/bulk', [
-        'ids' => $imageIds,
-        'related_id' => $relatedId
+test('3-1-22: 【アップロード】 メール未確認ユーザー', function () {
+    $unverifiedUser = User::factory()->create([
+        'email_verified_at' => null,
     ]);
 
-    $response->assertStatus(200);
+    $file = UploadedFile::fake()->image('avatar.jpg', 100, 100);
+
+    $response = $this->actingAs($unverifiedUser)->post('/images/users/upload', [
+        'image' => $file,
+    ]);
+
+    $response->assertStatus(409);
     $response->assertJson([
-        'success' => true,
-        'message' => '画像を3件削除しました。'
+        'success' => false,
+        'message' => 'Your email address is not verified.',
     ]);
-
-    // 全ての画像レコードは残ることを確認（紐づけ解除のみ）
-    foreach ($imageIds as $id) {
-        $this->assertDatabaseHas('images', ['id' => $id]);
-    }
-
-    // 全ての紐づけが解除されていることを確認
-    foreach ($imageIds as $imageId) {
-        $mappingCount = DB::table('image_mappings')
-            ->where('image_id', $imageId)
-            ->where('related_id', $relatedId)
-            ->count();
-        expect($mappingCount)->toBe(0);
-    }
-});
-
-test('3-1-23: 【一括削除】 削除成功メッセージの確認', function () {
-    // 画像をアップロードAPIで作成
-    $file = UploadedFile::fake()->image('test.jpg', 100, 100);
-    $uploadResponse = $this->actingAs($this->user)->post('/images/upload-bulk', [
-        'images' => [$file]
-    ]);
-    $imageId = $uploadResponse->json('data.0.id');
-    $relatedId = \Illuminate\Support\Str::uuid()->toString();
-
-    // image_mappingsに紐づけを作成
-    DB::table('image_mappings')->insert([
-        'image_id' => $imageId,
-        'group_id' => $this->group->id,
-        'related_model' => Recipe::class,
-        'related_id' => $relatedId,
-        'image_type' => 'thumbnail',
-        'order' => 0
-    ]);
-
-    $response = $this->actingAs($this->user)->delete('/images/bulk', [
-        'ids' => [$imageId],
-        'related_id' => $relatedId
-    ]);
-
-    $response->assertStatus(200);
-
-    // メッセージが正しく設定されていることを確認
-    $message = $response->json('message');
-    expect($message)->toBe('画像を1件削除しました。');
-});
-
-test('3-1-24: 【一括削除】 存在しない画像 ID の削除', function () {
-    $response = $this->actingAs($this->user)->delete('/images/bulk', [
-        'ids' => [\Illuminate\Support\Str::uuid()->toString()], // 存在しないID（文字列に変換）
-        'related_id' => \Illuminate\Support\Str::uuid()->toString()
-    ]);
-
-    // 存在しない画像IDを指定した場合、削除数0で正常終了する
-    $response->assertStatus(200);
-    $response->assertJson([
-        'success' => true,
-        'message' => '画像を0件削除しました。'
-    ]);
-
-    // レスポンス構造の確認
     $response->assertJsonStructure([
         'success',
-        'message'
+        'message',
     ]);
+    $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-1-25: 【一括削除】 指定した related_id との紐づけのみを解除', function () {
-    // 画像をアップロードAPIで作成
-    $file = UploadedFile::fake()->image('test.jpg', 100, 100);
-    $uploadResponse = $this->actingAs($this->user)->post('/images/upload-bulk', [
-        'images' => [$file]
-    ]);
-    $imageId = $uploadResponse->json('data.0.id');
+test('3-1-23: 【アップロード】 未認証ユーザー', function () {
+    $file = UploadedFile::fake()->image('avatar.jpg', 100, 100);
 
-    // image_mappingsに複数の紐づけを作成
-    $relatedId1 = \Illuminate\Support\Str::uuid()->toString();
-    $relatedId2 = \Illuminate\Support\Str::uuid()->toString();
-
-    // 1つ目の紐づけ
-    DB::table('image_mappings')->insert([
-        'image_id' => $imageId,
-        'group_id' => $this->group->id,
-        'related_model' => Recipe::class,
-        'related_id' => $relatedId1,
-        'image_type' => 'thumbnail',
-        'order' => 0
-    ]);
-
-    // 2つ目の紐づけ
-    DB::table('image_mappings')->insert([
-        'image_id' => $imageId,
-        'group_id' => $this->group->id,
-        'related_model' => Recipe::class,
-        'related_id' => $relatedId2,
-        'image_type' => 'thumbnail',
-        'order' => 0
-    ]);
-
-    // relatedId1との紐づけのみを解除
-    $response = $this->actingAs($this->user)->delete('/images/bulk', [
-        'ids' => [$imageId],
-        'related_id' => $relatedId1
-    ]);
-
-    $response->assertStatus(200);
-    $response->assertJson([
-        'success' => true,
-        'message' => '画像を1件削除しました。'
-    ]);
-
-    // データベースに画像が残っていることを確認（画像レコードは削除されない）
-    $this->assertDatabaseHas('images', [
-        'id' => $imageId
-    ]);
-
-    // relatedId1の紐づけは解除されていることを確認
-    $mapping1Count = DB::table('image_mappings')
-        ->where('image_id', $imageId)
-        ->where('related_id', $relatedId1)
-        ->count();
-    expect($mapping1Count)->toBe(0);
-
-    // relatedId2の紐づけは残っていることを確認
-    $mapping2Count = DB::table('image_mappings')
-        ->where('image_id', $imageId)
-        ->where('related_id', $relatedId2)
-        ->count();
-    expect($mapping2Count)->toBe(1);
-});
-
-test('3-1-26: 【一括削除】 紐づけ解除のみ（他の紐づけなしでも物理削除は行わない）', function () {
-    // 画像をアップロードAPIで作成
-    $file = UploadedFile::fake()->image('test.jpg', 100, 100);
-    $uploadResponse = $this->actingAs($this->user)->post('/images/upload-bulk', [
-        'images' => [$file]
-    ]);
-    $imageId = $uploadResponse->json('data.0.id');
-    $relatedId = \Illuminate\Support\Str::uuid()->toString();
-
-    // image_mappingsに紐づけを作成（1つのみ）
-    DB::table('image_mappings')->insert([
-        'image_id' => $imageId,
-        'group_id' => $this->group->id,
-        'related_model' => Recipe::class,
-        'related_id' => $relatedId,
-        'image_type' => 'thumbnail',
-        'order' => 0
-    ]);
-
-    // 紐づけを解除（物理削除は行わない）
-    $response = $this->actingAs($this->user)->delete('/images/bulk', [
-        'ids' => [$imageId],
-        'related_id' => $relatedId
-    ]);
-
-    $response->assertStatus(200);
-    $response->assertJson([
-        'success' => true,
-        'message' => '画像を1件削除しました。'
-    ]);
-
-    // 画像レコードは残ることを確認（紐づけ解除のみ）
-    $this->assertDatabaseHas('images', [
-        'id' => $imageId
-    ]);
-
-    // 紐づけが解除されていることを確認
-    $mappingCount = DB::table('image_mappings')
-        ->where('image_id', $imageId)
-        ->where('related_id', $relatedId)
-        ->count();
-    expect($mappingCount)->toBe(0);
-});
-
-test('3-1-27: 【一括削除】 複数の画像で紐づけ解除のみ', function () {
-    // 2つの画像をアップロードAPIで作成
-    $files = [
-        UploadedFile::fake()->image('test1.jpg', 100, 100),
-        UploadedFile::fake()->image('test2.jpg', 100, 100)
-    ];
-    $uploadResponse = $this->actingAs($this->user)->post('/images/upload-bulk', [
-        'images' => $files
-    ]);
-    $imageIds = collect($uploadResponse->json('data'))->pluck('id')->toArray();
-    $imageId1 = $imageIds[0];
-    $imageId2 = $imageIds[1];
-
-    $relatedId1 = \Illuminate\Support\Str::uuid()->toString();
-    $relatedId2 = \Illuminate\Support\Str::uuid()->toString();
-    $relatedId3 = \Illuminate\Support\Str::uuid()->toString();
-
-    // imageId1に1つの紐づけのみ作成
-    DB::table('image_mappings')->insert([
-        'image_id' => $imageId1,
-        'group_id' => $this->group->id,
-        'related_model' => Recipe::class,
-        'related_id' => $relatedId1,
-        'image_type' => 'thumbnail',
-        'order' => 0
-    ]);
-
-    // imageId2に2つの紐づけを作成
-    DB::table('image_mappings')->insert([
-        'image_id' => $imageId2,
-        'group_id' => $this->group->id,
-        'related_model' => Recipe::class,
-        'related_id' => $relatedId2,
-        'image_type' => 'thumbnail',
-        'order' => 0
-    ]);
-    DB::table('image_mappings')->insert([
-        'image_id' => $imageId2,
-        'group_id' => $this->group->id,
-        'related_model' => Recipe::class,
-        'related_id' => $relatedId3,
-        'image_type' => 'thumbnail',
-        'order' => 0
-    ]);
-
-    // 両方の画像のrelatedId1との紐づけを解除
-    $response = $this->actingAs($this->user)->delete('/images/bulk', [
-        'ids' => $imageIds,
-        'related_id' => $relatedId1
-    ]);
-
-    $response->assertStatus(200);
-    // 両方とも紐づけ解除のみ（物理削除は行わない）
-    $response->assertJson([
-        'success' => true,
-        'message' => '画像を1件削除しました。'
-    ]);
-
-    // imageId1は残っていることを確認（紐づけ解除のみ、物理削除は行わない）
-    $this->assertDatabaseHas('images', [
-        'id' => $imageId1
-    ]);
-
-    // imageId2は残っていることを確認（紐づけ解除のみ）
-    $this->assertDatabaseHas('images', [
-        'id' => $imageId2
-    ]);
-
-    // imageId1のrelatedId1の紐づけは解除されていることを確認
-    $mapping1Count = DB::table('image_mappings')
-        ->where('image_id', $imageId1)
-        ->where('related_id', $relatedId1)
-        ->count();
-    expect($mapping1Count)->toBe(0);
-
-    // imageId2のrelatedId1の紐づけは解除されていることを確認
-    $mapping1Count2 = DB::table('image_mappings')
-        ->where('image_id', $imageId2)
-        ->where('related_id', $relatedId1)
-        ->count();
-    expect($mapping1Count2)->toBe(0);
-
-    // imageId2のrelatedId2の紐づけは残っていることを確認
-    $mapping2Count = DB::table('image_mappings')
-        ->where('image_id', $imageId2)
-        ->where('related_id', $relatedId2)
-        ->count();
-    expect($mapping2Count)->toBe(1);
-
-    // imageId2のrelatedId3の紐づけは残っていることを確認
-    $mapping3Count = DB::table('image_mappings')
-        ->where('image_id', $imageId2)
-        ->where('related_id', $relatedId3)
-        ->count();
-    expect($mapping3Count)->toBe(1);
-});
-
-test('3-1-28: 【一括削除】 未認証ユーザー', function () {
-    $response = $this->delete('/images/bulk', [
-        'ids' => [\Illuminate\Support\Str::uuid()],
-        'related_id' => \Illuminate\Support\Str::uuid()
+    $response = $this->post('/images/users/upload', [
+        'image' => $file,
     ]);
 
     $response->assertStatus(401);
     $response->assertJson([
         'success' => false,
-        'message' => '認証が必要です。'
+        'message' => '認証が必要です。',
     ]);
 });
 
-test('3-1-29: 【一括削除】 バリデーションエラー（削除 ID 配列バリデーション）', function () {
-    $response = $this->actingAs($this->user)->delete('/images/bulk', [
-        'ids' => 'not_an_array',
-        'related_id' => \Illuminate\Support\Str::uuid()->toString()
-    ]);
+test('3-1-24: 【アップロード】 バリデーションエラー（image 必須）', function () {
+    $response = $this->actingAs($this->user)->post('/images/users/upload', []);
 
     $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['ids']);
+    $response->assertJsonValidationErrors(['image']);
 
-    // エラーメッセージの確認
     $responseData = $response->json();
-    $this->assertContains('idsは配列でなくてはなりません。', $responseData['errors']['ids']);
+    $this->assertContains('imageは必ず指定してください。', $responseData['errors']['image']);
 });
 
-test('3-1-30: 【一括削除】 バリデーションエラー（削除 ID 最小数制限）', function () {
-    $response = $this->actingAs($this->user)->delete('/images/bulk', [
-        'ids' => [],
-        'related_id' => \Illuminate\Support\Str::uuid()->toString()
+test('3-1-25: 【アップロード】 バリデーションエラー（ファイル形式不正）', function () {
+    $file = UploadedFile::fake()->create('document.pdf', 100);
+
+    $response = $this->actingAs($this->user)->post('/images/users/upload', [
+        'image' => $file,
     ]);
 
     $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['ids']);
-
-    // エラーメッセージの確認
-    $responseData = $response->json();
-    $this->assertContains('idsは必ず指定してください。', $responseData['errors']['ids']);
-});
-
-test('3-1-31: 【一括削除】 バリデーションエラー（削除 ID UUID 形式バリデーション）', function () {
-    $response = $this->actingAs($this->user)->delete('/images/bulk', [
-        'ids' => ['invalid-uuid-format'],
-        'related_id' => \Illuminate\Support\Str::uuid()->toString()
-    ]);
-
-    $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['ids.0']);
-
-    // エラーメッセージの確認
-    $responseData = $response->json();
-    $this->assertContains('ids.*に有効なUUIDを指定してください。', $responseData['errors']['ids.0']);
-});
-
-test('3-1-32: 【一括削除】 バリデーションエラー（related_id 必須項目）', function () {
-    $response = $this->actingAs($this->user)->delete('/images/bulk', [
-        'ids' => [\Illuminate\Support\Str::uuid()->toString()]
-    ]);
-
-    $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['related_id']);
-
-    // エラーメッセージの確認
-    $responseData = $response->json();
-    $this->assertContains('related_idは必ず指定してください。', $responseData['errors']['related_id']);
-});
-
-test('3-1-33: 【一括削除】 バリデーションエラー（related_id UUID 形式）', function () {
-    $response = $this->actingAs($this->user)->delete('/images/bulk', [
-        'ids' => [\Illuminate\Support\Str::uuid()->toString()],
-        'related_id' => 'invalid-uuid-format'
-    ]);
-
-    $response->assertStatus(422);
-    $response->assertJsonValidationErrors(['related_id']);
-
-    // エラーメッセージの確認
-    $responseData = $response->json();
-    $this->assertContains('related_idに有効なUUIDを指定してください。', $responseData['errors']['related_id']);
-});
-
-test('3-1-34: 【一括削除】 グループが存在しない', function () {
-    $user = User::factory()->create([
-        'email_verified_at' => now()
-    ]);
-    // グループに所属させない
-
-    // デバッグ: ユーザーのグループを確認
-    $userGroup = $user->groups()->first();
-    expect($userGroup)->toBeNull();
-
-    // 任意の画像IDを使用（実際には検証前にエラーになるため）
-    $response = $this->actingAs($user)->delete('/images/bulk', [
-        'ids' => [\Illuminate\Support\Str::uuid()],
-        'related_id' => \Illuminate\Support\Str::uuid()
-    ]);
-
-    $response->assertStatus(422);
-    $response->assertJson([
-        'success' => false,
-        'message' => 'ユーザーはグループに所属していません。'
-    ]);
-});
-
-test('3-1-35: 【一括削除】 ImageService 例外（データベースエラー）', function () {
-    // 画像をアップロードAPIで作成
-    $file = UploadedFile::fake()->image('test.jpg', 100, 100);
-    $uploadResponse = $this->actingAs($this->user)->post('/images/upload-bulk', [
-        'images' => [$file]
-    ]);
-    $imageId = $uploadResponse->json('data.0.id');
-    $relatedId = \Illuminate\Support\Str::uuid()->toString();
-
-    // ImageServiceのメソッドで例外を発生させる
-    $this->mock(ImageService::class, function ($mock) {
-        $mock->shouldReceive('deleteImages')
-            ->andThrow(new \Exception('Database connection error'));
-    });
-
-    $response = $this->actingAs($this->user)->delete('/images/bulk', [
-        'ids' => [$imageId],
-        'related_id' => $relatedId
-    ]);
-
-    $response->assertStatus(500);
-    $response->assertJson([
-        'success' => false
-    ]);
-});
-
-test('3-1-36: 【一括削除】 ImageService 例外', function () {
-    // 画像をアップロードAPIで作成
-    $file = UploadedFile::fake()->image('test.jpg', 100, 100);
-    $uploadResponse = $this->actingAs($this->user)->post('/images/upload-bulk', [
-        'images' => [$file]
-    ]);
-    $imageId = $uploadResponse->json('data.0.id');
-    $relatedId = \Illuminate\Support\Str::uuid()->toString();
-
-    // ImageServiceのメソッドで例外を発生させる
-    $this->mock(ImageService::class, function ($mock) {
-        $mock->shouldReceive('deleteImages')
-            ->andThrow(new \Exception('ImageService error'));
-    });
-
-    $response = $this->actingAs($this->user)->delete('/images/bulk', [
-        'ids' => [$imageId],
-        'related_id' => $relatedId
-    ]);
-
-    $response->assertStatus(500);
-    $response->assertJson([
-        'success' => false
-    ]);
-});
-
-test('3-1-37: 【一括削除】 ImageService の deleteImages 内で想定外エラー', function () {
-    // 画像をアップロードAPIで作成
-    $file = UploadedFile::fake()->image('test.jpg', 100, 100);
-    $uploadResponse = $this->actingAs($this->user)->post('/images/upload-bulk', [
-        'images' => [$file]
-    ]);
-    $imageId = $uploadResponse->json('data.0.id');
-    $relatedId = \Illuminate\Support\Str::uuid()->toString();
-
-    // 本APIは紐づけ解除のみでファイル削除を行わない。ImageService::deleteImages 内で想定外エラーが発生した場合の 500 を検証
-    $this->mock(ImageService::class, function ($mock) {
-        $mock->shouldReceive('deleteImages')
-            ->andThrow(new \Exception('File delete failed'));
-    });
-
-    $response = $this->actingAs($this->user)->delete('/images/bulk', [
-        'ids' => [$imageId],
-        'related_id' => $relatedId
-    ]);
-
-    $response->assertStatus(500);
-    $response->assertJson([
-        'success' => false
-    ]);
+    $response->assertJsonValidationErrors(['image']);
 });
 
