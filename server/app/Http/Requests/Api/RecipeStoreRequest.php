@@ -18,7 +18,7 @@ class RecipeStoreRequest extends BaseApiRequest
     {
         return [
             'name' => 'string|max:255|required',
-            'url' => 'string|max:2048|nullable',
+            'url' => 'nullable|string|url|regex:/^https?:\/\//i|max:2048',
             'thumbnailId' => 'uuid|nullable',
             'categoryIds' => 'array|nullable',
             'categoryIds.*' => 'uuid|required',
@@ -60,6 +60,8 @@ class RecipeStoreRequest extends BaseApiRequest
             'name.max' => __('validation.max.string', ['attribute' => 'name', 'max' => 255]),
             'name.required' => __('validation.required', ['attribute' => 'name']),
             'url.string' => __('validation.string', ['attribute' => 'url']),
+            'url.url' => __('validation.url', ['attribute' => 'url']),
+            'url.regex' => __('validation.regex', ['attribute' => 'url']),
             'url.max' => __('validation.max.string', ['attribute' => 'url', 'max' => 2048]),
             'thumbnailId.uuid' => __('validation.uuid', ['attribute' => 'thumbnailId']),
             'categoryIds.array' => __('validation.array', ['attribute' => 'categoryIds']),

@@ -7156,3 +7156,40 @@ test('3-7-267: 【更新】 他グループユーザーを ownerUserId に指定
     $recipe = Recipe::find($recipeId);
     expect($recipe->owner_user_id)->toBe($this->user->id);
 });
+
+test('3-7-268: 【新規作成】 バリデーションエラー（url が http(s) スキームでない）', function () {
+    $data = [
+        'name' => 'カレーライス',
+        'url' => 'ftp://example.com/recipe',
+        'ownerUserId' => $this->user->id,
+    ];
+
+    $response = $this->actingAs($this->user)->post('/recipes', $data);
+
+    $response->assertStatus(422);
+    $response->assertJsonValidationErrors(['url']);
+
+    $responseData = $response->json();
+    $this->assertContains('urlに正しい形式を指定してください。', $responseData['errors']['url']);
+});
+
+test('3-7-269: 【更新】 バリデーションエラー（url が http(s) スキームでない）', function () {
+    $this->actingAs($this->user)->post('/recipes', [
+        'name' => 'カレーライス',
+        'servingCount' => 4,
+        'ownerUserId' => $this->user->id,
+    ]);
+    $recipeId = getRecipeIdAfterStore($this->group);
+
+    $response = $this->actingAs($this->user)->put("/recipes/{$recipeId}", [
+        'name' => 'カレーライス',
+        'url' => 'ftp://example.com/recipe',
+        'ownerUserId' => $this->user->id,
+    ]);
+
+    $response->assertStatus(422);
+    $response->assertJsonValidationErrors(['url']);
+
+    $responseData = $response->json();
+    $this->assertContains('urlに正しい形式を指定してください。', $responseData['errors']['url']);
+});

@@ -34,9 +34,13 @@ class PasswordResetLinkController extends Controller
                     $request->only('email')
                 );
 
+                if ($status === Password::INVALID_USER) {
+                    // ユーザー列挙を防ぐため、存在しないメールでも成功レスポンスを返す
+                    return $this->successResponse(null, __('passwords.sent'));
+                }
+
                 if ($status != Password::RESET_LINK_SENT) {
                     $statusMessages = [
-                        Password::INVALID_USER => HttpStatusCode::UNPROCESSABLE_ENTITY, // 422
                         Password::RESET_THROTTLED => HttpStatusCode::TOO_MANY_REQUESTS, // 429
                         CustomPasswordBroker::RETRY_TOKEN => HttpStatusCode::INTERNAL_SERVER_ERROR // 500
                     ];

@@ -24,8 +24,8 @@ test('2-4-2: 存在しないユーザー', function () {
     $response = $this->postJson(route('password.request'), [
         'email' => 'nonexistent@example.com',
     ]);
-    $response->assertStatus(422);
-    $response->assertJson(['message' => '指定されたメールアドレスのユーザーが見つかりませんでした。', 'errors' => []]);
+    $response->assertStatus(200);
+    $response->assertJson(['message' => 'パスワードリセットリンクをメールで送信しました。']);
 });
 
 test('2-4-3: メールアドレス未入力', function () {

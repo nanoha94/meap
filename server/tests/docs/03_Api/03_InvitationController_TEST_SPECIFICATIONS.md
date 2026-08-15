@@ -47,6 +47,8 @@ InvitationController のテストケースの詳細仕様を示します。グ�
 | 3-3-38 | 【グループ参加】 画像が存在する場合                            | 異常系 | 参加ユーザーの現グループに画像が1件以上存在。isDelete 未指定または false                                                                                                                       | 同上                                                          | `InvitationController::join()`  |
 | 3-3-39 | 【グループ参加】 データベース接続エラー                        | 異常系 | データベース接続が失敗                                                                                                                                                                         | HTTP 500 Internal Server Error                                | `InvitationController::join()`  |
 | 3-3-40 | 【グループ参加】 GroupUserMapping 作成失敗                     | 異常系 | GroupUserMapping::create() が失敗                                                                                                                                                              | HTTP 500 Internal Server Error                                | `InvitationController::join()`  |
+| 3-3-41 | 【トークン詳細取得】 有効期限切れトークンでの詳細取得          | 異常系 | 有効期限切れのトークンを提供                                                                                                                                                                   | HTTP 410 Gone                                                 | `InvitationController::show()`  |
+| 3-3-42 | 【グループ参加】 参加成功後にトークンが削除される              | 正常系 | 有効なトークンで参加成功                                                                                                                                                                       | 招待トークン行が DB から削除される                            | `InvitationController::join()`  |
 
 ## テスト実行方法
 

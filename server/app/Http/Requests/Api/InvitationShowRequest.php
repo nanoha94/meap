@@ -32,6 +32,14 @@ class InvitationShowRequest extends BaseApiRequest
             );
         }
 
+        // 有効期限切れ → 410 Gone
+        if ($this->invitationToken->expires_at < now()) {
+            throw new HttpException(
+                HttpStatusCode::GONE->value,
+                __('api.invitation.token_expired')
+            );
+        }
+
         return parent::authorize();
     }
 

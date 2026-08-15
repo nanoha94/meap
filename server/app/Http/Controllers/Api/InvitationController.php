@@ -164,6 +164,9 @@ class InvitationController extends ApiController
                     MasterService::forgetGroupCache($joinGroup);
                     MasterService::forgetGroupCache($currentGroup);
 
+                    // 使用済みトークンを削除（再利用防止）
+                    $invitationToken->delete();
+
                     $message = __('api.invitation.joined_successfully');
 
                     return $this->successResponse(null, $message);

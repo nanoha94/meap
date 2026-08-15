@@ -275,6 +275,8 @@ RecipeController のテストケースの詳細仕様を示します。料理の
 | 3-7-265 | 【新規作成】 他グループユーザーを ownerUserId に指定 | 異常系 | 他グループ所属ユーザーの ID を ownerUserId に指定 | HTTP 422 Validation Error | `RecipeController::store()` |
 | 3-7-266 | 【更新】 同一グループなら ownerUserId を変更できる | 正常系 | 同一グループ内の別ユーザーを ownerUserId に指定 | HTTP 200 JSON success、DB 上の owner_user_id が更新される | `RecipeController::update()` |
 | 3-7-267 | 【更新】 他グループユーザーを ownerUserId に指定 | 異常系 | 他グループ所属ユーザーの ID を ownerUserId に指定 | HTTP 422 Validation Error、DB 上の owner_user_id は維持 | `RecipeController::update()` |
+| 3-7-268 | 【新規作成】 バリデーションエラー（url が http(s) スキームでない） | 異常系 | url に ftp:// 等を指定 | HTTP 422 Validation Error | `RecipeController::store()` |
+| 3-7-269 | 【更新】 バリデーションエラー（url が http(s) スキームでない） | 異常系 | url に ftp:// 等を指定 | HTTP 422 Validation Error | `RecipeController::update()` |
 
 ## テスト実行方法
 

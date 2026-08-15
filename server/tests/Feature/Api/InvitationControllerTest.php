@@ -1585,3 +1585,85 @@ test('3-3-40: 【グループ参加】 GroupUserMapping 作成失敗', function 
     // Content-Typeがapplication/jsonであることを確認
     $response->assertHeader('Content-Type', 'application/json');
 });
+
+test('3-3-41: 【トークン詳細取得】 有効期限切れトークンでの詳細取得', function () {
+    $inviter = User::factory()->create([
+        'email_verified_at' => now(),
+    ]);
+    $group = Group::create([
+        'group_size' => 1,
+    ]);
+    DB::table('group_user_mappings')->insert([
+        'user_id' => $inviter->id,
+        'group_id' => $group->id,
+    ]);
+
+    $invitationTokenService = app(InvitationTokenService::class);
+    $plainToken = $invitationTokenService->generateToken();
+    InvitationToken::create([
+        'inviter_user_id' => $inviter->id,
+        'token' => Hash::make($plainToken),
+        'expires_at' => Carbon::now()->subHour(),
+    ]);
+
+    $user = User::factory()->create([
+        'email_verified_at' => now(),
+    ]);
+    $userGroup = Group::create([
+        'group_size' => 1,
+    ]);
+    DB::table('group_user_mappings')->insert([
+        'user_id' => $user->id,
+        'group_id' => $userGroup->id,
+    ]);
+
+    $response = $this->actingAs($user)->get("/invitations/{$plainToken}");
+
+    $response->assertStatus(410);
+    $response->assertJson([
+        'success' => false,
+        'message' => '招待トークンの有効期限が切れています。',
+    ]);
+    $response->assertHeader('Content-Type', 'application/json');
+});
+
+test('3-3-42: 【グループ参加】 参加成功後にトークンが削除される', function () {
+    $inviter = User::factory()->create([
+        'email_verified_at' => now(),
+    ]);
+    $inviterGroup = Group::create([
+        'group_size' => 1,
+    ]);
+    DB::table('group_user_mappings')->insert([
+        'user_id' => $inviter->id,
+        'group_id' => $inviterGroup->id,
+    ]);
+
+    $joinUser = User::factory()->create([
+        'email_verified_at' => now(),
+    ]);
+    $joinUserGroup = Group::create([
+        'group_size' => 1,
+    ]);
+    DB::table('group_user_mappings')->insert([
+        'user_id' => $joinUser->id,
+        'group_id' => $joinUserGroup->id,
+    ]);
+
+    $tokenResponse = $this->actingAs($inviter)->post('/invitations');
+    $plainToken = $tokenResponse->json('data.token');
+
+    expect(InvitationToken::count())->toBe(1);
+
+    $response = $this->actingAs($joinUser)->post("/invitations/{$plainToken}/join", [
+        'isDelete' => true,
+    ]);
+
+    $response->assertStatus(200);
+    $response->assertJson([
+        'success' => true,
+        'message' => 'グループに参加しました。',
+    ]);
+
+    expect(InvitationToken::count())->toBe(0);
+});

@@ -23,6 +23,8 @@ const lineTitleWrapperStyle =
 
 const lineTitleStyle = 'z-10 px-5 text-xl md:text-2xl bg-primary-background';
 
+const isHttpRecipeUrl = (url: string): boolean => /^https?:\/\//i.test(url);
+
 const RecipeDetailPage = ({
     fetchedRecipe,
     errorMessage,
@@ -185,13 +187,17 @@ const RecipeDetailPage = ({
                         {fetchedRecipe?.url && (
                             <div className="flex flex-col gap-y-1">
                                 <div className="text-xl font-bold">レシピ</div>
-                                <a
-                                    href={fetchedRecipe?.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="break-all text-primary-main underline transition-colors hover:text-accent-main">
-                                    {fetchedRecipe?.url}
-                                </a>
+                                {isHttpRecipeUrl(fetchedRecipe.url) ? (
+                                    <a
+                                        href={fetchedRecipe.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="break-all text-primary-main underline transition-colors hover:text-accent-main">
+                                        {fetchedRecipe.url}
+                                    </a>
+                                ) : (
+                                    <span className="break-all">{fetchedRecipe.url}</span>
+                                )}
                             </div>
                         )}
                         {/* 手順 */}

@@ -50,6 +50,13 @@ cd server
 
 - 本番 Docker デプロイでは **Start Command を設定しない**（`ENTRYPOINT` の `docker-entrypoint.sh` に任せる）。詳細は [docs/Railway_本番マイグレーション手順.md](docs/Railway_本番マイグレーション手順.md)。
 
+### CORS
+
+API の CORS 許可オリジンは `server/config/cors.php` で設定しています。
+
+- **本番:** `FRONTEND_URL`（例: Vercel の URL）のみが許可されます。Railway の API 環境変数にフロントの URL を設定してください。
+- **ローカル開発:** `http://localhost:8000` / `https://localhost:8000` は Swagger 等の開発用途のため `allowed_origins` に含めています。本番では `FRONTEND_URL` のみが有効な運用になります。
+
 ### マイグレーション
 
 本番環境でのマイグレーションは、必ず次のコマンドを使用してください。
