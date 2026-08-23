@@ -85,7 +85,7 @@ const RecipeDetailPage = ({
             hasBackButton={true}
             rightContent={
                 <div className="flex items-center gap-x-4">
-                    <HeaderTextButton colorVariant={COLOR_VARIANT.SECONDARY}
+                    <HeaderTextButton
                         href={`/recipe/${fetchedRecipe?.id}/edit`}>
                         <Pencil size={20} strokeWidth={2} />
                         編集
@@ -192,7 +192,7 @@ const RecipeDetailPage = ({
                                         href={fetchedRecipe.url}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="break-all text-primary-main underline transition-colors hover:text-accent-main">
+                                        className="break-all text-primary-main underline transition-opacity hover:opacity-80">
                                         {fetchedRecipe.url}
                                     </a>
                                 ) : (

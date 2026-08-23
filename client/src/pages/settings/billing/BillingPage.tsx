@@ -498,7 +498,7 @@ const PastInvoicesSection = ({ pastInvoices }: PastInvoicesSectionProps) => {
                                         href={invoice.invoiceUrl}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-x-1 text-base text-accent-main font-bold transition-opacity hover:opacity-80">
+                                        className="inline-flex items-center gap-x-1 text-base font-bold text-primary-main underline transition-opacity hover:opacity-80">
                                         <ExternalLink
                                             size={14}
                                             strokeWidth={3}

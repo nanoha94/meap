@@ -39,7 +39,6 @@ export const getPlanActionButtonConfig = (
                 label: '変更を取り消す',
                 onClick: () => handlers.onResume(),
                 variant: BUTTON_VARIANT.FILLED,
-                colorVariant: COLOR_VARIANT.PRIMARY,
                 disabled: false,
             };
         } else {
@@ -52,7 +51,6 @@ export const getPlanActionButtonConfig = (
             label: 'このプランを選択',
             onClick: () => handlers.onSubscribe(),
             variant: BUTTON_VARIANT.FILLED,
-            colorVariant: COLOR_VARIANT.PRIMARY,
             disabled: false,
         };
     }

@@ -1,4 +1,4 @@
-import { COLOR_VARIANT } from "./colors";
+import { COLOR_VARIANT } from './colors';
 
 export const BUTTON_TYPE = {
     SUBMIT: 'submit',
@@ -37,6 +37,7 @@ export const PRIMARY_BUTTON_COLOR_CLASS: Record<
         [COLOR_VARIANT.PRIMARY]:
             'text-primary-main border-2 border-primary-main hover:bg-primary-light',
         [COLOR_VARIANT.GRAY]: 'text-gray-main border-2 border-gray-main hover:bg-gray-light',
-        [COLOR_VARIANT.ALERT]: 'text-alert-main border-2 border-alert-main hover:bg-alert-light',
+        [COLOR_VARIANT.ALERT]:
+            'text-alert-main border-2 border-alert-main hover:bg-alert-background',
     },
 };

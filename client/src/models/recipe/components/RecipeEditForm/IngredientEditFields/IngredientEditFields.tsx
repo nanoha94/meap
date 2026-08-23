@@ -11,7 +11,7 @@ import {
     IngredientCategoryEditForm,
     TextButton,
 } from '@/components';
-import { COLOR_VARIANT, TMP_ID_PREFIX } from '@/constants';
+import { TMP_ID_PREFIX } from '@/constants';
 import { useDialog, useItemAndCategoryDnd } from '@/hooks';
 import { defaultIngredientItem, formatIngredient } from '@/models/ingredient';
 import { RecipeEditFormData } from '@/models/recipe/types';
@@ -319,7 +319,6 @@ const IngredientEditFields = ({ control, errors }: Props) => {
                 )}
             </div>
             <TextButton
-                colorVariant={COLOR_VARIANT.SECONDARY}
                 onClick={() => {
                     openDialog({
                         title: '材料カテゴリーを設定',

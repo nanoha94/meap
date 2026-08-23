@@ -16,18 +16,19 @@ const tailwindConfig = {
                 background: '#F5F5F5',
             },
             primary: {
-                main: '#A37F60',
+                main: '#927256',
                 light: '#FCE7D0',
                 background: '#FEFAF5',
             },
             secondary: {
+                dark: '#69753F',
                 main: '#7E8B55',
                 light: '#CDD59A',
                 background: '#F6F8ED',
             },
             accent: {
                 main: '#A36062',
-                light: '#D69E9F',
+                light: '#eed8d8',
                 background: '#F6F0F0',
             },
 

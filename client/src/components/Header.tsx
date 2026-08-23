@@ -34,7 +34,7 @@ const Header = ({ title, maxWidth = '1000px', leftContent, rightContent, hasBack
                         className="p-1 appearance-none rounded-full transition-colors hover:bg-gray-light">
                         <ChevronLeft color={colors.black} size={24} />
                     </button>}
-                    <h2 className="font-bold text-xl text-gray-800">
+                    <h2 className="font-bold text-xl">
                         {title}
                     </h2>
                     {leftContent}

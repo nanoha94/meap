@@ -41,7 +41,7 @@ const Page = () => {
             <main className="flex justify-center px-4 py-12">
                 <article className="w-full max-w-5xl">
                     <div className="mb-10">
-                        <p className="mb-2 text-sm font-bold text-secondary-main">
+                        <p className="mb-2 text-sm font-bold text-primary-main">
                             ヘルプ
                         </p>
                         <h1 className="mb-4 text-2xl font-bold sm:text-3xl">
@@ -209,7 +209,7 @@ const Page = () => {
                         <FaqList />
                     </Section>
 
-                    <div className="mt-10 rounded-xl border border-secondary-light bg-secondary-background p-5">
+                    <div className="mt-10 rounded-xl border border-primary-light bg-primary-background p-5">
                         <p>
                             プラン変更は設定画面の「プラン管理」から行えます。
                             料金の詳細は
@@ -254,7 +254,7 @@ const Timeline = ({ steps }: TimelineProps) => (
     <div className="max-w-3xl space-y-4">
         {steps.map((step, i) => (
             <div key={i} className="rounded-xl border bg-white px-5 py-4 shadow-card">
-                <p className="mb-1 font-bold text-secondary-main">
+                <p className="mb-1 font-bold text-primary-main">
                     {step.date}
                 </p>
                 <p className="mb-2 text-lg font-bold">{step.title}</p>
@@ -293,7 +293,7 @@ const CalcLine = ({ label, amount, muted, bold }: CalcLineProps) => (
             {label}
         </span>
         <span
-            className={`shrink-0 font-mono ${muted ? 'text-gray-main' : bold ? 'text-lg font-bold text-secondary-main' : ''}`}>
+            className={`shrink-0 font-mono ${muted ? 'text-gray-main' : bold ? 'text-lg font-bold text-primary-main' : ''}`}>
             {amount}
         </span>
     </div>
@@ -358,7 +358,7 @@ const badgeStyles = {
 const Section = ({ title, icon, badge, children }: SectionProps) => (
     <section className="mb-12">
         <div className="mb-5 flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2 text-secondary-main">{icon}</div>
+            <div className="flex items-center gap-2 text-primary-main">{icon}</div>
             <h2 className="text-xl font-bold sm:text-2xl">{title}</h2>
             {badge && (
                 <span

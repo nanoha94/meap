@@ -45,7 +45,7 @@ const FooterNavigation = ({ className }: Props) => {
                     key={idx}
                     href={formattedLink(v.link)}
                     prefetch={false}
-                    className={`py-2 px-0.5 flex-1 transition-colors hover:bg-gray-ligh ${pathname === v.link ? 'pointer-events-none' : ''}`}>
+                    className={`py-2 px-0.5 flex-1 transition-colors ${pathname === v.link ? 'pointer-events-none' : ''}`}>
                     <div className="relative mx-auto w-16 h-auto aspect-square rounded-full transition-colors hover:bg-gray-light">
                         <div
                             className={`absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 flex flex-col items-center gap-y-0.5 text-xs font-bold whitespace-nowrap ${pathname === v.link ? 'text-primary-main' : 'text-black'} `}>

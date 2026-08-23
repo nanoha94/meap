@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { TextButton, } from '@/components';
-import { BUTTON_TYPE, BUTTON_VARIANT, COLOR_VARIANT, LINK_TO } from '@/constants';
+import { BUTTON_TYPE, BUTTON_VARIANT, LINK_TO } from '@/constants';
 import { ChevronRight } from 'lucide-react';
 import { useAiUsageStore } from '@/stores';
 
@@ -33,7 +33,6 @@ const AiUsageLimitUpsell = ({ className }: Props) => {
             </p>
             <TextButton
                 type={BUTTON_TYPE.BUTTON}
-                colorVariant={COLOR_VARIANT.PRIMARY}
                 variant={BUTTON_VARIANT.FILLED}
                 href={LINK_TO.SETTINGS.BILLING} className='self-end'>
                 プラン変更・買い切りパック購入

@@ -167,7 +167,7 @@ const PlanEditPage = ({ selectedDate, fetchMealPlan, errorMessage }: Props) => {
                     />
                 </div>
             } rightContent={
-                <HeaderTextButton type={BUTTON_TYPE.SUBMIT} form="plan-edit-form" colorVariant={COLOR_VARIANT.SECONDARY} disabled={isDisabledSendButton}>
+                <HeaderTextButton type={BUTTON_TYPE.SUBMIT} form="plan-edit-form" disabled={isDisabledSendButton}>
                     <Save size={20} strokeWidth={2} />
                     保存
                 </HeaderTextButton >}

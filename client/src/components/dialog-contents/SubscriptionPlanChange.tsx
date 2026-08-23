@@ -120,12 +120,11 @@ const PlanColumn = ({
 
     return (
         <BillingOptionCard
-            variant={isCurrentPlan ? 'current' : 'default'}
             badge={
                 isCurrentPlan
                     ? {
                         label: '現在のプラン',
-                        colorVariant: COLOR_VARIANT.SECONDARY,
+                        colorVariant: COLOR_VARIANT.GRAY,
                     }
                     : undefined
             }
@@ -155,7 +154,9 @@ const PlanColumn = ({
                         </Button>
                     )}
                 </>
-            }>
+            }
+            className={isCurrentPlan ? 'border-gray-main border-2' : undefined}
+        >
             <dl className="flex flex-col gap-y-4 text-sm">
                 <div>
                     <dt className="mb-1 text-xs font-bold text-gray-main">

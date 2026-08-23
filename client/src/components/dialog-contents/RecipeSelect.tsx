@@ -185,7 +185,6 @@ const RecipeSelect = ({ initFetchedRecipes, defaultItems, onSave }: Props) => {
                         </div>
                         <TextButton
                             type={BUTTON_TYPE.BUTTON}
-                            colorVariant={COLOR_VARIANT.SECONDARY}
                             onClick={() => { router.push(LINK_TO.RECIPE.NEW); closeDialog(false); }}>
                             料理/レシピを追加
                             <ChevronRight size={20} />
@@ -196,7 +195,6 @@ const RecipeSelect = ({ initFetchedRecipes, defaultItems, onSave }: Props) => {
                         <p>まだ料理/レシピが登録されていません。</p>
                         <TextButton
                             type={BUTTON_TYPE.BUTTON}
-                            colorVariant={COLOR_VARIANT.SECONDARY}
                             onClick={() => { router.push(LINK_TO.RECIPE.NEW); closeDialog(false); }}>
                             料理/レシピを追加
                             <ChevronRight size={20} />

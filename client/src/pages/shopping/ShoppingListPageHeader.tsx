@@ -3,7 +3,7 @@ import React from 'react';
 import { CalendarDays, CirclePlus, Pencil } from 'lucide-react';
 
 import { Header, HeaderTextButton, MenuButton, ShoppingItemBulkCreateForm, ShoppingItemEditForm } from '@/components';
-import { COLOR_VARIANT, EDIT_MODE } from '@/constants';
+import { EDIT_MODE } from '@/constants';
 import { useDialog } from '@/hooks';
 import { ActionButton } from '@/types';
 
@@ -46,7 +46,6 @@ const ShoppingListPageHeader = () => {
                 <MenuButton
                     customButton={<HeaderTextButton
                         disabled={isOpen}
-                        colorVariant={COLOR_VARIANT.SECONDARY}
                         onClick={() => setIsOpen(true)}>
                         <CirclePlus size={20} strokeWidth={2} />
                         追加

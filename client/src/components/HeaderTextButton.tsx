@@ -2,27 +2,21 @@
 import React from 'react';
 import Link from 'next/link';
 
-import { ButtonType, COLOR_VARIANT } from '@/constants';
+import { ButtonType, BUTTON_VARIANT, COLOR_VARIANT, PRIMARY_BUTTON_COLOR_CLASS } from '@/constants';
 
 type Props = {
     type?: ButtonType;
     disabled?: boolean;
     colorVariant?:
-    | (typeof COLOR_VARIANT)['SECONDARY']
-    | (typeof COLOR_VARIANT)['GRAY'];
+        | (typeof COLOR_VARIANT)['PRIMARY']
+        | (typeof COLOR_VARIANT)['GRAY'];
     /** フォーム外の submit ボタンで、紐づける form の id */
     form?: string;
     children: React.ReactNode;
 } & ({ href: string; onClick?: never } | { onClick?: () => void; href?: never });
 
 const getHeaderTextButtonClassName = (colorVariant: NonNullable<Props['colorVariant']>) => {
-    const colorMappings = {
-        secondary:
-            'text-white bg-secondary-main hover:text-secondary-main hover:bg-secondary-light',
-        gray: 'text-white bg-gray-main hover:text-gray-main hover:bg-gray-light'
-    };
-    return `py-1 px-2 w-fit flex items-center gap-x-1 text-base font-bold rounded transition-colors shadow-card ${colorMappings[colorVariant]
-        } disabled:opacity-50 disabled:pointer-events-none`;
+    return `py-1 px-2 w-fit flex items-center gap-x-1 text-base font-bold rounded transition-colors shadow-card ${PRIMARY_BUTTON_COLOR_CLASS[BUTTON_VARIANT.FILLED][colorVariant]} disabled:opacity-50 disabled:pointer-events-none`;
 };
 
 const HeaderTextButton = ({
@@ -34,7 +28,7 @@ const HeaderTextButton = ({
     children,
     onClick,
 }: Props) => {
-    const className = getHeaderTextButtonClassName(colorVariant ?? COLOR_VARIANT.SECONDARY);
+    const className = getHeaderTextButtonClassName(colorVariant ?? COLOR_VARIANT.PRIMARY);
 
     if (href) {
         return (

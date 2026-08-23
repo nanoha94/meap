@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { CirclePlus, SlidersHorizontal } from 'lucide-react';
 
 import { Header, HeaderTextButton, RecipeFilterForm, StyledSelect } from '@/components';
-import { COLOR_VARIANT, LINK_TO, colors } from '@/constants';
+import { LINK_TO, colors } from '@/constants';
 import { useDialog, useSnackbars } from '@/hooks';
 import { sortOptions, useRecipeListStateStore } from '@/models/recipe';
 import { RecipeFilterFormData } from '@/models/recipe/types';
@@ -166,8 +166,7 @@ const RecipeListPage = ({
                 title="料理/レシピ一覧"
                 rightContent={
                     <HeaderTextButton
-                        href={LINK_TO.RECIPE.NEW}
-                        colorVariant={COLOR_VARIANT.SECONDARY}>
+                        href={LINK_TO.RECIPE.NEW}>
                         <CirclePlus size={20} />
                         追加
                     </HeaderTextButton>

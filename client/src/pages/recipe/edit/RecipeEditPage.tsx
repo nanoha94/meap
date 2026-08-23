@@ -117,7 +117,6 @@ const RecipeEditPage = ({
         <div className='w-full flex flex-col gap-y-1'>
             <TextButton
                 type={BUTTON_TYPE.BUTTON}
-                colorVariant={COLOR_VARIANT.ACCENT}
                 className="w-full justify-center"
                 disabled={isAiLimitReached}
                 onClick={handleOpenImageImportDialog}>
@@ -126,7 +125,6 @@ const RecipeEditPage = ({
             </TextButton>
             <TextButton
                 type={BUTTON_TYPE.BUTTON}
-                colorVariant={COLOR_VARIANT.ACCENT}
                 className="w-full justify-center"
                 disabled={isAiLimitReached}
                 onClick={handleOpenUrlImportDialog}>
@@ -206,7 +204,7 @@ const RecipeEditPage = ({
                 }
                 rightContent={
                     <>
-                        <HeaderTextButton type={BUTTON_TYPE.SUBMIT} form="recipe-edit-form" colorVariant={COLOR_VARIANT.SECONDARY} disabled={isDisabledSendButton}>
+                        <HeaderTextButton type={BUTTON_TYPE.SUBMIT} form="recipe-edit-form" disabled={isDisabledSendButton}>
                             <Save size={20} strokeWidth={2} />
                             保存
                         </HeaderTextButton>

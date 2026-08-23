@@ -33,7 +33,7 @@ const BillingFeatureList = ({
                     key={feature}
                     className="flex items-start gap-x-2 leading-relaxed">
                     <Check
-                        className="mt-1 text-secondary-main"
+                        className="mt-1 text-primary-main"
                         strokeWidth={3}
                         size={16}
                         aria-hidden="true"

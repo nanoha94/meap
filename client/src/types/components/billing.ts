@@ -10,8 +10,6 @@ export type PlanActionButtonConfig = {
     label: string;
     onClick?: () => void;
     variant: (typeof BUTTON_VARIANT)[keyof typeof BUTTON_VARIANT];
-    colorVariant:
-        | (typeof COLOR_VARIANT)['PRIMARY']
-        | (typeof COLOR_VARIANT)['GRAY'];
+    colorVariant?: (typeof COLOR_VARIANT)['GRAY'];
     disabled: boolean;
 };

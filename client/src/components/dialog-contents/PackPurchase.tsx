@@ -79,7 +79,9 @@ const PackColumn = ({
             <Button type={BUTTON_TYPE.BUTTON} onClick={onPurchase}>
                 購入する
             </Button>
-        }>
+        }
+        className={isRecommended ? 'border-accent-main border-2' : ''}
+    >
         <dl className="flex flex-col gap-y-4 text-sm">
             <div>
                 <dt className="mb-1 text-xs font-bold text-gray-main">

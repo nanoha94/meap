@@ -7,7 +7,6 @@ import { ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 import { Header, MonthlyCalendar, TextButton } from '@/components';
-import { COLOR_VARIANT } from '@/constants';
 import { getDayOfWeekTextColor } from '@/constants/calendar';
 import { useSnackbars } from '@/hooks';
 import { IMealPlan } from '@/types';
@@ -122,8 +121,7 @@ const PlanCalendarPage = ({ fetchMealPlans, errorMessage, year, month, date }: P
                     <div className="px-3 flex items-center justify-between gap-x-1"><div className={`text-base font-bold ${getDayOfWeekTextColor(selectedDate.day())}`}>{selectedDate.locale('ja').format('MM/DD')}<span className="ml-1 text-xs">{selectedDate.locale('ja').format('(ddd)')}</span>
                     </div>
                         <TextButton
-                            href={editPagePath}
-                            colorVariant={COLOR_VARIANT.SECONDARY}>
+                            href={editPagePath}>
                             献立を作成・編集
                             <ChevronRight size={20} />
                         </TextButton>

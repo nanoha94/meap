@@ -18,24 +18,21 @@ interface HeaderProps {
 
 interface Props {
     badge?: BadgeProps;
-    variant?: 'default' | 'current';
     header: HeaderProps;
     children: React.ReactNode;
     footer?: React.ReactNode;
+    className?: string;
 }
 
 const BillingOptionCard = ({
     badge,
-    variant = 'default',
     header,
     children,
     footer,
+    className,
 }: Props) => (
     <div
-        className={`relative flex flex-1 flex-col gap-y-4 rounded-lg border p-4 ${variant === 'current'
-            ? 'border-gray-border bg-gray-background'
-            : 'border-gray-border bg-white'
-            }`}>
+        className={`relative flex flex-1 flex-col gap-y-4 rounded-lg p-4 bg-white ${className || 'border-gray-border border'}`}>
         {badge && (
             <Label
                 label={badge.label}
@@ -46,9 +43,9 @@ const BillingOptionCard = ({
 
         <div className="flex w-full flex-col gap-y-1 border-b border-gray-border py-4">
             <div className="text-center text-lg font-bold">{header.title}</div>
-            <div className="text-center text-gray-main">{header.price}</div>
+            <div className="text-center">{header.price}</div>
             {header.subtitle && (
-                <div className="text-center text-xs text-gray-main">
+                <div className="text-center text-xs">
                     {header.subtitle}
                 </div>
             )}

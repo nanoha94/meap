@@ -16,7 +16,7 @@ const LoginLinks = () => {
             {loginUser?.id ? (
                 <Link
                     href={LINK_TO.PLAN.TOP}
-                    className={`${getLinkButtonClassName(COLOR_VARIANT.PRIMARY)} text-sm md:text-base`}
+                    className={`${getLinkButtonClassName()} text-sm md:text-base`}
                 >
                     マイ献立表へ
                 </Link>
@@ -25,7 +25,7 @@ const LoginLinks = () => {
 
                     <Link
                         href={LINK_TO.REGISTER}
-                        className={`${getLinkButtonClassName(COLOR_VARIANT.PRIMARY)} text-sm md:text-base`}
+                        className={`${getLinkButtonClassName()} text-sm md:text-base`}
                     >
                         アカウント登録
                     </Link>

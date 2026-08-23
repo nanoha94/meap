@@ -239,7 +239,7 @@ const Home = () => {
                     <div className="relative mx-auto flex w-full max-w-5xl justify-center">
                         <div className="flex w-full flex-col items-center gap-10 lg:flex-row lg:items-center lg:gap-8 xl:gap-12">
                             <div className="w-full lg:min-w-0 lg:flex-1">
-                                <p className="mb-3 text-lg font-bold text-accent-main">
+                                <p className="mb-3 text-lg font-bold text-primary-main">
                                     レシピ・献立・買い物リストを、これひとつで
                                 </p>
                                 <h1
@@ -256,9 +256,9 @@ const Home = () => {
                                     {heroBenefits.map((text) => (
                                         <li
                                             key={text}
-                                            className="flex items-center gap-2 rounded-full border border-accent-main bg-white px-4 py-2 text-base">
+                                            className="flex items-center gap-2 rounded-full border border-primary-main bg-white px-4 py-2 text-base">
                                             <Check
-                                                className="h-4 w-4 shrink-0 text-accent-main"
+                                                className="h-4 w-4 shrink-0 text-primary-main"
                                                 strokeWidth={4}
                                                 aria-hidden
                                             />
@@ -272,9 +272,7 @@ const Home = () => {
                                     <div className="flex flex-wrap items-center gap-3">
                                         <Link
                                             href={LINK_TO.REGISTER}
-                                            className={getLinkButtonClassName(
-                                                COLOR_VARIANT.PRIMARY,
-                                            )}>
+                                            className={getLinkButtonClassName()}>
                                             無料で登録する
                                         </Link>
                                         <Link
@@ -319,7 +317,7 @@ const Home = () => {
                         <div className="w-full max-w-5xl">
                             <h2
                                 id="pain-heading"
-                                className="mb-8 text-center text-2xl font-bold text-accent-main lg:mb-10 sm:text-3xl">
+                                className="mb-8 text-center text-2xl font-bold lg:mb-10 sm:text-3xl">
                                 こんなお悩み、ありませんか？
                             </h2>
                             <div className="grid items-center gap-8 sm:grid-cols-[auto_minmax(0,34rem)] sm:justify-center sm:gap-10 lg:gap-14">
@@ -376,7 +374,7 @@ const Home = () => {
                         <div className="w-full max-w-5xl">
                             <h2
                                 id="steps-heading"
-                                className="mb-8 text-2xl font-bold text-accent-main lg:mb-10 sm:text-3xl">
+                                className="mb-8 text-2xl font-bold lg:mb-10 sm:text-3xl">
                                 使い方はシンプル、3 ステップ
                             </h2>
                             <ol className="grid list-none gap-6 sm:grid-cols-3 sm:gap-8">
@@ -393,7 +391,7 @@ const Home = () => {
                                             key={step}
                                             className="relative rounded-2xl border border-gray-border bg-white p-6 shadow-card sm:p-7">
 
-                                            <p className="mb-1 text-base font-bold uppercase tracking-wide text-accent-main">
+                                            <p className="mb-1 text-base font-bold uppercase tracking-wide text-primary-main">
                                                 Step {step}
                                             </p>
                                             <p className="mb-2 text-lg font-bold leading-snug">
@@ -427,7 +425,7 @@ const Home = () => {
                     style={{ scrollMarginTop: '4rem' }}>
                     <div className="flex justify-center px-4 sm:px-6">
                         <div className="w-full max-w-5xl">
-                            <p className="mb-2 text-base font-bold uppercase tracking-wide text-accent-main">
+                            <p className="mb-2 text-base font-bold uppercase tracking-wide text-primary-main">
                                 FEATURES
                             </p>
                             <h2
@@ -576,7 +574,7 @@ const Home = () => {
                                                 <div className="flex flex-col items-center gap-2">
                                                     <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-white shadow-card">
                                                         <Sparkles
-                                                            className="h-7 w-7 text-accent-main"
+                                                            className="h-7 w-7 text-primary-main"
                                                             strokeWidth={1.75}
                                                         />
                                                     </div>
@@ -609,14 +607,14 @@ const Home = () => {
                                 AI機能は1回の実行につき利用回数を1回消費します。詳しくは
                                 <a
                                     href="#pricing"
-                                    className="font-bold text-accent-main underline-offset-2 hover:underline">
+                                    className="px-[0.5rem] font-bold text-primary-main underline transition-opacity hover:opacity-80">
                                     料金プラン
                                 </a>
                                 をご確認ください。
                             </p>
 
                             <div>
-                                <p className="mb-2 text-base font-bold uppercase tracking-wide text-accent-main">
+                                <p className="mb-2 text-base font-bold uppercase tracking-wide text-primary-main">
                                     Coming Soon
                                 </p>
                                 <h3 className="mb-4 text-xl font-bold sm:text-2xl">
@@ -653,7 +651,7 @@ const Home = () => {
                     style={{ scrollMarginTop: '4rem' }}>
                     <div className="flex justify-center px-4 sm:px-6">
                         <div className="w-full max-w-5xl">
-                            <p className="mb-2 text-base font-bold uppercase tracking-wide text-accent-main">
+                            <p className="mb-2 text-base font-bold uppercase tracking-wide text-primary-main">
                                 PRICING
                             </p>
                             <h2
@@ -677,7 +675,7 @@ const Home = () => {
                                         <li
                                             key={name}
                                             className={`rounded-2xl border p-6 shadow-card sm:p-7 bg-primary-background ${highlight
-                                                ? 'border-accent-main'
+                                                ? 'border-primary-main'
                                                 : 'border-gray-border'
                                                 }`}>
                                             <div className="mb-1 flex flex-wrap items-center gap-2">
@@ -749,9 +747,7 @@ const Home = () => {
                         </p>
                         <Link
                             href={LINK_TO.REGISTER}
-                            className={`${getLinkButtonClassName(
-                                COLOR_VARIANT.PRIMARY,
-                            )} mx-auto`}>
+                            className={`${getLinkButtonClassName()} mx-auto`}>
                             アカウントを作成
                         </Link>
                     </div>

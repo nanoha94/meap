@@ -62,7 +62,7 @@ const AddShoppingItemButton = () => {
                 ref={containerRef}>
                 <button
                     onClick={() => setIsOpen(true)}
-                    className="w-12 h-12 bg-primary-main rounded-full flex items-center justify-center shadow-lg transition-colors hover:bg-accent-main">
+                    className="w-12 h-12 bg-primary-main rounded-full flex items-center justify-center shadow-lg transition-colors hover:bg-primary-light">
                     {isOpen ? (
                         <Minus
                             color={colors.white}

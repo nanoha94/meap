@@ -6,7 +6,6 @@ import {
     ShoppingCategoryEditForm,
     TextButton,
 } from '@/components';
-import { COLOR_VARIANT } from '@/constants';
 import { useDialog, useSnackbars } from '@/hooks';
 import {
     ShoppingList,
@@ -72,7 +71,6 @@ const ShoppingListPage: React.FC<Props> = ({ fetchItems, errorMessage }) => {
                         <ShoppingList ref={shoppingListRef} />
                     </div>
                     <TextButton
-                        colorVariant={COLOR_VARIANT.SECONDARY}
                         onClick={handleOpenCategorySettingDialog}>
                         カテゴリーの追加・編集
                         <ChevronRight size={20} />

@@ -4,7 +4,6 @@ import { ChevronRight } from 'lucide-react';
 import { Control, Controller, useFormContext } from 'react-hook-form';
 
 import { CheckboxField, RecipeCategoryEditForm, TextButton } from '@/components';
-import { COLOR_VARIANT } from '@/constants';
 import { useDialog } from '@/hooks';
 import { useRecipeStore } from '@/models/recipe/hooks';
 import { RecipeEditFormData } from '@/models/recipe/types';
@@ -86,7 +85,6 @@ const CategoryEditFields = ({ control }: Props) => {
                     )}
                 </div>
                 <TextButton
-                    colorVariant={COLOR_VARIANT.SECONDARY}
                     onClick={() => {
                         openDialog({
                             title: '料理カテゴリーを設定',

@@ -5,7 +5,6 @@ interface Props {
     label: string;
     colorVariant:
     | (typeof COLOR_VARIANT)['ACCENT']
-    | (typeof COLOR_VARIANT)['SECONDARY']
     | (typeof COLOR_VARIANT)['GRAY'];
     className?: string;
 }
@@ -13,9 +12,8 @@ interface Props {
 const Label = ({ label, colorVariant = COLOR_VARIANT.GRAY, className }: Props) => {
     const colorClasses = React.useMemo(() => {
         const colorMappings = {
-            accent: 'bg-accent-light',
-            secondary: 'bg-secondary-light',
-            gray: 'bg-gray-light',
+            accent: 'bg-accent-main text-white',
+            gray: 'bg-gray-main text-white',
         };
         return colorMappings[colorVariant];
     }, [colorVariant]);
