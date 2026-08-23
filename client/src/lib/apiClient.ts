@@ -16,6 +16,21 @@ export class ApiClientError extends Error {
     }
 }
 
+/** SSR から API へ接続するとき、localhost が IPv6 経由になり遅延しやすいため 127.0.0.1 に寄せる */
+function resolveServerSideApiBaseUrl(baseUrl: string): string {
+    try {
+        const url = new URL(baseUrl);
+        if (url.hostname === 'localhost') {
+            url.hostname = '127.0.0.1';
+            return url.toString().replace(/\/$/, '');
+        }
+    } catch {
+        // baseUrl が不正な場合はそのまま使う
+    }
+
+    return baseUrl;
+}
+
 type ApiClientOptions = Omit<RequestInit, 'body'> & {
     body?: Record<string, unknown> | BodyInit | null;
     /**
@@ -39,8 +54,9 @@ export async function apiClient<T>(
     path: string,
     options: ApiClientOptions = {},
 ): Promise<T> {
-    const baseUrl =
-        process.env.NEXT_PUBLIC_BACKEND_URL || 'https://localhost:8000';
+    const baseUrl = resolveServerSideApiBaseUrl(
+        process.env.NEXT_PUBLIC_BACKEND_URL || 'https://localhost:8000',
+    );
     const frontendUrl =
         process.env.NEXT_PUBLIC_FRONTEND_URL ||
         'https://localhost:3000';
@@ -101,6 +117,7 @@ export async function apiClient<T>(
         fetchOptions.dispatcher = new Agent({
             connect: {
                 rejectUnauthorized: false,
+                timeout: 10_000,
             },
         });
     }
@@ -188,6 +205,8 @@ export async function fetchData<T>(
             signal: combinedSignal,
         });
     } catch (error) {
+        const isAbortError =
+            error instanceof Error && error.name === 'AbortError';
         // エラーログを抑制する条件
         const suppressFetchLog =
             (restOptions.suppressUnauthorizedLog &&
@@ -198,7 +217,13 @@ export async function fetchData<T>(
                 error.statusCode === API_STATUS_CODE.NOT_FOUND);
         // エラーログを抑制しない場合はエラーログを出力
         if (!suppressFetchLog) {
-            console.error(`[fetchData] エラー発生: ${path}`, error);
+            if (isAbortError) {
+                console.error(
+                    `[fetchData] タイムアウト: ${path}（${TIMEOUT_MS / 1000}秒）。バックエンド（${process.env.NEXT_PUBLIC_BACKEND_URL ?? '未設定'}）の起動状態を確認してください。`,
+                );
+            } else {
+                console.error(`[fetchData] エラー発生: ${path}`, error);
+            }
         }
         // エラーオブジェクトからエラーメッセージとステータスコードを取得
         if (error instanceof ApiClientError) {
@@ -206,7 +231,7 @@ export async function fetchData<T>(
             statusCode = error.statusCode;
         }
         // AbortErrorの場合はタイムアウトエラーとして扱う
-        else if (error instanceof Error && error.name === 'AbortError') {
+        else if (isAbortError) {
             errorMessage =
                 'リクエストがタイムアウトしました。再度お試しください。';
         }
