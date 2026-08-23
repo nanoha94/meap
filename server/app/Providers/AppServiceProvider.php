@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use InvalidArgumentException;
+use RuntimeException;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -48,6 +49,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        if (blank(config('cashier.webhook.secret'))) {
+            throw new RuntimeException(
+                'STRIPE_WEBHOOK_SECRET must be set.',
+            );
+        }
+
         Cashier::useCustomerModel(Group::class);
 
         URL::forceRootUrl(Config::get('app.url'));
