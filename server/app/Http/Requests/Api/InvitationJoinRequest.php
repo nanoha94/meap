@@ -10,7 +10,17 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class InvitationJoinRequest extends BaseApiRequest
 {
-    protected $invitationToken;
+    protected ?InvitationToken $invitationToken = null;
+
+    /**
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     */
+    public function rules(): array
+    {
+        return [
+            'isDelete' => ['boolean'],
+        ];
+    }
 
     /**
      * Determine if the user is authorized to make this request.
@@ -63,7 +73,7 @@ class InvitationJoinRequest extends BaseApiRequest
         // 5. isDeleteがfalseの場合の追加チェック
         // 初回joinリクエストのときは、isDeleteがfalseの想定
         // その後、フロント側で削除確認を行い、isDeleteがtrueで再度リクエストされる想定
-        if (!$this->isDelete) {
+        if (!$this->boolean('isDelete')) {
             // 他のグループに所属しているかチェック
             if ($currentGroup->group_size > 1) {
                 throw new HttpException(
@@ -104,7 +114,7 @@ class InvitationJoinRequest extends BaseApiRequest
      *
      * @return InvitationToken|null
      */
-    public function getInvitationToken()
+    public function getInvitationToken(): ?InvitationToken
     {
         return $this->invitationToken;
     }
