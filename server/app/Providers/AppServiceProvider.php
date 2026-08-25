@@ -49,7 +49,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        if (blank(config('cashier.webhook.secret'))) {
+        if (!$this->app->runningInConsole() && blank(config('cashier.webhook.secret'))) {
             throw new RuntimeException(
                 'STRIPE_WEBHOOK_SECRET must be set.',
             );
