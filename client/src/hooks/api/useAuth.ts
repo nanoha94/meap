@@ -242,9 +242,9 @@ export const useAuth = () => {
                 // CSRFトークンを取得
                 await csrf();
 
-                const response = await axios.post('/password/reset', { token: params?.token, ...props });
-                // パスワードリセット成功時にリセットトークンをクエリパラメータに追加してログインページにリダイレクト
-                router.push(LINK_TO.LOGIN + '?reset=' + btoa(response.data.message));
+                await axios.post('/password/reset', { token: params?.token, ...props });
+                // パスワードリセット成功時に固定コードをクエリパラメータに追加してログインページにリダイレクト
+                router.push(LINK_TO.LOGIN + '?reset=success');
             } catch (error) {
                 if (error.response?.status === API_STATUS_CODE.UNPROCESSABLE_ENTITY) {
                     setErrors(error.response.data.errors);

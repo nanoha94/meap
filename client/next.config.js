@@ -1,5 +1,29 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    async headers() {
+        const securityHeaders = [
+            { key: 'X-Frame-Options', value: 'DENY' },
+            { key: 'X-Content-Type-Options', value: 'nosniff' },
+            {
+                key: 'Referrer-Policy',
+                value: 'strict-origin-when-cross-origin',
+            },
+        ];
+
+        if (process.env.NODE_ENV === 'production') {
+            securityHeaders.push({
+                key: 'Strict-Transport-Security',
+                value: 'max-age=31536000; includeSubDomains',
+            });
+        }
+
+        return [
+            {
+                source: '/:path*',
+                headers: securityHeaders,
+            },
+        ];
+    },
     images: {
         // 開発環境でのみ最適化を無効化
         unoptimized: process.env.NODE_ENV === 'development',

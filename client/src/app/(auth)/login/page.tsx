@@ -11,6 +11,7 @@ import {
     COLOR_VARIANT,
     LINK_TO,
     OAUTH_ERROR_MESSAGES,
+    PASSWORD_RESET_STATUS_MESSAGES,
 } from '@/constants';
 import { useAuth } from '@/hooks';
 
@@ -44,28 +45,19 @@ const LoginForm = () => {
     const [loginStatus, setLoginStatus] = React.useState<string | null>(null);
 
     /**
-     * パスワードリセットトークンをデコードしてメッセージを取得
-     * @returns パスワードリセットメッセージ
+     * パスワードリセット成功時のメッセージ
      */
     const resetStatusMessage = React.useMemo(() => {
-        const resetToken = searchParams?.get('reset');
-        if (
-            !resetToken ||
-            resetToken.length === 0 ||
-            Object.keys(errors).length > 0
-        ) {
+        const code = searchParams?.get('reset');
+        if (!code || Object.keys(errors).length > 0) {
             return null;
         }
-        try {
-            const decoded = atob(resetToken);
-            return decoded === 'Your password has been reset.'
-                ? 'パスワードをリセットしました。'
-                : decoded;
-        } catch {
-            return null;
-        }
+        return PASSWORD_RESET_STATUS_MESSAGES[code] ?? null;
     }, [searchParams, errors]);
 
+    /**
+     * OAuth認証エラー時のメッセージ
+     */
     const oauthErrorMessage = React.useMemo(() => {
         const code = searchParams?.get('error');
         if (!code) {

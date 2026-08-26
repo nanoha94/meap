@@ -7,6 +7,10 @@ export const SESSION_REQUIRED_PATHS_IN_AUTH_SHELL = [
     LINK_TO.EMAIL_VERIFY,
 ] as const;
 
+export const PASSWORD_RESET_STATUS_MESSAGES: Record<string, string> = {
+    success: 'パスワードをリセットしました。',
+};
+
 export const OAUTH_ERROR_MESSAGES: Record<string, string> = {
     oauth_state_invalid:
         'セッションの有効期限が切れました。もう一度お試しください。',
