@@ -14,7 +14,7 @@ import {
     type FetchDataResult,
 } from '@/lib/apiClient';
 import { IAiUsageStatus, IAiUsageStatusResponse, IGetMasterResponse, IGetUserResponse } from '@/types';
-import { handleAuthRedirect } from '@/utils';
+import { handleAuthRedirect, isSafeRedirectPath } from '@/utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -89,9 +89,11 @@ const AppLayout = async ({ children }: Props) => {
         }
     }
 
-    // RSCでクッキーを取得する正しい方法
     const cookieStore = await cookies();
-    const redirectPath = cookieStore.get('redirectPath')?.value;
+    const rawRedirectPath = cookieStore.get('redirectPath')?.value;
+    const redirectPath = rawRedirectPath && isSafeRedirectPath(rawRedirectPath)
+        ? rawRedirectPath
+        : undefined;
 
     return (
         <div className="min-h-dvh h-full flex flex-col">

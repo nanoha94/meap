@@ -43,6 +43,7 @@ export function proxy(request: NextRequest) {
                     maxAge: 3600, // 1時間有効
                     sameSite: 'lax', // メール認証後バックエンド→フロントのリダイレクト時にも送るため
                     secure: true,
+                    httpOnly: true,
                 });
             }
 

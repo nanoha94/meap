@@ -1,5 +1,9 @@
 'use client';
+
 import { useEffect } from 'react';
+
+import { clearRedirectCookie } from '@/actions/clearRedirectCookie';
+import { isSafeRedirectPath } from '@/utils/redirectPath';
 
 interface Props {
     redirectPath: string;
@@ -7,11 +11,13 @@ interface Props {
 
 const RedirectHandler = ({ redirectPath }: Props) => {
     useEffect(() => {
-        // リダイレクト
-        window.location.href = redirectPath;
+        if (!isSafeRedirectPath(redirectPath)) {
+            return;
+        }
 
-        // クッキーを削除
-        document.cookie = `redirectPath=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; sameSite=strict; secure`;
+        clearRedirectCookie().then(() => {
+            window.location.href = redirectPath;
+        });
     }, [redirectPath]);
 
     return <></>;
