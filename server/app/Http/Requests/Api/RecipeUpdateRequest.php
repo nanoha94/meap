@@ -4,6 +4,7 @@ namespace App\Http\Requests\Api;
 
 use App\Http\Requests\Api\BaseApiRequest;
 use App\Models\IngredientUnit;
+use App\Support\ValidationLimits;
 use Illuminate\Support\Str;
 
 class RecipeUpdateRequest extends BaseApiRequest
@@ -19,13 +20,13 @@ class RecipeUpdateRequest extends BaseApiRequest
             'name' => 'string|max:255|required',
             'url' => 'nullable|string|url|regex:/^https?:\/\//i|max:2048',
             'thumbnailId' => 'uuid|nullable',
-            'categoryIds' => 'array|nullable',
+            'categoryIds' => 'array|nullable|max:' . ValidationLimits::RECIPE_CATEGORY_IDS_MAX,
             'categoryIds.*' => 'uuid|required',
-            'ingredientCategories' => 'array|nullable',
+            'ingredientCategories' => 'array|nullable|max:' . ValidationLimits::RECIPE_INGREDIENT_CATEGORIES_MAX,
             'ingredientCategories.*.id' => 'uuid|nullable',
             'ingredientCategories.*.name' => 'string|max:255|required',
             'ingredientCategories.*.order' => 'integer|min:0|required',
-            'ingredients' => 'array|nullable',
+            'ingredients' => 'array|nullable|max:' . ValidationLimits::RECIPE_INGREDIENTS_MAX,
             'ingredients.*.id' => 'uuid|nullable',
             'ingredients.*.name' => 'string|max:255|nullable',
             'ingredients.*.unitId' => 'uuid|required',
@@ -33,7 +34,7 @@ class RecipeUpdateRequest extends BaseApiRequest
             'ingredients.*.categoryName' => 'string|max:255|nullable',
             'ingredients.*.quantityDisplay' => 'nullable|string|max:50',
             'ingredients.*.order' => 'integer|min:0|nullable',
-            'steps' => 'array|nullable',
+            'steps' => 'array|nullable|max:' . ValidationLimits::RECIPE_STEPS_MAX,
             'steps.*.id' => 'uuid|nullable',
             'steps.*.instruction' => 'string|max:255|required',
             'steps.*.imageId' => 'uuid|nullable',
@@ -63,9 +64,11 @@ class RecipeUpdateRequest extends BaseApiRequest
             'url.max' => __('validation.max.string', ['attribute' => 'url', 'max' => 2048]),
             'thumbnailId.uuid' => __('validation.uuid', ['attribute' => 'thumbnailId']),
             'categoryIds.array' => __('validation.array', ['attribute' => 'categoryIds']),
+            'categoryIds.max' => __('validation.max.array', ['attribute' => 'categoryIds', 'max' => ValidationLimits::RECIPE_CATEGORY_IDS_MAX]),
             'categoryIds.*.uuid' => __('validation.uuid', ['attribute' => 'categoryIds.*']),
             'categoryIds.*.required' => __('validation.required', ['attribute' => 'categoryIds.*']),
             'ingredientCategories.array' => __('validation.array', ['attribute' => 'ingredientCategories']),
+            'ingredientCategories.max' => __('validation.max.array', ['attribute' => 'ingredientCategories', 'max' => ValidationLimits::RECIPE_INGREDIENT_CATEGORIES_MAX]),
             'ingredientCategories.*.id.uuid' => __('validation.uuid', ['attribute' => 'ingredientCategories.*.id']),
             'ingredientCategories.*.name.string' => __('validation.string', ['attribute' => 'ingredientCategories.*.name']),
             'ingredientCategories.*.name.max' => __('validation.max.string', ['attribute' => 'ingredientCategories.*.name', 'max' => 255]),
@@ -74,6 +77,7 @@ class RecipeUpdateRequest extends BaseApiRequest
             'ingredientCategories.*.order.min' => __('validation.min.numeric', ['attribute' => 'ingredientCategories.*.order', 'min' => 0]),
             'ingredientCategories.*.order.required' => __('validation.required', ['attribute' => 'ingredientCategories.*.order']),
             'ingredients.array' => __('validation.array', ['attribute' => 'ingredients']),
+            'ingredients.max' => __('validation.max.array', ['attribute' => 'ingredients', 'max' => ValidationLimits::RECIPE_INGREDIENTS_MAX]),
             'ingredients.*.id.uuid' => __('validation.uuid', ['attribute' => 'ingredients.*.id']),
             'ingredients.*.name.string' => __('validation.string', ['attribute' => 'ingredients.*.name']),
             'ingredients.*.name.max' => __('validation.max.string', ['attribute' => 'ingredients.*.name', 'max' => 255]),
@@ -88,6 +92,7 @@ class RecipeUpdateRequest extends BaseApiRequest
             'ingredients.*.order.integer' => __('validation.integer', ['attribute' => 'ingredients.*.order']),
             'ingredients.*.order.min' => __('validation.min.numeric', ['attribute' => 'ingredients.*.order', 'min' => 0]),
             'steps.array' => __('validation.array', ['attribute' => 'steps']),
+            'steps.max' => __('validation.max.array', ['attribute' => 'steps', 'max' => ValidationLimits::RECIPE_STEPS_MAX]),
             'steps.*.id.uuid' => __('validation.uuid', ['attribute' => 'steps.*.id']),
             'steps.*.instruction.string' => __('validation.string', ['attribute' => 'steps.*.instruction']),
             'steps.*.instruction.max' => __('validation.max.string', ['attribute' => 'steps.*.instruction', 'max' => 255]),

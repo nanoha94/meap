@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Api;
 
 use App\Http\Requests\Api\BaseApiRequest;
+use App\Support\ValidationLimits;
 
 class ShoppingCategoryBulkDestroyRequest extends BaseApiRequest
 {
@@ -15,7 +16,7 @@ class ShoppingCategoryBulkDestroyRequest extends BaseApiRequest
     public function rules(): array
     {
         return [
-            'ids' => 'array|min:1|required',
+            'ids' => 'array|min:1|max:' . ValidationLimits::BULK_CATEGORY_DATA_MAX . '|required',
             'ids.*' => 'uuid|required',
         ];
     }
@@ -30,6 +31,7 @@ class ShoppingCategoryBulkDestroyRequest extends BaseApiRequest
         return [
             'ids.array' => __('validation.array', ['attribute' => 'ids']),
             'ids.min' => __('validation.min.array', ['attribute' => 'ids', 'min' => 1]),
+            'ids.max' => __('validation.max.array', ['attribute' => 'ids', 'max' => ValidationLimits::BULK_CATEGORY_DATA_MAX]),
             'ids.required' => __('validation.required', ['attribute' => 'ids']),
             'ids.*.uuid' => __('validation.uuid', ['attribute' => 'ids.*']),
             'ids.*.required' => __('validation.required', ['attribute' => 'ids.*']),

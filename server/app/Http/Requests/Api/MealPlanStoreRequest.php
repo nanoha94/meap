@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Api;
 
 use App\Http\Requests\Api\BaseApiRequest;
+use App\Support\ValidationLimits;
 
 class MealPlanStoreRequest extends BaseApiRequest
 {
@@ -16,11 +17,11 @@ class MealPlanStoreRequest extends BaseApiRequest
     {
         return [
             'date' => 'date_format:Y-m-d|required',
-            'meals' => 'array|min:1|required',
+            'meals' => 'array|min:1|max:' . ValidationLimits::MEAL_PLAN_MEALS_MAX . '|required',
             'meals.*.id' => 'uuid|nullable',
             'meals.*.categoryId' => 'uuid|required',
             'meals.*.order' => 'integer|min:0|required',
-            'meals.*.recipes' => 'array|min:1|required',
+            'meals.*.recipes' => 'array|min:1|max:' . ValidationLimits::MEAL_PLAN_RECIPES_MAX . '|required',
             'meals.*.recipes.*.id' => 'uuid|required',
             'meals.*.recipes.*.order' => 'integer|min:0|required',
         ];
@@ -72,6 +73,7 @@ class MealPlanStoreRequest extends BaseApiRequest
             'date.required' => __('validation.required', ['attribute' => 'date']),
             'meals.array' => __('validation.array', ['attribute' => 'meals']),
             'meals.min' => __('validation.min.array', ['attribute' => 'meals', 'min' => 1]),
+            'meals.max' => __('validation.max.array', ['attribute' => 'meals', 'max' => ValidationLimits::MEAL_PLAN_MEALS_MAX]),
             'meals.required' => __('validation.required', ['attribute' => 'meals']),
             'meals.*.id.uuid' => __('validation.uuid', ['attribute' => 'meals.*.id']),
             'meals.*.categoryId.uuid' => __('validation.uuid', ['attribute' => 'meals.*.categoryId']),
@@ -81,6 +83,7 @@ class MealPlanStoreRequest extends BaseApiRequest
             'meals.*.order.required' => __('validation.required', ['attribute' => 'meals.*.order']),
             'meals.*.recipes.array' => __('validation.array', ['attribute' => 'meals.*.recipes']),
             'meals.*.recipes.min' => __('validation.min.array', ['attribute' => 'meals.*.recipes', 'min' => 1]),
+            'meals.*.recipes.max' => __('validation.max.array', ['attribute' => 'meals.*.recipes', 'max' => ValidationLimits::MEAL_PLAN_RECIPES_MAX]),
             'meals.*.recipes.required' => __('validation.required', ['attribute' => 'meals.*.recipes']),
             'meals.*.recipes.*.id.uuid' => __('validation.uuid', ['attribute' => 'meals.*.recipes.*.id']),
             'meals.*.recipes.*.id.required' => __('validation.required', ['attribute' => 'meals.*.recipes.*.id']),

@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Api;
 
 use App\Http\Requests\Api\BaseApiRequest;
+use App\Support\ValidationLimits;
 
 class MealCategoryBulkUpdateRequest extends BaseApiRequest
 {
@@ -15,7 +16,7 @@ class MealCategoryBulkUpdateRequest extends BaseApiRequest
     public function rules(): array
     {
         return [
-            'data' => 'array|min:1|required',
+            'data' => 'array|min:1|max:' . ValidationLimits::BULK_CATEGORY_DATA_MAX . '|required',
             'data.*.id' => 'uuid|required',
             'data.*.name' => 'string|max:255|required',
             'data.*.colorId' => 'uuid|exists:colors,id|required',
@@ -33,6 +34,7 @@ class MealCategoryBulkUpdateRequest extends BaseApiRequest
         return [
             'data.array' => __('validation.array', ['attribute' => 'data']),
             'data.min' => __('validation.min.array', ['attribute' => 'data', 'min' => 1]),
+            'data.max' => __('validation.max.array', ['attribute' => 'data', 'max' => ValidationLimits::BULK_CATEGORY_DATA_MAX]),
             'data.required' => __('validation.required', ['attribute' => 'data']),
             'data.*.id.uuid' => __('validation.uuid', ['attribute' => 'data.*.id']),
             'data.*.id.required' => __('validation.required', ['attribute' => 'data.*.id']),

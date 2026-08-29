@@ -1,0 +1,37 @@
+<?php
+
+namespace App\Support;
+
+/**
+ * API 入力検証の配列件数上限。
+ * DoS 耐性のため bulk 系・ネスト配列に適用する。
+ */
+final class ValidationLimits
+{
+    /** 買い物アイテム等の一括 data / ids 件数上限 */
+    public const BULK_ITEM_DATA_MAX = 500;
+
+    /** カテゴリ等の一括 data / ids 件数上限 */
+    public const BULK_CATEGORY_DATA_MAX = 100;
+
+    /** 買い物アイテム 1 件あたりのタグ数上限 */
+    public const SHOPPING_ITEM_TAGS_MAX = 50;
+
+    /** レシピの categoryIds 件数上限 */
+    public const RECIPE_CATEGORY_IDS_MAX = 50;
+
+    /** レシピの ingredientCategories 件数上限 */
+    public const RECIPE_INGREDIENT_CATEGORIES_MAX = 100;
+
+    /** レシピの ingredients 件数上限 */
+    public const RECIPE_INGREDIENTS_MAX = 100;
+
+    /** レシピの steps 件数上限 */
+    public const RECIPE_STEPS_MAX = 100;
+
+    /** 献立 1 日あたりの meals 件数上限 */
+    public const MEAL_PLAN_MEALS_MAX = 20;
+
+    /** 献立 1 食あたりの recipes 件数上限 */
+    public const MEAL_PLAN_RECIPES_MAX = 100;
+}

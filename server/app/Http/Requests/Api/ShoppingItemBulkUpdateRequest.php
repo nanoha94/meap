@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Api;
 
 use App\Http\Requests\Api\BaseApiRequest;
+use App\Support\ValidationLimits;
 
 class ShoppingItemBulkUpdateRequest extends BaseApiRequest
 {
@@ -15,14 +16,14 @@ class ShoppingItemBulkUpdateRequest extends BaseApiRequest
     public function rules(): array
     {
         return [
-            'data' => 'array|min:1|required',
+            'data' => 'array|min:1|max:' . ValidationLimits::BULK_ITEM_DATA_MAX . '|required',
             'data.*.id' => 'uuid|required',
             'data.*.name' => 'string|max:255|required',
             'data.*.categoryId' => 'uuid|required',
             'data.*.isPinned' => 'boolean|required',
             'data.*.isChecked' => 'boolean|required',
             'data.*.order' => 'integer|min:0|required',
-            'data.*.tags' => 'array|nullable',
+            'data.*.tags' => 'array|nullable|max:' . ValidationLimits::SHOPPING_ITEM_TAGS_MAX,
             'data.*.tags.*.id' => 'uuid|nullable',
             'data.*.tags.*.name' => 'string|max:255|nullable',
         ];
@@ -38,6 +39,7 @@ class ShoppingItemBulkUpdateRequest extends BaseApiRequest
         return [
             'data.array' => __('validation.array', ['attribute' => 'data']),
             'data.min' => __('validation.min.array', ['attribute' => 'data', 'min' => 1]),
+            'data.max' => __('validation.max.array', ['attribute' => 'data', 'max' => ValidationLimits::BULK_ITEM_DATA_MAX]),
             'data.required' => __('validation.required', ['attribute' => 'data']),
             'data.*.id.uuid' => __('validation.uuid', ['attribute' => 'data.*.id']),
             'data.*.id.required' => __('validation.required', ['attribute' => 'data.*.id']),
@@ -54,6 +56,7 @@ class ShoppingItemBulkUpdateRequest extends BaseApiRequest
             'data.*.order.min' => __('validation.min.numeric', ['attribute' => 'data.*.order', 'min' => 0]),
             'data.*.order.required' => __('validation.required', ['attribute' => 'data.*.order']),
             'data.*.tags.array' => __('validation.array', ['attribute' => 'data.*.tags']),
+            'data.*.tags.max' => __('validation.max.array', ['attribute' => 'data.*.tags', 'max' => ValidationLimits::SHOPPING_ITEM_TAGS_MAX]),
             'data.*.tags.*.id.uuid' => __('validation.uuid', ['attribute' => 'data.*.tags.*.id']),
             'data.*.tags.*.name.string' => __('validation.string', ['attribute' => 'data.*.tags.*.name']),
             'data.*.tags.*.name.max' => __('validation.max.string', ['attribute' => 'data.*.tags.*.name', 'max' => 255]),
