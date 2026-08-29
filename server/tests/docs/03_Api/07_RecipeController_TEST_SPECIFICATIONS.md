@@ -110,7 +110,7 @@ RecipeController のテストケースの詳細仕様を示します。料理の
 | 3-7-100 | 【新規作成】 バリデーションエラー（ingredients.\*.categoryName が ingredientCategories に含まれない） | 異常系 | ingredients.\*.categoryName が ingredientCategories に含まれない の入力 | HTTP 422 Validation Error | `RecipeController::store()` |
 | 3-7-101 | 【新規作成】 バリデーションエラー（ingredients.\*.quantityDisplay が parse 不可） | 異常系 | ingredients.\*.quantityDisplay が parse 不可 の入力 | HTTP 422 Validation Error | `RecipeController::store()` |
 | 3-7-102 | 【新規作成】 バリデーションエラー（ingredients.\*.quantityDisplay が文字列でない） | 異常系 | ingredients.\*.quantityDisplay が文字列でない の入力 | HTTP 422 Validation Error | `RecipeController::store()` |
-| 3-7-103 | 【新規作成】 バリデーションエラー（ingredients.\*.quantityDisplay が 50 文字超過） | 異常系 | ingredients.\*.quantityDisplay が 50 文字超過 の入力 | HTTP 422 Validation Error | `RecipeController::store()` |
+| 3-7-103 | 【新規作成】 バリデーションエラー（ingredients.*.quantityDisplay が 255 文字超過） | 異常系 | ingredients.*.quantityDisplay が 255 文字超過 の入力 | HTTP 422 Validation Error | `RecipeController::store()` |
 | 3-7-104 | 【新規作成】 バリデーションエラー（ingredients.\*.order が整数でない） | 異常系 | ingredients.\*.order が整数でない の入力 | HTTP 422 Validation Error | `RecipeController::store()` |
 | 3-7-105 | 【新規作成】 バリデーションエラー（ingredients\*.requires_quantity=true の単位で数量省略） | 異常系 | ingredients\*.requires_quantity=true の単位で quantityDisplay を省略 | HTTP 422 Validation Error、`ingredients.*.quantityDisplay` | `RecipeController::store()` |
 | 3-7-106 | 【新規作成】 バリデーションエラー（ingredients\*.requires_quantity=true の単位で quantityDisplay が空文字） | 異常系 | ingredients\*.requires_quantity=true の単位で quantityDisplay="" を指定 | HTTP 422 Validation Error、`ingredients.*.quantityDisplay` | `RecipeController::store()` |
@@ -222,7 +222,7 @@ RecipeController のテストケースの詳細仕様を示します。料理の
 | 3-7-212 | 【更新】 バリデーションエラー（ingredients.\*.categoryName が ingredientCategories に含まれない） | 異常系 | ingredients.\*.categoryName が ingredientCategories に含まれない の入力 | HTTP 422 Validation Error | `RecipeController::update()` |
 | 3-7-213 | 【更新】 バリデーションエラー（ingredients.\*.quantityDisplay が parse 不可） | 異常系 | ingredients.\*.quantityDisplay が parse 不可 の入力 | HTTP 422 Validation Error | `RecipeController::update()` |
 | 3-7-214 | 【更新】 バリデーションエラー（ingredients.\*.quantityDisplay が文字列でない） | 異常系 | ingredients.\*.quantityDisplay が文字列でない の入力 | HTTP 422 Validation Error | `RecipeController::update()` |
-| 3-7-215 | 【更新】 バリデーションエラー（ingredients.\*.quantityDisplay が 50 文字超過） | 異常系 | ingredients.\*.quantityDisplay が 50 文字超過 の入力 | HTTP 422 Validation Error | `RecipeController::update()` |
+| 3-7-215 | 【更新】 バリデーションエラー（ingredients.*.quantityDisplay が 255 文字超過） | 異常系 | ingredients.*.quantityDisplay が 255 文字超過 の入力 | HTTP 422 Validation Error | `RecipeController::update()` |
 | 3-7-216 | 【更新】 バリデーションエラー（requires_quantity=true の単位で quantityDisplay を null に指定） | 異常系 | requires_quantity=true の単位で quantityDisplay を null に指定 の入力 | HTTP 422 Validation Error | `RecipeController::update()` |
 | 3-7-217 | 【更新】 バリデーションエラー（ingredients.\*.order が整数でない） | 異常系 | ingredients.\*.order が整数でない の入力 | HTTP 422 Validation Error | `RecipeController::update()` |
 | 3-7-218 | 【更新】 バリデーションエラー（ingredients\*.requires_quantity=true の単位で数量省略） | 異常系 | ingredients\*.requires_quantity=true の単位で quantityDisplay を省略 | HTTP 422 Validation Error、`ingredients.*.quantityDisplay` | `RecipeController::update()` |

@@ -177,6 +177,12 @@ return [
     'url_not_accessible' => 'The specified URL is not accessible.',
     'date_range_max_days' => 'The period between date_from and date_to must not exceed :max days.',
 
+    'parsed_recipe' => [
+        'must_be_array' => 'The :attribute field must be an array.',
+        'exceeds_max_count' => 'The :attribute field must not have more than :max items.',
+        'exceeds_max_length' => 'The :attribute field must not be greater than :max characters.',
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Custom Validation Language Lines
@@ -277,6 +283,25 @@ return [
             'height' => 'image height'
         ],
         'data' => 'data',
+        'categoryIds' => 'category IDs',
+        'ingredientCategories' => 'ingredient categories',
+        'ingredientCategories.*.name' => 'ingredient category name',
+        'ingredients' => 'ingredients',
+        'ingredients.*.name' => 'ingredient name',
+        'ingredients.*.quantityDisplay' => 'quantity display',
+        'ingredients.*.unitName' => 'unit name',
+        'ingredients.*.categoryName' => 'ingredient category name',
+        'steps' => 'steps',
+        'steps.*.instruction' => 'instruction',
+        'servingCount' => 'serving count',
+        'cookingTime' => 'cooking time',
+        'ownerUserId' => 'owner user ID',
+        'thumbnailId' => 'thumbnail ID',
+        'date_from' => 'start date',
+        'date_to' => 'end date',
+        'include_ingredients' => 'include ingredients',
+        'recipe_name' => 'recipe name',
+        'ingredient_name' => 'ingredient name',
     ],
 
     'id_must_be_string' => 'The ID must be a string.',

@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Api;
 
 use App\Http\Requests\Api\BaseApiRequest;
+use App\Support\ValidationLimits;
 
 class RecipeIndexRequest extends BaseApiRequest
 {
@@ -19,8 +20,8 @@ class RecipeIndexRequest extends BaseApiRequest
             'offset' => 'integer|min:0|nullable',
             'sort' => 'nullable|string|in:created_at,last_planned_date,name',
             'order' => 'nullable|string|in:asc,desc',
-            'recipe_name' => 'nullable|string|max:255',
-            'ingredient_name' => 'nullable|string|max:255',
+            'recipe_name' => 'nullable|string|max:' . ValidationLimits::STRING_MAX,
+            'ingredient_name' => 'nullable|string|max:' . ValidationLimits::STRING_MAX,
             'category_ids' => 'nullable|array',
             'category_ids.*' => 'uuid|exists:recipe_categories,id',
             'last_planned_date_from' => 'nullable|date|date_format:Y-m-d',

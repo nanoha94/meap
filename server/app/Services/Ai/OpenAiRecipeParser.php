@@ -208,8 +208,11 @@ class OpenAiRecipeParser implements AiRecipeParserInterface
     /**
      * 抽出テキストをレシピ JSON に構造化する。
      *
-     * @param  list<string>  $unitNames
-     * @param  list<string>  $categoryNames
+     * @param  string  $text 抽出テキスト
+     * @param  list<string>  $unitNames 単位マスタ名一覧
+     * @param  list<string>  $categoryNames 材料カテゴリーマスタ名一覧
+     * @param  string  $sourceDescription ソース説明
+     * @return ParsedRecipe
      */
     private function structureRecipeFromText(string $text, array $unitNames, array $categoryNames, string $sourceDescription): ParsedRecipe
     {

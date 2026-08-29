@@ -2706,13 +2706,13 @@ test('3-7-102: 【新規作成】 バリデーションエラー（ingredients.\
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-7-103: 【新規作成】 バリデーションエラー（ingredients.\*.quantityDisplay が 50 文字超過）', function () {
+test('3-7-103: 【新規作成】 バリデーションエラー（ingredients.*.quantityDisplay が 255 文字超過）', function () {
     $data = [
         'name' => 'カレーライス',
         'ingredients' => [[
             'name' => '玉ねぎ',
             'unitId' => $this->ingredientUnit->id,
-            'quantityDisplay' => str_repeat('a', 51),
+            'quantityDisplay' => str_repeat('a', ValidationLimits::STRING_MAX + 1),
         ]],
         'ownerUserId' => $this->user->id,
     ];
@@ -2723,7 +2723,7 @@ test('3-7-103: 【新規作成】 バリデーションエラー（ingredients.\
     $response->assertJsonValidationErrors(['ingredients.0.quantityDisplay']);
 
     $responseData = $response->json();
-    $this->assertContains('ingredients.*.quantityDisplayは、50文字以内で指定してください。', $responseData['errors']['ingredients.0.quantityDisplay']);
+    $this->assertContains('ingredients.*.quantityDisplayは、255文字以内で指定してください。', $responseData['errors']['ingredients.0.quantityDisplay']);
 
     $response->assertJsonStructure([
         'success',
@@ -6040,7 +6040,7 @@ test('3-7-214: 【更新】 バリデーションエラー（ingredients.\*.quan
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-7-215: 【更新】 バリデーションエラー（ingredients.\*.quantityDisplay が 50 文字超過）', function () {
+test('3-7-215: 【更新】 バリデーションエラー（ingredients.*.quantityDisplay が 255 文字超過）', function () {
     $createResponse = $this->actingAs($this->user)->post('/recipes', [
         'name' => 'バリデーションテスト',
         'servingCount' => 2,
@@ -6053,7 +6053,7 @@ test('3-7-215: 【更新】 バリデーションエラー（ingredients.\*.quan
         'ingredients' => [[
             'name' => '玉ねぎ',
             'unitId' => $this->ingredientUnit->id,
-            'quantityDisplay' => str_repeat('a', 51),
+            'quantityDisplay' => str_repeat('a', ValidationLimits::STRING_MAX + 1),
         ]],
         'ownerUserId' => $this->user->id,
     ]);
@@ -6062,7 +6062,7 @@ test('3-7-215: 【更新】 バリデーションエラー（ingredients.\*.quan
     $response->assertJsonValidationErrors(['ingredients.0.quantityDisplay']);
 
     $responseData = $response->json();
-    $this->assertContains('ingredients.*.quantityDisplayは、50文字以内で指定してください。', $responseData['errors']['ingredients.0.quantityDisplay']);
+    $this->assertContains('ingredients.*.quantityDisplayは、255文字以内で指定してください。', $responseData['errors']['ingredients.0.quantityDisplay']);
 
     $response->assertJsonStructure([
         'success',

@@ -3,8 +3,8 @@
 namespace App\Support;
 
 /**
- * API 入力検証の配列件数上限。
- * DoS 耐性のため bulk 系・ネスト配列に適用する。
+ * API 入力検証の件数・文字列長上限。
+ * DoS 耐性のため bulk 系・ネスト配列・文字列フィールドに適用する。
  */
 final class ValidationLimits
 {
@@ -37,4 +37,7 @@ final class ValidationLimits
 
     /** 献立一覧取得の date_from〜date_to 期間上限（両端日を含む日数） */
     public const MEAL_PLAN_INDEX_DATE_RANGE_MAX_DAYS = 366;
+
+    /** 名前・手順・quantityDisplay 等の基本文字列上限 */
+    public const STRING_MAX = 255;
 }

@@ -18,7 +18,7 @@ class ShoppingCategoryBulkUpdateRequest extends BaseApiRequest
         return [
             'data' => 'array|min:1|max:' . ValidationLimits::BULK_CATEGORY_DATA_MAX . '|required',
             'data.*.id' => 'uuid|required',
-            'data.*.name' => 'string|max:255|required',
+            'data.*.name' => 'string|max:' . ValidationLimits::STRING_MAX . '|required',
             'data.*.order' => 'integer|min:0|required',
         ];
     }

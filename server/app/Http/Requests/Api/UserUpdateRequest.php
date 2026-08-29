@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Api;
 
 use App\Http\Requests\BaseRequest;
+use App\Support\ValidationLimits;
 
 class UserUpdateRequest extends BaseRequest
 {
@@ -22,7 +23,7 @@ class UserUpdateRequest extends BaseRequest
     public function rules(): array
     {
         return [
-            'name' => 'sometimes|string|max:255',
+            'name' => 'sometimes|string|max:' . ValidationLimits::STRING_MAX,
             'avatar_image_id' => 'sometimes|nullable|uuid',
         ];
     }

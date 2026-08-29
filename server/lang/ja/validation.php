@@ -172,6 +172,12 @@ return [
     'url_not_accessible' => '指定されたURLにはアクセスできません。',
     'date_range_max_days' => 'date_from と date_to の期間は:max日以内で指定してください。',
 
+    'parsed_recipe' => [
+        'must_be_array' => ':attributeは配列でなくてはなりません。',
+        'exceeds_max_count' => ':attributeは:max個以下で指定してください。',
+        'exceeds_max_length' => ':attributeは:max文字以内で指定してください。',
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Custom Validation Language Lines
@@ -345,6 +351,25 @@ return [
             'height' => '画像高さ'
         ],
         'data' => 'データ',
+        'categoryIds' => 'カテゴリID',
+        'ingredientCategories' => '材料カテゴリ',
+        'ingredientCategories.*.name' => '材料カテゴリ名',
+        'ingredients' => '材料',
+        'ingredients.*.name' => '材料名',
+        'ingredients.*.quantityDisplay' => '数量表示',
+        'ingredients.*.unitName' => '単位名',
+        'ingredients.*.categoryName' => '材料カテゴリ名',
+        'steps' => '手順',
+        'steps.*.instruction' => '調理手順',
+        'servingCount' => '人数',
+        'cookingTime' => '調理時間',
+        'ownerUserId' => '所有者ユーザーID',
+        'thumbnailId' => 'サムネイルID',
+        'date_from' => '開始日',
+        'date_to' => '終了日',
+        'include_ingredients' => '材料を含める',
+        'recipe_name' => 'レシピ名',
+        'ingredient_name' => '材料名',
     ],
 
 ];

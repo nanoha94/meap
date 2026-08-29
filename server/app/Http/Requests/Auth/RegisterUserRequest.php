@@ -4,6 +4,7 @@ namespace App\Http\Requests\Auth;
 
 use App\Models\User;
 use App\Http\Requests\Auth\BaseAuthRequest;
+use App\Support\ValidationLimits;
 use Illuminate\Support\Facades\Auth;
 use App\Enums\HttpStatusCode;
 use Illuminate\Validation\Rules\Password;
@@ -32,8 +33,8 @@ class RegisterUserRequest extends BaseAuthRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
+            'name' => ['required', 'string', 'max:' . ValidationLimits::STRING_MAX],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:' . ValidationLimits::STRING_MAX, 'unique:' . User::class],
             'password' => ['required', 'confirmed', Password::defaults()],
         ];
     }

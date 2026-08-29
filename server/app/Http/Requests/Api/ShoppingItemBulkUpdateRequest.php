@@ -18,14 +18,14 @@ class ShoppingItemBulkUpdateRequest extends BaseApiRequest
         return [
             'data' => 'array|min:1|max:' . ValidationLimits::BULK_ITEM_DATA_MAX . '|required',
             'data.*.id' => 'uuid|required',
-            'data.*.name' => 'string|max:255|required',
+            'data.*.name' => 'string|max:' . ValidationLimits::STRING_MAX . '|required',
             'data.*.categoryId' => 'uuid|required',
             'data.*.isPinned' => 'boolean|required',
             'data.*.isChecked' => 'boolean|required',
             'data.*.order' => 'integer|min:0|required',
             'data.*.tags' => 'array|nullable|max:' . ValidationLimits::SHOPPING_ITEM_TAGS_MAX,
             'data.*.tags.*.id' => 'uuid|nullable',
-            'data.*.tags.*.name' => 'string|max:255|nullable',
+            'data.*.tags.*.name' => 'string|max:' . ValidationLimits::STRING_MAX . '|nullable',
         ];
     }
 
