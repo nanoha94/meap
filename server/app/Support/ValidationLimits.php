@@ -34,4 +34,7 @@ final class ValidationLimits
 
     /** 献立 1 食あたりの recipes 件数上限 */
     public const MEAL_PLAN_RECIPES_MAX = 100;
+
+    /** 献立一覧取得の date_from〜date_to 期間上限（両端日を含む日数） */
+    public const MEAL_PLAN_INDEX_DATE_RANGE_MAX_DAYS = 366;
 }

@@ -175,6 +175,7 @@ return [
     'exactly_one_default_required' => 'Exactly one :attribute item must have :field set to :value.',
     'url_https_required' => 'The :attribute field must be a URL that starts with https.',
     'url_not_accessible' => 'The specified URL is not accessible.',
+    'date_range_max_days' => 'The period between date_from and date_to must not exceed :max days.',
 
     /*
     |--------------------------------------------------------------------------

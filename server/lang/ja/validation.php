@@ -170,6 +170,7 @@ return [
     'exactly_one_default_required' => ':attributeには :field が :value の項目を1つだけ指定してください。',
     'url_https_required' => ':attributeはhttpsで始まるURLを指定してください。',
     'url_not_accessible' => '指定されたURLにはアクセスできません。',
+    'date_range_max_days' => 'date_from と date_to の期間は:max日以内で指定してください。',
 
     /*
     |--------------------------------------------------------------------------

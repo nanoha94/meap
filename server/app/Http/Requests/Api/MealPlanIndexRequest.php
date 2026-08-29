@@ -3,6 +3,8 @@
 namespace App\Http\Requests\Api;
 
 use App\Http\Requests\Api\BaseApiRequest;
+use App\Support\ValidationLimits;
+use Carbon\Carbon;
 
 class MealPlanIndexRequest extends BaseApiRequest
 {
@@ -34,6 +36,43 @@ class MealPlanIndexRequest extends BaseApiRequest
             'date_to' => 'required|date|date_format:Y-m-d|after_or_equal:date_from',
             'include_ingredients' => 'sometimes|boolean',
         ];
+    }
+
+    /**
+     * Configure the validator (date_from〜date_to の期間上限チェック).
+     */
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            if ($validator->errors()->hasAny(['date_from', 'date_to'])) {
+                return;
+            }
+
+            $dateFrom = $this->input('date_from');
+            $dateTo = $this->input('date_to');
+
+            if (! is_string($dateFrom) || ! is_string($dateTo)) {
+                return;
+            }
+
+            $from = Carbon::createFromFormat('Y-m-d', $dateFrom);
+            $to = Carbon::createFromFormat('Y-m-d', $dateTo);
+
+            if ($from === false || $to === false) {
+                return;
+            }
+
+            $inclusiveDays = $from->startOfDay()->diffInDays($to->startOfDay()) + 1;
+
+            if ($inclusiveDays > ValidationLimits::MEAL_PLAN_INDEX_DATE_RANGE_MAX_DAYS) {
+                $validator->errors()->add(
+                    'date_to',
+                    __('validation.date_range_max_days', [
+                        'max' => ValidationLimits::MEAL_PLAN_INDEX_DATE_RANGE_MAX_DAYS,
+                    ])
+                );
+            }
+        });
     }
 
     /**
