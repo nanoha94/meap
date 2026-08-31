@@ -42,5 +42,12 @@ echo "実行中: GoogleVisionRecipeOcrTest.php"
 
 echo ""
 echo "=========================================="
+echo "📖 詳細ドキュメント: tests/docs/04_Services/06_OpenAiRecipeParser_TEST_SPECIFICATIONS.md"
+echo ""
+echo "実行中: OpenAiRecipeParserTest.php"
+./vendor/bin/sail test tests/Unit/Services/Ai/OpenAiRecipeParserTest.php --stop-on-failure
+
+echo ""
+echo "=========================================="
 echo "✅ Services関連テスト完了"
 echo "=========================================="

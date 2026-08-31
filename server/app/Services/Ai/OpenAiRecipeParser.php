@@ -10,6 +10,7 @@ use App\Interfaces\AiRecipeParserInterface;
 use App\Interfaces\RecipeOcrInterface;
 use App\Traits\LoggingTrait;
 use DOMDocument;
+use InvalidArgumentException;
 use OpenAI\Laravel\Facades\OpenAI;
 use finfo;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -37,10 +38,13 @@ class OpenAiRecipeParser implements AiRecipeParserInterface
 
     private string $textModel;
 
+    private int $structureMaxTokens;
+
     public function __construct(
         private readonly RecipeOcrInterface $recipeOcr,
     ) {
         $this->textModel = config('ai.models.text');
+        $this->structureMaxTokens = config('ai.structure_max_tokens');
     }
 
     /**
@@ -232,7 +236,7 @@ class OpenAiRecipeParser implements AiRecipeParserInterface
 USER,
                 ],
             ],
-            failureContext: 'OpenAI recipe structuring failed.',
+            failureContext: __('operations.ai.recipe.structure_failed'),
         );
 
         $this->logRecipeParseDiagnostic('structure', [
@@ -242,7 +246,24 @@ USER,
             'structured_json' => $decoded,
         ]);
 
-        return ParsedRecipe::fromArray($decoded);
+        try {
+            return ParsedRecipe::fromArray($decoded);
+        } catch (InvalidArgumentException $e) {
+            $this->logWarning(
+                __('operations.ai.recipe.parse_img'),
+                __('operations.ai.recipe.structure_validation_failed'),
+                [
+                    'exception_message' => $e->getMessage(),
+                ],
+                __METHOD__,
+            );
+
+            throw new HttpException(
+                HttpStatusCode::BAD_GATEWAY->value,
+                __('api.general.server_error'),
+                $e,
+            );
+        }
     }
 
     /**
@@ -260,6 +281,7 @@ USER,
                 'model' => $model,
                 'response_format' => ['type' => 'json_object'],
                 'temperature' => 0,
+                'max_tokens' => $this->structureMaxTokens,
                 'messages' => $messages,
             ]);
         } catch (Throwable $e) {
@@ -284,7 +306,7 @@ USER,
         if (! is_string($content) || $content === '') {
             $this->logWarning(
                 __('operations.ai.recipe.parse_img'),
-                'OpenAI API returned empty content.',
+                __('operations.ai.recipe.empty_content'),
                 callerMethod: __METHOD__,
             );
 
@@ -299,7 +321,7 @@ USER,
         } catch (Throwable $e) {
             $this->logWarning(
                 __('operations.ai.recipe.parse_img'),
-                'Failed to decode OpenAI JSON response.',
+                __('operations.ai.recipe.json_decode_failed'),
                 [
                     'exception_message' => $e->getMessage(),
                 ],

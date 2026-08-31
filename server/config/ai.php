@@ -40,4 +40,15 @@ return [
         'text' => env('AI_TEXT_MODEL', 'gpt-4o'), // Phase2 テキスト構造化
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Structure Max Tokens
+    |--------------------------------------------------------------------------
+    |
+    | Phase2 テキスト構造化（OpenAI JSON 出力）の max_tokens 上限。
+    | 無制限生成を防ぎ、ParsedRecipe の件数・文字列長上限と併用する。
+    |
+    */
+    'structure_max_tokens' => (int) env('AI_STRUCTURE_MAX_TOKENS', 16384),
+
 ];

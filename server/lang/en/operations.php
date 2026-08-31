@@ -24,6 +24,10 @@ return [
             'url_fetch_failed' => 'Failed to fetch recipe URL.',
             'url_fetch_non_success' => 'Recipe URL returned non-success status.',
             'url_fetch_invalid_body' => 'Recipe URL response is empty or too large.',
+            'structure_failed' => 'OpenAI recipe structuring failed.',
+            'structure_validation_failed' => 'OpenAI structured response failed validation.',
+            'empty_content' => 'OpenAI API returned empty content.',
+            'json_decode_failed' => 'Failed to decode OpenAI JSON response.',
         ],
         'usage' => [
             'show' => 'AI usage status retrieval',

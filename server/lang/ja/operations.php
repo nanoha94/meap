@@ -24,6 +24,10 @@ return [
             'url_fetch_failed' => 'レシピ URL の取得に失敗しました。',
             'url_fetch_non_success' => 'レシピ URL が成功以外のステータスを返しました。',
             'url_fetch_invalid_body' => 'レシピ URL のレスポンスが空、またはサイズ上限を超えています。',
+            'structure_failed' => 'OpenAI レシピ構造化に失敗しました。',
+            'structure_validation_failed' => 'OpenAI 構造化レスポンスの検証に失敗しました。',
+            'empty_content' => 'OpenAI API が空のコンテンツを返しました。',
+            'json_decode_failed' => 'OpenAI JSON レスポンスのデコードに失敗しました。',
         ],
         'usage' => [
             'show' => 'AI利用状況取得',
