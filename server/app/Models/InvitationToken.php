@@ -16,6 +16,7 @@ class InvitationToken extends Model
     protected $fillable = [
         'inviter_user_id',
         'token',
+        'token_lookup',
         'expires_at',
     ];
 

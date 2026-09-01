@@ -187,7 +187,8 @@ entity social_accounts {
 entity invitation_tokens {
     * id : string <<generated>>
     --
-    * token : string
+    * token : string / bcrypt ハッシュ
+    * token_lookup : string(8) / 平文トークン先頭8文字（インデックス付きルックアップ用）
     * expires_at : date
     * inviter_user_id : string <<FK>>
 }
@@ -358,6 +359,8 @@ end note
 note top of invitation_tokens
   ユーザ招待トークンを管理する。
   グループに招待するときにトークンを発行する。
+  token は平文を bcrypt でハッシュ化して保存する。
+  token_lookup は平文先頭8文字で、Hash::check 前の候補絞り込みに使う。
   一定時間でトークンは使用できなくなり、テーブルからデータを消去する。
 end note
 

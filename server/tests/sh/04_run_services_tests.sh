@@ -49,5 +49,12 @@ echo "実行中: OpenAiRecipeParserTest.php"
 
 echo ""
 echo "=========================================="
+echo "📖 詳細ドキュメント: tests/docs/04_Services/07_InvitationTokenService_TEST_SPECIFICATIONS.md"
+echo ""
+echo "実行中: InvitationTokenServiceTest.php"
+./vendor/bin/sail test tests/Feature/Services/InvitationTokenServiceTest.php --stop-on-failure
+
+echo ""
+echo "=========================================="
 echo "✅ Services関連テスト完了"
 echo "=========================================="

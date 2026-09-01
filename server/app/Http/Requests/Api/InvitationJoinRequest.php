@@ -5,7 +5,7 @@ namespace App\Http\Requests\Api;
 use App\Enums\HttpStatusCode;
 use App\Http\Requests\Api\BaseApiRequest;
 use App\Models\InvitationToken;
-use Illuminate\Support\Facades\Hash;
+use App\Services\InvitationTokenService;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class InvitationJoinRequest extends BaseApiRequest
@@ -30,10 +30,8 @@ class InvitationJoinRequest extends BaseApiRequest
         $token = $this->route('token');
         $user = $this->user();
 
-        // まず全トークンからハッシュチェック（有効期限無視）
-        $foundToken = InvitationToken::all()->first(function ($record) use ($token) {
-            return Hash::check($token, $record->token);
-        });
+        // 平文トークンに一致する招待トークンを取得する
+        $foundToken = app(InvitationTokenService::class)->findByPlainToken($token);
 
         // 1. トークンが存在しない → 404 Not Found
         if (!$foundToken) {

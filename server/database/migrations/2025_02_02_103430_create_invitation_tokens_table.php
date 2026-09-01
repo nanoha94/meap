@@ -15,8 +15,11 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('inviter_user_id')->constrained('users', 'id')->cascadeOnDelete();
             $table->string('token')->unique();
+            $table->string('token_lookup', 8);
             $table->timestamp('expires_at');
             $table->timestamps();
+
+            $table->index('token_lookup');
         });
     }
 

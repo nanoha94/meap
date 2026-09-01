@@ -29,6 +29,16 @@ beforeEach(function () {
     }
 });
 
+function createInvitationTokenRecord(string $inviterUserId, string $plainToken, Carbon $expiresAt): InvitationToken
+{
+    return InvitationToken::create([
+        'inviter_user_id' => $inviterUserId,
+        'token' => Hash::make($plainToken),
+        'token_lookup' => InvitationTokenService::extractTokenLookup($plainToken),
+        'expires_at' => $expiresAt,
+    ]);
+}
+
 // ===== store() メソッドのテストケース =====
 
 test('3-3-1: 【トークン生成】 正常な招待トークン生成', function () {
@@ -216,11 +226,11 @@ test('3-3-7: 【トークン生成】 トークン衝突時の再試行成功', 
 
     // 既存のトークンを3つ作成
     for ($i = 0; $i < 3; $i++) {
-        InvitationToken::create([
-            'inviter_user_id' => $user->id,
-            'token' => Hash::make('existing-token-' . $i),
-            'expires_at' => Carbon::now()->addHour()
-        ]);
+        createInvitationTokenRecord(
+            $user->id,
+            'existing-token-' . $i,
+            Carbon::now()->addHour()
+        );
     }
 
     // 新しいトークンを生成（衝突しても再試行で成功するはず）
@@ -464,12 +474,7 @@ test('3-3-14: 【トークン詳細取得】 ハッシュチェック失敗', fu
         'group_id' => $group->id
     ]);
 
-    // トークンを生成
-    InvitationToken::create([
-        'inviter_user_id' => $inviter->id,
-        'token' => Hash::make('correct-token'),
-        'expires_at' => Carbon::now()->addHour()
-    ]);
+    createInvitationTokenRecord($inviter->id, 'correct-token', Carbon::now()->addHour());
 
     $user = User::factory()->create([
         'email_verified_at' => now()
@@ -509,11 +514,7 @@ test('3-3-15: 【トークン詳細取得】 有効期限切れトークンで�
 
     $invitationTokenService = app(InvitationTokenService::class);
     $plainToken = $invitationTokenService->generateToken();
-    InvitationToken::create([
-        'inviter_user_id' => $inviter->id,
-        'token' => Hash::make($plainToken),
-        'expires_at' => Carbon::now()->subHour(),
-    ]);
+    createInvitationTokenRecord($inviter->id, $plainToken, Carbon::now()->subHour());
 
     $user = User::factory()->create([
         'email_verified_at' => now(),
@@ -563,11 +564,7 @@ test('3-3-16: 【トークン詳細取得】 データベース接続エラー',
     // トークンを生成
     $invitationTokenService = app(InvitationTokenService::class);
     $plainToken = $invitationTokenService->generateToken();
-    InvitationToken::create([
-        'inviter_user_id' => $inviter->id,
-        'token' => Hash::make($plainToken),
-        'expires_at' => Carbon::now()->addHour()
-    ]);
+    createInvitationTokenRecord($inviter->id, $plainToken, Carbon::now()->addHour());
 
     // データベース接続をモックしてエラーを発生させる（テストデータ作成後）
     DB::shouldReceive('table')->andThrow(new Exception('Database connection error'));
@@ -708,11 +705,7 @@ test('3-3-19: 【グループ参加】 空グループの削除確認', function
     // トークンを生成
     $invitationTokenService = app(InvitationTokenService::class);
     $plainToken = $invitationTokenService->generateToken();
-    InvitationToken::create([
-        'inviter_user_id' => $inviter->id,
-        'token' => Hash::make($plainToken),
-        'expires_at' => Carbon::now()->addHour()
-    ]);
+    createInvitationTokenRecord($inviter->id, $plainToken, Carbon::now()->addHour());
 
     $response = $this->actingAs($joinUser)->post("/invitations/{$plainToken}/join", [
         'isDelete' => true
@@ -760,11 +753,7 @@ test('3-3-20: 【グループ参加】 元グループの保持確認', function
     // トークンを生成
     $invitationTokenService = app(InvitationTokenService::class);
     $plainToken = $invitationTokenService->generateToken();
-    InvitationToken::create([
-        'inviter_user_id' => $inviter->id,
-        'token' => Hash::make($plainToken),
-        'expires_at' => Carbon::now()->addHour()
-    ]);
+    createInvitationTokenRecord($inviter->id, $plainToken, Carbon::now()->addHour());
 
     $response = $this->actingAs($joinUser)->post("/invitations/{$plainToken}/join", [
         'isDelete' => true
@@ -803,11 +792,7 @@ test('3-3-21: 【グループ参加】 デフォルトのマスタデータの�
 
     $invitationTokenService = app(InvitationTokenService::class);
     $plainToken = $invitationTokenService->generateToken();
-    InvitationToken::create([
-        'inviter_user_id' => $inviter->id,
-        'token' => Hash::make($plainToken),
-        'expires_at' => Carbon::now()->addHour()
-    ]);
+    createInvitationTokenRecord($inviter->id, $plainToken, Carbon::now()->addHour());
 
     $response = $this->actingAs($user)->post("/invitations/{$plainToken}/join");
 
@@ -902,11 +887,7 @@ test('3-3-24: 【グループ参加】 バリデーションエラー（isDelete
 
     $invitationTokenService = app(InvitationTokenService::class);
     $plainToken = $invitationTokenService->generateToken();
-    InvitationToken::create([
-        'inviter_user_id' => $inviter->id,
-        'token' => Hash::make($plainToken),
-        'expires_at' => Carbon::now()->addHour(),
-    ]);
+    createInvitationTokenRecord($inviter->id, $plainToken, Carbon::now()->addHour());
 
     $response = $this->actingAs($user)->postJson("/invitations/{$plainToken}/join", [
         'isDelete' => 'invalid',
@@ -955,12 +936,7 @@ test('3-3-26: 【グループ参加】 ハッシュチェック失敗', function
         'group_id' => $inviterGroup->id
     ]);
 
-    // トークンを生成
-    InvitationToken::create([
-        'inviter_user_id' => $inviter->id,
-        'token' => Hash::make('correct-token'),
-        'expires_at' => Carbon::now()->addHour()
-    ]);
+    createInvitationTokenRecord($inviter->id, 'correct-token', Carbon::now()->addHour());
 
     $user = User::factory()->create([
         'email_verified_at' => now()
@@ -1001,11 +977,7 @@ test('3-3-27: 【グループ参加】 有効期限切れトークンでの参�
     // 有効期限切れのトークンを生成
     $invitationTokenService = app(InvitationTokenService::class);
     $plainToken = $invitationTokenService->generateToken();
-    InvitationToken::create([
-        'inviter_user_id' => $inviter->id,
-        'token' => Hash::make($plainToken),
-        'expires_at' => Carbon::now()->subHour() // 1時間前に期限切れ
-    ]);
+    createInvitationTokenRecord($inviter->id, $plainToken, Carbon::now()->subHour());
 
     $user = User::factory()->create([
         'email_verified_at' => now()
@@ -1174,11 +1146,7 @@ test('3-3-31: 【グループ参加】 買い物アイテムが存在する場�
 
     $invitationTokenService = app(InvitationTokenService::class);
     $plainToken = $invitationTokenService->generateToken();
-    InvitationToken::create([
-        'inviter_user_id' => $inviter->id,
-        'token' => Hash::make($plainToken),
-        'expires_at' => Carbon::now()->addHour()
-    ]);
+    createInvitationTokenRecord($inviter->id, $plainToken, Carbon::now()->addHour());
 
     $response = $this->actingAs($user)->post("/invitations/{$plainToken}/join");
 
@@ -1220,11 +1188,7 @@ test('3-3-32: 【グループ参加】 is_default=false の買い物カテゴリ
 
     $invitationTokenService = app(InvitationTokenService::class);
     $plainToken = $invitationTokenService->generateToken();
-    InvitationToken::create([
-        'inviter_user_id' => $inviter->id,
-        'token' => Hash::make($plainToken),
-        'expires_at' => Carbon::now()->addHour()
-    ]);
+    createInvitationTokenRecord($inviter->id, $plainToken, Carbon::now()->addHour());
 
     $response = $this->actingAs($user)->post("/invitations/{$plainToken}/join");
 
@@ -1264,11 +1228,7 @@ test('3-3-33: 【グループ参加】 食事予定（meal plan）が存在す�
 
     $invitationTokenService = app(InvitationTokenService::class);
     $plainToken = $invitationTokenService->generateToken();
-    InvitationToken::create([
-        'inviter_user_id' => $inviter->id,
-        'token' => Hash::make($plainToken),
-        'expires_at' => Carbon::now()->addHour()
-    ]);
+    createInvitationTokenRecord($inviter->id, $plainToken, Carbon::now()->addHour());
 
     $response = $this->actingAs($user)->post("/invitations/{$plainToken}/join");
 
@@ -1312,11 +1272,7 @@ test('3-3-34: 【グループ参加】 is_default=false の食事カテゴリが
 
     $invitationTokenService = app(InvitationTokenService::class);
     $plainToken = $invitationTokenService->generateToken();
-    InvitationToken::create([
-        'inviter_user_id' => $inviter->id,
-        'token' => Hash::make($plainToken),
-        'expires_at' => Carbon::now()->addHour()
-    ]);
+    createInvitationTokenRecord($inviter->id, $plainToken, Carbon::now()->addHour());
 
     $response = $this->actingAs($user)->post("/invitations/{$plainToken}/join");
 
@@ -1358,11 +1314,7 @@ test('3-3-35: 【グループ参加】 レシピが存在する場合', function
 
     $invitationTokenService = app(InvitationTokenService::class);
     $plainToken = $invitationTokenService->generateToken();
-    InvitationToken::create([
-        'inviter_user_id' => $inviter->id,
-        'token' => Hash::make($plainToken),
-        'expires_at' => Carbon::now()->addHour()
-    ]);
+    createInvitationTokenRecord($inviter->id, $plainToken, Carbon::now()->addHour());
 
     $response = $this->actingAs($user)->post("/invitations/{$plainToken}/join");
 
@@ -1403,11 +1355,7 @@ test('3-3-36: 【グループ参加】 レシピカテゴリが存在する場�
 
     $invitationTokenService = app(InvitationTokenService::class);
     $plainToken = $invitationTokenService->generateToken();
-    InvitationToken::create([
-        'inviter_user_id' => $inviter->id,
-        'token' => Hash::make($plainToken),
-        'expires_at' => Carbon::now()->addHour()
-    ]);
+    createInvitationTokenRecord($inviter->id, $plainToken, Carbon::now()->addHour());
 
     $response = $this->actingAs($user)->post("/invitations/{$plainToken}/join");
 
@@ -1447,11 +1395,7 @@ test('3-3-37: 【グループ参加】 材料（ingredient）が存在する場�
 
     $invitationTokenService = app(InvitationTokenService::class);
     $plainToken = $invitationTokenService->generateToken();
-    InvitationToken::create([
-        'inviter_user_id' => $inviter->id,
-        'token' => Hash::make($plainToken),
-        'expires_at' => Carbon::now()->addHour()
-    ]);
+    createInvitationTokenRecord($inviter->id, $plainToken, Carbon::now()->addHour());
 
     $response = $this->actingAs($user)->post("/invitations/{$plainToken}/join");
 
@@ -1495,11 +1439,7 @@ test('3-3-38: 【グループ参加】 is_default=false の材料単位が存在
 
     $invitationTokenService = app(InvitationTokenService::class);
     $plainToken = $invitationTokenService->generateToken();
-    InvitationToken::create([
-        'inviter_user_id' => $inviter->id,
-        'token' => Hash::make($plainToken),
-        'expires_at' => Carbon::now()->addHour()
-    ]);
+    createInvitationTokenRecord($inviter->id, $plainToken, Carbon::now()->addHour());
 
     $response = $this->actingAs($user)->post("/invitations/{$plainToken}/join");
 
@@ -1539,11 +1479,7 @@ test('3-3-39: 【グループ参加】 買い物タグが存在する場合', fu
 
     $invitationTokenService = app(InvitationTokenService::class);
     $plainToken = $invitationTokenService->generateToken();
-    InvitationToken::create([
-        'inviter_user_id' => $inviter->id,
-        'token' => Hash::make($plainToken),
-        'expires_at' => Carbon::now()->addHour()
-    ]);
+    createInvitationTokenRecord($inviter->id, $plainToken, Carbon::now()->addHour());
 
     $response = $this->actingAs($user)->post("/invitations/{$plainToken}/join");
 
@@ -1593,11 +1529,7 @@ test('3-3-40: 【グループ参加】 画像が存在する場合', function ()
 
     $invitationTokenService = app(InvitationTokenService::class);
     $plainToken = $invitationTokenService->generateToken();
-    InvitationToken::create([
-        'inviter_user_id' => $inviter->id,
-        'token' => Hash::make($plainToken),
-        'expires_at' => Carbon::now()->addHour()
-    ]);
+    createInvitationTokenRecord($inviter->id, $plainToken, Carbon::now()->addHour());
 
     $response = $this->actingAs($user)->post("/invitations/{$plainToken}/join");
 
@@ -1641,11 +1573,7 @@ test('3-3-41: 【グループ参加】 isDelete に文字列 false を指定し�
 
     $invitationTokenService = app(InvitationTokenService::class);
     $plainToken = $invitationTokenService->generateToken();
-    InvitationToken::create([
-        'inviter_user_id' => $inviter->id,
-        'token' => Hash::make($plainToken),
-        'expires_at' => Carbon::now()->addHour()
-    ]);
+    createInvitationTokenRecord($inviter->id, $plainToken, Carbon::now()->addHour());
 
     $response = $this->actingAs($user)->post("/invitations/{$plainToken}/join", [
         'isDelete' => 'false',
@@ -1732,11 +1660,7 @@ test('3-3-43: 【グループ参加】 データベース接続エラー', funct
     // トークンを生成
     $invitationTokenService = app(InvitationTokenService::class);
     $plainToken = $invitationTokenService->generateToken();
-    InvitationToken::create([
-        'inviter_user_id' => $inviter->id,
-        'token' => Hash::make($plainToken),
-        'expires_at' => Carbon::now()->addHour()
-    ]);
+    createInvitationTokenRecord($inviter->id, $plainToken, Carbon::now()->addHour());
 
     // データベース接続をモックしてエラーを発生させる
     DB::shouldReceive('beginTransaction')->andThrow(new \Exception('Database connection error'));
@@ -1781,11 +1705,7 @@ test('3-3-44: 【グループ参加】 GroupUserMapping 作成失敗', function 
     // トークンを生成
     $invitationTokenService = app(InvitationTokenService::class);
     $plainToken = $invitationTokenService->generateToken();
-    InvitationToken::create([
-        'inviter_user_id' => $inviter->id,
-        'token' => Hash::make($plainToken),
-        'expires_at' => Carbon::now()->addHour()
-    ]);
+    createInvitationTokenRecord($inviter->id, $plainToken, Carbon::now()->addHour());
 
     // DBのトランザクション内でエラーを発生させる
     DB::shouldReceive('commit')->andThrow(new Exception('GroupUserMapping creation failed'));
