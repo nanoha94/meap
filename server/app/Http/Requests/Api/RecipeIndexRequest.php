@@ -4,6 +4,7 @@ namespace App\Http\Requests\Api;
 
 use App\Http\Requests\Api\BaseApiRequest;
 use App\Support\ValidationLimits;
+use Illuminate\Validation\Rule;
 
 class RecipeIndexRequest extends BaseApiRequest
 {
@@ -15,6 +16,8 @@ class RecipeIndexRequest extends BaseApiRequest
      */
     public function rules(): array
     {
+        $groupId = $this->user()?->groups()->first()?->id;
+
         return [
             'limit' => 'integer|min:1|max:100|nullable',
             'offset' => 'integer|min:0|nullable',
@@ -23,7 +26,10 @@ class RecipeIndexRequest extends BaseApiRequest
             'recipe_name' => 'nullable|string|max:' . ValidationLimits::STRING_MAX,
             'ingredient_name' => 'nullable|string|max:' . ValidationLimits::STRING_MAX,
             'category_ids' => 'nullable|array',
-            'category_ids.*' => 'uuid|exists:recipe_categories,id',
+            'category_ids.*' => [
+                'uuid',
+                Rule::exists('recipe_categories', 'id')->where('group_id', $groupId),
+            ],
             'last_planned_date_from' => 'nullable|date|date_format:Y-m-d',
             'last_planned_date_to' => 'nullable|date|date_format:Y-m-d|after_or_equal:last_planned_date_from',
         ];

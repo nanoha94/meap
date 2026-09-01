@@ -124,9 +124,10 @@ class RecipeStoreRequest extends BaseApiRequest
     public function withValidator($validator)
     {
         $validator->after(function ($validator) {
+            $group = $this->user()?->groups()->first();
+
             $ownerUserId = $this->input('ownerUserId');
             if (is_string($ownerUserId) && Str::isUuid($ownerUserId)) {
-                $group = $this->user()?->groups()->first();
                 if ($group && ! $group->users()->where('users.id', $ownerUserId)->exists()) {
                     $validator->errors()->add(
                         'ownerUserId',
@@ -221,7 +222,9 @@ class RecipeStoreRequest extends BaseApiRequest
 
                     // 配列など型不正は rules() の string ルールに任せる（null は必須チェック対象）
                     if ($quantityDisplay === null || is_string($quantityDisplay)) {
-                        $unit = IngredientUnit::find($ingredient['unitId']);
+                        $unit = $group
+                            ? IngredientUnit::query()->where('group_id', $group->id)->find($ingredient['unitId'])
+                            : null;
                         $hasDisplay = is_string($quantityDisplay) && trim($quantityDisplay) !== '';
 
                         // 数量が必須で、表示表記が未指定の場合はエラー
