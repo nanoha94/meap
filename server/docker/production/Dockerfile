@@ -43,12 +43,7 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 RUN rm -f /etc/nginx/sites-enabled/default \
     /etc/nginx/sites-available/default \
     && rm -f /etc/nginx/conf.d/*.conf \
-    && mkdir -p /var/log/supervisor /etc/nginx/conf.d \
-    && chown www-data:www-data /var/log/supervisor \
-    && sed -i 's|pid /run/nginx.pid;|pid /tmp/nginx.pid;|' /etc/nginx/nginx.conf \
-    && sed -i 's|error_log /var/log/nginx/error.log|error_log /dev/stderr|' /etc/nginx/nginx.conf \
-    && sed -i 's|access_log /var/log/nginx/access.log|access_log /dev/stdout|' /etc/nginx/nginx.conf \
-    && sed -i 's|^pid = .*|pid = /tmp/php-fpm.pid|' /usr/local/etc/php-fpm.conf
+    && mkdir -p /var/log/supervisor /etc/nginx/conf.d
 
 WORKDIR /var/www/html
 
