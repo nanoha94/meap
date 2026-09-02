@@ -3,7 +3,6 @@
 import React from 'react';
 import dayjs from 'dayjs';
 import { ChevronDown, ExternalLink } from 'lucide-react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import {
@@ -25,6 +24,8 @@ import {
     formatDisplayDate,
     formatYen,
     getNoUpcomingInvoicePendingPlanChangeMessage,
+    isAllowedStripeUrl,
+    openStripeUrl,
 } from '@/utils';
 import {
     IBillingInvoices,
@@ -493,20 +494,25 @@ const PastInvoicesSection = ({ pastInvoices }: PastInvoicesSectionProps) => {
                             <span>{formatDisplayDate(invoice.date)}</span>
                             <div className="flex items-center gap-x-5">
                                 <span>合計 {formatYen(invoice.total)}</span>
-                                {invoice.invoiceUrl && (
-                                    <Link
-                                        href={invoice.invoiceUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-x-1 text-base font-bold text-primary-main underline transition-opacity hover:opacity-80">
-                                        <ExternalLink
-                                            size={14}
-                                            strokeWidth={3}
-                                            aria-hidden="true"
-                                        />
-                                        請求書
-                                    </Link>
-                                )}
+                                {invoice.invoiceUrl &&
+                                    isAllowedStripeUrl(invoice.invoiceUrl) && (
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                openStripeUrl(
+                                                    invoice.invoiceUrl,
+                                                    '_blank',
+                                                )
+                                            }
+                                            className="inline-flex items-center gap-x-1 text-base font-bold text-primary-main underline transition-opacity hover:opacity-80">
+                                            <ExternalLink
+                                                size={14}
+                                                strokeWidth={3}
+                                                aria-hidden="true"
+                                            />
+                                            請求書
+                                        </button>
+                                    )}
                             </div>
                         </li>
                     ))}

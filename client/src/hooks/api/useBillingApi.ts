@@ -20,6 +20,7 @@ import {
     IPostBillingResumeResponse,
     IPostBillingSubscripeResponse,
 } from '@/types';
+import { openStripeUrl } from '@/utils/stripeUrl';
 
 import { useApiErrorHandler } from './useApiErrorHandler';
 import { useSnackbars } from '../useSnackbars';
@@ -170,8 +171,17 @@ export const useBillingApi = () => {
                     );
 
                 if (responseData.success && responseData.data?.checkoutUrl) {
-                    window.location.href = responseData.data.checkoutUrl;
-                    return true;
+                    if (
+                        openStripeUrl(responseData.data.checkoutUrl)
+                    ) {
+                        return true;
+                    }
+
+                    addSnackbar(
+                        'error',
+                        '決済ページへの遷移に失敗しました。しばらく経ってから再度お試しください。',
+                    );
+                    return false;
                 }
 
                 return false;
@@ -183,7 +193,12 @@ export const useBillingApi = () => {
                 decrementLoadingCount();
             }
         },
-        [handleApiError, incrementLoadingCount, decrementLoadingCount],
+        [
+            handleApiError,
+            incrementLoadingCount,
+            decrementLoadingCount,
+            addSnackbar,
+        ],
     );
 
     /**
@@ -206,8 +221,15 @@ export const useBillingApi = () => {
                 );
 
             if (responseData.success && responseData.data?.portalUrl) {
-                window.location.href = responseData.data.portalUrl;
-                return true;
+                if (openStripeUrl(responseData.data.portalUrl)) {
+                    return true;
+                }
+
+                addSnackbar(
+                    'error',
+                    '決済ページへの遷移に失敗しました。しばらく経ってから再度お試しください。',
+                );
+                return false;
             }
 
             return false;
@@ -218,7 +240,12 @@ export const useBillingApi = () => {
             isCreatePortalSessionRef.current = false;
             decrementLoadingCount();
         }
-    }, [handleApiError, incrementLoadingCount, decrementLoadingCount]);
+    }, [
+        handleApiError,
+        incrementLoadingCount,
+        decrementLoadingCount,
+        addSnackbar,
+    ]);
 
     /**
      * 買い切りパック購入（Stripe Checkout へリダイレクト）
@@ -241,8 +268,17 @@ export const useBillingApi = () => {
                     );
 
                 if (responseData.success && responseData.data?.checkoutUrl) {
-                    window.location.href = responseData.data.checkoutUrl;
-                    return true;
+                    if (
+                        openStripeUrl(responseData.data.checkoutUrl)
+                    ) {
+                        return true;
+                    }
+
+                    addSnackbar(
+                        'error',
+                        '決済ページへの遷移に失敗しました。しばらく経ってから再度お試しください。',
+                    );
+                    return false;
                 }
 
                 return false;
@@ -254,7 +290,12 @@ export const useBillingApi = () => {
                 decrementLoadingCount();
             }
         },
-        [handleApiError, incrementLoadingCount, decrementLoadingCount],
+        [
+            handleApiError,
+            incrementLoadingCount,
+            decrementLoadingCount,
+            addSnackbar,
+        ],
     );
 
     /**
