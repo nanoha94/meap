@@ -204,7 +204,23 @@ test('2-1-11: カスタムバリデーションメッセージ', function () {
     $this->assertContains('passwordは必ず指定してください。', $responseData['errors']['password']);
 });
 
-test('2-1-12: レート制限', function () {
+test('2-1-12: 【ログイン】 バリデーションエラー（パスワード256文字超過）', function () {
+    $response = $this->postJson('/login', [
+        'email' => 'test@example.com',
+        'password' => str_repeat('a', 256),
+    ]);
+
+    $this->assertGuest();
+    $response->assertStatus(422);
+    $response->assertJsonValidationErrors(['password']);
+    $response->assertJson([
+        'success' => false,
+    ]);
+    $responseData = $response->json();
+    $this->assertContains('passwordは、255文字以内で指定してください。', $responseData['errors']['password']);
+});
+
+test('2-1-13: レート制限', function () {
     $user = User::factory()->create();
 
     // 5回の失敗したログイン試行
@@ -231,7 +247,31 @@ test('2-1-12: レート制限', function () {
     expect($responseData['message'])->toMatch('/^試行回数が上限に達しました。\d+秒後に再度お試しください。$/');
 });
 
-test('2-1-13: レート制限クリア', function () {
+test('2-1-14: 【ログイン】 IP 単位のレート制限（異なるメールアドレス）', function () {
+    config(['auth.login.ip_max_attempts' => 5]);
+
+    for ($i = 0; $i < 5; $i++) {
+        $this->postJson('/login', [
+            'email' => "user{$i}@example.com",
+            'password' => 'wrong-password',
+        ]);
+    }
+
+    $response = $this->postJson('/login', [
+        'email' => 'user5@example.com',
+        'password' => 'wrong-password',
+    ]);
+
+    $response->assertStatus(429);
+    $response->assertJson([
+        'success' => false,
+    ]);
+
+    $responseData = $response->json();
+    expect($responseData['message'])->toMatch('/^試行回数が上限に達しました。\d+秒後に再度お試しください。$/');
+});
+
+test('2-1-15: レート制限クリア', function () {
     $user = User::factory()->create();
 
     // 2回の失敗したログイン試行
@@ -266,7 +306,7 @@ test('2-1-13: レート制限クリア', function () {
     ]);
 });
 
-test('2-1-14: Lockout イベント発火', function () {
+test('2-1-16: Lockout イベント発火', function () {
     Event::fake([Lockout::class]);
 
     $user = User::factory()->create();
@@ -288,7 +328,7 @@ test('2-1-14: Lockout イベント発火', function () {
     Event::assertDispatched(Lockout::class);
 });
 
-test('2-1-15: 正常ログアウト', function () {
+test('2-1-17: 正常ログアウト', function () {
     $user = User::factory()->create();
 
     $response = $this->actingAs($user)->post('/logout');
@@ -301,7 +341,7 @@ test('2-1-15: 正常ログアウト', function () {
     ]);
 });
 
-test('2-1-16: 未認証ログアウト', function () {
+test('2-1-18: 未認証ログアウト', function () {
     $response = $this->post('/logout');
 
     $response->assertStatus(401); // 未認証のため401
@@ -311,7 +351,7 @@ test('2-1-16: 未認証ログアウト', function () {
     ]);
 });
 
-test('2-1-17: セッション無効化', function () {
+test('2-1-19: セッション無効化', function () {
     $user = User::factory()->create();
 
     $response = $this->actingAs($user)->post('/logout');
@@ -323,7 +363,7 @@ test('2-1-17: セッション無効化', function () {
     $this->assertNull($this->app['session']->get('auth.password_confirmed_at'));
 });
 
-test('2-1-18: 【ログアウト】 クッキー削除確認', function () {
+test('2-1-20: 【ログアウト】 クッキー削除確認', function () {
     $user = User::factory()->create();
 
     $response = $this->actingAs($user)->post('/logout');

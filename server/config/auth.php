@@ -112,6 +112,23 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Login Rate Limiting
+    |--------------------------------------------------------------------------
+    |
+    | max_attempts: 同一メールアドレス + IP の組み合わせあたりの最大試行回数
+    | ip_max_attempts: 同一 IP あたりの最大試行回数（メールアドレス横断）
+    | decay_seconds: レート制限のロックアウト時間（秒）
+    |
+    */
+
+    'login' => [
+        'max_attempts' => 5,
+        'ip_max_attempts' => 20,
+        'decay_seconds' => 60,
+    ],
+
     'basic_user' => env('BASIC_AUTH_USER'),
     'basic_password' => env('BASIC_AUTH_PASSWORD'),
 

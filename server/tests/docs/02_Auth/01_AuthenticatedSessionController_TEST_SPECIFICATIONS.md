@@ -19,13 +19,15 @@ Auth 関連のコントローラーテストファイル群で実装されてい
 | 2-1-9  | 【ログイン】 バリデーションエラー（パスワード未入力）   | 異常系       | password が空            | HTTP 422 JSON errors     | `LoginRequest::rules()`                       |
 | 2-1-10 | 【ログイン】 バリデーションエラー（両方の項目未入力）   | 異常系       | email, password が空     | HTTP 422 JSON errors     | `LoginRequest::rules()`                       |
 | 2-1-11 | 【ログイン】 カスタムバリデーションメッセージ          | 異常系       | バリデーションエラー時   | 国際化メッセージ         | `LoginRequest::messages()`                    |
-| 2-1-12 | 【ログイン】 レート制限                                 | セキュリティ | 連続 5 回失敗            | HTTP 302 throttle msg    | `LoginRequest::ensureIsNotRateLimited()`      |
-| 2-1-13 | 【ログイン】 レート制限クリア                           | セキュリティ | ログイン成功後           | HTTP 200                 | `LoginRequest::authenticate()`                |
-| 2-1-14 | 【ログイン】 Lockout イベント発火                       | セキュリティ | レート制限時             | Lockout イベント         | `LoginRequest::ensureIsNotRateLimited()`      |
-| 2-1-15 | 【ログアウト】 正常ログアウト                           | ログアウト   | 認証済み                 | HTTP 200                 | `AuthenticatedSessionController::destroy()`  |
-| 2-1-16 | 【ログアウト】 未認証ログアウト                         | ログアウト   | 未認証                   | HTTP 302                 | `AuthenticatedSessionController::destroy()`  |
-| 2-1-17 | 【ログアウト】 セッション無効化                         | ログアウト   | ログアウト後             | HTTP 200                 | `AuthenticatedSessionController::destroy()`  |
-| 2-1-18 | 【ログアウト】 クッキー削除確認                         | ログアウト   | ログアウト後             | クッキー削除             | `AuthenticatedSessionController::destroy()`  |
+| 2-1-12 | 【ログイン】 バリデーションエラー（パスワード256文字超過） | 異常系       | password が 256 文字     | HTTP 422 JSON errors     | `LoginRequest::rules()`                       |
+| 2-1-13 | 【ログイン】 レート制限                                 | セキュリティ | 連続 5 回失敗            | HTTP 302 throttle msg    | `LoginRequest::ensureIsNotRateLimited()`      |
+| 2-1-14 | 【ログイン】 IP 単位のレート制限（異なるメールアドレス） | セキュリティ | 同一 IP で異なるメール 5 回失敗 | HTTP 429 throttle msg    | `LoginRequest::ensureIsNotRateLimited()`      |
+| 2-1-15 | 【ログイン】 レート制限クリア                           | セキュリティ | ログイン成功後           | HTTP 200                 | `LoginRequest::authenticate()`                |
+| 2-1-16 | 【ログイン】 Lockout イベント発火                       | セキュリティ | レート制限時             | Lockout イベント         | `LoginRequest::ensureIsNotRateLimited()`      |
+| 2-1-17 | 【ログアウト】 正常ログアウト                           | ログアウト   | 認証済み                 | HTTP 200                 | `AuthenticatedSessionController::destroy()`  |
+| 2-1-18 | 【ログアウト】 未認証ログアウト                         | ログアウト   | 未認証                   | HTTP 302                 | `AuthenticatedSessionController::destroy()`  |
+| 2-1-19 | 【ログアウト】 セッション無効化                         | ログアウト   | ログアウト後             | HTTP 200                 | `AuthenticatedSessionController::destroy()`  |
+| 2-1-20 | 【ログアウト】 クッキー削除確認                         | ログアウト   | ログアウト後             | クッキー削除             | `AuthenticatedSessionController::destroy()`  |
 
 ## テスト実行方法
 

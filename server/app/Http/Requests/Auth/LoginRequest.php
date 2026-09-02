@@ -31,7 +31,7 @@ class LoginRequest extends BaseAuthRequest
     {
         return [
             'email' => ['required', 'string', 'email'],
-            'password' => ['required', 'string'],
+            'password' => ['required', 'string', 'max:255'],
             'remember' => ['sometimes', 'boolean'],
         ];
     }
@@ -49,6 +49,7 @@ class LoginRequest extends BaseAuthRequest
             'email.email' => __('validation.email', ['attribute' => 'email']),
             'password.required' => __('validation.required', ['attribute' => 'password']),
             'password.string' => __('validation.string', ['attribute' => 'password']),
+            'password.max' => __('validation.max.string', ['attribute' => 'password', 'max' => 255]),
             'remember.boolean' => __('validation.boolean', ['attribute' => 'remember']),
         ];
     }
@@ -73,7 +74,10 @@ class LoginRequest extends BaseAuthRequest
         $this->ensureIsNotRateLimited();
 
         if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
-            RateLimiter::hit($this->throttleKey());
+            // 認証失敗時にレートリミットを設定
+            $decaySeconds = (int) config('auth.login.decay_seconds', 60);
+            RateLimiter::hit($this->throttleKey(), $decaySeconds);
+            RateLimiter::hit($this->ipThrottleKey(), $decaySeconds);
 
             // 認証失敗をExceptionHandlerTraitで処理
             $authException = new HttpException(HttpStatusCode::UNAUTHORIZED->value, __('auth.login.warning'));
@@ -89,6 +93,7 @@ class LoginRequest extends BaseAuthRequest
         }
 
         RateLimiter::clear($this->throttleKey());
+        RateLimiter::clear($this->ipThrottleKey());
     }
 
     /**
@@ -98,26 +103,31 @@ class LoginRequest extends BaseAuthRequest
      */
     public function ensureIsNotRateLimited(): void
     {
-        if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
-            return;
+        $decaySeconds = (int) config('auth.login.decay_seconds', 60);
+        $limits = [
+            ['key' => $this->throttleKey(), 'max' => (int) config('auth.login.max_attempts', 5)],
+            ['key' => $this->ipThrottleKey(), 'max' => (int) config('auth.login.ip_max_attempts', 20)],
+        ];
+
+        foreach ($limits as $limit) {
+            if (! RateLimiter::tooManyAttempts($limit['key'], $limit['max'])) {
+                continue;
+            }
+
+            event(new Lockout($this));
+
+            $seconds = RateLimiter::availableIn($limit['key']);
+            $displaySeconds = min($decaySeconds, $seconds);
+
+            $response = $this->handleException(
+                new ThrottleRequestsException(__('auth.throttle', ['seconds' => $displaySeconds])),
+                $this,
+                __('auth.throttle', ['seconds' => $displaySeconds]),
+                __('operations.auth.login')
+            );
+
+            throw new HttpResponseException($response);
         }
-
-        event(new Lockout($this));
-
-        $seconds = RateLimiter::availableIn($this->throttleKey());
-
-        // 制限時間を設定から取得（デフォルト60秒）
-        $throttleSeconds = config('auth.password_timeout', 60); // デフォルト60秒
-        $displaySeconds = min($throttleSeconds, $seconds);
-
-        $response = $this->handleException(
-            new ThrottleRequestsException(__('auth.throttle', ['seconds' => $displaySeconds])),
-            $this,
-            __('auth.throttle', ['seconds' => $displaySeconds]),
-            __('operations.auth.login')
-        );
-
-        throw new HttpResponseException($response);
     }
 
     /**
@@ -126,5 +136,13 @@ class LoginRequest extends BaseAuthRequest
     public function throttleKey(): string
     {
         return Str::transliterate(Str::lower($this->input('email')) . '|' . $this->ip());
+    }
+
+    /**
+     * Get the IP-only rate limiting throttle key for the request.
+     */
+    public function ipThrottleKey(): string
+    {
+        return 'login|ip|' . $this->ip();
     }
 }
