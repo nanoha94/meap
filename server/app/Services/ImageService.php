@@ -43,10 +43,35 @@ class ImageService
      */
     public function uploadAndSaveImage(UploadedFile $file, string $uploadPath): Image
     {
-        $fileName = $this->generateFileName($file->getClientOriginalExtension());
-        $fullPath = "images/{$uploadPath}/{$fileName}";
+        // 拡張子はクライアント名ではなく getimagesize の IMAGETYPE_* から決定（{@see downloadAndSaveImage} と同様）
+        // @ は不正バイナリで PHP が出す E_WARNING を抑え、失敗通知は下記 HttpException に統一するため付与
+        $imageInfo = @getimagesize($file->getPathname());
+        if ($imageInfo === false) {
+            throw new HttpException(
+                HttpStatusCode::INTERNAL_SERVER_ERROR->value,
+                __('api.general.server_error')
+            );
+        }
 
-        $mediaType = $this->resolveUploadedFileMediaType($file);
+        $imageType = $imageInfo[2] ?? 0;
+        $extension = $this->imageTypeToExtension($imageType);
+        if ($extension === null) {
+            throw new HttpException(
+                HttpStatusCode::INTERNAL_SERVER_ERROR->value,
+                __('api.general.server_error')
+            );
+        }
+
+        $mediaType = $this->imageTypeToMediaType($imageType);
+        if ($mediaType === null) {
+            throw new HttpException(
+                HttpStatusCode::INTERNAL_SERVER_ERROR->value,
+                __('api.general.server_error')
+            );
+        }
+
+        $fileName = $this->generateFileName($extension);
+        $fullPath = "images/{$uploadPath}/{$fileName}";
 
         try {
             $image = $this->imageManager()->decodePath($file->getPathname());
@@ -467,31 +492,6 @@ class ImageService
             'width' => $processed->width(),
             'height' => $processed->height(),
         ];
-    }
-
-    /**
-     * アップロードファイルの MIME（encode 先フォーマット判定用）
-     */
-    private function resolveUploadedFileMediaType(UploadedFile $file): string
-    {
-        $mime = $file->getMimeType();
-        if (! is_string($mime) || $mime === '') {
-            // getimagesize の失敗は想定しない
-            $imageInfo = @getimagesize($file->getPathname());
-            if ($imageInfo !== false && isset($imageInfo[2])) {
-                $detected = image_type_to_mime_type($imageInfo[2]);
-                $mime = is_string($detected) ? $detected : '';
-            }
-        }
-
-        if (! is_string($mime) || $mime === '') {
-            throw new HttpException(
-                HttpStatusCode::INTERNAL_SERVER_ERROR->value,
-                __('api.general.server_error')
-            );
-        }
-
-        return $mime;
     }
 
     /**
