@@ -2,8 +2,8 @@ services:
     nginx:
         image: "nginx:latest"
         ports:
-            - "${APP_PORT:-8000}:8000"
-            - "${PGADMIN_PORT:-8080}:8080"
+            - "127.0.0.1:${APP_PORT:-8000}:8000"
+            - "127.0.0.1:${PGADMIN_PORT:-8080}:8080"
         environment:
             - SSL_PORT=${APP_PORT:-8000}
             - APP_SERVICE=${APP_SERVICE:-laravel.test}
@@ -33,8 +33,8 @@ services:
         extra_hosts:
             - "host.docker.internal:host-gateway"
         ports:
-            - "${APP_HTTP_PORT:-8001}:80"
-            - "${VITE_PORT:-5173}:${VITE_PORT:-5173}"
+            - "127.0.0.1:${APP_HTTP_PORT:-8001}:80"
+            - "127.0.0.1:${VITE_PORT:-5173}:${VITE_PORT:-5173}"
         environment:
             WWWUSER: "${WWWUSER}"
             LARAVEL_SAIL: 1
@@ -55,12 +55,12 @@ services:
     db:
         image: "postgres:17"
         ports:
-            - "${FORWARD_DB_PORT:-5432}:5432"
+            - "127.0.0.1:${FORWARD_DB_PORT:-5432}:5432"
         environment:
-            PGPASSWORD: "${DB_PASSWORD:-password}"
+            PGPASSWORD: "${DB_PASSWORD}"
             POSTGRES_DB: "${DB_DATABASE}"
             POSTGRES_USER: "${DB_USERNAME}"
-            POSTGRES_PASSWORD: "${DB_PASSWORD:-password}"
+            POSTGRES_PASSWORD: "${DB_PASSWORD}"
         volumes:
             - "sail-pgsql:/var/lib/postgresql/data"
             - "./docker/pgsql/create-testing-database.sh:/docker-entrypoint-initdb.d/create-testing-database.sh"
@@ -81,7 +81,7 @@ services:
         image: dpage/pgadmin4:latest
         environment:
             PGADMIN_DEFAULT_EMAIL: "${PGADMIN_EMAIL:-admin@example.com}"
-            PGADMIN_DEFAULT_PASSWORD: "${PGADMIN_PASSWORD:-password}"
+            PGADMIN_DEFAULT_PASSWORD: "${PGADMIN_PASSWORD}"
             PGADMIN_CONFIG_SERVER_MODE: "False"
             PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
         volumes:
@@ -92,7 +92,7 @@ services:
     redis:
         image: "redis:alpine"
         ports:
-            - "${FORWARD_REDIS_PORT:-6379}:6379"
+            - "127.0.0.1:${FORWARD_REDIS_PORT:-6379}:6379"
         volumes:
             - "sail-redis:/data"
         networks:
@@ -107,7 +107,7 @@ services:
     meilisearch:
         image: "getmeili/meilisearch:latest"
         ports:
-            - "${FORWARD_MEILISEARCH_PORT:-7700}:7700"
+            - "127.0.0.1:${FORWARD_MEILISEARCH_PORT:-7700}:7700"
         environment:
             MEILI_NO_ANALYTICS: "${MEILISEARCH_NO_ANALYTICS:-false}"
         volumes:
@@ -126,8 +126,8 @@ services:
     mailpit:
         image: "axllent/mailpit:latest"
         ports:
-            - "${FORWARD_MAILPIT_PORT:-1025}:1025"
-            - "${FORWARD_MAILPIT_DASHBOARD_PORT:-8025}:8025"
+            - "127.0.0.1:${FORWARD_MAILPIT_PORT:-1025}:1025"
+            - "127.0.0.1:${FORWARD_MAILPIT_DASHBOARD_PORT:-8025}:8025"
         networks:
             - sail
     selenium:
