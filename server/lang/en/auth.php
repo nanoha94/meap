@@ -15,6 +15,10 @@ return [
         'warning' => 'Email address or password is incorrect.',
     ],
 
+    'register' => [
+        'failed' => 'Registration failed. Please check your input.',
+    ],
+
     'email_verification' => [
         'failed' => 'Email verification process failed.',
         'store_failed' => 'Failed to resend email verification link.',

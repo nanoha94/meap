@@ -434,7 +434,7 @@ test('2-5-24: 【store】 バリデーションエラー（重複メールアド
     $response->assertStatus(422);
     $response->assertJsonValidationErrors('email');
     $responseData = $response->json();
-    $this->assertContains('メールアドレスの値は既に存在しています。', $responseData['errors']['email']);
+    $this->assertContains('登録に失敗しました。入力内容をご確認ください。', $responseData['errors']['email']);
     $this->assertGuest();
 });
 

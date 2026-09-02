@@ -59,7 +59,7 @@ class RegisterUserRequest extends BaseAuthRequest
             'email.lowercase' => __('validation.lowercase', ['attribute' => $email]),
             'email.email' => __('validation.email', ['attribute' => $email]),
             'email.max' => __('validation.max', ['attribute' => $email, 'string' => 255]),
-            'email.unique' => __('validation.unique', ['attribute' => $email]),
+            'email.unique' => __('auth.register.failed'),
             'password.required' => __('validation.required', ['attribute' => $password]),
             'password.confirmed' => __('validation.password.confirmed', ['attribute' => $password]),
             'password.min' => __('validation.min', ['attribute' => $password, 'string' => 8]),
