@@ -2,10 +2,15 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\HttpStatusCode;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\BaseApiRequest;
+use App\Models\Group;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\MultipleRecordsFoundException;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
  * @OA\Info(
@@ -77,8 +82,20 @@ abstract class ApiController extends Controller
     /**
      * ユーザーのグループを取得
      */
-    protected function getUserGroup(Request|FormRequest|BaseApiRequest $request)
+    protected function getUserGroup(Request|FormRequest|BaseApiRequest $request): Group
     {
-        return $request->user()->groups()->first();
+        try {
+            return $request->user()->groups()->sole();
+        } catch (ModelNotFoundException) {
+            throw new HttpException(
+                HttpStatusCode::UNPROCESSABLE_ENTITY->value,
+                __('api.general.not_belong_to_any_group')
+            );
+        } catch (MultipleRecordsFoundException) {
+            throw new HttpException(
+                HttpStatusCode::UNPROCESSABLE_ENTITY->value,
+                __('api.general.belong_to_multiple_groups')
+            );
+        }
     }
 }

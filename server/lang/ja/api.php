@@ -13,6 +13,7 @@ return [
         'database_error' => 'データベースエラーが発生しました。',
         'server_error' => 'サーバー内部エラーが発生しました。',
         'not_belong_to_any_group' => 'ユーザーはグループに所属していません。',
+        'belong_to_multiple_groups' => 'ユーザーは複数のグループに所属しています。',
         'unexpected_type' => '予期しない型が渡されました。期待: :expected, 実際: :actual',
         'unexpected_collection_type' => '予期しないコレクション型が渡されました。期待: :expected, 実際: :actual',
     ],

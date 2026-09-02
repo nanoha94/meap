@@ -139,7 +139,30 @@ test('3-16-5: 【マスターデータ取得】 グループに所属してい�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-16-6: 【マスターデータ取得】 サービス例外', function () {
+test('3-16-6: 【マスターデータ取得】 複数のグループに所属している', function () {
+    $user = User::factory()->create([
+        'email_verified_at' => now(),
+    ]);
+    $group1 = Group::createGroup();
+    $group2 = Group::createGroup();
+    $group1->users()->attach($user->id);
+    $group2->users()->attach($user->id);
+
+    $response = $this->actingAs($user)->get('/master');
+
+    $response->assertStatus(422);
+    $response->assertJson([
+        'success' => false,
+        'message' => 'ユーザーは複数のグループに所属しています。',
+    ]);
+    $response->assertJsonStructure([
+        'success',
+        'message',
+    ]);
+    $response->assertHeader('Content-Type', 'application/json');
+});
+
+test('3-16-7: 【マスターデータ取得】 サービス例外', function () {
     $this->mock(MasterService::class, function ($mock) {
         $mock->shouldReceive('index')
             ->once()

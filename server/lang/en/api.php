@@ -13,6 +13,7 @@ return [
         'database_error' => 'A database error occurred.',
         'server_error' => 'Internal server error occurred.',
         'not_belong_to_any_group' => 'User does not belong to any group.',
+        'belong_to_multiple_groups' => 'User belongs to multiple groups.',
         'unexpected_type' => 'Unexpected type passed. Expected: :expected, Actual: :actual',
         'unexpected_collection_type' => 'Unexpected collection type passed. Expected: :expected, Actual: :actual',
     ],

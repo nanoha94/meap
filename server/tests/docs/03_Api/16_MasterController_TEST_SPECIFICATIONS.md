@@ -19,7 +19,8 @@
 | 3-16-3 | 【マスターデータ取得】 未認証 | 異常系 | 認証なし | HTTP 401 | `MasterController::__invoke()` |
 | 3-16-4 | 【マスターデータ取得】 メール未認証 | 異常系 | 認証済みユーザー（email_verified_at が null）、Accept: application/json | HTTP 409、メール未確認メッセージ | `MasterController::__invoke()` |
 | 3-16-5 | 【マスターデータ取得】 グループに所属していない | 異常系 | グループ未所属の認証済みユーザー | HTTP 422、グループ未所属メッセージ | `MasterController::__invoke()` |
-| 3-16-6 | 【マスターデータ取得】 サービス例外 | 異常系 | MasterService::index が例外を投げる | HTTP 500 | `MasterController::__invoke()` |
+| 3-16-6 | 【マスターデータ取得】 複数のグループに所属している | 異常系 | 2 つ以上のグループに所属する認証済みユーザー | HTTP 422、複数グループ所属メッセージ | `MasterController::__invoke()` |
+| 3-16-7 | 【マスターデータ取得】 サービス例外 | 異常系 | MasterService::index が例外を投げる | HTTP 500 | `MasterController::__invoke()` |
 
 ## テスト実行方法
 
