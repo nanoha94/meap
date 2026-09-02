@@ -48,8 +48,7 @@ RUN rm -f /etc/nginx/sites-enabled/default \
     && sed -i 's|pid /run/nginx.pid;|pid /tmp/nginx.pid;|' /etc/nginx/nginx.conf \
     && sed -i 's|error_log /var/log/nginx/error.log|error_log /dev/stderr|' /etc/nginx/nginx.conf \
     && sed -i 's|access_log /var/log/nginx/access.log|access_log /dev/stdout|' /etc/nginx/nginx.conf \
-    && chown -R www-data:www-data /usr/local/var/run \
-    && printf '[global]\npid = /tmp/php-fpm.pid\n' > /usr/local/etc/php-fpm.d/zz-pid.conf
+    && sed -i 's|^pid = .*|pid = /tmp/php-fpm.pid|' /usr/local/etc/php-fpm.conf
 
 WORKDIR /var/www/html
 

@@ -13,5 +13,6 @@ fi
 php artisan config:cache --no-interaction
 php artisan route:cache --no-interaction
 chown -R www-data:www-data /var/www/html/bootstrap/cache
+chown -R www-data:www-data /var/lib/nginx /var/log/nginx
 echo "[meap] starting supervisord (nginx + php-fpm)"
 exec /usr/bin/supervisord -c /etc/supervisor/supervisord.conf -n
