@@ -35,7 +35,10 @@ class BasicAuth
             return $next($request);
         }
 
-        if ($request->getUser() !== $user || $request->getPassword() !== $password) {
+        if (
+            ! hash_equals((string) $user, (string) ($request->getUser() ?? ''))
+            || ! hash_equals((string) $password, (string) ($request->getPassword() ?? ''))
+        ) {
             return response('Unauthorized', 401)
                 ->header('WWW-Authenticate', 'Basic realm="Meap"');
         }
