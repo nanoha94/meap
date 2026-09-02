@@ -57,7 +57,15 @@ beforeEach(function () {
 
         public function testHandleQueryException($request)
         {
-            $exception = new QueryException('mysql', 'SELECT * FROM users', [], new Exception('SQLSTATE[42S02]: Base table or view not found'));
+            $previous = new PDOException('SQLSTATE[42S02]: Base table or view not found', 42);
+            $previous->errorInfo = ['42S02', 1146, "Table 'users' doesn't exist"];
+
+            $exception = new QueryException(
+                'mysql',
+                'SELECT * FROM users WHERE email = ?',
+                ['secret@example.com'],
+                $previous,
+            );
 
             return $this->handleException(
                 $exception,
@@ -198,7 +206,14 @@ test('1-3-4: 【handleException】 QueryException 処理テスト', function () 
         ->withArgs(function ($message, $context) {
             return str_contains($message, '操作「ユーザー取得」: サーバー内部エラーが発生しました') &&
                 $context['message'] === 'データベースエラーが発生しました' &&
-                $context['status_code'] === HttpStatusCode::INTERNAL_SERVER_ERROR->value;
+                $context['status_code'] === HttpStatusCode::INTERNAL_SERVER_ERROR->value &&
+                $context['sqlstate'] === '42S02' &&
+                $context['error_code'] === 1146 &&
+                ! array_key_exists('sql', $context) &&
+                ! array_key_exists('bindings', $context) &&
+                ! array_key_exists('sql_error', $context) &&
+                ! str_contains(json_encode($context), 'secret@example.com') &&
+                ! str_contains(json_encode($context), 'SELECT * FROM users');
         });
 
     $response = $this->dummy->testHandleQueryException($request);

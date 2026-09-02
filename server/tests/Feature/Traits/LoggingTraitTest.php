@@ -201,7 +201,8 @@ test('1-4-6: 機密情報フィルタリングテスト', function () {
         'token' => 'sometoken',
         'api_token' => 'someapitoken',
         'api_key' => 'someapikey',
-        'secret' => 'somesecret'
+        'secret' => 'somesecret',
+        'email' => 'user@example.com',
     ]);
 
     $group = new Group();
@@ -235,8 +236,37 @@ test('1-4-6: 機密情報フィルタリングテスト', function () {
                 $context['request_data']['token'] === '*****' &&
                 $context['request_data']['api_token'] === '*****' &&
                 $context['request_data']['api_key'] === '*****' &&
-                $context['request_data']['secret'] === '*****';
+                $context['request_data']['secret'] === '*****' &&
+                $context['request_data']['email'] === 'u***@example.com';
         });
 
     $this->dummy->testMethodWithSensitiveData($request);
+});
+
+test('1-4-7: 【filterSensitiveData】 メールアドレス部分マスクテスト', function () {
+    $request = Request::create('/test', 'POST', [
+        'email' => 'john.doe@example.com',
+    ]);
+
+    Log::shouldReceive('info')
+        ->once()
+        ->withArgs(function ($message, $context) {
+            return $context['request_data']['email'] === 'j***@example.com';
+        });
+
+    $this->dummy->testMethod($request);
+});
+
+test('1-4-8: 【filterSensitiveData】 無効なメールアドレスはマスク化テスト', function () {
+    $request = Request::create('/test', 'POST', [
+        'email' => 'not-an-email',
+    ]);
+
+    Log::shouldReceive('info')
+        ->once()
+        ->withArgs(function ($message, $context) {
+            return $context['request_data']['email'] === '*****';
+        });
+
+    $this->dummy->testMethod($request);
 });

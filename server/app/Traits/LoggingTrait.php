@@ -173,20 +173,51 @@ trait LoggingTrait
             'token',             // 認証トークン
             'api_token',         // APIトークン
             'api_key',           // APIキー
-            'secret'             // シークレットキー
+            'secret',            // シークレットキー
+            'email',             // メールアドレス
         ];
 
         // リクエストデータから機密情報を除外
         $requestData = $request->all();
         foreach ($sensitiveFields as $field) {
             if (isset($requestData[$field])) {
-                $requestData[$field] = '*****';
+                $requestData[$field] = $field === 'email'
+                    ? $this->maskEmail($requestData[$field])
+                    : '*****';
             }
         }
 
         $context['request_data'] = $requestData;
 
         return $context;
+    }
+
+    /**
+     * メールアドレスを部分マスクする
+     */
+    private function maskEmail(mixed $email): string
+    {
+        if (! is_string($email) || $email === '') {
+            return '*****';
+        }
+
+        $atPos = strpos($email, '@');
+        if ($atPos === false || $atPos === 0) {
+            return '*****';
+        }
+
+        $local = substr($email, 0, $atPos);
+        $domain = substr($email, $atPos + 1);
+
+        if ($domain === '') {
+            return '*****';
+        }
+
+        $maskedLocal = strlen($local) <= 1
+            ? '*'
+            : $local[0] . str_repeat('*', min(strlen($local) - 1, 3));
+
+        return $maskedLocal . '@' . $domain;
     }
 
     /**

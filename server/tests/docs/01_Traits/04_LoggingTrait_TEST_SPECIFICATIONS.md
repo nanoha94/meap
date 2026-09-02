@@ -21,7 +21,9 @@
 | 1-4-3 | 【logWarning】 警告ログ出力テスト                            | 基本機能     | PUT `/test`<br>未認証ユーザー                    | - 操作名、コントローラー名、メソッド名、null 値の処理                                | `LoggingTrait::logWarning()`           |
 | 1-4-4 | 【logError】 エラーログ出力テスト                             | 基本機能     | POST `/test`<br>ユーザー ID=2<br>例外発生        | - エラーメッセージ、エラーコード、ステータスコード、ファイル・行情報                 | `LoggingTrait::logError()`             |
 | 1-4-5 | 【logMessage】 ログメッセージ統合テスト                      | 基本機能     | GET `/test`<br>ユーザー ID=6<br>グループ ID=600  | - 各ログレベルでのメッセージ出力が正しいことを確認                                   | `LoggingTrait::logMessage()`           |
-| 1-4-6 | 【filterSensitiveData】 機密情報フィルタリングテスト         | セキュリティ | POST `/test`<br>すべての機密情報を含むリクエスト | - すべての機密情報が`*****`に置換されることを確認                                    | `LoggingTrait::filterSensitiveData()`  |
+| 1-4-6 | 【filterSensitiveData】 機密情報フィルタリングテスト         | セキュリティ | POST `/test`<br>すべての機密情報を含むリクエスト | - すべての機密情報が`*****`に置換されることを確認<br>- `email` は部分マスク（例: `u***@example.com`） | `LoggingTrait::filterSensitiveData()`  |
+| 1-4-7 | 【filterSensitiveData】 メールアドレス部分マスクテスト       | セキュリティ | POST `/test`<br>`email=john.doe@example.com`    | - `email` が `j***@example.com` にマスクされること                                     | `LoggingTrait::filterSensitiveData()`  |
+| 1-4-8 | 【filterSensitiveData】 無効なメールアドレスはマスク化テスト | セキュリティ | POST `/test`<br>`email=not-an-email`            | - `email` が `*****` に置換されること                                                  | `LoggingTrait::filterSensitiveData()`  |
 
 ## テスト実行方法
 
