@@ -11,7 +11,7 @@
         "dev:ssl": "local-ssl-proxy --key ../certificates/localhost-key.pem --cert ../certificates/localhost.pem --source 3000 --target 3001",
         "build": "next build",
         "start": "npm-run-all -p start:*",
-        "start:app": "set NODE_TLS_REJECT_UNAUTHORIZED=0&&next start -p 3001",
+        "start:app": "next start -p 3001",
         "start:ssl": "local-ssl-proxy --key ../certificates/localhost-key.pem --cert ../certificates/localhost.pem --source 3000 --target 3001",
         "lint": "eslint .",
         "lint:fix": "eslint --fix ."
