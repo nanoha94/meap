@@ -25,7 +25,7 @@ const nextConfig = {
         ];
     },
     images: {
-        // 開発環境でのみ最適化を無効化
+        // ローカル環境（next dev）でのみ最適化を無効化
         unoptimized: process.env.NODE_ENV === 'development',
         remotePatterns: [
             {

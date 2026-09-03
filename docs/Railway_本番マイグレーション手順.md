@@ -5,7 +5,7 @@
 ## 前提
 
 - 対象サービス: `meap`（Laravel）
-- 環境: `develop`（必要に応じて読み替え）
+- 環境: `staging`（必要に応じて読み替え）
 - 実行場所: Railway コンテナ内（`railway ssh`）
 
 ## 重要な設定方針
