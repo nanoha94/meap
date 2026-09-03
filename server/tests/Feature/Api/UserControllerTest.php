@@ -129,8 +129,9 @@ test('3-11-2: 【一覧取得】 グループ内ユーザー情報の確認', fu
 });
 
 test('3-11-3: 【一覧取得】 ユーザー情報フォーマット確認', function () {
+    $imagePath = 'images/test.jpg';
     $image = Image::create([
-        'src' => '/storage/images/test.jpg',
+        'src' => $imagePath,
         'width' => 100,
         'height' => 100
     ]);
@@ -167,7 +168,7 @@ test('3-11-3: 【一覧取得】 ユーザー情報フォーマット確認', fu
                     'seed' => 'testseed',
                     'image' => [
                         'id' => $image->id,
-                        'src' => '/storage/images/test.jpg',
+                        'src' => Storage::disk('public')->url($imagePath),
                         'width' => 100,
                         'height' => 100,
                     ]
@@ -491,7 +492,7 @@ test('3-11-11: 【詳細取得】 未認証ユーザー', function () {
 
 test('3-11-12: 【更新】 名前のみ更新', function () {
     $image = Image::create([
-        'src' => '/storage/images/users/dummy/test.jpg',
+        'src' => 'images/users/dummy/test.jpg',
         'width' => 100,
         'height' => 100
     ]);
@@ -543,7 +544,7 @@ test('3-11-13: 【更新】 アバター画像IDのみ更新', function () {
     ]);
 
     $image = Image::create([
-        'src' => "/storage/images/users/{$user->id}/test.jpg",
+        'src' => "images/users/{$user->id}/test.jpg",
         'width' => 100,
         'height' => 100
     ]);
@@ -591,7 +592,7 @@ test('3-11-14: 【更新】 名前とアバター画像IDを同時に更新', fu
     ]);
 
     $image = Image::create([
-        'src' => "/storage/images/users/{$user->id}/test.jpg",
+        'src' => "images/users/{$user->id}/test.jpg",
         'width' => 100,
         'height' => 100
     ]);
@@ -631,7 +632,7 @@ test('3-11-15: 【更新】 アバター画像IDをnullに設定（削除）', f
     Storage::disk('public')->put($filePath, 'fake image content');
 
     $image = Image::create([
-        'src' => '/storage/' . $filePath,
+        'src' => $filePath,
         'width' => 100,
         'height' => 100
     ]);
@@ -686,7 +687,7 @@ test('3-11-16: 【更新】 アバター画像IDキーを省略した場合、nu
     $filePath = 'images/test.jpg';
     Storage::disk('public')->put($filePath, 'fake image content');
     $image = Image::create([
-        'src' => '/storage/' . $filePath,
+        'src' => $filePath,
         'width' => 100,
         'height' => 100
     ]);
@@ -959,7 +960,7 @@ test('3-11-24: 【削除】 アカウント削除時にユーザー配下の画�
 
     // Image レコード作成（deleteImagesByUser の LIKE 条件に合う src）
     $image = Image::create([
-        'src' => url('/storage/' . $filePath),
+        'src' => $filePath,
         'width' => 100,
         'height' => 100
     ]);

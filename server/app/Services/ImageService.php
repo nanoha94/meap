@@ -88,7 +88,7 @@ class ImageService
 
         return DB::transaction(function () use ($fullPath, $processed) {
             return Image::create([
-                'src' => $this->imageDisk()->url($fullPath),
+                'src' => $fullPath,
                 'width' => $processed['width'],
                 'height' => $processed['height'],
             ]);
@@ -196,7 +196,7 @@ class ImageService
         try {
             return DB::transaction(function () use ($fullPath, $processed) {
                 return Image::create([
-                    'src' => $this->imageDisk()->url($fullPath),
+                    'src' => $fullPath,
                     'width' => $processed['width'],
                     'height' => $processed['height'],
                 ]);
@@ -361,10 +361,34 @@ class ImageService
 
         return [
             'id' => $image->id,
-            'src' => $image->src,
+            'src' => $this->generateImageUrl($image->src),
             'width' => $image->width,
             'height' => $image->height,
         ];
+    }
+
+    /**
+     * DB に保存された相対パスからクライアント向け URL を生成する。
+     */
+    private function generateImageUrl(?string $path): ?string
+    {
+        if ($path === null) {
+            return null;
+        }
+
+        $disk = $this->imageDisk();
+        $diskName = config('filesystems.image_disk');
+        $driver = config("filesystems.disks.{$diskName}.driver");
+
+        // s3（R2）ディスク時は署名付き URL、public ディスク時は従来の公開 URL を返す
+        if ($driver === 's3') {
+            $ttl = (int) config('filesystems.signed_url_ttl', 360);
+
+            return $disk->temporaryUrl($path, now()->addMinutes($ttl));
+        }
+
+        // 従来の公開 URL を返す
+        return $disk->url($path);
     }
 
     /**
@@ -559,5 +583,4 @@ class ImageService
             return false;
         }
     }
-
 }

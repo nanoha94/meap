@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('images', function (Blueprint $table) {
             $table->uuid('id')->primary();
+            // ストレージ上のオブジェクトキー（例: images/groups/{id}/file.jpg）。完全 URL は保存しない。
             $table->string('src')->nullable();
             $table->integer('width')->nullable();
             $table->integer('height')->nullable();

@@ -92,6 +92,7 @@ test('3-1-1: 【一括アップロード】 正常な画像アップロード（
     // srcが正しい形式で保存されていることを確認
     $image = Image::where('width', 100)->where('height', 100)->first();
     expect($image->src)->toContain("images/groups/{$this->group->id}/");
+    expect($data[0]['src'])->toBe(Storage::disk($this->imageDisk)->url($image->src));
 });
 
 test('3-1-2: 【一括アップロード】 複数画像の一括アップロード', function () {
@@ -496,6 +497,7 @@ test('3-1-21: 【アップロード】 正常な画像アップロード', funct
 
     $image = Image::where('width', 100)->where('height', 100)->first();
     expect($image->src)->toContain("images/users/{$this->user->id}/");
+    expect($data['src'])->toBe(Storage::disk($this->imageDisk)->url($image->src));
 });
 
 test('3-1-22: 【アップロード】 メール未確認ユーザー', function () {

@@ -49,7 +49,7 @@ const ProfileEditForm = () => {
     const isDisabledSendButton = React.useMemo(() => {
         if (watchedName === '') return true;
         const nameUnchanged = watchedName === (loginUser.name ?? '');
-        const avatarUnchanged = watchedAvatarImage?.src === loginUser.avatar.image?.src;
+        const avatarUnchanged = watchedAvatarImage?.id === loginUser.avatar.image?.id;
         return nameUnchanged && avatarUnchanged;
     }, [watchedName, watchedAvatarImage, loginUser.name, loginUser.avatar.image]);
     useNavigationGuard(!isDisabledSendButton);

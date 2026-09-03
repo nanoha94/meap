@@ -27,6 +27,11 @@ return [
 
     'image_disk' => env('IMAGE_DISK', 'public'),
 
+    // 署名付き URL の有効期間（分）。レシピ閲覧中に切れない長さに設定。
+    // 制約: MasterService のキャッシュ TTL（現在 30 分）より必ず長くすること。
+    // キャッシュ内に署名付き URL が含まれるため、逆転するとキャッシュから期限切れ URL が返る。
+    'signed_url_ttl' => (int) env('IMAGE_SIGNED_URL_TTL', 360),
+
     /*
     |--------------------------------------------------------------------------
     | Filesystem Disks

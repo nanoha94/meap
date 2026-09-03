@@ -91,7 +91,7 @@ beforeEach(function () {
 
     // テスト用の画像を作成（グループスコープ検証は images/groups/{group_id}/ 形式のため合わせる）
     $this->image = Image::create([
-        'src' => "/storage/images/groups/{$this->group->id}/test.jpg",
+        'src' => "images/groups/{$this->group->id}/test.jpg",
         'width' => 800,
         'height' => 600
     ]);
@@ -1421,7 +1421,7 @@ test('3-7-56: 【新規作成】 requires_quantity=false の食材単位で数�
 test('3-7-57: 【新規作成】 すべての項目を含む料理作成', function () {
     // 追加の画像を作成（手順用）
     $stepImage = Image::create([
-        'src' => "/storage/images/groups/{$this->group->id}/step.jpg",
+        'src' => "images/groups/{$this->group->id}/step.jpg",
         'width' => 800,
         'height' => 600
     ]);
@@ -3698,7 +3698,7 @@ test('3-7-136: 【新規作成】 他グループの画像 ID 指定（thumbnail
 
     // 他グループの画像を作成
     $otherImage = Image::create([
-        'src' => "/storage/images/groups/{$otherGroup->id}/other_test.jpg",
+        'src' => "images/groups/{$otherGroup->id}/other_test.jpg",
         'width' => 800,
         'height' => 600
     ]);
@@ -3766,7 +3766,7 @@ test('3-7-138: 【新規作成】 他グループの画像 ID 指定（steps.\*.
 
     // 他グループの画像を作成
     $otherImage = Image::create([
-        'src' => "/storage/images/groups/{$otherGroup->id}/other_test.jpg",
+        'src' => "images/groups/{$otherGroup->id}/other_test.jpg",
         'width' => 800,
         'height' => 600
     ]);
@@ -4061,7 +4061,7 @@ test('3-7-147: 【詳細取得】 正常な料理詳細取得', function () {
 test('3-7-148: 【詳細取得】 すべての項目を含む料理詳細取得', function () {
     // 追加の画像を作成（手順用）
     $stepImage = Image::create([
-        'src' => "/storage/images/groups/{$this->group->id}/step.jpg",
+        'src' => "images/groups/{$this->group->id}/step.jpg",
         'width' => 800,
         'height' => 600
     ]);
@@ -4859,7 +4859,7 @@ test('3-7-171: 【更新】 すべての項目を含む料理更新', function (
 
     // 追加の画像を作成（手順用）
     $stepImage = Image::create([
-        'src' => "/storage/images/groups/{$this->group->id}/step.jpg",
+        'src' => "images/groups/{$this->group->id}/step.jpg",
         'width' => 800,
         'height' => 600
     ]);
@@ -6768,7 +6768,7 @@ test('3-7-249: 【更新】 他グループの画像 ID 指定（thumbnailId）'
     $otherGroup = Group::create(['group_size' => 1]);
     DB::table('group_user_mappings')->insert(['user_id' => $otherUser->id, 'group_id' => $otherGroup->id]);
     $otherImage = Image::create([
-        'src' => "/storage/images/groups/{$otherGroup->id}/other.jpg",
+        'src' => "images/groups/{$otherGroup->id}/other.jpg",
         'width' => 800,
         'height' => 600
     ]);
@@ -6809,7 +6809,7 @@ test('3-7-251: 【更新】 他グループの画像 ID 指定（steps.\*.imageI
     $otherGroup = Group::create(['group_size' => 1]);
     DB::table('group_user_mappings')->insert(['user_id' => $otherUser->id, 'group_id' => $otherGroup->id]);
     $otherImage = Image::create([
-        'src' => "/storage/images/groups/{$otherGroup->id}/other.jpg",
+        'src' => "images/groups/{$otherGroup->id}/other.jpg",
         'width' => 800,
         'height' => 600
     ]);

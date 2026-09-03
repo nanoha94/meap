@@ -66,6 +66,7 @@ const AccountPage = ({ invitationDetail, errorMessage }: Props) => {
                                 width={loginUser.avatar.image.width}
                                 height={loginUser.avatar.image.height}
                                 className="w-full h-full object-cover"
+                                priority
                             />
                         ) : (
                             <div
