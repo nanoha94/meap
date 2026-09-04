@@ -4,6 +4,7 @@ namespace App\Http\Requests\Api;
 
 use App\Http\Requests\Api\BaseApiRequest;
 use App\Support\ValidationLimits;
+use Illuminate\Validation\Rule;
 
 class MealPlanStoreRequest extends BaseApiRequest
 {
@@ -15,14 +16,24 @@ class MealPlanStoreRequest extends BaseApiRequest
      */
     public function rules(): array
     {
+        $groupId = $this->user()->groups()->sole()->id;
+
         return [
             'date' => 'date_format:Y-m-d|required',
             'meals' => 'array|min:1|max:' . ValidationLimits::MEAL_PLAN_MEALS_MAX . '|required',
             'meals.*.id' => 'uuid|nullable',
-            'meals.*.categoryId' => 'uuid|required',
+            'meals.*.categoryId' => [
+                'uuid',
+                'required',
+                Rule::exists('meal_categories', 'id')->where('group_id', $groupId),
+            ],
             'meals.*.order' => 'integer|min:0|required',
             'meals.*.recipes' => 'array|min:1|max:' . ValidationLimits::MEAL_PLAN_RECIPES_MAX . '|required',
-            'meals.*.recipes.*.id' => 'uuid|required',
+            'meals.*.recipes.*.id' => [
+                'uuid',
+                'required',
+                Rule::exists('recipes', 'id')->where('group_id', $groupId),
+            ],
             'meals.*.recipes.*.order' => 'integer|min:0|required',
         ];
     }
@@ -78,6 +89,7 @@ class MealPlanStoreRequest extends BaseApiRequest
             'meals.*.id.uuid' => __('validation.uuid', ['attribute' => 'meals.*.id']),
             'meals.*.categoryId.uuid' => __('validation.uuid', ['attribute' => 'meals.*.categoryId']),
             'meals.*.categoryId.required' => __('validation.required', ['attribute' => 'meals.*.categoryId']),
+            'meals.*.categoryId.exists' => __('validation.exists', ['attribute' => 'meals.*.categoryId']),
             'meals.*.order.integer' => __('validation.integer', ['attribute' => 'meals.*.order']),
             'meals.*.order.min' => __('validation.min.numeric', ['attribute' => 'meals.*.order', 'min' => 0]),
             'meals.*.order.required' => __('validation.required', ['attribute' => 'meals.*.order']),
@@ -87,6 +99,7 @@ class MealPlanStoreRequest extends BaseApiRequest
             'meals.*.recipes.required' => __('validation.required', ['attribute' => 'meals.*.recipes']),
             'meals.*.recipes.*.id.uuid' => __('validation.uuid', ['attribute' => 'meals.*.recipes.*.id']),
             'meals.*.recipes.*.id.required' => __('validation.required', ['attribute' => 'meals.*.recipes.*.id']),
+            'meals.*.recipes.*.id.exists' => __('validation.exists', ['attribute' => 'meals.*.recipes.*.id']),
             'meals.*.recipes.*.order.integer' => __('validation.integer', ['attribute' => 'meals.*.recipes.*.order']),
             'meals.*.recipes.*.order.min' => __('validation.min.numeric', ['attribute' => 'meals.*.recipes.*.order', 'min' => 0]),
             'meals.*.recipes.*.order.required' => __('validation.required', ['attribute' => 'meals.*.recipes.*.order']),

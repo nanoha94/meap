@@ -4,6 +4,7 @@ namespace App\Http\Requests\Api;
 
 use App\Http\Requests\Api\BaseApiRequest;
 use App\Support\ValidationLimits;
+use Illuminate\Validation\Rule;
 
 class ShoppingItemBulkStoreRequest extends BaseApiRequest
 {
@@ -15,10 +16,16 @@ class ShoppingItemBulkStoreRequest extends BaseApiRequest
      */
     public function rules(): array
     {
+        $groupId = $this->user()->groups()->sole()->id;
+
         return [
             'data' => 'array|min:1|max:' . ValidationLimits::BULK_ITEM_DATA_MAX . '|required',
             'data.*.name' => 'string|max:' . ValidationLimits::STRING_MAX . '|required',
-            'data.*.categoryId' => 'uuid|required',
+            'data.*.categoryId' => [
+                'uuid',
+                'required',
+                Rule::exists('shopping_categories', 'id')->where('group_id', $groupId),
+            ],
             'data.*.order' => 'integer|min:0|required',
             'data.*.isPinned' => 'boolean|required',
             'data.*.isChecked' => 'boolean|required',
@@ -45,6 +52,7 @@ class ShoppingItemBulkStoreRequest extends BaseApiRequest
             'data.*.name.required' => __('validation.required', ['attribute' => 'data.*.name']),
             'data.*.categoryId.uuid' => __('validation.uuid', ['attribute' => 'data.*.categoryId']),
             'data.*.categoryId.required' => __('validation.required', ['attribute' => 'data.*.categoryId']),
+            'data.*.categoryId.exists' => __('validation.exists', ['attribute' => 'data.*.categoryId']),
             'data.*.isPinned.boolean' => __('validation.boolean', ['attribute' => 'data.*.isPinned']),
             'data.*.isPinned.required' => __('validation.required', ['attribute' => 'data.*.isPinned']),
             'data.*.isChecked.boolean' => __('validation.boolean', ['attribute' => 'data.*.isChecked']),

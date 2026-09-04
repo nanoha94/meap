@@ -917,7 +917,7 @@ test('3-9-31: 【一括作成】 バリデーションエラー（tags.name が 
     $this->assertContains('data.*.tags.*.nameは、255文字以内で指定してください。', $responseData['errors']['data.0.tags.0.name']);
 });
 
-test('3-9-32: 【一括作成】 存在しないカテゴリ ID', function () {
+test('3-9-32: 【一括作成】 バリデーションエラー（categoryId 存在チェック）', function () {
     $data = [
         'data' => [
             [
@@ -932,12 +932,10 @@ test('3-9-32: 【一括作成】 存在しないカテゴリ ID', function () {
 
     $response = $this->actingAs($this->user)->post('/shopping-items/bulk', $data);
 
-    $response->assertStatus(404);
-    $response->assertJson([
-        'success' => false,
-        'message' => '指定された買い物カテゴリーが見つかりませんでした。'
-    ]);
-    $response->assertJsonStructure(['success', 'message']);
+    $response->assertStatus(422);
+    $response->assertJson(['success' => false]);
+    $response->assertJsonValidationErrors(['data.0.categoryId']);
+    $response->assertJsonStructure(['success', 'message', 'errors']);
     $response->assertHeader('Content-Type', 'application/json');
 });
 

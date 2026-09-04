@@ -1446,11 +1446,9 @@ test('3-5-46: 【新規作成】 バリデーションエラー（categoryId 存
 
     $response = $this->actingAs($user)->post('/meal-plans', $requestData);
 
-    $response->assertStatus(404);
-    $response->assertJson([
-        'success' => false,
-        'message' => '指定された献立カテゴリが見つかりませんでした。'
-    ]);
+    $response->assertStatus(422);
+    $response->assertJson(['success' => false]);
+    $response->assertJsonValidationErrors(['meals.0.categoryId']);
 });
 
 test('3-5-47: 【新規作成】 バリデーションエラー（recipeIds 存在チェック）', function () {
@@ -1471,11 +1469,9 @@ test('3-5-47: 【新規作成】 バリデーションエラー（recipeIds 存�
 
     $response = $this->actingAs($user)->post('/meal-plans', $requestData);
 
-    $response->assertStatus(404);
-    $response->assertJson([
-        'success' => false,
-        'message' => '指定された料理/レシピが見つかりませんでした。'
-    ]);
+    $response->assertStatus(422);
+    $response->assertJson(['success' => false]);
+    $response->assertJsonValidationErrors(['meals.0.recipes.0.id']);
 });
 
 // ===== show() メソッドのテストケース =====
@@ -2533,11 +2529,9 @@ test('3-5-83: 【更新】 バリデーションエラー（categoryId 存在チ
 
     $response = $this->actingAs($user)->put("/meal-plans/{$mealPlanData['id']}", $requestData);
 
-    $response->assertStatus(404);
-    $response->assertJson([
-        'success' => false,
-        'message' => '指定された献立カテゴリが見つかりませんでした。'
-    ]);
+    $response->assertStatus(422);
+    $response->assertJson(['success' => false]);
+    $response->assertJsonValidationErrors(['meals.0.categoryId']);
 });
 
 test('3-5-84: 【更新】 バリデーションエラー（recipeIds 存在チェック）', function () {
@@ -2558,11 +2552,9 @@ test('3-5-84: 【更新】 バリデーションエラー（recipeIds 存在チ�
 
     $response = $this->actingAs($user)->put("/meal-plans/{$mealPlanData['id']}", $requestData);
 
-    $response->assertStatus(404);
-    $response->assertJson([
-        'success' => false,
-        'message' => '指定された料理/レシピが見つかりませんでした。'
-    ]);
+    $response->assertStatus(422);
+    $response->assertJson(['success' => false]);
+    $response->assertJsonValidationErrors(['meals.0.recipes.0.id']);
 });
 
 test('3-5-85: 【削除】 正常な献立削除', function () {

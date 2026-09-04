@@ -53,8 +53,8 @@ MealPlanController のテストケースの詳細仕様を示します。献立�
 | 3-5-43 | 【新規作成】 バリデーションエラー（meals.*.recipeIds.* UUID形式）    | 異常系 | recipeIds の個別要素が無効な UUID        | HTTP 422 Validation Error                        | `MealPlanStoreRequest::rules()`  |
 | 3-5-44 | 【新規作成】 バリデーションエラー（meals.*.recipeIds.* 必須）        | 異常系 | recipeIds の個別要素が未入力             | HTTP 422 Validation Error                        | `MealPlanStoreRequest::rules()`  |
 | 3-5-45 | 【新規作成】 バリデーションエラー（meals.*.recipeIds 重複）           | 異常系 | 同一 meal の recipeIds に同じ recipeId を複数含める | HTTP 422 Validation Error                        | `MealPlanStoreRequest::rules()`  |
-| 3-5-46 | 【新規作成】 バリデーションエラー（categoryId 存在チェック）        | 異常系 | 存在しない categoryId を meals に提供    | HTTP 404 Not Found                               | `MealPlanController::store()`    |
-| 3-5-47 | 【新規作成】 バリデーションエラー（recipeIds 存在チェック）          | 異常系 | 存在しない recipeId を meals に提供       | HTTP 404 Not Found                               | `MealPlanController::store()`    |
+| 3-5-46 | 【新規作成】 バリデーションエラー（categoryId 存在チェック）        | 異常系 | 存在しない categoryId を meals に提供    | HTTP 422 Validation Error                        | `MealPlanStoreRequest::rules()`  |
+| 3-5-47 | 【新規作成】 バリデーションエラー（recipeIds 存在チェック）          | 異常系 | 存在しない recipeId を meals に提供       | HTTP 422 Validation Error                        | `MealPlanStoreRequest::rules()`  |
 | 3-5-48 | 【詳細取得】 正常な献立詳細取得                                     | 正常系 | 有効な献立 ID を提供                     | HTTP 200 JSON success        | `MealPlanController::show()`     |
 | 3-5-49 | 【詳細取得】 未認証ユーザー                                         | 異常系 | 認証されていないユーザー                 | HTTP 401 Unauthorized                            | `MealPlanController::show()`     |
 | 3-5-50 | 【詳細取得】 グループが存在しない                                   | 異常系 | ユーザーにグループが紐づいていない       | HTTP 422 Unprocessable Entity                    | `MealPlanController::show()`     |
@@ -90,8 +90,8 @@ MealPlanController のテストケースの詳細仕様を示します。献立�
 | 3-5-80 | 【更新】 バリデーションエラー（meals.*.recipeIds.* UUID形式）         | 異常系 | recipeIds の個別要素が無効な UUID        | HTTP 422 Validation Error                        | `MealPlanUpdateRequest::rules()` |
 | 3-5-81 | 【更新】 バリデーションエラー（meals.*.recipeIds.* 必須）             | 異常系 | recipeIds の個別要素が未入力             | HTTP 422 Validation Error                        | `MealPlanUpdateRequest::rules()` |
 | 3-5-82 | 【更新】 バリデーションエラー（meals.*.recipeIds 重複）               | 異常系 | 同一 meal の recipeIds に同じ recipeId を複数含める | HTTP 422 Validation Error                        | `MealPlanUpdateRequest::rules()` |
-| 3-5-83 | 【更新】 バリデーションエラー（categoryId 存在チェック）             | 異常系 | 存在しない categoryId を meals に提供    | HTTP 404 Not Found                               | `MealPlanController::update()`   |
-| 3-5-84 | 【更新】 バリデーションエラー（recipeIds 存在チェック）              | 異常系 | 存在しない recipeId を meals に提供      | HTTP 404 Not Found                               | `MealPlanController::update()`   |
+| 3-5-83 | 【更新】 バリデーションエラー（categoryId 存在チェック）             | 異常系 | 存在しない categoryId を meals に提供    | HTTP 422 Validation Error                        | `MealPlanUpdateRequest::rules()` |
+| 3-5-84 | 【更新】 バリデーションエラー（recipeIds 存在チェック）              | 異常系 | 存在しない recipeId を meals に提供      | HTTP 422 Validation Error                        | `MealPlanUpdateRequest::rules()` |
 | 3-5-85 | 【削除】 正常な献立削除                                             | 正常系 | 有効な献立 ID を提供                     | HTTP 200、「献立(日付)を削除しました。」形式のメッセージ | `MealPlanController::destroy()`  |
 | 3-5-86 | 【削除】 削除成功メッセージの確認                                   | 正常系 | 正常な献立削除後                         | 「献立(2024-01-15)を削除しました。」が返される | `MealPlanController::destroy()`  |
 | 3-5-87 | 【削除】 未認証ユーザー                                             | 異常系 | 認証されていないユーザー                 | HTTP 401 Unauthorized                            | `MealPlanController::destroy()`  |
