@@ -54,8 +54,7 @@ cd server
 
 API の CORS 許可オリジンは `server/config/cors.php` で設定しています。
 
-- **本番:** `FRONTEND_URL`（例: Vercel の URL）のみが許可されます。Railway の API 環境変数にフロントの URL を設定してください。
-- **ローカル開発:** `http://localhost:8000` / `https://localhost:8000` は Swagger 等の開発用途のため `allowed_origins` に含めています。本番では `FRONTEND_URL` のみが有効な運用になります。
+- **本番・開発共通:** `FRONTEND_URL` のみが許可されます。Railway の API 環境変数（本番）や `server/.env`（ローカル開発）にフロントの URL を設定してください。
 
 ### マイグレーション
 
