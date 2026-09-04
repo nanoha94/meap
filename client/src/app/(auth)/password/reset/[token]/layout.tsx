@@ -1,21 +1,10 @@
-import type { Metadata } from 'next';
+import { createPrivatePageMetadata, METADATA } from '@/constants';
 
-import { createPageMetadata, METADATA } from '@/constants';
+export const metadata = createPrivatePageMetadata(METADATA.PAGE.PASSWORD_RESET);
 
 interface Props {
     children: React.ReactNode;
-    params: Promise<{ token: string }>;
 }
-
-export const generateMetadata = async ({
-    params,
-}: Props): Promise<Metadata> => {
-    const { token } = await params;
-
-    return createPageMetadata(METADATA.PAGE.PASSWORD_RESET, {
-        path: `/password/reset/${token}`,
-    });
-};
 
 const PasswordResetTokenLayout = ({ children }: Props) => {
     return children;

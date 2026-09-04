@@ -108,6 +108,28 @@ export const createPageMetadata = (
     };
 };
 
+/**
+ * 共有・インデックス不要なページ（トークン付き URL 等）向けメタデータ。
+ * robots: noindex を付与し、親 layout の OGP / Twitter カードを最小限の値で上書きする。
+ */
+export const createPrivatePageMetadata = (title: string): Metadata => {
+    const formattedTitle = formatPageTitle(title);
+
+    return {
+        title: { absolute: formattedTitle },
+        robots: { index: false, follow: false },
+        openGraph: {
+            title: formattedTitle,
+            images: [],
+        },
+        twitter: {
+            card: 'summary',
+            title: formattedTitle,
+            images: [],
+        },
+    };
+};
+
 export const createRootSocialMetadata = (
     path: string,
 ): Pick<Metadata, 'openGraph' | 'twitter'> => ({
