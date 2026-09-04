@@ -1,4 +1,42 @@
 /** @type {import('next').NextConfig} */
+
+const BACKEND_URL =
+    process.env.NEXT_PUBLIC_BACKEND_URL || 'https://localhost:8000';
+
+function parseOrigin(url) {
+    try {
+        return new URL(url).origin;
+    } catch {
+        return null;
+    }
+}
+
+/**
+ * Content-Security-Policy を組み立てる。
+ * DiceBear SVG（dangerouslySetInnerHTML）と Next.js のインラインスクリプトのため
+ * style-src / script-src に 'unsafe-inline' を含める。
+ */
+function buildContentSecurityPolicy() {
+    const backendOrigin =
+        parseOrigin(BACKEND_URL) ?? 'https://localhost:8000';
+
+    const directives = [
+        "default-src 'self'",
+        "script-src 'self' 'unsafe-inline'",
+        "style-src 'self' 'unsafe-inline'",
+        `img-src 'self' blob: data: ${backendOrigin} https://*.r2.cloudflarestorage.com`,
+        "font-src 'self'",
+        `connect-src 'self' ${backendOrigin}`,
+        "frame-ancestors 'none'",
+        "form-action 'self'",
+        "base-uri 'self'",
+        "object-src 'none'",
+        'upgrade-insecure-requests',
+    ];
+
+    return directives.join('; ');
+}
+
 const nextConfig = {
     async headers() {
         const securityHeaders = [
@@ -14,6 +52,10 @@ const nextConfig = {
             securityHeaders.push({
                 key: 'Strict-Transport-Security',
                 value: 'max-age=31536000; includeSubDomains',
+            });
+            securityHeaders.push({
+                key: 'Content-Security-Policy',
+                value: buildContentSecurityPolicy(),
             });
         }
 
