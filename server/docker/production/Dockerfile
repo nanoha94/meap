@@ -20,6 +20,7 @@ RUN apt-get update \
         libpq-dev \
         libzip-dev \
         nginx \
+        gosu \
         supervisor \
         unzip \
         zip \
@@ -43,7 +44,10 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 RUN rm -f /etc/nginx/sites-enabled/default \
     /etc/nginx/sites-available/default \
     && rm -f /etc/nginx/conf.d/*.conf \
-    && mkdir -p /var/log/supervisor /etc/nginx/conf.d
+    && mkdir -p /var/log/supervisor /etc/nginx/conf.d \
+    && sed -i 's|pid /run/nginx.pid;|pid /tmp/nginx.pid;|' /etc/nginx/nginx.conf \
+    && sed -i 's|error_log /var/log/nginx/error.log;|error_log /dev/stderr;|' /etc/nginx/nginx.conf \
+    && sed -i 's|access_log /var/log/nginx/access.log;|access_log /dev/stdout;|' /etc/nginx/nginx.conf
 
 WORKDIR /var/www/html
 
@@ -60,8 +64,8 @@ RUN composer install --no-interaction --no-dev --optimize-autoloader \
     && rm -f /etc/nginx/sites-enabled/default /etc/nginx/sites-available/default
 
 # 非 root (www-data) で nginx (8080) / php-fpm / supervisord を動かすための権限設定
-RUN sed -i 's|pid /run/nginx.pid;|pid /tmp/nginx.pid;|' /etc/nginx/nginx.conf \
-    && mkdir -p \
+# ENTRYPOINT は root で起動し、準備後 gosu で www-data に降格する（Railway 等の PaaS 互換）
+RUN mkdir -p \
         /var/cache/nginx \
         /var/lib/nginx/body \
         /var/lib/nginx/proxy \
@@ -69,16 +73,16 @@ RUN sed -i 's|pid /run/nginx.pid;|pid /tmp/nginx.pid;|' /etc/nginx/nginx.conf \
         /var/lib/nginx/uwsgi \
         /var/lib/nginx/scgi \
     && chown -R www-data:www-data \
-        /var/www/html \
+        /var/www/html/storage \
+        /var/www/html/bootstrap/cache \
         /var/cache/nginx \
         /var/log/nginx \
         /var/lib/nginx \
         /var/log/supervisor \
-        /etc/nginx/conf.d
+        /etc/nginx/conf.d \
+    && chmod -R ug+rwx /var/www/html/storage /var/www/html/bootstrap/cache
 
 EXPOSE 8080
-
-USER www-data
 
 # Railway: Start Command 空でも ENTRYPOINT が使われるよう CMD を明示
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
