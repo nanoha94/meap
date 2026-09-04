@@ -23,7 +23,7 @@ Route::post('/register', [RegisteredUserController::class, 'store'])
     ->name('register');
 
 Route::post('/password/reset/request', [PasswordResetLinkController::class, 'store'])
-    ->middleware('guest')
+    ->middleware(['guest', 'throttle:6,1'])
     ->name('password.request');
 
 Route::post('/password/reset', [NewPasswordController::class, 'store'])

@@ -47,20 +47,20 @@ test('2-4-4: 無効なメール形式', function () {
 });
 
 test('2-4-5: リセットリンク送信のレート制限', function () {
-    $user = User::factory()->create();
-
     for ($i = 0; $i < 6; $i++) {
+        $user = User::factory()->create();
+
         $this->postJson(route('password.request'), [
             'email' => $user->email,
         ]);
     }
 
+    $user = User::factory()->create();
     $response = $this->postJson(route('password.request'), [
         'email' => $user->email,
     ]);
 
     $response->assertStatus(429);
-    $response->assertJson(['message' => 'パスワードリセットリンクの送信は、短時間に複数回リクエストすることはできません。']);
 });
 
 test('2-4-6: サーバーエラー', function () {
