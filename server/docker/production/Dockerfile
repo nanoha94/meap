@@ -57,11 +57,28 @@ RUN chmod +x /usr/local/bin/docker-entrypoint.sh \
 COPY . /var/www/html
 
 RUN composer install --no-interaction --no-dev --optimize-autoloader \
-    && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
-    && chmod -R ug+rwx /var/www/html/storage /var/www/html/bootstrap/cache \
     && rm -f /etc/nginx/sites-enabled/default /etc/nginx/sites-available/default
 
+# 非 root (www-data) で nginx (8080) / php-fpm / supervisord を動かすための権限設定
+RUN sed -i 's|pid /run/nginx.pid;|pid /tmp/nginx.pid;|' /etc/nginx/nginx.conf \
+    && mkdir -p \
+        /var/cache/nginx \
+        /var/lib/nginx/body \
+        /var/lib/nginx/proxy \
+        /var/lib/nginx/fastcgi \
+        /var/lib/nginx/uwsgi \
+        /var/lib/nginx/scgi \
+    && chown -R www-data:www-data \
+        /var/www/html \
+        /var/cache/nginx \
+        /var/log/nginx \
+        /var/lib/nginx \
+        /var/log/supervisor \
+        /etc/nginx/conf.d
+
 EXPOSE 8080
+
+USER www-data
 
 # Railway: Start Command 空でも ENTRYPOINT が使われるよう CMD を明示
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
