@@ -27,7 +27,7 @@ class RecipeDestroyRequest extends BaseApiRequest
 
         // レシピが存在しない場合、または自分のグループのレシピではない場合は、
         // 既存の挙動（404エラー）を優先させるため認可をパスさせる
-        $userGroup = $this->user()->groups()->first();
+        $userGroup = $this->user()->groups()->sole();
         if (!$recipe || $recipe->group_id !== $userGroup->id) {
             return true;
         }

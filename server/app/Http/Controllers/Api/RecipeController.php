@@ -54,8 +54,7 @@ class RecipeController extends ApiController
 
         return $this->executeWithExceptionHandling(
             function () use ($request) {
-                $user = $request->user();
-                $group = $user->groups()->first();
+                $group = $this->getUserGroup($request);
 
                 // ページネーションのパラメータを取得（デフォルト値も設定）
                 $limit = $request->input('limit', 15);

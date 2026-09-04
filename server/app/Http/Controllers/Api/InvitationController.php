@@ -147,8 +147,8 @@ class InvitationController extends ApiController
                 return DB::transaction(function () use ($request) {
                     $invitationToken = $request->getInvitationToken();
                     $user = $request->user();
-                    $currentGroup = $user->groups()->first();
-                    $joinGroup = $invitationToken->inviter->groups()->first();
+                    $currentGroup = $this->getUserGroup($request);
+                    $joinGroup = $invitationToken->inviter->groups()->sole();
 
                     // 既存のグループユーザーマッピングを削除
                     $currentGroup->users()->detach($user->id);
