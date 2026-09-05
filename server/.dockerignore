@@ -1,0 +1,49 @@
+# Secrets and environment
+.env
+.env.*
+auth.json
+
+# Version control
+.git
+.gitattributes
+.gitignore
+
+# Local development
+docker-compose.yml
+Homestead.json
+Homestead.yaml
+
+# Tests
+tests/
+phpunit.xml
+.phpunit.cache
+.phpunit.result.cache
+
+# Dependencies (reinstalled during image build)
+vendor/
+node_modules/
+
+# Generated / runtime storage
+storage/api-docs/
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/pail
+
+# Build artifacts
+public/build
+public/hot
+public/storage
+
+# IDE and editor
+.fleet
+.idea
+.nova
+.vscode
+.zed
+.phpactor.json
+
+# Logs
+npm-debug.log
+yarn-error.log
