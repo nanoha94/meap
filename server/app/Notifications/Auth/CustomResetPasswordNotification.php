@@ -2,56 +2,24 @@
 
 namespace App\Notifications\Auth;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Notifications\Messages\MailMessage;
-use Illuminate\Notifications\Notification;
 
-class CustomResetPasswordNotification extends Notification
+class CustomResetPasswordNotification extends ResetPassword
 {
-    use Queueable;
-    public string $token;
-
-    /**
-     * Create a new notification instance.
-     */
-    public function __construct(string $token)
-    {
-        $this->token = $token;
-    }
-
-    /**
-     * Get the notification's delivery channels.
-     *
-     * @return array<int, string>
-     */
-    public function via(object $notifiable): array
-    {
-        return ['mail'];
-    }
-
     /**
      * Get the mail representation of the notification.
      */
-    public function toMail(object $notifiable): MailMessage
+    public function toMail($notifiable): MailMessage
     {
-        $url = config('app.frontend_url') . "/password/reset/" . $this->token;
+        $url = $this->resetUrl($notifiable);
 
         return (new MailMessage)
-            ->line('The introduction to the notification.')
-            ->action('Notification Action', $url)
-            ->line('Thank you for using our application!');
-    }
-
-    /**
-     * Get the array representation of the notification.
-     *
-     * @return array<string, mixed>
-     */
-    public function toArray(object $notifiable): array
-    {
-        return [
-            //
-        ];
+            ->subject('パスワード再設定')
+            ->greeting($notifiable->name . ' 様')
+            ->line('パスワード再設定のリクエストを受け付けました。以下のボタンをクリックして、新しいパスワードを設定してください。')
+            ->action('パスワードを再設定', $url)
+            ->line('このリンクの有効期限は ' . config('auth.passwords.' . config('auth.defaults.passwords') . '.expire') . ' 分です。')
+            ->line('心当たりがない場合は、このメールを無視してください。');
     }
 }

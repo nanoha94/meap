@@ -3,13 +3,10 @@
 namespace App\Custom\Auth;
 
 use App\Custom\Auth\Interfaces\CustomPasswordBroker as InterfacesCustomPasswordBroker;
-use App\Models\User;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use Closure;
 use Illuminate\Auth\Events\PasswordResetLinkSent;
 use Illuminate\Auth\Passwords\PasswordBroker;
-use Illuminate\Support\Facades\Hash;
-use App\Models\PasswordResetTokens;
 
 class CustomPasswordBroker extends PasswordBroker implements InterfacesCustomPasswordBroker
 {
@@ -58,7 +55,7 @@ class CustomPasswordBroker extends PasswordBroker implements InterfacesCustomPas
     }
 
     /**
-     * トークンからメールアドレスを取得して、それを使ってパスワードリセット処理を実行する
+     * メールアドレスでトークンを1件取得し、パスワードリセット処理を実行する
      *
      * @param  array  $credentials
      * @param  \Closure  $callback
@@ -66,45 +63,14 @@ class CustomPasswordBroker extends PasswordBroker implements InterfacesCustomPas
      */
     public function reset(#[\SensitiveParameter] array $credentials, Closure $callback)
     {
-        // トークンからメールアドレスを取得
-        $token = $credentials['token'];
-        $passwordResets = PasswordResetTokens::where('created_at', '>=', now()->subMinutes(config('auth.passwords.users.expire')))
-            ->get()
-            ->filter(function ($record) use ($token) {
-                return Hash::check($token, $record->token);
-            });
-
-        // トークンが有効期限内でない場合
-        if ($passwordResets->isEmpty() || $passwordResets->count() !== 1) {
-            return static::INVALID_TOKEN;
-        }
-
-
-        $isExistUser = User::where('email', $passwordResets->first()->email)->exists();
-
-        // トークンに一致するメールアドレスがない場合
-        if (is_null($passwordResets->first()->email) || !$isExistUser) {
-            return static::INVALID_USER;
-        }
-
-
-        // $credentialsにメールアドレスの情報を含める
-        $credentials['email'] = $passwordResets->first()->email;
-
         $user = $this->validateReset($credentials);
 
-        // If the responses from the validate method is not a user instance, we will
-        // assume that it is a redirect and simply return it from this method and
-        // the user is properly redirected having an error message on the post.
         if (! $user instanceof CanResetPasswordContract) {
             return $user;
         }
 
         $password = $credentials['password'];
 
-        // Once the reset has been validated, we'll call the given callback with the
-        // new password. This gives the user an opportunity to store the password
-        // in their persistent storage. Then we'll delete the token and return.
         $callback($user, $password);
 
         $this->tokens->delete($user);

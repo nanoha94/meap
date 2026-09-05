@@ -32,6 +32,7 @@ interface PasswordResetRequestProps {
 }
 
 interface ResetPasswordProps {
+    email: string;
     password: string;
     password_confirmation: string;
     setErrors: (errors: Record<string, string[]>) => void;

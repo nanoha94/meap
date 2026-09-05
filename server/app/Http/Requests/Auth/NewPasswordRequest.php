@@ -24,6 +24,7 @@ class NewPasswordRequest extends BaseAuthRequest
     {
         return [
             'token' => ['required'],
+            'email' => ['required', 'email'],
             'password' => ['required', 'confirmed', Password::defaults()],
             'password_confirmation' => ['required'],
         ];
@@ -38,6 +39,8 @@ class NewPasswordRequest extends BaseAuthRequest
     {
         return [
             'token.required' => __('validation.required', ['attribute' => 'token']),
+            'email.required' => __('validation.required', ['attribute' => 'email']),
+            'email.email' => __('validation.email', ['attribute' => 'email']),
             'password.required' => __('validation.required', ['attribute' => 'password']),
             'password.confirmed' => __('validation.password.confirmed', ['attribute' => 'password']),
             'password.min' => __('validation.min', ['attribute' => 'password', 'string' => 8]),

@@ -1,5 +1,7 @@
 'use client';
+
 import React from 'react';
+import { useSearchParams } from 'next/navigation';
 import { SubmitHandler, useForm } from 'react-hook-form';
 
 import { Button, VerticalRowField } from '@/components';
@@ -14,6 +16,8 @@ interface FormInputs {
 type visibleErrorFields = 'password' | 'passwordConfirmation';
 
 const PasswordReset = () => {
+    const searchParams = useSearchParams();
+    const email = searchParams?.get('email') ?? '';
     const { resetPassword } = useAuth();
     const {
         handleSubmit,
@@ -45,6 +49,7 @@ const PasswordReset = () => {
      */
     const onSubmit: SubmitHandler<FormInputs> = (data: FormInputs) => {
         resetPassword({
+            email,
             password: data.password,
             password_confirmation: data.passwordConfirmation,
             setErrors: setApiErrors,
