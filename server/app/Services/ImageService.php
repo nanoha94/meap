@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Enums\HttpStatusCode;
 use App\Enums\ImageScope;
+use App\Exceptions\SafeUrlFetchException;
+use App\Helpers\SafeUrlFetcher;
 use App\Models\Group;
 use App\Models\Image;
 use App\Models\User;
@@ -14,7 +16,6 @@ use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Drivers\Gd\Driver as GdDriver;
 use Intervention\Image\ImageManager;
@@ -128,31 +129,27 @@ class ImageService
             return null;
         }
 
+        // OAuth アバター取得は許可済み CDN のみ（SSRF 対策）
+        if (! $this->isAllowedRemoteAvatarHost($url)) {
+            $logFail('host_not_allowed');
+            return null;
+        }
+
         // Google CDN（lh3-7.googleusercontent.com など）の URL はデフォルトで 96px のサムネイルが返るため、
         // 末尾の =sNN[-c] サイズ指定を高解像度（=s512-c）に置換してから取得する。
         $url = $this->normalizeRemoteImageUrl($url);
 
-        // 取得（一部の CDN では一般的なブラウザ User-Agent を要求する）
+        // SSRF 対策付きで取得（HTTPS 限定・内部 IP 拒否・リダイレクト無効）
         try {
-            $response = Http::timeout(30)
-                ->withHeaders([
-                    'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                ])
-                ->get($url);
-        } catch (Throwable $e) {
-            $logFail('http_exception', ['exception' => $e->getMessage()]);
-            return null;
-        }
+            $body = SafeUrlFetcher::fetch($url, maxBytes: self::MAX_IMAGE_BYTES);
+        } catch (SafeUrlFetchException $e) {
+            $this->logWarning(
+                __('operations.image.download_remote'),
+                __('api.image.remote_download_failed'),
+                $e->toLogContext($url),
+                __METHOD__,
+            );
 
-        if (! $response->successful()) {
-            $logFail('http_error', ['status' => $response->status()]);
-            return null;
-        }
-
-        $body = $response->body();
-        // 空ファイル防止・アップロード（max:10240 KB）に揃えた 10MB 上限
-        if ($body === '' || strlen($body) > self::MAX_IMAGE_BYTES) {
-            $logFail('empty_or_too_large');
             return null;
         }
 
@@ -180,7 +177,7 @@ class ImageService
             $image = $this->imageManager()->decodeBinary($body);
             $processed = $this->stripResizeEncodeRaster($image, $mediaType);
         } catch (Throwable $e) {
-            $logFail('image_process_failed', ['exception' => $e->getMessage()]);
+            $logFail('image_process_failed', ['exception_message' => $e->getMessage()]);
 
             return null;
         }
@@ -188,7 +185,7 @@ class ImageService
         try {
             $this->imageDisk()->put($fullPath, $processed['binary']);
         } catch (Throwable $e) {
-            $logFail('storage_put_failed', ['exception' => $e->getMessage()]);
+            $logFail('storage_put_failed', ['exception_message' => $e->getMessage()]);
 
             return null;
         }
@@ -209,7 +206,7 @@ class ImageService
             } catch (Throwable) {
                 // 掃除失敗は握り潰し（上位でログ済みの文脈に追加しない）
             }
-            $logFail('db_transaction_failed', ['exception' => $e->getMessage()]);
+            $logFail('db_transaction_failed', ['exception_message' => $e->getMessage()]);
 
             return null;
         }
@@ -530,6 +527,22 @@ class ImageService
             IMAGETYPE_WEBP => 'image/webp',
             default => null,
         };
+    }
+
+    /**
+     * OAuth アバター取得で許可するリモートホストかどうか。
+     *
+     * 現状は Google OAuth（*.googleusercontent.com）のみ対応。
+     */
+    private function isAllowedRemoteAvatarHost(string $url): bool
+    {
+        $host = parse_url($url, PHP_URL_HOST);
+
+        if (! is_string($host)) {
+            return false;
+        }
+
+        return (bool) preg_match('/(^|\.)googleusercontent\.com$/i', $host);
     }
 
     /**

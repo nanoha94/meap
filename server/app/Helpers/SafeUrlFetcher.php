@@ -18,6 +18,11 @@ class SafeUrlFetcher
     /** レスポンスボディの最大バイト数（5MB） */
     public const MAX_RESPONSE_BYTES = 5 * 1024 * 1024;
 
+    /** 一部 CDN・サイトが要求するブラウザ風 User-Agent */
+    public const DEFAULT_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+
+    private const DEFAULT_TIMEOUT_SECONDS = 30;
+
     /**
      * URL が安全にフェッチ可能か検証する。
      *
@@ -69,37 +74,37 @@ class SafeUrlFetcher
     /**
      * SSRF 対策付きで URL のレスポンスボディを取得する。
      *
-     * @param  array<string, string>  $headers
-     *
      * @throws SafeUrlFetchException 検証失敗・HTTP 失敗・サイズ超過時
      */
     public static function fetch(
         string $url,
-        int $timeoutSeconds = 30,
-        array $headers = [],
         int $maxBytes = self::MAX_RESPONSE_BYTES,
     ): string {
         $validationError = self::validateUrl($url);
 
+        // 検証エラーがある場合は例外を投げる
         if ($validationError !== null) {
             throw SafeUrlFetchException::validationFailed($validationError);
         }
 
+        // HTTP リクエストを送信する
         try {
-            $response = Http::timeout($timeoutSeconds)
+            $response = Http::timeout(self::DEFAULT_TIMEOUT_SECONDS)
                 ->withoutRedirecting()
-                ->withHeaders($headers)
+                ->withHeaders(['User-Agent' => self::DEFAULT_USER_AGENT])
                 ->get($url);
         } catch (Throwable $e) {
             throw SafeUrlFetchException::requestFailed($e);
         }
 
+        // リクエストが失敗した場合は例外を投げる
         if (! $response->successful()) {
             throw SafeUrlFetchException::badResponse($response);
         }
 
         $body = $response->body();
 
+        // レスポンスボディが空か、サイズが最大バイト数を超えている場合は例外を投げる
         if ($body === '' || strlen($body) > $maxBytes) {
             throw SafeUrlFetchException::invalidBody(strlen($body), $maxBytes);
         }

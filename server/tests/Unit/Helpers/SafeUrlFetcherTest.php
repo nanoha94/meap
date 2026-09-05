@@ -75,3 +75,28 @@ test('5-2-8: 【fetch】 正常レスポンスのボディを返す', function (
 
     expect($body)->toBe('<html><body>recipe</body></html>');
 });
+
+// ===== SafeUrlFetchException::toLogContext() のテストケース =====
+
+test('5-2-9: 【toLogContext】 ログ用コンテキストを統一形式で返す', function () {
+    $exception = new SafeUrlFetchException(
+        SafeUrlFetchException::TYPE_RESPONSE,
+        httpStatus: 502,
+    );
+
+    expect($exception->toLogContext('https://example.com/recipe'))->toBe([
+        'url' => 'https://example.com/recipe',
+        'reason' => SafeUrlFetchException::TYPE_RESPONSE,
+        'status' => 502,
+    ]);
+});
+
+test('5-2-10: 【fetch】 デフォルト User-Agent を送信する', function () {
+    Http::fake([
+        'https://example.com/recipe' => Http::response('ok', 200),
+    ]);
+
+    SafeUrlFetcher::fetch('https://example.com/recipe');
+
+    Http::assertSent(fn ($request) => $request->header('User-Agent')[0] === SafeUrlFetcher::DEFAULT_USER_AGENT);
+});

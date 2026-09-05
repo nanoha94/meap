@@ -16,6 +16,8 @@ SSRF 対策付き URL フェッチャー `SafeUrlFetcher` の単体テスト。h
 | 5-2-6 | 【validateUrl】 公開 HTTPS URL は許可する | 正常系 | `https://example.com/recipe` | null | `SafeUrlFetcher::validateUrl()` |
 | 5-2-7 | 【fetch】 リダイレクトレスポンスを拒否する | 異常系 | 302 レスポンス | SafeUrlFetchException | `SafeUrlFetcher::fetch()` |
 | 5-2-8 | 【fetch】 正常レスポンスのボディを返す | 正常系 | 200 レスポンス | HTML 文字列 | `SafeUrlFetcher::fetch()` |
+| 5-2-9 | 【toLogContext】 ログ用コンテキストを統一形式で返す | 正常系 | TYPE_RESPONSE 例外と URL | url / reason / status を含む配列 | `SafeUrlFetchException::toLogContext()` |
+| 5-2-10 | 【fetch】 デフォルト User-Agent を送信する | 正常系 | 200 レスポンス | リクエストに DEFAULT_USER_AGENT が付く | `SafeUrlFetcher::fetch()` |
 
 ## テスト実行方法
 

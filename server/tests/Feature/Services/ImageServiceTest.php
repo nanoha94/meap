@@ -8,6 +8,7 @@ use App\Services\ImageService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -48,9 +49,50 @@ test('4-8-2: 【画像アップロード】 正常な JPEG を保存できる', 
     expect($image->src)->toMatch('/\.jpg$/');
 });
 
+// ===== downloadAndSaveImage() メソッドのテストケース =====
+
+test('4-8-3: 【リモート画像取得】 Google CDN URL から正常に画像を保存できる', function () {
+    $avatarUrl = 'https://lh3.googleusercontent.com/a/test-avatar';
+    $oneByOnePng = base64_decode(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+        true
+    );
+
+    Http::fake([
+        $avatarUrl => Http::response($oneByOnePng, 200, ['Content-Type' => 'image/png']),
+    ]);
+
+    $image = $this->service->downloadAndSaveImage($avatarUrl, 'users/test-user-id');
+
+    expect($image)->toBeInstanceOf(Image::class);
+    expect($image->width)->toBe(1);
+    expect($image->height)->toBe(1);
+    expect($image->src)->toContain('images/users/test-user-id/');
+    expect($image->src)->toMatch('/\.png$/');
+    Http::assertSent(fn ($request) => $request->url() === $avatarUrl);
+});
+
+test('4-8-4: 【リモート画像取得】 許可されていないホストの URL は拒否する', function () {
+    Http::fake();
+
+    $result = $this->service->downloadAndSaveImage('https://evil.example.com/avatar.png', 'users/test-user-id');
+
+    expect($result)->toBeNull();
+    Http::assertNothingSent();
+});
+
+test('4-8-5: 【リモート画像取得】 HTTP スキームの Google CDN URL は拒否する', function () {
+    Http::fake();
+
+    $result = $this->service->downloadAndSaveImage('http://lh3.googleusercontent.com/a/test-avatar', 'users/test-user-id');
+
+    expect($result)->toBeNull();
+    Http::assertNothingSent();
+});
+
 // ===== findImagesByIds() メソッドのテストケース =====
 
-test('4-8-3: 【画像取得】 相対パス src の画像をグループスコープで検証できる', function () {
+test('4-8-6: 【画像取得】 相対パス src の画像をグループスコープで検証できる', function () {
     $group = Group::create(['group_size' => 1]);
     $image = Image::create([
         'src' => "images/groups/{$group->id}/test.jpg",
@@ -64,7 +106,7 @@ test('4-8-3: 【画像取得】 相対パス src の画像をグループスコ�
     expect($result->first()->id)->toBe($image->id);
 });
 
-test('4-8-4: 【画像取得】 相対パス src の画像をユーザースコープで検証できる', function () {
+test('4-8-7: 【画像取得】 相対パス src の画像をユーザースコープで検証できる', function () {
     $user = User::factory()->create();
     $image = Image::create([
         'src' => "images/users/{$user->id}/avatar.jpg",
@@ -78,7 +120,7 @@ test('4-8-4: 【画像取得】 相対パス src の画像をユーザースコ�
     expect($result->first()->id)->toBe($image->id);
 });
 
-test('4-8-5: 【画像取得】 相対パス src が他グループの場合は Not Found', function () {
+test('4-8-8: 【画像取得】 相対パス src が他グループの場合は Not Found', function () {
     $group = Group::create(['group_size' => 1]);
     $otherGroup = Group::create(['group_size' => 1]);
     $image = Image::create([
@@ -92,7 +134,7 @@ test('4-8-5: 【画像取得】 相対パス src が他グループの場合は 
 
 // ===== deleteImages() メソッドのテストケース =====
 
-test('4-8-6: 【画像削除】 相対パス src の画像 mapping を解除できる', function () {
+test('4-8-9: 【画像削除】 相対パス src の画像 mapping を解除できる', function () {
     $group = Group::create(['group_size' => 1]);
     $relatedId = (string) Str::uuid();
     $image = Image::create([
@@ -120,7 +162,7 @@ test('4-8-6: 【画像削除】 相対パス src の画像 mapping を解除で�
     $this->assertDatabaseHas('images', ['id' => $image->id]);
 });
 
-test('4-8-7: 【画像削除】 相対パス src が他グループの場合は mapping を解除しない', function () {
+test('4-8-10: 【画像削除】 相対パス src が他グループの場合は mapping を解除しない', function () {
     $group = Group::create(['group_size' => 1]);
     $otherGroup = Group::create(['group_size' => 1]);
     $relatedId = (string) Str::uuid();
@@ -150,7 +192,7 @@ test('4-8-7: 【画像削除】 相対パス src が他グループの場合は 
 
 // ===== deleteImagesByGroup() / deleteImagesByUser() メソッドのテストケース =====
 
-test('4-8-8: 【グループ画像一括削除】 相対パス src の images レコードとディレクトリを削除する', function () {
+test('4-8-11: 【グループ画像一括削除】 相対パス src の images レコードとディレクトリを削除する', function () {
     $group = Group::create(['group_size' => 1]);
     $dirPath = "images/groups/{$group->id}";
     $filePath = "{$dirPath}/test.jpg";
@@ -167,7 +209,7 @@ test('4-8-8: 【グループ画像一括削除】 相対パス src の images �
     expect(Storage::disk($this->imageDisk)->exists($dirPath))->toBeFalse();
 });
 
-test('4-8-9: 【ユーザー画像一括削除】 相対パス src の images レコードとディレクトリを削除する', function () {
+test('4-8-12: 【ユーザー画像一括削除】 相対パス src の images レコードとディレクトリを削除する', function () {
     $user = User::factory()->create();
     $dirPath = "images/users/{$user->id}";
     $filePath = "{$dirPath}/avatar.jpg";
@@ -186,7 +228,7 @@ test('4-8-9: 【ユーザー画像一括削除】 相対パス src の images �
 
 // ===== formatImage() / generateImageUrl() メソッドのテストケース =====
 
-test('4-8-10: 【画像URL生成】 public ディスクでは公開 URL を返す', function () {
+test('4-8-13: 【画像URL生成】 public ディスクでは公開 URL を返す', function () {
     $path = 'images/groups/test-group/test.jpg';
     Storage::disk($this->imageDisk)->put($path, 'fake');
     $image = Image::create([
@@ -200,7 +242,7 @@ test('4-8-10: 【画像URL生成】 public ディスクでは公開 URL を返�
     expect($formatted['src'])->toBe(Storage::disk($this->imageDisk)->url($path));
 });
 
-test('4-8-11: 【画像URL生成】 s3 ディスクでは署名付き URL を返す', function () {
+test('4-8-14: 【画像URL生成】 s3 ディスクでは署名付き URL を返す', function () {
     Storage::fake('s3');
     config(['filesystems.image_disk' => 's3']);
 

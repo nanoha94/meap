@@ -28,8 +28,6 @@ class OpenAiRecipeParser implements AiRecipeParserInterface
 {
     use LoggingTrait;
 
-    private const HTTP_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
-
     /** HTML レスポンスの最大バイト数（5MB） */
     private const MAX_HTML_BYTES = 5 * 1024 * 1024;
 
@@ -117,32 +115,13 @@ class OpenAiRecipeParser implements AiRecipeParserInterface
     private function fetchHtmlFromUrl(string $url): string
     {
         try {
-            return SafeUrlFetcher::fetch(
-                $url,
-                timeoutSeconds: 30,
-                headers: ['User-Agent' => self::HTTP_USER_AGENT],
-                maxBytes: self::MAX_HTML_BYTES,
-            );
+            return SafeUrlFetcher::fetch($url, maxBytes: self::MAX_HTML_BYTES);
         } catch (SafeUrlFetchException $e) {
             if ($e->type === SafeUrlFetchException::TYPE_VALIDATION) {
                 throw new HttpException(
                     HttpStatusCode::BAD_REQUEST->value,
                     __('api.general.validation_error'),
                 );
-            }
-
-            $logContext = [
-                'url' => $url,
-                'reason' => $e->type,
-                'exception_message' => $e->getPrevious()?->getMessage(),
-            ];
-
-            if ($e->httpStatus !== null) {
-                $logContext['status'] = $e->httpStatus;
-            }
-
-            if ($e->bodyLength !== null) {
-                $logContext['body_length'] = $e->bodyLength;
             }
 
             $this->logWarning(
@@ -152,7 +131,7 @@ class OpenAiRecipeParser implements AiRecipeParserInterface
                     SafeUrlFetchException::TYPE_RESPONSE => __('operations.ai.recipe.url_fetch_non_success'),
                     default => __('operations.ai.recipe.url_fetch_invalid_body'),
                 },
-                $logContext,
+                $e->toLogContext($url),
                 __METHOD__,
             );
 

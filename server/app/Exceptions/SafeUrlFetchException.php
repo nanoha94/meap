@@ -45,4 +45,25 @@ class SafeUrlFetchException extends RuntimeException
     {
         return new self(self::TYPE_BODY, bodyLength: $bodyLength);
     }
+
+    /**
+     * logWarning 用の統一コンテキストを返す。
+     *
+     * @return array<string, mixed>
+     */
+    public function toLogContext(string $url): array
+    {
+        $context = [
+            'url' => $url,
+            'reason' => $this->type,
+            'exception_message' => $this->getPrevious()?->getMessage(),
+            'status' => $this->httpStatus,
+            'body_length' => $this->bodyLength,
+        ];
+
+        return array_filter(
+            $context,
+            fn (mixed $value): bool => $value !== null && $value !== '',
+        );
+    }
 }
