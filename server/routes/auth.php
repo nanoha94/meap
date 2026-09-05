@@ -27,7 +27,7 @@ Route::post('/password/reset/request', [PasswordResetLinkController::class, 'sto
     ->name('password.request');
 
 Route::post('/password/reset', [NewPasswordController::class, 'store'])
-    ->middleware('guest')
+    ->middleware(['guest', 'throttle:6,1'])
     ->name('password.reset');
 
 Route::get('/auth/google/redirect', [SocialLoginController::class, 'redirectToGoogle'])
