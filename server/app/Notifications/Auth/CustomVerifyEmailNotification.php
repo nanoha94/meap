@@ -12,6 +12,9 @@ class CustomVerifyEmailNotification extends VerifyEmail
 {
     /**
      * Get the verification URL for the given notifiable.
+     *
+     * 署名を相対パスで生成し（absolute: false）、APP_URL を先頭に付与してメールリンクにする。
+     * ルート側は signed:relative で検証するため、scheme/host/port の不一致が発生しない。
      */
     protected function verificationUrl($notifiable): string
     {
@@ -19,31 +22,19 @@ class CustomVerifyEmailNotification extends VerifyEmail
             return call_user_func(static::$createUrlCallback, $notifiable);
         }
 
-        $baseUrl = config('app.url');
-        $baseUrlWithoutPort = 'https://localhost';
-
-        // ローカル環境の場合、ポート番号を追加
-        if (app()->environment('local')) {
-            // ハッシュ生成時はポート番号を含めない
-            URL::forceRootUrl($baseUrlWithoutPort);
-        }
-
-        $temporarySignedURL = URL::temporarySignedRoute(
+        // 署名をパス（相対URL）に対して生成する
+        $relativeSignedUrl = URL::temporarySignedRoute(
             'verification.verify',
             Carbon::now()->addMinutes(Config::get('auth.verification.expire', 60)),
             [
                 'id' => $notifiable->getKey(),
                 'hash' => sha1($notifiable->getEmailForVerification()),
-            ]
+            ],
+            absolute: false
         );
 
-        // URLのベース部分を置き換え
-        $url = str_replace(url('/'), $baseUrl, $temporarySignedURL);
-
-        // 元のベースURLに戻す
-        URL::forceRootUrl($baseUrl);
-
-        return $url;
+        // メールリンク用にフル URL を組み立てる
+        return config('app.url') . $relativeSignedUrl;
     }
 
     /**
