@@ -4,7 +4,7 @@ use App\Http\Controllers\StripeWebhookController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return ['Laravel' => app()->version()];
+    return response()->json(['status' => 'ok']);
 });
 
 Route::post('stripe/webhook', [StripeWebhookController::class, 'handleWebhook'])
