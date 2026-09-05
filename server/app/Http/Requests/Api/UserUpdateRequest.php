@@ -37,7 +37,7 @@ class UserUpdateRequest extends BaseRequest
     {
         return [
             'name.string' => __('validation.string', ['attribute' => 'name']),
-            'name.max' => __('validation.max.string', ['attribute' => 'name', 'max' => 255]),
+            'name.max' => __('validation.max.string', ['attribute' => 'name', 'max' => ValidationLimits::STRING_MAX]),
             'avatar_image_id.uuid' => __('validation.uuid', ['attribute' => 'avatar_image_id']),
         ];
     }

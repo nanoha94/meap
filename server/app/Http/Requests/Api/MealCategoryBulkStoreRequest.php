@@ -36,7 +36,7 @@ class MealCategoryBulkStoreRequest extends BaseApiRequest
             'data.max' => __('validation.max.array', ['attribute' => 'data', 'max' => ValidationLimits::BULK_CATEGORY_DATA_MAX]),
             'data.required' => __('validation.required', ['attribute' => 'data']),
             'data.*.name.string' => __('validation.string', ['attribute' => 'data.*.name']),
-            'data.*.name.max' => __('validation.max.string', ['attribute' => 'data.*.name', 'max' => 255]),
+            'data.*.name.max' => __('validation.max.string', ['attribute' => 'data.*.name', 'max' => ValidationLimits::STRING_MAX]),
             'data.*.name.required' => __('validation.required', ['attribute' => 'data.*.name']),
             'data.*.colorId.uuid' => __('validation.uuid', ['attribute' => 'data.*.colorId']),
             'data.*.colorId.exists' => __('validation.exists', ['attribute' => 'data.*.colorId']),

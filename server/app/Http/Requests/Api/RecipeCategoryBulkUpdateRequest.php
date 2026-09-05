@@ -18,7 +18,7 @@ class RecipeCategoryBulkUpdateRequest extends BaseApiRequest
         return [
             'data' => 'array|min:1|max:' . ValidationLimits::BULK_CATEGORY_DATA_MAX . '|required',
             'data.*.id' => 'uuid|required',
-            'data.*.name' => 'string|required',
+            'data.*.name' => 'string|max:' . ValidationLimits::STRING_MAX . '|required',
             'data.*.order' => 'integer|min:0|required',
         ];
     }
@@ -38,6 +38,7 @@ class RecipeCategoryBulkUpdateRequest extends BaseApiRequest
             'data.*.id.uuid' => __('validation.uuid', ['attribute' => 'data.*.id']),
             'data.*.id.required' => __('validation.required', ['attribute' => 'data.*.id']),
             'data.*.name.string' => __('validation.string', ['attribute' => 'data.*.name']),
+            'data.*.name.max' => __('validation.max.string', ['attribute' => 'data.*.name', 'max' => ValidationLimits::STRING_MAX]),
             'data.*.name.required' => __('validation.required', ['attribute' => 'data.*.name']),
             'data.*.order.integer' => __('validation.integer', ['attribute' => 'data.*.order']),
             'data.*.order.min' => __('validation.min.numeric', ['attribute' => 'data.*.order', 'min' => 0]),

@@ -39,7 +39,7 @@ class MealCategoryBulkUpdateRequest extends BaseApiRequest
             'data.*.id.uuid' => __('validation.uuid', ['attribute' => 'data.*.id']),
             'data.*.id.required' => __('validation.required', ['attribute' => 'data.*.id']),
             'data.*.name.string' => __('validation.string', ['attribute' => 'data.*.name']),
-            'data.*.name.max' => __('validation.max.string', ['attribute' => 'data.*.name', 'max' => 255]),
+            'data.*.name.max' => __('validation.max.string', ['attribute' => 'data.*.name', 'max' => ValidationLimits::STRING_MAX]),
             'data.*.name.required' => __('validation.required', ['attribute' => 'data.*.name']),
             'data.*.colorId.uuid' => __('validation.uuid', ['attribute' => 'data.*.colorId']),
             'data.*.colorId.exists' => __('validation.exists', ['attribute' => 'data.*.colorId']),

@@ -35,7 +35,7 @@ class RecipeCategoryBulkStoreRequest extends BaseApiRequest
             'data.max' => __('validation.max.array', ['attribute' => 'data', 'max' => ValidationLimits::BULK_CATEGORY_DATA_MAX]),
             'data.required' => __('validation.required', ['attribute' => 'data']),
             'data.*.name.string' => __('validation.string', ['attribute' => 'data.*.name']),
-            'data.*.name.max' => __('validation.max.string', ['attribute' => 'data.*.name', 'max' => 255]),
+            'data.*.name.max' => __('validation.max.string', ['attribute' => 'data.*.name', 'max' => ValidationLimits::STRING_MAX]),
             'data.*.name.required' => __('validation.required', ['attribute' => 'data.*.name']),
             'data.*.order.integer' => __('validation.integer', ['attribute' => 'data.*.order']),
             'data.*.order.min' => __('validation.min.numeric', ['attribute' => 'data.*.order', 'min' => 0]),

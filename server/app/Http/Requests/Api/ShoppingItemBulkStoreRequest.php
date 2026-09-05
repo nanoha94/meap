@@ -48,7 +48,7 @@ class ShoppingItemBulkStoreRequest extends BaseApiRequest
             'data.max' => __('validation.max.array', ['attribute' => 'data', 'max' => ValidationLimits::BULK_ITEM_DATA_MAX]),
             'data.required' => __('validation.required', ['attribute' => 'data']),
             'data.*.name.string' => __('validation.string', ['attribute' => 'data.*.name']),
-            'data.*.name.max' => __('validation.max.string', ['attribute' => 'data.*.name', 'max' => 255]),
+            'data.*.name.max' => __('validation.max.string', ['attribute' => 'data.*.name', 'max' => ValidationLimits::STRING_MAX]),
             'data.*.name.required' => __('validation.required', ['attribute' => 'data.*.name']),
             'data.*.categoryId.uuid' => __('validation.uuid', ['attribute' => 'data.*.categoryId']),
             'data.*.categoryId.required' => __('validation.required', ['attribute' => 'data.*.categoryId']),
@@ -64,7 +64,7 @@ class ShoppingItemBulkStoreRequest extends BaseApiRequest
             'data.*.tags.max' => __('validation.max.array', ['attribute' => 'data.*.tags', 'max' => ValidationLimits::SHOPPING_ITEM_TAGS_MAX]),
             'data.*.tags.*.id.uuid' => __('validation.uuid', ['attribute' => 'data.*.tags.*.id']),
             'data.*.tags.*.name.string' => __('validation.string', ['attribute' => 'data.*.tags.*.name']),
-            'data.*.tags.*.name.max' => __('validation.max.string', ['attribute' => 'data.*.tags.*.name', 'max' => 255]),
+            'data.*.tags.*.name.max' => __('validation.max.string', ['attribute' => 'data.*.tags.*.name', 'max' => ValidationLimits::STRING_MAX]),
             'data.*.tags.*.name.required' => __('validation.required', ['attribute' => 'data.*.tags.*.name']),
         ];
     }

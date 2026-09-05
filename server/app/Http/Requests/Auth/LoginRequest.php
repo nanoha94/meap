@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Support\ValidationLimits;
 use App\Enums\HttpStatusCode;
 use App\Http\Requests\Auth\BaseAuthRequest;
 use Illuminate\Auth\Events\Lockout;
@@ -31,7 +32,7 @@ class LoginRequest extends BaseAuthRequest
     {
         return [
             'email' => ['required', 'string', 'email'],
-            'password' => ['required', 'string', 'max:255'],
+            'password' => ['required', 'string', 'max:' . ValidationLimits::STRING_MAX],
             'remember' => ['sometimes', 'boolean'],
         ];
     }
@@ -49,7 +50,7 @@ class LoginRequest extends BaseAuthRequest
             'email.email' => __('validation.email', ['attribute' => 'email']),
             'password.required' => __('validation.required', ['attribute' => 'password']),
             'password.string' => __('validation.string', ['attribute' => 'password']),
-            'password.max' => __('validation.max.string', ['attribute' => 'password', 'max' => 255]),
+            'password.max' => __('validation.max.string', ['attribute' => 'password', 'max' => ValidationLimits::STRING_MAX]),
             'remember.boolean' => __('validation.boolean', ['attribute' => 'remember']),
         ];
     }
