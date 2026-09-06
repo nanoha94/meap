@@ -9,6 +9,7 @@ import {
     BillingOptionCard,
     Button,
     PendingPlanChangeNote,
+    PlanChangeHelpLink,
 } from '@/components';
 import {
     BILLING_PLAN_DETAILS,
@@ -96,6 +97,7 @@ const SubscriptionPlanChange = ({
                     );
                 })}
             </div>
+            <div className="mx-auto w-fit"><PlanChangeHelpLink /></div>
         </div>
     );
 };

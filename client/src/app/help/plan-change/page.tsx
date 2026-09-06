@@ -1,7 +1,7 @@
 import React from 'react';
 import {
-    ArrowDown,
     ArrowUp,
+    // ArrowDown, // 複数有料プラン追加時: ダウングレードセクションと合わせて有効化
     CircleHelp,
     Coins,
     ChevronDown,
@@ -11,7 +11,15 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import { LoginLinks } from '@/components';
-import { LINK_TO } from '@/constants';
+import {
+    BILLING_PLAN,
+    BILLING_PLAN_DETAILS,
+    LINK_TO,
+} from '@/constants';
+
+const STANDARD_MONTHLY = BILLING_PLAN_DETAILS[BILLING_PLAN.STANDARD].price;
+const formatYenCompact = (amount: number) => `¥${amount.toLocaleString()}`;
+const STANDARD_MONTHLY_LABEL = `${formatYenCompact(STANDARD_MONTHLY)}/月`;
 
 const Page = () => {
     return (
@@ -47,8 +55,9 @@ const Page = () => {
                         <h1 className="mb-4 text-2xl font-bold sm:text-3xl">
                             プラン変更の仕組み
                         </h1>
+                        {/* 複数有料プラン追加時: 「アップグレード・ダウングレード・解約」に変更 */}
                         <p className="leading-relaxed">
-                            プランを変更（アップグレード・ダウングレード・解約）する場合、
+                            プランを変更（アップグレード・解約）する場合、
                             それぞれ料金の請求タイミングやプランの切り替わり方が異なります。<br />
                             各プラン変更のルールを具体例つきで説明します。
                         </p>
@@ -65,33 +74,24 @@ const Page = () => {
                         </p>
 
                         <ScenarioHeading>
-                            具体例：1/1 にスタンダードプラン（¥580/月）を契約 → 1/10 にプロプランへアップグレード
+                            具体例：1/1 からフリープランで利用 → 1/10 にスタンダードプラン（{STANDARD_MONTHLY_LABEL}）へアップグレード
                         </ScenarioHeading>
                         <Timeline
                             steps={[
                                 {
                                     date: '1/1',
-                                    title: 'スタンダードプランを契約',
+                                    title: 'フリープランで利用開始',
                                     description:
-                                        'スタンダードプラン（¥580/月）で利用開始。',
-                                    detail: <BillingAmount amount="¥580" />,
+                                        'フリープランで利用開始。',
+                                    detail: <BillingAmount amount="なし" />,
                                 },
                                 {
                                     date: '1/10',
-                                    title: 'プロプランへアップグレード（即時反映）',
+                                    title: 'スタンダードプランへアップグレード（即時反映）',
                                     description:
-                                        'プロプランの全機能がすぐに利用できます。\nプロプランの月額から、スタンダードプランの残り日数分を日割りで差し引いた差額が請求されます。',
+                                        'スタンダードプランのAI機能がすぐに利用できます。\nフリープランに日割り計算の対象となる料金はないため、スタンダードプランの月額（1か月分）が請求されます。',
                                     detail: (
-                                        <CalcBreakdown>
-                                            <CalcLine label="プロプランの月額（1か月分）" amount="+ ¥980" />
-                                            <CalcLine
-                                                label="スタンダードプラン残り22日分の返金（¥580 × 22/31）"
-                                                amount="− ¥412"
-                                                muted
-                                            />
-                                            <div className="my-1.5 border-t border-dashed border-gray-border" />
-                                            <CalcLine label="請求額" amount="¥568" bold />
-                                        </CalcBreakdown>
+                                        <BillingAmount amount={formatYenCompact(STANDARD_MONTHLY)} />
                                     ),
                                 },
                                 {
@@ -99,11 +99,17 @@ const Page = () => {
                                     title: '次回請求',
                                     description:
                                         '以降、毎月10日が請求日になります。',
-                                    detail: <BillingAmount amount="¥980" />,
+                                    detail: <BillingAmount amount={formatYenCompact(STANDARD_MONTHLY)} />,
                                 },
                             ]}
                         />
                     </Section>
+
+                    {/*
+                      有料プランがスタンダードのみのため非表示（スタンダード→フリーは解約と同じ）。
+                      複数有料プラン追加時: 以下のセクションと ArrowDown import を有効化し、
+                      具体例を上位有料プラン→下位有料プラン（例: プロ→スタンダード）に差し替える。
+                      冒頭・買い切りパック・FAQ の「ダウングレード」表記も合わせて復元すること。
 
                     <Section
                         title="ダウングレード"
@@ -117,40 +123,41 @@ const Page = () => {
                         </p>
 
                         <ScenarioHeading>
-                            具体例：1/1 にプロプラン（¥980/月）を契約 → 1/15 にスタンダードプランへダウングレード
+                            具体例：1/1 にスタンダードプラン（{STANDARD_MONTHLY_LABEL}）を契約 → 1/15 にフリープランへダウングレード
                         </ScenarioHeading>
                         <Timeline
                             steps={[
                                 {
                                     date: '1/1',
-                                    title: 'プロプランを契約',
+                                    title: 'スタンダードプランを契約',
                                     description:
-                                        'プロプラン（¥980/月）で利用開始。',
-                                    detail: <BillingAmount amount="¥980" />,
+                                        `スタンダードプラン（${STANDARD_MONTHLY_LABEL}）で利用開始。`,
+                                    detail: <BillingAmount amount={formatYenCompact(STANDARD_MONTHLY)} />,
                                 },
                                 {
                                     date: '1/15',
-                                    title: 'スタンダードプランへダウングレード',
+                                    title: 'フリープランへダウングレード',
                                     description:
-                                        '手続き完了。ただし、次の更新日まではプロプランのまま利用できます。',
+                                        '手続き完了。ただし、次の更新日まではスタンダードプランのまま利用できます。',
                                     detail: <BillingAmount amount="なし" />,
                                 },
                                 {
                                     date: '1/15〜2/1',
-                                    title: 'プロプランとして利用を継続',
+                                    title: 'スタンダードプランとして利用を継続',
                                     description:
                                         '次の更新日（2/1）まではプランは切り替わりません。',
                                 },
                                 {
                                     date: '2/1',
-                                    title: '更新日 → スタンダードプランへ自動切り替え',
+                                    title: '更新日 → フリープランへ自動切り替え',
                                     description:
-                                        'スタンダードプランに切り替わります。',
-                                    detail: <BillingAmount amount="¥580" />,
+                                        'フリープランに切り替わります。',
+                                    detail: <BillingAmount amount="なし" />,
                                 },
                             ]}
                         />
                     </Section>
+                    */}
 
                     <Section
                         title="解約"
@@ -163,7 +170,7 @@ const Page = () => {
                         </p>
 
                         <ScenarioHeading>
-                            具体例：6/10 にスタンダードプラン（¥580/月）を契約 → 6/20 に解約
+                            具体例：6/10 にスタンダードプラン（{STANDARD_MONTHLY_LABEL}）を契約 → 6/20 に解約
                         </ScenarioHeading>
                         <Timeline
                             steps={[
@@ -171,8 +178,8 @@ const Page = () => {
                                     date: '6/10',
                                     title: 'スタンダードプランを契約',
                                     description:
-                                        'スタンダードプラン（¥580/月）で利用開始。',
-                                    detail: <BillingAmount amount="¥580" />,
+                                        `スタンダードプラン（${STANDARD_MONTHLY_LABEL}）で利用開始。`,
+                                    detail: <BillingAmount amount={formatYenCompact(STANDARD_MONTHLY)} />,
                                 },
                                 {
                                     date: '6/20',
@@ -201,7 +208,8 @@ const Page = () => {
                     <Section title="買い切りパックについて" icon={<Coins className="size-6" />}>
                         <p>
                             買い切りパックで購入した利用回数には<strong>有効期限がなく</strong>、
-                            アップグレード・ダウングレード・解約いずれの場合でもそのまま維持されます。
+                            アップグレード・解約いずれの場合でもそのまま維持されます。
+                            {/* 複数有料プラン追加時: 「アップグレード・ダウングレード・解約いずれの場合でも」に変更 */}
                         </p>
                     </Section>
 
@@ -209,14 +217,14 @@ const Page = () => {
                         <FaqList />
                     </Section>
 
-                    <div className="mt-10 rounded-xl border border-primary-light bg-primary-background p-5">
+                    <div className="mt-10">
                         <p>
                             プラン変更は設定画面の「プラン管理」から行えます。
-                            料金の詳細は
+                            料金の詳細は、
                             <Link
                                 href={`${LINK_TO.LP}#pricing`}
                                 className="mx-1 text-primary-main underline transition-opacity hover:opacity-80">
-                                料金ページ
+                                料金プラン
                             </Link>
                             もご確認ください。
                         </p>
@@ -274,49 +282,26 @@ const BillingAmount = ({ amount }: { amount: string }) => (
     </span>
 );
 
-const CalcBreakdown = ({ children }: { children: React.ReactNode }) => (
-    <div className="mt-3 max-w-lg space-y-1.5 rounded-lg bg-gray-background px-4 py-3">
-        {children}
-    </div>
-);
-
-interface CalcLineProps {
-    label: string;
-    amount: string;
-    muted?: boolean;
-    bold?: boolean;
-}
-
-const CalcLine = ({ label, amount, muted, bold }: CalcLineProps) => (
-    <div className="flex items-baseline justify-between gap-4">
-        <span className={muted ? 'text-gray-main' : bold ? 'font-bold' : ''}>
-            {label}
-        </span>
-        <span
-            className={`shrink-0 font-mono ${muted ? 'text-gray-main' : bold ? 'text-lg font-bold text-primary-main' : ''}`}>
-            {amount}
-        </span>
-    </div>
-);
-
 /* ── FAQ ── */
 
 const faqItems = [
     {
         question: 'アップグレード後、請求日はいつになりますか？',
-        answer: 'アップグレードした日が新しい請求日になります。たとえば 1/10 にアップグレードした場合、次回の請求日は 2/10 になり、以降は毎月10日に請求されます。',
+        answer: 'アップグレードした日が新しい請求日になります。たとえば 1/10 にアップグレードした場合、次回の請求は 2/10 となり、以降も毎月 10 日に請求されます。',
     },
     {
-        question: 'プランの契約や変更をした後、やっぱりキャンセルしたくなったら？',
-        answer: 'アップグレードは即時反映のためキャンセルできません。その後、ダウングレード・解約することは可能ですが、次の更新日に反映されます。\nダウングレード・解約は、次の更新日の前であればキャンセルして今のプランを継続できます。',
+        question: 'プラン変更や解約の手続きを取り消せますか？',
+        answer: 'アップグレードは即時反映のため、取り消して元のプランに戻すことはできません。\n解約予定の取り消しは、次の更新日の前であれば「プラン管理」から行えます。取り消すと有料プランの利用が継続されます。',
+        // 複数有料プラン追加時:
+        // answer: 'アップグレードは即時反映のため、取り消して元のプランに戻すことはできません。\nダウングレード・解約予定の取り消しは、次の更新日の前であれば「プラン管理」から行えます。取り消すと今のプランの利用が継続されます。',
     },
     {
-        question: '解約後に再度有料プランに戻れますか？',
-        answer: 'はい、いつでも再度加入できます。新規契約として即時反映されます。',
+        question: '解約後に、再度有料プランに加入できますか？',
+        answer: 'はい、いつでも再加入できます。加入と同時に有料プランが反映され、請求もその日を基準に始まります。',
     },
     {
-        question: '買い切りパックの残数はプラン変更で消えますか？',
-        answer: '消えません。買い切りパックで購入した利用回数には有効期限がなく、プラン変更・解約の影響を一切受けません。',
+        question: '買い切りパックの残数は、アップグレードや解約で消えますか？',
+        answer: '消えません。買い切りパックで購入した利用回数に有効期限はなく、アップグレード・解約のいずれにも影響されません。',
     },
 ] as const;
 

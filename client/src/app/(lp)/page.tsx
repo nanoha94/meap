@@ -12,8 +12,16 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import { DotList, ScreenshotPlaceholder } from './_components';
-import { LoginLinks } from '@/components';
-import { COLOR_VARIANT, LINK_TO } from '@/constants';
+import { LoginLinks, PlanChangeHelpLink } from '@/components';
+import {
+    BILLING_PACK_OPTIONS,
+    BILLING_PLAN,
+    BILLING_PLAN_DETAILS,
+    BILLING_PLAN_ORDER,
+    BillingPlan,
+    COLOR_VARIANT,
+    LINK_TO,
+} from '@/constants';
 import { getLinkButtonClassName } from '@/utils';
 
 const heroBenefits = [
@@ -164,35 +172,34 @@ const aiComingSoonItems = [
     },
 ] as const;
 
-const pricingPlans = [
-    {
-        name: 'フリー',
-        price: '無料',
-        priceNote: null,
-        highlight: false,
-        features: [
-            'レシピの作成・管理・共有',
-            '買い物リスト・献立',
-            'AI機能 月3回まで',
-        ],
-    },
-    {
-        name: 'スタンダード',
-        price: '480円',
-        priceNote: '/ 月',
-        highlight: true,
-        features: [
-            'フリーの全機能',
-            'AI機能 月30回まで',
-            '今後追加されるAI機能も利用可能',
-        ],
-    },
-] as const;
+const lpPlanFeatures: Record<BillingPlan, readonly string[]> = {
+    [BILLING_PLAN.FREE]: [
+        'レシピの作成・管理・共有',
+        '買い物リスト・献立',
+        `AI機能 月${BILLING_PLAN_DETAILS[BILLING_PLAN.FREE].monthlyCredits}回まで`,
+    ],
+    [BILLING_PLAN.STANDARD]: [
+        'フリーの全機能',
+        `AI機能 月${BILLING_PLAN_DETAILS[BILLING_PLAN.STANDARD].monthlyCredits}回まで`,
+        '今後追加されるAI機能も利用可能',
+    ],
+};
 
-const addonPacks = [
-    { count: 10, price: 200 },
-    { count: 30, price: 500 },
-] as const;
+const pricingPlans = BILLING_PLAN_ORDER.map(plan => {
+    const detail = BILLING_PLAN_DETAILS[plan];
+    return {
+        name: detail.label,
+        price: detail.price === 0 ? '無料' : `${detail.price}円`,
+        priceNote: detail.price === 0 ? null : '/ 月',
+        highlight: plan === BILLING_PLAN.STANDARD,
+        features: lpPlanFeatures[plan],
+    };
+});
+
+const addonPacks = BILLING_PACK_OPTIONS.map(pack => ({
+    count: pack.credits,
+    price: pack.price,
+}));
 
 const Home = () => {
     return (
@@ -704,7 +711,7 @@ const Home = () => {
                                 )}
                             </ul>
 
-                            <div className="rounded-2xl border border-gray-border bg-primary-background p-6 shadow-card sm:p-7">
+                            <div className="mb-10 rounded-2xl border border-gray-border bg-primary-background p-6 shadow-card sm:p-7">
                                 <h3 className="mb-2 text-lg font-bold sm:text-xl">
                                     追加パック（都度購入）
                                 </h3>
@@ -729,6 +736,7 @@ const Home = () => {
                                     ))}
                                 </ul>
                             </div>
+                            <PlanChangeHelpLink />
                         </div>
                     </div>
                 </section>

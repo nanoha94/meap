@@ -11,6 +11,7 @@ import {
     Header,
     PackPurchase,
     PendingPlanChangeNote,
+    PlanChangeHelpLink,
     SubscriptionPlanChange,
 } from '@/components';
 import {
@@ -151,7 +152,7 @@ const CurrentPlanSection = ({
                             />
                         </div>
                     </div>
-                    <ul className="flex flex-col gap-y-2 text-base leading-relaxed">
+                    <ul className="mb-4 flex flex-col gap-y-2 text-base leading-relaxed">
                         <li>
                             ・月間 AI 使用回数：
                             {planDetail.monthlyCredits} 回
@@ -174,6 +175,7 @@ const CurrentPlanSection = ({
                             size="base"
                         />
                     )}
+                    <PlanChangeHelpLink />
                 </>
             )}
             <div className="mt-4 sp-only-sm">

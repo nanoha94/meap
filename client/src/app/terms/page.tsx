@@ -3,7 +3,17 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import { LoginLinks } from '@/components';
-import { LINK_TO } from '@/constants';
+import {
+    BILLING_PACK_OPTIONS,
+    BILLING_PLAN,
+    BILLING_PLAN_DETAILS,
+    LINK_TO,
+} from '@/constants';
+
+const standardPlan = BILLING_PLAN_DETAILS[BILLING_PLAN.STANDARD];
+const packPriceSummary = BILLING_PACK_OPTIONS.map(
+    pack => `${pack.credits}回${pack.price}円（税込）`,
+).join('、');
 
 const Page = () => {
     return (
@@ -76,10 +86,13 @@ const Page = () => {
                     <Section title="第4条（利用料金）">
                         <ol className="list-decimal pl-6 [&>li:not(:last-child)]:mb-1">
                             <li>
-                                本サービスは、本規約の制定時点において、すべての機能を無料で提供しています。
+                                本サービスは、基本機能をフリープランとして無料で提供します。AI機能等の一部機能については、有料プラン（{standardPlan.label}プラン：月額{standardPlan.price}円・税込）または追加パック（{packPriceSummary}）の購入により利用できます。
                             </li>
                             <li>
-                                当事業者は、将来、本サービスの一部機能を有料化することがあります。この場合、有料機能の対価および支払方法は、当事業者が別途定め、本サービス上にあらかじめ表示するものとし、お客様が当該機能の利用を申し込み、当事業者がこれを承諾した時点で利用契約が成立するものとします。
+                                有料プランおよび追加パックの料金・支払方法等の詳細は、当事業者が別途本サービス上に表示するものとし、お客様が当該プランまたは追加パックの利用を申し込み、当事業者がこれを承諾した時点で利用契約が成立するものとします。
+                            </li>
+                            <li>
+                                当事業者は、料金を変更する場合、変更後の料金を本サービス上に表示したうえで、変更後の料金は変更後に新たに申し込まれた利用契約から適用するものとします。
                             </li>
                             <li>
                                 お客様が利用料金の支払を遅滞した場合には、お客様は年14.6％の割合による遅延損害金を支払うものとします。
