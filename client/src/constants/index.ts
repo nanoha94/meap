@@ -9,6 +9,7 @@ export * from './dnd';
 export * from './fonts';
 export * from './form';
 export * from './image';
+export * from './legal';
 export * from './links';
 export * from './metadata';
 export * from './navigation';

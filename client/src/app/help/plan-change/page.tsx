@@ -10,7 +10,7 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { LoginLinks } from '@/components';
+import { LoginLinks, Footer } from '@/components';
 import {
     BILLING_PLAN,
     BILLING_PLAN_DETAILS,
@@ -232,15 +232,7 @@ const Page = () => {
                 </article>
             </main>
 
-            <footer
-                className="bg-white py-8"
-                style={{ boxShadow: 'inset 0 1px 3px 0 rgba(0, 0, 0, 10%)' }}>
-                <div className="flex justify-center px-4 sm:px-6">
-                    <div className="w-full text-center text-base text-gray-main">
-                        © {new Date().getFullYear()} meap
-                    </div>
-                </div>
-            </footer>
+            <Footer />
         </div>
     );
 };
@@ -278,7 +270,7 @@ const Timeline = ({ steps }: TimelineProps) => (
 const BillingAmount = ({ amount }: { amount: string }) => (
     <span className="mt-3 inline-flex items-center gap-2.5 rounded-lg bg-gray-background px-4 py-2">
         <span className="text-gray-main">請求額</span>
-        <span className="font-mono font-bold">{amount}</span>
+        <span className="font-bold">{amount}</span>
     </span>
 );
 

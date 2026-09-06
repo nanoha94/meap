@@ -312,7 +312,7 @@ const PaymentSettingsSection = ({
                             <span className="mr-2">
                                 {billingStatus.pmType ?? 'カード'}
                             </span>
-                            <span className="font-mono tracking-wider">
+                            <span className="tracking-wider">
                                 {formatMaskedCardNumber(
                                     billingStatus.pmLastFour,
                                     billingStatus.pmType,

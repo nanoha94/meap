@@ -26,4 +26,7 @@ export const LINK_TO = {
     REGISTER: '/register',
     PRIVACY: '/privacy',
     TERMS: '/terms',
+    LEGAL: {
+        COMMERCIAL: '/legal/commercial',
+    },
 } as const;

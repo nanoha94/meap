@@ -2,11 +2,12 @@ import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { LoginLinks } from '@/components';
+import { LegalContactCard, LoginLinks, Footer } from '@/components';
 import {
     BILLING_PACK_OPTIONS,
     BILLING_PLAN,
     BILLING_PLAN_DETAILS,
+    LEGAL,
     LINK_TO,
 } from '@/constants';
 
@@ -47,8 +48,7 @@ const Page = () => {
                     </h1>
 
                     <p className="mb-10 leading-relaxed">
-                        この利用規約（以下「本規約」といいます。）は、屋号「nanoha
-                        code」（以下「当事業者」といいます。）が提供するサービス「meap」（以下「本サービス」といいます。）の利用条件を定めるものです。本サービスにご登録いただいたお客様（以下「お客様」といいます。）には、本規約に従って本サービスをご利用いただきます。
+                        この利用規約（以下「本規約」といいます。）は、屋号「{LEGAL.TRADE_NAME}」（以下「当事業者」といいます。）が提供するサービス「{LEGAL.SERVICE_NAME}」（以下「本サービス」といいます。）の利用条件を定めるものです。本サービスにご登録いただいたお客様（以下「お客様」といいます。）には、本規約に従って本サービスをご利用いただきます。
                     </p>
 
                     <Section title="第1条（適用）">
@@ -339,21 +339,7 @@ const Page = () => {
                         <p>
                             本規約に関するお問い合わせは、以下の窓口までご連絡ください。
                         </p>
-                        <div className="p-4 bg-white rounded-md shadow-card">
-                            <dl className="grid grid-cols-[120px_1fr] items-start gap-x-3 gap-y-1">
-                                <dt className="font-bold">屋号</dt>
-                                <dd className="font-mono">nanoha code</dd>
-                                <dt className="font-bold">住所</dt>
-                                <dd className="font-mono">
-                                    〒980-0021 宮城県仙台市青葉区中央4丁目8-17 小林ビル1階
-                                </dd>
-                                <dt className="font-bold">メールアドレス</dt>
-                                <dd className="font-mono">
-                                    {/* TODO: サポート用メールアドレスを記載 */}
-                                    meap.support@example.com
-                                </dd>
-                            </dl>
-                        </div>
+                        <LegalContactCard />
                     </Section>
 
                     <p className="text-right text-base text-gray-main">
@@ -363,15 +349,7 @@ const Page = () => {
                 </article>
             </main>
 
-            <footer
-                className="bg-white py-8"
-                style={{ boxShadow: 'inset 0 1px 3px 0 rgba(0, 0, 0, 10%)' }}>
-                <div className="flex justify-center px-4 sm:px-6">
-                    <div className="w-full text-center text-base text-gray-main">
-                        © {new Date().getFullYear()} meap
-                    </div>
-                </div>
-            </footer>
+            <Footer />
         </div>
     );
 };
