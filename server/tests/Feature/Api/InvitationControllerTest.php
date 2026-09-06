@@ -804,7 +804,7 @@ test('3-3-21: 【グループ参加】 デフォルトのマスタデータの�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-3-22: 【グループ参加】 参加成功後にトークンが削除される', function () {
+test('3-3-22: 【グループ参加】 参加成功後もトークンは残る', function () {
     $inviter = User::factory()->create([
         'email_verified_at' => now(),
     ]);
@@ -842,7 +842,8 @@ test('3-3-22: 【グループ参加】 参加成功後にトークンが削除�
         'message' => 'グループに参加しました。',
     ]);
 
-    expect(InvitationToken::count())->toBe(0);
+    expect(InvitationToken::count())->toBe(1);
+    expect(app(InvitationTokenService::class)->findByPlainToken($plainToken))->not->toBeNull();
 });
 
 test('3-3-23: 【グループ参加】 未認証ユーザー', function () {
