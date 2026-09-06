@@ -4,16 +4,18 @@ import React from 'react';
 import Link from 'next/link';
 
 import { COLOR_VARIANT, LINK_TO } from '@/constants';
+import { useIsClient } from '@/hooks';
 import { useUserStore } from '@/models/user';
 import { getLinkButtonClassName } from '@/utils';
 
 const LoginLinks = () => {
-    // store
+    const isClient = useIsClient();
     const loginUser = useUserStore(state => state.loginUser);
+    const showLoggedInLinks = isClient && Boolean(loginUser?.id);
 
     return (
         <div className="flex gap-x-4">
-            {loginUser?.id ? (
+            {showLoggedInLinks ? (
                 <Link
                     href={LINK_TO.PLAN.TOP}
                     className={`${getLinkButtonClassName()} text-sm md:text-base`}

@@ -6,7 +6,7 @@ import { LogOut } from 'lucide-react';
 import { NavigationIcon } from '.';
 
 import { LINK_TO, navigationItems } from '@/constants';
-import { useAuth } from '@/hooks';
+import { useAuth, useIsClient } from '@/hooks';
 import { useRecipeListStateStore } from '@/models/recipe';
 import { useUserStore, iconAvatar } from '@/models/user';
 import { getBrowserQueryString } from '@/models/recipe/utils';
@@ -26,15 +26,14 @@ const SideNavigation = ({ className }: Props) => {
     // hook
     const { logout } = useAuth();
     const pathname = usePathname();
+    const isClient = useIsClient();
 
-    if (!pathname) {
-        return <></>;
-    }
-
-    const formattedLink = (link: string) =>
-        link === LINK_TO.RECIPE.TOP
-            ? `${LINK_TO.RECIPE.TOP}?${getBrowserQueryString(listSortOptions, listFilterOptions, listCurrentPage)}`
-            : link;
+    const formattedLink = (link: string) => {
+        if (link !== LINK_TO.RECIPE.TOP || !isClient) {
+            return link;
+        }
+        return `${LINK_TO.RECIPE.TOP}?${getBrowserQueryString(listSortOptions, listFilterOptions, listCurrentPage)}`;
+    };
 
     return (
         <div
@@ -53,7 +52,7 @@ const SideNavigation = ({ className }: Props) => {
                 </Link>
             </div>
             <div className="py-3 flex flex-col border-b border-gray-border">
-                {loginUser && (
+                {loginUser?.id && (
                     <Link
                         href={LINK_TO.SETTINGS.ACCOUNT}
                         prefetch={false}
