@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { TIMEOUT_MS, TMP_ID_PREFIX } from '@/constants';
+import { TMP_ID_PREFIX } from '@/constants';
 import { useApiErrorHandler, useSnackbars } from '@/hooks';
 import { getApiErrorMessageFromSettledResult } from '@/lib/apiResponse';
 import axios from '@/lib/axios';
@@ -45,7 +45,6 @@ export const useShoppingCategoryApi = () => {
             if (deleteCategoryIds.length > 0) {
                 return axios.delete(`/shopping-categories/bulk`, {
                     data: { ids: deleteCategoryIds },
-                    timeout: TIMEOUT_MS,
                 });
             }
             return null;
@@ -104,7 +103,6 @@ export const useShoppingCategoryApi = () => {
             if (createCategories.length > 0) {
                 createRequest = axios.post(`/shopping-categories/bulk`, {
                     data: createCategories,
-                    timeout: TIMEOUT_MS,
                 });
             }
 
@@ -112,7 +110,6 @@ export const useShoppingCategoryApi = () => {
             if (updateCategories.length > 0) {
                 updateRequest = axios.put(`/shopping-categories/bulk`, {
                     data: updateCategories,
-                    timeout: TIMEOUT_MS,
                 });
             }
 
@@ -129,7 +126,6 @@ export const useShoppingCategoryApi = () => {
         try {
             const { data } = await axios.get<IGetShoppingCategoryIndexResponse>(
                 '/shopping-categories',
-                { timeout: TIMEOUT_MS },
             );
             if (data.success && data.data) {
                 setCategories(data.data);

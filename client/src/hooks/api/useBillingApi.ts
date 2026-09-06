@@ -6,7 +6,6 @@ import {
     BILLING_SUBSCRIPTION_TYPE,
     BillingPackType,
     BillingSubscriptionType,
-    TIMEOUT_MS,
 } from '@/constants';
 import axios from '@/lib/axios';
 import { useGlobalStore } from '@/stores';
@@ -64,9 +63,7 @@ export const useBillingApi = () => {
             incrementLoadingCount();
 
             const { data: responseData } =
-                await axios.get<IGetBillingStatusResponse>('/billing/status', {
-                    timeout: TIMEOUT_MS,
-                });
+                await axios.get<IGetBillingStatusResponse>('/billing/status');
 
             if (responseData.success && responseData.data) {
                 return responseData.data;
@@ -112,12 +109,7 @@ export const useBillingApi = () => {
             incrementLoadingCount();
 
             const { data: responseData } =
-                await axios.get<IGetBillingInvoicesResponse>(
-                    '/billing/invoices',
-                    {
-                        timeout: TIMEOUT_MS,
-                    },
-                );
+                await axios.get<IGetBillingInvoicesResponse>('/billing/invoices');
 
             if (responseData.success && responseData.data) {
                 return responseData.data;
@@ -166,8 +158,6 @@ export const useBillingApi = () => {
                 const { data: responseData } =
                     await axios.post<IPostBillingSubscripeResponse>(
                         `/billing/subscribe/${subscriptionType}`,
-                        {},
-                        { timeout: TIMEOUT_MS },
                     );
 
                 if (responseData.success && responseData.data?.checkoutUrl) {
@@ -214,11 +204,7 @@ export const useBillingApi = () => {
             incrementLoadingCount();
 
             const { data: responseData } =
-                await axios.post<IPostBillingPortalResponse>(
-                    '/billing/portal',
-                    {},
-                    { timeout: TIMEOUT_MS },
-                );
+                await axios.post<IPostBillingPortalResponse>('/billing/portal');
 
             if (responseData.success && responseData.data?.portalUrl) {
                 if (openStripeUrl(responseData.data.portalUrl)) {
@@ -263,8 +249,6 @@ export const useBillingApi = () => {
                 const { data: responseData } =
                     await axios.post<IPostBillingPacksResponse>(
                         `/billing/packs/${packType}`,
-                        {},
-                        { timeout: TIMEOUT_MS },
                     );
 
                 if (responseData.success && responseData.data?.checkoutUrl) {
@@ -313,8 +297,6 @@ export const useBillingApi = () => {
             const { data: responseData } =
                 await axios.post<IPostBillingResumeResponse>(
                     '/billing/subscription/resume',
-                    {},
-                    { timeout: TIMEOUT_MS },
                 );
 
             if (responseData.success && responseData.data) {

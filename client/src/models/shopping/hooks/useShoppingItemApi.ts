@@ -1,7 +1,6 @@
 "use client";
 import React from 'react';
 
-import { TIMEOUT_MS } from '@/constants';
 import { useApiErrorHandler, useSnackbars } from '@/hooks';
 import axios from '@/lib/axios';
 import { useGlobalStore } from '@/stores';
@@ -63,9 +62,7 @@ export const useShoppingItemApi = () => {
                 isFetchRequestRef.current = true;
                 if (!silent) incrementLoadingCount();
 
-                const res = await axios.get('/shopping-items', {
-                    timeout: TIMEOUT_MS,
-                });
+                const res = await axios.get('/shopping-items');
                 if (res.data) {
                     setServerItems(res.data.data);
                     setStoreItems(res.data.data);
@@ -102,10 +99,7 @@ export const useShoppingItemApi = () => {
 
                 const { data: responseData } = await axios.post<IPostShoppingItemResponse>(
                     `/shopping-items/bulk`,
-                    {
-                        data: items,
-                        timeout: TIMEOUT_MS,
-                    },
+                    { data: items },
                 );
                 if (responseData.success) {
                     await fetchShoppingItems();
@@ -157,10 +151,7 @@ export const useShoppingItemApi = () => {
 
                 const { data: responseData } = await axios.put<IBaseApiResponse>(
                     `/shopping-items/bulk`,
-                    {
-                        data: items.filter(v => v.name && v.name.length > 0),
-                        timeout: TIMEOUT_MS,
-                    },
+                    { data: items.filter(v => v.name && v.name.length > 0) },
                 );
                 if (responseData.success) {
                     await fetchShoppingItems(silent);
@@ -218,10 +209,7 @@ export const useShoppingItemApi = () => {
 
             const { data: responseData } = await axios.delete<IBaseApiResponse>(
                 '/shopping-items/bulk',
-                {
-                    data: { ids },
-                    timeout: TIMEOUT_MS,
-                },
+                { data: { ids } },
             );
             if (responseData.success) {
                 setIsSkipNextBulkSnackbar(true);

@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { TIMEOUT_MS, TMP_ID_PREFIX } from '@/constants';
+import { TMP_ID_PREFIX } from '@/constants';
 import { useApiErrorHandler, useSnackbars } from '@/hooks';
 import { getApiErrorMessageFromSettledResult } from '@/lib/apiResponse';
 import axios from '@/lib/axios';
@@ -40,7 +40,6 @@ export const useRecipeCategoryApi = () => {
             if (deleteCategoryIds.length > 0) {
                 return axios.delete(`/recipe-categories/bulk`, {
                     data: { ids: deleteCategoryIds },
-                    timeout: TIMEOUT_MS,
                 });
             }
             return null;
@@ -93,11 +92,9 @@ export const useRecipeCategoryApi = () => {
 
             // 新規作成リクエスト（一括）
             if (createCategories.length > 0) {
-                createRequest = axios.post(
-                    `/recipe-categories/bulk`,
-                    { data: createCategories },
-                    { timeout: TIMEOUT_MS },
-                );
+                createRequest = axios.post(`/recipe-categories/bulk`, {
+                    data: createCategories,
+                });
 
             }
 
@@ -105,7 +102,6 @@ export const useRecipeCategoryApi = () => {
             if (updateCategories.length > 0) {
                 updateRequest = axios.put(`/recipe-categories/bulk`, {
                     data: updateCategories,
-                    timeout: TIMEOUT_MS,
                 });
             }
 
@@ -123,7 +119,6 @@ export const useRecipeCategoryApi = () => {
         try {
             const { data } = await axios.get<IGetRecipeCategoryIndexResponse>(
                 '/recipe-categories',
-                { timeout: TIMEOUT_MS },
             );
             if (data.success && data.data) {
                 setCategories(data.data);

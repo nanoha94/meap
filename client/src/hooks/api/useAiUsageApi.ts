@@ -2,7 +2,6 @@
 
 import React from 'react';
 
-import { TIMEOUT_MS } from '@/constants';
 import axios from '@/lib/axios';
 import { useAiUsageStore, useGlobalStore } from '@/stores';
 import { IAiUsageStatusResponse } from '@/types';
@@ -38,9 +37,7 @@ export const useAiUsageApi = () => {
             incrementLoadingCount();
 
             const { data: responseData } =
-                await axios.get<IAiUsageStatusResponse>('/ai/usage', {
-                    timeout: TIMEOUT_MS,
-                });
+                await axios.get<IAiUsageStatusResponse>('/ai/usage');
 
             if (responseData.success && responseData.data) {
                 setAiUsageStatus(responseData.data);

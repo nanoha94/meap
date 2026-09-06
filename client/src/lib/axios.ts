@@ -1,5 +1,7 @@
 import axios, { isAxiosError, InternalAxiosRequestConfig } from 'axios';
 
+import { TIMEOUT_MS } from '@/constants';
+
 /** 419 リトライ時に二重送信を防ぐためのフラグ */
 type RetryableRequestConfig = InternalAxiosRequestConfig & {
     _retried?: boolean;
@@ -7,6 +9,7 @@ type RetryableRequestConfig = InternalAxiosRequestConfig & {
 
 const axiosInstance = axios.create({
     baseURL: process.env.NEXT_PUBLIC_BACKEND_URL,
+    timeout: TIMEOUT_MS,
     headers: {
         'X-Requested-With': 'XMLHttpRequest',
     },

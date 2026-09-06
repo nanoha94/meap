@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { API_STATUS_CODE, TIMEOUT_MS } from '@/constants';
+import { API_STATUS_CODE } from '@/constants';
 import { useAlertDialog, useApiErrorHandler, useSnackbars } from '@/hooks';
 import axios, { isAxiosError } from '@/lib/axios';
 import { useGlobalStore } from '@/stores';
@@ -56,12 +56,7 @@ export const useInvitationApi = () => {
                 setIsFetching(true);
 
                 // 招待トークン発行
-                const res = await axios.post<IPostInvitaionResponse>(
-                    '/invitations',
-                    {
-                        timeout: TIMEOUT_MS,
-                    },
-                );
+                const res = await axios.post<IPostInvitaionResponse>('/invitations');
 
                 // レスポンスデータ
                 const responseData: IPostInvitaionResponse = res.data;
@@ -112,10 +107,7 @@ export const useInvitationApi = () => {
 
                 const res = await axios.post<IPostInvitationJoinResponse>(
                     `/invitations/${invitationDetail.token}/join`,
-                    {
-                        isDelete,
-                        timeout: TIMEOUT_MS,
-                    },
+                    { isDelete },
                 );
                 // URLからトークンを削除
                 removeTokenFromPath();

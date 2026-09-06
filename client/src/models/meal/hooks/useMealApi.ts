@@ -2,7 +2,6 @@
 
 import React from 'react';
 
-import { TIMEOUT_MS } from '@/constants';
 import { useApiErrorHandler, useSnackbars } from '@/hooks';
 import axios from '@/lib/axios';
 import { useGlobalStore } from '@/stores';
@@ -36,9 +35,6 @@ export const useMealApi = () => {
                 incrementLoadingCount();
                 const { data: responseData } = await axios.delete<IBaseApiResponse>(
                     `/meal-plans/${mealPlanId}/meals/${id}`,
-                    {
-                        timeout: TIMEOUT_MS,
-                    },
                 );
                 if (responseData.success) {
                     addSnackbar(

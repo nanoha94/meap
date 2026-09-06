@@ -2,7 +2,6 @@
 
 import React from 'react';
 
-import { TIMEOUT_MS } from '@/constants';
 import { useApiErrorHandler, useSnackbars } from '@/hooks';
 import axios from '@/lib/axios';
 import { useGlobalStore } from '@/stores';
@@ -55,10 +54,7 @@ export const useMealPlanApi = () => {
 
             const { data: responseData } = await axios.get<IGetMealPlanIndexResponse>(
                 `/meal-plans`,
-                {
-                    params,
-                    timeout: TIMEOUT_MS,
-                },
+                { params },
             );
 
             if (responseData.success) {
@@ -101,9 +97,6 @@ export const useMealPlanApi = () => {
                 const res = await axios.post<IPostMealPlanResponse>(
                     `/meal-plans`,
                     sendData,
-                    {
-                        timeout: TIMEOUT_MS,
-                    },
                 );
 
                 // レスポンスデータ
@@ -151,9 +144,6 @@ export const useMealPlanApi = () => {
             const { data: responseData } = await axios.put<IPutMealPlanResponse>(
                 `/meal-plans/${data.id}`,
                 data,
-                {
-                    timeout: TIMEOUT_MS,
-                },
             );
 
             if (responseData.success) {
@@ -194,9 +184,6 @@ export const useMealPlanApi = () => {
             incrementLoadingCount();
             const { data: responseData } = await axios.delete<IDeleteMealPlanResponse>(
                 `/meal-plans/${id}`,
-                {
-                    timeout: TIMEOUT_MS,
-                },
             );
             if (responseData.success) {
                 addSnackbar(

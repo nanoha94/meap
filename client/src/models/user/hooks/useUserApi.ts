@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { LINK_TO, TIMEOUT_MS } from '@/constants';
+import { LINK_TO } from '@/constants';
 import { useApiErrorHandler, useSnackbars } from '@/hooks';
 import axios from '@/lib/axios';
 import { useImageApi } from '@/models/image';
@@ -47,9 +47,7 @@ export const useUserApi = () => {
             }
 
             // APIリクエスト
-            const { data: responseData } = await axios.put<IBaseApiResponse>('/user', data, {
-                timeout: TIMEOUT_MS,
-            });
+            const { data: responseData } = await axios.put<IBaseApiResponse>('/user', data);
             if (responseData.success) {
                 addSnackbar(
                     'success',
@@ -85,9 +83,7 @@ export const useUserApi = () => {
         try {
             isDeleteRequestRef.current = true;
             incrementLoadingCount();
-            const { data: responseData } = await axios.delete<IBaseApiResponse>('/user', {
-                timeout: TIMEOUT_MS,
-            });
+            const { data: responseData } = await axios.delete<IBaseApiResponse>('/user');
             if (responseData.success) {
                 addSnackbar(
                     'success',
