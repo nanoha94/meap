@@ -3,7 +3,7 @@
 import React from 'react';
 
 import { AuthHeading, Button } from '@/components';
-import { useAuth, useLoadingAnimation } from '@/hooks';
+import { useAuth } from '@/hooks';
 import { useGlobalStore } from '@/stores';
 
 const Page = () => {
@@ -14,30 +14,7 @@ const Page = () => {
     const { resendEmailVerification } = useAuth();
 
     const [message, setMessage] = React.useState<string | null>(null);
-    const [isInitialSent, setIsInitialSent] = React.useState(false);
-    const hasInitialSent = React.useRef(false);
 
-    /**
-     * 初回のメール送信
-     */
-    const sendInitialEmail = React.useCallback(async () => {
-        await resendEmailVerification({
-            setMessage: () => { }, // 初回は状態を設定しない
-        });
-        setIsInitialSent(true);
-    }, [resendEmailVerification]);
-
-    React.useEffect(() => {
-        if (!hasInitialSent.current) {
-            void sendInitialEmail();
-            hasInitialSent.current = true;
-        }
-    }, [sendInitialEmail]);
-
-    // 初回送信完了後のみローディングアニメーションを表示
-    useLoadingAnimation(isInitialSent);
-
-    // ボタンクリック時の再送（メッセージ表示あり）
     const handleResendEmail = async () => {
         setMessage(null);
         await resendEmailVerification({ setMessage });
@@ -61,7 +38,7 @@ const Page = () => {
                 </p>
                 <Button
                     onClick={handleResendEmail}
-                    disabled={loadingCount > 0 && isInitialSent}>
+                    disabled={loadingCount > 0}>
                     認証メールを再送する
                 </Button>
                 {message && <p className="text-alert-main">{message}</p>}
