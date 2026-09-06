@@ -1,7 +1,8 @@
 'use client';
+
 import React from 'react';
 
-import { Button } from '@/components';
+import { AuthHeading, Button } from '@/components';
 import { useAuth, useLoadingAnimation } from '@/hooks';
 import { useGlobalStore } from '@/stores';
 
@@ -43,25 +44,15 @@ const Page = () => {
     };
 
     return (
-        <div className="flex flex-col gap-y-10">
-            <div className="relative w-full text-center">
-                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-px bg-gray-main" />
-                <h1 className="relative w-fit mx-auto px-4 bg-white">
-                    メールアドレス認証
-                </h1>
-            </div>
-            <div className="flex flex-col gap-y-4">
-                <p className="text-xl font-bold">
-                    メールアドレス認証をお願いします
+        <div className="flex flex-col gap-y-8">
+            <AuthHeading>メールアドレス認証</AuthHeading>
+            <div className="flex flex-col gap-y-2">
+                <p>
+                    ご登録ありがとうございます！アカウントを利用するにはメールアドレスの認証が必要です。
                 </p>
-                <div className="flex flex-col gap-y-2">
-                    <p>
-                        ご登録ありがとうございます！アカウントを利用するにはメールアドレスの認証が必要です。
-                    </p>
-                    <p>
-                        info@meap.comよりメールを送信しましたので、メール本文に記載のあるリンクをクリックして認証を完了してください。
-                    </p>
-                </div>
+                <p>
+                    info@meap.comよりメールを送信しましたので、メール本文に記載のあるリンクをクリックして認証を完了してください。
+                </p>
             </div>
 
             <div className="flex flex-col gap-y-4">

@@ -35,11 +35,24 @@ const AuthLayout = async ({ children }: Props) => {
             {shouldShowError && (
                 <SnackbarHandler type="error" message={errorMessage} />
             )}
-            <div className="max-w-xl mx-auto pt-10 pb-20 px-5 flex flex-col gap-y-16">
-                <Link href={LINK_TO.LP} className="w-[60%] mx-auto block">
-                    <Image src="/images/meap-logo.png" alt="meap" width={297} height={307} loading="eager" className="w-full h-auto" />
-                </Link>
-                {children}
+            <div className="min-h-dvh bg-primary-background">
+                <header className="px-5 py-4">
+                    <Link
+                        href={LINK_TO.LP}
+                        className="inline-block w-fit transition-opacity hover:opacity-80">
+                        <Image
+                            src="/images/meap-logo2.png"
+                            alt="meap"
+                            width={1224}
+                            height={456}
+                            loading="eager"
+                            className="h-[42px] w-auto"
+                        />
+                    </Link>
+                </header>
+                <div className="mx-auto flex w-full max-w-xl flex-col gap-y-10 px-5 pb-20 pt-6">
+                    {children}
+                </div>
             </div>
         </>
     );

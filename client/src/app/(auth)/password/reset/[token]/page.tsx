@@ -4,7 +4,7 @@ import React from 'react';
 import { useSearchParams } from 'next/navigation';
 import { SubmitHandler, useForm } from 'react-hook-form';
 
-import { Button, VerticalRowField } from '@/components';
+import { AuthHeading, Button, VerticalRowField } from '@/components';
 import { BUTTON_TYPE } from '@/constants';
 import { useAuth } from '@/hooks';
 
@@ -58,13 +58,8 @@ const PasswordReset = () => {
     };
 
     return (
-        <div className="flex flex-col gap-y-10">
-            <div className="relative w-full text-center">
-                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-px bg-gray-main" />
-                <h1 className="relative w-fit mx-auto px-4 bg-white">
-                    パスワード再設定
-                </h1>
-            </div>
+        <div className="flex flex-col gap-y-8">
+            <AuthHeading>パスワード再設定</AuthHeading>
             <p className="text-center">
                 新しく設定するパスワードを入力してください
             </p>

@@ -1,10 +1,11 @@
 'use client';
+
+import React from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import React from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
-import { AuthLoading, Button, ButtonLink, VerticalRowField } from '@/components';
+import { AuthHeading, AuthLoading, Button, ButtonLink, VerticalRowField } from '@/components';
 import {
     BUTTON_TYPE,
     BUTTON_VARIANT,
@@ -87,13 +88,8 @@ const LoginForm = () => {
 
     return (
         <>
-            <div className="flex flex-col gap-y-10">
-                <div className="relative w-full text-center">
-                    <span className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-px bg-gray-main" />
-                    <h1 className="relative w-fit mx-auto px-4 bg-white">
-                        ログイン
-                    </h1>
-                </div>
+            <div className="flex flex-col gap-y-8">
+                <AuthHeading>ログイン</AuthHeading>
                 <form
                     noValidate
                     onSubmit={handleSubmit(onSubmit)}
@@ -228,13 +224,8 @@ const LoginForm = () => {
                     </Link>
                 </div>
             </div>
-            <div className="flex flex-col gap-y-10">
-                <div className="relative w-full text-center">
-                    <span className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-px bg-gray-main" />
-                    <h1 className="relative w-fit mx-auto px-4 bg-white">
-                        他の方法でログイン
-                    </h1>
-                </div>
+            <div className="flex flex-col gap-y-6">
+                <AuthHeading as="h2">他の方法でログイン</AuthHeading>
                 <ButtonLink
                     href={`${(process.env.NEXT_PUBLIC_BACKEND_URL || 'https://localhost:8000').replace(/\/$/, '')}/auth/google/redirect`}
                     variant={BUTTON_VARIANT.OUTLINED}
