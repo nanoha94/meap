@@ -8,7 +8,7 @@ import { NavigationIcon } from '.';
 import { LINK_TO, navigationItems } from '@/constants';
 import { useAuth, useIsClient } from '@/hooks';
 import { useRecipeListStateStore } from '@/models/recipe';
-import { useUserStore, iconAvatar } from '@/models/user';
+import { useUserStore, iconAvatarHtml } from '@/models/user';
 import { getBrowserQueryString } from '@/models/recipe/utils';
 import Image from 'next/image';
 
@@ -57,12 +57,13 @@ const SideNavigation = ({ className }: Props) => {
                         href={LINK_TO.SETTINGS.ACCOUNT}
                         prefetch={false}
                         key={loginUser.id}
+                        aria-label={`${loginUser.name}のアカウント設定`}
                         className="py-2 px-3 w-full mx-auto flex flex-col items-center gap-y-1 transition-colors hover:bg-gray-light ">
                         <div className="w-14 h-auto aspect-square rounded-full overflow-hidden">
                             {loginUser?.avatar?.image ? (
                                 <Image
                                     src={loginUser.avatar.image.src}
-                                    alt="avatar"
+                                    alt=""
                                     width={loginUser.avatar.image.width}
                                     height={loginUser.avatar.image.height}
                                     className="w-full h-full object-cover"
@@ -70,9 +71,9 @@ const SideNavigation = ({ className }: Props) => {
                             ) : (
                                 <div
                                     dangerouslySetInnerHTML={{
-                                        __html: iconAvatar(
+                                        __html: iconAvatarHtml(
                                             loginUser?.avatar?.seed ?? '',
-                                        ).toString(),
+                                        ),
                                     }}
                                 />
                             )}</div>

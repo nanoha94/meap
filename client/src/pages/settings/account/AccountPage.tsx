@@ -4,7 +4,7 @@ import { ChevronRight } from 'lucide-react';
 
 import { Header, Invitation, JoinGroup, ProfileEditForm, TextButton } from '@/components';
 import { useDialog, useSnackbars } from '@/hooks';
-import { useUserStore, iconAvatar, useAccountNavigation } from '@/models/user';
+import { useUserStore, iconAvatarHtml, useAccountNavigation } from '@/models/user';
 import { IInvitation } from '@/types';
 import Image from 'next/image';
 
@@ -71,9 +71,9 @@ const AccountPage = ({ invitationDetail, errorMessage }: Props) => {
                         ) : (
                             <div
                                 dangerouslySetInnerHTML={{
-                                    __html: iconAvatar(
+                                    __html: iconAvatarHtml(
                                         loginUser?.avatar?.seed ?? '',
-                                    ).toString(),
+                                    ),
                                 }}
                             />
                         )}
@@ -120,9 +120,9 @@ const AccountPage = ({ invitationDetail, errorMessage }: Props) => {
                                                 ) : (
                                                     <div
                                                         dangerouslySetInnerHTML={{
-                                                            __html: iconAvatar(
+                                                            __html: iconAvatarHtml(
                                                                 user?.avatar?.seed ?? '',
-                                                            ).toString(),
+                                                            ),
                                                         }}
                                                     />
                                                 )}</div>

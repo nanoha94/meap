@@ -16,3 +16,11 @@ export const iconAvatar = (id: string): Result => {
         ],
     });
 };
+
+/** DiceBear SVG のライセンス metadata を除き、装飾画像として読み上げない HTML を返す */
+export const iconAvatarHtml = (id: string): string => {
+    return iconAvatar(id)
+        .toString()
+        .replace(/<metadata[\s\S]*?<\/metadata>/, '')
+        .replace('<svg', '<svg aria-hidden="true" focusable="false"');
+};

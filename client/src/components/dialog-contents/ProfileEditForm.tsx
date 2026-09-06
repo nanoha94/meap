@@ -8,7 +8,7 @@ import { useForm, useWatch } from 'react-hook-form';
 
 import { BUTTON_TYPE } from '@/constants';
 import { useDialog, useNavigationGuard } from '@/hooks';
-import { iconAvatar, useUserApi, useUserStore } from '@/models/user';
+import { iconAvatarHtml, useUserApi, useUserStore } from '@/models/user';
 import { ProfileEditFormData } from '@/models/user/types';
 import Button from '../Button';
 import { ImageEditField, VerticalRowField } from '../react-hook-form';
@@ -82,9 +82,9 @@ const ProfileEditForm = () => {
                     {!watchedAvatarImage?.src && <div
                         className="absolute top-0 left-0 w-full h-full rounded-full overflow-hidden"
                         dangerouslySetInnerHTML={{
-                            __html: iconAvatar(
+                            __html: iconAvatarHtml(
                                 loginUser?.avatar.seed ?? '',
-                            ).toString(),
+                            ),
                         }}
                     />}
                     <ImageEditField

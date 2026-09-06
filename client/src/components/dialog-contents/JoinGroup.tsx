@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components';
 import { BUTTON_VARIANT, COLOR_VARIANT } from '@/constants';
 import { useDialog } from '@/hooks';
-import { useAccountNavigation, useInvitationApi, iconAvatar } from '@/models/user';
+import { useAccountNavigation, useInvitationApi, iconAvatarHtml } from '@/models/user';
 import { IInvitation } from '@/types';
 
 interface Props {
@@ -79,10 +79,10 @@ const JoinGroup: React.FC<Props> = ({ invitationDetail, isDelete = false }) => {
                             <div
 
                                 dangerouslySetInnerHTML={{
-                                    __html: iconAvatar(
+                                    __html: iconAvatarHtml(
                                         invitationDetail?.inviter.avatar
                                             .seed ?? '',
-                                    ).toString(),
+                                    ),
                                 }}
                             />)}
                     </div>
