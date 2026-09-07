@@ -4,7 +4,12 @@ import type { Metadata, Viewport } from 'next';
 import { AlertDialog, Dialog, LoadingAnimation, Snackbars } from '@/components';
 import { NOTO_SANS_JP } from '@/constants';
 import '@/styles/global.css';
-import { LINK_TO, METADATA, createRootSocialMetadata } from '@/constants';
+import {
+    LINK_TO,
+    METADATA,
+    createRootSocialMetadata,
+    getRobotsMetadata,
+} from '@/constants';
 
 interface RootLayoutProps {
     children: React.ReactNode;
@@ -38,6 +43,7 @@ export const metadata: Metadata = {
         template: `%s | ${METADATA.SITE_NAME}`,
     },
     description: METADATA.SITE_DESCRIPTION,
+    robots: getRobotsMetadata(),
     ...createRootSocialMetadata(LINK_TO.LP),
 };
 

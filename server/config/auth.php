@@ -129,7 +129,4 @@ return [
         'decay_seconds' => 60,
     ],
 
-    'basic_user' => env('BASIC_AUTH_USER'),
-    'basic_password' => env('BASIC_AUTH_PASSWORD'),
-
 ];

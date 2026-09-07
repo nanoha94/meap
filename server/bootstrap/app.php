@@ -29,7 +29,6 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(prepend: [
             \App\Http\Middleware\SetLocale::class,
         ]);
-        $middleware->prepend(\App\Http\Middleware\BasicAuth::class);
 
         $trustedProxies = env('TRUSTED_PROXIES');
         $proxies = ($trustedProxies === null || $trustedProxies === '')

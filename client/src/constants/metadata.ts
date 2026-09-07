@@ -1,5 +1,14 @@
 import type { Metadata } from 'next';
 
+export const isNoindexEnabled = () =>
+    process.env.NEXT_PUBLIC_NOINDEX === 'true' ||
+    process.env.NEXT_PUBLIC_NOINDEX === '1';
+
+export const getRobotsMetadata = (): Metadata['robots'] =>
+    isNoindexEnabled()
+        ? { index: false, follow: false }
+        : { index: true, follow: true };
+
 export const METADATA = {
     SITE_NAME: 'meap — レシピと献立をまとめて管理',
     SITE_DESCRIPTION:
@@ -106,6 +115,7 @@ export const createPageMetadata = (
     return {
         title: { absolute: formattedTitle },
         description: pageDescription,
+        robots: getRobotsMetadata(),
         openGraph: getSiteOpenGraph(formattedTitle, pageDescription, options.path),
         twitter: getSiteTwitter(formattedTitle, pageDescription),
     };

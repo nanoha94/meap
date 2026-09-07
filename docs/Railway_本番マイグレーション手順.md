@@ -166,3 +166,5 @@ curl -s -o /dev/null -w "%{http_code}\n" -H "Host: dev.api.meap.blog" "http://12
 ### ログイン画面の 404 / CSRF エラー
 
 API の `/up` が `200` になってから、Vercel の `NEXT_PUBLIC_BACKEND_URL=https://dev.api.meap.blog`（末尾スラッシュなし）を確認し再デプロイする。Railway では `APP_URL` / `FRONTEND_URL` / `SANCTUM_STATEFUL_DOMAINS` / `SESSION_SECURE_COOKIE=true` を設定する。
+
+デプロイと一般公開の切り分け、ステージングの noindex、本番ドメイン切替のタイミングは [ステージングと本番公開の方針](ステージングと本番公開_方針.md) を参照。
