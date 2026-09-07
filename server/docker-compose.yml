@@ -1,16 +1,40 @@
 services:
+    nginx:
+        image: "nginx:latest"
+        ports:
+            - "127.0.0.1:${APP_PORT:-8000}:8000"
+            - "127.0.0.1:${PGADMIN_PORT:-8080}:8080"
+        environment:
+            - SSL_PORT=${APP_PORT:-8000}
+            - APP_SERVICE=${APP_SERVICE:-laravel.test}
+            - SERVER_NAME=${APP_SERVER_NAME:-localhost}
+            - SSL_DOMAIN=${APP_SSL_DOMAIN:-localhost}
+            - SSL_ALT_NAME=${APP_SSL_ALT_NAME:-DNS:localhost}
+        volumes:
+            - "../certificates/localhost-key.pem:/etc/certs/localhost-key.pem"
+            - "../certificates/localhost.pem:/etc/certs/localhost.pem"
+            - "./docker/nginx/conf.d:/etc/nginx/conf.d"
+            - "sail-nginx:/etc/nginx/certs"
+            - "./vendor/ryoluo/sail-ssl/nginx/templates:/etc/nginx/templates"
+            - "./vendor/ryoluo/sail-ssl/nginx/generate-ssl-cert.sh:/docker-entrypoint.d/99-generate-ssl-cert.sh"
+            - .:/var/www/html
+            - /dev/null:/etc/nginx/conf.d/default.conf
+        depends_on:
+            - ${APP_SERVICE:-laravel.test}
+            - pgadmin
+        networks:
+            - sail
     laravel.test:
         build:
-            context: "./vendor/laravel/sail/runtimes/8.4"
-            dockerfile: Dockerfile
+            context: "./docker/8.3"
+            dockerfile: Dockerfile.local
             args:
                 WWWGROUP: "${WWWGROUP}"
-        image: "sail-8.4/app"
         extra_hosts:
             - "host.docker.internal:host-gateway"
         ports:
-            - "${APP_PORT:-80}:80"
-            - "${VITE_PORT:-5173}:${VITE_PORT:-5173}"
+            - "127.0.0.1:${APP_HTTP_PORT:-8001}:80"
+            - "127.0.0.1:${VITE_PORT:-5173}:${VITE_PORT:-5173}"
         environment:
             WWWUSER: "${WWWUSER}"
             LARAVEL_SAIL: 1
@@ -19,54 +43,56 @@ services:
             IGNITION_LOCAL_SITES_PATH: "${PWD}"
         volumes:
             - ".:/var/www/html"
+            - "./docker/8.3/php.ini:/etc/php/8.3/cli/conf.d/99-sail.ini"
         networks:
             - sail
         depends_on:
-            - mysql
+            - db
             - redis
             - meilisearch
             - mailpit
             - selenium
-    mysql:
-        image: "mysql/mysql-server:8.0"
+    db:
+        image: "postgres:17"
         ports:
-            - "${FORWARD_DB_PORT:-3306}:3306"
+            - "127.0.0.1:${FORWARD_DB_PORT:-5432}:5432"
         environment:
-            MYSQL_ROOT_PASSWORD: "${DB_PASSWORD}"
-            MYSQL_ROOT_HOST: "%"
-            MYSQL_DATABASE: "${DB_DATABASE}"
-            MYSQL_USER: "${DB_USERNAME}"
-            MYSQL_PASSWORD: "${DB_PASSWORD}"
-            MYSQL_ALLOW_EMPTY_PASSWORD: 1
+            PGPASSWORD: "${DB_PASSWORD}"
+            POSTGRES_DB: "${DB_DATABASE}"
+            POSTGRES_USER: "${DB_USERNAME}"
+            POSTGRES_PASSWORD: "${DB_PASSWORD}"
         volumes:
-            - "sail-mysql:/var/lib/mysql"
-            - "./vendor/laravel/sail/database/mysql/create-testing-database.sh:/docker-entrypoint-initdb.d/10-create-testing-database.sh"
+            - "sail-pgsql:/var/lib/postgresql/data"
+            - "./docker/pgsql/create-testing-database.sh:/docker-entrypoint-initdb.d/create-testing-database.sh"
         networks:
             - sail
         healthcheck:
             test:
                 - CMD
-                - mysqladmin
-                - ping
-                - "-p${DB_PASSWORD}"
+                - pg_isready
+                - "-q"
+                - "-d"
+                - "${DB_DATABASE}"
+                - "-U"
+                - "${DB_USERNAME}"
             retries: 3
             timeout: 5s
-    phpmyadmin:
-        image: phpmyadmin/phpmyadmin
-        links:
-            - mysql:mysql
-        ports:
-            - 8080:80
+    pgadmin:
+        image: dpage/pgadmin4:latest
         environment:
-            MYSQL_USERNAME: "${DB_USERNAME}"
-            MYSQL_ROOT_PASSWORD: "${DB_PASSWORD}"
-            PMA_HOST: mysql
+            PGADMIN_DEFAULT_EMAIL: "${PGADMIN_EMAIL:-admin@example.com}"
+            PGADMIN_DEFAULT_PASSWORD: "${PGADMIN_PASSWORD:-admin}"
+            PGADMIN_CONFIG_SERVER_MODE: "False"
+            PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+        volumes:
+            - "sail-pgadmin:/var/lib/pgadmin"
+            - "./docker/pgadmin/servers.json:/pgadmin4/servers.json"
         networks:
             - sail
     redis:
         image: "redis:alpine"
         ports:
-            - "${FORWARD_REDIS_PORT:-6379}:6379"
+            - "127.0.0.1:${FORWARD_REDIS_PORT:-6379}:6379"
         volumes:
             - "sail-redis:/data"
         networks:
@@ -81,7 +107,7 @@ services:
     meilisearch:
         image: "getmeili/meilisearch:latest"
         ports:
-            - "${FORWARD_MEILISEARCH_PORT:-7700}:7700"
+            - "127.0.0.1:${FORWARD_MEILISEARCH_PORT:-7700}:7700"
         environment:
             MEILI_NO_ANALYTICS: "${MEILISEARCH_NO_ANALYTICS:-false}"
         volumes:
@@ -100,8 +126,8 @@ services:
     mailpit:
         image: "axllent/mailpit:latest"
         ports:
-            - "${FORWARD_MAILPIT_PORT:-1025}:1025"
-            - "${FORWARD_MAILPIT_DASHBOARD_PORT:-8025}:8025"
+            - "127.0.0.1:${FORWARD_MAILPIT_PORT:-1025}:1025"
+            - "127.0.0.1:${FORWARD_MAILPIT_DASHBOARD_PORT:-8025}:8025"
         networks:
             - sail
     selenium:
@@ -116,7 +142,11 @@ networks:
     sail:
         driver: bridge
 volumes:
-    sail-mysql:
+    sail-nginx:
+        driver: local
+    sail-pgsql:
+        driver: local
+    sail-pgadmin:
         driver: local
     sail-redis:
         driver: local

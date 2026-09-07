@@ -4,6 +4,8 @@ use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
 use Monolog\Processor\PsrLogMessageProcessor;
+use App\Helpers\CustomLogFormatter;
+use Monolog\Formatter\LineFormatter;
 
 return [
 
@@ -69,8 +71,9 @@ return [
             'driver' => 'daily',
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
-            'days' => env('LOG_DAILY_DAYS', 14),
+            'days' => env('LOG_DAILY_DAYS', 30),
             'replace_placeholders' => true,
+            'permission' => 0664,
         ],
 
         'slack' => [
@@ -89,9 +92,18 @@ return [
             'handler_with' => [
                 'host' => env('PAPERTRAIL_URL'),
                 'port' => env('PAPERTRAIL_PORT'),
-                'connectionString' => 'tls://'.env('PAPERTRAIL_URL').':'.env('PAPERTRAIL_PORT'),
+                'connectionString' => 'tls://' . env('PAPERTRAIL_URL') . ':' . env('PAPERTRAIL_PORT'),
             ],
             'processors' => [PsrLogMessageProcessor::class],
+        ],
+
+        'error' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/error.log'),
+            'level' => env('LOG_ERROR_LEVEL', 'error'),
+            'days' => env('LOG_ERROR_DAYS', 90),
+            'replace_placeholders' => true,
+            'permission' => 0664,
         ],
 
         'stderr' => [

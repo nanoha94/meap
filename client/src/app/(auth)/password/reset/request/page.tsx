@@ -1,0 +1,150 @@
+'use client';
+
+import React from 'react';
+import Link from 'next/link';
+import { SubmitHandler, useForm } from 'react-hook-form';
+
+import { AuthHeading, Button, ButtonLink, VerticalRowField } from '@/components';
+import {
+    BUTTON_TYPE,
+    BUTTON_VARIANT,
+    COLOR_VARIANT,
+    LINK_TO,
+} from '@/constants';
+import { useAuth } from '@/hooks';
+
+interface FormInputs {
+    email: string;
+}
+
+type visibleErrorFields = 'email';
+
+const Page = () => {
+    const { passwordResetRequest } = useAuth();
+
+    const {
+        handleSubmit,
+        control,
+        formState: { errors },
+    } = useForm<FormInputs>({
+        defaultValues: {
+            email: '',
+        },
+    });
+
+    const [apiErrors, setApiErrors] = React.useState<Record<string, string[]>>(
+        {},
+    );
+    const [apiStatus, setApiStatus] = React.useState<string | null>(null);
+
+    // 入力エラーがあったとき、その後に入力内容が変更されればエラー有無に関わらずエラー内容を非表示にする
+    const [isErrorVisible, setIsErrorVisible] = React.useState<
+        Record<visibleErrorFields, boolean>
+    >({ email: false });
+
+    /**
+     * パスワード再設定リクエストフォームの送信
+     * @param data フォームの入力値
+     */
+    const onSubmit: SubmitHandler<FormInputs> = (data: FormInputs) => {
+        passwordResetRequest({
+            email: data.email,
+            setErrors: setApiErrors,
+            setStatus: setApiStatus,
+        });
+    };
+
+    return (
+        <>
+            <div className="flex flex-col gap-y-8">
+                <AuthHeading>パスワード再設定</AuthHeading>
+                <p className="text-center">
+                    パスワード再設定のリンクを送信します。
+                    <br />
+                    ご登録のメールアドレスを入力してください。
+                </p>
+                <form
+                    noValidate
+                    onSubmit={handleSubmit(onSubmit)}
+                    className="flex flex-col gap-y-10">
+                    {/* Email Address */}
+                    <VerticalRowField
+                        control={control}
+                        name="email"
+                        label="メールアドレス"
+                        errorMessage={
+                            isErrorVisible.email
+                                ? ([
+                                    errors.email?.message,
+                                    ...(apiErrors?.email || []),
+                                ].filter(Boolean) as string[])
+                                : []
+                        }
+                        rules={{
+                            required: '必須項目です',
+                            pattern: {
+                                value: /^[a-zA-Z0-9_+-]+(.[a-zA-Z0-9_+-]+)*@([a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.)+[a-zA-Z]{2,}$/,
+                                message:
+                                    'メールアドレスの形式で入力してください',
+                            },
+                        }}>
+                        {({ value, onChange, id }) => (
+                            <input
+                                id={id}
+                                type="email"
+                                value={value as string}
+                                onChange={e => {
+                                    onChange(e);
+                                    setIsErrorVisible(prev => ({
+                                        ...prev,
+                                        email: false,
+                                    }));
+                                    setApiErrors({ email: [] });
+                                }}
+                                autoFocus
+                                className={`py-2 px-4 border rounded-lg ${isErrorVisible.email && (!!errors.email?.message || (!!apiErrors.email && apiErrors.email?.length > 0)) ? 'border-alert-main border-2' : 'border-gray-main'}`}
+                            />
+                        )}
+                    </VerticalRowField>
+
+                    <div className="flex flex-col gap-y-4">
+                        <Button
+                            type={BUTTON_TYPE.SUBMIT}
+                            onClick={() => setIsErrorVisible({ email: true })}>
+                            送信
+                        </Button>
+                        {!!apiStatus && (
+                            <p className="text-alert-main">{apiStatus}</p>
+                        )}
+                    </div>
+                </form>
+                <div className="flex flex-col items-center gap-y-4">
+                    <Link
+                        href={LINK_TO.REGISTER}
+                        className="font-bold text-primary-main underline transition-opacity hover:text-opacity-70">
+                        アカウント登録はこちら
+                    </Link>
+                    <Link
+                        href={LINK_TO.LOGIN}
+                        className="font-bold text-primary-main underline transition-opacity hover:text-opacity-70">
+                        ログインはこちら
+                    </Link>
+                </div>
+            </div>
+            <div className="flex flex-col gap-y-6">
+                <AuthHeading as="h2">他の方法でログイン</AuthHeading>
+                <ButtonLink
+                    href={`${(process.env.NEXT_PUBLIC_BACKEND_URL || 'https://localhost:8000').replace(/\/$/, '')}/auth/google/redirect`}
+                    variant={BUTTON_VARIANT.OUTLINED}
+                    colorVariant={COLOR_VARIANT.GRAY}
+                    isExternal={true}
+                    openInNewTab={false}
+                >
+                    Googleアカウントでログイン
+                </ButtonLink>
+            </div>
+        </>
+    );
+};
+
+export default Page;

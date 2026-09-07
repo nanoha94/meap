@@ -1,30 +1,61 @@
+import { headers } from 'next/headers';
+import Image from 'next/image';
 import Link from 'next/link';
-import AuthCard from '@/app/(auth)/AuthCard';
-import ApplicationLogo from '@/components/ApplicationLogo';
 
-export const metadata = {
-    title: 'Laravel',
-};
+import { SnackbarHandler } from '@/components';
+import { LINK_TO } from '@/constants';
+import { fetchData } from '@/lib/apiClient';
+import { IGetUserResponse } from '@/types';
+import { handleAuthRedirect } from '@/utils';
+
+// 動的レンダリングを強制（クッキーを使用するため）
+export const dynamic = 'force-dynamic';
 
 interface Props {
     children: React.ReactNode;
 }
 
-const Layout = ({ children }: Props) => {
+const AuthLayout = async ({ children }: Props) => {
+    const headerList = await headers();
+    const pathname = headerList.get('x-pathname') ?? '';
+
+    const { data: user, errorMessage } = await fetchData<IGetUserResponse>(
+        '/user',
+        { suppressUnauthorizedLog: true },
+    );
+
+    handleAuthRedirect(user?.data ?? null, true, { pathname });
+
+    // 認証エラー（AUTHENTICATION_REQUIRED）はログインページでは表示しない
+    const shouldShowError =
+        errorMessage && errorMessage !== 'AUTHENTICATION_REQUIRED';
+
     return (
-        <div>
-            <div className="text-gray-900 antialiased">
-                <AuthCard
-                    logo={
-                        <Link href="/">
-                            <ApplicationLogo className="w-20 h-20 fill-current text-gray-500" />
-                        </Link>
-                    }>
+        <>
+            {shouldShowError && (
+                <SnackbarHandler type="error" message={errorMessage} />
+            )}
+            <div className="min-h-dvh bg-primary-background">
+                <header className="px-5 py-4">
+                    <Link
+                        href={LINK_TO.LP}
+                        className="inline-block w-fit transition-opacity hover:opacity-80">
+                        <Image
+                            src="/images/meap-logo2.png"
+                            alt="meap"
+                            width={1224}
+                            height={456}
+                            loading="eager"
+                            className="h-[42px] w-auto"
+                        />
+                    </Link>
+                </header>
+                <div className="mx-auto flex w-full max-w-xl flex-col gap-y-10 px-5 pb-20 pt-6">
                     {children}
-                </AuthCard>
+                </div>
             </div>
-        </div>
+        </>
     );
 };
 
-export default Layout;
+export default AuthLayout;

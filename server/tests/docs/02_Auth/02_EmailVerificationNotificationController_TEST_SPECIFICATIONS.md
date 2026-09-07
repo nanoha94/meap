@@ -1,0 +1,22 @@
+# EmailVerificationNotificationController テストケース詳細仕様
+
+## 概要
+
+このドキュメントは、EmailVerificationNotificationController のテストケースの詳細仕様を示します。メールアドレス確認通知の送信機能を検証し、システムの安定性と安全性を確保します。
+
+## テストケース一覧表
+
+| ID    | テスト名                                                                 | 種別   | 入力条件                               | 期待される出力                                               | 該当メソッド                                                |
+| ----- | ------------------------------------------------------------------------ | ------ | -------------------------------------- | ------------------------------------------------------------ | ----------------------------------------------------------- |
+| 2-2-1 | 【store】 既にメールアドレスが確認済みの場合                             | 正常系 | ユーザーが既にメールアドレスを確認済み | フロントエンドのプランページにリダイレクトされる             | `EmailVerificationNotificationController::store()`         |
+| 2-2-2 | 【store】 メールアドレス確認通知の再送信                                 | 正常系 | ユーザーがメールアドレスを未確認       | メールアドレス確認リンクが再送され、成功メッセージが返される | `EmailVerificationNotificationController::store()`         |
+| 2-2-3 | 【store】 メール送信失敗                                                 | 異常系 | メール送信が何らかの理由で失敗         | エラーメッセージが返される                                   | `EmailVerificationNotificationController::store()`         |
+
+## テスト実行方法
+
+### Sail 環境での実行
+
+```bash
+cd server
+./vendor/bin/sail test tests/Feature/Auth/EmailVerificationNotificationControllerTest.php --stop-on-failure
+```

@@ -17,6 +17,23 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Image Storage Disk
+    |--------------------------------------------------------------------------
+    |
+    | Disk used by ImageService for uploads and URLs. Use "public" locally
+    | (storage/app/public + symlink) and "s3" for Cloudflare R2 in staging/production.
+    |
+    */
+
+    'image_disk' => env('IMAGE_DISK', 'public'),
+
+    // 署名付き URL の有効期間（分）。レシピ閲覧中に切れない長さに設定。
+    // 制約: MasterService のキャッシュ TTL（現在 30 分）より必ず長くすること。
+    // キャッシュ内に署名付き URL が含まれるため、逆転するとキャッシュから期限切れ URL が返る。
+    'signed_url_ttl' => (int) env('IMAGE_SIGNED_URL_TTL', 360),
+
+    /*
+    |--------------------------------------------------------------------------
     | Filesystem Disks
     |--------------------------------------------------------------------------
     |
@@ -33,15 +50,16 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
-            'serve' => true,
+            'serve' => false,
             'throw' => false,
         ],
 
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => env('APP_URL').'/storage',
+            'url' => env('APP_URL') . '/storage',
             'visibility' => 'public',
+            'serve' => true,
             'throw' => false,
         ],
 

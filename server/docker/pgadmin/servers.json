@@ -1,0 +1,13 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "MEAP Local",
+      "Group": "Servers",
+      "Host": "db",
+      "Port": 5432,
+      "MaintenanceDB": "meap_dev",
+      "Username": "sail",
+      "SSLMode": "prefer"
+    }
+  }
+}

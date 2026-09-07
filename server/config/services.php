@@ -35,4 +35,33 @@ return [
         ],
     ],
 
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_REDIRECT_URI'),
+    ],
+
+    'google_cloud_vision' => [
+        'api_key' => env('GOOGLE_CLOUD_VISION_API_KEY'),
+        'endpoint' => env(
+            'GOOGLE_CLOUD_VISION_ENDPOINT',
+            'https://vision.googleapis.com/v1/images:annotate',
+        ),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | AI Providers
+    |--------------------------------------------------------------------------
+    |
+    | 機能ごとに AI プロバイダーを切り替え可能。.env の AI_*_PROVIDER で指定。
+    | ocr: openai / google（Phase1 画像→テキスト）。text / image: 現時点では openai のみ。
+    |
+    */
+    'ai' => [
+        'ocr_provider' => env('AI_OCR_PROVIDER', 'google'),
+        'image_provider' => env('AI_IMAGE_PROVIDER', 'openai'),
+        'text_provider' => env('AI_TEXT_PROVIDER', 'openai'),
+    ],
+
 ];

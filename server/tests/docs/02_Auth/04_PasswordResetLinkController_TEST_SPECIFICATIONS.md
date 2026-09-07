@@ -1,0 +1,26 @@
+# PasswordResetLinkController テストケース詳細仕様
+
+## 概要
+
+このドキュメントは、PasswordResetLinkController のテストケースの詳細仕様を示します。パスワードリセットリンク送信機能を検証し、システムの安定性と安全性を確保します。
+
+## テストケース一覧表
+
+| ID    | テスト名                                                       | 種別   | 入力条件                           | 期待される出力                                     | 該当メソッド                                    |
+| ----- | -------------------------------------------------------------- | ------ | ---------------------------------- | -------------------------------------------------- | ----------------------------------------------- |
+| 2-4-1 | 【store】 正常なパスワードリセットリンク送信                   | 正常系 | 有効なメールアドレスを提供         | リセットリンクが送信され、成功メッセージが返される | `PasswordResetLinkController::store()`          |
+| 2-4-2 | 【store】 存在しないユーザー                                   | 正常系 | 存在しないメールアドレスを提供     | 成功メッセージが返される (200)                     | `PasswordResetLinkController::store()`          |
+| 2-4-3 | 【store】 バリデーションエラー（メールアドレス未入力）         | 異常系 | メールアドレスが未入力             | エラーメッセージが返される (422)                   | `PasswordResetLinkRequest::rules()`             |
+| 2-4-4 | 【store】 バリデーションエラー（無効なメール形式）             | 異常系 | 無効な形式のメールアドレスを提供   | エラーメッセージが返される (422)                   | `PasswordResetLinkRequest::rules()`             |
+| 2-4-5 | 【store】 リセットリンク送信のレート制限                       | 異常系 | 短時間に複数回リクエスト           | エラーメッセージが返される (429)                   | `PasswordResetLinkController::store()`          |
+| 2-4-6 | 【store】 サーバーエラー                                       | 異常系 | サーバーエラーが発生               | エラーメッセージが返される (500)                   | `PasswordResetLinkController::store()`          |
+| 2-4-7 | 【store】 トークン生成失敗                                     | 異常系 | トークン生成が失敗するようにモック | エラーメッセージが返される (500)                   | `PasswordResetLinkController::store()`          |
+
+## テスト実行方法
+
+### Sail 環境での実行
+
+```bash
+cd server
+./vendor/bin/sail test tests/Feature/Auth/PasswordResetLinkControllerTest.php --stop-on-failure
+```

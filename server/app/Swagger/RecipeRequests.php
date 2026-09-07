@@ -1,0 +1,105 @@
+<?php
+
+namespace App\Swagger;
+
+/**
+ * レシピ作成/更新リクエスト
+ *
+ * @OA\Schema(
+ *     schema="RecipeRequest",
+ *     required={"name", "categoryIds", "ownerUserId"},
+ *     @OA\Property(property="id", type="string", nullable=true, description="ID（更新時のみ）", example="1"),
+ *     @OA\Property(property="name", type="string", description="料理名", example="ハンバーグ"),
+ *     @OA\Property(property="url", type="string", nullable=true, description="レシピURL", example="https://www.google.com"),
+ *     @OA\Property(property="memo", type="string", nullable=true, description="メモ", example="ハンバーグは美味しい"),
+ *     @OA\Property(property="servingCount", type="integer", nullable=true, description="分量（○○人分）", example=4, minimum=1),
+ *     @OA\Property(property="cookingTime", type="integer", nullable=true, description="調理時間（分）", example=30, minimum=0),
+ *     @OA\Property(property="thumbnailId", type="string", nullable=true, description="サムネイル画像ID", example="1"),
+ *     @OA\Property(property="categoryIds", type="array", description="料理カテゴリID", @OA\Items(type="string", example="1")),
+ *     @OA\Property(property="ownerUserId", type="string", description="編集責任者のユーザーID", example="00000000-0000-0000-0000-000000000000"),
+ *     @OA\Property(property="source", type="string", nullable=true, enum={"manual", "ai_imported"}, description="レシピのソース（省略時は manual）", example="manual"),
+ *     @OA\Property(property="ingredientCategories", type="array", nullable=true, description="食材カテゴリ（省略時はデフォルト「食材」カテゴリを自動作成）",
+ *         @OA\Items(ref="#/components/schemas/RecipeIngredientCategory")
+ *     ),
+ *     @OA\Property(property="ingredients", type="array", description="食材",
+ *         @OA\Items(ref="#/components/schemas/RecipeIngredient")
+ *     ),
+ *     @OA\Property(property="steps", type="array", description="手順",
+ *         @OA\Items(ref="#/components/schemas/RecipeStepItem")
+ *     )
+ * )
+ *
+ * レシピカテゴリー作成リクエスト
+ *
+ * @OA\Schema(
+ *     schema="RecipeCategoryRequest",
+ *     required={"name", "order"},
+ *     @OA\Property(property="name", type="string", description="カテゴリ名", example="肉料理"),
+ *     @OA\Property(property="order", type="integer", description="並び順", example=1)
+ * )
+ *
+ * @OA\RequestBody(
+ *     request="RecipeRequest",
+ *     description="※新規作成時はid不要",
+ *     required=true,
+ *     @OA\JsonContent(ref="#/components/schemas/RecipeRequest")
+ * )
+ * @OA\RequestBody(
+ *     request="RecipeCategoryRequest",
+ *     description="※新規作成時はid不要",
+ *     required=true,
+ *     @OA\JsonContent(ref="#/components/schemas/RecipeCategoryRequest")
+ * )
+ *
+ * 料理カテゴリ一括作成リクエスト（POST /recipe-categories/bulk）
+ *
+ * @OA\Schema(
+ *     schema="RecipeCategoryBulkStoreRequest",
+ *     required={"data"},
+ *     @OA\Property(
+ *         property="data",
+ *         type="array",
+ *         description="作成する料理カテゴリの配列（1件以上）",
+ *         minItems=1,
+ *         @OA\Items(
+ *             type="object",
+ *             required={"name", "order"},
+ *             @OA\Property(property="name", type="string", description="カテゴリ名", example="和食"),
+ *             @OA\Property(property="order", type="integer", description="並び順（0以上）", example=0)
+ *         )
+ *     )
+ * )
+ * @OA\RequestBody(
+ *     request="RecipeCategoryBulkStoreRequest",
+ *     description="料理カテゴリ一括作成。data は1件以上必須。",
+ *     required=true,
+ *     @OA\JsonContent(ref="#/components/schemas/RecipeCategoryBulkStoreRequest")
+ * )
+ * @OA\RequestBody(
+ *     request="RecipeCategoryBulkUpdateRequest",
+ *     description="一括更新する料理カテゴリデータ",
+ *     required=true,
+ *     @OA\JsonContent(
+ *         type="object",
+ *         @OA\Property(
+ *             property="data",
+ *             type="array",
+ *             @OA\Items(ref="#/components/schemas/RecipeCategory")
+ *         )
+ *     )
+ * )
+ * @OA\RequestBody(
+ *     request="RecipeCategoryBulkDestroyRequest",
+ *     required=true,
+ *     @OA\JsonContent(
+ *         type="object",
+ *         @OA\Property(
+ *             property="ids",
+ *             type="array",
+ *             @OA\Items(type="string", description="料理カテゴリID", example="1")
+ *         )
+ *     )
+ * )
+ */
+
+class RecipeRequests {}

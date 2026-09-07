@@ -1,14 +1,28 @@
-interface Props extends React.LabelHTMLAttributes<HTMLLabelElement> {
+import { COLOR_VARIANT } from "@/constants";
+import React from "react";
+
+interface Props {
+    label: string;
+    colorVariant:
+    | (typeof COLOR_VARIANT)['ACCENT']
+    | (typeof COLOR_VARIANT)['GRAY'];
     className?: string;
-    children: React.ReactNode;
 }
 
-const Label = ({ className, children, ...props }: Props) => (
-    <label
-        className={`${className} block font-medium text-sm text-gray-700`}
-        {...props}>
-        {children}
-    </label>
-);
+const Label = ({ label, colorVariant = COLOR_VARIANT.GRAY, className }: Props) => {
+    const colorClasses = React.useMemo(() => {
+        const colorMappings = {
+            accent: 'bg-accent-main text-white',
+            gray: 'bg-gray-main text-white',
+        };
+        return colorMappings[colorVariant];
+    }, [colorVariant]);
+
+    return (
+        <span className={`px-3 py-1 text-sm font-bold rounded ${colorClasses} ${className ?? ''}`}>
+            {label}
+        </span>
+    );
+};
 
 export default Label;

@@ -1,129 +1,251 @@
 'use client';
 
-import Button from '@/components/Button';
-import Input from '@/components/Input';
-import InputError from '@/components/InputError';
-import Label from '@/components/Label';
+import React from 'react';
 import Link from 'next/link';
-import { useAuth } from '@/hooks/auth';
-import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import AuthSessionStatus from '@/app/(auth)/AuthSessionStatus';
-import { User } from '@/types/user';
+import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
-const Inner = () => {
+import { AuthHeading, AuthLoading, Button, ButtonLink, VerticalRowField } from '@/components';
+import {
+    BUTTON_TYPE,
+    BUTTON_VARIANT,
+    COLOR_VARIANT,
+    LINK_TO,
+    OAUTH_ERROR_MESSAGES,
+    PASSWORD_RESET_STATUS_MESSAGES,
+} from '@/constants';
+import { useAuth } from '@/hooks';
+
+interface FormInputs {
+    email: string;
+    password: string;
+    isKeepLogin: boolean;
+}
+
+type visibleErrorFields = 'email' | 'password';
+
+const LoginForm = () => {
     const searchParams = useSearchParams();
+    const { login } = useAuth();
 
-    const { login } = useAuth({
-        middleware: 'guest',
-        redirectIfAuthenticated: '/dashboard',
+    const {
+        handleSubmit,
+        control,
+        formState: { errors },
+    } = useForm<FormInputs>({
+        defaultValues: {
+            email: '',
+            password: '',
+            isKeepLogin: false,
+        },
     });
 
-    const [email, setEmail] = useState<User['email']>('');
-    const [password, setPassword] = useState<string>('');
-    const [shouldRemember, setShouldRemember] = useState<boolean>(false);
-    const [errors, setErrors] = useState<Record<string, string[]>>({});
-    const [status, setStatus] = useState<string | null>(null);
+    const [apiErrors, setApiErrors] = React.useState<Record<string, string[]>>(
+        {},
+    );
+    const [loginStatus, setLoginStatus] = React.useState<string | null>(null);
 
-    useEffect(() => {
-        const resetToken = searchParams.get('reset');
-        if (resetToken?.length > 0 && Object.keys(errors).length === 0) {
-            setStatus(atob(resetToken));
-        } else {
-            setStatus(null);
+    /**
+     * パスワードリセット成功時のメッセージ
+     */
+    const resetStatusMessage = React.useMemo(() => {
+        const code = searchParams?.get('reset');
+        if (!code || Object.keys(errors).length > 0) {
+            return null;
         }
-    });
+        return PASSWORD_RESET_STATUS_MESSAGES[code] ?? null;
+    }, [searchParams, errors]);
 
-    const submitForm = async event => {
-        event.preventDefault();
+    /**
+     * OAuth認証エラー時のメッセージ
+     */
+    const oauthErrorMessage = React.useMemo(() => {
+        const code = searchParams?.get('error');
+        if (!code) {
+            return null;
+        }
+        return OAUTH_ERROR_MESSAGES[code] ?? null;
+    }, [searchParams]);
 
+    // 入力エラーがあったとき、その後に入力内容が変更されればエラー有無に関わらずエラー内容を非表示にする
+    const [isErrorVisible, setIsErrorVisible] = React.useState<
+        Record<visibleErrorFields, boolean>
+    >({ email: false, password: false });
+
+    /**
+     * ログインフォームの送信
+     * @param data フォームの入力値
+     */
+    const onSubmit: SubmitHandler<FormInputs> = (data: FormInputs) => {
         login({
-            email,
-            password,
-            remember: shouldRemember,
-            setErrors,
-            setStatus,
+            email: data.email,
+            password: data.password,
+            remember: data.isKeepLogin,
+            setErrors: setApiErrors,
+            setStatus: setLoginStatus,
         });
     };
 
     return (
         <>
-            <AuthSessionStatus className="mb-4" status={status} />
-            <form onSubmit={submitForm}>
-                {/* Email Address */}
-                <div>
-                    <Label htmlFor="email">Email</Label>
-
-                    <Input
-                        id="email"
-                        type="email"
-                        value={email}
-                        className="block mt-1 w-full"
-                        onChange={event => setEmail(event.target.value)}
-                        required
-                        autoFocus
-                    />
-
-                    <InputError messages={errors.email} className="mt-2" />
-                </div>
-
-                {/* Password */}
-                <div className="mt-4">
-                    <Label htmlFor="password">Password</Label>
-
-                    <Input
-                        id="password"
-                        type="password"
-                        value={password}
-                        className="block mt-1 w-full"
-                        onChange={event => setPassword(event.target.value)}
-                        required
-                        autoComplete="current-password"
-                    />
-
-                    <InputError messages={errors.password} className="mt-2" />
-                </div>
-
-                {/* Remember Me */}
-                <div className="block mt-4">
-                    <label
-                        htmlFor="remember_me"
-                        className="inline-flex items-center">
-                        <input
-                            id="remember_me"
-                            type="checkbox"
-                            name="remember"
-                            className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                            onChange={event =>
-                                setShouldRemember(event.target.checked)
+            <div className="flex flex-col gap-y-8">
+                <AuthHeading>ログイン</AuthHeading>
+                <form
+                    noValidate
+                    onSubmit={handleSubmit(onSubmit)}
+                    className="flex flex-col gap-y-10">
+                    <div className="flex flex-col gap-y-4">
+                        {/* メールアドレス */}
+                        <VerticalRowField
+                            control={control}
+                            name="email"
+                            label="メールアドレス"
+                            errorMessage={
+                                isErrorVisible.email
+                                    ? ([
+                                        errors.email?.message,
+                                        ...(apiErrors?.email || []),
+                                    ].filter(Boolean) as string[])
+                                    : []
                             }
-                        />
+                            rules={{
+                                required: '必須項目です',
+                                pattern: {
+                                    value: /^[a-zA-Z0-9_+-]+(.[a-zA-Z0-9_+-]+)*@([a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.)+[a-zA-Z]{2,}$/,
+                                    message:
+                                        'メールアドレスの形式で入力してください',
+                                },
+                            }}>
+                            {({ value, onChange, id }) => (
+                                <input
+                                    id={id}
+                                    type="email"
+                                    value={value as string}
+                                    onChange={e => {
+                                        onChange(e);
+                                        setIsErrorVisible(prev => ({
+                                            ...prev,
+                                            email: false,
+                                        }));
+                                        setApiErrors({ email: [] });
+                                    }}
+                                    className={`py-2 px-4 border rounded-lg ${isErrorVisible.email && (!!errors.email?.message || (!!apiErrors.email && apiErrors.email?.length > 0)) ? 'border-alert-main border-2' : 'border-gray-main'}`}
+                                />
+                            )}
+                        </VerticalRowField>
 
-                        <span className="ml-2 text-sm text-gray-600">
-                            Remember me
-                        </span>
-                    </label>
-                </div>
+                        {/* パスワード */}
+                        <VerticalRowField
+                            control={control}
+                            name="password"
+                            label="パスワード"
+                            errorMessage={
+                                isErrorVisible.password
+                                    ? ([
+                                        errors.password?.message,
+                                        ...(apiErrors?.password || []),
+                                    ].filter(Boolean) as string[])
+                                    : []
+                            }
+                            rules={{ required: '必須項目です' }}>
+                            {({ value, onChange, id }) => (
+                                <input
+                                    id={id}
+                                    type="password"
+                                    value={value as string}
+                                    onChange={e => {
+                                        onChange(e);
+                                        setIsErrorVisible(prev => ({
+                                            ...prev,
+                                            password: false,
+                                        }));
+                                        setApiErrors({ password: [] });
+                                    }}
+                                    className={`py-2 px-4 border rounded-lg ${isErrorVisible.password && (!!errors.password?.message || (!!apiErrors.password && apiErrors.password?.length > 0)) ? 'border-alert-main border-2' : 'border-gray-main'}`}
+                                />
+                            )}
+                        </VerticalRowField>
 
-                <div className="flex items-center justify-end mt-4">
+                        <div className="w-fit flex items-center gap-x-1.5">
+                            <Controller
+                                control={control}
+                                name="isKeepLogin"
+                                render={({ field: { onChange, value } }) => (
+                                    <input
+                                        id="isKeepLogin"
+                                        type="checkbox"
+                                        checked={value}
+                                        onChange={onChange}
+                                        className="cursor-pointer w-[18px] h-[18px] border-2 border-gray-main rounded-sm accent-primary-main"
+                                    />
+                                )}
+                            />
+                            <label
+                                htmlFor="isKeepLogin"
+                                className="cursor-pointer">
+                                ログイン状態を保持する
+                            </label>
+                        </div>
+                    </div>
+                    <div className="flex flex-col gap-y-4">
+                        <Button
+                            type={BUTTON_TYPE.SUBMIT}
+                            onClick={() =>
+                                setIsErrorVisible({
+                                    email: true,
+                                    password: true,
+                                })
+                            }>
+                            ログイン
+                        </Button>
+                        {!!(
+                            oauthErrorMessage ??
+                            resetStatusMessage ??
+                            loginStatus
+                        ) && (
+                                <p className="text-alert-main">
+                                    {oauthErrorMessage ??
+                                        resetStatusMessage ??
+                                        loginStatus}
+                                </p>
+                            )}
+                    </div>
+                </form>
+                <div className="flex flex-col items-center gap-y-4">
                     <Link
-                        href="/forgot-password"
-                        className="underline text-sm text-gray-600 hover:text-gray-900">
-                        Forgot your password?
+                        href={LINK_TO.REGISTER}
+                        className="font-bold text-primary-main underline transition-opacity hover:text-opacity-70">
+                        アカウント登録はこちら
                     </Link>
-
-                    <Button className="ml-3">Login</Button>
+                    <Link
+                        href={LINK_TO.PASSWORD_RESET_REQUEST}
+                        className="font-bold text-primary-main underline transition-opacity hover:text-opacity-70">
+                        パスワードをお忘れの方はこちら
+                    </Link>
                 </div>
-            </form>
+            </div>
+            <div className="flex flex-col gap-y-6">
+                <AuthHeading as="h2">他の方法でログイン</AuthHeading>
+                <ButtonLink
+                    href={`${(process.env.NEXT_PUBLIC_BACKEND_URL || 'https://localhost:8000').replace(/\/$/, '')}/auth/google/redirect`}
+                    variant={BUTTON_VARIANT.OUTLINED}
+                    colorVariant={COLOR_VARIANT.GRAY}
+                    isExternal={true}
+                    openInNewTab={false}
+                >
+                    Googleアカウントでログイン
+                </ButtonLink>
+            </div>
         </>
     );
 };
 
 const Login = () => {
     return (
-        <Suspense>
-            <Inner />
-        </Suspense>
+        <React.Suspense fallback={<AuthLoading />}>
+            <LoginForm />
+        </React.Suspense>
     );
 };
+
 export default Login;

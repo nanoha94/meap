@@ -1,0 +1,212 @@
+'use client';
+
+import React from 'react';
+
+import { useApiErrorHandler, useSnackbars } from '@/hooks';
+import axios from '@/lib/axios';
+import { useGlobalStore } from '@/stores';
+import {
+    IDeleteMealPlanResponse,
+    IGetMealPlanIndexRequest,
+    IGetMealPlanIndexResponse,
+    IPostMealPlanResponse,
+    IPostPutMealPlanRequest,
+    IPutMealPlanResponse,
+} from '@/types';
+import { MealPlanFilterFormData } from "../types";
+
+export const useMealPlanApi = () => {
+    // store
+    const incrementLoadingCount = useGlobalStore(state => state.incrementLoadingCount);
+    const decrementLoadingCount = useGlobalStore(state => state.decrementLoadingCount);
+
+    // hook
+    const { addSnackbar } = useSnackbars();
+    const { handleApiError } = useApiErrorHandler();
+
+    // 重複リクエスト防止用のフラグ
+    const isFetchRequestRef = React.useRef(false);
+    const isStoreRequestRef = React.useRef(false);
+    const isUpdateRequestRef = React.useRef(false);
+    const isDeleteRequestRef = React.useRef(false);
+
+    /**
+     * 献立プラン一覧を取得
+     * @param filterOptions フィルターオプション
+     * @returns 献立プラン一覧
+     */
+    const fetchMealPlans = React.useCallback(async (filterOptions?: MealPlanFilterFormData) => {
+        // 重複リクエスト防止
+        if (isFetchRequestRef.current) {
+            return;
+        }
+
+        // パラメータをセット
+        const params: IGetMealPlanIndexRequest = {
+            date_from: filterOptions?.dateFrom,
+            date_to: filterOptions?.dateTo,
+            include_ingredients: filterOptions?.includeIngredients ?? false,
+        };
+
+        try {
+            isFetchRequestRef.current = true;
+            incrementLoadingCount();
+
+            const { data: responseData } = await axios.get<IGetMealPlanIndexResponse>(
+                `/meal-plans`,
+                { params },
+            );
+
+            if (responseData.success) {
+                return responseData.data;
+            }
+            addSnackbar(
+                'error',
+                responseData.message || '献立プラン一覧の取得に失敗しました',
+            );
+            return [];
+        } catch (error) {
+            handleApiError(error);
+            return [];
+        } finally {
+            isFetchRequestRef.current = false;
+            decrementLoadingCount();
+        }
+    }, [incrementLoadingCount, decrementLoadingCount, addSnackbar, handleApiError]);
+
+    /**
+     * 献立プラン作成
+     * @param data 作成する献立プランデータ
+     */
+    const storeMealPlan = React.useCallback(
+        async (
+            data: IPostPutMealPlanRequest,
+        ): Promise<boolean> => {
+            // 重複リクエスト防止
+            if (isStoreRequestRef.current) {
+                return false;
+            }
+
+            const sendData: IPostPutMealPlanRequest = data;
+
+            try {
+                isStoreRequestRef.current = true;
+                incrementLoadingCount();
+
+                // APIリクエスト
+                const res = await axios.post<IPostMealPlanResponse>(
+                    `/meal-plans`,
+                    sendData,
+                );
+
+                // レスポンスデータ
+                const responseData: IPostMealPlanResponse = res.data;
+                if (responseData.success) {
+                    addSnackbar(
+                        'success',
+                        responseData.message ||
+                        'リクエストが正常に完了しました',
+                    );
+                    return true;
+                } else {
+                    addSnackbar(
+                        'error',
+                        responseData.message || '献立プランの作成に失敗しました',
+                    );
+                    return false;
+                }
+            } catch (error) {
+                handleApiError(error);
+                return false;
+            } finally {
+                isStoreRequestRef.current = false;
+                decrementLoadingCount();
+            }
+        },
+        [incrementLoadingCount, decrementLoadingCount, addSnackbar, handleApiError],
+    );
+
+    /**
+     * 献立プラン更新
+     * @param data 更新する献立プランデータ
+     */
+    const updateMealPlan = React.useCallback(async (data: IPostPutMealPlanRequest): Promise<boolean> => {
+        // 重複リクエスト防止
+        if (isUpdateRequestRef.current) {
+            return false;
+        }
+
+        try {
+            isUpdateRequestRef.current = true;
+            incrementLoadingCount();
+
+            // APIリクエスト
+            const { data: responseData } = await axios.put<IPutMealPlanResponse>(
+                `/meal-plans/${data.id}`,
+                data,
+            );
+
+            if (responseData.success) {
+                addSnackbar(
+                    'success',
+                    responseData.message ||
+                    'リクエストが正常に完了しました',
+                );
+                return true;
+            }
+            addSnackbar(
+                'error',
+                responseData.message || '献立プランの更新に失敗しました',
+            );
+            return false;
+        } catch (error) {
+            handleApiError(error);
+            return false;
+        } finally {
+            isUpdateRequestRef.current = false;
+            decrementLoadingCount();
+        }
+    },
+        [incrementLoadingCount, decrementLoadingCount, addSnackbar, handleApiError],
+    );
+
+    /**
+     * 献立プラン削除
+     * @param id 削除する献立プランのID
+     */
+    const deleteMealPlan = React.useCallback(async (id: string): Promise<boolean> => {
+        if (isDeleteRequestRef.current) {
+            return false;
+        }
+
+        try {
+            isDeleteRequestRef.current = true;
+            incrementLoadingCount();
+            const { data: responseData } = await axios.delete<IDeleteMealPlanResponse>(
+                `/meal-plans/${id}`,
+            );
+            if (responseData.success) {
+                addSnackbar(
+                    'success',
+                    responseData.message || 'リクエストが正常に完了しました',
+                );
+                return true;
+            }
+            addSnackbar(
+                'error',
+                responseData.message || '献立プランの削除に失敗しました',
+            );
+            return false;
+        } catch (error) {
+            handleApiError(error);
+            return false;
+        } finally {
+            isDeleteRequestRef.current = false;
+            decrementLoadingCount();
+        }
+    }, [incrementLoadingCount, decrementLoadingCount, addSnackbar, handleApiError]);
+
+    return {
+        fetchMealPlans, storeMealPlan, updateMealPlan, deleteMealPlan
+    };
+};

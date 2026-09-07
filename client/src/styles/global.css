@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    --color-gray-placeholder: #9e9e9e;
+}
+
+@layer base {
+    body {
+        font-family: var(--font-noto-sans-jp), sans-serif;
+    }
+
+    input::placeholder,
+    select option[value=''] {
+        color: var(--color-gray-placeholder);
+    }
+
+    input:not([type='checkbox']):not([type='radio']):not([type='file']):not([hidden]),
+    textarea,
+    select {
+        outline-color: #333333;
+    }
+}
+
+@media (min-width: 640px) {
+    .sp-only-sm {
+        display: none;
+    }
+}
+
+@media (max-width: 639px) {
+    .pc-only-sm {
+        display: none;
+    }
+}

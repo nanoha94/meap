@@ -1,0 +1,35 @@
+# LoggingTrait テストケース詳細仕様
+
+## 目次
+
+-   [概要](#概要)
+-   [テストケース一覧表](#テストケース一覧表)
+-   [テスト実行方法](#テスト実行方法)
+
+---
+
+## 概要
+
+`LoggingTrait`トレイトの動作を検証するための包括的なテストスイートを作成しました。各テストケースは、特定の入力に対して期待される出力を明確に定義し、トレイトの動作を詳細に検証します。
+
+## テストケース一覧表
+
+| ID    | テスト名                                                     | 種別         | 入力条件                                         | 期待される出力                                                                       | 該当メソッド                           |
+| ----- | ------------------------------------------------------------ | ------------ | ------------------------------------------------ | ------------------------------------------------------------------------------------ | -------------------------------------- |
+| 1-4-1 | 【logInfo】 基本動作テスト                                   | 基本機能     | GET `/test`<br>ユーザー ID=1<br>グループ ID=100  | - ログメッセージに操作名、コントローラー名、メソッド名、ユーザー情報、リクエスト情報 | `LoggingTrait::logInfo()`              |
+| 1-4-2 | 【logInfo】 リクエスト情報記録テスト                         | 基本機能     | POST `/api/test?param=value`                     | - HTTP メソッド、完全な URL、リクエストデータ                                        | `LoggingTrait::logInfo()`              |
+| 1-4-3 | 【logWarning】 警告ログ出力テスト                            | 基本機能     | PUT `/test`<br>未認証ユーザー                    | - 操作名、コントローラー名、メソッド名、null 値の処理                                | `LoggingTrait::logWarning()`           |
+| 1-4-4 | 【logError】 エラーログ出力テスト                             | 基本機能     | POST `/test`<br>ユーザー ID=2<br>例外発生        | - エラーメッセージ、エラーコード、ステータスコード、ファイル・行情報                 | `LoggingTrait::logError()`             |
+| 1-4-5 | 【logMessage】 ログメッセージ統合テスト                      | 基本機能     | GET `/test`<br>ユーザー ID=6<br>グループ ID=600  | - 各ログレベルでのメッセージ出力が正しいことを確認                                   | `LoggingTrait::logMessage()`           |
+| 1-4-6 | 【filterSensitiveData】 機密情報フィルタリングテスト         | セキュリティ | POST `/test`<br>すべての機密情報を含むリクエスト | - すべての機密情報が`*****`に置換されることを確認<br>- `email` は部分マスク（例: `u***@example.com`） | `LoggingTrait::filterSensitiveData()`  |
+| 1-4-7 | 【filterSensitiveData】 メールアドレス部分マスクテスト       | セキュリティ | POST `/test`<br>`email=john.doe@example.com`    | - `email` が `j***@example.com` にマスクされること                                     | `LoggingTrait::filterSensitiveData()`  |
+| 1-4-8 | 【filterSensitiveData】 無効なメールアドレスはマスク化テスト | セキュリティ | POST `/test`<br>`email=not-an-email`            | - `email` が `*****` に置換されること                                                  | `LoggingTrait::filterSensitiveData()`  |
+
+## テスト実行方法
+
+### Sail 環境での実行
+
+```bash
+cd server
+./vendor/bin/sail test tests/Feature/Traits/LoggingTraitTest.php --stop-on-failure
+```

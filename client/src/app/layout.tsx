@@ -1,21 +1,50 @@
-import { Nunito } from 'next/font/google';
-import '@/app/global.css';
+import React from 'react';
+import type { Metadata, Viewport } from 'next';
 
-const nunitoFont = Nunito({
-    subsets: ['latin'],
-    display: 'swap',
-});
+import { AlertDialog, Dialog, LoadingAnimation, Snackbars } from '@/components';
+import { NOTO_SANS_JP } from '@/constants';
+import '@/styles/global.css';
+import {
+    LINK_TO,
+    METADATA,
+    createRootSocialMetadata,
+    getRobotsMetadata,
+} from '@/constants';
 
-const RootLayout = ({ children }) => {
+interface RootLayoutProps {
+    children: React.ReactNode;
+}
+
+const RootLayout = ({ children }: RootLayoutProps) => {
     return (
-        <html lang="en" className={nunitoFont.className}>
-            <body className="antialiased">{children}</body>
+        <html lang="ja" className={NOTO_SANS_JP.variable}>
+            <body
+                className={`${NOTO_SANS_JP.className} text-base text-black`}>
+                {children}
+                <Snackbars />
+                <Dialog />
+                <AlertDialog />
+                <LoadingAnimation />
+            </body>
         </html>
     );
 };
 
-export const metadata = {
-    title: 'Laravel',
+export const viewport: Viewport = {
+    viewportFit: 'cover',
+};
+
+export const metadata: Metadata = {
+    metadataBase: new URL(
+        process.env.NEXT_PUBLIC_FRONTEND_URL ?? 'http://localhost:3000',
+    ),
+    title: {
+        default: METADATA.SITE_NAME,
+        template: `%s | ${METADATA.SITE_NAME}`,
+    },
+    description: METADATA.SITE_DESCRIPTION,
+    robots: getRobotsMetadata(),
+    ...createRootSocialMetadata(LINK_TO.LP),
 };
 
 export default RootLayout;
