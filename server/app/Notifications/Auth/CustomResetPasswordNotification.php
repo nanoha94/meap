@@ -16,10 +16,12 @@ class CustomResetPasswordNotification extends ResetPassword
 
         return (new MailMessage)
             ->subject('パスワード再設定')
-            ->greeting($notifiable->name . ' 様')
+            ->line('※このメールはシステムからの自動返信です。ご返信いただいてもお答えできません。')
+            ->line($notifiable->name . ' 様')
             ->line('パスワード再設定のリクエストを受け付けました。以下のボタンをクリックして、新しいパスワードを設定してください。')
             ->action('パスワードを再設定', $url)
             ->line('このリンクの有効期限は ' . config('auth.passwords.' . config('auth.defaults.passwords') . '.expire') . ' 分です。')
-            ->line('心当たりがない場合は、このメールを無視してください。');
+            ->line('心当たりがない場合は、このメールを無視してください。')
+            ->salutation('');
     }
 }

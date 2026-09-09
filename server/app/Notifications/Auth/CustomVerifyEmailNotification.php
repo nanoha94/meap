@@ -46,9 +46,11 @@ class CustomVerifyEmailNotification extends VerifyEmail
 
         return (new MailMessage)
             ->subject('メールアドレスの確認')
-            ->greeting($notifiable->name . ' 様')
+            ->line('※このメールはシステムからの自動返信です。ご返信いただいてもお答えできません。')
+            ->line($notifiable->name . ' 様')
             ->line('ご登録ありがとうございます。以下のボタンをクリックしてメールアドレスの確認を完了してください。')
             ->action('メールアドレスを確認', $verificationUrl)
-            ->line('このメールに心当たりがない場合は、このメールを無視してください。');
+            ->line('このメールに心当たりがない場合は、このメールを無視してください。')
+            ->salutation('');
     }
 }
