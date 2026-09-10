@@ -38,7 +38,6 @@ Route::get('/auth/google/callback', [SocialLoginController::class, 'handleGoogle
     ->name('auth.google.callback');
 
 Route::get('/email/verify/{id}/{hash}', VerifyEmailController::class)
-
     ->middleware(['signed:relative', 'throttle:6,1'])
     ->name('verification.verify');
 
