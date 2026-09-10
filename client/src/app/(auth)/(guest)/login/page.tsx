@@ -5,11 +5,19 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
-import { AuthHeading, AuthLoading, Button, ButtonLink, VerticalRowField } from '@/components';
+import {
+    AuthHeading,
+    AuthLoading,
+    Button,
+    ButtonLink,
+    SnackbarHandler,
+    VerticalRowField,
+} from '@/components';
 import {
     BUTTON_TYPE,
     BUTTON_VARIANT,
     COLOR_VARIANT,
+    EMAIL_VERIFY_ERROR_MESSAGES,
     LINK_TO,
     OAUTH_ERROR_MESSAGES,
     PASSWORD_RESET_STATUS_MESSAGES,
@@ -57,14 +65,18 @@ const LoginForm = () => {
     }, [searchParams, errors]);
 
     /**
-     * OAuth認証エラー時のメッセージ
+     * クエリ ?error= のメッセージ（メール認証・OAuth）
      */
-    const oauthErrorMessage = React.useMemo(() => {
+    const queryErrorMessage = React.useMemo(() => {
         const code = searchParams?.get('error');
         if (!code) {
             return null;
         }
-        return OAUTH_ERROR_MESSAGES[code] ?? null;
+        return (
+            EMAIL_VERIFY_ERROR_MESSAGES[code] ??
+            OAUTH_ERROR_MESSAGES[code] ??
+            null
+        );
     }, [searchParams]);
 
     // 入力エラーがあったとき、その後に入力内容が変更されればエラー有無に関わらずエラー内容を非表示にする
@@ -88,6 +100,9 @@ const LoginForm = () => {
 
     return (
         <>
+            {queryErrorMessage && (
+                <SnackbarHandler type="error" message={queryErrorMessage} />
+            )}
             <div className="flex flex-col gap-y-8">
                 <AuthHeading>ログイン</AuthHeading>
                 <form
@@ -198,17 +213,11 @@ const LoginForm = () => {
                             }>
                             ログイン
                         </Button>
-                        {!!(
-                            oauthErrorMessage ??
-                            resetStatusMessage ??
-                            loginStatus
-                        ) && (
-                                <p className="text-alert-main">
-                                    {oauthErrorMessage ??
-                                        resetStatusMessage ??
-                                        loginStatus}
-                                </p>
-                            )}
+                        {!!(resetStatusMessage ?? loginStatus) && (
+                            <p className="text-alert-main">
+                                {resetStatusMessage ?? loginStatus}
+                            </p>
+                        )}
                     </div>
                 </form>
                 <div className="flex flex-col items-center gap-y-4">

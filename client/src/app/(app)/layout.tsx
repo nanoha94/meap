@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 
 import {
     DataHandler,
@@ -8,13 +9,14 @@ import {
     SnackbarHandler,
     VerifiedHandler,
 } from '@/components';
+import { LINK_TO } from '@/constants';
 import {
     fetchData,
     fetchDataParallel,
     type FetchDataResult,
 } from '@/lib/apiClient';
 import { IAiUsageStatus, IAiUsageStatusResponse, IGetMasterResponse, IGetUserResponse } from '@/types';
-import { handleAuthRedirect, isSafeRedirectPath } from '@/utils';
+import { isSafeRedirectPath } from '@/utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -53,8 +55,9 @@ const AppLayout = async ({ children }: Props) => {
                 }),
         ]);
 
+    // データ取得エラー時は /login へ
     if (parallelError || !parallelData) {
-        handleAuthRedirect(null, false);
+        redirect(LINK_TO.LOGIN);
     } else {
         const [
             { data: userData, errorMessage: userError },
@@ -62,11 +65,16 @@ const AppLayout = async ({ children }: Props) => {
             { data: aiUsageResponse, errorMessage: aiUsageError },
         ] = parallelData;
 
+        // ユーザーデータ取得エラー時は /login へ
         if (userError || !userData?.success) {
-            handleAuthRedirect(null, false);
+            redirect(LINK_TO.LOGIN);
         } else {
             user = userData;
-            handleAuthRedirect(user.data, false);
+
+            // 未認証は /email/verify へ
+            if (!user.data.email_verified_at) {
+                redirect(LINK_TO.EMAIL_VERIFY);
+            }
 
             if (masterDataResult?.success) {
                 masterData = masterDataResult;

@@ -7,7 +7,9 @@ use App\Traits\ExceptionHandlerTrait;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Exceptions\InvalidSignatureException;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -48,6 +50,12 @@ class Handler extends ExceptionHandler
             ], HttpStatusCode::UNAUTHORIZED->value);
         }
 
+        if ($exception instanceof InvalidSignatureException && $this->isEmailVerificationVerifyRoute($request)) {
+            if (!$request->expectsJson()) {
+                return $this->redirectToEmailVerifyWithError('invalid_link');
+            }
+        }
+
         $operation = $this->determineOperation($request) ?? __('operations.general.unknown');
         $defaultMessage = __('api.general.server_error') ?? $exception->getMessage();
 
@@ -80,7 +88,26 @@ class Handler extends ExceptionHandler
         if (str_contains($uri, '/forgot-password')) {
             return __('operations.auth.password_reset_link');
         }
+        if (str_contains($uri, '/email/verify/')) {
+            return __('operations.auth.email_verification');
+        }
 
         return __('operations.general.request');
+    }
+
+    /**
+     * verification.verify ルートかどうかを判定
+     */
+    protected function isEmailVerificationVerifyRoute(Request $request): bool
+    {
+        return $request->route()?->getName() === 'verification.verify';
+    }
+
+    /**
+     * メール確認ページへエラータイプ付きでリダイレクト
+     */
+    protected function redirectToEmailVerifyWithError(string $errorType): RedirectResponse
+    {
+        return redirect(config('app.frontend_url') . '/email/verify?error=' . $errorType);
     }
 }

@@ -11,16 +11,25 @@ use Illuminate\Support\Facades\DB;
 
 uses(RefreshDatabase::class);
 
+/**
+ * signed:relative ミドルウェアに合わせて、相対パスの署名付き URL を生成する
+ */
+function signedVerificationUrl(int|string $id, string $hash, ?\DateTimeInterface $expiresAt = null): string
+{
+    return URL::temporarySignedRoute(
+        'verification.verify',
+        $expiresAt ?? now()->addMinutes(60),
+        ['id' => $id, 'hash' => $hash],
+        absolute: false
+    );
+}
+
 test('2-6-1: 正常なメール確認', function () {
     $user = User::factory()->unverified()->create();
 
     Event::fake();
 
-    $verificationUrl = URL::temporarySignedRoute(
-        'verification.verify',
-        now()->addMinutes(60),
-        ['id' => $user->id, 'hash' => sha1($user->email)]
-    );
+    $verificationUrl = signedVerificationUrl($user->id, sha1($user->email));
 
     $response = $this->actingAs($user)->get($verificationUrl);
 
@@ -34,11 +43,7 @@ test('2-6-2: メール確認の冪等性確認', function () {
 
     Event::fake();
 
-    $verificationUrl = URL::temporarySignedRoute(
-        'verification.verify',
-        now()->addMinutes(60),
-        ['id' => $user->id, 'hash' => sha1($user->email)]
-    );
+    $verificationUrl = signedVerificationUrl($user->id, sha1($user->email));
 
     $response = $this->actingAs($user)->get($verificationUrl);
 
@@ -50,11 +55,7 @@ test('2-6-2: メール確認の冪等性確認', function () {
 test('2-6-3: リダイレクトパラメータ確認（verified=1）', function () {
     $user = User::factory()->unverified()->create();
 
-    $verificationUrl = URL::temporarySignedRoute(
-        'verification.verify',
-        now()->addMinutes(60),
-        ['id' => $user->id, 'hash' => sha1($user->email)]
-    );
+    $verificationUrl = signedVerificationUrl($user->id, sha1($user->email));
 
     $response = $this->actingAs($user)->get($verificationUrl);
 
@@ -66,11 +67,7 @@ test('2-6-4: Verified イベント発火確認', function () {
 
     Event::fake();
 
-    $verificationUrl = URL::temporarySignedRoute(
-        'verification.verify',
-        now()->addMinutes(60),
-        ['id' => $user->id, 'hash' => sha1($user->email)]
-    );
+    $verificationUrl = signedVerificationUrl($user->id, sha1($user->email));
 
     $this->actingAs($user)->get($verificationUrl);
 
@@ -82,11 +79,7 @@ test('2-6-4: Verified イベント発火確認', function () {
 test('2-6-5: 間違ったハッシュ値', function () {
     $user = User::factory()->unverified()->create();
 
-    $verificationUrl = URL::temporarySignedRoute(
-        'verification.verify',
-        now()->addMinutes(60),
-        ['id' => $user->id, 'hash' => sha1('wrong-email')]
-    );
+    $verificationUrl = signedVerificationUrl($user->id, sha1('wrong-email'));
 
     $response = $this->actingAs($user)->get($verificationUrl);
 
@@ -99,11 +92,7 @@ test('2-6-5: 間違ったハッシュ値', function () {
 test('2-6-6: 未認証ユーザーのアクセス', function () {
     $user = User::factory()->unverified()->create();
 
-    $verificationUrl = URL::temporarySignedRoute(
-        'verification.verify',
-        now()->addMinutes(60),
-        ['id' => $user->id, 'hash' => sha1($user->email)]
-    );
+    $verificationUrl = signedVerificationUrl($user->id, sha1($user->email));
 
     $response = $this->get($verificationUrl);
 
@@ -117,11 +106,7 @@ test('2-6-7: 無効なパラメータ形式', function () {
 
     // 存在しないユーザーIDでアクセス（署名は正しく生成）
     $nonExistentUserId = 99999;
-    $verificationUrl = URL::temporarySignedRoute(
-        'verification.verify',
-        now()->addMinutes(60),
-        ['id' => $nonExistentUserId, 'hash' => sha1($user->email)]
-    );
+    $verificationUrl = signedVerificationUrl($nonExistentUserId, sha1($user->email));
 
     $response = $this->actingAs($user)->get($verificationUrl);
 
@@ -139,8 +124,8 @@ test('2-6-8: 無効な署名', function () {
 
     $response = $this->actingAs($user)->get($tamperedUrl);
 
-    // 署名検証はミドルウェアレベルで行われ、403 Forbiddenが返される
-    $response->assertStatus(403);
+    $response->assertRedirect();
+    $response->assertRedirectContains('/email/verify?error=invalid_link');
 });
 
 test('2-6-9: 署名なしの URL', function () {
@@ -151,23 +136,29 @@ test('2-6-9: 署名なしの URL', function () {
 
     $response = $this->actingAs($user)->get($url);
 
-    // 署名検証はミドルウェアレベルで行われ、403 Forbiddenが返される
-    $response->assertStatus(403);
+    $response->assertRedirect();
+    $response->assertRedirectContains('/email/verify?error=invalid_link');
 });
 
 test('2-6-10: 期限切れの署名', function () {
     $user = User::factory()->unverified()->create();
 
     // 期限切れの署名付きURL（過去の時間を指定）
-    $verificationUrl = URL::temporarySignedRoute(
-        'verification.verify',
-        now()->subMinutes(60),
-        ['id' => $user->id, 'hash' => sha1($user->email)]
-    );
+    $verificationUrl = signedVerificationUrl($user->id, sha1($user->email), now()->subMinutes(60));
 
     $response = $this->actingAs($user)->get($verificationUrl);
 
-    // 署名検証はミドルウェアレベルで行われ、403 Forbiddenが返される
+    $response->assertRedirect();
+    $response->assertRedirectContains('/email/verify?error=invalid_link');
+});
+
+test('2-6-19: 無効な署名（JSON リクエスト）', function () {
+    $user = User::factory()->unverified()->create();
+
+    $url = route('verification.verify', ['id' => $user->id, 'hash' => sha1($user->email)]);
+
+    $response = $this->actingAs($user)->getJson($url);
+
     $response->assertStatus(403);
 });
 
@@ -177,11 +168,7 @@ test('2-6-11: レート制限（1分間に6回超過）', function () {
     // レート制限をクリア
     Cache::forget('throttle:verification.verify:' . $user->id);
 
-    $verificationUrl = URL::temporarySignedRoute(
-        'verification.verify',
-        now()->addMinutes(60),
-        ['id' => $user->id, 'hash' => sha1($user->email)]
-    );
+    $verificationUrl = signedVerificationUrl($user->id, sha1($user->email));
 
     // 6回リクエストを送信
     for ($i = 0; $i < 6; $i++) {
@@ -200,11 +187,7 @@ test('2-6-12: レート制限リセット', function () {
     // レート制限をクリア
     Cache::forget('throttle:verification.verify:' . $user->id);
 
-    $verificationUrl = URL::temporarySignedRoute(
-        'verification.verify',
-        now()->addMinutes(60),
-        ['id' => $user->id, 'hash' => sha1($user->email)]
-    );
+    $verificationUrl = signedVerificationUrl($user->id, sha1($user->email));
 
     // 1分経過をシミュレーション（Cacheをクリアすることで代替）
     Cache::flush();
@@ -225,11 +208,7 @@ test('2-6-13: markEmailAsVerified() 失敗', function () {
     // リクエストのユーザーをモックに置き換え
     $this->actingAs($userMock);
 
-    $verificationUrl = URL::temporarySignedRoute(
-        'verification.verify',
-        now()->addMinutes(60),
-        ['id' => $user->id, 'hash' => sha1($user->email)]
-    );
+    $verificationUrl = signedVerificationUrl($user->id, sha1($user->email));
 
     $response = $this->get($verificationUrl);
 
@@ -249,11 +228,7 @@ test('2-6-14: Verified イベント発火失敗', function () {
         throw new \Exception('Event dispatch failed');
     });
 
-    $verificationUrl = URL::temporarySignedRoute(
-        'verification.verify',
-        now()->addMinutes(60),
-        ['id' => $user->id, 'hash' => sha1($user->email)]
-    );
+    $verificationUrl = signedVerificationUrl($user->id, sha1($user->email));
 
     $response = $this->actingAs($user)->get($verificationUrl);
 
@@ -273,11 +248,7 @@ test('2-6-15: データベース接続エラー', function () {
     // リクエストのユーザーをモックに置き換え
     $this->actingAs($userMock);
 
-    $verificationUrl = URL::temporarySignedRoute(
-        'verification.verify',
-        now()->addMinutes(60),
-        ['id' => $user->id, 'hash' => sha1($user->email)]
-    );
+    $verificationUrl = signedVerificationUrl($user->id, sha1($user->email));
 
     $response = $this->get($verificationUrl);
 
@@ -300,11 +271,7 @@ test('2-6-16: ログ出力とエラーリダイレクト確認', function () {
     // リクエストのユーザーをモックに置き換え
     $this->actingAs($userMock);
 
-    $verificationUrl = URL::temporarySignedRoute(
-        'verification.verify',
-        now()->addMinutes(60),
-        ['id' => $user->id, 'hash' => sha1($user->email)]
-    );
+    $verificationUrl = signedVerificationUrl($user->id, sha1($user->email));
 
     $response = $this->get($verificationUrl);
 
@@ -327,11 +294,7 @@ test('2-6-17: エラー時のリダイレクト URL 確認', function () {
     // リクエストのユーザーをモックに置き換え
     $this->actingAs($userMock);
 
-    $verificationUrl = URL::temporarySignedRoute(
-        'verification.verify',
-        now()->addMinutes(60),
-        ['id' => $user->id, 'hash' => sha1($user->email)]
-    );
+    $verificationUrl = signedVerificationUrl($user->id, sha1($user->email));
 
     $response = $this->get($verificationUrl);
 
@@ -349,11 +312,7 @@ test('2-6-18: フロントエンド URL 設定なし', function () {
     // frontend_url設定をクリア
     Config::set('app.frontend_url', null);
 
-    $verificationUrl = URL::temporarySignedRoute(
-        'verification.verify',
-        now()->addMinutes(60),
-        ['id' => $user->id, 'hash' => sha1($user->email)]
-    );
+    $verificationUrl = signedVerificationUrl($user->id, sha1($user->email));
 
     $response = $this->actingAs($user)->get($verificationUrl);
 

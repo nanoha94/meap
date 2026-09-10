@@ -1,9 +1,11 @@
 <?php
 
 use App\Models\User;
+use App\Notifications\Auth\CustomVerifyEmailNotification;
+use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Auth\Events\Lockout;
+use Illuminate\Support\Facades\Notification;
 
 uses(RefreshDatabase::class);
 
@@ -58,7 +60,45 @@ test('2-1-3: セッション再生成テスト', function () {
     );
 });
 
-test('2-1-4: 無効な認証情報', function () {
+test('2-1-4: 【ログイン】 未認証ユーザーへの認証メール送信', function () {
+    Notification::fake();
+
+    $user = User::factory()->unverified()->create();
+
+    $response = $this->post('/login', [
+        'email' => $user->email,
+        'password' => 'password',
+    ]);
+
+    $this->assertAuthenticated();
+    $response->assertStatus(200);
+    $response->assertJson([
+        'success' => true,
+        'message' => 'ログインに成功しました。',
+    ]);
+    Notification::assertSentTo($user, CustomVerifyEmailNotification::class);
+});
+
+test('2-1-5: 【ログイン】 認証済みユーザーには認証メールを送らない', function () {
+    Notification::fake();
+
+    $user = User::factory()->create();
+
+    $response = $this->post('/login', [
+        'email' => $user->email,
+        'password' => 'password',
+    ]);
+
+    $this->assertAuthenticated();
+    $response->assertStatus(200);
+    $response->assertJson([
+        'success' => true,
+        'message' => 'ログインに成功しました。',
+    ]);
+    Notification::assertNotSentTo($user, CustomVerifyEmailNotification::class);
+});
+
+test('2-1-6: 無効な認証情報', function () {
     $user = User::factory()->create();
 
     $response = $this->post('/login', [
@@ -75,7 +115,7 @@ test('2-1-4: 無効な認証情報', function () {
     ]);
 });
 
-test('2-1-5: 間違ったパスワード', function () {
+test('2-1-7: 間違ったパスワード', function () {
     $user = User::factory()->create();
 
     $response = $this->post('/login', [
@@ -92,7 +132,7 @@ test('2-1-5: 間違ったパスワード', function () {
     ]);
 });
 
-test('2-1-6: 認証情報不足', function () {
+test('2-1-8: 認証情報不足', function () {
     $response = $this->post('/login', []);
 
     $this->assertGuest();
@@ -105,7 +145,7 @@ test('2-1-6: 認証情報不足', function () {
     $this->assertContains('emailは必ず指定してください。', $responseData['errors']['email']);
 });
 
-test('2-1-7: 無効なメール形式', function () {
+test('2-1-9: 無効なメール形式', function () {
     $response = $this->post('/login', [
         'email' => 'invalid-email',
         'password' => 'password',
@@ -121,7 +161,7 @@ test('2-1-7: 無効なメール形式', function () {
     $this->assertContains('emailには、有効なメールアドレスを指定してください。', $responseData['errors']['email']);
 });
 
-test('2-1-8: メールアドレス未入力', function () {
+test('2-1-10: メールアドレス未入力', function () {
     $response = $this->postJson('/login', [
         'password' => 'password',
     ]);
@@ -144,7 +184,7 @@ test('2-1-8: メールアドレス未入力', function () {
     ]);
 });
 
-test('2-1-9: パスワード未入力', function () {
+test('2-1-11: パスワード未入力', function () {
     $response = $this->postJson('/login', [
         'email' => 'test@example.com',
     ]);
@@ -162,7 +202,7 @@ test('2-1-9: パスワード未入力', function () {
     ]);
 });
 
-test('2-1-10: 両方の項目未入力', function () {
+test('2-1-12: 両方の項目未入力', function () {
     $response = $this->postJson('/login', []);
 
     $this->assertGuest();
@@ -179,7 +219,7 @@ test('2-1-10: 両方の項目未入力', function () {
     ]);
 });
 
-test('2-1-11: カスタムバリデーションメッセージ', function () {
+test('2-1-13: カスタムバリデーションメッセージ', function () {
     $response = $this->postJson('/login', [
         'email' => 'invalid-email',
         'password' => '',
@@ -204,7 +244,7 @@ test('2-1-11: カスタムバリデーションメッセージ', function () {
     $this->assertContains('passwordは必ず指定してください。', $responseData['errors']['password']);
 });
 
-test('2-1-12: 【ログイン】 バリデーションエラー（パスワード256文字超過）', function () {
+test('2-1-14: 【ログイン】 バリデーションエラー（パスワード256文字超過）', function () {
     $response = $this->postJson('/login', [
         'email' => 'test@example.com',
         'password' => str_repeat('a', 256),
@@ -220,7 +260,7 @@ test('2-1-12: 【ログイン】 バリデーションエラー（パスワー�
     $this->assertContains('passwordは、255文字以内で指定してください。', $responseData['errors']['password']);
 });
 
-test('2-1-13: レート制限', function () {
+test('2-1-15: レート制限', function () {
     $user = User::factory()->create();
 
     // 5回の失敗したログイン試行
@@ -247,7 +287,7 @@ test('2-1-13: レート制限', function () {
     expect($responseData['message'])->toMatch('/^試行回数が上限に達しました。\d+秒後に再度お試しください。$/');
 });
 
-test('2-1-14: 【ログイン】 IP 単位のレート制限（異なるメールアドレス）', function () {
+test('2-1-16: 【ログイン】 IP 単位のレート制限（異なるメールアドレス）', function () {
     config(['auth.login.ip_max_attempts' => 5]);
 
     for ($i = 0; $i < 5; $i++) {
@@ -271,7 +311,7 @@ test('2-1-14: 【ログイン】 IP 単位のレート制限（異なるメー�
     expect($responseData['message'])->toMatch('/^試行回数が上限に達しました。\d+秒後に再度お試しください。$/');
 });
 
-test('2-1-15: レート制限クリア', function () {
+test('2-1-17: レート制限クリア', function () {
     $user = User::factory()->create();
 
     // 2回の失敗したログイン試行
@@ -306,7 +346,7 @@ test('2-1-15: レート制限クリア', function () {
     ]);
 });
 
-test('2-1-16: Lockout イベント発火', function () {
+test('2-1-18: Lockout イベント発火', function () {
     Event::fake([Lockout::class]);
 
     $user = User::factory()->create();
@@ -328,7 +368,7 @@ test('2-1-16: Lockout イベント発火', function () {
     Event::assertDispatched(Lockout::class);
 });
 
-test('2-1-17: 正常ログアウト', function () {
+test('2-1-19: 正常ログアウト', function () {
     $user = User::factory()->create();
 
     $response = $this->actingAs($user)->post('/logout');
@@ -341,7 +381,7 @@ test('2-1-17: 正常ログアウト', function () {
     ]);
 });
 
-test('2-1-18: 未認証ログアウト', function () {
+test('2-1-20: 未認証ログアウト', function () {
     $response = $this->post('/logout');
 
     $response->assertStatus(401); // 未認証のため401
@@ -351,7 +391,7 @@ test('2-1-18: 未認証ログアウト', function () {
     ]);
 });
 
-test('2-1-19: セッション無効化', function () {
+test('2-1-21: セッション無効化', function () {
     $user = User::factory()->create();
 
     $response = $this->actingAs($user)->post('/logout');
@@ -363,7 +403,7 @@ test('2-1-19: セッション無効化', function () {
     $this->assertNull($this->app['session']->get('auth.password_confirmed_at'));
 });
 
-test('2-1-20: 【ログアウト】 クッキー削除確認', function () {
+test('2-1-22: 【ログアウト】 クッキー削除確認', function () {
     $user = User::factory()->create();
 
     $response = $this->actingAs($user)->post('/logout');

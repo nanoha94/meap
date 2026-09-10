@@ -1,12 +1,10 @@
-import { headers } from 'next/headers';
 import Image from 'next/image';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 
 import { SnackbarHandler } from '@/components';
 import { LINK_TO } from '@/constants';
-import { fetchData } from '@/lib/apiClient';
-import { IGetUserResponse } from '@/types';
-import { handleAuthRedirect } from '@/utils';
+import { fetchCurrentUser } from '@/lib/fetchCurrentUser';
 
 // 動的レンダリングを強制（クッキーを使用するため）
 export const dynamic = 'force-dynamic';
@@ -16,15 +14,12 @@ interface Props {
 }
 
 const AuthLayout = async ({ children }: Props) => {
-    const headerList = await headers();
-    const pathname = headerList.get('x-pathname') ?? '';
+    const { data: user, errorMessage } = await fetchCurrentUser();
 
-    const { data: user, errorMessage } = await fetchData<IGetUserResponse>(
-        '/user',
-        { suppressUnauthorizedLog: true },
-    );
-
-    handleAuthRedirect(user?.data ?? null, true, { pathname });
+    // 認証済みは /plan へ
+    if (user?.data?.email_verified_at) {
+        redirect(LINK_TO.PLAN.TOP);
+    }
 
     // 認証エラー（AUTHENTICATION_REQUIRED）はログインページでは表示しない
     const shouldShowError =

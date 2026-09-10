@@ -36,6 +36,12 @@ class AuthenticatedSessionController extends Controller
             function () use ($request) {
                 $request->authenticate();
                 $request->session()->regenerate();
+
+                $user = $request->user();
+                if ($user !== null && ! $user->hasVerifiedEmail()) {
+                    $user->sendEmailVerificationNotification();
+                }
+
                 $message = __('auth.success', ['attribute' => __('auth.attributes.login')]);
                 return $this->successResponse(null, $message);
             },

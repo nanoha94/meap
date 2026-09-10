@@ -6,7 +6,6 @@ export * from './defaultDataHelpers';
 export * from './dndHelpers';
 export * from './focusHelpers';
 export * from './getLinkButtonClassName';
-export * from './pathname';
 export * from './quantity';
 export * from './redirectPath';
 export * from './stripeUrl';
