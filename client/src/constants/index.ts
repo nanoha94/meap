@@ -14,4 +14,5 @@ export * from './links';
 export * from './metadata';
 export * from './navigation';
 export * from './quantity';
+export * from './site';
 export * from './tmpIdPrefix';

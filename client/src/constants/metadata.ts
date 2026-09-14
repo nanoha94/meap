@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 
+import { getPageUrl } from './site';
+
 export const isNoindexEnabled = () =>
     process.env.NEXT_PUBLIC_NOINDEX === 'true' ||
     process.env.NEXT_PUBLIC_NOINDEX === '1';
@@ -51,12 +53,6 @@ type PageMetadataOptions = {
     path: string;
     description?: string;
 };
-
-const getFrontendBaseUrl = () =>
-    process.env.NEXT_PUBLIC_FRONTEND_URL ?? 'http://localhost:3000';
-
-const getPageUrl = (path: string) =>
-    new URL(path, getFrontendBaseUrl()).toString();
 
 const formatPageTitle = (pageTitle: string) =>
     `${pageTitle} | ${METADATA.SITE_NAME}`;

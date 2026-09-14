@@ -5,6 +5,7 @@ import { AlertDialog, Dialog, LoadingAnimation, Snackbars } from '@/components';
 import { NOTO_SANS_JP } from '@/constants';
 import '@/styles/global.css';
 import {
+    FRONTEND_BASE_URL,
     LINK_TO,
     METADATA,
     createRootSocialMetadata,
@@ -35,9 +36,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-    metadataBase: new URL(
-        process.env.NEXT_PUBLIC_FRONTEND_URL ?? 'http://localhost:3000',
-    ),
+    metadataBase: new URL(FRONTEND_BASE_URL),
     title: {
         default: METADATA.SITE_NAME,
         template: `%s | ${METADATA.SITE_NAME}`,
