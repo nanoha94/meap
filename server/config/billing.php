@@ -4,16 +4,27 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Stripe Price IDs
+    | PAY.JP Plan IDs
     |--------------------------------------------------------------------------
     |
-    | Stripe ダッシュボードで作成した Price ID を .env から読み込む。
+    | PAY.JP 管理画面で作成したサブスクリプション用プラン ID を .env から読み込む。
     |
     */
-    'price_ids' => [
-        'subscription_standard' => env('STRIPE_PRICE_SUBSCRIPTION_STANDARD'),
-        'pack_light' => env('STRIPE_PRICE_PACK_LIGHT'),
-        'pack_value' => env('STRIPE_PRICE_PACK_VALUE'),
+    'plan_ids' => [
+        'subscription_standard' => env('PAYJP_PLAN_SUBSCRIPTION_STANDARD'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Pack Prices
+    |--------------------------------------------------------------------------
+    |
+    | 買い切りパックの都度課金金額（円）。PAY.JP Charge API に渡す。
+    |
+    */
+    'pack_prices' => [
+        'pack_light' => (int) env('PAYJP_PRICE_PACK_LIGHT', 400),
+        'pack_value' => (int) env('PAYJP_PRICE_PACK_VALUE', 800),
     ],
 
     /*
@@ -28,15 +39,5 @@ return [
         'light' => 10,
         'value' => 30,
     ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Subscription Type
-    |--------------------------------------------------------------------------
-    |
-    | Cashier の subscriptions.type カラムに保存する識別子。
-    |
-    */
-    'subscription_type' => 'default',
 
 ];
