@@ -7,8 +7,8 @@ import {
     BILLING_PACK_OPTIONS,
     BILLING_PLAN,
     BILLING_PLAN_DETAILS,
+    FRONTEND_BASE_URL,
     LEGAL,
-    LEGAL_SERVICE_URL,
     LINK_TO,
 } from '@/constants';
 
@@ -76,9 +76,9 @@ const Page = () => {
                             </Row>
                             <Row label="サービスURL">
                                 <a
-                                    href={LEGAL_SERVICE_URL}
+                                    href={FRONTEND_BASE_URL}
                                     className="break-all text-primary-main underline">
-                                    {LEGAL_SERVICE_URL}
+                                    {FRONTEND_BASE_URL}
                                 </a>
                             </Row>
                             <Row label="販売価格">
