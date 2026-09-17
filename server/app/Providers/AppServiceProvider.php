@@ -5,11 +5,9 @@ namespace App\Providers;
 use App\Enums\HttpStatusCode;
 use App\Interfaces\AiRecipeParserInterface;
 use App\Interfaces\RecipeOcrInterface;
-use App\Models\Group;
 use App\Services\Ai\GoogleVisionRecipeOcr;
 use App\Services\Ai\OpenAiRecipeOcr;
 use App\Services\Ai\OpenAiRecipeParser;
-use Laravel\Cashier\Cashier;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -19,7 +17,6 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use InvalidArgumentException;
-use RuntimeException;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -28,8 +25,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        Cashier::ignoreRoutes();
-
         $this->app->bind(
             RecipeOcrInterface::class,
             match (config('services.ai.ocr_provider')) {
@@ -49,14 +44,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        if (!$this->app->runningInConsole() && blank(config('cashier.webhook.secret'))) {
-            throw new RuntimeException(
-                'STRIPE_WEBHOOK_SECRET must be set.',
-            );
-        }
-
-        Cashier::useCustomerModel(Group::class);
-
         URL::forceRootUrl(Config::get('app.url'));
         URL::forceScheme('https');
 
