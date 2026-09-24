@@ -14,16 +14,18 @@ return new class extends Migration
         Schema::create('subscriptions', function (Blueprint $table) {
             $table->id();
             $table->foreignUuid('group_id')->constrained()->cascadeOnDelete();
-            $table->string('type');
-            $table->string('stripe_id')->unique();
-            $table->string('stripe_status');
-            $table->string('stripe_price')->nullable();
-            $table->integer('quantity')->nullable();
+            $table->string('payjp_subscription_id')->unique();
+            $table->string('payjp_plan_id')->nullable();
+            $table->string('status');
             $table->timestamp('trial_ends_at')->nullable();
             $table->timestamp('ends_at')->nullable();
+            $table->timestamp('current_period_start')->nullable();
+            $table->timestamp('current_period_end')->nullable();
+            $table->timestamp('canceled_at')->nullable();
+            $table->timestamp('paused_at')->nullable();
             $table->timestamps();
 
-            $table->index(['group_id', 'stripe_status']);
+            $table->index(['group_id', 'status']);
         });
     }
 

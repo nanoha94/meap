@@ -94,7 +94,7 @@ const Page = () => {
                                 インターネット接続に必要な通信料等は、お客様のご負担となります。
                             </Row>
                             <Row label="支払方法">
-                                クレジットカード（Stripe）
+                                クレジットカード（PAY.JP）
                             </Row>
                             <Row label="支払時期">
                                 <ul className="list-disc pl-5 [&>li:not(:last-child)]:mb-1">
@@ -103,6 +103,9 @@ const Page = () => {
                                     </li>
                                     <li>追加パック：お支払い時</li>
                                 </ul>
+                            </Row>
+                            <Row label="領収書の発行">
+                                発行しておりません。お支払いの確認はご利用のクレジットカード会社の利用明細をご参照ください。
                             </Row>
                             <Row label="商品の引渡時期">
                                 決済完了後、直ちに本サービス上でご利用いただけます。

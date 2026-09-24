@@ -171,6 +171,7 @@ trait LoggingTrait
             'password_confirmation', // パスワード確認
             'current_password',   // 現在のパスワード
             'token',             // 認証トークン
+            'cardToken',         // PAY.JP カードトークン
             'api_token',         // APIトークン
             'api_key',           // APIキー
             'secret',            // シークレットキー

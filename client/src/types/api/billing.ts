@@ -9,15 +9,15 @@ export type IGetBillingStatusResponse = IBaseApiResponseWithData<IBillingStatus>
 
 // 課金サブスクリプション開始
 export type IPostBillingSubscripeResponse =
-    IBaseApiResponseWithData<IBillingCheckoutData>;
+    IBaseApiResponseWithData<IBillingStatus>;
 
 // 課金パック購入
-export type IPostBillingPacksResponse =
-    IBaseApiResponseWithData<IBillingCheckoutData>;
+export type IPostBillingPackPurchaseResponse =
+    IBaseApiResponseWithData<IBillingStatus>;
 
-// 課金ポータル
-export type IPostBillingPortalResponse =
-    IBaseApiResponseWithData<IBillingPortalData>;
+// 課金サブスクリプション解約
+export type IPostBillingCancelResponse =
+    IBaseApiResponseWithData<IBillingStatus>;
 
 // 請求履歴
 export type IGetBillingInvoicesResponse =
@@ -25,6 +25,10 @@ export type IGetBillingInvoicesResponse =
 
 // プラン変更予定取り消し
 export type IPostBillingResumeResponse =
+    IBaseApiResponseWithData<IBillingStatus>;
+
+// カード情報更新
+export type IPostBillingCardUpdateResponse =
     IBaseApiResponseWithData<IBillingStatus>;
 
 //--------------------------------
@@ -47,14 +51,6 @@ export interface IBillingStatus {
     pmExpYear: number | null;
 }
 
-export interface IBillingCheckoutData {
-    checkoutUrl: string;
-}
-
-export interface IBillingPortalData {
-    portalUrl: string;
-}
-
 export interface IBillingInvoiceLine {
     description: string;
     quantity: number;
@@ -74,8 +70,8 @@ export interface IBillingUpcomingInvoice {
 export interface IBillingPastInvoice {
     id: string;
     date: string;
+    description: string;
     total: number;
-    invoiceUrl: string;
 }
 
 export interface IBillingInvoices {

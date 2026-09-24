@@ -202,7 +202,7 @@ test('4-1-13: 【利用状況取得】 周期終了後にフリー月次リセ�
 
 // ===== renewBillingPeriod() メソッドのテストケース =====
 
-test('4-1-14: 【課金周期更新】 Stripe の課金周期でリセットする', function () {
+test('4-1-14: 【課金周期更新】 PAY.JP の課金周期でリセットする', function () {
     $periodEnd = now()->addDays(25)->startOfSecond();
 
     $this->group->update([
@@ -281,7 +281,7 @@ test('4-1-18: 【課金周期更新】 ダウングレード後の初回請求�
     expect($this->group->ai_usage_reset_at->eq($newPeriodEnd))->toBeTrue();
 });
 
-// ===== adjustMonthlyRemainingForPlanChange() メソッドのテストケース =====
+// ===== updateMonthlyRemainingForPlanChange() メソッドのテストケース =====
 
 test('4-1-19: 【プラン変更】 フリー使い切りからスタンダードへ変更すると新プラン上限が付与される', function () {
     $this->group->update([
@@ -289,7 +289,7 @@ test('4-1-19: 【プラン変更】 フリー使い切りからスタンダー�
         'ai_monthly_remaining' => 0,
     ]);
 
-    $this->service->adjustMonthlyRemainingForPlanChange(
+    $this->service->updateMonthlyRemainingForPlanChange(
         $this->group,
         GroupPlan::FREE,
         GroupPlan::STANDARD,
@@ -304,7 +304,7 @@ test('4-1-20: 【プラン変更】 フリー残数があっても新プラン�
         'ai_monthly_remaining' => 2,
     ]);
 
-    $this->service->adjustMonthlyRemainingForPlanChange(
+    $this->service->updateMonthlyRemainingForPlanChange(
         $this->group,
         GroupPlan::FREE,
         GroupPlan::STANDARD,
@@ -320,7 +320,7 @@ test('4-1-21: 【プラン変更】 スタンダード解約からフリーへ�
         'ai_usage_reset_at' => now()->addDays(10),
     ]);
 
-    $this->service->adjustMonthlyRemainingForPlanChange(
+    $this->service->updateMonthlyRemainingForPlanChange(
         $this->group,
         GroupPlan::STANDARD,
         GroupPlan::FREE,
@@ -336,7 +336,7 @@ test('4-1-22: 【プラン変更】 スタンダード解約からフリーへ�
         'ai_usage_reset_at' => now()->subDay(),
     ]);
 
-    $this->service->adjustMonthlyRemainingForPlanChange(
+    $this->service->updateMonthlyRemainingForPlanChange(
         $this->group,
         GroupPlan::STANDARD,
         GroupPlan::FREE,
@@ -351,7 +351,7 @@ test('4-1-23: 【プラン変更】 同一プランへの変更では残数を�
         'ai_monthly_remaining' => 20,
     ]);
 
-    $this->service->adjustMonthlyRemainingForPlanChange(
+    $this->service->updateMonthlyRemainingForPlanChange(
         $this->group,
         GroupPlan::STANDARD,
         GroupPlan::STANDARD,
@@ -366,7 +366,7 @@ test('4-1-24: 【プラン変更】 スタンダードから Pro へアップグ
         'ai_monthly_remaining' => 20,
     ]);
 
-    $this->service->adjustMonthlyRemainingForPlanChange(
+    $this->service->updateMonthlyRemainingForPlanChange(
         $this->group,
         GroupPlan::STANDARD,
         GroupPlan::PRO,
@@ -382,7 +382,7 @@ test('4-1-25: 【プラン変更】 Pro からスタンダードへダウング�
         'ai_usage_reset_at' => now()->addDays(10),
     ]);
 
-    $this->service->adjustMonthlyRemainingForPlanChange(
+    $this->service->updateMonthlyRemainingForPlanChange(
         $this->group,
         GroupPlan::PRO,
         GroupPlan::STANDARD,
@@ -401,7 +401,7 @@ test('4-1-26: 【プラン変更】 アップグレード後の請求周期更�
         'ai_usage_reset_at' => $oldPeriodEnd,
     ]);
 
-    $this->service->adjustMonthlyRemainingForPlanChange(
+    $this->service->updateMonthlyRemainingForPlanChange(
         $this->group,
         GroupPlan::STANDARD,
         GroupPlan::PRO,
@@ -429,7 +429,7 @@ test('4-1-27: 【プラン変更】 ダウングレード予約から初回請�
         'ai_usage_reset_at' => $oldPeriodEnd,
     ]);
 
-    $this->service->adjustMonthlyRemainingForPlanChange(
+    $this->service->updateMonthlyRemainingForPlanChange(
         $this->group,
         GroupPlan::PRO,
         GroupPlan::STANDARD,

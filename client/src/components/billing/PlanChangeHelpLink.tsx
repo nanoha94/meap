@@ -11,7 +11,7 @@ const BASE_CLASS_NAME = 'text-primary-main font-bold underline transition-opacit
 const PlanChangeHelpLink = () => {
     return (
         <div className="flex items-center gap-x-2 text-base">
-            <CircleHelp className="size-4 shrink-0 text-primary-main" />
+            <CircleHelp className="size-4" />
             <p>プラン変更の仕組みについては、<Link href={LINK_TO.HELP.PLAN_CHANGE} className={BASE_CLASS_NAME}>こちら</Link>をご確認ください。</p>
         </div>
     );

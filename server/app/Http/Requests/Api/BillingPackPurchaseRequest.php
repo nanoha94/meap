@@ -21,12 +21,24 @@ class BillingPackPurchaseRequest extends BaseApiRequest
     {
         return [
             'packType' => ['required', Rule::enum(BillingPackType::class)],
+            'cardToken' => ['nullable', 'string'],
         ];
     }
 
     public function packType(): BillingPackType
     {
         return BillingPackType::from($this->validated('packType'));
+    }
+
+    public function cardToken(): ?string
+    {
+        $cardToken = $this->validated('cardToken');
+
+        if (! is_string($cardToken) || $cardToken === '') {
+            return null;
+        }
+
+        return $cardToken;
     }
 
     protected function getOperationKey(): string

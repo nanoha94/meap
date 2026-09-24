@@ -21,12 +21,24 @@ class BillingSubscribeRequest extends BaseApiRequest
     {
         return [
             'subscriptionType' => ['required', Rule::enum(BillingSubscriptionType::class)],
+            'cardToken' => ['nullable', 'string'],
         ];
     }
 
     public function subscriptionType(): BillingSubscriptionType
     {
         return BillingSubscriptionType::from($this->validated('subscriptionType'));
+    }
+
+    public function cardToken(): ?string
+    {
+        $cardToken = $this->validated('cardToken');
+
+        if (! is_string($cardToken) || $cardToken === '') {
+            return null;
+        }
+
+        return $cardToken;
     }
 
     protected function getOperationKey(): string

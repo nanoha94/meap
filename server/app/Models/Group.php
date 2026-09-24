@@ -10,11 +10,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
-use Laravel\Cashier\Billable;
 
 class Group extends Model
 {
-    use Billable;
     use HasUuids;
     use HasFactory;
 
@@ -36,11 +34,18 @@ class Group extends Model
         'ai_monthly_remaining',
         'ai_usage_reset_at',
         'ai_pack_remaining',
+        'payjp_customer_id',
+        'pm_type', // カードブランド（pm = payment method）
+        'pm_last_four', // カード下4桁（pm = payment method）
+        'pm_exp_month', // カード有効期限（月）
+        'pm_exp_year', // カード有効期限（年）
     ];
 
     protected $casts = [
         'plan' => GroupPlan::class,
         'ai_usage_reset_at' => 'datetime',
+        'pm_exp_month' => 'integer',
+        'pm_exp_year' => 'integer',
     ];
 
     // Groupを作成
@@ -243,5 +248,63 @@ class Group extends Model
     {
         return $this->belongsToMany(Image::class, 'image_mappings', 'group_id', 'image_id')
             ->withPivot('related_model', 'related_id', 'image_type', 'order');
+    }
+
+    /**
+     * PAY.JP Customer ID が登録済みかどうか
+     */
+    public function hasPayjpCustomer(): bool
+    {
+        return filled($this->payjp_customer_id);
+    }
+
+    /**
+     * 登録済みカード情報があるかどうか（末尾4桁を保持しているか）
+     */
+    public function hasPaymentMethod(): bool
+    {
+        return filled($this->pm_last_four);
+    }
+
+    /**
+     * サブスクリプション一覧を取得する
+     */
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(Subscription::class);
+    }
+
+    /**
+     * 現在のサブスクリプションを取得する（1グループ1件想定）
+     */
+    public function subscription(): ?Subscription
+    {
+        return $this->subscriptions()
+            ->orderByDesc('created_at')
+            ->first();
+    }
+
+    /**
+     * 有効なサブスクリプション契約があるかどうか（猶予期間を含む）
+     */
+    public function isSubscribed(): bool
+    {
+        $subscription = $this->subscription();
+
+        return $subscription !== null && $subscription->grantsSubscriptionAccess();
+    }
+
+    /**
+     * PAY.JP Customer ID からグループを取得する。未設定・空文字・文字列以外は null。
+     */
+    public static function findByPayjpCustomerId(mixed $payjpCustomerId): ?self
+    {
+        if (! is_string($payjpCustomerId) || $payjpCustomerId === '') {
+            return null;
+        }
+
+        return self::query()
+            ->where('payjp_customer_id', $payjpCustomerId)
+            ->first();
     }
 }

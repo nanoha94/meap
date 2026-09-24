@@ -64,4 +64,18 @@ return [
         'text_provider' => env('AI_TEXT_PROVIDER', 'openai'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | PAY.JP
+    |--------------------------------------------------------------------------
+    |
+    | PAY.JP の設定。
+    |
+    */
+    'payjp' => [
+        'secret_key' => env('PAYJP_SECRET_KEY'),
+        'public_key' => env('PAYJP_PUBLIC_KEY'),
+        'webhook_token' => env('PAYJP_WEBHOOK_TOKEN'),
+    ],
+
 ];
