@@ -6,344 +6,627 @@ use App\Enums\GroupPlan;
 use App\Models\Group;
 use App\Models\User;
 use App\Services\BillingService;
-use App\Services\BillingWebhookService;
+use App\Services\PayjpBillingClient;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Laravel\Cashier\Checkout;
-use Laravel\Cashier\Invoice;
-use Laravel\Cashier\SubscriptionBuilder;
+use Payjp\Card;
+use Payjp\Charge;
+use Payjp\Customer;
+use Payjp\Error\Base as PayjpError;
+use Payjp\Subscription;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
     config([
-        'billing.price_ids.subscription_standard' => 'price_test_standard',
-        'billing.price_ids.pack_light' => 'price_test_light',
-        'billing.price_ids.pack_value' => 'price_test_value',
-        'billing.subscription_type' => 'default',
-        'app.frontend_url' => 'https://app.test.example',
+        'billing.subscription_plan_ids.standard' => 'pln_test_standard',
+        'billing.subscription_amounts.standard' => 580,
+        'billing.pack_prices.light' => 400,
+        'billing.pack_prices.value' => 800,
+        'billing.pack_credits.light' => 10,
+        'billing.pack_credits.value' => 30,
+        'app.timezone' => 'Asia/Tokyo',
     ]);
 
-    $this->service = app(BillingService::class);
     $this->user = User::factory()->create();
 });
 
-function makeCheckout(string $url = 'https://checkout.stripe.com/c/pay/cs_test'): Checkout
+function billingService(): BillingService
 {
-    $session = \Stripe\Checkout\Session::constructFrom([
-        'id' => 'cs_test',
-        'url' => $url,
-    ]);
-
-    return new Checkout(null, $session);
+    return app(BillingService::class);
 }
 
 function createBillingGroup(array $attributes = []): Group
 {
     return Group::factory()->create(array_merge([
         'plan' => GroupPlan::FREE,
-        'stripe_id' => 'cus_test_123',
+        'payjp_customer_id' => null,
     ], $attributes));
 }
 
 function createSubscriptionRecord(Group $group, array $attributes = []): void
 {
     $group->subscriptions()->create(array_merge([
-        'type' => config('billing.subscription_type'),
-        'stripe_id' => 'sub_test_' . str()->random(8),
-        'stripe_status' => 'active',
-        'stripe_price' => config('billing.price_ids.subscription_standard'),
+        'payjp_subscription_id' => 'sub_test_' . str()->random(8),
+        'payjp_plan_id' => config('billing.subscription_plan_ids.standard'),
+        'status' => 'active',
         'ends_at' => null,
+        'current_period_end' => null,
     ], $attributes));
 }
 
-function frontendCheckoutSessionOptions(): array
+function makePayjpCard(string $cardId, array $attributes = []): Card
 {
-    $frontendUrl = rtrim((string) config('app.frontend_url'), '/');
+    $card = new Card($cardId);
+    $card->brand = $attributes['brand'] ?? 'Visa';
+    $card->last4 = $attributes['last4'] ?? '4242';
+    $card->exp_month = $attributes['exp_month'] ?? 12;
+    $card->exp_year = $attributes['exp_year'] ?? 2028;
 
-    return [
-        'success_url' => $frontendUrl . '/billing/success?session_id={CHECKOUT_SESSION_ID}',
-        'cancel_url' => $frontendUrl . '/settings/billing?checkout=canceled',
-        'automatic_tax' => ['enabled' => true],
-        'customer_update' => ['address' => 'auto'],
-    ];
+    return $card;
 }
 
-function mockGroupForSubscriptionCheckout(Group $group, string $checkoutUrl = 'https://checkout.stripe.com/c/pay/cs_test_sub'): Group
+function makePayjpCustomer(array $overrides = []): Customer
 {
-    $checkout = makeCheckout($checkoutUrl);
+    $cardId = $overrides['cardId'] ?? 'car_test_1';
+    unset($overrides['cardId']);
+    $cardAttributes = $overrides['card'] ?? [];
+    unset($overrides['card']);
 
-    $builder = Mockery::mock(SubscriptionBuilder::class);
-    $builder->shouldReceive('withMetadata')
-        ->once()
-        ->with(['group_id' => $group->id])
-        ->andReturnSelf();
-    $builder->shouldReceive('checkout')
-        ->once()
-        ->with(frontendCheckoutSessionOptions())
-        ->andReturn($checkout);
+    $customerId = $overrides['id'] ?? 'cus_test_123';
+    unset($overrides['id']);
 
-    /** @var Group&\Mockery\MockInterface $mock */
-    $mock = Mockery::mock($group)->makePartial();
-    $mock->shouldReceive('subscribed')
-        ->with(config('billing.subscription_type'))
-        ->andReturn(false);
-    $mock->shouldReceive('newSubscription')
-        ->with(config('billing.subscription_type'), config('billing.price_ids.subscription_standard'))
-        ->once()
-        ->andReturn($builder);
-    $mock->shouldReceive('createOrGetStripeCustomer')
-        ->once()
-        ->andReturnUsing(function () use ($group) {
-            return \Stripe\Customer::constructFrom(['id' => $group->stripe_id ?? 'cus_test']);
-        });
-    $mock->shouldReceive('refresh')->once();
+    $customer = new Customer($customerId);
+    $customer->default_card = $cardId;
+    $customer->cards = (object) ['data' => [makePayjpCard($cardId, $cardAttributes)]];
 
-    return $mock;
+    foreach ($overrides as $key => $value) {
+        $customer->{$key} = $value;
+    }
+
+    return $customer;
 }
 
-function mockGroupForPackCheckout(
-    Group $group,
-    BillingPackType $packType,
-    string $checkoutUrl = 'https://checkout.stripe.com/c/pay/cs_test_pack',
-): Group {
-    $checkout = makeCheckout($checkoutUrl);
-    $priceId = config('billing.price_ids.' . $packType->configKey());
+function makePayjpSubscription(array $overrides = []): Subscription
+{
+    $planId = config('billing.subscription_plan_ids.standard');
+    $subscriptionId = $overrides['id'] ?? 'sub_test_' . str()->random(8);
+    unset($overrides['id']);
 
-    /** @var Group&\Mockery\MockInterface $mock */
-    $mock = Mockery::mock($group)->makePartial();
-    $mock->shouldReceive('checkout')
-        ->once()
-        ->with(
-            [$priceId => 1],
-            Mockery::on(function (array $sessionOptions) use ($group, $packType) {
-                $checkoutOptions = frontendCheckoutSessionOptions();
+    $subscription = new Subscription($subscriptionId);
+    $subscription->status = $overrides['status'] ?? 'active';
+    unset($overrides['status']);
+    $subscription->current_period_start = $overrides['current_period_start'] ?? now()->timestamp;
+    unset($overrides['current_period_start']);
+    $subscription->current_period_end = $overrides['current_period_end'] ?? now()->addMonth()->startOfSecond()->timestamp;
+    unset($overrides['current_period_end']);
+    $subscription->trial_end = $overrides['trial_end'] ?? null;
+    unset($overrides['trial_end']);
+    $subscription->canceled_at = $overrides['canceled_at'] ?? null;
+    unset($overrides['canceled_at']);
+    $subscription->paused_at = $overrides['paused_at'] ?? null;
+    unset($overrides['paused_at']);
+    $subscription->plan = $overrides['plan'] ?? (object) ['id' => $planId];
+    unset($overrides['plan']);
 
-                return ($sessionOptions['success_url'] ?? null) === $checkoutOptions['success_url']
-                    && ($sessionOptions['cancel_url'] ?? null) === $checkoutOptions['cancel_url']
-                    && ($sessionOptions['automatic_tax'] ?? null) === $checkoutOptions['automatic_tax']
-                    && ($sessionOptions['customer_update'] ?? null) === $checkoutOptions['customer_update']
-                    && ($sessionOptions['metadata']['type'] ?? null) === 'pack'
-                    && ($sessionOptions['metadata']['group_id'] ?? null) === $group->id
-                    && ($sessionOptions['metadata']['credits'] ?? null) === (string) $packType->credits();
-            }),
-        )
-        ->andReturn($checkout);
-    $mock->shouldReceive('createOrGetStripeCustomer')
-        ->once()
-        ->andReturnUsing(function () use ($group) {
-            return \Stripe\Customer::constructFrom(['id' => $group->stripe_id ?? 'cus_test']);
-        });
-    $mock->shouldReceive('refresh')->once();
+    foreach ($overrides as $key => $value) {
+        $subscription->{$key} = $value;
+    }
 
-    return $mock;
+    return $subscription;
 }
 
-// ===== createSubscriptionCheckout() メソッドのテストケース =====
+function makePayjpCharge(array $overrides = []): Charge
+{
+    $chargeId = $overrides['id'] ?? 'ch_test_' . str()->random(8);
+    unset($overrides['id']);
 
-test('4-3-1: 【サブスク Checkout】 Checkout URL を返す', function () {
-    $group = createBillingGroup();
-    $checkoutUrl = 'https://checkout.stripe.com/c/pay/cs_test_sub';
-    $group = mockGroupForSubscriptionCheckout($group, $checkoutUrl);
+    $charge = new Charge($chargeId);
 
-    $url = $this->service->createSubscriptionCheckout(
+    foreach ($overrides as $key => $value) {
+        $charge->{$key} = $value;
+    }
+
+    return $charge;
+}
+
+function makePayjpError(int $httpStatus = 402): PayjpError
+{
+    $error = Mockery::mock(PayjpError::class);
+    $error->shouldReceive('getHttpStatus')->andReturn($httpStatus);
+
+    return $error;
+}
+
+// ===== updateCard() メソッドのテストケース =====
+
+test('4-3-1: 【カード更新】 課金状態配列を返し pm 情報を同期する', function () {
+    $group = createBillingGroup([
+        'payjp_customer_id' => 'cus_update_test',
+        'plan' => GroupPlan::FREE,
+    ]);
+    $customer = makePayjpCustomer([
+        'id' => 'cus_update_test',
+        'card' => ['brand' => 'Visa', 'last4' => '4242'],
+    ]);
+
+    $this->mock(PayjpBillingClient::class, function ($mock) use ($customer) {
+        $mock->shouldReceive('addCustomerCardFromToken')
+            ->once()
+            ->with('cus_update_test', 'tok_test_update')
+            ->andReturn($customer);
+    });
+
+    $status = billingService()->updateCard($group, $this->user, 'tok_test_update');
+
+    $group->refresh();
+    expect($group->pm_type)->toBe('Visa')
+        ->and($group->pm_last_four)->toBe('4242')
+        ->and($group->pm_exp_month)->toBe(12)
+        ->and($group->pm_exp_year)->toBe(2028)
+        ->and($status['plan'])->toBe('free')
+        ->and($status['isSubscribed'])->toBeFalse()
+        ->and($status['pmType'])->toBe('Visa')
+        ->and($status['pmLastFour'])->toBe('4242')
+        ->and($status['pmExpMonth'])->toBe(12)
+        ->and($status['pmExpYear'])->toBe(2028);
+});
+
+test('4-3-2: 【カード更新】 Customer 未作成時は新規作成する', function () {
+    $group = createBillingGroup(['payjp_customer_id' => null]);
+    $customer = makePayjpCustomer(['id' => 'cus_new_test']);
+
+    $this->mock(PayjpBillingClient::class, function ($mock) use ($group, $customer) {
+        $mock->shouldReceive('createCustomer')
+            ->once()
+            ->with([
+                'email' => $this->user->email,
+                'description' => $this->user->name,
+                'card' => 'tok_test_new',
+                'metadata' => ['group_id' => $group->id],
+            ])
+            ->andReturn($customer);
+    });
+
+    $status = billingService()->updateCard($group, $this->user, 'tok_test_new');
+
+    $group->refresh();
+    expect($group->payjp_customer_id)->toBe('cus_new_test')
+        ->and($status['pmLastFour'])->toBe('4242');
+});
+
+test('4-3-3: 【カード更新】 PAY.JP API 失敗時は HttpException を投げる', function () {
+    $group = createBillingGroup(['payjp_customer_id' => 'cus_fail_test']);
+
+    $this->mock(PayjpBillingClient::class, function ($mock) {
+        $mock->shouldReceive('addCustomerCardFromToken')
+            ->once()
+            ->andThrow(makePayjpError());
+    });
+
+    expect(fn() => billingService()->updateCard($group, $this->user, 'tok_fail'))
+        ->toThrow(HttpException::class, 'カード情報の更新に失敗しました。');
+});
+
+// ===== deleteCard() メソッドのテストケース =====
+
+test('4-3-4: 【カード削除】 デフォルトカードを削除し pm をクリアする', function () {
+    $group = createBillingGroup([
+        'payjp_customer_id' => 'cus_delete_test',
+        'pm_type' => 'Visa',
+        'pm_last_four' => '4242',
+        'pm_exp_month' => 12,
+        'pm_exp_year' => 2028,
+    ]);
+    $customer = makePayjpCustomer(['id' => 'cus_delete_test', 'cardId' => 'car_delete_1']);
+
+    $this->mock(PayjpBillingClient::class, function ($mock) use ($customer) {
+        $mock->shouldReceive('retrieveCustomer')
+            ->once()
+            ->with('cus_delete_test')
+            ->andReturn($customer);
+        $mock->shouldReceive('deleteCustomerCard')
+            ->once()
+            ->with('cus_delete_test', 'car_delete_1');
+    });
+
+    billingService()->deleteCard($group);
+
+    $group->refresh();
+    expect($group->pm_type)->toBeNull()
+        ->and($group->pm_last_four)->toBeNull()
+        ->and($group->pm_exp_month)->toBeNull()
+        ->and($group->pm_exp_year)->toBeNull();
+});
+
+test('4-3-5: 【カード削除】 Customer 未登録なら 422 を投げる', function () {
+    $group = createBillingGroup(['payjp_customer_id' => null]);
+
+    expect(fn() => billingService()->deleteCard($group))
+        ->toThrow(HttpException::class, '課金情報が登録されていません。');
+});
+
+test('4-3-6: 【カード削除】 PAY.JP API 失敗時は HttpException を投げる', function () {
+    $group = createBillingGroup(['payjp_customer_id' => 'cus_delete_fail']);
+
+    $this->mock(PayjpBillingClient::class, function ($mock) {
+        $mock->shouldReceive('retrieveCustomer')
+            ->once()
+            ->andThrow(makePayjpError());
+    });
+
+    expect(fn() => billingService()->deleteCard($group))
+        ->toThrow(HttpException::class, 'カード情報の削除に失敗しました。');
+});
+
+// ===== createSubscription() メソッドのテストケース =====
+
+test('4-3-7: 【サブスク開始】 Customer 未作成時にサブスクを開始し課金状態を返す', function () {
+    $group = createBillingGroup(['payjp_customer_id' => null, 'ai_monthly_remaining' => 0]);
+    $customer = makePayjpCustomer(['id' => 'cus_subscribe_new']);
+    $periodEnd = now()->addMonth()->startOfSecond();
+    $payjpSubscription = makePayjpSubscription([
+        'id' => 'sub_subscribe_new',
+        'current_period_end' => $periodEnd->timestamp,
+    ]);
+
+    $this->mock(PayjpBillingClient::class, function ($mock) use ($group, $customer, $payjpSubscription) {
+        $mock->shouldReceive('createCustomer')
+            ->once()
+            ->with([
+                'email' => $this->user->email,
+                'description' => $this->user->name,
+                'card' => 'tok_subscribe_new',
+                'metadata' => ['group_id' => $group->id],
+            ])
+            ->andReturn($customer);
+        $mock->shouldReceive('createSubscription')
+            ->once()
+            ->with([
+                'customer' => 'cus_subscribe_new',
+                'plan' => config('billing.subscription_plan_ids.standard'),
+                'metadata' => ['group_id' => $group->id],
+            ])
+            ->andReturn($payjpSubscription);
+    });
+
+    $status = billingService()->createSubscription(
         $group,
         $this->user,
         BillingSubscriptionType::STANDARD,
+        'tok_subscribe_new',
     );
 
-    expect($url)->toBe($checkoutUrl);
+    $group->refresh();
+    $subscription = $group->subscription();
+
+    expect($group->payjp_customer_id)->toBe('cus_subscribe_new')
+        ->and($group->plan)->toBe(GroupPlan::STANDARD)
+        ->and($group->pm_last_four)->toBe('4242')
+        ->and($subscription)->not->toBeNull()
+        ->and($subscription->payjp_subscription_id)->toBe('sub_subscribe_new')
+        ->and($subscription->status)->toBe('active')
+        ->and($status['plan'])->toBe('standard')
+        ->and($status['isSubscribed'])->toBeTrue()
+        ->and($status['subscriptionStatus'])->toBe('active');
 });
 
-test('4-3-2: 【サブスク Checkout】 メタデータに group_id がセットされる', function () {
-    $group = createBillingGroup();
-    $capturedMetadata = null;
+test('4-3-8: 【サブスク開始】 既存 Customer でサブスクを開始する', function () {
+    $group = createBillingGroup(['payjp_customer_id' => 'cus_subscribe_existing']);
+    $customer = makePayjpCustomer(['id' => 'cus_subscribe_existing']);
+    $payjpSubscription = makePayjpSubscription(['id' => 'sub_subscribe_existing']);
 
-    $checkout = makeCheckout();
-    $builder = Mockery::mock(SubscriptionBuilder::class);
-    $builder->shouldReceive('withMetadata')
-        ->once()
-        ->withArgs(function (array $metadata) use (&$capturedMetadata) {
-            $capturedMetadata = $metadata;
+    $this->mock(PayjpBillingClient::class, function ($mock) use ($customer, $payjpSubscription) {
+        $mock->shouldReceive('addCustomerCardFromToken')
+            ->once()
+            ->with('cus_subscribe_existing', 'tok_subscribe_existing')
+            ->andReturn($customer);
+        $mock->shouldReceive('createSubscription')
+            ->once()
+            ->andReturn($payjpSubscription);
+    });
 
-            return true;
-        })
-        ->andReturnSelf();
-    $builder->shouldReceive('checkout')->once()->andReturn($checkout);
-
-    $mock = Mockery::mock($group)->makePartial();
-    $mock->shouldReceive('subscribed')->andReturn(false);
-    $mock->shouldReceive('newSubscription')->once()->andReturn($builder);
-    $mock->shouldReceive('createOrGetStripeCustomer')->once();
-    $mock->shouldReceive('refresh')->once();
-
-    $this->service->createSubscriptionCheckout(
-        $mock,
+    billingService()->createSubscription(
+        $group,
         $this->user,
         BillingSubscriptionType::STANDARD,
+        'tok_subscribe_existing',
     );
 
-    expect($capturedMetadata)->toBe(['group_id' => $group->id]);
+    expect($group->fresh()->subscription()?->payjp_subscription_id)->toBe('sub_subscribe_existing');
 });
 
-test('4-3-3: 【サブスク Checkout】 既にサブスク済みなら 422 を投げる', function () {
-    $group = createBillingGroup();
-    createSubscriptionRecord($group);
+test('4-3-9: 【サブスク開始】 current_period_end ありで月間残数をリセットする', function () {
+    $periodEnd = now()->addMonth()->startOfSecond();
+    $group = createBillingGroup([
+        'payjp_customer_id' => null,
+        'ai_monthly_remaining' => 0,
+    ]);
+    $customer = makePayjpCustomer(['id' => 'cus_subscribe_renew']);
+    $payjpSubscription = makePayjpSubscription([
+        'id' => 'sub_subscribe_renew',
+        'current_period_end' => $periodEnd->timestamp,
+    ]);
 
-    expect(fn() => $this->service->createSubscriptionCheckout(
+    $this->mock(PayjpBillingClient::class, function ($mock) use ($group, $customer, $payjpSubscription) {
+        $mock->shouldReceive('createCustomer')->andReturn($customer);
+        $mock->shouldReceive('createSubscription')->andReturn($payjpSubscription);
+    });
+
+    billingService()->createSubscription(
+        $group,
+        $this->user,
+        BillingSubscriptionType::STANDARD,
+        'tok_subscribe_renew',
+    );
+
+    $group->refresh();
+    expect($group->ai_monthly_remaining)->toBe(GroupPlan::STANDARD->monthlyLimit())
+        ->and($group->ai_usage_reset_at?->toIso8601String())->toBe($periodEnd->toIso8601String());
+});
+
+test('4-3-10: 【サブスク開始】 既にサブスク済みなら 422 を投げる', function () {
+    $group = createBillingGroup(['plan' => GroupPlan::STANDARD]);
+    createSubscriptionRecord($group, ['status' => 'active']);
+
+    expect(fn() => billingService()->createSubscription(
         $group->fresh(),
         $this->user,
         BillingSubscriptionType::STANDARD,
+        'tok_already_subscribed',
     ))->toThrow(HttpException::class, 'すでにサブスクリプションに加入しています。');
 });
 
-test('4-3-4: 【サブスク Checkout】 価格 ID 未設定なら 500 を投げる', function () {
-    config(['billing.price_ids.subscription_standard' => '']);
-    $group = createBillingGroup();
-    $group = Mockery::mock($group)->makePartial();
-    $group->shouldReceive('subscribed')->andReturn(false);
-    $group->shouldReceive('createOrGetStripeCustomer')->once();
-    $group->shouldReceive('refresh')->once();
+test('4-3-11: 【サブスク開始】 PAY.JP API 失敗時は HttpException を投げる', function () {
+    $group = createBillingGroup(['payjp_customer_id' => null]);
+    $customer = makePayjpCustomer(['id' => 'cus_subscribe_fail']);
 
-    expect(fn() => $this->service->createSubscriptionCheckout(
+    $this->mock(PayjpBillingClient::class, function ($mock) use ($customer) {
+        $mock->shouldReceive('createCustomer')->andReturn($customer);
+        $mock->shouldReceive('createSubscription')
+            ->once()
+            ->andThrow(makePayjpError());
+    });
+
+    expect(fn() => billingService()->createSubscription(
         $group,
         $this->user,
         BillingSubscriptionType::STANDARD,
-    ))->toThrow(HttpException::class, 'Stripe の価格設定が完了していません。');
+        'tok_subscribe_fail',
+    ))->toThrow(HttpException::class, 'サブスクリプションの開始に失敗しました。');
 });
 
-// ===== createPortalSession() メソッドのテストケース =====
+// ===== cancelSubscription() メソッドのテストケース =====
 
-test('4-3-5: 【Customer Portal】 Portal URL を返す', function () {
-    $group = createBillingGroup(['stripe_id' => 'cus_portal_test']);
-    $portalUrl = 'https://billing.stripe.com/p/session/test_portal';
-
-    $mock = Mockery::mock($group)->makePartial();
-    $mock->shouldReceive('hasStripeId')->once()->andReturn(true);
-    $mock->shouldReceive('billingPortalUrl')
-        ->once()
-        ->with('https://app.test.example/settings/billing')
-        ->andReturn($portalUrl);
-
-    $url = $this->service->createPortalSession($mock);
-
-    expect($url)->toBe($portalUrl);
-});
-
-test('4-3-6: 【Customer Portal】 Stripe 未登録なら 422 を投げる', function () {
-    $group = createBillingGroup(['stripe_id' => null]);
-
-    expect(fn() => $this->service->createPortalSession($group))
-        ->toThrow(HttpException::class, '課金情報が登録されていません。先にサブスクリプションまたは買い切りパックを購入してください。');
-});
-
-// ===== createPackCheckout() メソッドのテストケース =====
-
-test('4-3-7: 【パック Checkout】 Checkout URL を返す', function () {
-    $group = createBillingGroup();
-    $checkoutUrl = 'https://checkout.stripe.com/c/pay/cs_test_light';
-    $group = mockGroupForPackCheckout($group, BillingPackType::LIGHT, $checkoutUrl);
-
-    $url = $this->service->createPackCheckout($group, $this->user, BillingPackType::LIGHT);
-
-    expect($url)->toBe($checkoutUrl);
-});
-
-test('4-3-8: 【パック Checkout】 バリューパックの Checkout URL を返す', function () {
-    $group = createBillingGroup();
-    $checkoutUrl = 'https://checkout.stripe.com/c/pay/cs_test_value';
-    $group = mockGroupForPackCheckout($group, BillingPackType::VALUE, $checkoutUrl);
-
-    $url = $this->service->createPackCheckout($group, $this->user, BillingPackType::VALUE);
-
-    expect($url)->toBe($checkoutUrl);
-});
-
-test('4-3-9: 【パック Checkout】 メタデータに type/group_id/credits がセットされる', function () {
-    $group = createBillingGroup();
-    $capturedMetadata = null;
-    $capturedInvoiceCreation = null;
-
-    $checkout = makeCheckout();
-    $mock = Mockery::mock($group)->makePartial();
-    $mock->shouldReceive('checkout')
-        ->once()
-        ->withArgs(function ($items, array $sessionOptions) use (&$capturedMetadata, &$capturedInvoiceCreation) {
-            $capturedMetadata = $sessionOptions['metadata'] ?? null;
-            $capturedInvoiceCreation = $sessionOptions['invoice_creation'] ?? null;
-
-            return true;
-        })
-        ->andReturn($checkout);
-    $mock->shouldReceive('createOrGetStripeCustomer')->once();
-    $mock->shouldReceive('refresh')->once();
-
-    $this->service->createPackCheckout($mock, $this->user, BillingPackType::LIGHT);
-
-    $expectedMetadata = [
-        'type' => 'pack',
-        'group_id' => $group->id,
-        'credits' => (string) BillingPackType::LIGHT->credits(),
-    ];
-
-    expect($capturedMetadata)->toBe($expectedMetadata);
-    expect($capturedInvoiceCreation)->toBe([
-        'enabled' => true,
-        'invoice_data' => [
-            'metadata' => $expectedMetadata,
-        ],
+test('4-3-12: 【サブスク解約】 期間終了解約し課金状態配列を返す', function () {
+    $periodEnd = now()->addDays(30)->startOfSecond();
+    $payjpSubId = 'sub_cancel_test';
+    $group = createBillingGroup(['plan' => GroupPlan::STANDARD, 'payjp_customer_id' => 'cus_sub_cancel']);
+    createSubscriptionRecord($group, [
+        'payjp_subscription_id' => $payjpSubId,
+        'status' => 'active',
+        'ends_at' => null,
     ]);
+
+    $this->mock(PayjpBillingClient::class, function ($mock) use ($payjpSubId, $periodEnd) {
+        $mock->shouldReceive('cancelSubscription')
+            ->once()
+            ->with($payjpSubId)
+            ->andReturn(makePayjpSubscription([
+                'id' => $payjpSubId,
+                'status' => 'canceled',
+                'current_period_end' => $periodEnd->timestamp,
+            ]));
+    });
+
+    $status = billingService()->cancelSubscription($group->fresh());
+
+    expect($status['plan'])->toBe('standard')
+        ->and($status['isSubscribed'])->toBeTrue()
+        ->and($status['subscriptionStatus'])->toBe('canceled')
+        ->and($status['pendingPlanChange'])->toBe([
+            'nextPlan' => 'free',
+            'changesAt' => $periodEnd->toIso8601String(),
+        ])
+        ->and($status['subscriptionEndsAt'])->toBe($periodEnd->toIso8601String());
 });
 
-test('4-3-10: 【パック Checkout】 価格 ID 未設定なら 500 を投げる（LIGHT）', function () {
-    config(['billing.price_ids.pack_light' => '']);
-    $group = createBillingGroup();
-    $group = Mockery::mock($group)->makePartial();
-    $group->shouldReceive('createOrGetStripeCustomer')->once();
-    $group->shouldReceive('refresh')->once();
+test('4-3-13: 【サブスク解約】 未加入なら 422 を投げる', function () {
+    $group = createBillingGroup(['plan' => GroupPlan::FREE]);
 
-    expect(fn() => $this->service->createPackCheckout($group, $this->user, BillingPackType::LIGHT))
-        ->toThrow(HttpException::class, 'Stripe の価格設定が完了していません。');
+    expect(fn() => billingService()->cancelSubscription($group))
+        ->toThrow(HttpException::class, '有効なサブスクリプションがありません。');
 });
 
-test('4-3-11: 【パック Checkout】 価格 ID 未設定なら 500 を投げる（VALUE）', function () {
-    config(['billing.price_ids.pack_value' => '']);
-    $group = createBillingGroup();
-    $group = Mockery::mock($group)->makePartial();
-    $group->shouldReceive('createOrGetStripeCustomer')->once();
-    $group->shouldReceive('refresh')->once();
+test('4-3-14: 【サブスク解約】 PAY.JP API 失敗時は HttpException を投げる', function () {
+    $payjpSubId = 'sub_cancel_fail';
+    $group = createBillingGroup(['plan' => GroupPlan::STANDARD]);
+    createSubscriptionRecord($group, [
+        'payjp_subscription_id' => $payjpSubId,
+        'status' => 'active',
+    ]);
 
-    expect(fn() => $this->service->createPackCheckout($group, $this->user, BillingPackType::VALUE))
-        ->toThrow(HttpException::class, 'Stripe の価格設定が完了していません。');
+    $this->mock(PayjpBillingClient::class, function ($mock) use ($payjpSubId) {
+        $mock->shouldReceive('cancelSubscription')
+            ->once()
+            ->with($payjpSubId)
+            ->andThrow(makePayjpError());
+    });
+
+    expect(fn() => billingService()->cancelSubscription($group->fresh()))
+        ->toThrow(HttpException::class, 'サブスクリプションの解約に失敗しました。');
+});
+
+// ===== purchasePack() メソッドのテストケース =====
+
+test('4-3-15: 【パック購入】 カードトークンでライトパックを購入し ai_pack_remaining を加算する', function () {
+    $group = createBillingGroup(['payjp_customer_id' => null, 'ai_pack_remaining' => 5]);
+    $customer = makePayjpCustomer(['id' => 'cus_pack_light']);
+
+    $this->mock(PayjpBillingClient::class, function ($mock) use ($group, $customer) {
+        $mock->shouldReceive('createCustomer')
+            ->once()
+            ->with([
+                'email' => $this->user->email,
+                'description' => $this->user->name,
+                'card' => 'tok_pack_light',
+                'metadata' => ['group_id' => $group->id],
+            ])
+            ->andReturn($customer);
+        $mock->shouldReceive('createCharge')
+            ->once()
+            ->with([
+                'amount' => 400,
+                'currency' => 'jpy',
+                'customer' => 'cus_pack_light',
+                'metadata' => [
+                    'type' => 'pack',
+                    'group_id' => $group->id,
+                    'pack_type' => 'light',
+                    'credits' => '10',
+                ],
+            ])
+            ->andReturn(makePayjpCharge(['id' => 'ch_pack_light']));
+    });
+
+    $status = billingService()->purchasePack(
+        $group,
+        $this->user,
+        BillingPackType::LIGHT,
+        'tok_pack_light',
+    );
+
+    $group->refresh();
+    expect($group->ai_pack_remaining)->toBe(15)
+        ->and($group->payjp_customer_id)->toBe('cus_pack_light')
+        ->and($status['plan'])->toBe('free')
+        ->and($status['isSubscribed'])->toBeFalse();
+});
+
+test('4-3-16: 【パック購入】 カードトークンでバリューパックを購入する', function () {
+    $group = createBillingGroup(['payjp_customer_id' => null, 'ai_pack_remaining' => 0]);
+    $customer = makePayjpCustomer(['id' => 'cus_pack_value']);
+
+    $this->mock(PayjpBillingClient::class, function ($mock) use ($customer) {
+        $mock->shouldReceive('createCustomer')->andReturn($customer);
+        $mock->shouldReceive('createCharge')
+            ->once()
+            ->with(Mockery::on(function (array $params): bool {
+                return $params['amount'] === 800
+                    && $params['metadata']['pack_type'] === 'value'
+                    && $params['metadata']['credits'] === '30';
+            }))
+            ->andReturn(makePayjpCharge(['id' => 'ch_pack_value']));
+    });
+
+    billingService()->purchasePack(
+        $group,
+        $this->user,
+        BillingPackType::VALUE,
+        'tok_pack_value',
+    );
+
+    expect($group->fresh()->ai_pack_remaining)->toBe(30);
+});
+
+test('4-3-17: 【パック購入】 登録済みカードでトークンなし購入する', function () {
+    $group = createBillingGroup([
+        'payjp_customer_id' => 'cus_pack_existing',
+        'ai_pack_remaining' => 2,
+    ]);
+
+    $this->mock(PayjpBillingClient::class, function ($mock) {
+        $mock->shouldNotReceive('createCustomer');
+        $mock->shouldNotReceive('addCustomerCardFromToken');
+        $mock->shouldReceive('createCharge')
+            ->once()
+            ->with(Mockery::on(fn(array $params): bool => $params['customer'] === 'cus_pack_existing'))
+            ->andReturn(makePayjpCharge(['id' => 'ch_pack_existing']));
+    });
+
+    billingService()->purchasePack($group, $this->user, BillingPackType::LIGHT);
+
+    expect($group->fresh()->ai_pack_remaining)->toBe(12);
+});
+
+test('4-3-18: 【パック購入】 Customer 未登録かつトークンなしなら 422 を投げる', function () {
+    $group = createBillingGroup(['payjp_customer_id' => null]);
+
+    expect(fn() => billingService()->purchasePack($group, $this->user, BillingPackType::LIGHT))
+        ->toThrow(HttpException::class, '支払い方法が登録されていません。カード情報を登録してください。');
+});
+
+test('4-3-19: 【パック購入】 PAY.JP API 失敗時は HttpException を投げる', function () {
+    $group = createBillingGroup(['payjp_customer_id' => 'cus_pack_charge_fail']);
+
+    $this->mock(PayjpBillingClient::class, function ($mock) {
+        $mock->shouldReceive('createCharge')
+            ->once()
+            ->andThrow(makePayjpError());
+    });
+
+    expect(fn() => billingService()->purchasePack($group, $this->user, BillingPackType::LIGHT))
+        ->toThrow(HttpException::class, '買い切りパックの購入処理に失敗しました。');
+});
+
+test('4-3-20: 【パック購入】 空文字トークンは未指定として扱い登録済み Customer で課金する', function () {
+    $group = createBillingGroup([
+        'payjp_customer_id' => 'cus_pack_empty_token',
+        'ai_pack_remaining' => 0,
+    ]);
+
+    $this->mock(PayjpBillingClient::class, function ($mock) {
+        $mock->shouldNotReceive('createCustomer');
+        $mock->shouldNotReceive('addCustomerCardFromToken');
+        $mock->shouldReceive('createCharge')->once()->andReturn(makePayjpCharge(['id' => 'ch_empty_token']));
+    });
+
+    billingService()->purchasePack($group, $this->user, BillingPackType::LIGHT, '');
+
+    expect($group->fresh()->ai_pack_remaining)->toBe(10);
+});
+
+test('4-3-21: 【パック購入】 複数回購入で ai_pack_remaining が累積する', function () {
+    $group = createBillingGroup([
+        'payjp_customer_id' => 'cus_pack_accumulate',
+        'ai_pack_remaining' => 5,
+    ]);
+
+    $this->mock(PayjpBillingClient::class, function ($mock) {
+        $mock->shouldReceive('createCharge')
+            ->twice()
+            ->andReturn(makePayjpCharge(['id' => 'ch_accumulate']));
+    });
+
+    billingService()->purchasePack($group, $this->user, BillingPackType::LIGHT);
+    billingService()->purchasePack($group, $this->user, BillingPackType::LIGHT);
+
+    expect($group->fresh()->ai_pack_remaining)->toBe(25);
+});
+
+test('4-3-22: 【パック購入】 カード登録時の PAY.JP API 失敗時は HttpException を投げる', function () {
+    $group = createBillingGroup(['payjp_customer_id' => null]);
+
+    $this->mock(PayjpBillingClient::class, function ($mock) {
+        $mock->shouldReceive('createCustomer')
+            ->once()
+            ->andThrow(makePayjpError());
+    });
+
+    expect(fn() => billingService()->purchasePack(
+        $group,
+        $this->user,
+        BillingPackType::LIGHT,
+        'tok_pack_customer_fail',
+    ))->toThrow(HttpException::class, '買い切りパックの購入処理に失敗しました。');
 });
 
 // ===== getBillingStatus() メソッドのテストケース =====
 
-function mockGroupDefaultPaymentMethod(Group $group, ?int $expMonth = null, ?int $expYear = null): Group
-{
-    /** @var Group&\Mockery\MockInterface $mock */
-    $mock = Mockery::mock($group)->makePartial();
+test('4-3-23: 【課金状態取得】 未加入（FREE）の状態を返す', function () {
+    $group = createBillingGroup(['plan' => GroupPlan::FREE]);
 
-    if ($expMonth !== null || $expYear !== null) {
-        $card = (object) [
-            'exp_month' => $expMonth,
-            'exp_year' => $expYear,
-        ];
-        $stripePaymentMethod = (object) ['card' => $card];
-        $paymentMethod = Mockery::mock();
-        $paymentMethod->shouldReceive('asStripePaymentMethod')->andReturn($stripePaymentMethod);
-        $mock->shouldReceive('defaultPaymentMethod')->andReturn($paymentMethod);
-    } else {
-        $mock->shouldReceive('defaultPaymentMethod')->andReturn(null);
-    }
-
-    return $mock;
-}
-
-test('4-3-12: 【課金状態取得】 未加入（FREE）の状態を返す', function () {
-    $group = mockGroupDefaultPaymentMethod(createBillingGroup(['plan' => GroupPlan::FREE]));
-
-    $status = $this->service->getBillingStatus($group);
+    $status = billingService()->getBillingStatus($group);
 
     expect($status)->toBe([
         'plan' => 'free',
@@ -358,16 +641,14 @@ test('4-3-12: 【課金状態取得】 未加入（FREE）の状態を返す', f
     ]);
 });
 
-test('4-3-13: 【課金状態取得】 サブスク中（active）の状態を返す', function () {
+test('4-3-24: 【課金状態取得】 サブスク中（active）の状態を返す', function () {
     $group = createBillingGroup(['plan' => GroupPlan::STANDARD]);
     createSubscriptionRecord($group, [
-        'stripe_status' => 'active',
+        'status' => 'active',
         'ends_at' => null,
     ]);
 
-    $status = $this->service->getBillingStatus(
-        mockGroupDefaultPaymentMethod($group->fresh()),
-    );
+    $status = billingService()->getBillingStatus($group->fresh());
 
     expect($status['plan'])->toBe('standard')
         ->and($status['isSubscribed'])->toBeTrue()
@@ -376,17 +657,15 @@ test('4-3-13: 【課金状態取得】 サブスク中（active）の状態を�
         ->and($status['subscriptionEndsAt'])->toBeNull();
 });
 
-test('4-3-14: 【課金状態取得】 猶予期間中（Grace Period）の状態を返す', function () {
+test('4-3-25: 【課金状態取得】 猶予期間中（Grace Period）の状態を返す', function () {
     $endsAt = now()->addDays(7)->startOfSecond();
     $group = createBillingGroup(['plan' => GroupPlan::STANDARD]);
     createSubscriptionRecord($group, [
-        'stripe_status' => 'canceled',
+        'status' => 'canceled',
         'ends_at' => $endsAt,
     ]);
 
-    $status = $this->service->getBillingStatus(
-        mockGroupDefaultPaymentMethod($group->fresh()),
-    );
+    $status = billingService()->getBillingStatus($group->fresh());
 
     expect($status['isSubscribed'])->toBeTrue()
         ->and($status['pendingPlanChange'])->toBe([
@@ -396,17 +675,15 @@ test('4-3-14: 【課金状態取得】 猶予期間中（Grace Period）の状�
         ->and($status['subscriptionEndsAt'])->toBe($endsAt->toIso8601String());
 });
 
-test('4-3-15: 【課金状態取得】 キャンセル済み（猶予期間終了後）の状態を返す', function () {
+test('4-3-26: 【課金状態取得】 キャンセル済み（猶予期間終了後）の状態を返す', function () {
     $endsAt = now()->subDay()->startOfSecond();
     $group = createBillingGroup(['plan' => GroupPlan::STANDARD]);
     createSubscriptionRecord($group, [
-        'stripe_status' => 'canceled',
+        'status' => 'canceled',
         'ends_at' => $endsAt,
     ]);
 
-    $status = $this->service->getBillingStatus(
-        mockGroupDefaultPaymentMethod($group->fresh()),
-    );
+    $status = billingService()->getBillingStatus($group->fresh());
 
     expect($status['isSubscribed'])->toBeFalse()
         ->and($status['pendingPlanChange'])->toBeNull()
@@ -414,175 +691,86 @@ test('4-3-15: 【課金状態取得】 キャンセル済み（猶予期間終�
         ->and($status['subscriptionEndsAt'])->toBe($endsAt->toIso8601String());
 });
 
-test('4-3-16: 【課金状態取得】 pmType / pmLastFour / pmExpMonth / pmExpYear を返す', function () {
-    $group = mockGroupDefaultPaymentMethod(
-        createBillingGroup([
-            'pm_type' => 'card',
-            'pm_last_four' => '4242',
-        ]),
-        expMonth: 12,
-        expYear: 2028,
-    );
+test('4-3-27: 【課金状態取得】 pmType / pmLastFour / pmExpMonth / pmExpYear を返す', function () {
+    $group = createBillingGroup([
+        'payjp_customer_id' => 'cus_pm_test',
+        'pm_type' => 'Visa',
+        'pm_last_four' => '4242',
+        'pm_exp_month' => 12,
+        'pm_exp_year' => 2028,
+    ]);
 
-    $status = $this->service->getBillingStatus($group);
+    $status = billingService()->getBillingStatus($group);
 
-    expect($status['pmType'])->toBe('card')
+    expect($status['pmType'])->toBe('Visa')
         ->and($status['pmLastFour'])->toBe('4242')
         ->and($status['pmExpMonth'])->toBe(12)
         ->and($status['pmExpYear'])->toBe(2028);
 });
 
-test('4-3-17: 【課金状態取得】 plan が null のとき FREE を返す', function () {
+test('4-3-28: 【課金状態取得】 plan が null のとき FREE を返す', function () {
     $group = createBillingGroup();
     $group->forceFill(['plan' => null]);
 
-    $status = $this->service->getBillingStatus(
-        mockGroupDefaultPaymentMethod($group),
-    );
+    $status = billingService()->getBillingStatus($group);
 
     expect($status['plan'])->toBe('free');
 });
 
-test('4-3-18: 【課金状態取得】 FREE に戻った後は ends_at が未来でも pendingPlanChange=null', function () {
+test('4-3-29: 【課金状態取得】 FREE に戻った後は ends_at が未来でも pendingPlanChange=null', function () {
     $endsAt = now()->addDays(7)->startOfSecond();
     $group = createBillingGroup(['plan' => GroupPlan::FREE]);
     createSubscriptionRecord($group, [
-        'stripe_status' => 'canceled',
+        'status' => 'canceled',
         'ends_at' => $endsAt,
     ]);
 
-    $status = $this->service->getBillingStatus(
-        mockGroupDefaultPaymentMethod($group->fresh()),
-    );
+    $status = billingService()->getBillingStatus($group->fresh());
 
     expect($status['plan'])->toBe('free')
         ->and($status['pendingPlanChange'])->toBeNull()
         ->and($status['subscriptionEndsAt'])->toBe($endsAt->toIso8601String());
 });
 
-test('4-3-19: 【課金状態取得】 解約キャンセル後は pendingPlanChange=null かつ ends_at をクリアする', function () {
-    $endsAt = now()->addDays(7)->startOfSecond();
+test('4-3-30: 【課金状態取得】 解約取り消し同期後は pendingPlanChange=null かつ ends_at をクリアする', function () {
     $group = createBillingGroup(['plan' => GroupPlan::STANDARD]);
     createSubscriptionRecord($group, [
-        'stripe_status' => 'active',
-        'ends_at' => $endsAt,
+        'status' => 'active',
+        'ends_at' => null,
     ]);
 
-    app(BillingWebhookService::class)->syncSubscriptionCancellationSchedule(
-        $group->fresh(),
-        [
-            'status' => 'active',
-            'cancel_at_period_end' => false,
-            'metadata' => ['type' => 'default'],
-            'items' => [
-                'data' => [
-                    ['price' => ['id' => config('billing.price_ids.subscription_standard')]],
-                ],
-            ],
-        ],
-    );
-
-    $status = $this->service->getBillingStatus(
-        mockGroupDefaultPaymentMethod($group->fresh()),
-    );
+    $status = billingService()->getBillingStatus($group->fresh());
 
     expect($status['pendingPlanChange'])->toBeNull()
         ->and($status['subscriptionEndsAt'])->toBeNull();
 });
 
-test('4-3-20: 【課金状態取得】 active かつ cancel_at_period_end=true で ends_at=null のとき解約予定を返す', function () {
-    $periodEnd = now()->addDays(14)->startOfSecond();
+test('4-3-31: 【課金状態取得】 active かつ ends_at が未来のとき解約予定を返す', function () {
+    $endsAt = now()->addDays(14)->startOfSecond();
     $group = createBillingGroup(['plan' => GroupPlan::STANDARD]);
     createSubscriptionRecord($group, [
-        'stripe_status' => 'active',
-        'ends_at' => null,
-    ]);
-
-    $subscription = $group->fresh()->subscription(config('billing.subscription_type'));
-
-    $stripeSubscription = \Stripe\Subscription::constructFrom([
-        'id' => $subscription->stripe_id,
-        'cancel_at_period_end' => true,
-        'current_period_end' => $periodEnd->timestamp,
-    ]);
-
-    /** @var \Laravel\Cashier\Subscription&\Mockery\MockInterface $mockSubscription */
-    $mockSubscription = Mockery::mock($subscription)->makePartial();
-    $mockSubscription->shouldReceive('asStripeSubscription')
-        ->once()
-        ->andReturn($stripeSubscription);
-
-    /** @var Group&\Mockery\MockInterface $mockGroup */
-    $mockGroup = Mockery::mock($group->fresh())->makePartial();
-    $mockGroup->shouldReceive('subscription')
-        ->with(config('billing.subscription_type'))
-        ->andReturn($mockSubscription);
-    $mockGroup->shouldReceive('subscribed')
-        ->with(config('billing.subscription_type'))
-        ->andReturn(true);
-    $mockGroup->shouldReceive('defaultPaymentMethod')->andReturn(null);
-
-    $status = $this->service->getBillingStatus($mockGroup);
-
-    expect($status['pendingPlanChange'])->toBe([
-        'nextPlan' => 'free',
-        'changesAt' => $periodEnd->toIso8601String(),
-    ])
-        ->and($status['subscriptionEndsAt'])->toBe($periodEnd->toIso8601String());
-});
-
-test('4-3-21: 【課金状態取得】 cancel_at_period_end=true かつ current_period_end=null cancel_at ありで subscriptionEndsAt を返す', function () {
-    $cancelAt = now()->addDays(22)->startOfSecond();
-    $group = createBillingGroup(['plan' => GroupPlan::STANDARD]);
-    createSubscriptionRecord($group, [
-        'stripe_status' => 'active',
-        'ends_at' => null,
-    ]);
-
-    $subscription = $group->fresh()->subscription(config('billing.subscription_type'));
-
-    $stripeSubscription = \Stripe\Subscription::constructFrom([
-        'id' => $subscription->stripe_id,
-        'cancel_at_period_end' => true,
-        'cancel_at' => $cancelAt->timestamp,
-    ]);
-
-    /** @var \Laravel\Cashier\Subscription&\Mockery\MockInterface $mockSubscription */
-    $mockSubscription = Mockery::mock($subscription)->makePartial();
-    $mockSubscription->shouldReceive('asStripeSubscription')
-        ->once()
-        ->andReturn($stripeSubscription);
-
-    /** @var Group&\Mockery\MockInterface $mockGroup */
-    $mockGroup = Mockery::mock($group->fresh())->makePartial();
-    $mockGroup->shouldReceive('subscription')
-        ->with(config('billing.subscription_type'))
-        ->andReturn($mockSubscription);
-    $mockGroup->shouldReceive('subscribed')
-        ->with(config('billing.subscription_type'))
-        ->andReturn(true);
-    $mockGroup->shouldReceive('defaultPaymentMethod')->andReturn(null);
-
-    $status = $this->service->getBillingStatus($mockGroup);
-
-    expect($status['pendingPlanChange'])->toBe([
-        'nextPlan' => 'free',
-        'changesAt' => $cancelAt->toIso8601String(),
-    ])
-        ->and($status['subscriptionEndsAt'])->toBe($cancelAt->toIso8601String());
-});
-
-test('4-3-22: 【課金状態取得】 解約予定時に pendingPlanChange を返す', function () {
-    $endsAt = now()->addDays(7)->startOfSecond();
-    $group = createBillingGroup(['plan' => GroupPlan::STANDARD]);
-    createSubscriptionRecord($group, [
-        'stripe_status' => 'canceled',
+        'status' => 'active',
         'ends_at' => $endsAt,
     ]);
 
-    $status = $this->service->getBillingStatus(
-        mockGroupDefaultPaymentMethod($group->fresh()),
-    );
+    $status = billingService()->getBillingStatus($group->fresh());
+
+    expect($status['pendingPlanChange'])->toBe([
+        'nextPlan' => 'free',
+        'changesAt' => $endsAt->toIso8601String(),
+    ])
+        ->and($status['subscriptionEndsAt'])->toBe($endsAt->toIso8601String());
+});
+
+test('4-3-32: 【課金状態取得】 canceled かつ ends_at が未来のとき解約予定を返す', function () {
+    $endsAt = now()->addDays(7)->startOfSecond();
+    $group = createBillingGroup(['plan' => GroupPlan::STANDARD]);
+    createSubscriptionRecord($group, [
+        'status' => 'canceled',
+        'ends_at' => $endsAt,
+    ]);
+
+    $status = billingService()->getBillingStatus($group->fresh());
 
     expect($status['pendingPlanChange'])->toBe([
         'nextPlan' => 'free',
@@ -590,154 +778,135 @@ test('4-3-22: 【課金状態取得】 解約予定時に pendingPlanChange を�
     ]);
 });
 
-test('4-3-23: 【課金状態取得】 予定変更なしのとき pendingPlanChange=null', function () {
+test('4-3-33: 【課金状態取得】 予定変更なしのとき pendingPlanChange=null', function () {
     $group = createBillingGroup(['plan' => GroupPlan::STANDARD]);
     createSubscriptionRecord($group, [
-        'stripe_status' => 'active',
+        'status' => 'active',
         'ends_at' => null,
     ]);
 
-    $status = $this->service->getBillingStatus(
-        mockGroupDefaultPaymentMethod($group->fresh()),
-    );
+    $status = billingService()->getBillingStatus($group->fresh());
 
     expect($status['pendingPlanChange'])->toBeNull();
 });
 
 // ===== resumeSubscription() メソッドのテストケース =====
 
-test('4-3-24: 【プラン変更予定取り消し】 解約予定を取り消してサブスクを継続する', function () {
+test('4-3-34: 【プラン変更予定取り消し】 解約予定を取り消してサブスクを継続する', function () {
     $endsAt = now()->addDays(7)->startOfSecond();
+    $payjpSubId = 'sub_resume_test';
     $group = createBillingGroup(['plan' => GroupPlan::STANDARD]);
     createSubscriptionRecord($group, [
-        'stripe_status' => 'canceled',
+        'payjp_subscription_id' => $payjpSubId,
+        'status' => 'canceled',
         'ends_at' => $endsAt,
     ]);
 
-    $subscription = $group->fresh()->subscription(config('billing.subscription_type'));
+    $this->mock(PayjpBillingClient::class, function ($mock) use ($payjpSubId) {
+        $mock->shouldReceive('resumeSubscription')
+            ->once()
+            ->with($payjpSubId)
+            ->andReturn(makePayjpSubscription([
+                'id' => $payjpSubId,
+                'status' => 'active',
+                'current_period_end' => now()->addMonth()->timestamp,
+            ]));
+    });
 
-    /** @var \Laravel\Cashier\Subscription&\Mockery\MockInterface $mockSubscription */
-    $mockSubscription = Mockery::mock($subscription)->makePartial();
-    $mockSubscription->shouldReceive('refresh')->andReturnSelf();
-    $mockSubscription->shouldReceive('resume')->once();
+    billingService()->resumeSubscription($group->fresh());
 
-    /** @var Group&\Mockery\MockInterface $mockGroup */
-    $mockGroup = Mockery::mock($group->fresh())->makePartial();
-    $mockGroup->shouldReceive('subscription')
-        ->with(config('billing.subscription_type'))
-        ->andReturn($mockSubscription);
-    $mockGroup->shouldReceive('subscribed')
-        ->with(config('billing.subscription_type'))
-        ->andReturn(true);
-
-    $this->service->resumeSubscription($mockGroup);
+    $subscription = $group->fresh()->subscription();
+    expect($subscription->status)->toBe('active')
+        ->and($subscription->ends_at)->toBeNull();
 });
 
-test('4-3-25: 【プラン変更予定取り消し】 予定変更なしなら 422 を投げる', function () {
+test('4-3-35: 【プラン変更予定取り消し】 予定変更なしなら 422 を投げる', function () {
     $group = createBillingGroup(['plan' => GroupPlan::STANDARD]);
     createSubscriptionRecord($group, [
-        'stripe_status' => 'active',
+        'status' => 'active',
         'ends_at' => null,
     ]);
 
-    expect(fn () => $this->service->resumeSubscription($group->fresh()))
+    expect(fn() => billingService()->resumeSubscription($group->fresh()))
         ->toThrow(HttpException::class, '取り消すプラン変更予定がありません。');
 });
 
-function mockUpcomingInvoice(array $overrides = []): Invoice
-{
-    $date = \Illuminate\Support\Carbon::parse($overrides['date'] ?? '2024-02-01T00:00:00+00:00');
-    $tax = $overrides['tax'] ?? 53;
-    $stripeInvoice = (object) [
-        'subtotal' => $overrides['subtotal'] ?? 580,
-        'subtotal_excluding_tax' => $overrides['subtotalExcludingTax'] ?? 527,
-        'total_taxes' => $overrides['totalTaxes'] ?? [
-            (object) [
-                'amount' => $tax,
-                'tax_behavior' => 'inclusive',
-                'type' => 'tax_rate_details',
-            ],
-        ],
-    ];
+test('4-3-36: 【プラン変更予定取り消し】 PAY.JP API 失敗時は HttpException を投げる', function () {
+    $endsAt = now()->addDays(7)->startOfSecond();
+    $payjpSubId = 'sub_resume_fail';
+    $group = createBillingGroup(['plan' => GroupPlan::STANDARD]);
+    createSubscriptionRecord($group, [
+        'payjp_subscription_id' => $payjpSubId,
+        'status' => 'canceled',
+        'ends_at' => $endsAt,
+    ]);
 
-    $lineItem = Mockery::mock();
-    $lineItem->description = $overrides['lineDescription'] ?? 'スタンダードプラン';
-    $lineItem->quantity = $overrides['lineQuantity'] ?? 1;
-    $lineItem->amount = $overrides['lineAmount'] ?? 580;
+    $this->mock(PayjpBillingClient::class, function ($mock) use ($payjpSubId) {
+        $mock->shouldReceive('resumeSubscription')
+            ->once()
+            ->with($payjpSubId)
+            ->andThrow(makePayjpError());
+    });
 
-    /** @var Invoice&\Mockery\MockInterface $mock */
-    $mock = Mockery::mock(Invoice::class);
-    $mock->shouldReceive('date')->andReturn($date);
-    $mock->shouldReceive('invoiceLineItems')->andReturn([$lineItem]);
-    $mock->shouldReceive('asStripeInvoice')->andReturn($stripeInvoice);
-    $mock->shouldReceive('rawTotal')->andReturn($overrides['total'] ?? 580);
-    $mock->shouldReceive('rawAmountDue')->andReturn($overrides['amountDue'] ?? 580);
-
-    return $mock;
-}
-
-function mockPastInvoice(array $overrides = []): Invoice
-{
-    $date = \Illuminate\Support\Carbon::parse($overrides['date'] ?? '2024-01-01T00:00:00+00:00');
-    $stripeInvoice = (object) [
-        'hosted_invoice_url' => $overrides['invoiceUrl'] ?? 'https://invoice.stripe.com/i/test',
-    ];
-
-    /** @var Invoice&\Mockery\MockInterface $mock */
-    $mock = Mockery::mock(Invoice::class);
-    $mock->id = $overrides['id'] ?? 'in_test_1';
-    $mock->shouldReceive('date')->andReturn($date);
-    $mock->shouldReceive('rawTotal')->andReturn($overrides['total'] ?? 580);
-    $mock->shouldReceive('asStripeInvoice')->andReturn($stripeInvoice);
-
-    return $mock;
-}
+    expect(fn() => billingService()->resumeSubscription($group->fresh()))
+        ->toThrow(HttpException::class, 'プラン変更予定の取り消しに失敗しました。');
+});
 
 // ===== getInvoices() メソッドのテストケース =====
 
-test('4-3-26: 【請求履歴取得】 次回お支払い予定と過去請求履歴を返す', function () {
-    $group = createBillingGroup();
-    $upcoming = mockUpcomingInvoice();
-    $past = mockPastInvoice();
-
-    $mock = Mockery::mock($group)->makePartial();
-    $mock->shouldReceive('hasStripeId')->once()->andReturn(true);
-    $mock->shouldReceive('upcomingInvoice')->once()->andReturn($upcoming);
-    $mock->shouldReceive('invoices')->once()->andReturn(collect([$past]));
-
-    $result = $this->service->getInvoices($mock);
-
-    expect($result)->toBe([
-        'upcomingInvoice' => [
-            'date' => '2024-02-01T00:00:00+00:00',
-            'lines' => [
-                [
-                    'description' => 'スタンダードプラン',
-                    'quantity' => 1,
-                    'amount' => 580,
-                ],
-            ],
-            'subtotal' => 580,
-            'subtotalExcludingTax' => 527,
-            'tax' => 53,
-            'total' => 580,
-            'amountDue' => 580,
-        ],
-        'pastInvoices' => [
-            [
-                'id' => 'in_test_1',
-                'date' => '2024-01-01T00:00:00+00:00',
-                'total' => 580,
-                'invoiceUrl' => 'https://invoice.stripe.com/i/test',
-            ],
-        ],
+test('4-3-37: 【請求履歴取得】 次回お支払い予定と過去 Charge 履歴を返す', function () {
+    $periodEnd = now()->addDays(30)->startOfSecond();
+    $chargeCreated = now()->subMonth()->startOfSecond();
+    $group = createBillingGroup(['payjp_customer_id' => 'cus_invoices', 'plan' => GroupPlan::STANDARD]);
+    createSubscriptionRecord($group, [
+        'status' => 'active',
+        'current_period_end' => $periodEnd,
     ]);
+
+    $this->mock(PayjpBillingClient::class, function ($mock) use ($chargeCreated) {
+        $mock->shouldReceive('listCharges')
+            ->once()
+            ->andReturn([
+                (object) [
+                    'id' => 'ch_test_paid',
+                    'paid' => true,
+                    'amount' => 580,
+                    'created' => $chargeCreated->timestamp,
+                ],
+            ]);
+    });
+
+    $result = billingService()->getInvoices($group->fresh());
+
+    expect($result['upcomingInvoice'])->toBe([
+        'date' => $periodEnd->toIso8601String(),
+        'lines' => [
+            [
+                'description' => 'スタンダードプラン',
+                'quantity' => 1,
+                'amount' => 580,
+            ],
+        ],
+        'subtotal' => 580,
+        'subtotalExcludingTax' => 580,
+        'tax' => 0,
+        'total' => 580,
+        'amountDue' => 580,
+    ])
+        ->and($result['pastInvoices'])->toBe([
+            [
+                'id' => 'ch_test_paid',
+                'date' => $chargeCreated->toIso8601String(),
+                'description' => 'スタンダードプラン',
+                'total' => 580,
+            ],
+        ]);
 });
 
-test('4-3-27: 【請求履歴取得】 Stripe 未登録なら空を返す', function () {
-    $group = createBillingGroup(['stripe_id' => null]);
+test('4-3-38: 【請求履歴取得】 Customer 未登録なら空を返す', function () {
+    $group = createBillingGroup(['payjp_customer_id' => null]);
 
-    $result = $this->service->getInvoices($group);
+    $result = billingService()->getInvoices($group);
 
     expect($result)->toBe([
         'upcomingInvoice' => null,
@@ -745,54 +914,132 @@ test('4-3-27: 【請求履歴取得】 Stripe 未登録なら空を返す', func
     ]);
 });
 
-test('4-3-28: 【請求履歴取得】 upcoming 取得失敗時は null と pastInvoices を返す', function () {
-    $group = createBillingGroup();
-    $past = mockPastInvoice(['id' => 'in_test_2']);
+test('4-3-39: 【請求履歴取得】 解約猶予中（!isActive）は upcomingInvoice は null', function () {
+    $endsAt = now()->addDays(7)->startOfSecond();
+    $group = createBillingGroup(['payjp_customer_id' => 'cus_grace', 'plan' => GroupPlan::STANDARD]);
+    createSubscriptionRecord($group, [
+        'status' => 'canceled',
+        'ends_at' => $endsAt,
+    ]);
 
-    $mock = Mockery::mock($group)->makePartial();
-    $mock->shouldReceive('hasStripeId')->once()->andReturn(true);
-    $mock->shouldReceive('upcomingInvoice')->once()->andThrow(new \Exception('No upcoming invoice'));
-    $mock->shouldReceive('invoices')->once()->andReturn(collect([$past]));
+    $this->mock(PayjpBillingClient::class, function ($mock) {
+        $mock->shouldReceive('listCharges')
+            ->once()
+            ->andReturn([
+                (object) [
+                    'id' => 'ch_grace_paid',
+                    'paid' => true,
+                    'amount' => 400,
+                    'created' => now()->subWeek()->timestamp,
+                ],
+            ]);
+    });
 
-    $result = $this->service->getInvoices($mock);
-
-    expect($result['upcomingInvoice'])->toBeNull()
-        ->and($result['pastInvoices'])->toBe([
-            [
-                'id' => 'in_test_2',
-                'date' => '2024-01-01T00:00:00+00:00',
-                'total' => 580,
-                'invoiceUrl' => 'https://invoice.stripe.com/i/test',
-            ],
-        ]);
-});
-
-test('4-3-29: 【請求履歴取得】 upcoming が null のとき upcomingInvoice は null', function () {
-    $group = createBillingGroup();
-    $past = mockPastInvoice();
-
-    $mock = Mockery::mock($group)->makePartial();
-    $mock->shouldReceive('hasStripeId')->once()->andReturn(true);
-    $mock->shouldReceive('upcomingInvoice')->once()->andReturn(null);
-    $mock->shouldReceive('invoices')->once()->andReturn(collect([$past]));
-
-    $result = $this->service->getInvoices($mock);
+    $result = billingService()->getInvoices($group->fresh());
 
     expect($result['upcomingInvoice'])->toBeNull()
-        ->and($result['pastInvoices'])->toHaveCount(1);
+        ->and($result['pastInvoices'])->toHaveCount(1)
+        ->and($result['pastInvoices'][0]['id'])->toBe('ch_grace_paid');
 });
 
-test('4-3-30: 【請求履歴取得】 過去請求がない場合 pastInvoices は空配列', function () {
-    $group = createBillingGroup();
-    $upcoming = mockUpcomingInvoice();
+test('4-3-40: 【請求履歴取得】 paid=false の Charge は pastInvoices に含めない', function () {
+    $group = createBillingGroup(['payjp_customer_id' => 'cus_paid_filter', 'plan' => GroupPlan::STANDARD]);
+    createSubscriptionRecord($group, ['status' => 'active']);
 
-    $mock = Mockery::mock($group)->makePartial();
-    $mock->shouldReceive('hasStripeId')->once()->andReturn(true);
-    $mock->shouldReceive('upcomingInvoice')->once()->andReturn($upcoming);
-    $mock->shouldReceive('invoices')->once()->andReturn(collect());
+    $paidAt = now()->subDays(3)->startOfSecond();
 
-    $result = $this->service->getInvoices($mock);
+    $this->mock(PayjpBillingClient::class, function ($mock) use ($paidAt) {
+        $mock->shouldReceive('listCharges')
+            ->once()
+            ->andReturn([
+                (object) [
+                    'id' => 'ch_unpaid',
+                    'paid' => false,
+                    'amount' => 580,
+                    'created' => now()->timestamp,
+                ],
+                (object) [
+                    'id' => 'ch_paid_only',
+                    'paid' => true,
+                    'amount' => 580,
+                    'created' => $paidAt->timestamp,
+                ],
+            ]);
+    });
+
+    $result = billingService()->getInvoices($group->fresh());
+
+    expect($result['pastInvoices'])->toHaveCount(1)
+        ->and($result['pastInvoices'][0]['id'])->toBe('ch_paid_only');
+});
+
+test('4-3-41: 【請求履歴取得】 PAY.JP 取得失敗時は upcoming と past を安全に返す', function () {
+    $periodEnd = now()->addDays(30)->startOfSecond();
+    $group = createBillingGroup(['payjp_customer_id' => 'cus_list_fail', 'plan' => GroupPlan::STANDARD]);
+    createSubscriptionRecord($group, [
+        'status' => 'active',
+        'current_period_end' => $periodEnd,
+    ]);
+
+    $this->mock(PayjpBillingClient::class, function ($mock) {
+        $mock->shouldReceive('listCharges')
+            ->once()
+            ->andThrow(makePayjpError());
+    });
+
+    $result = billingService()->getInvoices($group->fresh());
+
+    expect($result['upcomingInvoice'])->not->toBeNull()
+        ->and($result['upcomingInvoice']['date'])->toBe($periodEnd->toIso8601String())
+        ->and($result['pastInvoices'])->toBe([]);
+});
+
+test('4-3-42: 【請求履歴取得】 Charge がない場合 pastInvoices は空配列', function () {
+    $periodEnd = now()->addDays(30)->startOfSecond();
+    $group = createBillingGroup(['payjp_customer_id' => 'cus_no_charges', 'plan' => GroupPlan::STANDARD]);
+    createSubscriptionRecord($group, [
+        'status' => 'active',
+        'current_period_end' => $periodEnd,
+    ]);
+
+    $this->mock(PayjpBillingClient::class, function ($mock) {
+        $mock->shouldReceive('listCharges')
+            ->once()
+            ->andReturn([]);
+    });
+
+    $result = billingService()->getInvoices($group->fresh());
 
     expect($result['upcomingInvoice'])->not->toBeNull()
         ->and($result['pastInvoices'])->toBe([]);
+});
+
+test('4-3-43: 【請求履歴取得】 パック購入 Charge の description にクレジット数が含まれる', function () {
+    $chargeCreated = now()->subDays(5)->startOfSecond();
+    $group = createBillingGroup(['payjp_customer_id' => 'cus_pack_desc', 'plan' => GroupPlan::STANDARD]);
+    createSubscriptionRecord($group, ['status' => 'active']);
+
+    $this->mock(PayjpBillingClient::class, function ($mock) use ($chargeCreated) {
+        $mock->shouldReceive('listCharges')
+            ->once()
+            ->andReturn([
+                (object) [
+                    'id' => 'ch_pack_light',
+                    'paid' => true,
+                    'amount' => 400,
+                    'created' => $chargeCreated->timestamp,
+                    'metadata' => (object) [
+                        'type' => 'pack',
+                        'pack_type' => 'light',
+                        'credits' => '10',
+                        'group_id' => '1',
+                    ],
+                ],
+            ]);
+    });
+
+    $result = billingService()->getInvoices($group->fresh());
+
+    expect($result['pastInvoices'])->toHaveCount(1)
+        ->and($result['pastInvoices'][0]['description'])->toBe('買い切りパック ライト');
 });

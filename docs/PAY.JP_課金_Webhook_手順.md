@@ -1,8 +1,8 @@
 # PAY.JP 課金・Webhook 手順
 
-サブスクリプション更新や解約をアプリ側に反映するには **PAY.JP Webhook の受信が必須** です（Stripe 移行後）。
+サブスクリプション更新や解約をアプリ側に反映するには **PAY.JP Webhook の受信が必須** です。カード登録 API だけでは `Group.plan` や周期更新後の AI 枠リセットは完了しません。
 
-Webhook は `POST /payjp/webhook` に届き、`X-Payjp-Webhook-Token` ヘッダーで正当性を検証します（Phase 2 で実装）。
+Webhook は `POST /payjp/webhook` に届き、`X-Payjp-Webhook-Token` ヘッダーで正当性を検証します（`PayjpWebhookController` → `BillingWebhookService`）。
 
 アカウント作成・プラン・Dashboard 上の Webhook URL 登録は先に [PAY.JP アカウント設定（Phase 0）](PAY.JP_アカウント設定_手順.md) を完了してください。
 
@@ -10,14 +10,14 @@ Webhook は `POST /payjp/webhook` に届き、`X-Payjp-Webhook-Token` ヘッダ�
 
 `server/.env`（本番は Railway の Variables）に以下を設定します。雛形は [server/.env.example](../server/.env.example) の PAY.JP セクションを参照。
 
-| 変数 | 説明 |
-| --- | --- |
-| `PAYJP_SECRET_KEY` | 秘密鍵（`sk_test_...` / `sk_live_...`） |
-| `PAYJP_PUBLIC_KEY` | 公開鍵（サーバー側で必要な場合） |
-| `PAYJP_WEBHOOK_TOKEN` | Webhook Token（`whook_...`。管理画面のアカウント設定） |
-| `PAYJP_PLAN_SUBSCRIPTION_STANDARD` | スタンダードプラン ID（例: `pln_standard`） |
-| `PAYJP_PRICE_PACK_LIGHT` | ライトパック金額（400） |
-| `PAYJP_PRICE_PACK_VALUE` | バリューパック金額（800） |
+| 変数                               | 説明                                                   |
+| ---------------------------------- | ------------------------------------------------------ |
+| `PAYJP_SECRET_KEY`                 | 秘密鍵（`sk_test_...` / `sk_live_...`）                |
+| `PAYJP_PUBLIC_KEY`                 | 公開鍵（サーバー側で必要な場合）                       |
+| `PAYJP_WEBHOOK_TOKEN`              | Webhook Token（`whook_...`。管理画面のアカウント設定） |
+| `PAYJP_PLAN_SUBSCRIPTION_STANDARD` | スタンダードプラン ID（例: `pln_standard`）            |
+| `PAYJP_PRICE_PACK_LIGHT`           | ライトパック金額（400）                                |
+| `PAYJP_PRICE_PACK_VALUE`           | バリューパック金額（800）                              |
 
 フロント: `NEXT_PUBLIC_PAYJP_PUBLIC_KEY`（`pk_test_...` / `pk_live_...`）
 
@@ -48,7 +48,9 @@ payjp-cli listen --forward-to http://localhost:8001/payjp/webhook
 payjp-cli listen --events subscription.created,subscription.renewed,subscription.updated,subscription.deleted,subscription.paused,charge.failed --forward-to http://localhost:8001/payjp/webhook
 ```
 
-### 3. 課金テストの流れ（移行完了後）
+### 3. 課金テストの流れ
+
+ブラウザでの確認項目は [PAY.JP 課金 E2E 手順](PAY.JP_課金_E2E_手順.md) を参照してください。
 
 1. `payjp-cli listen` を起動
 2. フロントでカード登録・サブスク開始またはパック購入
@@ -63,10 +65,10 @@ payjp-cli listen --events subscription.created,subscription.renewed,subscription
 
 ### 1. Webhook エンドポイント
 
-| 環境 | URL |
-| --- | --- |
-| ステージング | `https://dev.api.meap.blog/payjp/webhook` |
-| 本番 | `https://api.meap-app.com/payjp/webhook` |
+| 環境         | URL                                          |
+| ------------ | -------------------------------------------- |
+| ステージング | `https://dev.api.meap-app.com/payjp/webhook` |
+| 本番         | `https://api.meap-app.com/payjp/webhook`     |
 
 PAY.JP 管理画面で **テストモード / ライブモードごと** に URL を登録する（データ・Webhook はモード別）。**イベント種別の選択 UI はなく**、URL とモードを追加すればそのモードのイベントが送られる。
 
@@ -87,21 +89,21 @@ PAY.JP 管理画面で **テストモード / ライブモードごと** に URL
 
 ### プランが `free` のまま / `subscriptions` が更新されない
 
-| 確認項目 | ローカル | ステージング・本番 |
-| --- | --- | --- |
-| Webhook 転送 | `payjp-cli listen` が起動しているか | Dashboard の URL が `.../payjp/webhook` か |
-| Token | `.env` の `PAYJP_WEBHOOK_TOKEN` とヘッダーが一致するか | 同上 |
-| モード | テスト決済なら test キー・test Webhook 設定か | live キーと live Webhook の組み合わせか |
-| 実装 | Phase 2 の `PayjpWebhookController` がデプロイ済みか | 同上 |
+| 確認項目     | ローカル                                               | ステージング・本番                         |
+| ------------ | ------------------------------------------------------ | ------------------------------------------ |
+| Webhook 転送 | `payjp-cli listen` が起動しているか                    | Dashboard の URL が `.../payjp/webhook` か |
+| Token        | `.env` の `PAYJP_WEBHOOK_TOKEN` とヘッダーが一致するか | 同上                                       |
+| モード       | テスト決済なら test キー・test Webhook 設定か          | live キーと live Webhook の組み合わせか    |
+| デプロイ     | `PayjpWebhookController` がデプロイ済みか              | 同上                                       |
 
 ### 401 / Invalid webhook token
 
-`PAYJP_WEBHOOK_TOKEN` が管理画面のアカウント設定の `whook_...` と一致しているか確認する。Stripe の `whsec_...` とは別物。
+`PAYJP_WEBHOOK_TOKEN` が管理画面のアカウント設定の `whook_...` と一致しているか確認する。
 
 ### ローカルと本番の使い分け（まとめ）
 
-| | ローカル | ステージング・本番 |
-| --- | --- | --- |
+|              | ローカル                                                            | ステージング・本番    |
+| ------------ | ------------------------------------------------------------------- | --------------------- |
 | Webhook 受信 | `payjp-cli listen --forward-to http://localhost:8001/payjp/webhook` | PAY.JP 管理画面の URL |
-| Token | 管理画面の `PAYJP_WEBHOOK_TOKEN` | 同左 |
-| 常時実行 | 課金テスト中のみ CLI | **不要** |
+| Token        | 管理画面の `PAYJP_WEBHOOK_TOKEN`                                    | 同左                  |
+| 常時実行     | 課金テスト中のみ CLI                                                | **不要**              |

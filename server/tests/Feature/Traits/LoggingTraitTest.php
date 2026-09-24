@@ -199,6 +199,7 @@ test('1-4-6: 機密情報フィルタリングテスト', function () {
         'password_confirmation' => 'password123',
         'current_password' => 'password123',
         'token' => 'sometoken',
+        'cardToken' => 'tok_xxxxx',
         'api_token' => 'someapitoken',
         'api_key' => 'someapikey',
         'secret' => 'somesecret',
@@ -234,6 +235,7 @@ test('1-4-6: 機密情報フィルタリングテスト', function () {
                 $context['request_data']['password_confirmation'] === '*****' &&
                 $context['request_data']['current_password'] === '*****' &&
                 $context['request_data']['token'] === '*****' &&
+                $context['request_data']['cardToken'] === '*****' &&
                 $context['request_data']['api_token'] === '*****' &&
                 $context['request_data']['api_key'] === '*****' &&
                 $context['request_data']['secret'] === '*****' &&

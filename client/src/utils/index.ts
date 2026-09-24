@@ -8,4 +8,3 @@ export * from './focusHelpers';
 export * from './getLinkButtonClassName';
 export * from './quantity';
 export * from './redirectPath';
-export * from './stripeUrl';

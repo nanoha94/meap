@@ -8,6 +8,7 @@ use App\Interfaces\RecipeOcrInterface;
 use App\Services\Ai\GoogleVisionRecipeOcr;
 use App\Services\Ai\OpenAiRecipeOcr;
 use App\Services\Ai\OpenAiRecipeParser;
+use App\Services\PayjpBillingClient;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -37,6 +38,8 @@ class AppServiceProvider extends ServiceProvider
         );
 
         $this->app->bind(AiRecipeParserInterface::class, OpenAiRecipeParser::class);
+
+        $this->app->singleton(PayjpBillingClient::class);
     }
 
     /**
@@ -72,6 +75,25 @@ class AppServiceProvider extends ServiceProvider
                         'success' => false,
                         'message' => __('api.ai.usage.rate_limit_exceeded'),
                         'error_type' => 'ai_rate_limit_exceeded',
+                        'error_code' => HttpStatusCode::TOO_MANY_REQUESTS->value,
+                        'error_description' => HttpStatusCode::TOO_MANY_REQUESTS->getDescription(),
+                        'errors' => [],
+                    ], HttpStatusCode::TOO_MANY_REQUESTS->value, $headers);
+                });
+        });
+
+        // 課金・カード操作 API のレートリミット（有効性確認の回数制限）
+        // routes/api.php で throttle:billing ミドルウェアが適用されたルートで有効
+        RateLimiter::for('billing', function (Request $request) {
+            $limit = config('billing.rate_limit_per_minute', 10);
+
+            return Limit::perMinute($limit)
+                ->by($request->user()?->id ?: $request->ip())
+                ->response(function (Request $request, array $headers) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => __('api.billing.rate_limit_exceeded'),
+                        'error_type' => 'billing_rate_limit_exceeded',
                         'error_code' => HttpStatusCode::TOO_MANY_REQUESTS->value,
                         'error_description' => HttpStatusCode::TOO_MANY_REQUESTS->getDescription(),
                         'errors' => [],

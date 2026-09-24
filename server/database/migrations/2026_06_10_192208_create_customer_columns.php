@@ -18,6 +18,10 @@ return new class extends Migration
             $table->string('pm_type')->nullable();
             // 登録カード番号の下4桁。API レスポンスの pmLastFour に対応
             $table->string('pm_last_four', 4)->nullable();
+            // 登録カードの有効期限（月）。API レスポンスの pmExpMonth に対応
+            $table->unsignedTinyInteger('pm_exp_month')->nullable();
+            // 登録カードの有効期限（年）。API レスポンスの pmExpYear に対応
+            $table->unsignedSmallInteger('pm_exp_year')->nullable();
         });
     }
 
@@ -35,6 +39,8 @@ return new class extends Migration
                 'payjp_customer_id',
                 'pm_type',
                 'pm_last_four',
+                'pm_exp_month',
+                'pm_exp_year',
             ]);
         });
     }

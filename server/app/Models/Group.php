@@ -37,11 +37,15 @@ class Group extends Model
         'payjp_customer_id',
         'pm_type', // カードブランド（pm = payment method）
         'pm_last_four', // カード下4桁（pm = payment method）
+        'pm_exp_month', // カード有効期限（月）
+        'pm_exp_year', // カード有効期限（年）
     ];
 
     protected $casts = [
         'plan' => GroupPlan::class,
         'ai_usage_reset_at' => 'datetime',
+        'pm_exp_month' => 'integer',
+        'pm_exp_year' => 'integer',
     ];
 
     // Groupを作成
@@ -291,10 +295,14 @@ class Group extends Model
     }
 
     /**
-     * PAY.JP Customer ID からグループを取得する
+     * PAY.JP Customer ID からグループを取得する。未設定・空文字・文字列以外は null。
      */
-    public static function findByPayjpCustomerId(string $payjpCustomerId): ?self
+    public static function findByPayjpCustomerId(mixed $payjpCustomerId): ?self
     {
+        if (! is_string($payjpCustomerId) || $payjpCustomerId === '') {
+            return null;
+        }
+
         return self::query()
             ->where('payjp_customer_id', $payjpCustomerId)
             ->first();

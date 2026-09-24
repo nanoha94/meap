@@ -116,7 +116,7 @@ php artisan migrate:status --no-interaction
 
 ### ルート URL が「Welcome to nginx!」のまま
 
-`https://dev.api.meap.blog/` などで Laravel ではなく **nginx の初期ページ** が出る場合、Laravel 用 nginx 設定が有効になっていない。
+`https://dev.api.meap-app.com/` などで Laravel ではなく **nginx の初期ページ** が出る場合、Laravel 用 nginx 設定が有効になっていない。
 
 Dashboard の設定（Root Directory=`server`、Dockerfile=`docker/production/Dockerfile`、Start Command 空）が合っていても、次を確認する。
 
@@ -138,7 +138,7 @@ tr '\0' ' ' < /proc/1/cmdline; echo
 再デプロイ後（PowerShell）:
 
 ```powershell
-curl.exe -s -o NUL -w "%{http_code}" https://dev.api.meap.blog/up
+curl.exe -s -o NUL -w "%{http_code}" https://dev.api.meap-app.com/up
 ```
 
 `200` になれば API 側は復旧。
@@ -153,18 +153,18 @@ curl.exe -s -o NUL -w "%{http_code}" https://dev.api.meap.blog/up
 curl.exe -s -o NUL -w "%{http_code}" https://<Public-URL>/up
 ```
 
-Public URL が `200` で `dev.api.meap.blog` だけ `404` なら、**カスタムドメインの紐付け先サービス**を見直す。
+Public URL が `200` で `dev.api.meap-app.com` だけ `404` なら、**カスタムドメインの紐付け先サービス**を見直す。
 
 2. Cloudflare 等を使っている場合、DNS の CNAME 先が正しい Railway サービスか、プロキシキャッシュを疑う。
 
 3. SSH 内で Host ヘッダ付き確認:
 
 ```bash
-curl -s -o /dev/null -w "%{http_code}\n" -H "Host: dev.api.meap.blog" "http://127.0.0.1:${PORT:-8080}/up"
+curl -s -o /dev/null -w "%{http_code}\n" -H "Host: dev.api.meap-app.com" "http://127.0.0.1:${PORT:-8080}/up"
 ```
 
 ### ログイン画面の 404 / CSRF エラー
 
-API の `/up` が `200` になってから、Vercel の `NEXT_PUBLIC_BACKEND_URL=https://dev.api.meap.blog`（末尾スラッシュなし）を確認し再デプロイする。Railway では `APP_URL` / `FRONTEND_URL` / `SANCTUM_STATEFUL_DOMAINS` / `SESSION_SECURE_COOKIE=true` を設定する。
+API の `/up` が `200` になってから、Vercel の `NEXT_PUBLIC_BACKEND_URL=https://dev.api.meap-app.com`（末尾スラッシュなし）を確認し再デプロイする。Railway では `APP_URL` / `FRONTEND_URL` / `SANCTUM_STATEFUL_DOMAINS` / `SESSION_SECURE_COOKIE=true` を設定する。
 
 デプロイと一般公開の切り分け、ステージングの noindex、本番ドメイン切替のタイミングは [ステージングと本番公開の方針](ステージングと本番公開_方針.md) を参照。

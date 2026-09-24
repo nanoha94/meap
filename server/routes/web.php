@@ -1,13 +1,13 @@
 <?php
 
-use App\Http\Controllers\StripeWebhookController;
+use App\Http\Controllers\PayjpWebhookController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return response()->json(['status' => 'ok']);
 });
 
-Route::post('stripe/webhook', [StripeWebhookController::class, 'handleWebhook'])
-    ->name('cashier.webhook');
+Route::post('payjp/webhook', [PayjpWebhookController::class, 'handle'])
+    ->name('payjp.webhook');
 
 require __DIR__ . '/auth.php';

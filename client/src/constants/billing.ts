@@ -57,11 +57,6 @@ export const BILLING_PLAN_DETAILS: Record<BillingPlan, BillingPlanDetail> = {
     },
 };
 
-export const BILLING_CHECKOUT_QUERY = {
-    KEY: 'checkout',
-    CANCELED: 'canceled',
-} as const;
-
 export interface BillingPackDetail {
     type: BillingPackType;
     label: string;
@@ -93,6 +88,15 @@ export const BILLING_PACK_ORDER: BillingPackType[] = [
     BILLING_PACK_TYPE.LIGHT,
     BILLING_PACK_TYPE.VALUE,
 ];
+
+/** カードブランド別のマスク表示グループ長（下4桁グループを含む） */
+export const BILLING_CARD_MASK_GROUPS: Record<string, number[]> = {
+    amex: [4, 6, 5],    // アメックス
+    diners: [4, 6, 4],  // ディナース
+};
+
+/** 上記に該当しないブランドのデフォルトマスクグループ */
+export const BILLING_DEFAULT_CARD_MASK_GROUPS: number[] = [4, 4, 4, 4];
 
 export const BILLING_PACK_OPTIONS: readonly BillingPackDetail[] =
     BILLING_PACK_ORDER.map(type => BILLING_PACK_DETAILS[type]);

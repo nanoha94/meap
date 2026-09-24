@@ -287,6 +287,7 @@ return [
         'time' => '時間',
         'title' => 'タイトル',
         'token' => 'トークン',
+        'cardToken' => 'カードトークン',
         'updated_at' => '更新日',
         'username' => 'ユーザー名',
         'year' => '年',

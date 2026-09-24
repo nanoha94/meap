@@ -37,18 +37,13 @@ cd server
 ./vendor/bin/sail up -d
 ```
 
-## 課金（Stripe → PAY.JP 移行中）
+## 課金（PAY.JP）
 
-**Phase 0（PAY.JP 管理画面）:** [docs/PAY.JP_アカウント設定_手順.md](docs/PAY.JP_アカウント設定_手順.md) / [チェックリスト](docs/PAY.JP_Phase0_チェックリスト.md)
-
-**現行 Stripe（移行完了まで）:** サブスク・パック購入の反映には Webhook が必要です。
-
-- **ローカル:** 課金テスト中は `stripe listen --forward-to http://localhost:8001/stripe/webhook` を起動
-- **本番（Railway）:** `stripe listen` は**不要**。Stripe Dashboard で Webhook エンドポイントを登録する
-
-詳細は [docs/Stripe_課金_Webhook_手順.md](docs/Stripe_課金_Webhook_手順.md) を参照。
-
-**移行後（PAY.JP）:** [docs/PAY.JP_課金_Webhook_手順.md](docs/PAY.JP_課金_Webhook_手順.md)（`payjp-cli listen --forward-to http://localhost:8001/payjp/webhook`）
+- **アカウント設定（Phase 0）:** [docs/PAY.JP_アカウント設定_手順.md](docs/PAY.JP_アカウント設定_手順.md) / [チェックリスト](docs/PAY.JP_Phase0_チェックリスト.md)
+- **Webhook:** [docs/PAY.JP_課金_Webhook_手順.md](docs/PAY.JP_課金_Webhook_手順.md)
+  - **ローカル:** 課金テスト中は `payjp-cli listen --forward-to http://localhost:8001/payjp/webhook` を起動
+  - **本番（Railway）:** `payjp-cli` は**不要**。PAY.JP 管理画面で Webhook URL を登録
+- **ブラウザ E2E:** [docs/PAY.JP_課金_E2E_手順.md](docs/PAY.JP_課金_E2E_手順.md)
 
 ## Railway 本番
 
