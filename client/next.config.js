@@ -15,12 +15,15 @@ function parseOrigin(url) {
 const PAYJP_JS_ORIGIN = 'https://js.pay.jp';
 /** カードトークン作成 API のオリジン */
 const PAYJP_API_ORIGIN = 'https://api.pay.jp';
+/** Vercel Toolbar（コメント）のオリジン。https://vercel.com/docs/vercel-toolbar/managing-toolbar */
+const VERCEL_LIVE_ORIGIN = 'https://vercel.live';
 
 /**
  * Content-Security-Policy を組み立てる。
  * DiceBear SVG（dangerouslySetInnerHTML）と Next.js のインラインスクリプトのため
  * style-src / script-src に 'unsafe-inline' を含める。
  * PAY.JP のカード入力は js.pay.jp のスクリプトと iframe、api.pay.jp への通信が必要。
+ * Vercel Toolbar は vercel.live のスクリプト・iframe と Pusher への通信が必要。
  */
 function buildContentSecurityPolicy() {
     const backendOrigin =
@@ -28,12 +31,12 @@ function buildContentSecurityPolicy() {
 
     const directives = [
         "default-src 'self'",
-        `script-src 'self' 'unsafe-inline' ${PAYJP_JS_ORIGIN}`,
-        "style-src 'self' 'unsafe-inline'",
-        `img-src 'self' blob: data: ${backendOrigin} https://*.r2.cloudflarestorage.com`,
-        "font-src 'self'",
-        `connect-src 'self' ${backendOrigin} ${PAYJP_API_ORIGIN}`,
-        `frame-src ${PAYJP_JS_ORIGIN}`,
+        `script-src 'self' 'unsafe-inline' ${PAYJP_JS_ORIGIN} ${VERCEL_LIVE_ORIGIN}`,
+        `style-src 'self' 'unsafe-inline' ${VERCEL_LIVE_ORIGIN}`,
+        `img-src 'self' blob: data: ${backendOrigin} https://*.r2.cloudflarestorage.com ${VERCEL_LIVE_ORIGIN} https://vercel.com`,
+        `font-src 'self' ${VERCEL_LIVE_ORIGIN} https://assets.vercel.com`,
+        `connect-src 'self' ${backendOrigin} ${PAYJP_API_ORIGIN} ${VERCEL_LIVE_ORIGIN} wss://ws-us3.pusher.com`,
+        `frame-src ${PAYJP_JS_ORIGIN} ${VERCEL_LIVE_ORIGIN}`,
         "frame-ancestors 'none'",
         "form-action 'self'",
         "base-uri 'self'",
