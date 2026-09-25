@@ -368,6 +368,13 @@ export const useRecipeEditForm = (initialOwnerUserId: string, fetchedRecipe?: IR
     };
 
     /**
+     * ref を読む送信処理は、描画中ではなく submit 時に handleSubmit へ渡す
+     */
+    const handleFormSubmit: React.SubmitEventHandler<HTMLFormElement> = event => {
+        void handleSubmit(onSubmit)(event);
+    };
+
+    /**
      * AI 読み込みで上書きされる項目に入力済みの内容があるか判定する
      * （memo / url / thumbnail / categories は上書きしない）
      */
@@ -445,7 +452,7 @@ export const useRecipeEditForm = (initialOwnerUserId: string, fetchedRecipe?: IR
         methods,
         editMode,
         isDisabledSendButton,
-        onSubmit: handleSubmit(onSubmit),
+        onSubmit: handleFormSubmit,
         errors,
         setIsNameFocused,
         hasFormContent,

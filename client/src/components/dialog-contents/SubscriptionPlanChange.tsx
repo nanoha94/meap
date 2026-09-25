@@ -12,35 +12,147 @@ import {
     PlanChangeHelpLink,
 } from '@/components';
 import {
+    BILLING_PLAN,
     BILLING_PLAN_DETAILS,
     BILLING_PLAN_LABEL,
     BILLING_PLAN_ORDER,
+    BILLING_SUBSCRIPTION_TYPE,
     BillingPlanDetail,
     BUTTON_TYPE,
     COLOR_VARIANT,
 } from '@/constants';
-import { useAlertDialog, useBillingApi, useDialog } from '@/hooks';
 import {
+    useAlertDialog,
+    useBillingApi,
+    useDialog,
+} from '@/hooks';
+import {
+    BillingCheckoutOrderRow,
     IBillingStatus,
     PlanActionButtonConfig,
 } from '@/types';
-import { formatYen, getPlanActionButtonConfig } from '@/utils';
+import {
+    formatYen,
+    getPlanActionButtonConfig,
+} from '@/utils';
+import BillingCheckoutPayment from './BillingCheckoutPayment';
 
 interface Props {
     billingStatus: IBillingStatus | null;
 }
+
+const standardPlanDetail = BILLING_PLAN_DETAILS[BILLING_PLAN.STANDARD];
+const standardPlanLabel = BILLING_PLAN_LABEL[BILLING_PLAN.STANDARD];
+
+const standardSubscribeOrderRows: BillingCheckoutOrderRow[] = [
+    {
+        label: 'プラン',
+        value: standardPlanLabel,
+    },
+    {
+        label: '月額（税込）',
+        value: formatYen(standardPlanDetail.price),
+    },
+    {
+        label: '今回のお支払い',
+        value: formatYen(standardPlanDetail.price),
+        emphasis: 'total',
+    },
+];
 
 const SubscriptionPlanChange = ({
     billingStatus,
 }: Props) => {
     const router = useRouter();
     const { openAlertDialog } = useAlertDialog();
-    const { closeDialog } = useDialog();
+    const { closeAllDialogs, openDialog } = useDialog();
     const {
         createSubscription,
-        createPortalSession,
+        cancelSubscription,
         resumeSubscription,
     } = useBillingApi();
+
+    /**
+     * プラン変更を完了する
+     * @param success プラン変更が成功したかどうか
+     */
+    const completePlanChange = React.useCallback(
+        (success: boolean) => {
+            if (success) {
+                router.refresh();
+                closeAllDialogs();
+            }
+        },
+        [closeAllDialogs, router],
+    );
+
+    /**
+     * スタンダードプランを購入する
+     */
+    const handleSubscribe = React.useCallback(() => {
+        if (!billingStatus) {
+            return;
+        }
+
+        openDialog({
+            title: 'スタンダードプランのお申し込み',
+            children: (
+                <BillingCheckoutPayment
+                    billingStatus={billingStatus}
+                    orderRows={standardSubscribeOrderRows}
+                    orderNote="お申し込み後、スタンダードプランが即時反映され、上記金額が請求されます。"
+                    submitButtonText="申し込む"
+                    onSubmit={cardToken =>
+                        createSubscription(
+                            BILLING_SUBSCRIPTION_TYPE.STANDARD,
+                            cardToken,
+                        )
+                    }
+                    onSuccess={() => {
+                        completePlanChange(true);
+                    }}
+                />
+            ),
+            maxWidth: 480,
+        });
+    }, [
+        billingStatus,
+        completePlanChange,
+        createSubscription,
+        openDialog,
+    ]);
+
+    /**
+     * サブスクプランをダウングレードする
+     */
+    const handleDowngrade = React.useCallback(() => {
+        if (!billingStatus) {
+            return;
+        }
+
+        const currentPlanLabel = BILLING_PLAN_LABEL[billingStatus.plan];
+        const freePlanLabel = BILLING_PLAN_LABEL[BILLING_PLAN.FREE];
+
+        openAlertDialog(
+            {
+                title: `${freePlanLabel}プランへダウングレードしますか？`,
+                message: [
+                    `次の更新日までは${currentPlanLabel}プランをご利用いただけます。`,
+                ],
+                alertMessage: '',
+                actionButtonText: 'ダウングレード',
+            },
+            async () => {
+                const success = await cancelSubscription();
+                completePlanChange(success);
+            },
+        );
+    }, [
+        billingStatus,
+        cancelSubscription,
+        completePlanChange,
+        openAlertDialog,
+    ]);
 
     const handleResume = React.useCallback(() => {
         if (!billingStatus?.pendingPlanChange) {
@@ -57,18 +169,14 @@ const SubscriptionPlanChange = ({
             },
             async () => {
                 const success = await resumeSubscription();
-                if (success) {
-                    router.refresh();
-                    closeDialog(false);
-                }
+                completePlanChange(success);
             },
         );
     }, [
         billingStatus,
-        closeDialog,
+        completePlanChange,
         openAlertDialog,
         resumeSubscription,
-        router,
     ]);
 
     return (
@@ -88,8 +196,8 @@ const SubscriptionPlanChange = ({
                                 plan,
                                 billingStatus,
                                 {
-                                    onSubscribe: createSubscription,
-                                    onPortal: createPortalSession,
+                                    onSubscribe: handleSubscribe,
+                                    onDowngrade: handleDowngrade,
                                     onResume: handleResume,
                                 },
                             )}

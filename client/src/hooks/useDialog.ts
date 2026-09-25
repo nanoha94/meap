@@ -10,7 +10,6 @@ import { useAlertDialog } from './useAlertDialog';
 /**
  * Dialogを管理するカスタムフック
  * 複数のダイアログが順番に表示される
- * @returns { openDialog, closeDialog }
  */
 export const useDialog = () => {
     // store
@@ -54,6 +53,45 @@ export const useDialog = () => {
         },
         [flushCloseStack, openAlertDialog],
     );
+
+    /**
+     * 表示中のダイアログをすべて閉じる
+     * 前面（末尾）から順に閉じ、isCheckBeforeClose のダイアログでは確認する
+     */
+    const closeAllDialogs = React.useCallback(() => {
+        const closeChain = (dialogs: DialogData[]) => {
+            if (dialogs.length === 0) return;
+
+            // 前面から逆順に、最初の isCheckBeforeClose を探す
+            let checkIndex = -1;
+            for (let i = dialogs.length - 1; i >= 0; i--) {
+                if (dialogs[i].config.isCheckBeforeClose) {
+                    checkIndex = i;
+                    break;
+                }
+            }
+
+            if (checkIndex === -1) {
+                // 全部確認不要 → 一括クリア
+                setDialogs([]);
+                return;
+            }
+
+            // checkIndex より後ろ（確認不要分）を一括除去
+            const remaining = dialogs.slice(0, checkIndex + 1);
+            setDialogs(remaining);
+
+            // checkIndex のダイアログについて確認
+            openAlertDialog(ALERT_DIALOG_CONFIGS.unsavedChanges(), () => {
+                // OK → そのダイアログも除去して再帰
+                const afterRemove = remaining.slice(0, -1);
+                setDialogs(afterRemove);
+                closeChain(afterRemove);
+            });
+        };
+
+        closeChain(useGlobalStore.getState().dialogs);
+    }, [openAlertDialog, setDialogs]);
 
     /**
      * ダイアログを開く
@@ -111,6 +149,7 @@ export const useDialog = () => {
     return {
         openDialog,
         closeDialog,
+        closeAllDialogs,
         updateCurrentDialogConfig,
     };
 };

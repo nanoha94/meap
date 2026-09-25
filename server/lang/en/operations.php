@@ -35,11 +35,13 @@ return [
     ],
     'billing' => [
         'subscribe' => 'Start subscription',
-        'portal' => 'Create Customer Portal session',
         'purchase_pack' => 'Purchase one-time pack',
         'status' => 'Retrieve billing and subscription status',
         'invoices' => 'Retrieve billing invoices',
         'resume' => 'Cancel scheduled plan change',
+        'card' => 'Update card information',
+        'card_delete' => 'Delete card information',
+        'cancel' => 'Cancel subscription',
     ],
     'meal_plan' => [
         'index' => 'Meal plan list retrieval',

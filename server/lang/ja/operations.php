@@ -35,11 +35,13 @@ return [
     ],
     'billing' => [
         'subscribe' => 'サブスクリプション開始',
-        'portal' => 'Customer Portal セッション作成',
         'purchase_pack' => '買い切りパック購入',
         'status' => '課金・サブスクリプション状態取得',
         'invoices' => '請求履歴取得',
         'resume' => 'プラン変更予定取り消し',
+        'card' => 'カード情報更新',
+        'card_delete' => 'カード情報削除',
+        'cancel' => 'サブスクリプション解約',
     ],
     'meal_plan' => [
         'index' => '献立一覧取得',

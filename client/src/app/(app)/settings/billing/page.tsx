@@ -14,31 +14,17 @@ import {
     IGetBillingStatusResponse,
 } from '@/types';
 
-interface Props {
-    searchParams: Promise<{
-        checkout?: string;
-    }>;
-}
-
-const Page = async ({ searchParams }: Props) => {
-    const { checkout } = await searchParams;
-
+const Page = () => {
     return (
         <Suspense fallback={<Loading />}>
-            <BillingPageWithData checkoutQuery={checkout} />
+            <BillingPageWithData />
         </Suspense>
     );
 };
 
 export default Page;
 
-interface BillingPageWithDataProps {
-    checkoutQuery: string | undefined;
-}
-
-const BillingPageWithData = async ({
-    checkoutQuery,
-}: BillingPageWithDataProps) => {
+const BillingPageWithData = async () => {
     let billingStatus: IBillingStatus | null = null;
     let billingInvoices: IBillingInvoices | null = null;
     let fetchErrorMessages: string[] = [];
@@ -94,7 +80,6 @@ const BillingPageWithData = async ({
                 <SnackbarHandler key={index} type="error" message={message} />
             ))}
             <BillingPage
-                checkoutQuery={checkoutQuery}
                 billingStatus={billingStatus}
                 billingInvoices={billingInvoices}
             />

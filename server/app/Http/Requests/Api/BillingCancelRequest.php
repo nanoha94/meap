@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests\Api;
 
-class BillingPortalRequest extends BaseApiRequest
+class BillingCancelRequest extends BaseApiRequest
 {
     /**
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
@@ -14,6 +14,6 @@ class BillingPortalRequest extends BaseApiRequest
 
     protected function getOperationKey(): string
     {
-        return __('operations.billing.portal');
+        return __('operations.billing.cancel');
     }
 }

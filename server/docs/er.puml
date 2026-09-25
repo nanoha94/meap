@@ -83,10 +83,11 @@ entity groups #LightBlue {
     * ai_monthly_remaining : int / 月間枠の残り回数（デフォルト: 3）
     * ai_usage_reset_at : timestamp / AI利用回数の次回リセット日時
     * ai_pack_remaining : int / 買い切りパックの残り回数（デフォルト: 0、失効なし）
-    * stripe_id : string / Stripe Customer ID（Laravel Cashier、nullable）
+    * payjp_customer_id : string / PAY.JP Customer ID（cus_...、nullable）
     * pm_type : string / 登録済み支払い方法の種類（nullable）
     * pm_last_four : string / 登録済み支払い方法の下4桁（nullable）
-    * trial_ends_at : timestamp / トライアル終了日時（nullable）
+    * pm_exp_month : int / 登録カード有効期限（月、nullable）
+    * pm_exp_year : int / 登録カード有効期限（年、nullable）
 }
 
 entity meal_recipe_mappings {

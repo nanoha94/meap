@@ -14,12 +14,12 @@ import {
     IBillingStatus,
     IGetBillingInvoicesResponse,
     IGetBillingStatusResponse,
-    IPostBillingPacksResponse,
-    IPostBillingPortalResponse,
+    IPostBillingCancelResponse,
+    IPostBillingPackPurchaseResponse,
     IPostBillingResumeResponse,
+    IPostBillingCardUpdateResponse,
     IPostBillingSubscripeResponse,
 } from '@/types';
-import { openStripeUrl } from '@/utils/stripeUrl';
 
 import { useApiErrorHandler } from './useApiErrorHandler';
 import { useSnackbars } from '../useSnackbars';
@@ -44,9 +44,10 @@ export const useBillingApi = () => {
     const isFetchBillingStatusRef = React.useRef(false);
     const isFetchInvoicesRef = React.useRef(false);
     const isCreateSubscriptionRef = React.useRef(false);
-    const isCreatePortalSessionRef = React.useRef(false);
+    const isCancelSubscriptionRef = React.useRef(false);
     const isPurchasePackRef = React.useRef(false);
     const isResumeSubscriptionRef = React.useRef(false);
+    const isUpdateCardRef = React.useRef(false);
 
     /**
      * 課金・サブスクリプション状態を API から取得する（state は更新しない）
@@ -141,11 +142,12 @@ export const useBillingApi = () => {
     }, [loadInvoices]);
 
     /**
-     * サブスクリプション開始（Stripe Checkout へリダイレクト）
+     * サブスクリプションを開始する
      */
     const createSubscription = React.useCallback(
         async (
             subscriptionType: BillingSubscriptionType = BILLING_SUBSCRIPTION_TYPE.STANDARD,
+            cardToken?: string,
         ): Promise<boolean> => {
             if (isCreateSubscriptionRef.current) {
                 return false;
@@ -157,21 +159,19 @@ export const useBillingApi = () => {
 
                 const { data: responseData } =
                     await axios.post<IPostBillingSubscripeResponse>(
-                        `/billing/subscribe/${subscriptionType}`,
+                        `/billing/subscription/${subscriptionType}`,
+                        cardToken ? { cardToken } : {},
                     );
 
-                if (responseData.success && responseData.data?.checkoutUrl) {
-                    if (
-                        openStripeUrl(responseData.data.checkoutUrl)
-                    ) {
-                        return true;
-                    }
-
+                if (responseData.success && responseData.data) {
+                    setBillingStatus(responseData.data);
+                    void fetchInvoices();
                     addSnackbar(
-                        'error',
-                        '決済ページへの遷移に失敗しました。しばらく経ってから再度お試しください。',
+                        'success',
+                        responseData.message ||
+                        'サブスクリプションを開始しました。',
                     );
-                    return false;
+                    return true;
                 }
 
                 return false;
@@ -187,35 +187,37 @@ export const useBillingApi = () => {
             handleApiError,
             incrementLoadingCount,
             decrementLoadingCount,
+            fetchInvoices,
             addSnackbar,
         ],
     );
 
     /**
-     * Stripe Customer Portal セッション作成（Portal へリダイレクト）
+     * サブスクリプションを期間終了時に解約する
      */
-    const createPortalSession = React.useCallback(async (): Promise<boolean> => {
-        if (isCreatePortalSessionRef.current) {
+    const cancelSubscription = React.useCallback(async (): Promise<boolean> => {
+        if (isCancelSubscriptionRef.current) {
             return false;
         }
 
         try {
-            isCreatePortalSessionRef.current = true;
+            isCancelSubscriptionRef.current = true;
             incrementLoadingCount();
 
             const { data: responseData } =
-                await axios.post<IPostBillingPortalResponse>('/billing/portal');
-
-            if (responseData.success && responseData.data?.portalUrl) {
-                if (openStripeUrl(responseData.data.portalUrl)) {
-                    return true;
-                }
-
-                addSnackbar(
-                    'error',
-                    '決済ページへの遷移に失敗しました。しばらく経ってから再度お試しください。',
+                await axios.post<IPostBillingCancelResponse>(
+                    '/billing/subscription/cancel',
                 );
-                return false;
+
+            if (responseData.success && responseData.data) {
+                setBillingStatus(responseData.data);
+                void fetchInvoices();
+                addSnackbar(
+                    'success',
+                    responseData.message ||
+                    'サブスクリプションの解約を受け付けました。',
+                );
+                return true;
             }
 
             return false;
@@ -223,21 +225,22 @@ export const useBillingApi = () => {
             handleApiError(error);
             return false;
         } finally {
-            isCreatePortalSessionRef.current = false;
+            isCancelSubscriptionRef.current = false;
             decrementLoadingCount();
         }
     }, [
         handleApiError,
         incrementLoadingCount,
         decrementLoadingCount,
+        fetchInvoices,
         addSnackbar,
     ]);
 
     /**
-     * 買い切りパック購入（Stripe Checkout へリダイレクト）
+     * 買い切りパックを購入する
      */
     const purchasePack = React.useCallback(
-        async (packType: BillingPackType): Promise<boolean> => {
+        async (packType: BillingPackType, cardToken?: string): Promise<boolean> => {
             if (isPurchasePackRef.current) {
                 return false;
             }
@@ -247,22 +250,20 @@ export const useBillingApi = () => {
                 incrementLoadingCount();
 
                 const { data: responseData } =
-                    await axios.post<IPostBillingPacksResponse>(
+                    await axios.post<IPostBillingPackPurchaseResponse>(
                         `/billing/packs/${packType}`,
+                        cardToken ? { cardToken } : {},
                     );
 
-                if (responseData.success && responseData.data?.checkoutUrl) {
-                    if (
-                        openStripeUrl(responseData.data.checkoutUrl)
-                    ) {
-                        return true;
-                    }
-
+                if (responseData.success && responseData.data) {
+                    setBillingStatus(responseData.data);
+                    void fetchInvoices();
                     addSnackbar(
-                        'error',
-                        '決済ページへの遷移に失敗しました。しばらく経ってから再度お試しください。',
+                        'success',
+                        responseData.message ||
+                        '買い切りパックを購入しました。',
                     );
-                    return false;
+                    return true;
                 }
 
                 return false;
@@ -278,6 +279,7 @@ export const useBillingApi = () => {
             handleApiError,
             incrementLoadingCount,
             decrementLoadingCount,
+            fetchInvoices,
             addSnackbar,
         ],
     );
@@ -326,6 +328,52 @@ export const useBillingApi = () => {
         addSnackbar,
     ]);
 
+    /**
+     * カード情報を更新する
+     */
+    const updateCard = React.useCallback(
+        async (cardToken: string): Promise<boolean> => {
+            if (isUpdateCardRef.current) {
+                return false;
+            }
+
+            try {
+                isUpdateCardRef.current = true;
+                incrementLoadingCount();
+
+                const { data: responseData } =
+                    await axios.post<IPostBillingCardUpdateResponse>(
+                        '/billing/card',
+                        { cardToken },
+                    );
+
+                if (responseData.success && responseData.data) {
+                    setBillingStatus(responseData.data);
+                    addSnackbar(
+                        'success',
+                        responseData.message ||
+                        '支払い方法を更新しました。',
+                    );
+                    return true;
+                }
+
+                return false;
+            } catch (error) {
+                handleApiError(error);
+                return false;
+            } finally {
+                isUpdateCardRef.current = false;
+                decrementLoadingCount();
+            }
+        },
+        [
+            handleApiError,
+            incrementLoadingCount,
+            decrementLoadingCount,
+            addSnackbar,
+        ],
+    );
+
     // React.useEffect(() => {
     //     void loadBillingStatus().then(status => {
     //         if (status) {
@@ -356,8 +404,9 @@ export const useBillingApi = () => {
         fetchBillingStatus,
         fetchInvoices,
         createSubscription,
-        createPortalSession,
+        cancelSubscription,
         purchasePack,
         resumeSubscription,
+        updateCard,
     };
 };

@@ -33,6 +33,36 @@ Railway サービス設定の **Start Command は空のまま**にしてくだ�
 
 ## 1. SSH 接続
 
+### 環境の切り替え
+
+プロジェクト `meap` には `staging` と `production` がある。`railway ssh` は **CLI でリンクした環境** のコンテナに接続する。
+
+リポジトリ直下（`meap`）で実行:
+
+```powershell
+# ステージング
+railway environment staging
+
+# 本番
+railway environment production
+```
+
+サービスも明示してリンクし直す場合（Linked service が None のときなど）:
+
+```powershell
+railway link -e staging -s meap -p meap
+# 本番の例: railway link -e production -s meap -p meap
+```
+
+確認:
+
+```powershell
+railway status
+railway environment list
+```
+
+`Environment:` が意図した名前（`staging` / `production`）になっていることを確認してから SSH する。
+
 ### 鍵作成（未作成の場合）
 
 ```powershell
@@ -64,6 +94,7 @@ printenv | grep -E '^(DB_CONNECTION|DB_HOST|DB_PORT|DB_DATABASE|DB_USERNAME|DB_U
 - `DB_CONNECTION=pgsql`
 - `DB_HOST=postgres.railway.internal`
 - `DB_PORT=5432`（整数）
+- 環境の取り違え防止: `APP_ENV` や `DB_DATABASE` がリンクした環境と一致していること
 
 ## 3. マイグレーション実行
 
@@ -116,7 +147,7 @@ php artisan migrate:status --no-interaction
 
 ### ルート URL が「Welcome to nginx!」のまま
 
-`https://dev.api.meap.blog/` などで Laravel ではなく **nginx の初期ページ** が出る場合、Laravel 用 nginx 設定が有効になっていない。
+`https://dev.api.meap-app.com/` などで Laravel ではなく **nginx の初期ページ** が出る場合、Laravel 用 nginx 設定が有効になっていない。
 
 Dashboard の設定（Root Directory=`server`、Dockerfile=`docker/production/Dockerfile`、Start Command 空）が合っていても、次を確認する。
 
@@ -138,7 +169,7 @@ tr '\0' ' ' < /proc/1/cmdline; echo
 再デプロイ後（PowerShell）:
 
 ```powershell
-curl.exe -s -o NUL -w "%{http_code}" https://dev.api.meap.blog/up
+curl.exe -s -o NUL -w "%{http_code}" https://dev.api.meap-app.com/up
 ```
 
 `200` になれば API 側は復旧。
@@ -153,18 +184,18 @@ curl.exe -s -o NUL -w "%{http_code}" https://dev.api.meap.blog/up
 curl.exe -s -o NUL -w "%{http_code}" https://<Public-URL>/up
 ```
 
-Public URL が `200` で `dev.api.meap.blog` だけ `404` なら、**カスタムドメインの紐付け先サービス**を見直す。
+Public URL が `200` で `dev.api.meap-app.com` だけ `404` なら、**カスタムドメインの紐付け先サービス**を見直す。
 
 2. Cloudflare 等を使っている場合、DNS の CNAME 先が正しい Railway サービスか、プロキシキャッシュを疑う。
 
 3. SSH 内で Host ヘッダ付き確認:
 
 ```bash
-curl -s -o /dev/null -w "%{http_code}\n" -H "Host: dev.api.meap.blog" "http://127.0.0.1:${PORT:-8080}/up"
+curl -s -o /dev/null -w "%{http_code}\n" -H "Host: dev.api.meap-app.com" "http://127.0.0.1:${PORT:-8080}/up"
 ```
 
 ### ログイン画面の 404 / CSRF エラー
 
-API の `/up` が `200` になってから、Vercel の `NEXT_PUBLIC_BACKEND_URL=https://dev.api.meap.blog`（末尾スラッシュなし）を確認し再デプロイする。Railway では `APP_URL` / `FRONTEND_URL` / `SANCTUM_STATEFUL_DOMAINS` / `SESSION_SECURE_COOKIE=true` を設定する。
+API の `/up` が `200` になってから、Vercel の `NEXT_PUBLIC_BACKEND_URL=https://dev.api.meap-app.com`（末尾スラッシュなし）を確認し再デプロイする。Railway では `APP_URL` / `FRONTEND_URL` / `SANCTUM_STATEFUL_DOMAINS` / `SESSION_SECURE_COOKIE=true` を設定する。
 
 デプロイと一般公開の切り分け、ステージングの noindex、本番ドメイン切替のタイミングは [ステージングと本番公開の方針](ステージングと本番公開_方針.md) を参照。

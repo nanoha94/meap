@@ -95,7 +95,7 @@ class AiUsageService
     }
 
     /**
-     * Stripe 等の課金周期更新時に月間枠を満タンにリセットする。
+     * PAY.JP の課金周期更新時に月間枠を満タンにリセットする。
      * current_period_end をそのまま渡す想定。有料プラン専用。
      */
     public function renewBillingPeriod(Group $group, Carbon $periodEnd): void
@@ -111,18 +111,18 @@ class AiUsageService
     }
 
     /**
-     * プラン変更時に ai_monthly_remaining を調整する。
-     * BillingWebhookService::updateGroupPlan() から呼ばれる。
+     * プラン変更時に ai_monthly_remaining を更新する（同一プラン・周期内解約・ダウングレードでは no-op）。
+     * GroupPlanService::update() から呼ばれる。
      *
-     * Group.plan の更新は呼び出し元（BillingWebhookService::updateGroupPlan）が行う。
-     * ai_usage_reset_at の更新は renewBillingPeriod() の責務（handleInvoicePaid から呼ばれる）。
+     * Group.plan の更新は呼び出し元（GroupPlanService::update）が行う。
+     * ai_usage_reset_at の更新は renewBillingPeriod() の責務（subscription.renewed Webhook から呼ばれる）。
      *
      * 月間残数の満タン化は次の2経路に分かれる:
      * - 即時プラン変更（FREE→有料・アップグレード）: 本メソッドが新上限を設定
      * - 周期更新・ダウングレード後の初回請求: renewBillingPeriod() が新上限を設定
      *
      * ai_pack_remaining は本メソッドでは触らない。パック購入時のみ
-     * BillingWebhookService::handleCheckoutSessionCompleted() で加算され、プラン変更の影響を受けない。
+     * BillingService::purchasePack() で加算され、プラン変更の影響を受けない。
      *
      * ## プラン変更時の月間残数ルール
      *
@@ -134,7 +134,7 @@ class AiUsageService
      *   有料 → 有料（アップグレード） … 新プラン上限
      *   有料 → 有料（ダウングレード） … 変更なし
      */
-    public function adjustMonthlyRemainingForPlanChange(
+    public function updateMonthlyRemainingForPlanChange(
         Group $group,
         GroupPlan $oldPlan,
         GroupPlan $newPlan,
@@ -176,7 +176,7 @@ class AiUsageService
 
     /**
      * フリープラン: 次回リセット日時を過ぎていれば月間枠を満タンに戻す。
-     * 有料プランは Stripe Webhook（renewBillingPeriod）のみがリセット経路。
+     * 有料プランは PAY.JP Webhook（renewBillingPeriod）のみがリセット経路。
      */
     private function resetFreeMonthlyUsageIfNeeded(Group $group): void
     {
@@ -216,7 +216,7 @@ class AiUsageService
     }
 
     /**
-     * Stripe 課金周期（ai_usage_reset_at）内かどうか。
+     * PAY.JP 課金周期（ai_usage_reset_at）内かどうか。
      * 解約後も周期終了までは true となり、有料分の残数を維持する。
      */
     private function isWithinBillingPeriod(Group $group): bool

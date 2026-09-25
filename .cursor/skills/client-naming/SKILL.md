@@ -14,7 +14,7 @@ description: client（Next.js/React）の命名ルール。boolean を返す関�
 | `pathnameRequiresSessionInAuthLayout()` | `isSessionRequiredPathInAuthLayout()` |
 | `requiresAuth()` | `isAuthRequired()` |
 
-- 引数を判定する関数: `is` + 判定内容（例: `isSafeRedirectPath`, `isAllowedStripeUrl`）
+- 引数を判定する関数: `is` + 判定内容（例: `isSafeRedirectPath`, `isPayjpPublicKeyConfigured`）
 - 状態を表す変数・引数も同様: `isAuthPage`, `isLoading`
 
 ## 既存コードとの関係

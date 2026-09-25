@@ -2,39 +2,36 @@
 
 import React from 'react';
 import dayjs from 'dayjs';
-import { ChevronDown, ExternalLink } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 import {
+    BillingCheckoutPayment,
     BillingFeatureList,
     Button,
     Header,
     PackPurchase,
+    PayjpScript,
     PendingPlanChangeNote,
     PlanChangeHelpLink,
     SubscriptionPlanChange,
 } from '@/components';
-import {
-    BILLING_CHECKOUT_QUERY,
-    BILLING_PLAN_DETAILS,
-    BUTTON_TYPE,
-    LINK_TO,
-} from '@/constants';
-import { useBillingApi, useDialog, useSnackbars } from '@/hooks';
-import {
-    formatDisplayDate,
-    formatYen,
-    getNoUpcomingInvoicePendingPlanChangeMessage,
-    isAllowedStripeUrl,
-    openStripeUrl,
-} from '@/utils';
+import { BILLING_PLAN_DETAILS, BUTTON_TYPE } from '@/constants';
+import { useBillingApi, useDialog } from '@/hooks';
+import { useAiUsageStore } from '@/stores';
 import {
     IBillingInvoices,
     IBillingPastInvoice,
     IBillingStatus,
     IBillingUpcomingInvoice,
 } from '@/types';
-import { useAiUsageStore } from '@/stores';
+import {
+    formatCardExpiration,
+    formatDisplayDate,
+    formatMaskedCardNumber,
+    formatYen,
+    getNoUpcomingInvoicePendingPlanChangeMessage,
+} from '@/utils';
 
 const sectionTitleClassName = 'text-lg';
 
@@ -44,58 +41,15 @@ const cardClassName =
 const usageRowClassName =
     'pb-1/2 flex items-end justify-between gap-x-4 border-b border-gray-border';
 
-const formatCardExpiration = (
-    month: number | null,
-    year: number | null,
-): string | null => {
-    if (month == null || year == null) {
-        return null;
-    }
-
-    return `${String(month).padStart(2, '0')}/${year}`;
-};
-
-const CARD_MASK_GROUPS: Record<string, number[]> = {
-    amex: [4, 6, 5],
-    diners: [4, 6, 4],
-};
-const DEFAULT_MASK_GROUPS = [4, 4, 4, 4];
-
-const formatMaskedCardNumber = (
-    lastFour: string,
-    brand: string | null,
-): string => {
-    const groups =
-        CARD_MASK_GROUPS[(brand ?? '').toLowerCase()] ?? DEFAULT_MASK_GROUPS;
-    const lastGroupLen = groups[groups.length - 1];
-    const maskedGroups = groups.slice(0, -1).map(len => '•'.repeat(len));
-    const lastGroup =
-        '•'.repeat(lastGroupLen - lastFour.length) + lastFour;
-    return [...maskedGroups, lastGroup].join(' ');
-};
-
 interface Props {
-    checkoutQuery?: string;
     billingStatus: IBillingStatus | null;
     billingInvoices: IBillingInvoices | null;
 }
 
-const BillingPage = ({ checkoutQuery, billingStatus, billingInvoices }: Props) => {
-    const router = useRouter();
-    const { addSnackbar } = useSnackbars();
-
-    /**
-     * 購入がキャンセルされた場合の処理
-     */
-    React.useEffect(() => {
-        if (checkoutQuery === BILLING_CHECKOUT_QUERY.CANCELED) {
-            addSnackbar('error', '購入はキャンセルされました');
-            router.replace(LINK_TO.SETTINGS.BILLING);
-        }
-    }, [checkoutQuery, addSnackbar, router]);
-
+const BillingPage = ({ billingStatus, billingInvoices }: Props) => {
     return (
         <>
+            <PayjpScript />
             <Header title="プラン管理" hasBackButton={true} />
             <main className="p-5 pb-[60px] md:px-10 max-w-[1000px] mx-auto flex flex-col gap-y-6">
                 {/* 現在のプラン */}
@@ -136,9 +90,9 @@ const CurrentPlanSection = ({
     return (
         <section className={cardClassName}>
             {planDetail && billingStatus && (
-                <>
+                <div className='flex flex-col gap-y-4'>
                     <div className="flex items-start justify-between gap-x-4">
-                        <div className="mb-4">
+                        <div>
                             <span className="mb-1 text-sm text-gray-main">
                                 現在のプラン
                             </span>
@@ -152,7 +106,7 @@ const CurrentPlanSection = ({
                             />
                         </div>
                     </div>
-                    <ul className="mb-4 flex flex-col gap-y-2 text-base leading-relaxed">
+                    <ul className="flex flex-col gap-y-2 text-base leading-relaxed">
                         <li>
                             ・月間 AI 使用回数：
                             {planDetail.monthlyCredits} 回
@@ -167,7 +121,6 @@ const CurrentPlanSection = ({
                     </ul>
                     {billingStatus.pendingPlanChange && (
                         <PendingPlanChangeNote
-                            className="mt-4"
                             currentPlanLabel={planDetail.label}
                             pendingPlanChange={
                                 billingStatus.pendingPlanChange
@@ -176,7 +129,7 @@ const CurrentPlanSection = ({
                         />
                     )}
                     <PlanChangeHelpLink />
-                </>
+                </div>
             )}
             <div className="mt-4 sp-only-sm">
                 <PlanManageButtons billingStatus={billingStatus} />
@@ -200,7 +153,8 @@ const AiUsageSection = () => {
                                 <>
                                     （
                                     {formatDisplayDate(aiUsageStatus.resetsAt)}{' '}
-                                    リセット）
+                                    に {aiUsageStatus.monthlyLimit}
+                                    回にリセットされます）
                                 </>
                             )}
                         </dt>
@@ -245,10 +199,10 @@ const PlanManageButtons = ({
     const handleOpenPackPurchaseDialog = React.useCallback(() => {
         openDialog({
             title: '買い切りパックを購入',
-            children: <PackPurchase />,
+            children: <PackPurchase billingStatus={billingStatus} />,
             maxWidth: 800,
         });
-    }, [openDialog]);
+    }, [billingStatus, openDialog]);
 
     return (
         <div className="flex gap-x-3">
@@ -275,7 +229,9 @@ interface PaymentSettingsSectionProps {
 const PaymentSettingsSection = ({
     billingStatus,
 }: PaymentSettingsSectionProps) => {
-    const { createPortalSession } = useBillingApi();
+    const router = useRouter();
+    const { closeAllDialogs, openDialog } = useDialog();
+    const { updateCard } = useBillingApi();
 
     const cardExpiration = billingStatus
         ? formatCardExpiration(
@@ -289,6 +245,36 @@ const PaymentSettingsSection = ({
         billingStatus?.pendingPlanChange != null ||
         billingStatus?.pmLastFour;
 
+    const handleOpenCardUpdateDialog = React.useCallback(() => {
+        if (!billingStatus) {
+            return;
+        }
+
+        openDialog({
+            title: '支払い方法を変更',
+            children: (
+                <BillingCheckoutPayment
+                    billingStatus={billingStatus}
+                    forceNewCard
+                    orderRows={[]}
+                    orderNote=""
+                    submitButtonText="カードを更新"
+                    onSubmit={async (cardToken) => {
+                        if (!cardToken) {
+                            return false;
+                        }
+                        return updateCard(cardToken);
+                    }}
+                    onSuccess={() => {
+                        router.refresh();
+                        closeAllDialogs();
+                    }}
+                />
+            ),
+            maxWidth: 480,
+        });
+    }, [billingStatus, closeAllDialogs, openDialog, router, updateCard]);
+
     return (
         <section className={cardClassName}>
             <div className="flex items-start justify-between gap-x-4">
@@ -297,8 +283,8 @@ const PaymentSettingsSection = ({
                     {canChangePaymentMethod && (
                         <Button
                             type={BUTTON_TYPE.BUTTON}
-                            onClick={createPortalSession}
                             className='!w-fit'
+                            onClick={handleOpenCardUpdateDialog}
                         >
                             支払い方法を変更
                         </Button>
@@ -320,7 +306,7 @@ const PaymentSettingsSection = ({
                             </span>
                         </p>
                         {cardExpiration && (
-                            <p className="text-base text-gray-main">
+                            <p className="text-base">
                                 有効期限 {cardExpiration}
                             </p>
                         )}
@@ -336,8 +322,8 @@ const PaymentSettingsSection = ({
                 {canChangePaymentMethod && (
                     <Button
                         type={BUTTON_TYPE.BUTTON}
-                        onClick={createPortalSession}
                         className='!w-fit'
+                        onClick={handleOpenCardUpdateDialog}
                     >
                         支払い方法を変更
                     </Button>
@@ -410,13 +396,13 @@ const UpcomingInvoiceSection = ({
                     </dl>
                 </div>
             ) : pendingPlanChange ? (
-                <p className="text-gray-main">
+                <p>
                     {getNoUpcomingInvoicePendingPlanChangeMessage(
                         pendingPlanChange.changesAt,
                     )}
                 </p>
             ) : (
-                <p className="text-gray-main">
+                <p>
                     予定されているお支払いはありません
                 </p>
             )}
@@ -463,7 +449,7 @@ const PastInvoicesSection = ({ pastInvoices }: PastInvoicesSectionProps) => {
     /**
      * 選択された月の請求履歴
      */
-    const filteredInvoices = invoicesByMonth.get(activeMonth) ?? [];
+    const filteredInvoices: IBillingPastInvoice[] = invoicesByMonth.get(activeMonth) ?? [];
 
     return (
         <section className={cardClassName}>
@@ -492,35 +478,19 @@ const PastInvoicesSection = ({ pastInvoices }: PastInvoicesSectionProps) => {
                     {filteredInvoices.map(invoice => (
                         <li
                             key={invoice.id}
-                            className="pb-1/2 flex items-center justify-between border-b border-gray-border">
-                            <span>{formatDisplayDate(invoice.date)}</span>
-                            <div className="flex items-center gap-x-5">
-                                <span>合計 {formatYen(invoice.total)}</span>
-                                {invoice.invoiceUrl &&
-                                    isAllowedStripeUrl(invoice.invoiceUrl) && (
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                openStripeUrl(
-                                                    invoice.invoiceUrl,
-                                                    '_blank',
-                                                )
-                                            }
-                                            className="inline-flex items-center gap-x-1 text-base font-bold text-primary-main underline transition-opacity hover:opacity-80">
-                                            <ExternalLink
-                                                size={14}
-                                                strokeWidth={3}
-                                                aria-hidden="true"
-                                            />
-                                            請求書
-                                        </button>
-                                    )}
+                            className="pb-1/2 flex items-end justify-between gap-x-4 border-b border-gray-border">
+                            <div className="flex flex-col">
+                                <span>{formatDisplayDate(invoice.date)}</span>
+                                <span className='text-sm'>
+                                    {invoice.description}
+                                </span>
                             </div>
+                            <span className="text-nowrap">{formatYen(invoice.total)}</span>
                         </li>
                     ))}
                 </ul>
             ) : (
-                <p className="text-gray-main">
+                <p>
                     この月の請求はありません
                 </p>
             )}

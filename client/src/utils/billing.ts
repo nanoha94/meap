@@ -1,4 +1,10 @@
-import { BILLING_PLAN, BUTTON_VARIANT, COLOR_VARIANT } from '@/constants';
+import {
+    BILLING_CARD_MASK_GROUPS,
+    BILLING_DEFAULT_CARD_MASK_GROUPS,
+    BILLING_PLAN,
+    BUTTON_VARIANT,
+    COLOR_VARIANT,
+} from '@/constants';
 import {
     IBillingStatus,
     PlanActionButtonConfig,
@@ -11,9 +17,52 @@ import { formatDisplayDate } from './date';
 export const formatYen = (amount: number): string =>
     `¥ ${amount.toLocaleString()}`;
 
+/** カード有効期限を MM/YYYY 形式で表示する */
+export const formatCardExpiration = (
+    month: number | null,
+    year: number | null,
+): string | null => {
+    if (month == null || year == null) {
+        return null;
+    }
+
+    return `${String(month).padStart(2, '0')}/${year}`;
+};
+
+/** ブランドに応じたマスク付きカード番号表示（下4桁のみ実値） */
+export const formatMaskedCardNumber = (
+    lastFour: string,
+    brand: string | null,
+): string => {
+    // ブランドに応じたマスク付きカード番号表示（下4桁のみ実値）
+    const maskSegmentLengths =
+        BILLING_CARD_MASK_GROUPS[(brand ?? '').toLowerCase()] ??
+        BILLING_DEFAULT_CARD_MASK_GROUPS;
+    // 最後のセグメントの長さ
+    const lastSegmentLength =
+        maskSegmentLengths[maskSegmentLengths.length - 1];
+    // 先頭のセグメントの長さ
+    const maskedLeadingSegments = maskSegmentLengths
+        .slice(0, -1)
+        .map(len => '•'.repeat(len));
+    // 最後のセグメントの実値
+    const lastSegment =
+        '•'.repeat(lastSegmentLength - lastFour.length) + lastFour;
+    // マスク付きカード番号表示
+    return [...maskedLeadingSegments, lastSegment].join(' ');
+};
+
 /** 買い切りパックの 1 回あたり単価表示 */
 export const formatPackUnitPrice = (price: number, credits: number): string =>
     `1回あたり ${formatYen(Math.round(price / credits))}`;
+
+/** 課金状態に支払い方法が登録されているか */
+export const hasBillingPaymentMethod = (
+    billingStatus: IBillingStatus | null,
+): boolean =>
+    billingStatus !== null &&
+    billingStatus.pmLastFour !== null &&
+    billingStatus.pmLastFour !== '';
 
 /** プラン選択カードのアクションボタン表示内容を決定する */
 export const getPlanActionButtonConfig = (
@@ -57,7 +106,7 @@ export const getPlanActionButtonConfig = (
 
     return {
         label: 'ダウングレード',
-        onClick: () => handlers.onPortal(),
+        onClick: () => handlers.onDowngrade(),
         variant: BUTTON_VARIANT.OUTLINED,
         colorVariant: COLOR_VARIANT.GRAY,
         disabled: false,

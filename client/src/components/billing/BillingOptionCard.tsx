@@ -42,10 +42,10 @@ const BillingOptionCard = ({
         )}
 
         <div className="flex w-full flex-col gap-y-1 border-b border-gray-border py-4">
-            <div className="text-center text-lg font-bold">{header.title}</div>
-            <div className="text-center">{header.price}</div>
+            <div className="text-center font-bold">{header.title}</div>
+            <div className="text-2xl font-bold text-center">{header.price}</div>
             {header.subtitle && (
-                <div className="text-center text-xs">
+                <div className="text-center">
                     {header.subtitle}
                 </div>
             )}

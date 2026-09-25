@@ -78,12 +78,20 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // billing
     Route::get('/billing/status', [BillingController::class, 'status']);
     Route::get('/billing/invoices', [BillingController::class, 'invoices']);
-    Route::post('/billing/subscribe/{subscriptionType}', [BillingController::class, 'subscribe'])
-        ->where('subscriptionType', 'standard');
-    Route::post('/billing/portal', [BillingController::class, 'portal']);
-    Route::post('/billing/subscription/resume', [BillingController::class, 'resume']);
+    Route::post('/billing/subscription/{subscriptionType}', [BillingController::class, 'subscribe'])
+        ->where('subscriptionType', 'standard')
+        ->middleware('throttle:billing');
+    Route::post('/billing/subscription/cancel', [BillingController::class, 'cancel'])
+        ->middleware('throttle:billing');
+    Route::post('/billing/subscription/resume', [BillingController::class, 'resume'])
+        ->middleware('throttle:billing');
+
     Route::post('/billing/packs/{packType}', [BillingController::class, 'purchasePack'])
-        ->where('packType', 'light|value');
+        ->where('packType', 'light|value')
+        ->middleware('throttle:billing');
+    Route::post('/billing/card', [BillingController::class, 'updateCard'])
+        ->middleware('throttle:billing');
+    Route::delete('/billing/card', [BillingController::class, 'deleteCard']);
 
     // master
     Route::get('/master', MasterController::class);
