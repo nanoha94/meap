@@ -33,6 +33,36 @@ Railway サービス設定の **Start Command は空のまま**にしてくだ�
 
 ## 1. SSH 接続
 
+### 環境の切り替え
+
+プロジェクト `meap` には `staging` と `production` がある。`railway ssh` は **CLI でリンクした環境** のコンテナに接続する。
+
+リポジトリ直下（`meap`）で実行:
+
+```powershell
+# ステージング
+railway environment staging
+
+# 本番
+railway environment production
+```
+
+サービスも明示してリンクし直す場合（Linked service が None のときなど）:
+
+```powershell
+railway link -e staging -s meap -p meap
+# 本番の例: railway link -e production -s meap -p meap
+```
+
+確認:
+
+```powershell
+railway status
+railway environment list
+```
+
+`Environment:` が意図した名前（`staging` / `production`）になっていることを確認してから SSH する。
+
 ### 鍵作成（未作成の場合）
 
 ```powershell
@@ -64,6 +94,7 @@ printenv | grep -E '^(DB_CONNECTION|DB_HOST|DB_PORT|DB_DATABASE|DB_USERNAME|DB_U
 - `DB_CONNECTION=pgsql`
 - `DB_HOST=postgres.railway.internal`
 - `DB_PORT=5432`（整数）
+- 環境の取り違え防止: `APP_ENV` や `DB_DATABASE` がリンクした環境と一致していること
 
 ## 3. マイグレーション実行
 

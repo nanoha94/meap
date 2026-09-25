@@ -11,10 +11,16 @@ function parseOrigin(url) {
     }
 }
 
+/** payjp.js とカード入力 iframe のオリジン */
+const PAYJP_JS_ORIGIN = 'https://js.pay.jp';
+/** カードトークン作成 API のオリジン */
+const PAYJP_API_ORIGIN = 'https://api.pay.jp';
+
 /**
  * Content-Security-Policy を組み立てる。
  * DiceBear SVG（dangerouslySetInnerHTML）と Next.js のインラインスクリプトのため
  * style-src / script-src に 'unsafe-inline' を含める。
+ * PAY.JP のカード入力は js.pay.jp のスクリプトと iframe、api.pay.jp への通信が必要。
  */
 function buildContentSecurityPolicy() {
     const backendOrigin =
@@ -22,11 +28,12 @@ function buildContentSecurityPolicy() {
 
     const directives = [
         "default-src 'self'",
-        "script-src 'self' 'unsafe-inline'",
+        `script-src 'self' 'unsafe-inline' ${PAYJP_JS_ORIGIN}`,
         "style-src 'self' 'unsafe-inline'",
         `img-src 'self' blob: data: ${backendOrigin} https://*.r2.cloudflarestorage.com`,
         "font-src 'self'",
-        `connect-src 'self' ${backendOrigin}`,
+        `connect-src 'self' ${backendOrigin} ${PAYJP_API_ORIGIN}`,
+        `frame-src ${PAYJP_JS_ORIGIN}`,
         "frame-ancestors 'none'",
         "form-action 'self'",
         "base-uri 'self'",
