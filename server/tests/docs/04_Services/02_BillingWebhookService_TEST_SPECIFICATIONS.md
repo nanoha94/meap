@@ -8,8 +8,8 @@ PAY.JP Webhook イベントに応じた課金状態同期を担う `BillingWebho
 
 - PAY.JP API への実通信は行わない
 - `config('billing.subscription_plan_ids.standard')` にはテスト用の固定 plan ID（`pln_standard_test`）を `beforeEach` で設定する
-- Group は `payjp_customer_id` を持つ Factory レコードとして作成する（`makePayjpBillableGroup`）
-- 顧客検索は `Group::findByPayjpCustomerId()` 経由で行われる
+- Group は `square_customer_id` を持つ Factory レコードとして作成する（`makePayjpBillableGroup`）
+- 顧客検索は `Group::findBySquareCustomerId()` 経由で行われる
 - サブスクリプション本体は `['id' => eventId, 'data' => subscription]` 形式のエンベロープ（`makePayjpWebhookEnvelope`）で渡す
 - サブスクリプションのデフォルト形は `makePayjpSubscriptionPayload`（`customer` / `status` / `plan.id` / `current_period_end` 等）
 - `oncePerEvent` の検証では `beforeEach` で `Cache::flush()` し、同一 event ID で 2 回呼び出す
@@ -19,8 +19,8 @@ PAY.JP Webhook イベントに応じた課金状態同期を担う `BillingWebho
 
 | ID | テスト名 | 種別 | 入力条件 | 期待される出力 | 該当メソッド |
 |---|---|---|---|---|---|
-| 4-2-1 | 【定期更新】 subscription.renewed でプラン更新と利用回数リセットを行う | 正常系 | FREE の Group（`payjp_customer_id` あり）、`subscription.renewed` 相当ペイロード（standard plan ID、`current_period_end` あり） | plan=STANDARD、ai_monthly_remaining=STANDARD の月間上限、ai_usage_reset_at=current_period_end | `BillingWebhookService::handleSubscriptionRenewed()` |
-| 4-2-2 | 【定期更新】 顧客不在はスキップする | 異常系 | Group の `payjp_customer_id` とペイロードの `customer` が不一致 | plan / ai_monthly_remaining が変更されない | `BillingWebhookService::handleSubscriptionRenewed()` |
+| 4-2-1 | 【定期更新】 subscription.renewed でプラン更新と利用回数リセットを行う | 正常系 | FREE の Group（`square_customer_id` あり）、`subscription.renewed` 相当ペイロード（standard plan ID、`current_period_end` あり） | plan=STANDARD、ai_monthly_remaining=STANDARD の月間上限、ai_usage_reset_at=current_period_end | `BillingWebhookService::handleSubscriptionRenewed()` |
+| 4-2-2 | 【定期更新】 顧客不在はスキップする | 異常系 | Group の `square_customer_id` とペイロードの `customer` が不一致 | plan / ai_monthly_remaining が変更されない | `BillingWebhookService::handleSubscriptionRenewed()` |
 | 4-2-3 | 【定期更新】 同一 event ID の再送は二重処理しない | 異常系 | 同一 event ID で `handleSubscriptionRenewed` を 2 回呼び出し（2 回目の前に ai_monthly_remaining を 0 に変更） | 2 回目以降は renew 処理が走らず ai_monthly_remaining=0 のまま | `BillingWebhookService::handleSubscriptionRenewed()` |
 | 4-2-4 | 【サブスク同期】 active で STANDARD プランを付与する | 正常系 | FREE の Group、`status=active`、standard plan ID | plan=STANDARD | `BillingWebhookService::handleSubscriptionChanged()` |
 | 4-2-5 | 【サブスク同期】 canceled（期間終了後）で FREE に戻す | 正常系 | STANDARD の Group、`status=canceled`、`current_period_end` が過去 | plan=FREE | `BillingWebhookService::handleSubscriptionDeleted()` |

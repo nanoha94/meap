@@ -23,7 +23,7 @@ beforeEach(function () {
 function makePayjpBillableGroup(array $attributes = []): Group
 {
     return Group::factory()->create(array_merge([
-        'payjp_customer_id' => test()->payjpCustomerId,
+        'square_customer_id' => test()->payjpCustomerId,
         'plan' => GroupPlan::FREE,
         'ai_monthly_remaining' => GroupPlan::FREE->monthlyLimit(),
         'ai_pack_remaining' => 0,
@@ -72,7 +72,7 @@ test('4-2-1: 【定期更新】 subscription.renewed でプラン更新と利用
 });
 
 test('4-2-2: 【定期更新】 顧客不在はスキップする', function () {
-    $group = makePayjpBillableGroup(['payjp_customer_id' => 'cus_other']);
+    $group = makePayjpBillableGroup(['square_customer_id' => 'cus_other']);
     $beforePlan = $group->plan;
     $beforeRemaining = $group->ai_monthly_remaining;
 

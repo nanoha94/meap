@@ -14,7 +14,7 @@ class PayjpBillingClient
 {
     public function __construct(?string $apiKey = null)
     {
-        $key = $apiKey ?? (string) config('services.payjp.secret_key', '');
+        $key = $apiKey ?? (string) env('PAYJP_SECRET_KEY', '');
 
         if ($key !== '') {
             Payjp::setApiKey($key);

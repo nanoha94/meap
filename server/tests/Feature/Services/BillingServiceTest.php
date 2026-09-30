@@ -40,15 +40,15 @@ function createBillingGroup(array $attributes = []): Group
 {
     return Group::factory()->create(array_merge([
         'plan' => GroupPlan::FREE,
-        'payjp_customer_id' => null,
+        'square_customer_id' => null,
     ], $attributes));
 }
 
 function createSubscriptionRecord(Group $group, array $attributes = []): void
 {
     $group->subscriptions()->create(array_merge([
-        'payjp_subscription_id' => 'sub_test_' . str()->random(8),
-        'payjp_plan_id' => config('billing.subscription_plan_ids.standard'),
+        'square_subscription_id' => 'sub_test_' . str()->random(8),
+        'square_plan_variation_id' => config('billing.subscription_plan_ids.standard'),
         'status' => 'active',
         'ends_at' => null,
         'current_period_end' => null,
@@ -142,7 +142,7 @@ function makePayjpError(int $httpStatus = 402): PayjpError
 
 test('4-3-1: 【カード更新】 課金状態配列を返し pm 情報を同期する', function () {
     $group = createBillingGroup([
-        'payjp_customer_id' => 'cus_update_test',
+        'square_customer_id' => 'cus_update_test',
         'plan' => GroupPlan::FREE,
     ]);
     $customer = makePayjpCustomer([
@@ -173,7 +173,7 @@ test('4-3-1: 【カード更新】 課金状態配列を返し pm 情報を同�
 });
 
 test('4-3-2: 【カード更新】 Customer 未作成時は新規作成する', function () {
-    $group = createBillingGroup(['payjp_customer_id' => null]);
+    $group = createBillingGroup(['square_customer_id' => null]);
     $customer = makePayjpCustomer(['id' => 'cus_new_test']);
 
     $this->mock(PayjpBillingClient::class, function ($mock) use ($group, $customer) {
@@ -191,12 +191,12 @@ test('4-3-2: 【カード更新】 Customer 未作成時は新規作成する', 
     $status = billingService()->updateCard($group, $this->user, 'tok_test_new');
 
     $group->refresh();
-    expect($group->payjp_customer_id)->toBe('cus_new_test')
+    expect($group->square_customer_id)->toBe('cus_new_test')
         ->and($status['pmLastFour'])->toBe('4242');
 });
 
 test('4-3-3: 【カード更新】 PAY.JP API 失敗時は HttpException を投げる', function () {
-    $group = createBillingGroup(['payjp_customer_id' => 'cus_fail_test']);
+    $group = createBillingGroup(['square_customer_id' => 'cus_fail_test']);
 
     $this->mock(PayjpBillingClient::class, function ($mock) {
         $mock->shouldReceive('addCustomerCardFromToken')
@@ -212,7 +212,7 @@ test('4-3-3: 【カード更新】 PAY.JP API 失敗時は HttpException を投�
 
 test('4-3-4: 【カード削除】 デフォルトカードを削除し pm をクリアする', function () {
     $group = createBillingGroup([
-        'payjp_customer_id' => 'cus_delete_test',
+        'square_customer_id' => 'cus_delete_test',
         'pm_type' => 'Visa',
         'pm_last_four' => '4242',
         'pm_exp_month' => 12,
@@ -240,14 +240,14 @@ test('4-3-4: 【カード削除】 デフォルトカードを削除し pm を�
 });
 
 test('4-3-5: 【カード削除】 Customer 未登録なら 422 を投げる', function () {
-    $group = createBillingGroup(['payjp_customer_id' => null]);
+    $group = createBillingGroup(['square_customer_id' => null]);
 
     expect(fn() => billingService()->deleteCard($group))
         ->toThrow(HttpException::class, '課金情報が登録されていません。');
 });
 
 test('4-3-6: 【カード削除】 PAY.JP API 失敗時は HttpException を投げる', function () {
-    $group = createBillingGroup(['payjp_customer_id' => 'cus_delete_fail']);
+    $group = createBillingGroup(['square_customer_id' => 'cus_delete_fail']);
 
     $this->mock(PayjpBillingClient::class, function ($mock) {
         $mock->shouldReceive('retrieveCustomer')
@@ -262,7 +262,7 @@ test('4-3-6: 【カード削除】 PAY.JP API 失敗時は HttpException を投�
 // ===== createSubscription() メソッドのテストケース =====
 
 test('4-3-7: 【サブスク開始】 Customer 未作成時にサブスクを開始し課金状態を返す', function () {
-    $group = createBillingGroup(['payjp_customer_id' => null, 'ai_monthly_remaining' => 0]);
+    $group = createBillingGroup(['square_customer_id' => null, 'ai_monthly_remaining' => 0]);
     $customer = makePayjpCustomer(['id' => 'cus_subscribe_new']);
     $periodEnd = now()->addMonth()->startOfSecond();
     $payjpSubscription = makePayjpSubscription([
@@ -300,11 +300,11 @@ test('4-3-7: 【サブスク開始】 Customer 未作成時にサブスクを開
     $group->refresh();
     $subscription = $group->subscription();
 
-    expect($group->payjp_customer_id)->toBe('cus_subscribe_new')
+    expect($group->square_customer_id)->toBe('cus_subscribe_new')
         ->and($group->plan)->toBe(GroupPlan::STANDARD)
         ->and($group->pm_last_four)->toBe('4242')
         ->and($subscription)->not->toBeNull()
-        ->and($subscription->payjp_subscription_id)->toBe('sub_subscribe_new')
+        ->and($subscription->square_subscription_id)->toBe('sub_subscribe_new')
         ->and($subscription->status)->toBe('active')
         ->and($status['plan'])->toBe('standard')
         ->and($status['isSubscribed'])->toBeTrue()
@@ -312,7 +312,7 @@ test('4-3-7: 【サブスク開始】 Customer 未作成時にサブスクを開
 });
 
 test('4-3-8: 【サブスク開始】 既存 Customer でサブスクを開始する', function () {
-    $group = createBillingGroup(['payjp_customer_id' => 'cus_subscribe_existing']);
+    $group = createBillingGroup(['square_customer_id' => 'cus_subscribe_existing']);
     $customer = makePayjpCustomer(['id' => 'cus_subscribe_existing']);
     $payjpSubscription = makePayjpSubscription(['id' => 'sub_subscribe_existing']);
 
@@ -333,13 +333,13 @@ test('4-3-8: 【サブスク開始】 既存 Customer でサブスクを開始�
         'tok_subscribe_existing',
     );
 
-    expect($group->fresh()->subscription()?->payjp_subscription_id)->toBe('sub_subscribe_existing');
+    expect($group->fresh()->subscription()?->square_subscription_id)->toBe('sub_subscribe_existing');
 });
 
 test('4-3-9: 【サブスク開始】 current_period_end ありで月間残数をリセットする', function () {
     $periodEnd = now()->addMonth()->startOfSecond();
     $group = createBillingGroup([
-        'payjp_customer_id' => null,
+        'square_customer_id' => null,
         'ai_monthly_remaining' => 0,
     ]);
     $customer = makePayjpCustomer(['id' => 'cus_subscribe_renew']);
@@ -378,7 +378,7 @@ test('4-3-10: 【サブスク開始】 既にサブスク済みなら 422 を投
 });
 
 test('4-3-11: 【サブスク開始】 PAY.JP API 失敗時は HttpException を投げる', function () {
-    $group = createBillingGroup(['payjp_customer_id' => null]);
+    $group = createBillingGroup(['square_customer_id' => null]);
     $customer = makePayjpCustomer(['id' => 'cus_subscribe_fail']);
 
     $this->mock(PayjpBillingClient::class, function ($mock) use ($customer) {
@@ -401,9 +401,9 @@ test('4-3-11: 【サブスク開始】 PAY.JP API 失敗時は HttpException を
 test('4-3-12: 【サブスク解約】 期間終了解約し課金状態配列を返す', function () {
     $periodEnd = now()->addDays(30)->startOfSecond();
     $payjpSubId = 'sub_cancel_test';
-    $group = createBillingGroup(['plan' => GroupPlan::STANDARD, 'payjp_customer_id' => 'cus_sub_cancel']);
+    $group = createBillingGroup(['plan' => GroupPlan::STANDARD, 'square_customer_id' => 'cus_sub_cancel']);
     createSubscriptionRecord($group, [
-        'payjp_subscription_id' => $payjpSubId,
+        'square_subscription_id' => $payjpSubId,
         'status' => 'active',
         'ends_at' => null,
     ]);
@@ -442,7 +442,7 @@ test('4-3-14: 【サブスク解約】 PAY.JP API 失敗時は HttpException を
     $payjpSubId = 'sub_cancel_fail';
     $group = createBillingGroup(['plan' => GroupPlan::STANDARD]);
     createSubscriptionRecord($group, [
-        'payjp_subscription_id' => $payjpSubId,
+        'square_subscription_id' => $payjpSubId,
         'status' => 'active',
     ]);
 
@@ -460,7 +460,7 @@ test('4-3-14: 【サブスク解約】 PAY.JP API 失敗時は HttpException を
 // ===== purchasePack() メソッドのテストケース =====
 
 test('4-3-15: 【パック購入】 カードトークンでライトパックを購入し ai_pack_remaining を加算する', function () {
-    $group = createBillingGroup(['payjp_customer_id' => null, 'ai_pack_remaining' => 5]);
+    $group = createBillingGroup(['square_customer_id' => null, 'ai_pack_remaining' => 5]);
     $customer = makePayjpCustomer(['id' => 'cus_pack_light']);
 
     $this->mock(PayjpBillingClient::class, function ($mock) use ($group, $customer) {
@@ -498,13 +498,13 @@ test('4-3-15: 【パック購入】 カードトークンでライトパック�
 
     $group->refresh();
     expect($group->ai_pack_remaining)->toBe(15)
-        ->and($group->payjp_customer_id)->toBe('cus_pack_light')
+        ->and($group->square_customer_id)->toBe('cus_pack_light')
         ->and($status['plan'])->toBe('free')
         ->and($status['isSubscribed'])->toBeFalse();
 });
 
 test('4-3-16: 【パック購入】 カードトークンでバリューパックを購入する', function () {
-    $group = createBillingGroup(['payjp_customer_id' => null, 'ai_pack_remaining' => 0]);
+    $group = createBillingGroup(['square_customer_id' => null, 'ai_pack_remaining' => 0]);
     $customer = makePayjpCustomer(['id' => 'cus_pack_value']);
 
     $this->mock(PayjpBillingClient::class, function ($mock) use ($customer) {
@@ -531,7 +531,7 @@ test('4-3-16: 【パック購入】 カードトークンでバリューパッ�
 
 test('4-3-17: 【パック購入】 登録済みカードでトークンなし購入する', function () {
     $group = createBillingGroup([
-        'payjp_customer_id' => 'cus_pack_existing',
+        'square_customer_id' => 'cus_pack_existing',
         'ai_pack_remaining' => 2,
     ]);
 
@@ -550,14 +550,14 @@ test('4-3-17: 【パック購入】 登録済みカードでトークンなし�
 });
 
 test('4-3-18: 【パック購入】 Customer 未登録かつトークンなしなら 422 を投げる', function () {
-    $group = createBillingGroup(['payjp_customer_id' => null]);
+    $group = createBillingGroup(['square_customer_id' => null]);
 
     expect(fn() => billingService()->purchasePack($group, $this->user, BillingPackType::LIGHT))
         ->toThrow(HttpException::class, '支払い方法が登録されていません。カード情報を登録してください。');
 });
 
 test('4-3-19: 【パック購入】 PAY.JP API 失敗時は HttpException を投げる', function () {
-    $group = createBillingGroup(['payjp_customer_id' => 'cus_pack_charge_fail']);
+    $group = createBillingGroup(['square_customer_id' => 'cus_pack_charge_fail']);
 
     $this->mock(PayjpBillingClient::class, function ($mock) {
         $mock->shouldReceive('createCharge')
@@ -571,7 +571,7 @@ test('4-3-19: 【パック購入】 PAY.JP API 失敗時は HttpException を投
 
 test('4-3-20: 【パック購入】 空文字トークンは未指定として扱い登録済み Customer で課金する', function () {
     $group = createBillingGroup([
-        'payjp_customer_id' => 'cus_pack_empty_token',
+        'square_customer_id' => 'cus_pack_empty_token',
         'ai_pack_remaining' => 0,
     ]);
 
@@ -588,7 +588,7 @@ test('4-3-20: 【パック購入】 空文字トークンは未指定として�
 
 test('4-3-21: 【パック購入】 複数回購入で ai_pack_remaining が累積する', function () {
     $group = createBillingGroup([
-        'payjp_customer_id' => 'cus_pack_accumulate',
+        'square_customer_id' => 'cus_pack_accumulate',
         'ai_pack_remaining' => 5,
     ]);
 
@@ -605,7 +605,7 @@ test('4-3-21: 【パック購入】 複数回購入で ai_pack_remaining が累�
 });
 
 test('4-3-22: 【パック購入】 カード登録時の PAY.JP API 失敗時は HttpException を投げる', function () {
-    $group = createBillingGroup(['payjp_customer_id' => null]);
+    $group = createBillingGroup(['square_customer_id' => null]);
 
     $this->mock(PayjpBillingClient::class, function ($mock) {
         $mock->shouldReceive('createCustomer')
@@ -693,7 +693,7 @@ test('4-3-26: 【課金状態取得】 キャンセル済み（猶予期間終�
 
 test('4-3-27: 【課金状態取得】 pmType / pmLastFour / pmExpMonth / pmExpYear を返す', function () {
     $group = createBillingGroup([
-        'payjp_customer_id' => 'cus_pm_test',
+        'square_customer_id' => 'cus_pm_test',
         'pm_type' => 'Visa',
         'pm_last_four' => '4242',
         'pm_exp_month' => 12,
@@ -797,7 +797,7 @@ test('4-3-34: 【プラン変更予定取り消し】 解約予定を取り消�
     $payjpSubId = 'sub_resume_test';
     $group = createBillingGroup(['plan' => GroupPlan::STANDARD]);
     createSubscriptionRecord($group, [
-        'payjp_subscription_id' => $payjpSubId,
+        'square_subscription_id' => $payjpSubId,
         'status' => 'canceled',
         'ends_at' => $endsAt,
     ]);
@@ -836,7 +836,7 @@ test('4-3-36: 【プラン変更予定取り消し】 PAY.JP API 失敗時は Ht
     $payjpSubId = 'sub_resume_fail';
     $group = createBillingGroup(['plan' => GroupPlan::STANDARD]);
     createSubscriptionRecord($group, [
-        'payjp_subscription_id' => $payjpSubId,
+        'square_subscription_id' => $payjpSubId,
         'status' => 'canceled',
         'ends_at' => $endsAt,
     ]);
@@ -857,7 +857,7 @@ test('4-3-36: 【プラン変更予定取り消し】 PAY.JP API 失敗時は Ht
 test('4-3-37: 【請求履歴取得】 次回お支払い予定と過去 Charge 履歴を返す', function () {
     $periodEnd = now()->addDays(30)->startOfSecond();
     $chargeCreated = now()->subMonth()->startOfSecond();
-    $group = createBillingGroup(['payjp_customer_id' => 'cus_invoices', 'plan' => GroupPlan::STANDARD]);
+    $group = createBillingGroup(['square_customer_id' => 'cus_invoices', 'plan' => GroupPlan::STANDARD]);
     createSubscriptionRecord($group, [
         'status' => 'active',
         'current_period_end' => $periodEnd,
@@ -904,7 +904,7 @@ test('4-3-37: 【請求履歴取得】 次回お支払い予定と過去 Charge 
 });
 
 test('4-3-38: 【請求履歴取得】 Customer 未登録なら空を返す', function () {
-    $group = createBillingGroup(['payjp_customer_id' => null]);
+    $group = createBillingGroup(['square_customer_id' => null]);
 
     $result = billingService()->getInvoices($group);
 
@@ -916,7 +916,7 @@ test('4-3-38: 【請求履歴取得】 Customer 未登録なら空を返す', fu
 
 test('4-3-39: 【請求履歴取得】 解約猶予中（!isActive）は upcomingInvoice は null', function () {
     $endsAt = now()->addDays(7)->startOfSecond();
-    $group = createBillingGroup(['payjp_customer_id' => 'cus_grace', 'plan' => GroupPlan::STANDARD]);
+    $group = createBillingGroup(['square_customer_id' => 'cus_grace', 'plan' => GroupPlan::STANDARD]);
     createSubscriptionRecord($group, [
         'status' => 'canceled',
         'ends_at' => $endsAt,
@@ -943,7 +943,7 @@ test('4-3-39: 【請求履歴取得】 解約猶予中（!isActive）は upcomin
 });
 
 test('4-3-40: 【請求履歴取得】 paid=false の Charge は pastInvoices に含めない', function () {
-    $group = createBillingGroup(['payjp_customer_id' => 'cus_paid_filter', 'plan' => GroupPlan::STANDARD]);
+    $group = createBillingGroup(['square_customer_id' => 'cus_paid_filter', 'plan' => GroupPlan::STANDARD]);
     createSubscriptionRecord($group, ['status' => 'active']);
 
     $paidAt = now()->subDays(3)->startOfSecond();
@@ -975,7 +975,7 @@ test('4-3-40: 【請求履歴取得】 paid=false の Charge は pastInvoices �
 
 test('4-3-41: 【請求履歴取得】 PAY.JP 取得失敗時は upcoming と past を安全に返す', function () {
     $periodEnd = now()->addDays(30)->startOfSecond();
-    $group = createBillingGroup(['payjp_customer_id' => 'cus_list_fail', 'plan' => GroupPlan::STANDARD]);
+    $group = createBillingGroup(['square_customer_id' => 'cus_list_fail', 'plan' => GroupPlan::STANDARD]);
     createSubscriptionRecord($group, [
         'status' => 'active',
         'current_period_end' => $periodEnd,
@@ -996,7 +996,7 @@ test('4-3-41: 【請求履歴取得】 PAY.JP 取得失敗時は upcoming と pa
 
 test('4-3-42: 【請求履歴取得】 Charge がない場合 pastInvoices は空配列', function () {
     $periodEnd = now()->addDays(30)->startOfSecond();
-    $group = createBillingGroup(['payjp_customer_id' => 'cus_no_charges', 'plan' => GroupPlan::STANDARD]);
+    $group = createBillingGroup(['square_customer_id' => 'cus_no_charges', 'plan' => GroupPlan::STANDARD]);
     createSubscriptionRecord($group, [
         'status' => 'active',
         'current_period_end' => $periodEnd,
@@ -1016,7 +1016,7 @@ test('4-3-42: 【請求履歴取得】 Charge がない場合 pastInvoices は�
 
 test('4-3-43: 【請求履歴取得】 パック購入 Charge の description にクレジット数が含まれる', function () {
     $chargeCreated = now()->subDays(5)->startOfSecond();
-    $group = createBillingGroup(['payjp_customer_id' => 'cus_pack_desc', 'plan' => GroupPlan::STANDARD]);
+    $group = createBillingGroup(['square_customer_id' => 'cus_pack_desc', 'plan' => GroupPlan::STANDARD]);
     createSubscriptionRecord($group, ['status' => 'active']);
 
     $this->mock(PayjpBillingClient::class, function ($mock) use ($chargeCreated) {

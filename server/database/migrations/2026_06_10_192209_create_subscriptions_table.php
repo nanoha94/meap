@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('subscriptions', function (Blueprint $table) {
             $table->id();
             $table->foreignUuid('group_id')->constrained()->cascadeOnDelete();
-            $table->string('payjp_subscription_id')->unique();
-            $table->string('payjp_plan_id')->nullable();
+            $table->string('square_subscription_id')->unique();
+            $table->string('square_plan_variation_id')->nullable();
             $table->string('status');
             $table->timestamp('trial_ends_at')->nullable();
             $table->timestamp('ends_at')->nullable();

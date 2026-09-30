@@ -27,7 +27,7 @@ class BillingWebhookService
                 return;
             }
 
-            $group = Group::findByPayjpCustomerId($subscription['customer'] ?? null);
+            $group = Group::findBySquareCustomerId($subscription['customer'] ?? null);
             if ($group === null) {
                 return;
             }
@@ -51,7 +51,7 @@ class BillingWebhookService
             return;
         }
 
-        $group = Group::findByPayjpCustomerId($subscription['customer'] ?? null);
+        $group = Group::findBySquareCustomerId($subscription['customer'] ?? null);
         if ($group === null) {
             return;
         }
@@ -69,7 +69,7 @@ class BillingWebhookService
             return;
         }
 
-        $group = Group::findByPayjpCustomerId($subscription['customer'] ?? null);
+        $group = Group::findBySquareCustomerId($subscription['customer'] ?? null);
         if ($group === null) {
             return;
         }
@@ -87,7 +87,7 @@ class BillingWebhookService
             return;
         }
 
-        $group = Group::findByPayjpCustomerId($subscription['customer'] ?? null);
+        $group = Group::findBySquareCustomerId($subscription['customer'] ?? null);
         if ($group === null) {
             return;
         }

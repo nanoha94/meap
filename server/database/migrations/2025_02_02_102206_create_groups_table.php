@@ -18,6 +18,12 @@ return new class extends Migration
             $table->unsignedInteger('ai_monthly_remaining')->default(3);
             $table->timestamp('ai_usage_reset_at')->nullable();
             $table->unsignedInteger('ai_pack_remaining')->default(0);
+            $table->string('square_customer_id')->nullable()->index();
+            $table->string('square_card_id')->nullable();
+            $table->string('pm_type')->nullable();
+            $table->string('pm_last_four', 4)->nullable();
+            $table->unsignedTinyInteger('pm_exp_month')->nullable();
+            $table->unsignedSmallInteger('pm_exp_year')->nullable();
             $table->timestamps();
         });
     }

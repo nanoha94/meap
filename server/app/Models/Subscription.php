@@ -9,8 +9,8 @@ class Subscription extends Model
 {
     protected $fillable = [
         'group_id',
-        'payjp_subscription_id',
-        'payjp_plan_id',
+        'square_subscription_id',
+        'square_plan_variation_id',
         'status',
         'trial_ends_at',
         'ends_at',

@@ -29,9 +29,9 @@ class BillingService
      */
     public function createOrUpdatePayjpCustomer(Group $group, User $user, string $cardToken): void
     {
-        if ($group->hasPayjpCustomer()) {
+        if ($group->hasSquareCustomer()) {
             $customer = $this->payjp->addCustomerCardFromToken(
-                $group->payjp_customer_id,
+                $group->square_customer_id,
                 $cardToken,
             );
         } else {
@@ -45,7 +45,7 @@ class BillingService
             ]);
 
             $group->forceFill([
-                'payjp_customer_id' => $customer->id,
+                'square_customer_id' => $customer->id,
             ])->save();
         }
 
@@ -128,7 +128,7 @@ class BillingService
      */
     public function deleteCard(Group $group): void
     {
-        if (! $group->hasPayjpCustomer()) {
+        if (! $group->hasSquareCustomer()) {
             throw new HttpException(
                 HttpStatusCode::UNPROCESSABLE_ENTITY->value,
                 __('api.billing.no_billing_account'),
@@ -136,12 +136,12 @@ class BillingService
         }
 
         try {
-            $customer = $this->payjp->retrieveCustomer($group->payjp_customer_id);
+            $customer = $this->payjp->retrieveCustomer($group->square_customer_id);
             $card = $this->getDefaultCard($customer);
             $cardId = $card->id ?? null;
 
             if (is_string($cardId) && $cardId !== '') {
-                $this->payjp->deleteCustomerCard($group->payjp_customer_id, $cardId);
+                $this->payjp->deleteCustomerCard($group->square_customer_id, $cardId);
             }
 
             $group->forceFill([
@@ -191,7 +191,7 @@ class BillingService
         try {
             if ($cardToken !== null && $cardToken !== '') {
                 $this->createOrUpdatePayjpCustomer($group, $user, $cardToken);
-            } elseif (! $group->hasPayjpCustomer()) {
+            } elseif (! $group->hasSquareCustomer()) {
                 throw new HttpException(
                     HttpStatusCode::UNPROCESSABLE_ENTITY->value,
                     __('api.billing.no_payment_method'),
@@ -199,7 +199,7 @@ class BillingService
             }
 
             $payjpSubscription = $this->payjp->createSubscription([
-                'customer' => $group->payjp_customer_id,
+                'customer' => $group->square_customer_id,
                 'plan' => $planId,
                 'metadata' => [
                     'group_id' => $group->id,
@@ -252,7 +252,7 @@ class BillingService
         $subscription = $group->subscription();
 
         try {
-            $payjpSubscription = $this->payjp->cancelSubscription($subscription->payjp_subscription_id);
+            $payjpSubscription = $this->payjp->cancelSubscription($subscription->square_subscription_id);
             $this->syncLocalSubscription($group, $payjpSubscription);
         } catch (PayjpError $e) {
             throw $this->payjpHttpException($e, __('api.billing.cancel_failed'));
@@ -289,7 +289,7 @@ class BillingService
         try {
             if ($cardToken !== null && $cardToken !== '') {
                 $this->createOrUpdatePayjpCustomer($group, $user, $cardToken);
-            } elseif (! $group->hasPayjpCustomer()) {
+            } elseif (! $group->hasSquareCustomer()) {
                 throw new HttpException(
                     HttpStatusCode::UNPROCESSABLE_ENTITY->value,
                     __('api.billing.no_payment_method'),
@@ -299,7 +299,7 @@ class BillingService
             $this->payjp->createCharge([
                 'amount' => $amount,
                 'currency' => 'jpy',
-                'customer' => $group->payjp_customer_id,
+                'customer' => $group->square_customer_id,
                 'metadata' => [
                     'type' => 'pack',
                     'group_id' => $group->id,
@@ -391,7 +391,7 @@ class BillingService
 
         try {
             // キャンセル済みのサブスクリプションを再開する
-            $payjpSubscription = $this->payjp->resumeSubscription($subscription->payjp_subscription_id);
+            $payjpSubscription = $this->payjp->resumeSubscription($subscription->square_subscription_id);
             $this->syncLocalSubscription($group, $payjpSubscription);
         } catch (PayjpError $e) {
             throw $this->payjpHttpException($e, __('api.billing.resume_failed'));
@@ -461,10 +461,10 @@ class BillingService
         $endsAt = $this->getSubscriptionEndsAt($payjpSubscription);
 
         Subscription::query()->updateOrCreate(
-            ['payjp_subscription_id' => (string) $payjpSubscription->id],
+            ['square_subscription_id' => (string) $payjpSubscription->id],
             [
                 'group_id' => $group->id,
-                'payjp_plan_id' => $this->extractPayjpSubscriptionPlanId($payjpSubscription),
+                'square_plan_variation_id' => $this->extractPayjpSubscriptionPlanId($payjpSubscription),
                 'status' => (string) ($payjpSubscription->status ?? 'active'),
                 'trial_ends_at' => $this->timestampToCarbon($payjpSubscription->trial_end ?? null),
                 'ends_at' => $endsAt,
@@ -552,7 +552,7 @@ class BillingService
         $upcomingInvoice = null;
         $pastInvoices = [];
 
-        if (! $group->hasPayjpCustomer()) {
+        if (! $group->hasSquareCustomer()) {
             return [
                 'upcomingInvoice' => null,
                 'pastInvoices' => [],
@@ -576,7 +576,7 @@ class BillingService
                 ->getTimestamp();
 
             $charges = $this->payjp->listCharges([
-                'customer' => $group->payjp_customer_id,
+                'customer' => $group->square_customer_id,
                 'since' => $chargeSince,
                 'limit' => $chargeHistoryLimit,
             ]);

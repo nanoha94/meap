@@ -17,7 +17,7 @@ class PayjpWebhookController extends Controller
      */
     public function handle(Request $request): Response
     {
-        $expectedToken = (string) config('services.payjp.webhook_token', '');
+        $expectedToken = (string) env('PAYJP_WEBHOOK_TOKEN', '');
         $providedToken = (string) $request->header('X-Payjp-Webhook-Token', '');
 
         if ($expectedToken === '' || ! hash_equals($expectedToken, $providedToken)) {
