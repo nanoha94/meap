@@ -98,6 +98,7 @@ return [
         'pack_charge_line' => '買い切りパック :label',
         'pack_label_light' => 'ライト',
         'pack_label_value' => 'バリュー',
+        'unknown_charge_line' => 'その他のお支払い',
         'rate_limit_exceeded' => '短時間で複数回リクエストしているので、課金操作を一時停止しています。時間をおいて試してください。',
     ],
 

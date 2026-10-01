@@ -17,12 +17,10 @@ return new class extends Migration
             $table->string('square_subscription_id')->unique();
             $table->string('square_plan_variation_id')->nullable();
             $table->string('status');
-            $table->timestamp('trial_ends_at')->nullable();
             $table->timestamp('ends_at')->nullable();
             $table->timestamp('current_period_start')->nullable();
             $table->timestamp('current_period_end')->nullable();
             $table->timestamp('canceled_at')->nullable();
-            $table->timestamp('paused_at')->nullable();
             $table->timestamps();
 
             $table->index(['group_id', 'status']);

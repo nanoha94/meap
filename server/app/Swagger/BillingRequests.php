@@ -7,7 +7,7 @@ namespace App\Swagger;
  *
  * @OA\Schema(
  *     schema="BillingSubscribeRequest",
- *     @OA\Property(property="cardToken", type="string", nullable=true, description="PAY.JP カードトークン（未登録時は必須。登録済みカードで開始する場合は省略可）", example="tok_xxxxx")
+ *     @OA\Property(property="cardToken", type="string", nullable=true, description="Square カードトークン（未登録時は必須。登録済みカードで開始する場合は省略可）", example="cnon:card-nonce-ok")
  * )
  * 
  * @OA\RequestBody(
@@ -20,7 +20,7 @@ namespace App\Swagger;
  *
  * @OA\Schema(
  *     schema="BillingPackPurchaseRequest",
- *     @OA\Property(property="cardToken", type="string", nullable=true, description="PAY.JP カードトークン（未登録時は必須。登録済みカードで購入する場合は省略可）", example="tok_xxxxx")
+ *     @OA\Property(property="cardToken", type="string", nullable=true, description="Square カードトークン（未登録時は必須。登録済みカードで購入する場合は省略可）", example="cnon:card-nonce-ok")
  * )
  * 
  * @OA\RequestBody(
@@ -34,7 +34,7 @@ namespace App\Swagger;
  * @OA\Schema(
  *     schema="BillingCardUpdateRequest",
  *     required={"cardToken"},
- *     @OA\Property(property="cardToken", type="string", description="PAY.JP カードトークン", example="tok_xxxxx")
+ *     @OA\Property(property="cardToken", type="string", description="Square カードトークン", example="cnon:card-nonce-ok")
  * )
  *
  * @OA\RequestBody(

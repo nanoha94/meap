@@ -254,7 +254,7 @@ test('3-15-10: 【請求履歴取得】 サービス例外', function () {
     $this->mock(BillingService::class, function ($mock) {
         $mock->shouldReceive('getInvoices')
             ->once()
-            ->andThrow(new \Exception('PAY.JP API error'));
+            ->andThrow(new \Exception('Square API error'));
     });
 
     $response = $this->actingAs($this->user)->get('/billing/invoices');
@@ -424,7 +424,7 @@ test('3-15-19: 【サブスク開始】 サービス例外', function () {
     $this->mock(BillingService::class, function ($mock) {
         $mock->shouldReceive('createSubscription')
             ->once()
-            ->andThrow(new \Exception('PAY.JP API error'));
+            ->andThrow(new \Exception('Square API error'));
     });
 
     $response = $this->actingAs($this->user)->postJson('/billing/subscription/standard', [
@@ -532,7 +532,7 @@ test('3-15-25: 【サブスク解約】 サービス例外', function () {
     $this->mock(BillingService::class, function ($mock) {
         $mock->shouldReceive('cancelSubscription')
             ->once()
-            ->andThrow(new \Exception('PAY.JP API error'));
+            ->andThrow(new \Exception('Square API error'));
     });
 
     $response = $this->actingAs($this->user)->postJson('/billing/subscription/cancel');
@@ -632,7 +632,7 @@ test('3-15-31: 【プラン変更予定取り消し】 サービス例外', func
     $this->mock(BillingService::class, function ($mock) {
         $mock->shouldReceive('resumeSubscription')
             ->once()
-            ->andThrow(new \Exception('PAY.JP API error'));
+            ->andThrow(new \Exception('Square API error'));
     });
 
     $response = $this->actingAs($this->user)->postJson('/billing/subscription/resume');
@@ -786,7 +786,7 @@ test('3-15-40: 【パック購入】 サービス例外', function () {
     $this->mock(BillingService::class, function ($mock) {
         $mock->shouldReceive('purchasePack')
             ->once()
-            ->andThrow(new \Exception('PAY.JP API error'));
+            ->andThrow(new \Exception('Square API error'));
     });
 
     $response = $this->actingAs($this->user)->postJson('/billing/packs/light');
@@ -900,7 +900,7 @@ test('3-15-47: 【カード更新】 サービス例外', function () {
     $this->mock(BillingService::class, function ($mock) {
         $mock->shouldReceive('updateCard')
             ->once()
-            ->andThrow(new \Exception('PAY.JP API error'));
+            ->andThrow(new \Exception('Square API error'));
     });
 
     $response = $this->actingAs($this->user)->postJson('/billing/card', [
@@ -992,7 +992,7 @@ test('3-15-53: 【カード削除】 サービス例外', function () {
     $this->mock(BillingService::class, function ($mock) {
         $mock->shouldReceive('deleteCard')
             ->once()
-            ->andThrow(new \Exception('PAY.JP API error'));
+            ->andThrow(new \Exception('Square API error'));
     });
 
     $response = $this->actingAs($this->user)->deleteJson('/billing/card');

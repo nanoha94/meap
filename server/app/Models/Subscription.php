@@ -12,21 +12,17 @@ class Subscription extends Model
         'square_subscription_id',
         'square_plan_variation_id',
         'status',
-        'trial_ends_at',
         'ends_at',
         'current_period_start',
         'current_period_end',
         'canceled_at',
-        'paused_at',
     ];
 
     protected $casts = [
-        'trial_ends_at' => 'datetime',
         'ends_at' => 'datetime',
         'current_period_start' => 'datetime',
         'current_period_end' => 'datetime',
         'canceled_at' => 'datetime',
-        'paused_at' => 'datetime',
     ];
 
     /**
@@ -38,9 +34,9 @@ class Subscription extends Model
     }
 
     /**
-     * PAY.JP 上で契約が継続中かどうか（解約・停止前）。
+     * 契約が継続中かどうか（解約・停止前）。
      *
-     * meap ではトライアル期間は提供しないが、PAY.JP の status や将来のプラン設定に備え trial も active と同様に扱う。
+     * meap ではトライアル期間は提供しないが、status が trial の場合も active と同様に扱う。
      */
     public function isActive(): bool
     {

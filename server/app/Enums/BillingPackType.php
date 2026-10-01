@@ -34,7 +34,7 @@ enum BillingPackType: string
      *
      * @throws HttpException 金額が未設定のとき
      */
-    public function payjpPackPrice(): int
+    public function squarePackPrice(): int
     {
         $price = config('billing.pack_prices.' . $this->value);
 

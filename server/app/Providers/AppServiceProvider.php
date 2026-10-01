@@ -8,7 +8,7 @@ use App\Interfaces\RecipeOcrInterface;
 use App\Services\Ai\GoogleVisionRecipeOcr;
 use App\Services\Ai\OpenAiRecipeOcr;
 use App\Services\Ai\OpenAiRecipeParser;
-use App\Services\PayjpBillingClient;
+use App\Services\SquareBillingClient;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -39,7 +39,7 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->bind(AiRecipeParserInterface::class, OpenAiRecipeParser::class);
 
-        $this->app->singleton(PayjpBillingClient::class);
+        $this->app->singleton(SquareBillingClient::class);
     }
 
     /**
