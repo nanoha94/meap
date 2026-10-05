@@ -31,13 +31,18 @@ class BillingService
      *
      * @throws SquareApiException
      */
-    public function createOrUpdateSquareCustomer(Group $group, User $user, string $cardToken): void
-    {
+    public function createOrUpdateSquareCustomer(
+        Group $group,
+        User $user,
+        string $cardToken,
+        ?string $verificationToken = null,
+    ): void {
         if ($group->hasSquareCustomer()) {
             $card = $this->square->addCustomerCardFromToken(
                 $group->square_customer_id,
                 $cardToken,
                 $group->square_card_id,
+                $verificationToken,
             );
         } else {
             $customer = $this->square->createCustomer([
@@ -51,7 +56,7 @@ class BillingService
                 throw new SquareApiException('Square customer id is missing', 502, null);
             }
 
-            $card = $this->square->createCard($customerId, $cardToken);
+            $card = $this->square->createCard($customerId, $cardToken, $verificationToken);
 
             $group->forceFill([
                 'square_customer_id' => $customerId,
@@ -109,10 +114,14 @@ class BillingService
      *
      * @throws HttpException
      */
-    public function updateCard(Group $group, User $user, string $cardToken): array
-    {
+    public function updateCard(
+        Group $group,
+        User $user,
+        string $cardToken,
+        ?string $verificationToken = null,
+    ): array {
         try {
-            $this->createOrUpdateSquareCustomer($group, $user, $cardToken);
+            $this->createOrUpdateSquareCustomer($group, $user, $cardToken, $verificationToken);
         } catch (SquareApiException $e) {
             throw $this->squareHttpException($e, __('api.billing.card_update_failed'));
         }
@@ -175,6 +184,7 @@ class BillingService
         User $user,
         BillingSubscriptionType $subscriptionType,
         ?string $cardToken = null,
+        ?string $verificationToken = null,
     ): array {
         if ($group->isSubscribed()) {
             throw new HttpException(
@@ -188,7 +198,7 @@ class BillingService
 
         try {
             if ($cardToken !== null && $cardToken !== '') {
-                $this->createOrUpdateSquareCustomer($group, $user, $cardToken);
+                $this->createOrUpdateSquareCustomer($group, $user, $cardToken, $verificationToken);
             } elseif (! $group->hasSquareCustomer()) {
                 throw new HttpException(
                     HttpStatusCode::UNPROCESSABLE_ENTITY->value,
@@ -285,12 +295,13 @@ class BillingService
         User $user,
         BillingPackType $packType,
         ?string $cardToken = null,
+        ?string $verificationToken = null,
     ): array {
         $amount = $packType->squarePackPrice();
 
         try {
             if ($cardToken !== null && $cardToken !== '') {
-                $this->createOrUpdateSquareCustomer($group, $user, $cardToken);
+                $this->createOrUpdateSquareCustomer($group, $user, $cardToken, $verificationToken);
             } elseif (! $group->hasSquareCustomer()) {
                 throw new HttpException(
                     HttpStatusCode::UNPROCESSABLE_ENTITY->value,

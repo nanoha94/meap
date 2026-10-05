@@ -83,17 +83,25 @@ class SquareBillingClient
      * Square Cards API でカードを作成する。
      * @param  string  $customerId
      * @param  string  $sourceId
+     * @param  string|null  $verificationToken  CreateCard の任意 verification_token。通常は省略
      * @return \Square\Types\Card
      */
     public function createCard(
         string $customerId,
         string $sourceId,
+        ?string $verificationToken = null,
     ): Card {
-        $request = new CreateCardRequest([
+        $values = [
             'idempotencyKey' => Str::uuid()->toString(),
             'sourceId' => $sourceId,
             'card' => new Card(['customerId' => $customerId]),
-        ]);
+        ];
+
+        if (is_string($verificationToken) && $verificationToken !== '') {
+            $values['verificationToken'] = $verificationToken;
+        }
+
+        $request = new CreateCardRequest($values);
 
         $response = $this->client()->cards->create($request);
         $this->throwIfResponseHasErrors($response->getErrors(), 'createCard');
@@ -111,14 +119,16 @@ class SquareBillingClient
      * @param  string  $customerId
      * @param  string  $sourceId
      * @param  string|null  $oldCardId
+     * @param  string|null  $verificationToken  CreateCard の任意 verification_token。通常は省略
      * @return \Square\Types\Card
      */
     public function addCustomerCardFromToken(
         string $customerId,
         string $sourceId,
         ?string $oldCardId = null,
+        ?string $verificationToken = null,
     ): Card {
-        $card = $this->createCard($customerId, $sourceId);
+        $card = $this->createCard($customerId, $sourceId, $verificationToken);
 
         if (is_string($oldCardId) && $oldCardId !== '') {
             $this->disableCard($oldCardId);

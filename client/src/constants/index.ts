@@ -13,7 +13,7 @@ export * from './legal';
 export * from './links';
 export * from './metadata';
 export * from './navigation';
-export * from './payjp';
 export * from './quantity';
 export * from './site';
+export * from './square';
 export * from './tmpIdPrefix';

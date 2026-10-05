@@ -31,6 +31,7 @@ import {
     IBillingStatus,
     PlanActionButtonConfig,
 } from '@/types';
+import { SQUARE_VERIFICATION_INTENT } from '@/types/vendor/square';
 import {
     formatYen,
     getPlanActionButtonConfig,
@@ -99,6 +100,7 @@ const SubscriptionPlanChange = ({
             children: (
                 <BillingCheckoutPayment
                     billingStatus={billingStatus}
+                    tokenizationIntent={SQUARE_VERIFICATION_INTENT.STORE}
                     orderRows={standardSubscribeOrderRows}
                     orderNote="お申し込み後、スタンダードプランが即時反映され、上記金額が請求されます。"
                     submitButtonText="申し込む"

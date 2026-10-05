@@ -2,9 +2,7 @@
 
 import React from 'react';
 
-import { Lock } from 'lucide-react';
-
-import { Button, PayjpCardForm } from '@/components';
+import { Button, SquareCardForm } from '@/components';
 import {
     BUTTON_TYPE,
     BUTTON_VARIANT,
@@ -13,9 +11,11 @@ import {
 import { useDialog, useSnackbars } from '@/hooks';
 import {
     BillingCheckoutOrderRow,
+    BillingTokenizationIntent,
+    CardFormHandle,
     IBillingStatus,
-    PayjpCardFormHandle,
 } from '@/types';
+import { SQUARE_VERIFICATION_INTENT } from '@/types/vendor/square';
 import {
     formatCardExpiration,
     formatMaskedCardNumber,
@@ -24,36 +24,40 @@ import {
 
 interface Props {
     billingStatus?: IBillingStatus | null;
+    chargeAmountYen?: number; // CHARGE 時の決済金額（パック購入時のみ指定）
     forceNewCard?: boolean;
     orderRows: BillingCheckoutOrderRow[];
     orderNote: string;
     submitButtonText: string;
+    tokenizationIntent?: BillingTokenizationIntent;
     onSubmit: (cardToken?: string) => Promise<boolean>;
     onSuccess: () => void;
 }
 
 const BillingCheckoutPayment = ({
     billingStatus,
+    chargeAmountYen,
     forceNewCard = false,
     orderRows,
     orderNote,
     submitButtonText,
+    tokenizationIntent = SQUARE_VERIFICATION_INTENT.STORE,
     onSubmit,
     onSuccess,
 }: Props) => {
     const { closeDialog } = useDialog();
     const { addSnackbar } = useSnackbars();
-    const payjpCardFormRef = React.useRef<PayjpCardFormHandle>(null);
+    const cardFormRef = React.useRef<CardFormHandle>(null);
     const [isCardFormComplete, setIsCardFormComplete] = React.useState(false);
     const hasRegisteredCard = hasBillingPaymentMethod(billingStatus ?? null);
-    const [isPayjpCardFormShown, setIsPayjpCardFormShown] = React.useState(
+    const [isCardFormShown, setIsCardFormShown] = React.useState(
         !hasRegisteredCard || forceNewCard,
     );
     const isDisabledSendButton =
-        isPayjpCardFormShown && !isCardFormComplete;
+        isCardFormShown && !isCardFormComplete;
 
     const handleSubmit = React.useCallback(async () => {
-        if (!isPayjpCardFormShown) {
+        if (!isCardFormShown) {
             const success = await onSubmit();
 
             if (success) {
@@ -62,7 +66,7 @@ const BillingCheckoutPayment = ({
             return;
         }
 
-        const tokenResult = await payjpCardFormRef.current?.createToken();
+        const tokenResult = await cardFormRef.current?.createToken();
 
         if (!tokenResult?.ok) {
             addSnackbar(
@@ -77,7 +81,7 @@ const BillingCheckoutPayment = ({
         if (success) {
             onSuccess();
         }
-    }, [addSnackbar, onSubmit, onSuccess, isPayjpCardFormShown]);
+    }, [addSnackbar, isCardFormShown, onSubmit, onSuccess]);
 
     return (
         <div className="flex w-full flex-col gap-y-6">
@@ -99,29 +103,29 @@ const BillingCheckoutPayment = ({
                 <h3 className="text-base font-bold">
                     {forceNewCard ? '新しいカード' : 'クレジットカード決済'}
                 </h3>
-                {!isPayjpCardFormShown && billingStatus ? (
+                {!isCardFormShown && billingStatus ? (
                     <>
                         <RegisteredCard billingStatus={billingStatus} />
                         <button
                             type={BUTTON_TYPE.BUTTON}
                             className="text-primary-main w-fit font-bold underline transition-opacity hover:opacity-80"
                             onClick={() => {
-                                setIsPayjpCardFormShown(true);
+                                setIsCardFormShown(true);
                             }}>
                             支払い方法を変更
                         </button>
                     </>
                 ) : (
-                    <PayjpCardForm
-                        ref={payjpCardFormRef}
+                    <SquareCardForm
+                        ref={cardFormRef}
+                        tokenizationIntent={tokenizationIntent}
+                        chargeAmountYen={chargeAmountYen}
                         onChange={({ complete }) => {
                             setIsCardFormComplete(complete);
                         }}
                     />
                 )}
             </section>
-
-            {isPayjpCardFormShown && <PayjpSecurityNote />}
 
             <div className="flex gap-x-3 md:justify-end">
                 <Button
@@ -216,25 +220,3 @@ const RegisteredCard = ({ billingStatus }: RegisteredCardProps) => {
         </div>
     );
 };
-
-const PayjpSecurityNote = () => (
-    <p className="flex gap-x-2 text-xs">
-        <Lock
-            className="mt-0.5 size-4"
-            aria-hidden
-        />
-        <span>
-            カード情報は
-            <span> </span>
-            <a
-                href="https://pay.jp/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary-main font-bold underline">
-                PAY.JP
-            </a>
-            <span> </span>
-            の決済システムで安全に処理され、当サービスのサーバーには保存されません。
-        </span>
-    </p>
-);

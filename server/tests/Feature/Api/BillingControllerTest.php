@@ -288,6 +288,7 @@ test('3-15-11: 【サブスク開始】 正常にサブスクリプションを�
                 Mockery::type(User::class),
                 BillingSubscriptionType::STANDARD,
                 $cardToken,
+                null,
             )
             ->andReturn($status);
     });
@@ -304,6 +305,41 @@ test('3-15-11: 【サブスク開始】 正常にサブスクリプションを�
     ]);
     $response->assertJsonStructure(billingStatusJsonStructure());
     $response->assertHeader('Content-Type', 'application/json');
+});
+
+test('3-15-57: 【サブスク開始】 verificationToken をサービスに渡す', function () {
+    $status = array_merge(sampleBillingStatus(), [
+        'plan' => 'standard',
+        'isSubscribed' => true,
+        'subscriptionStatus' => 'active',
+    ]);
+    $cardToken = 'tok_test_subscribe';
+    $verificationToken = 'verf_test_subscribe';
+
+    $this->mock(BillingService::class, function ($mock) use ($status, $cardToken, $verificationToken) {
+        $mock->shouldReceive('createSubscription')
+            ->once()
+            ->with(
+                Mockery::type(Group::class),
+                Mockery::type(User::class),
+                BillingSubscriptionType::STANDARD,
+                $cardToken,
+                $verificationToken,
+            )
+            ->andReturn($status);
+    });
+
+    $response = $this->actingAs($this->user)->postJson('/billing/subscription/standard', [
+        'cardToken' => $cardToken,
+        'verificationToken' => $verificationToken,
+    ]);
+
+    $response->assertStatus(200);
+    $response->assertJson([
+        'success' => true,
+        'message' => 'サブスクリプションを開始しました。',
+        'data' => $status,
+    ]);
 });
 
 test('3-15-12: 【サブスク開始】 未認証', function () {
@@ -377,6 +413,7 @@ test('3-15-16: 【サブスク開始】 cardToken なしでサブスクリプシ
                 Mockery::type(User::class),
                 BillingSubscriptionType::STANDARD,
                 null,
+                null,
             )
             ->andReturn($status);
     });
@@ -400,6 +437,16 @@ test('3-15-17: 【サブスク開始】 バリデーションエラー（cardTok
 
     $response->assertStatus(422);
     $response->assertJsonValidationErrors(['cardToken']);
+});
+
+test('3-15-54: 【サブスク開始】 バリデーションエラー（verificationToken が文字列でない）', function () {
+    $response = $this->actingAs($this->user)->postJson('/billing/subscription/standard', [
+        'cardToken' => 'tok_test_subscribe',
+        'verificationToken' => 12345,
+    ]);
+
+    $response->assertStatus(422);
+    $response->assertJsonValidationErrors(['verificationToken']);
 });
 
 test('3-15-18: 【サブスク開始】 既にサブスク済み', function () {
@@ -663,6 +710,7 @@ test('3-15-32: 【パック購入】 正常にパックを購入できる（ligh
                 Mockery::type(User::class),
                 BillingPackType::LIGHT,
                 $cardToken,
+                null,
             )
             ->andReturn($status);
     });
@@ -697,6 +745,7 @@ test('3-15-33: 【パック購入】 正常にパックを購入できる（valu
                 Mockery::type(User::class),
                 BillingPackType::VALUE,
                 null,
+                null,
             )
             ->andReturn($status);
     });
@@ -711,6 +760,37 @@ test('3-15-33: 【パック購入】 正常にパックを購入できる（valu
     ]);
     $response->assertJsonStructure(billingStatusJsonStructure());
     $response->assertHeader('Content-Type', 'application/json');
+});
+
+test('3-15-58: 【パック購入】 verificationToken をサービスに渡す', function () {
+    $status = sampleBillingStatus();
+    $cardToken = 'tok_test_pack';
+    $verificationToken = 'verf_test_pack';
+
+    $this->mock(BillingService::class, function ($mock) use ($status, $cardToken, $verificationToken) {
+        $mock->shouldReceive('purchasePack')
+            ->once()
+            ->with(
+                Mockery::type(Group::class),
+                Mockery::type(User::class),
+                BillingPackType::LIGHT,
+                $cardToken,
+                $verificationToken,
+            )
+            ->andReturn($status);
+    });
+
+    $response = $this->actingAs($this->user)->postJson('/billing/packs/light', [
+        'cardToken' => $cardToken,
+        'verificationToken' => $verificationToken,
+    ]);
+
+    $response->assertStatus(200);
+    $response->assertJson([
+        'success' => true,
+        'message' => '買い切りパックを購入しました。',
+        'data' => $status,
+    ]);
 });
 
 test('3-15-34: 【パック購入】 未認証', function () {
@@ -766,6 +846,16 @@ test('3-15-38: 【パック購入】 バリデーションエラー（cardToken 
     $response->assertJsonValidationErrors(['cardToken']);
 });
 
+test('3-15-55: 【パック購入】 バリデーションエラー（verificationToken が文字列でない）', function () {
+    $response = $this->actingAs($this->user)->postJson('/billing/packs/light', [
+        'cardToken' => 'tok_test_pack',
+        'verificationToken' => 12345,
+    ]);
+
+    $response->assertStatus(422);
+    $response->assertJsonValidationErrors(['verificationToken']);
+});
+
 test('3-15-39: 【パック購入】 支払い方法未登録', function () {
     $this->mock(BillingService::class, function ($mock) {
         $mock->shouldReceive('purchasePack')
@@ -816,6 +906,7 @@ test('3-15-41: 【カード更新】 正常にカード情報を更新できる'
                 Mockery::type(Group::class),
                 Mockery::type(User::class),
                 $cardToken,
+                null,
             )
             ->andReturn($status);
     });
@@ -832,6 +923,36 @@ test('3-15-41: 【カード更新】 正常にカード情報を更新できる'
     ]);
     $response->assertJsonStructure(billingStatusJsonStructure());
     $response->assertHeader('Content-Type', 'application/json');
+});
+
+test('3-15-59: 【カード更新】 verificationToken をサービスに渡す', function () {
+    $status = sampleBillingStatus();
+    $cardToken = 'tok_test_card';
+    $verificationToken = 'verf_test_card';
+
+    $this->mock(BillingService::class, function ($mock) use ($status, $cardToken, $verificationToken) {
+        $mock->shouldReceive('updateCard')
+            ->once()
+            ->with(
+                Mockery::type(Group::class),
+                Mockery::type(User::class),
+                $cardToken,
+                $verificationToken,
+            )
+            ->andReturn($status);
+    });
+
+    $response = $this->actingAs($this->user)->postJson('/billing/card', [
+        'cardToken' => $cardToken,
+        'verificationToken' => $verificationToken,
+    ]);
+
+    $response->assertStatus(200);
+    $response->assertJson([
+        'success' => true,
+        'message' => 'カード情報を更新しました。',
+        'data' => $status,
+    ]);
 });
 
 test('3-15-42: 【カード更新】 未認証', function () {
@@ -894,6 +1015,16 @@ test('3-15-46: 【カード更新】 バリデーションエラー（cardToken 
 
     $response->assertStatus(422);
     $response->assertJsonValidationErrors(['cardToken']);
+});
+
+test('3-15-56: 【カード更新】 バリデーションエラー（verificationToken が文字列でない）', function () {
+    $response = $this->actingAs($this->user)->postJson('/billing/card', [
+        'cardToken' => 'tok_test_card',
+        'verificationToken' => 12345,
+    ]);
+
+    $response->assertStatus(422);
+    $response->assertJsonValidationErrors(['verificationToken']);
 });
 
 test('3-15-47: 【カード更新】 サービス例外', function () {

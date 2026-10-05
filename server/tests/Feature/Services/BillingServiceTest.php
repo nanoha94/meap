@@ -169,7 +169,7 @@ test('4-3-1: 【カード更新】 課金状態配列を返し pm 情報を同�
     $this->mock(SquareBillingClient::class, function ($mock) use ($card) {
         $mock->shouldReceive('addCustomerCardFromToken')
             ->once()
-            ->with('cus_update_test', 'tok_test_update', null)
+            ->with('cus_update_test', 'tok_test_update', null, null)
             ->andReturn($card);
     });
 
@@ -204,7 +204,7 @@ test('4-3-2: 【カード更新】 Customer 未作成時は新規作成する', 
             ->andReturn($customer);
         $mock->shouldReceive('createCard')
             ->once()
-            ->with('cus_new_test', 'tok_test_new')
+            ->with('cus_new_test', 'tok_test_new', null)
             ->andReturn($card);
     });
 
@@ -213,6 +213,46 @@ test('4-3-2: 【カード更新】 Customer 未作成時は新規作成する', 
     $group->refresh();
     expect($group->square_customer_id)->toBe('cus_new_test')
         ->and($status['pmLastFour'])->toBe('4242');
+});
+
+test('4-3-47: 【カード更新】 verificationToken を Square に渡す', function () {
+    $group = createBillingGroup([
+        'square_customer_id' => 'cus_verify_test',
+        'plan' => GroupPlan::FREE,
+    ]);
+    $card = makeSquareCard('ccof_verify_test', ['customerId' => 'cus_verify_test']);
+
+    $this->mock(SquareBillingClient::class, function ($mock) use ($card) {
+        $mock->shouldReceive('addCustomerCardFromToken')
+            ->once()
+            ->with('cus_verify_test', 'tok_verify', null, 'verf_test')
+            ->andReturn($card);
+    });
+
+    billingService()->updateCard($group, $this->user, 'tok_verify', 'verf_test');
+});
+
+test('4-3-48: 【カード更新】 新規 Customer の verificationToken を createCard に渡す', function () {
+    $group = createBillingGroup(['square_customer_id' => null]);
+    $customer = makeSquareCustomer(['id' => 'cus_verify_new']);
+    $card = makeSquareCard('ccof_verify_new', ['customerId' => 'cus_verify_new']);
+
+    $this->mock(SquareBillingClient::class, function ($mock) use ($group, $customer, $card) {
+        $mock->shouldReceive('createCustomer')
+            ->once()
+            ->with([
+                'emailAddress' => $this->user->email,
+                'note' => $this->user->name,
+                'referenceId' => $group->id,
+            ])
+            ->andReturn($customer);
+        $mock->shouldReceive('createCard')
+            ->once()
+            ->with('cus_verify_new', 'tok_verify_new', 'verf_new')
+            ->andReturn($card);
+    });
+
+    billingService()->updateCard($group, $this->user, 'tok_verify_new', 'verf_new');
 });
 
 test('4-3-3: 【カード更新】 Square API 失敗時は HttpException を投げる', function () {
@@ -302,7 +342,7 @@ test('4-3-7: 【サブスク開始】 Customer 未作成時にサブスクを開
             ->andReturn($customer);
         $mock->shouldReceive('createCard')
             ->once()
-            ->with('cus_subscribe_new', 'tok_subscribe_new')
+            ->with('cus_subscribe_new', 'tok_subscribe_new', null)
             ->andReturn($card);
         $mock->shouldReceive('createSubscription')
             ->once()
@@ -343,7 +383,7 @@ test('4-3-8: 【サブスク開始】 既存 Customer でサブスクを開始�
     $this->mock(SquareBillingClient::class, function ($mock) use ($card, $squareSubscription) {
         $mock->shouldReceive('addCustomerCardFromToken')
             ->once()
-            ->with('cus_subscribe_existing', 'tok_subscribe_existing', null)
+            ->with('cus_subscribe_existing', 'tok_subscribe_existing', null, null)
             ->andReturn($card);
         $mock->shouldReceive('createSubscription')
             ->once()
@@ -384,7 +424,7 @@ test('4-3-9: 【サブスク開始】 current_period_end ありで月間残数�
             ->andReturn($customer);
         $mock->shouldReceive('createCard')
             ->once()
-            ->with('cus_subscribe_renew', 'tok_subscribe_renew')
+            ->with('cus_subscribe_renew', 'tok_subscribe_renew', null)
             ->andReturn($card);
         $mock->shouldReceive('createSubscription')->andReturn($squareSubscription);
     });
@@ -399,6 +439,39 @@ test('4-3-9: 【サブスク開始】 current_period_end ありで月間残数�
     $group->refresh();
     expect($group->ai_monthly_remaining)->toBe(GroupPlan::STANDARD->monthlyLimit())
         ->and($group->ai_usage_reset_at?->toIso8601String())->toBe($periodEnd->toIso8601String());
+});
+
+test('4-3-49: 【サブスク開始】 verificationToken を createCard に渡す', function () {
+    $group = createBillingGroup(['square_customer_id' => null]);
+    $customer = makeSquareCustomer(['id' => 'cus_subscribe_verify']);
+    $card = makeSquareCard('ccof_subscribe_verify', ['customerId' => 'cus_subscribe_verify']);
+    $squareSubscription = makeSquareSubscription(['id' => 'sub_subscribe_verify']);
+
+    $this->mock(SquareBillingClient::class, function ($mock) use ($group, $customer, $card, $squareSubscription) {
+        $mock->shouldReceive('createCustomer')
+            ->once()
+            ->andReturn($customer);
+        $mock->shouldReceive('createCard')
+            ->once()
+            ->with('cus_subscribe_verify', 'tok_subscribe_verify', 'verf_subscribe')
+            ->andReturn($card);
+        $mock->shouldReceive('createSubscription')
+            ->once()
+            ->with([
+                'customerId' => 'cus_subscribe_verify',
+                'planVariationId' => config('billing.subscription_plan_ids.standard'),
+                'cardId' => 'ccof_subscribe_verify',
+            ])
+            ->andReturn($squareSubscription);
+    });
+
+    billingService()->createSubscription(
+        $group,
+        $this->user,
+        BillingSubscriptionType::STANDARD,
+        'tok_subscribe_verify',
+        'verf_subscribe',
+    );
 });
 
 test('4-3-10: 【サブスク開始】 既にサブスク済みなら 422 を投げる', function () {
@@ -514,7 +587,7 @@ test('4-3-15: 【パック購入】 カードトークンでライトパック�
             ->andReturn($customer);
         $mock->shouldReceive('createCard')
             ->once()
-            ->with('cus_pack_light', 'tok_pack_light')
+            ->with('cus_pack_light', 'tok_pack_light', null)
             ->andReturn($card);
         $mock->shouldReceive('createPayment')
             ->once()
@@ -563,7 +636,7 @@ test('4-3-16: 【パック購入】 カードトークンでバリューパッ�
             ->andReturn($customer);
         $mock->shouldReceive('createCard')
             ->once()
-            ->with('cus_pack_value', 'tok_pack_value')
+            ->with('cus_pack_value', 'tok_pack_value', null)
             ->andReturn($card);
         $mock->shouldReceive('createPayment')
             ->once()
@@ -607,6 +680,35 @@ test('4-3-17: 【パック購入】 登録済みカードでトークンなし�
     billingService()->purchasePack($group, $this->user, BillingPackType::LIGHT);
 
     expect($group->fresh()->ai_pack_remaining)->toBe(12);
+});
+
+test('4-3-50: 【パック購入】 verificationToken を createCard に渡す', function () {
+    $group = createBillingGroup(['square_customer_id' => null, 'ai_pack_remaining' => 0]);
+    $customer = makeSquareCustomer(['id' => 'cus_pack_verify']);
+    $card = makeSquareCard('ccof_pack_verify', ['customerId' => 'cus_pack_verify']);
+
+    $this->mock(SquareBillingClient::class, function ($mock) use ($customer, $card) {
+        $mock->shouldReceive('createCustomer')
+            ->once()
+            ->andReturn($customer);
+        $mock->shouldReceive('createCard')
+            ->once()
+            ->with('cus_pack_verify', 'tok_pack_verify', 'verf_pack')
+            ->andReturn($card);
+        $mock->shouldReceive('createPayment')
+            ->once()
+            ->with(Mockery::on(fn (array $params): bool => $params['sourceId'] === 'ccof_pack_verify'
+                && ! array_key_exists('verificationToken', $params)))
+            ->andReturn(makeSquarePayment(['id' => 'pay_pack_verify']));
+    });
+
+    billingService()->purchasePack(
+        $group,
+        $this->user,
+        BillingPackType::LIGHT,
+        'tok_pack_verify',
+        'verf_pack',
+    );
 });
 
 test('4-3-18: 【パック購入】 Customer 未登録かつトークンなしなら 422 を投げる', function () {

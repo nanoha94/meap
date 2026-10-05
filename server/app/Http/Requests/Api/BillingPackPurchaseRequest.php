@@ -22,6 +22,7 @@ class BillingPackPurchaseRequest extends BaseApiRequest
         return [
             'packType' => ['required', Rule::enum(BillingPackType::class)],
             'cardToken' => ['nullable', 'string'],
+            'verificationToken' => ['nullable', 'string'],
         ];
     }
 
@@ -39,6 +40,17 @@ class BillingPackPurchaseRequest extends BaseApiRequest
         }
 
         return $cardToken;
+    }
+
+    public function verificationToken(): ?string
+    {
+        $verificationToken = $this->validated('verificationToken');
+
+        if (! is_string($verificationToken) || $verificationToken === '') {
+            return null;
+        }
+
+        return $verificationToken;
     }
 
     protected function getOperationKey(): string

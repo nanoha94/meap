@@ -4,6 +4,7 @@ namespace App\Custom\Auth;
 
 use Illuminate\Auth\Passwords\CacheTokenRepository;
 use Illuminate\Auth\Passwords\PasswordBrokerManager;
+use Illuminate\Foundation\Application;
 use InvalidArgumentException;
 
 class CustomPasswordBrokerManager extends PasswordBrokerManager
@@ -25,13 +26,15 @@ class CustomPasswordBrokerManager extends PasswordBrokerManager
             throw new InvalidArgumentException("Password resetter [{$name}] is not defined.");
         }
 
+        $app = $this->getApplication();
+
         // The password broker uses a token repository to validate tokens and send user
         // password e-mails, as well as validating that password reset process as an
         // aggregate service of sorts providing a convenient interface for resets.
         return new CustomPasswordBroker(
             $this->createTokenRepository($config),
-            $this->app['auth']->createUserProvider($config['provider'] ?? null),
-            $this->app['events'] ?? null,
+            $app['auth']->createUserProvider($config['provider'] ?? null),
+            $app['events'] ?? null,
         );
     }
 
@@ -43,7 +46,8 @@ class CustomPasswordBrokerManager extends PasswordBrokerManager
      */
     protected function createTokenRepository(array $config)
     {
-        $key = $this->app['config']['app.key'];
+        $app = $this->getApplication();
+        $key = $app['config']['app.key'];
 
         if (str_starts_with($key, 'base64:')) {
             $key = base64_decode(substr($key, 7));
@@ -51,8 +55,8 @@ class CustomPasswordBrokerManager extends PasswordBrokerManager
 
         if (isset($config['driver']) && $config['driver'] === 'cache') {
             return new CacheTokenRepository(
-                $this->app['cache']->store($config['store'] ?? null),
-                $this->app['hash'],
+                $app['cache']->store($config['store'] ?? null),
+                $app['hash'],
                 $key,
                 ($config['expire'] ?? 60) * 60,
                 $config['throttle'] ?? 0,
@@ -61,12 +65,28 @@ class CustomPasswordBrokerManager extends PasswordBrokerManager
         }
 
         return new CustomDatabaseTokenRepository(
-            $this->app['db']->connection($config['connection'] ?? null),
-            $this->app['hash'],
+            $app['db']->connection($config['connection'] ?? null),
+            $app['hash'],
             $config['table'],
             $key,
             $config['expire'],
             $config['throttle'] ?? 0
         );
+    }
+
+    /**
+     * 配列アクセスできる Laravel アプリケーション実装を返す
+     *
+     * @return \Illuminate\Foundation\Application
+     */
+    private function getApplication(): Application
+    {
+        $app = $this->app;
+
+        if (! $app instanceof Application) {
+            throw new InvalidArgumentException('Password broker requires the Laravel application.');
+        }
+
+        return $app;
     }
 }

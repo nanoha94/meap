@@ -288,6 +288,7 @@ return [
         'title' => 'タイトル',
         'token' => 'トークン',
         'cardToken' => 'カードトークン',
+        'verificationToken' => '検証トークン',
         'updated_at' => '更新日',
         'username' => 'ユーザー名',
         'year' => '年',

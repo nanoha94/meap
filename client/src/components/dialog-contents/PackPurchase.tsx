@@ -19,6 +19,7 @@ import {
 import { useAiUsageApi, useBillingApi, useDialog } from '@/hooks';
 import { useAiUsageStore } from '@/stores';
 import { BillingCheckoutOrderRow, IBillingStatus } from '@/types';
+import { SQUARE_VERIFICATION_INTENT } from '@/types/vendor/square';
 import { formatPackUnitPrice, formatYen } from '@/utils';
 import BillingCheckoutPayment from './BillingCheckoutPayment';
 
@@ -75,6 +76,8 @@ const PackPurchase = ({ billingStatus }: Props) => {
                 children: (
                     <BillingCheckoutPayment
                         billingStatus={billingStatus}
+                        tokenizationIntent={SQUARE_VERIFICATION_INTENT.CHARGE}
+                        chargeAmountYen={pack.price}
                         orderRows={buildPackOrderRows(pack)}
                         orderNote="購入後、買い切り AI 利用回数が即時付与され、上記金額が請求されます。"
                         submitButtonText="購入する"
