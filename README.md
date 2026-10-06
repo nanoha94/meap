@@ -1,53 +1,67 @@
 # meap
 
 ## 環境構築
+
 local-ssl-proxyのインストール
+
 ```
 npm install -g local-ssl-proxy
 ```
+
 mkcertのインストール([chocolatey](https://chocolatey.org/install)を使用する場合)
+
 ```
 choco install mkcert
 ```
+
 証明書のインストール
+
 ```
 mkcert -install
 ```
+
 証明書を作成するディレクトリを用意して移動
+
 ```
 mkdir certificates
 cd certificates
 ```
+
 localhost用の鍵と証明書を作成
+
 ```
 mkcert localhost
 ```
 
 ## 環境立ち上げ
+
 ### フロントエンド
+
 ```
 cd client
 npm run dev
-npx local-ssl-proxy --key ..\certificates\localhost-key.pem --cert ..\certificates\localhost.pem  --source 3000 --target 3001 
+npx local-ssl-proxy --key ..\certificates\localhost-key.pem --cert ..\certificates\localhost.pem  --source 3000 --target 3001
 ```
 
 ### バックエンド
+
 ```
 cd server
 ./vendor/bin/sail up -d
 ```
 
-## 課金（PAY.JP）
+## 課金（Square）
 
-- **アカウント設定（Phase 0）:** [docs/PAY.JP_アカウント設定_手順.md](docs/PAY.JP_アカウント設定_手順.md) / [チェックリスト](docs/PAY.JP_Phase0_チェックリスト.md)
-- **Webhook:** [docs/PAY.JP_課金_Webhook_手順.md](docs/PAY.JP_課金_Webhook_手順.md)
-  - **ローカル:** 課金テスト中は `payjp-cli listen --forward-to http://localhost:8001/payjp/webhook` を起動
-  - **本番（Railway）:** `payjp-cli` は**不要**。PAY.JP 管理画面で Webhook URL を登録
-- **ブラウザ E2E:** [docs/PAY.JP_課金_E2E_手順.md](docs/PAY.JP_課金_E2E_手順.md)
+- **アカウント設定（Phase 0）:** [docs/Square*アカウント設定*手順.md](docs/Square_アカウント設定_手順.md) / [チェックリスト](docs/Square_Phase0_チェックリスト.md)
+- **Webhook:** [docs/Square*課金\_Webhook*手順.md](docs/Square_課金_Webhook_手順.md)
+  - **ローカル:** 受信しない。`SQUARE_WEBHOOK_*` は空。申込とパック購入は API で確認する
+  - **ステージング:** Sandbox 購読を `https://dev.api.meap-app.com/square/webhook` へ。Signature key と `SQUARE_WEBHOOK_NOTIFICATION_URL` は Railway
+  - **本番:** Production 購読を `https://api.meap-app.com/square/webhook` へ
+- **ブラウザ E2E:** [docs/Square*課金\_E2E*手順.md](docs/Square_課金_E2E_手順.md)
 
 ## Railway 本番
 
-- 本番 Docker デプロイでは **Start Command を設定しない**（`ENTRYPOINT` の `docker-entrypoint.sh` に任せる）。詳細は [docs/Railway_本番マイグレーション手順.md](docs/Railway_本番マイグレーション手順.md)。
+- 本番 Docker デプロイでは **Start Command を設定しない**（`ENTRYPOINT` の `docker-entrypoint.sh` に任せる）。詳細は [docs/Railway\_本番マイグレーション手順.md](docs/Railway_本番マイグレーション手順.md)。
 
 ### CORS
 
@@ -69,4 +83,4 @@ php artisan migrate --force --no-interaction
 
 詳細手順とトラブルシュートは以下を参照:
 
-- [docs/Railway_本番マイグレーション手順.md](docs/Railway_本番マイグレーション手順.md)
+- [docs/Railway\_本番マイグレーション手順.md](docs/Railway_本番マイグレーション手順.md)

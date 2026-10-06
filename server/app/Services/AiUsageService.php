@@ -95,7 +95,7 @@ class AiUsageService
     }
 
     /**
-     * PAY.JP の課金周期更新時に月間枠を満タンにリセットする。
+     * Square サブスクの課金周期更新時に月間枠を満タンにリセットする。
      * current_period_end をそのまま渡す想定。有料プラン専用。
      */
     public function renewBillingPeriod(Group $group, Carbon $periodEnd): void
@@ -176,7 +176,7 @@ class AiUsageService
 
     /**
      * フリープラン: 次回リセット日時を過ぎていれば月間枠を満タンに戻す。
-     * 有料プランは PAY.JP Webhook（renewBillingPeriod）のみがリセット経路。
+     * 有料プランは Square Webhook（invoice.payment_made → renewBillingPeriod）のみがリセット経路。
      */
     private function resetFreeMonthlyUsageIfNeeded(Group $group): void
     {
@@ -216,7 +216,7 @@ class AiUsageService
     }
 
     /**
-     * PAY.JP 課金周期（ai_usage_reset_at）内かどうか。
+     * Square 課金周期（ai_usage_reset_at）内かどうか。
      * 解約後も周期終了までは true となり、有料分の残数を維持する。
      */
     private function isWithinBillingPeriod(Group $group): bool

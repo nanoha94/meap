@@ -202,7 +202,7 @@ test('4-1-13: 【利用状況取得】 周期終了後にフリー月次リセ�
 
 // ===== renewBillingPeriod() メソッドのテストケース =====
 
-test('4-1-14: 【課金周期更新】 PAY.JP の課金周期でリセットする', function () {
+test('4-1-14: 【課金周期更新】 Square の課金周期でリセットする', function () {
     $periodEnd = now()->addDays(25)->startOfSecond();
 
     $this->group->update([

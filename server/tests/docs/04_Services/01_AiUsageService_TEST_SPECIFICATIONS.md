@@ -33,7 +33,7 @@ AI 利用回数の消費・返却・リセット・ステータス取得を担�
 | 4-1-11 | 【利用状況取得】 リセット待ちのフリー枠を同期する | 正常系 | 月間0、過去の reset_at | monthlyRemaining=3 | `AiUsageService::getUsageStatus()` |
 | 4-1-12 | 【利用状況取得】 解約後周期内はフリー月次リセットで上書きされない | 正常系 | FREE 残20、reset_at 未来 | 残20 | `AiUsageService::getUsageStatus()` |
 | 4-1-13 | 【利用状況取得】 周期終了後にフリー月次リセットで枠が復帰する | 正常系 | FREE 残0、reset_at 過去 | 残3 | `AiUsageService::getUsageStatus()` |
-| 4-1-14 | 【課金周期更新】 PAY.JP の課金周期でリセットする | 正常系 | STANDARD、月間0 | ai_monthly_remaining=30 | `AiUsageService::renewBillingPeriod()` |
+| 4-1-14 | 【課金周期更新】 Square の課金周期でリセットする | 正常系 | STANDARD、月間0 | ai_monthly_remaining=30 | `AiUsageService::renewBillingPeriod()` |
 | 4-1-15 | 【課金周期更新】 月間残ありでもプラン上限にリセットする | 正常系 | STANDARD、月間20 | ai_monthly_remaining=30 | `AiUsageService::renewBillingPeriod()` |
 | 4-1-16 | 【課金周期更新】 Pro プランで課金周期をリセットする | 正常系 | PRO、月間10 | ai_monthly_remaining=50 | `AiUsageService::renewBillingPeriod()` |
 | 4-1-17 | 【課金周期更新】 請求周期更新で ai_usage_reset_at を新しい請求日に更新する | 正常系 | STANDARD、旧 reset_at 未来 | reset_at=新請求日、残30 | `AiUsageService::renewBillingPeriod()` |
