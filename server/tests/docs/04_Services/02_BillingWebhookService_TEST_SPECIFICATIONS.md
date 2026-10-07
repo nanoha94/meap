@@ -14,7 +14,7 @@ Square Webhook イベントに応じた課金状態同期を担う `BillingWebho
 - `invoice.payment_made` は `data.object.invoice`（`subscription_id` / `primary_recipient.customer_id` / 任意で `payment_ids` または `order_id`）。プラン・周期は `SquareBillingClient::retrieveSubscription` をモックして返す。`order_id` 経由の Payment ID 取得は `retrieveOrder` をモックする
 - サブスクリプションのデフォルト形は `makeSquareSubscriptionObject`（Webhook 用）および `makeSquareSubscriptionSdk`（Retrieve API 応答用）
 - `oncePerEvent` の検証では `beforeEach` で `Cache::flush()` し、同一 event ID で 2 回呼び出す
-- private メソッド（`subscriptionFromPayload` / `syncPlanFromSquareSubscription` 等）は public メソッド経由で間接的に検証する
+- private メソッド（`subscriptionFromPayload` / `upsertSubscriptionRecord` / `syncGroupPlanFromSubscription` 等）は public メソッド経由で間接的に検証する
 
 ## テストケース一覧表
 
@@ -32,6 +32,10 @@ Square Webhook イベントに応じた課金状態同期を担う `BillingWebho
 | 4-2-7 | 【サブスク同期】 不明な plan variation ID ではプラン更新しない | 異常系 | FREE の Group、`status=ACTIVE`、`plan_variation_id` が config 未登録 | plan=FREE のまま | `BillingWebhookService::handleSubscriptionUpdated()` |
 | 4-2-8 | 【支払い失敗】 payment.updated（FAILED）は例外なく処理できる | 正常系 | 任意の Group、`payment.updated` 相当ペイロード（`status=FAILED`） | 例外なし、Group の plan は変更されない | `BillingWebhookService::handlePaymentUpdated()` |
 | 4-2-9 | 【サブスク同期】 PENDING（未来開始・未課金）ではプラン付与しない | 正常系 | FREE の Group、`status=PENDING` | plan=FREE のまま | `BillingWebhookService::handleSubscriptionUpdated()` |
+| 4-2-13 | 【サブスク同期】 DEACTIVATED で subscriptions.status を更新する | 正常系 | STANDARD の Group、ローカル Subscription（status=active）、Webhook `status=DEACTIVATED` | `subscriptions.status=canceled` | `BillingWebhookService::handleSubscriptionUpdated()` |
+| 4-2-14 | 【サブスク同期】 ACTIVE（charged_through_date 付き）で current_period_end を更新する | 正常系 | Group、ローカル Subscription（current_period_end=null）、Webhook `status=ACTIVE` と charged_through_date | `subscriptions.current_period_end` が charged_through_date と一致 | `BillingWebhookService::handleSubscriptionUpdated()` |
+| 4-2-15 | 【サブスク同期】 status 欠落ペイロードでは subscriptions も plan も更新しない | 正常系 | STANDARD の Group、既存 Subscription（status=active）、Webhook ペイロードの `status` が null | `subscriptions.status` は active のまま、`Group.plan` も STANDARD のまま | `BillingWebhookService::handleSubscriptionUpdated()` |
+| 4-2-16 | 【サブスク同期】 charged_through_date 欠落時 canceled_date で current_period_end を補完する | 正常系 | Group、ローカル Subscription（current_period_end=null）、Webhook `status=ACTIVE`、`charged_through_date` 欠落、`canceled_date` のみ | `subscriptions.current_period_end` が canceled_date と一致 | `BillingWebhookService::handleSubscriptionUpdated()` |
 
 ## テスト実行方法
 

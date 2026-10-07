@@ -28,6 +28,13 @@ echo "実行中: BillingServiceTest.php"
 
 echo ""
 echo "=========================================="
+echo "📖 詳細ドキュメント: tests/docs/04_Services/10_SubscriptionHelper_TEST_SPECIFICATIONS.md"
+echo ""
+echo "実行中: SubscriptionHelperTest.php"
+./vendor/bin/sail test tests/Feature/Services/SubscriptionHelperTest.php --stop-on-failure
+
+echo ""
+echo "=========================================="
 echo "📖 詳細ドキュメント: tests/docs/04_Services/04_AiRecipeService_TEST_SPECIFICATIONS.md"
 echo ""
 echo "実行中: AiRecipeServiceTest.php"

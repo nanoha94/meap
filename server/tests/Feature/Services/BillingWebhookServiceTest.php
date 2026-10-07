@@ -3,6 +3,7 @@
 use App\Enums\GroupPlan;
 use App\Models\BillingHistory;
 use App\Models\Group;
+use App\Models\Subscription;
 use App\Services\BillingWebhookService;
 use App\Services\SquareBillingClient;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -317,4 +318,98 @@ test('4-2-9: 【サブスク同期】 PENDING（未来開始・未課金）で�
     $group->refresh();
 
     expect($group->plan)->toBe(GroupPlan::FREE);
+});
+
+test('4-2-13: 【サブスク同期】 DEACTIVATED で subscriptions.status を更新する', function () {
+    $group = makeSquareBillableGroup(['plan' => GroupPlan::STANDARD]);
+    Subscription::query()->create([
+        'group_id' => $group->id,
+        'square_subscription_id' => 'sub_test_1',
+        'square_plan_variation_id' => $this->standardPlanVariationId,
+        'status' => 'active',
+        'current_period_end' => null,
+    ]);
+
+    $subscription = makeSquareSubscriptionObject(['status' => 'DEACTIVATED']);
+
+    $this->service->handleSubscriptionUpdated(
+        makeSquareSubscriptionWebhookEnvelope($subscription, 'evt_deactivated_1'),
+    );
+
+    $local = Subscription::query()->where('square_subscription_id', 'sub_test_1')->first();
+
+    expect($local)->not->toBeNull()
+        ->and($local->status)->toBe('canceled');
+});
+
+test('4-2-14: 【サブスク同期】 ACTIVE（charged_through_date 付き）で current_period_end を更新する', function () {
+    $group = makeSquareBillableGroup();
+    Subscription::query()->create([
+        'group_id' => $group->id,
+        'square_subscription_id' => 'sub_test_1',
+        'status' => 'active',
+        'current_period_end' => null,
+    ]);
+
+    $chargedThrough = now()->addDays(30)->format('Y-m-d');
+    $subscription = makeSquareSubscriptionObject([
+        'status' => 'ACTIVE',
+        'charged_through_date' => $chargedThrough,
+    ]);
+
+    $this->service->handleSubscriptionUpdated(
+        makeSquareSubscriptionWebhookEnvelope($subscription, 'evt_active_period_1'),
+    );
+
+    $local = Subscription::query()->where('square_subscription_id', 'sub_test_1')->first();
+
+    expect($local->current_period_end?->format('Y-m-d'))->toBe($chargedThrough);
+});
+
+test('4-2-15: 【サブスク同期】 status 欠落ペイロードでは subscriptions も plan も更新しない', function () {
+    $group = makeSquareBillableGroup(['plan' => GroupPlan::STANDARD]);
+    Subscription::query()->create([
+        'group_id' => $group->id,
+        'square_subscription_id' => 'sub_test_1',
+        'square_plan_variation_id' => $this->standardPlanVariationId,
+        'status' => 'active',
+        'current_period_end' => null,
+    ]);
+
+    $subscription = makeSquareSubscriptionObject(['status' => null]);
+
+    $this->service->handleSubscriptionUpdated(
+        makeSquareSubscriptionWebhookEnvelope($subscription, 'evt_status_missing_1'),
+    );
+
+    $group->refresh();
+    $local = Subscription::query()->where('square_subscription_id', 'sub_test_1')->first();
+
+    expect($group->plan)->toBe(GroupPlan::STANDARD)
+        ->and($local->status)->toBe('active');
+});
+
+test('4-2-16: 【サブスク同期】 charged_through_date 欠落時 canceled_date で current_period_end を補完する', function () {
+    $group = makeSquareBillableGroup();
+    Subscription::query()->create([
+        'group_id' => $group->id,
+        'square_subscription_id' => 'sub_test_1',
+        'status' => 'active',
+        'current_period_end' => null,
+    ]);
+
+    $canceledDate = now()->addDays(30)->format('Y-m-d');
+    $subscription = makeSquareSubscriptionObject([
+        'status' => 'ACTIVE',
+        'charged_through_date' => null,
+        'canceled_date' => $canceledDate,
+    ]);
+
+    $this->service->handleSubscriptionUpdated(
+        makeSquareSubscriptionWebhookEnvelope($subscription, 'evt_canceled_date_fallback_1'),
+    );
+
+    $local = Subscription::query()->where('square_subscription_id', 'sub_test_1')->first();
+
+    expect($local->current_period_end?->format('Y-m-d'))->toBe($canceledDate);
 });

@@ -352,6 +352,10 @@ test('4-3-7: 【サブスク開始】 Customer 未作成時にサブスクを開
                 'cardId' => 'ccof_subscribe_new',
             ])
             ->andReturn($squareSubscription);
+        $mock->shouldReceive('retrieveSubscription')
+            ->once()
+            ->with('sub_subscribe_new')
+            ->andReturn($squareSubscription);
     });
 
     $status = billingService()->createSubscription(
@@ -387,6 +391,10 @@ test('4-3-8: 【サブスク開始】 既存 Customer でサブスクを開始�
             ->andReturn($card);
         $mock->shouldReceive('createSubscription')
             ->once()
+            ->andReturn($squareSubscription);
+        $mock->shouldReceive('retrieveSubscription')
+            ->once()
+            ->with('sub_subscribe_existing')
             ->andReturn($squareSubscription);
     });
 
@@ -427,6 +435,10 @@ test('4-3-9: 【サブスク開始】 current_period_end ありで月間残数�
             ->with('cus_subscribe_renew', 'tok_subscribe_renew', null)
             ->andReturn($card);
         $mock->shouldReceive('createSubscription')->andReturn($squareSubscription);
+        $mock->shouldReceive('retrieveSubscription')
+            ->once()
+            ->with('sub_subscribe_renew')
+            ->andReturn($squareSubscription);
     });
 
     billingService()->createSubscription(
@@ -463,6 +475,10 @@ test('4-3-49: 【サブスク開始】 verificationToken を createCard に渡�
                 'cardId' => 'ccof_subscribe_verify',
             ])
             ->andReturn($squareSubscription);
+        $mock->shouldReceive('retrieveSubscription')
+            ->once()
+            ->with('sub_subscribe_verify')
+            ->andReturn($squareSubscription);
     });
 
     billingService()->createSubscription(
@@ -472,6 +488,89 @@ test('4-3-49: 【サブスク開始】 verificationToken を createCard に渡�
         'tok_subscribe_verify',
         'verf_subscribe',
     );
+});
+
+test('4-3-51: 【サブスク開始】 再取得で current_period_end を補完する', function () {
+    $periodEnd = now()->addMonth()->startOfDay()->startOfSecond();
+    $group = createBillingGroup([
+        'square_customer_id' => 'cus_subscribe_refresh',
+        'square_card_id' => 'ccof_subscribe_refresh',
+        'ai_monthly_remaining' => 0,
+    ]);
+    $createdSubscription = makeSquareSubscription([
+        'id' => 'sub_subscribe_refresh',
+        'chargedThroughDate' => null,
+    ]);
+    $retrievedSubscription = makeSquareSubscription([
+        'id' => 'sub_subscribe_refresh',
+        'current_period_end' => $periodEnd->timestamp,
+    ]);
+
+    $this->mock(SquareBillingClient::class, function ($mock) use ($createdSubscription, $retrievedSubscription) {
+        $mock->shouldReceive('createSubscription')
+            ->once()
+            ->with([
+                'customerId' => 'cus_subscribe_refresh',
+                'planVariationId' => config('billing.subscription_plan_ids.standard'),
+                'cardId' => 'ccof_subscribe_refresh',
+            ])
+            ->andReturn($createdSubscription);
+        $mock->shouldReceive('retrieveSubscription')
+            ->once()
+            ->with('sub_subscribe_refresh')
+            ->andReturn($retrievedSubscription);
+    });
+
+    billingService()->createSubscription(
+        $group,
+        $this->user,
+        BillingSubscriptionType::STANDARD,
+    );
+
+    $group->refresh();
+    $subscription = $group->subscription();
+
+    expect($subscription?->current_period_end?->toIso8601String())->toBe($periodEnd->toIso8601String())
+        ->and($group->plan)->toBe(GroupPlan::STANDARD)
+        ->and($group->ai_monthly_remaining)->toBe(GroupPlan::STANDARD->monthlyLimit())
+        ->and($group->ai_usage_reset_at?->toIso8601String())->toBe($periodEnd->toIso8601String());
+});
+
+test('4-3-52: 【サブスク開始】 再取得失敗時は初回応答で続行する', function () {
+    $periodEnd = now()->addMonth()->startOfDay()->startOfSecond();
+    $group = createBillingGroup([
+        'square_customer_id' => 'cus_subscribe_retrieve_fail',
+        'square_card_id' => 'ccof_subscribe_retrieve_fail',
+    ]);
+    $createdSubscription = makeSquareSubscription([
+        'id' => 'sub_subscribe_retrieve_fail',
+        'current_period_end' => $periodEnd->timestamp,
+    ]);
+
+    $this->mock(SquareBillingClient::class, function ($mock) use ($createdSubscription) {
+        $mock->shouldReceive('createSubscription')
+            ->once()
+            ->andReturn($createdSubscription);
+        $mock->shouldReceive('retrieveSubscription')
+            ->once()
+            ->with('sub_subscribe_retrieve_fail')
+            ->andThrow(makeSquareApiException());
+    });
+
+    $status = billingService()->createSubscription(
+        $group,
+        $this->user,
+        BillingSubscriptionType::STANDARD,
+    );
+
+    $group->refresh();
+    $subscription = $group->subscription();
+
+    expect($status['plan'])->toBe('standard')
+        ->and($status['isSubscribed'])->toBeTrue()
+        ->and($group->plan)->toBe(GroupPlan::STANDARD)
+        ->and($subscription?->status)->toBe('active')
+        ->and($subscription?->current_period_end?->toIso8601String())->toBe($periodEnd->toIso8601String());
 });
 
 test('4-3-10: 【サブスク開始】 既にサブスク済みなら 422 を投げる', function () {
@@ -505,6 +604,87 @@ test('4-3-11: 【サブスク開始】 Square API 失敗時は HttpException を
         BillingSubscriptionType::STANDARD,
         'tok_subscribe_fail',
     ))->toThrow(HttpException::class, 'サブスクリプションの開始に失敗しました。');
+});
+
+test('4-3-53: 【サブスク開始】 再取得が DEACTIVATED なら FREE に戻して例外を投げる', function () {
+    $group = createBillingGroup([
+        'square_customer_id' => 'cus_subscribe_deactivated',
+        'square_card_id' => 'ccof_subscribe_deactivated',
+        'plan' => GroupPlan::FREE,
+        'ai_monthly_remaining' => 0,
+    ]);
+    $createdSubscription = makeSquareSubscription([
+        'id' => 'sub_subscribe_deactivated',
+        'status' => 'active',
+        'chargedThroughDate' => null,
+    ]);
+    $retrievedSubscription = makeSquareSubscription([
+        'id' => 'sub_subscribe_deactivated',
+        'status' => 'deactivated',
+        'chargedThroughDate' => null,
+    ]);
+
+    $this->mock(SquareBillingClient::class, function ($mock) use ($createdSubscription, $retrievedSubscription) {
+        $mock->shouldReceive('createSubscription')
+            ->once()
+            ->andReturn($createdSubscription);
+        $mock->shouldReceive('retrieveSubscription')
+            ->once()
+            ->with('sub_subscribe_deactivated')
+            ->andReturn($retrievedSubscription);
+    });
+
+    expect(fn() => billingService()->createSubscription(
+        $group,
+        $this->user,
+        BillingSubscriptionType::STANDARD,
+    ))->toThrow(HttpException::class, 'サブスクリプションの開始に失敗しました。');
+
+    $group->refresh();
+
+    expect($group->plan)->toBe(GroupPlan::FREE)
+        ->and($group->ai_monthly_remaining)->toBe(0)
+        ->and($group->subscription()?->status)->toBe('canceled');
+});
+
+test('4-3-57: 【サブスク開始】 再取得が CANCELED なら FREE に戻して例外を投げる', function () {
+    $group = createBillingGroup([
+        'square_customer_id' => 'cus_subscribe_canceled',
+        'square_card_id' => 'ccof_subscribe_canceled',
+        'plan' => GroupPlan::FREE,
+        'ai_monthly_remaining' => 0,
+    ]);
+    $createdSubscription = makeSquareSubscription([
+        'id' => 'sub_subscribe_canceled',
+        'status' => 'active',
+        'chargedThroughDate' => null,
+    ]);
+    $retrievedSubscription = makeSquareSubscription([
+        'id' => 'sub_subscribe_canceled',
+        'status' => 'canceled',
+        'chargedThroughDate' => null,
+    ]);
+
+    $this->mock(SquareBillingClient::class, function ($mock) use ($createdSubscription, $retrievedSubscription) {
+        $mock->shouldReceive('createSubscription')
+            ->once()
+            ->andReturn($createdSubscription);
+        $mock->shouldReceive('retrieveSubscription')
+            ->once()
+            ->with('sub_subscribe_canceled')
+            ->andReturn($retrievedSubscription);
+    });
+
+    expect(fn() => billingService()->createSubscription(
+        $group,
+        $this->user,
+        BillingSubscriptionType::STANDARD,
+    ))->toThrow(HttpException::class, 'サブスクリプションの開始に失敗しました。');
+
+    $group->refresh();
+
+    expect($group->plan)->toBe(GroupPlan::FREE)
+        ->and($group->subscription()?->status)->toBe('canceled');
 });
 
 // ===== cancelSubscription() メソッドのテストケース =====
@@ -1170,8 +1350,12 @@ test('4-3-39: 【請求履歴取得】 解約猶予中（!isActive）は upcomin
 });
 
 test('4-3-40: 【請求履歴取得】 未完了 Payment は pastInvoices に含めない', function () {
+    $periodEnd = now()->addDays(30)->startOfSecond();
     $group = createBillingGroup(['square_customer_id' => 'cus_paid_filter', 'plan' => GroupPlan::STANDARD]);
-    createSubscriptionRecord($group, ['status' => 'active']);
+    createSubscriptionRecord($group, [
+        'status' => 'active',
+        'current_period_end' => $periodEnd,
+    ]);
 
     $paidAt = now()->subDays(3)->startOfSecond();
 
@@ -1251,8 +1435,12 @@ test('4-3-42: 【請求履歴取得】 Payment がない場合 pastInvoices は�
 
 test('4-3-43: 【請求履歴取得】 パック購入 Payment の description が billing_histories から取得される', function () {
     $chargeCreated = now()->subDays(5)->startOfSecond();
+    $periodEnd = now()->addDays(30)->startOfSecond();
     $group = createBillingGroup(['square_customer_id' => 'cus_pack_desc', 'plan' => GroupPlan::STANDARD]);
-    createSubscriptionRecord($group, ['status' => 'active']);
+    createSubscriptionRecord($group, [
+        'status' => 'active',
+        'current_period_end' => $periodEnd,
+    ]);
 
     BillingHistory::create([
         'group_id' => $group->id,
@@ -1284,8 +1472,12 @@ test('4-3-43: 【請求履歴取得】 パック購入 Payment の description �
 
 test('4-3-46: 【請求履歴取得】 billing_histories にない Payment は unknown の description を返す', function () {
     $chargeCreated = now()->subDays(2)->startOfSecond();
+    $periodEnd = now()->addDays(30)->startOfSecond();
     $group = createBillingGroup(['square_customer_id' => 'cus_no_history', 'plan' => GroupPlan::STANDARD]);
-    createSubscriptionRecord($group, ['status' => 'active']);
+    createSubscriptionRecord($group, [
+        'status' => 'active',
+        'current_period_end' => $periodEnd,
+    ]);
 
     $this->mock(SquareBillingClient::class, function ($mock) use ($chargeCreated) {
         $mock->shouldReceive('listPayments')
@@ -1310,4 +1502,100 @@ test('4-3-46: 【請求履歴取得】 billing_histories にない Payment は u
 
     expect($result['pastInvoices'])->toHaveCount(1)
         ->and($result['pastInvoices'][0]['description'])->toBe('その他のお支払い');
+});
+
+test('4-3-54: 【請求履歴取得】 current_period_end 未設定時に再取得で補完する', function () {
+    $periodEnd = now()->addDays(30)->startOfDay()->startOfSecond();
+    $group = createBillingGroup(['square_customer_id' => 'cus_invoices_refresh', 'plan' => GroupPlan::STANDARD]);
+    createSubscriptionRecord($group, [
+        'square_subscription_id' => 'sub_invoices_refresh',
+        'status' => 'active',
+        'current_period_end' => null,
+    ]);
+
+    $retrievedSubscription = makeSquareSubscription([
+        'id' => 'sub_invoices_refresh',
+        'current_period_end' => $periodEnd->timestamp,
+    ]);
+
+    $this->mock(SquareBillingClient::class, function ($mock) use ($retrievedSubscription) {
+        $mock->shouldReceive('retrieveSubscription')
+            ->once()
+            ->with('sub_invoices_refresh')
+            ->andReturn($retrievedSubscription);
+        $mock->shouldReceive('listPayments')
+            ->once()
+            ->andReturn([]);
+    });
+
+    $result = billingService()->getInvoices($group->fresh());
+
+    expect($result['upcomingInvoice'])->not->toBeNull()
+        ->and($result['upcomingInvoice']['date'])->toBe($periodEnd->toIso8601String())
+        ->and($group->fresh()->subscription()?->current_period_end?->toIso8601String())
+        ->toBe($periodEnd->toIso8601String());
+});
+
+test('4-3-55: 【サブスク同期】 status 欠落の SquareSubscription では subscriptions を更新しない', function () {
+    $group = createBillingGroup([
+        'square_customer_id' => 'cus_sync_status_missing',
+        'plan' => GroupPlan::STANDARD,
+    ]);
+    createSubscriptionRecord($group, [
+        'square_subscription_id' => 'sub_status_missing',
+        'status' => 'active',
+        'current_period_end' => null,
+    ]);
+
+    $retrievedSubscription = makeSquareSubscription([
+        'id' => 'sub_status_missing',
+        'status' => null,
+    ]);
+
+    $this->mock(SquareBillingClient::class, function ($mock) use ($retrievedSubscription) {
+        $mock->shouldReceive('retrieveSubscription')
+            ->once()
+            ->with('sub_status_missing')
+            ->andReturn($retrievedSubscription);
+        $mock->shouldReceive('listPayments')
+            ->once()
+            ->andReturn([]);
+    });
+
+    billingService()->getInvoices($group->fresh());
+
+    expect($group->fresh()->subscription()?->status)->toBe('active');
+});
+
+test('4-3-56: 【請求履歴取得】 再取得で DEACTIVATED なら plan を FREE に戻す', function () {
+    $group = createBillingGroup([
+        'square_customer_id' => 'cus_invoices_deactivated',
+        'plan' => GroupPlan::STANDARD,
+    ]);
+    createSubscriptionRecord($group, [
+        'square_subscription_id' => 'sub_invoices_deactivated',
+        'status' => 'active',
+        'current_period_end' => null,
+    ]);
+
+    $retrievedSubscription = makeSquareSubscription([
+        'id' => 'sub_invoices_deactivated',
+        'status' => 'deactivated',
+        'chargedThroughDate' => null,
+    ]);
+
+    $this->mock(SquareBillingClient::class, function ($mock) use ($retrievedSubscription) {
+        $mock->shouldReceive('retrieveSubscription')
+            ->once()
+            ->with('sub_invoices_deactivated')
+            ->andReturn($retrievedSubscription);
+        $mock->shouldReceive('listPayments')
+            ->once()
+            ->andReturn([]);
+    });
+
+    billingService()->getInvoices($group->fresh());
+
+    expect($group->fresh()->plan)->toBe(GroupPlan::FREE)
+        ->and($group->fresh()->subscription()?->status)->toBe('canceled');
 });

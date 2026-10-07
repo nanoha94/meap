@@ -6,11 +6,9 @@ use App\Enums\BillingSubscriptionType;
 use App\Enums\GroupPlan;
 use App\Models\BillingHistory;
 use App\Models\Group;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Square\Exceptions\SquareApiException;
-use Square\Types\Subscription as SquareSubscription;
 
 class BillingWebhookService
 {
@@ -54,7 +52,7 @@ class BillingWebhookService
                 return;
             }
 
-            $subscription = $this->normalizeSubscriptionFieldsFromSquare($squareSubscription);
+            $subscription = SubscriptionHelper::normalizeFromSquare($squareSubscription);
 
             $group = Group::findBySquareCustomerId($subscription['customer_id'] ?? null);
             if ($group === null) {
@@ -66,7 +64,10 @@ class BillingWebhookService
             $this->recordSubscriptionBillingHistory($group, $invoice, $subscription, $eventId);
 
             // 請求周期終了日が取れたとき、月間利用回数を新周期にリセットする
-            $periodEnd = $this->periodEndFromSubscription($subscription);
+            $periodEnd = SubscriptionHelper::periodEnd(
+                $subscription['charged_through_date'] ?? null,
+                $subscription['canceled_date'] ?? null,
+            );
             if ($periodEnd !== null) {
                 $this->aiUsageService->renewBillingPeriod($group, $periodEnd);
             }
@@ -74,7 +75,7 @@ class BillingWebhookService
     }
 
     /**
-     * subscription.updated で Group.plan を同期する。
+     * subscription.updated で Subscriptions テーブルと Group.plan を同期する。
      * 解約・停止も status の変更としてこのイベントに含まれる。
      */
     public function handleSubscriptionUpdated(array $payload): void
@@ -89,7 +90,8 @@ class BillingWebhookService
             return;
         }
 
-        $this->syncPlanFromSquareSubscription($group, $subscription);
+        SubscriptionHelper::upsertSubscriptionRecord($group, $subscription);
+        $this->syncGroupPlanFromSubscription($group, $subscription);
     }
 
     /**
@@ -115,7 +117,7 @@ class BillingWebhookService
     }
 
     /**
-     * サブスクリプション status に応じて Group.plan を同期する。
+     * サブスクリプション status に応じて Group.plan（利用権限）を同期する。
      *
      * ACTIVE は plan variation から有料プランを付与する。
      * PAUSED は即時に、CANCELED / DEACTIVATED は請求周期終了後（終了日不明を含む）に FREE に戻す。
@@ -123,13 +125,15 @@ class BillingWebhookService
      *
      * @param  array<string, mixed>  $subscription
      */
-    private function syncPlanFromSquareSubscription(Group $group, array $subscription): void
+    private function syncGroupPlanFromSubscription(Group $group, array $subscription): void
     {
+        // ACTIVE の場合は有料プランを付与する
         if ($this->grantsPaidPlan($subscription)) {
             $this->updateGroupPlanFromSquareSubscription($group, $subscription);
             return;
         }
 
+        // 解約・停止時は FREE に戻す
         if ($this->shouldRevokePlan($subscription)) {
             $this->groupPlanService->update($group, GroupPlan::FREE);
         }
@@ -302,38 +306,28 @@ class BillingWebhookService
      *
      * @param  array<string, mixed>  $subscription
      * @return array{
+     *     id: string|null,
      *     customer_id: string|null,
      *     plan_variation_id: string|null,
      *     status: string|null,
+     *     start_date: string|null,
      *     charged_through_date: string|null,
      *     canceled_date: string|null,
      * }
      */
     private function normalizeSubscriptionFields(array $subscription): array
     {
+        $id = $subscription['id'] ?? null;
+
         return [
+            'id' => is_string($id) && $id !== '' ? $id : null,
             'customer_id' => $subscription['customer_id'] ?? null,
             'plan_variation_id' => $subscription['plan_variation_id'] ?? null,
             'status' => $subscription['status'] ?? null,
+            'start_date' => $subscription['start_date'] ?? null,
             'charged_through_date' => $subscription['charged_through_date'] ?? null,
             'canceled_date' => $subscription['canceled_date'] ?? null,
         ];
-    }
-
-    /**
-     * Square SDK の Subscription を同期用の配列に変換する。
-     */
-    private function normalizeSubscriptionFieldsFromSquare(SquareSubscription $subscription): array
-    {
-        $status = $subscription->getStatus();
-
-        return $this->normalizeSubscriptionFields([
-            'customer_id' => $subscription->getCustomerId(),
-            'plan_variation_id' => $subscription->getPlanVariationId(),
-            'status' => $status === null ? null : (string) $status,
-            'charged_through_date' => $subscription->getChargedThroughDate(),
-            'canceled_date' => $subscription->getCanceledDate(),
-        ]);
     }
 
     /**
@@ -367,7 +361,10 @@ class BillingWebhookService
             return false;
         }
 
-        $periodEnd = $this->periodEndFromSubscription($subscription);
+        $periodEnd = SubscriptionHelper::periodEnd(
+            $subscription['charged_through_date'] ?? null,
+            $subscription['canceled_date'] ?? null,
+        );
         // 請求周期終了日が不明なら FREE に戻す
         if ($periodEnd === null) {
             return true;
@@ -375,21 +372,6 @@ class BillingWebhookService
 
         // 請求周期を過ぎていれば FREE に戻す（期間内は有料プランを維持）
         return $periodEnd->isPast();
-    }
-
-    /**
-     * charged_through_date をアプリタイムゾーンの日始まりとして返す。無い場合は null。
-     *
-     * @param  array<string, mixed>  $subscription
-     */
-    private function periodEndFromSubscription(array $subscription): ?Carbon
-    {
-        $chargedThrough = $subscription['charged_through_date'] ?? null;
-        if (is_string($chargedThrough) && $chargedThrough !== '') {
-            return Carbon::parse($chargedThrough, config('app.timezone'))->startOfDay();
-        }
-
-        return null;
     }
 
     /**

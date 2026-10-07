@@ -221,11 +221,35 @@ class BillingService
                 'cardId' => $cardId,
             ]);
 
-            $this->syncLocalSubscription($group, $squareSubscription);
+            // 申込応答は charged_through_date が空、または直後に ACTIVE でなくなることがある。
+            // 再取得して請求周期とステータスを補完する。再取得失敗時だけ初回応答を保存する。
+            try {
+                $latestSubscription = $this->square->retrieveSubscription(
+                    (string) $squareSubscription->getId(),
+                );
+                $this->syncLocalSubscription($group, $latestSubscription);
+
+                // ACTIVE 以外は開始失敗として FREE に戻す
+                if (strtolower((string) ($latestSubscription->getStatus() ?? '')) !== 'active') {
+                    $this->groupPlanService->update($group, GroupPlan::FREE);
+                    throw new HttpException(
+                        HttpStatusCode::UNPROCESSABLE_ENTITY->value,
+                        __('api.billing.subscribe_failed'),
+                    );
+                }
+
+                $squareSubscription = $latestSubscription;
+            } catch (SquareApiException) {
+                $this->syncLocalSubscription($group, $squareSubscription);
+            }
+
             $this->groupPlanService->update($group, $groupPlan);
 
             // 初回請求周期の終了日を ai_usage_reset_at に反映（月間残数の満タン化は update() 側）
-            $periodEnd = $this->squareBillingPeriodEnd($squareSubscription);
+            $periodEnd = SubscriptionHelper::periodEnd(
+                $squareSubscription->getChargedThroughDate(),
+                $squareSubscription->getCanceledDate(),
+            );
             if ($periodEnd !== null) {
                 $this->aiUsageService->renewBillingPeriod($group, $periodEnd);
             }
@@ -479,84 +503,10 @@ class BillingService
      */
     private function syncLocalSubscription(Group $group, SquareSubscription $squareSubscription): void
     {
-        $endsAt = $this->getSubscriptionEndsAt($squareSubscription);
-        $periodEnd = $this->squareBillingPeriodEnd($squareSubscription);
-
-        Subscription::query()->updateOrCreate(
-            ['square_subscription_id' => (string) $squareSubscription->getId()],
-            [
-                'group_id' => $group->id,
-                'square_plan_variation_id' => $squareSubscription->getPlanVariationId(),
-                'status' => $this->normalizeSquareSubscriptionStatus($squareSubscription),
-                'ends_at' => $endsAt,
-                'current_period_start' => $this->squareBillingDateToCarbon($squareSubscription->getStartDate()),
-                'current_period_end' => $periodEnd,
-                'canceled_at' => $this->squareBillingDateToCarbon($squareSubscription->getCanceledDate()),
-            ],
+        SubscriptionHelper::upsertSubscriptionRecord(
+            $group,
+            SubscriptionHelper::normalizeFromSquare($squareSubscription),
         );
-    }
-
-    /**
-     * Square の SubscriptionStatus をローカル DB 用（小文字）に正規化する。
-     * 解約予定（canceled_date あり）の ACTIVE は canceled として扱う（期間満了まで利用可能な UX）。
-     *
-     * PENDING（未来開始・未課金）は DB にそのまま 'pending' として保持する。
-     * PENDING → ACTIVE 遷移時に再度この正規化が走り 'active' に更新される。
-     */
-    private function normalizeSquareSubscriptionStatus(SquareSubscription $squareSubscription): string
-    {
-        $status = strtolower((string) ($squareSubscription->getStatus() ?? 'active'));
-        $canceledDate = $squareSubscription->getCanceledDate();
-
-        if ($canceledDate !== null && $canceledDate !== '' && $status === 'active') {
-            return 'canceled';
-        }
-
-        return match ($status) {
-            'active' => 'active',
-            'pending' => 'pending',
-            'canceled', 'deactivated' => 'canceled',
-            'paused' => 'paused',
-            default => $status,
-        };
-    }
-
-    /**
-     * 解約予定・解約済みのときだけローカル `ends_at` を返す（継続契約中は null）。
-     */
-    private function getSubscriptionEndsAt(SquareSubscription $squareSubscription): ?Carbon
-    {
-        $status = $this->normalizeSquareSubscriptionStatus($squareSubscription);
-        $canceledDate = $squareSubscription->getCanceledDate();
-
-        if ($status !== 'canceled' && ($canceledDate === null || $canceledDate === '')) {
-            return null;
-        }
-
-        return $this->squareBillingPeriodEnd($squareSubscription);
-    }
-
-    /**
-     * Square の請求周期終了日（charged_through_date、なければ canceled_date）を Carbon に変換する。
-     */
-    private function squareBillingPeriodEnd(SquareSubscription $squareSubscription): ?Carbon
-    {
-        $date = $squareSubscription->getChargedThroughDate()
-            ?? $squareSubscription->getCanceledDate();
-
-        return $this->squareBillingDateToCarbon($date);
-    }
-
-    /**
-     * Square API の `YYYY-MM-DD` 日付をアプリタイムゾーンの Carbon（日始まり）に変換する。
-     */
-    private function squareBillingDateToCarbon(?string $date): ?Carbon
-    {
-        if ($date === null || $date === '') {
-            return null;
-        }
-
-        return Carbon::parse($date, config('app.timezone'))->startOfDay()->startOfSecond();
     }
 
     /**
@@ -588,6 +538,29 @@ class BillingService
 
         try {
             $subscription = $group->subscription();
+
+            // 周期終了日が未設定の場合は再取得する
+            if (
+                $subscription?->isActive()
+                && $subscription->current_period_end === null
+                && is_string($subscription->square_subscription_id)
+            ) {
+                try {
+                    $squareSubscription = $this->square->retrieveSubscription(
+                        $subscription->square_subscription_id,
+                    );
+                    $this->syncLocalSubscription($group, $squareSubscription);
+                    $subscription->refresh();
+
+                    // 再取得で継続中でなくなっていたらプランを FREE に戻す
+                    if (! $subscription->isActive()) {
+                        $this->groupPlanService->update($group, GroupPlan::FREE);
+                    }
+                } catch (SquareApiException) {
+                    // 補完失敗は無視
+                }
+            }
+
             // 次回請求は継続課金中のみ。解約予定（isSubscribed だが !isActive）では表示しない。
             if ($group->isSubscribed() && $subscription?->isActive()) {
                 $upcomingInvoice = $this->buildUpcomingInvoice($subscription);
