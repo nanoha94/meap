@@ -12,11 +12,11 @@ use Square\Exceptions\SquareApiException;
 use Square\SquareClient;
 use Square\Subscriptions\Requests\CancelSubscriptionsRequest;
 use Square\Subscriptions\Requests\CreateSubscriptionRequest;
+use Square\Subscriptions\Requests\DeleteActionSubscriptionsRequest;
 use Square\Subscriptions\Requests\GetSubscriptionsRequest;
 use Square\Orders\Requests\GetOrdersRequest;
 use Square\Payments\Requests\CreatePaymentRequest;
 use Square\Payments\Requests\ListPaymentsRequest;
-use Square\Subscriptions\Requests\ResumeSubscriptionRequest;
 use Square\Types\Card;
 use Square\Types\Customer;
 use Square\Types\Money;
@@ -265,18 +265,42 @@ class SquareBillingClient
     }
 
     /**
-     * 解約予定を取り消してサブスクリプションを再開する。
+     * 予約済みの解約（CANCEL アクション）を削除して、解約予定を取り消す。
      *
      * @throws SquareApiException
      */
-    public function resumeSubscription(string $subscriptionId): Subscription
+    public function cancelScheduledCancellation(string $subscriptionId): Subscription
     {
-        $response = $this->client()->subscriptions->resume(
-            new ResumeSubscriptionRequest(['subscriptionId' => $subscriptionId]),
+        $response = $this->client()->subscriptions->get(
+            new GetSubscriptionsRequest([
+                'subscriptionId' => $subscriptionId,
+                'include' => 'actions',
+            ]),
         );
-        $this->throwIfResponseHasErrors($response->getErrors(), 'resumeSubscription');
+        $this->throwIfResponseHasErrors($response->getErrors(), 'retrieveSubscriptionWithActions');
+        $subscription = $this->requireSubscription($response->getSubscription(), 'retrieveSubscriptionWithActions');
 
-        return $this->requireSubscription($response->getSubscription(), 'resumeSubscription');
+        $cancelActionId = null;
+        foreach ($subscription->getActions() ?? [] as $action) {
+            if ($action->getType() === 'CANCEL') {
+                $cancelActionId = $action->getId();
+                break;
+            }
+        }
+
+        if ($cancelActionId === null || $cancelActionId === '') {
+            throw new SquareApiException('No scheduled CANCEL action found', 422, null);
+        }
+
+        $deleteResponse = $this->client()->subscriptions->deleteAction(
+            new DeleteActionSubscriptionsRequest([
+                'subscriptionId' => $subscriptionId,
+                'actionId' => $cancelActionId,
+            ]),
+        );
+        $this->throwIfResponseHasErrors($deleteResponse->getErrors(), 'deleteSubscriptionAction');
+
+        return $this->requireSubscription($deleteResponse->getSubscription(), 'deleteSubscriptionAction');
     }
 
     /**
@@ -444,12 +468,10 @@ class SquareBillingClient
         );
     }
 
-    /**     
-     * Square のサブスクリプションを返す。
-     * @param ?Subscription $subscription
-     * @param string $context
-     * @return Subscription
-     * @throws SquareApiException
+    /**
+     * ID のあるサブスクリプションを返す。無いときは例外にする。
+     *
+     * @throws SquareApiException サブスクリプションまたはその ID が無いとき
      */
     private function requireSubscription(?Subscription $subscription, string $context): Subscription
     {

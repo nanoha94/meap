@@ -440,7 +440,7 @@ class BillingService
         }
 
         try {
-            $squareSubscription = $this->square->resumeSubscription($subscription->square_subscription_id);
+            $squareSubscription = $this->square->cancelScheduledCancellation($subscription->square_subscription_id);
             $this->syncLocalSubscription($group, $squareSubscription);
         } catch (SquareApiException $e) {
             throw $this->squareHttpException($e, __('api.billing.resume_failed'));

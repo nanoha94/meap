@@ -1198,7 +1198,7 @@ test('4-3-34: 【プラン変更予定取り消し】 解約予定を取り消�
     ]);
 
     $this->mock(SquareBillingClient::class, function ($mock) use ($squareSubscriptionId) {
-        $mock->shouldReceive('resumeSubscription')
+        $mock->shouldReceive('cancelScheduledCancellation')
             ->once()
             ->with($squareSubscriptionId)
             ->andReturn(makeSquareSubscription([
@@ -1238,7 +1238,7 @@ test('4-3-36: 【プラン変更予定取り消し】 Square API 失敗時は Ht
     ]);
 
     $this->mock(SquareBillingClient::class, function ($mock) use ($squareSubscriptionId) {
-        $mock->shouldReceive('resumeSubscription')
+        $mock->shouldReceive('cancelScheduledCancellation')
             ->once()
             ->with($squareSubscriptionId)
             ->andThrow(makeSquareApiException());
