@@ -40,7 +40,7 @@ function buildContentSecurityPolicy() {
     const directives = [
         "default-src 'self'",
         `script-src 'self' 'unsafe-inline' ${squareScriptOrigins} ${VERCEL_LIVE_ORIGIN}`,
-        `style-src 'self' 'unsafe-inline' ${VERCEL_LIVE_ORIGIN}`,
+        `style-src 'self' 'unsafe-inline' ${squareScriptOrigins} ${VERCEL_LIVE_ORIGIN}`,
         `img-src 'self' blob: data: ${backendOrigin} https://*.r2.cloudflarestorage.com ${VERCEL_LIVE_ORIGIN} https://vercel.com`,
         `font-src 'self' ${VERCEL_LIVE_ORIGIN} https://assets.vercel.com`,
         `connect-src 'self' ${backendOrigin} ${squareConnectOrigins} ${VERCEL_LIVE_ORIGIN} wss://ws-us3.pusher.com`,
