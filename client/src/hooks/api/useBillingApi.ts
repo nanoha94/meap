@@ -142,12 +142,14 @@ export const useBillingApi = () => {
     }, [loadInvoices]);
 
     /**
-     * サブスクリプションを開始する
+     * サブスクリプションを開始する。
+     * verificationToken は CreateCard 後方互換用で、渡されたときだけ body に含める。
      */
     const createSubscription = React.useCallback(
         async (
             subscriptionType: BillingSubscriptionType = BILLING_SUBSCRIPTION_TYPE.STANDARD,
             cardToken?: string,
+            verificationToken?: string,
         ): Promise<boolean> => {
             if (isCreateSubscriptionRef.current) {
                 return false;
@@ -160,7 +162,10 @@ export const useBillingApi = () => {
                 const { data: responseData } =
                     await axios.post<IPostBillingSubscripeResponse>(
                         `/billing/subscription/${subscriptionType}`,
-                        cardToken ? { cardToken } : {},
+                        {
+                            ...(cardToken ? { cardToken } : {}),
+                            ...(verificationToken ? { verificationToken } : {}),
+                        },
                     );
 
                 if (responseData.success && responseData.data) {
@@ -237,10 +242,15 @@ export const useBillingApi = () => {
     ]);
 
     /**
-     * 買い切りパックを購入する
+     * 買い切りパックを購入する。
+     * verificationToken は CreateCard 後方互換用で、渡されたときだけ body に含める。
      */
     const purchasePack = React.useCallback(
-        async (packType: BillingPackType, cardToken?: string): Promise<boolean> => {
+        async (
+            packType: BillingPackType,
+            cardToken?: string,
+            verificationToken?: string,
+        ): Promise<boolean> => {
             if (isPurchasePackRef.current) {
                 return false;
             }
@@ -252,7 +262,10 @@ export const useBillingApi = () => {
                 const { data: responseData } =
                     await axios.post<IPostBillingPackPurchaseResponse>(
                         `/billing/packs/${packType}`,
-                        cardToken ? { cardToken } : {},
+                        {
+                            ...(cardToken ? { cardToken } : {}),
+                            ...(verificationToken ? { verificationToken } : {}),
+                        },
                     );
 
                 if (responseData.success && responseData.data) {
@@ -329,10 +342,11 @@ export const useBillingApi = () => {
     ]);
 
     /**
-     * カード情報を更新する
+     * カード情報を更新する。
+     * verificationToken は CreateCard 後方互換用で、渡されたときだけ body に含める。
      */
     const updateCard = React.useCallback(
-        async (cardToken: string): Promise<boolean> => {
+        async (cardToken: string, verificationToken?: string): Promise<boolean> => {
             if (isUpdateCardRef.current) {
                 return false;
             }
@@ -344,7 +358,10 @@ export const useBillingApi = () => {
                 const { data: responseData } =
                     await axios.post<IPostBillingCardUpdateResponse>(
                         '/billing/card',
-                        { cardToken },
+                        {
+                            cardToken,
+                            ...(verificationToken ? { verificationToken } : {}),
+                        },
                     );
 
                 if (responseData.success && responseData.data) {

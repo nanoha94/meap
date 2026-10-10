@@ -6,91 +6,95 @@ use App\Enums\BillingPackType;
 use App\Enums\BillingSubscriptionType;
 use App\Enums\GroupPlan;
 use App\Enums\HttpStatusCode;
+use App\Models\BillingHistory;
 use App\Models\Group;
 use App\Models\Subscription;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
-use Payjp\Error\Base as PayjpError;
+use Square\Exceptions\SquareApiException;
+use Square\Types\Card;
+use Square\Types\Payment;
+use Square\Types\Subscription as SquareSubscription;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class BillingService
 {
     public function __construct(
-        private readonly PayjpBillingClient $payjp,
+        private readonly SquareBillingClient $square,
         private readonly GroupPlanService $groupPlanService,
         private readonly AiUsageService $aiUsageService,
     ) {}
 
     /**
-     * カードトークンで PAY.JP Customer を作成またはカードを更新する。
+     * カードトークンで Square Customer を作成またはカードを更新する。
      *
-     * @throws PayjpError
+     * @throws SquareApiException
      */
-    public function createOrUpdatePayjpCustomer(Group $group, User $user, string $cardToken): void
-    {
-        if ($group->hasPayjpCustomer()) {
-            $customer = $this->payjp->addCustomerCardFromToken(
-                $group->payjp_customer_id,
+    public function createOrUpdateSquareCustomer(
+        Group $group,
+        User $user,
+        string $cardToken,
+        ?string $verificationToken = null,
+    ): void {
+        if ($group->hasSquareCustomer()) {
+            $card = $this->square->addCustomerCardFromToken(
+                $group->square_customer_id,
                 $cardToken,
+                $group->square_card_id,
+                $verificationToken,
             );
         } else {
-            $customer = $this->payjp->createCustomer([
-                'email' => $user->email,
-                'description' => $user->name,
-                'card' => $cardToken,
-                'metadata' => [
-                    'group_id' => $group->id,
-                ],
+            $customer = $this->square->createCustomer([
+                'emailAddress' => $user->email,
+                'note' => $user->name,
+                'referenceId' => $group->id,
             ]);
 
+            $customerId = $customer->getId();
+            if ($customerId === null) {
+                throw new SquareApiException('Square customer id is missing', 502, null);
+            }
+
+            $card = $this->square->createCard($customerId, $cardToken, $verificationToken);
+
             $group->forceFill([
-                'payjp_customer_id' => $customer->id,
+                'square_customer_id' => $customerId,
             ])->save();
         }
 
-        $this->syncPaymentMethodFromCustomer($group, $customer);
+        $this->syncPaymentMethodFromCard($group, $card);
         $group->refresh();
     }
 
     /**
-     * PAY.JP Customer のデフォルトカード情報を Group に同期する。
+     * Square Card の情報を Group に同期する。
      */
-    private function syncPaymentMethodFromCustomer(Group $group, object $customer): void
+    private function syncPaymentMethodFromCard(Group $group, Card $card): void
     {
-        $card = $this->getDefaultCard($customer);
-
-        if ($card === null) {
-            return;
-        }
-
         $group->forceFill([
-            'pm_type' => $card->brand ?? $card->type ?? 'card',
-            'pm_last_four' => isset($card->last4) ? (string) $card->last4 : null,
-            'pm_exp_month' => isset($card->exp_month) ? (int) $card->exp_month : null,
-            'pm_exp_year' => isset($card->exp_year) ? (int) $card->exp_year : null,
+            'square_card_id' => $card->getId(),
+            'pm_type' => $this->formatPmType($card->getCardBrand()),
+            'pm_last_four' => $card->getLast4(),
+            'pm_exp_month' => $card->getExpMonth(),
+            'pm_exp_year' => $card->getExpYear(),
         ])->save();
     }
 
-    /**
-     * デフォルトカードを取得する
-     * @param object $customer
-     * @return object|null
-     */
-    private function getDefaultCard(object $customer): ?object
+    private function formatPmType(?string $cardBrand): ?string
     {
-        $defaultCardId = $customer->default_card ?? null;
-        $cards = $customer->cards->data ?? [];
-
-        foreach ($cards as $card) {
-            if ($defaultCardId !== null && ($card->id ?? null) !== $defaultCardId) {
-                continue;
-            }
-
-            return $card;
+        if ($cardBrand === null || $cardBrand === '') {
+            return 'card';
         }
 
-        return null;
+        return match (strtoupper($cardBrand)) {
+            'VISA' => 'Visa',
+            'MASTERCARD' => 'Mastercard',
+            'AMERICAN_EXPRESS' => 'American Express',
+            'DISCOVER' => 'Discover',
+            'JCB' => 'JCB',
+            default => ucfirst(strtolower($cardBrand)),
+        };
     }
 
     /**
@@ -110,12 +114,16 @@ class BillingService
      *
      * @throws HttpException
      */
-    public function updateCard(Group $group, User $user, string $cardToken): array
-    {
+    public function updateCard(
+        Group $group,
+        User $user,
+        string $cardToken,
+        ?string $verificationToken = null,
+    ): array {
         try {
-            $this->createOrUpdatePayjpCustomer($group, $user, $cardToken);
-        } catch (PayjpError $e) {
-            throw $this->payjpHttpException($e, __('api.billing.card_update_failed'));
+            $this->createOrUpdateSquareCustomer($group, $user, $cardToken, $verificationToken);
+        } catch (SquareApiException $e) {
+            throw $this->squareHttpException($e, __('api.billing.card_update_failed'));
         }
 
         return $this->getBillingStatus($group->fresh());
@@ -128,7 +136,7 @@ class BillingService
      */
     public function deleteCard(Group $group): void
     {
-        if (! $group->hasPayjpCustomer()) {
+        if (! $group->hasSquareCustomer()) {
             throw new HttpException(
                 HttpStatusCode::UNPROCESSABLE_ENTITY->value,
                 __('api.billing.no_billing_account'),
@@ -136,22 +144,21 @@ class BillingService
         }
 
         try {
-            $customer = $this->payjp->retrieveCustomer($group->payjp_customer_id);
-            $card = $this->getDefaultCard($customer);
-            $cardId = $card->id ?? null;
+            $cardId = $group->square_card_id;
 
             if (is_string($cardId) && $cardId !== '') {
-                $this->payjp->deleteCustomerCard($group->payjp_customer_id, $cardId);
+                $this->square->disableCard($cardId);
             }
 
             $group->forceFill([
+                'square_card_id' => null,
                 'pm_type' => null,
                 'pm_last_four' => null,
                 'pm_exp_month' => null,
                 'pm_exp_year' => null,
             ])->save();
-        } catch (PayjpError $e) {
-            throw $this->payjpHttpException($e, __('api.billing.card_delete_failed'));
+        } catch (SquareApiException $e) {
+            throw $this->squareHttpException($e, __('api.billing.card_delete_failed'));
         }
     }
 
@@ -177,6 +184,7 @@ class BillingService
         User $user,
         BillingSubscriptionType $subscriptionType,
         ?string $cardToken = null,
+        ?string $verificationToken = null,
     ): array {
         if ($group->isSubscribed()) {
             throw new HttpException(
@@ -186,36 +194,67 @@ class BillingService
         }
 
         $groupPlan = $subscriptionType->groupPlan();
-        $planId = $subscriptionType->payjpSubscriptionPlanId();
+        $planVariationId = $subscriptionType->squarePlanVariationId();
 
         try {
             if ($cardToken !== null && $cardToken !== '') {
-                $this->createOrUpdatePayjpCustomer($group, $user, $cardToken);
-            } elseif (! $group->hasPayjpCustomer()) {
+                $this->createOrUpdateSquareCustomer($group, $user, $cardToken, $verificationToken);
+            } elseif (! $group->hasSquareCustomer()) {
                 throw new HttpException(
                     HttpStatusCode::UNPROCESSABLE_ENTITY->value,
                     __('api.billing.no_payment_method'),
                 );
             }
 
-            $payjpSubscription = $this->payjp->createSubscription([
-                'customer' => $group->payjp_customer_id,
-                'plan' => $planId,
-                'metadata' => [
-                    'group_id' => $group->id,
-                ],
+            $group->refresh();
+            $cardId = $group->square_card_id;
+            if (! is_string($cardId) || $cardId === '') {
+                throw new HttpException(
+                    HttpStatusCode::UNPROCESSABLE_ENTITY->value,
+                    __('api.billing.no_payment_method'),
+                );
+            }
+
+            $squareSubscription = $this->square->createSubscription([
+                'customerId' => (string) $group->square_customer_id,
+                'planVariationId' => $planVariationId,
+                'cardId' => $cardId,
             ]);
 
-            $this->syncLocalSubscription($group, $payjpSubscription);
+            // 申込応答は charged_through_date が空、または直後に ACTIVE でなくなることがある。
+            // 再取得して請求周期とステータスを補完する。再取得失敗時だけ初回応答を保存する。
+            try {
+                $latestSubscription = $this->square->retrieveSubscription(
+                    (string) $squareSubscription->getId(),
+                );
+                $this->syncLocalSubscription($group, $latestSubscription);
+
+                // ACTIVE 以外は開始失敗として FREE に戻す
+                if (strtolower((string) ($latestSubscription->getStatus() ?? '')) !== 'active') {
+                    $this->groupPlanService->update($group, GroupPlan::FREE);
+                    throw new HttpException(
+                        HttpStatusCode::UNPROCESSABLE_ENTITY->value,
+                        __('api.billing.subscribe_failed'),
+                    );
+                }
+
+                $squareSubscription = $latestSubscription;
+            } catch (SquareApiException) {
+                $this->syncLocalSubscription($group, $squareSubscription);
+            }
+
             $this->groupPlanService->update($group, $groupPlan);
 
-            $periodEnd = $this->timestampToCarbon($payjpSubscription->current_period_end ?? null);
-            // 期間終了日がある場合は猶予期間を更新
+            // 初回請求周期の終了日を ai_usage_reset_at に反映（月間残数の満タン化は update() 側）
+            $periodEnd = SubscriptionHelper::periodEnd(
+                $squareSubscription->getChargedThroughDate(),
+                $squareSubscription->getCanceledDate(),
+            );
             if ($periodEnd !== null) {
                 $this->aiUsageService->renewBillingPeriod($group, $periodEnd);
             }
-        } catch (PayjpError $e) {
-            throw $this->payjpHttpException($e, __('api.billing.subscribe_failed'));
+        } catch (SquareApiException $e) {
+            throw $this->squareHttpException($e, __('api.billing.subscribe_failed'));
         }
 
         return $this->getBillingStatus($group->fresh());
@@ -223,9 +262,6 @@ class BillingService
 
     /**
      * サブスクリプションを期間終了時に解約する。
-     *
-     * PAY.JP の cancel は status を canceled にし、current_period_end まで利用できる。
-     *
      * @return array{
      *     plan: string,
      *     isSubscribed: bool,
@@ -252,10 +288,10 @@ class BillingService
         $subscription = $group->subscription();
 
         try {
-            $payjpSubscription = $this->payjp->cancelSubscription($subscription->payjp_subscription_id);
-            $this->syncLocalSubscription($group, $payjpSubscription);
-        } catch (PayjpError $e) {
-            throw $this->payjpHttpException($e, __('api.billing.cancel_failed'));
+            $squareSubscription = $this->square->cancelSubscription($subscription->square_subscription_id);
+            $this->syncLocalSubscription($group, $squareSubscription);
+        } catch (SquareApiException $e) {
+            throw $this->squareHttpException($e, __('api.billing.cancel_failed'));
         }
 
         return $this->getBillingStatus($group->fresh());
@@ -283,34 +319,48 @@ class BillingService
         User $user,
         BillingPackType $packType,
         ?string $cardToken = null,
+        ?string $verificationToken = null,
     ): array {
-        $amount = $packType->payjpPackPrice();
+        $amount = $packType->squarePackPrice();
 
         try {
             if ($cardToken !== null && $cardToken !== '') {
-                $this->createOrUpdatePayjpCustomer($group, $user, $cardToken);
-            } elseif (! $group->hasPayjpCustomer()) {
+                $this->createOrUpdateSquareCustomer($group, $user, $cardToken, $verificationToken);
+            } elseif (! $group->hasSquareCustomer()) {
                 throw new HttpException(
                     HttpStatusCode::UNPROCESSABLE_ENTITY->value,
                     __('api.billing.no_payment_method'),
                 );
             }
 
-            $this->payjp->createCharge([
+            $group->refresh();
+            $cardId = $group->square_card_id;
+            if (! is_string($cardId) || $cardId === '') {
+                throw new HttpException(
+                    HttpStatusCode::UNPROCESSABLE_ENTITY->value,
+                    __('api.billing.no_payment_method'),
+                );
+            }
+
+            $payment = $this->square->createPayment([
+                'sourceId' => $cardId,
+                'customerId' => (string) $group->square_customer_id,
                 'amount' => $amount,
-                'currency' => 'jpy',
-                'customer' => $group->payjp_customer_id,
-                'metadata' => [
-                    'type' => 'pack',
-                    'group_id' => $group->id,
-                    'pack_type' => $packType->value,
-                    'credits' => (string) $packType->credits(),
-                ],
+                'currency' => 'JPY',
+                'note' => $this->encodePackPaymentNote($group, $packType),
+                'referenceId' => 'pack:' . $packType->value,
+            ]);
+
+            BillingHistory::create([
+                'group_id' => $group->id,
+                'square_payment_id' => (string) $payment->getId(),
+                'type' => 'pack',
+                'description' => __('api.billing.pack_charge_line', ['label' => $packType->label()]),
             ]);
 
             $this->addPackCredits($group, $packType->credits());
-        } catch (PayjpError $e) {
-            throw $this->payjpHttpException($e, __('api.billing.purchase_pack_failed'));
+        } catch (SquareApiException $e) {
+            throw $this->squareHttpException($e, __('api.billing.purchase_pack_failed'));
         }
 
         return $this->getBillingStatus($group->fresh());
@@ -353,9 +403,9 @@ class BillingService
     }
 
     /**
-     * 予定されているプラン変更（解約予定など）を取り消してサブスクリプションを継続する
-     * @param Group $group
-     * @return void
+     * 解約予定を取り消し、サブスクリプションを継続する（猶予期間中のみ）。
+     * AI 利用枠（ai_usage_reset_at / ai_monthly_remaining）は変更しない。
+     *
      * @throws HttpException
      */
     public function resumeSubscription(Group $group): void
@@ -390,18 +440,16 @@ class BillingService
         }
 
         try {
-            // キャンセル済みのサブスクリプションを再開する
-            $payjpSubscription = $this->payjp->resumeSubscription($subscription->payjp_subscription_id);
-            $this->syncLocalSubscription($group, $payjpSubscription);
-        } catch (PayjpError $e) {
-            throw $this->payjpHttpException($e, __('api.billing.resume_failed'));
+            $squareSubscription = $this->square->cancelScheduledCancellation($subscription->square_subscription_id);
+            $this->syncLocalSubscription($group, $squareSubscription);
+        } catch (SquareApiException $e) {
+            throw $this->squareHttpException($e, __('api.billing.resume_failed'));
         }
     }
 
     /**
-     * 予定されているプラン変更を取得する
-     * @param ?Subscription $subscription
-     * @param GroupPlan $plan
+     * 解約予定（STANDARD → FREE）を返す。
+     *
      * @return array{nextPlan: string, changesAt: string}|null
      */
     private function getPendingPlanChange(
@@ -425,10 +473,7 @@ class BillingService
     }
 
     /**
-     * 解約予定のチェック
-     * @param ?Subscription $subscription
-     * @param GroupPlan $plan
-     * @return bool
+     * 解約予定（周期終了後に FREE へ落ちる状態）かどうか。
      */
     private function isCancellationScheduled(
         ?Subscription $subscription,
@@ -439,12 +484,12 @@ class BillingService
             return false;
         }
 
-        // キャンセルされていて、猶予期間がある場合は true
+        // 解約済みだが契約終了日（ends_at）まで利用可能な場合
         if ($subscription->status === 'canceled' && $subscription->ends_at?->isFuture()) {
             return true;
         }
 
-        // アクティブで、猶予期間がある場合は true
+        // active のまま ends_at が未来（同期タイミング等の残存ケース）
         if ($subscription->isActive() && $subscription->ends_at?->isFuture()) {
             return true;
         }
@@ -454,86 +499,18 @@ class BillingService
     }
 
     /**
-     * PAY.JP Subscription オブジェクトをローカル DB に反映する。
+     * Square Subscription をローカル DB に反映する。
      */
-    private function syncLocalSubscription(Group $group, object $payjpSubscription): void
+    private function syncLocalSubscription(Group $group, SquareSubscription $squareSubscription): void
     {
-        $endsAt = $this->getSubscriptionEndsAt($payjpSubscription);
-
-        Subscription::query()->updateOrCreate(
-            ['payjp_subscription_id' => (string) $payjpSubscription->id],
-            [
-                'group_id' => $group->id,
-                'payjp_plan_id' => $this->extractPayjpSubscriptionPlanId($payjpSubscription),
-                'status' => (string) ($payjpSubscription->status ?? 'active'),
-                'trial_ends_at' => $this->timestampToCarbon($payjpSubscription->trial_end ?? null),
-                'ends_at' => $endsAt,
-                'current_period_start' => $this->timestampToCarbon($payjpSubscription->current_period_start ?? null),
-                'current_period_end' => $this->timestampToCarbon($payjpSubscription->current_period_end ?? null),
-                'canceled_at' => $this->timestampToCarbon($payjpSubscription->canceled_at ?? null),
-                'paused_at' => $this->timestampToCarbon($payjpSubscription->paused_at ?? null),
-            ],
+        SubscriptionHelper::upsertSubscriptionRecord(
+            $group,
+            SubscriptionHelper::normalizeFromSquare($squareSubscription),
         );
     }
 
     /**
-     * PAY.JP の subscription オブジェクトからプラン ID を取得する。
-     * @param object $payjpSubscription
-     * @return ?string
-     */
-    private function extractPayjpSubscriptionPlanId(object $payjpSubscription): ?string
-    {
-        $plan = $payjpSubscription->plan ?? null;
-
-        if (is_object($plan)) {
-            return isset($plan->id) ? (string) $plan->id : null;
-        }
-
-        if (is_string($plan) && $plan !== '') {
-            return $plan;
-        }
-
-        return null;
-    }
-
-    /**
-     * 解約予定・解約済み猶予期間の終了日（ローカル `ends_at`）を PAY.JP レスポンスから求める。
-     *
-     * PAY.JP の subscription オブジェクトに `ended_at` はなく、キャンセル後も
-     * `current_period_end` まで利用可能（公式: キャンセルは current_period_end 以降に削除）。
-     *
-     * @param object $payjpSubscription PAY.JP Subscription API レスポンス
-     */
-    private function getSubscriptionEndsAt(object $payjpSubscription): ?Carbon
-    {
-        $status = (string) ($payjpSubscription->status ?? '');
-
-        // キャンセルされていない場合は null
-        if ($status !== 'canceled' && ($payjpSubscription->canceled_at ?? null) === null) {
-            return null;
-        }
-
-        // キャンセルされている場合は `current_period_end` を返す
-        return $this->timestampToCarbon($payjpSubscription->current_period_end ?? null);
-    }
-
-    /**
-     * タイムスタンプを Carbon に変換する
-     * @param mixed $timestamp
-     * @return ?Carbon
-     */
-    private function timestampToCarbon(mixed $timestamp): ?Carbon
-    {
-        if ($timestamp === null || $timestamp === '') {
-            return null;
-        }
-
-        return Carbon::createFromTimestamp((int) $timestamp, config('app.timezone'));
-    }
-
-    /**
-     * 請求履歴と次回お支払い予定を取得する
-     * @param Group $group
+     * 請求履歴と次回お支払い予定を取得する。
      * @return array{
      *     upcomingInvoice: array{
      *         date: string,
@@ -552,7 +529,7 @@ class BillingService
         $upcomingInvoice = null;
         $pastInvoices = [];
 
-        if (! $group->hasPayjpCustomer()) {
+        if (! $group->hasSquareCustomer()) {
             return [
                 'upcomingInvoice' => null,
                 'pastInvoices' => [],
@@ -561,7 +538,30 @@ class BillingService
 
         try {
             $subscription = $group->subscription();
-            // 次回請求は継続課金中のみ。解約猶予（isSubscribed だが !isActive）では表示しない。
+
+            // 周期終了日が未設定の場合は再取得する
+            if (
+                $subscription?->isActive()
+                && $subscription->current_period_end === null
+                && is_string($subscription->square_subscription_id)
+            ) {
+                try {
+                    $squareSubscription = $this->square->retrieveSubscription(
+                        $subscription->square_subscription_id,
+                    );
+                    $this->syncLocalSubscription($group, $squareSubscription);
+                    $subscription->refresh();
+
+                    // 再取得で継続中でなくなっていたらプランを FREE に戻す
+                    if (! $subscription->isActive()) {
+                        $this->groupPlanService->update($group, GroupPlan::FREE);
+                    }
+                } catch (SquareApiException) {
+                    // 補完失敗は無視
+                }
+            }
+
+            // 次回請求は継続課金中のみ。解約予定（isSubscribed だが !isActive）では表示しない。
             if ($group->isSubscribed() && $subscription?->isActive()) {
                 $upcomingInvoice = $this->buildUpcomingInvoice($subscription);
             }
@@ -575,31 +575,31 @@ class BillingService
                 ->subYears($historyYears)
                 ->getTimestamp();
 
-            $charges = $this->payjp->listCharges([
-                'customer' => $group->payjp_customer_id,
+            $payments = $this->square->listPayments([
+                'customerId' => (string) $group->square_customer_id,
                 'since' => $chargeSince,
                 'limit' => $chargeHistoryLimit,
             ]);
 
-            foreach ($charges as $charge) {
-                if (($charge->paid ?? false) !== true) {
+            foreach ($payments as $payment) {
+                if (! $this->square->isPaymentCompleted($payment)) {
                     continue;
                 }
 
-                $created = $this->timestampToCarbon($charge->created ?? null);
-                if ($created === null) {
+                $createdAt = $this->paymentCreatedAt($payment);
+                if ($createdAt === null) {
                     continue;
                 }
 
                 $pastInvoices[] = [
-                    'id' => (string) $charge->id,
-                    'date' => $created->toIso8601String(),
-                    'description' => $this->buildChargeDescription($charge),
-                    'total' => (int) ($charge->amount ?? 0),
+                    'id' => (string) $payment->getId(),
+                    'date' => $createdAt->toIso8601String(),
+                    'description' => $this->buildPaymentDescription($payment),
+                    'total' => $this->paymentTotalAmount($payment),
                 ];
             }
-        } catch (PayjpError) {
-            // PAY.JP 取得不可時は upcoming=null・pastInvoices=取得できた分のみ
+        } catch (SquareApiException) {
+            // Square 取得不可時は upcoming は DB 由来のまま・pastInvoices=取得できた分のみ
         }
 
         return [
@@ -628,13 +628,17 @@ class BillingService
             return null;
         }
 
-        $amount = BillingSubscriptionType::STANDARD->payjpSubscriptionAmount();
+        $subscriptionType = BillingSubscriptionType::subscriptionTypeFromSquarePlanVariationId(
+            $subscription->square_plan_variation_id,
+        ) ?? BillingSubscriptionType::STANDARD;
+
+        $amount = $subscriptionType->squareSubscriptionAmount();
 
         return [
             'date' => $periodEnd->toIso8601String(),
             'lines' => [
                 [
-                    'description' => __('api.billing.standard_plan_line'),
+                    'description' => $subscriptionType->label(),
                     'quantity' => 1,
                     'amount' => $amount,
                 ],
@@ -648,23 +652,53 @@ class BillingService
     }
 
     /**
-     * PAY.JP Charge の metadata から請求内容を組み立てる。
-     *
-     * @param  object  $charge  PAY.JP Charge オブジェクト
+     * パック購入 Payment の note（JSON）を組み立てる。
      */
-    private function buildChargeDescription(object $charge): string
+    private function encodePackPaymentNote(Group $group, BillingPackType $packType): string
     {
-        $metadata = $charge->metadata ?? null;
-        $type = $metadata->type ?? null;
+        return json_encode([
+            'type' => 'pack',
+            'group_id' => (string) $group->id,
+            'pack_type' => $packType->value,
+        ], JSON_THROW_ON_ERROR);
+    }
 
-        if ($type === 'pack') {
-            $packType = BillingPackType::tryFrom($metadata->pack_type ?? '');
-            if ($packType !== null) {
-                return __('api.billing.pack_charge_line', ['label' => $packType->label()]);
-            }
+    /**
+     * Square Payment の請求内容ラベルを返す。billing_histories を参照し、未登録なら中立なフォールバックを返す。
+     */
+    private function buildPaymentDescription(Payment $payment): string
+    {
+        $paymentId = (string) $payment->getId();
+        $history = BillingHistory::where('square_payment_id', $paymentId)->first();
+        if ($history !== null) {
+            return $history->description;
         }
 
-        return __('api.billing.standard_plan_line');
+        return __('api.billing.unknown_charge_line');
+    }
+
+    /**
+     * Square Payment の作成日を Carbon に変換する。
+     */
+    private function paymentCreatedAt(Payment $payment): ?Carbon
+    {
+        $createdAt = $payment->getCreatedAt();
+        if ($createdAt === null || $createdAt === '') {
+            return null;
+        }
+
+        return Carbon::parse($createdAt, config('app.timezone'));
+    }
+
+    /**
+     * Square Payment の合計金額を返す。
+     */
+    private function paymentTotalAmount(Payment $payment): int
+    {
+        $totalMoney = $payment->getTotalMoney() ?? $payment->getAmountMoney();
+        $amount = $totalMoney?->getAmount();
+
+        return is_int($amount) ? $amount : 0;
     }
 
     /**
@@ -689,9 +723,9 @@ class BillingService
         });
     }
 
-    private function payjpHttpException(PayjpError $error, string $message): HttpException
+    private function squareHttpException(SquareApiException $error, string $message): HttpException
     {
-        $status = $error->getHttpStatus();
+        $status = $error->getStatusCode();
         $code = $status >= 400 && $status < 600
             ? $status
             : HttpStatusCode::UNPROCESSABLE_ENTITY->value;

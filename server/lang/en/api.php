@@ -99,6 +99,7 @@ return [
         'pack_charge_line' => 'One-time pack :label',
         'pack_label_light' => 'Light',
         'pack_label_value' => 'Value',
+        'unknown_charge_line' => 'Other charge',
         'rate_limit_exceeded' => 'Billing operations are temporarily unavailable due to multiple requests in a short time. Please try again later.',
     ],
 

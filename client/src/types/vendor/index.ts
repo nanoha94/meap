@@ -1,1 +1,1 @@
-export * from './payjp';
+export * from './square';

@@ -4,14 +4,15 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Subscription Plan IDs (PAY.JP)
+    | Subscription Plan Variation IDs (Square)
     |--------------------------------------------------------------------------
     |
-    | サブスクリプション用 Plan ID（`pln_...`）。キーは BillingSubscriptionType の value と一致。
+    | サブスクリプション用 Plan Variation ID（Catalog SUBSCRIPTION_PLAN_VARIATION）。
+    | キーは BillingSubscriptionType の value と一致。
     |
     */
     'subscription_plan_ids' => [
-        'standard' => env('PAYJP_PLAN_SUBSCRIPTION_STANDARD'),
+        'standard' => env('SQUARE_PLAN_VARIATION_STANDARD'),
     ],
 
     /*
@@ -24,7 +25,7 @@ return [
     |
     */
     'subscription_amounts' => [
-        'standard' => (int) env('PAYJP_AMOUNT_SUBSCRIPTION_STANDARD', 580),
+        'standard' => (int) env('SQUARE_AMOUNT_SUBSCRIPTION_STANDARD', 580),
     ],
 
     /*
@@ -32,12 +33,12 @@ return [
     | Pack Prices
     |--------------------------------------------------------------------------
     |
-    | 買い切りパックの都度課金金額（円）。PAY.JP Charge API に渡す。
+    | 買い切りパックの都度課金金額（円）。Square Payments API に渡す。
     |
     */
     'pack_prices' => [
-        'light' => (int) env('PAYJP_PRICE_PACK_LIGHT', 400),
-        'value' => (int) env('PAYJP_PRICE_PACK_VALUE', 800),
+        'light' => (int) env('SQUARE_PRICE_PACK_LIGHT', 400),
+        'value' => (int) env('SQUARE_PRICE_PACK_VALUE', 800),
     ],
 
     /*
@@ -70,8 +71,8 @@ return [
     |--------------------------------------------------------------------------
     |
     | GET /billing/invoices の pastInvoices。サブスク更新・買い切りパックを合算。
-    | charge_history_since_years: listCharges の since（この年数より前は取得しない）。
-    | charge_history_limit: 1 リクエストあたりの最大件数（PAY.JP API は 1〜100）。
+    | charge_history_since_years: 取得開始の年数（この年数より前は取得しない）。
+    | charge_history_limit: 1 リクエストあたりの最大件数。
     |
     */
     'charge_history_since_years' => 2,

@@ -29,6 +29,7 @@
         <env name="SESSION_DRIVER" value="array"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="IMAGE_DISK" value="public"/>
-        <env name="PAYJP_WEBHOOK_TOKEN" value="whook_test"/>
+        <env name="SQUARE_WEBHOOK_SIGNATURE_KEY" value="test_signature_key"/>
+        <env name="SQUARE_WEBHOOK_NOTIFICATION_URL" value="https://example.com/square/webhook"/>
     </php>
 </phpunit>

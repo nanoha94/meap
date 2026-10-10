@@ -17,7 +17,7 @@ namespace App\Swagger;
  *     required={"plan", "isSubscribed", "subscriptionStatus", "subscriptionEndsAt", "pendingPlanChange", "pmType", "pmLastFour", "pmExpMonth", "pmExpYear"},
  *     @OA\Property(property="plan", type="string", description="現在の料金プラン", example="free"),
  *     @OA\Property(property="isSubscribed", type="boolean", description="有効なサブスクリプションがあるか", example=false),
- *     @OA\Property(property="subscriptionStatus", type="string", nullable=true, description="PAY.JP サブスクリプション状態", example="active"),
+ *     @OA\Property(property="subscriptionStatus", type="string", nullable=true, description="Square サブスクリプション状態", example="active"),
  *     @OA\Property(property="subscriptionEndsAt", type="string", format="date-time", nullable=true, description="サブスクリプション終了日時"),
  *     @OA\Property(property="pendingPlanChange", ref="#/components/schemas/PendingPlanChange", nullable=true, description="予定されているプラン変更（解約予定など）"),
  *     @OA\Property(property="pmType", type="string", nullable=true, description="登録済み支払い方法の種類", example="card"),
@@ -49,7 +49,7 @@ namespace App\Swagger;
  * @OA\Schema(
  *     schema="BillingPastInvoice",
  *     required={"id", "date", "description", "total"},
- *     @OA\Property(property="id", type="string", description="PAY.JP Charge ID", example="ch_abc123"),
+ *     @OA\Property(property="id", type="string", description="Square Payment ID", example="pay_abc123"),
  *     @OA\Property(property="date", type="string", format="date-time", description="請求日"),
  *     @OA\Property(property="description", type="string", description="請求内容", example="スタンダードプラン"),
  *     @OA\Property(property="total", type="integer", description="合計（最小通貨単位）", example=580)

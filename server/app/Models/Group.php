@@ -34,7 +34,8 @@ class Group extends Model
         'ai_monthly_remaining',
         'ai_usage_reset_at',
         'ai_pack_remaining',
-        'payjp_customer_id',
+        'square_customer_id',
+        'square_card_id',
         'pm_type', // カードブランド（pm = payment method）
         'pm_last_four', // カード下4桁（pm = payment method）
         'pm_exp_month', // カード有効期限（月）
@@ -251,11 +252,11 @@ class Group extends Model
     }
 
     /**
-     * PAY.JP Customer ID が登録済みかどうか
+     * Square Customer ID が登録済みかどうか
      */
-    public function hasPayjpCustomer(): bool
+    public function hasSquareCustomer(): bool
     {
-        return filled($this->payjp_customer_id);
+        return filled($this->square_customer_id);
     }
 
     /**
@@ -295,16 +296,16 @@ class Group extends Model
     }
 
     /**
-     * PAY.JP Customer ID からグループを取得する。未設定・空文字・文字列以外は null。
+     * Square Customer ID からグループを取得する。未設定・空文字・文字列以外は null。
      */
-    public static function findByPayjpCustomerId(mixed $payjpCustomerId): ?self
+    public static function findBySquareCustomerId(mixed $squareCustomerId): ?self
     {
-        if (! is_string($payjpCustomerId) || $payjpCustomerId === '') {
+        if (! is_string($squareCustomerId) || $squareCustomerId === '') {
             return null;
         }
 
         return self::query()
-            ->where('payjp_customer_id', $payjpCustomerId)
+            ->where('square_customer_id', $squareCustomerId)
             ->first();
     }
 }

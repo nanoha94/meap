@@ -86,7 +86,7 @@ root@xxxxxxxxxxxx:/var/www/html#
 SSH 内で以下を実行:
 
 ```bash
-printenv | grep -E '^(DB_CONNECTION|DB_HOST|DB_PORT|DB_DATABASE|DB_USERNAME|DB_URL|DATABASE_URL)='
+printenv | grep -E '^(DB_CONNECTION|APP_ENV|DB_HOST|DB_PORT|DB_DATABASE|DB_USERNAME|DB_URL|DATABASE_URL)='
 ```
 
 確認ポイント:

@@ -94,7 +94,7 @@ const Page = () => {
                                 インターネット接続に必要な通信料等は、お客様のご負担となります。
                             </Row>
                             <Row label="支払方法">
-                                クレジットカード（PAY.JP）
+                                クレジットカード
                             </Row>
                             <Row label="支払時期">
                                 <ul className="list-disc pl-5 [&>li:not(:last-child)]:mb-1">

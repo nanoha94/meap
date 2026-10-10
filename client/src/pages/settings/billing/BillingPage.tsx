@@ -11,7 +11,7 @@ import {
     Button,
     Header,
     PackPurchase,
-    PayjpScript,
+    SquareScript,
     PendingPlanChangeNote,
     PlanChangeHelpLink,
     SubscriptionPlanChange,
@@ -25,6 +25,7 @@ import {
     IBillingStatus,
     IBillingUpcomingInvoice,
 } from '@/types';
+import { SQUARE_VERIFICATION_INTENT } from '@/types/vendor/square';
 import {
     formatCardExpiration,
     formatDisplayDate,
@@ -49,7 +50,7 @@ interface Props {
 const BillingPage = ({ billingStatus, billingInvoices }: Props) => {
     return (
         <>
-            <PayjpScript />
+            <SquareScript />
             <Header title="プラン管理" hasBackButton={true} />
             <main className="p-5 pb-[60px] md:px-10 max-w-[1000px] mx-auto flex flex-col gap-y-6">
                 {/* 現在のプラン */}
@@ -256,6 +257,7 @@ const PaymentSettingsSection = ({
                 <BillingCheckoutPayment
                     billingStatus={billingStatus}
                     forceNewCard
+                    tokenizationIntent={SQUARE_VERIFICATION_INTENT.STORE}
                     orderRows={[]}
                     orderNote=""
                     submitButtonText="カードを更新"
@@ -312,7 +314,7 @@ const PaymentSettingsSection = ({
                         )}
                     </div>
                 ) : (
-                    <p className="text-gray-main">
+                    <p>
                         支払い方法が設定されていません
                     </p>
                 )}

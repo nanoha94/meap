@@ -111,6 +111,7 @@ class BillingController extends ApiController
                     $request->user(),
                     $request->subscriptionType(),
                     $request->cardToken(),
+                    $request->verificationToken(),
                 );
                 $message = __('api.billing.subscribe_success');
 
@@ -215,6 +216,7 @@ class BillingController extends ApiController
                     $request->user(),
                     $request->packType(),
                     $request->cardToken(),
+                    $request->verificationToken(),
                 );
                 $message = __('api.billing.purchase_pack_success');
 
@@ -250,6 +252,7 @@ class BillingController extends ApiController
                     $group,
                     $request->user(),
                     $request->cardToken(),
+                    $request->verificationToken(),
                 );
                 $message = __('api.billing.card_update_success');
 
