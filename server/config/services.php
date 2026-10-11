@@ -66,16 +66,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | PAY.JP
+    | Square
     |--------------------------------------------------------------------------
     |
-    | PAY.JP の設定。
+    | Square API / Web Payments / Webhook の設定。
     |
     */
-    'payjp' => [
-        'secret_key' => env('PAYJP_SECRET_KEY'),
-        'public_key' => env('PAYJP_PUBLIC_KEY'),
-        'webhook_token' => env('PAYJP_WEBHOOK_TOKEN'),
+    'square' => [
+        'access_token' => env('SQUARE_ACCESS_TOKEN'),
+        'application_id' => env('SQUARE_APPLICATION_ID'),
+        'location_id' => env('SQUARE_LOCATION_ID'),
+        'webhook_signature_key' => env('SQUARE_WEBHOOK_SIGNATURE_KEY'),
+        'webhook_notification_url' => env('SQUARE_WEBHOOK_NOTIFICATION_URL'),
     ],
 
 ];

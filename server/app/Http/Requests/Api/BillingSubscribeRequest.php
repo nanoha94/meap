@@ -22,6 +22,7 @@ class BillingSubscribeRequest extends BaseApiRequest
         return [
             'subscriptionType' => ['required', Rule::enum(BillingSubscriptionType::class)],
             'cardToken' => ['nullable', 'string'],
+            'verificationToken' => ['nullable', 'string'],
         ];
     }
 
@@ -39,6 +40,17 @@ class BillingSubscribeRequest extends BaseApiRequest
         }
 
         return $cardToken;
+    }
+
+    public function verificationToken(): ?string
+    {
+        $verificationToken = $this->validated('verificationToken');
+
+        if (! is_string($verificationToken) || $verificationToken === '') {
+            return null;
+        }
+
+        return $verificationToken;
     }
 
     protected function getOperationKey(): string

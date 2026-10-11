@@ -1,4 +1,5 @@
 import { BUTTON_VARIANT, COLOR_VARIANT } from '@/constants';
+import { VerificationIntent } from '@/types/vendor/square';
 
 export type PlanActionHandlers = {
     onSubscribe: () => void;
@@ -6,19 +7,21 @@ export type PlanActionHandlers = {
     onResume: () => void;
 };
 
-export type PayjpCardFormChangeState = {
+export type CardFormChangeState = {
     complete: boolean;
     empty: boolean;
     errorMessage: string | null;
 };
 
-export type PayjpCreateTokenResult =
+export type CardCreateTokenResult =
     | { ok: true; token: string }
     | { ok: false; message: string };
 
-export type PayjpCardFormHandle = {
-    createToken: () => Promise<PayjpCreateTokenResult>;
+export type CardFormHandle = {
+    createToken: () => Promise<CardCreateTokenResult>;
 };
+
+export type BillingTokenizationIntent = VerificationIntent;
 
 export type PlanActionButtonConfig = {
     label: string;

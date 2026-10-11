@@ -171,7 +171,8 @@ trait LoggingTrait
             'password_confirmation', // パスワード確認
             'current_password',   // 現在のパスワード
             'token',             // 認証トークン
-            'cardToken',         // PAY.JP カードトークン
+            'cardToken',         // Square カードトークン
+            'verificationToken', // Square CreateCard の任意 verification_token
             'api_token',         // APIトークン
             'api_key',           // APIキー
             'secret',            // シークレットキー

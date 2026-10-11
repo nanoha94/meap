@@ -19,18 +19,28 @@ enum BillingSubscriptionType: string
     }
 
     /**
-     * PAY.JP の Plan ID（`pln_...`）から反映先 {@see GroupPlan} を得る（Webhook 等）。
+     * 請求履歴・次回請求表示用の翻訳済みラベル。
+     */
+    public function label(): string
+    {
+        return match ($this) {
+            self::STANDARD => __('api.billing.standard_plan_line'),
+        };
+    }
+
+    /**
+     * Square の Plan Variation ID から {@see self} を得る。
      * 未設定・不明な ID のときは null。
      */
-    public static function groupPlanFromPayjpPlanId(?string $payjpPlanId): ?GroupPlan
+    public static function subscriptionTypeFromSquarePlanVariationId(?string $planVariationId): ?self
     {
-        if ($payjpPlanId === null || $payjpPlanId === '') {
+        if ($planVariationId === null || $planVariationId === '') {
             return null;
         }
 
         foreach (self::cases() as $type) {
-            if ($type->configuredPayjpPlanId() === $payjpPlanId) {
-                return $type->groupPlan();
+            if ($type->configuredSquarePlanVariationId() === $planVariationId) {
+                return $type;
             }
         }
 
@@ -38,44 +48,51 @@ enum BillingSubscriptionType: string
     }
 
     /**
-     * PAY.JP のサブスクリプション用 Plan ID（`pln_...`）。
+     * Square の Plan Variation ID から反映先 {@see GroupPlan} を得る（Webhook 等）。
+     * 未設定・不明な ID のときは null。
+     */
+    public static function groupPlanFromSquarePlanVariationId(?string $planVariationId): ?GroupPlan
+    {
+        return self::subscriptionTypeFromSquarePlanVariationId($planVariationId)?->groupPlan();
+    }
+
+    /**
+     * Square のサブスクリプション用 Plan Variation ID。
      * `billing.subscription_plan_ids` のキーは {@see $this->value} と一致。
      *
      * @throws HttpException プラン ID が未設定のとき
      */
-    public function payjpSubscriptionPlanId(): string
+    public function squarePlanVariationId(): string
     {
-        $planId = $this->configuredPayjpPlanId();
+        $planVariationId = $this->configuredSquarePlanVariationId();
 
-        if ($planId === null) {
+        if ($planVariationId === null) {
             throw new HttpException(
                 HttpStatusCode::INTERNAL_SERVER_ERROR->value,
                 __('api.billing.price_not_configured'),
             );
         }
 
-        return $planId;
+        return $planVariationId;
     }
 
     /**
      * サブスクリプション月額（円・表示・次回請求予定用）。
      * `billing.subscription_amounts` のキーは {@see $this->value} と一致。
      */
-    public function payjpSubscriptionAmount(): int
+    public function squareSubscriptionAmount(): int
     {
         $amount = config('billing.subscription_amounts.' . $this->value);
         return is_numeric($amount) && (int) $amount > 0 ? (int) $amount : 0;
     }
 
     /**
-     * PAY.JP のサブスクリプション用 Plan ID（`pln_...`）。
+     * Square のサブスクリプション用 Plan Variation ID。
      * `billing.subscription_plan_ids` のキーは {@see $this->value} と一致。
-     *
-     * @throws HttpException プラン ID が未設定のとき
      */
-    private function configuredPayjpPlanId(): ?string
+    private function configuredSquarePlanVariationId(): ?string
     {
-        $planId = config('billing.subscription_plan_ids.' . $this->value);
-        return is_string($planId) && $planId !== '' ? $planId : null;
+        $planVariationId = config('billing.subscription_plan_ids.' . $this->value);
+        return is_string($planVariationId) && $planVariationId !== '' ? $planVariationId : null;
     }
 }
