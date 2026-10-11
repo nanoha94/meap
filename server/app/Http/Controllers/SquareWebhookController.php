@@ -26,7 +26,7 @@ class SquareWebhookController extends Controller
         if (
             $signatureKey === ''
             || $notificationUrl === ''
-            || ! WebhooksHelper::isValidWebhookEventSignature(
+            || ! WebhooksHelper::verifySignature(
                 $body,
                 $signature,
                 $signatureKey,
