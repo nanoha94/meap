@@ -33,7 +33,7 @@ const Page = () => {
                             href={LINK_TO.LP}
                             className="flex items-center gap-2 text-primary-main transition-opacity hover:opacity-80">
                             <Image
-                                src="/images/meap-logo2.png"
+                                src="/images/meap-logo.png"
                                 alt="meap"
                                 width={1224}
                                 height={486}

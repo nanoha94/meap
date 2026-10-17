@@ -36,7 +36,7 @@ const AuthLayout = async ({ children }: Props) => {
                         href={LINK_TO.LP}
                         className="inline-block w-fit transition-opacity hover:opacity-80">
                         <Image
-                            src="/images/meap-logo2.png"
+                            src="/images/meap-logo.png"
                             alt="meap"
                             width={1224}
                             height={456}

@@ -42,7 +42,7 @@ const SideNavigation = ({ className }: Props) => {
             <div className="py-2 flex flex-col border-b border-gray-border">
                 <Link href={LINK_TO.LP} prefetch={false} className="w-fit mx-auto block">
                     <Image
-                        src="/images/meap-logo2.png"
+                        src="/images/meap-logo.png"
                         alt="meap"
                         width={1224}
                         height={486}
