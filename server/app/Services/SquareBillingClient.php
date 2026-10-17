@@ -14,11 +14,14 @@ use Square\Subscriptions\Requests\CancelSubscriptionsRequest;
 use Square\Subscriptions\Requests\CreateSubscriptionRequest;
 use Square\Subscriptions\Requests\DeleteActionSubscriptionsRequest;
 use Square\Subscriptions\Requests\GetSubscriptionsRequest;
+use Square\Invoices\Requests\GetInvoicesRequest;
 use Square\Orders\Requests\GetOrdersRequest;
 use Square\Payments\Requests\CreatePaymentRequest;
+use Square\Payments\Requests\GetPaymentsRequest;
 use Square\Payments\Requests\ListPaymentsRequest;
 use Square\Types\Card;
 use Square\Types\Customer;
+use Square\Types\Invoice;
 use Square\Types\Money;
 use Square\Types\Order;
 use Square\Types\Payment;
@@ -226,6 +229,46 @@ class SquareBillingClient
     }
 
     /**
+     * Square Invoices API で請求書を取得する。
+     *
+     * @throws SquareApiException
+     */
+    public function retrieveInvoice(string $invoiceId): Invoice
+    {
+        $response = $this->client()->invoices->get(
+            new GetInvoicesRequest(['invoiceId' => $invoiceId]),
+        );
+        $this->throwIfResponseHasErrors($response->getErrors(), 'retrieveInvoice');
+
+        $invoice = $response->getInvoice();
+        if ($invoice === null || $invoice->getId() === null) {
+            throw new SquareApiException('Square retrieveInvoice returned no invoice', 502, null);
+        }
+
+        return $invoice;
+    }
+
+    /**
+     * Square Payments API で支払いを取得する。
+     *
+     * @throws SquareApiException
+     */
+    public function retrievePayment(string $paymentId): Payment
+    {
+        $response = $this->client()->payments->get(
+            new GetPaymentsRequest(['paymentId' => $paymentId]),
+        );
+        $this->throwIfResponseHasErrors($response->getErrors(), 'retrievePayment');
+
+        $payment = $response->getPayment();
+        if ($payment === null || $payment->getId() === null) {
+            throw new SquareApiException('Square retrievePayment returned no payment', 502, null);
+        }
+
+        return $payment;
+    }
+
+    /**
      * 注文に紐づく最初の Tender から Square Payment ID を返す。見つからなければ null。
      */
     public function paymentIdFromOrder(Order $order): ?string
@@ -247,6 +290,102 @@ class SquareBillingClient
         }
 
         return null;
+    }
+
+    /**
+     * Subscription.invoice_ids の先頭 ID を返す（Square 仕様上、新しい請求書が先頭）。
+     */
+    public function latestSubscriptionInvoiceId(Subscription $subscription): ?string
+    {
+        foreach ($subscription->getInvoiceIds() ?? [] as $candidate) {
+            if (is_string($candidate) && $candidate !== '') {
+                return $candidate;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * サブスクに紐づく最新請求書を GetInvoice で取得する。ID が無い・API 失敗時は null。
+     */
+    public function retrieveLatestSubscriptionInvoice(Subscription $subscription): ?Invoice
+    {
+        $invoiceId = $this->latestSubscriptionInvoiceId($subscription);
+        if ($invoiceId === null) {
+            return null;
+        }
+
+        try {
+            return $this->retrieveInvoice($invoiceId);
+        } catch (SquareApiException) {
+            return null;
+        }
+    }
+
+    /**
+     * Invoice.order_id 経由で Square Payment ID を得る（Square 推奨経路）。
+     */
+    public function paymentIdFromInvoice(Invoice $invoice): ?string
+    {
+        $orderId = $invoice->getOrderId();
+        if (! is_string($orderId) || $orderId === '') {
+            return null;
+        }
+
+        return $this->paymentIdFromOrderId($orderId);
+    }
+
+    /**
+     * Webhook 等の Invoice 配列から Payment ID を得る。payment_ids を優先し、なければ order_id 経由。
+     *
+     * @param  array<string, mixed>  $invoice
+     */
+    public function paymentIdFromInvoicePayload(array $invoice): ?string
+    {
+        $paymentId = $this->firstPaymentIdFromPaymentIds($invoice['payment_ids'] ?? null);
+        if ($paymentId !== null) {
+            return $paymentId;
+        }
+
+        $orderId = $invoice['order_id'] ?? null;
+        if (! is_string($orderId) || $orderId === '') {
+            return null;
+        }
+
+        return $this->paymentIdFromOrderId($orderId);
+    }
+
+    /**
+     * @param  mixed  $paymentIds
+     */
+    public function firstPaymentIdFromPaymentIds(mixed $paymentIds): ?string
+    {
+        if (! is_array($paymentIds)) {
+            return null;
+        }
+
+        foreach ($paymentIds as $candidate) {
+            if (is_string($candidate) && $candidate !== '') {
+                return $candidate;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Order ID から Payment ID を得る。RetrieveOrder 失敗・Tender なしは null。
+     */
+    public function paymentIdFromOrderId(string $orderId): ?string
+    {
+        try {
+            $order = $this->retrieveOrder($orderId);
+        } catch (SquareApiException) {
+            return null;
+        }
+
+        return $this->paymentIdFromOrder($order);
     }
 
     /**

@@ -14,6 +14,9 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Square\Exceptions\SquareApiException;
 use Square\Types\Card;
+use Square\Types\Invoice;
+use Square\Types\InvoicePaymentRequest;
+use Square\Types\Money;
 use Square\Types\Payment;
 use Square\Types\Subscription as SquareSubscription;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -253,6 +256,8 @@ class BillingService
             if ($periodEnd !== null) {
                 $this->aiUsageService->renewBillingPeriod($group, $periodEnd);
             }
+
+            $this->recordInitialSubscriptionBillingHistory($group, $subscriptionType, $squareSubscription);
         } catch (SquareApiException $e) {
             throw $this->squareHttpException($e, __('api.billing.subscribe_failed'));
         }
@@ -351,12 +356,18 @@ class BillingService
                 'referenceId' => 'pack:' . $packType->value,
             ]);
 
-            BillingHistory::create([
-                'group_id' => $group->id,
-                'square_payment_id' => (string) $payment->getId(),
-                'type' => 'pack',
-                'description' => __('api.billing.pack_charge_line', ['label' => $packType->label()]),
-            ]);
+            $recordedAmount = $this->paymentTotalAmount($payment);
+
+            BillingHistory::updateOrCreate(
+                ['square_payment_id' => (string) $payment->getId()],
+                [
+                    'group_id' => $group->id,
+                    'type' => 'pack',
+                    'description' => __('api.billing.pack_charge_line', ['label' => $packType->label()]),
+                    'amount' => $recordedAmount,
+                    'paid_at' => $this->paymentCreatedAt($payment) ?? Carbon::now(config('app.timezone')),
+                ],
+            );
 
             $this->addPackCredits($group, $packType->credits());
         } catch (SquareApiException $e) {
@@ -526,9 +537,6 @@ class BillingService
      */
     public function getInvoices(Group $group): array
     {
-        $upcomingInvoice = null;
-        $pastInvoices = [];
-
         if (! $group->hasSquareCustomer()) {
             return [
                 'upcomingInvoice' => null,
@@ -536,76 +544,75 @@ class BillingService
             ];
         }
 
+        $upcomingInvoice = null;
+        $pastInvoices = [];
+
         try {
             $subscription = $group->subscription();
 
-            // 周期終了日が未設定の場合は再取得する
-            if (
-                $subscription?->isActive()
-                && $subscription->current_period_end === null
-                && is_string($subscription->square_subscription_id)
-            ) {
-                try {
-                    $squareSubscription = $this->square->retrieveSubscription(
-                        $subscription->square_subscription_id,
-                    );
-                    $this->syncLocalSubscription($group, $squareSubscription);
-                    $subscription->refresh();
+            // サブスク継続中かつ current_period_end 未設定のとき、Square からサブスクを再取得してローカルに同期
+            $this->syncSubscriptionIfPeriodEndMissing($group, $subscription);
 
-                    // 再取得で継続中でなくなっていたらプランを FREE に戻す
-                    if (! $subscription->isActive()) {
-                        $this->groupPlanService->update($group, GroupPlan::FREE);
-                    }
-                } catch (SquareApiException) {
-                    // 補完失敗は無視
-                }
-            }
-
-            // 次回請求は継続課金中のみ。解約予定（isSubscribed だが !isActive）では表示しない。
+            // 次回請求は継続課金中のみ。解約予定（isSubscribed だが !isActive）では表示しない
             if ($group->isSubscribed() && $subscription?->isActive()) {
                 $upcomingInvoice = $this->buildUpcomingInvoice($subscription);
             }
 
-            $chargeHistoryLimit = (int) config('billing.charge_history_limit', 100);
-            $chargeHistoryLimit = max(1, min(100, $chargeHistoryLimit));
+            // 過去請求履歴を取得するパラメータを取得
+            [$chargeSince, $chargeHistoryLimit] = $this->chargeHistoryParams();
 
-            $historyYears = (int) config('billing.charge_history_since_years', 2);
-            $historyYears = max(1, $historyYears);
-            $chargeSince = Carbon::now(config('app.timezone'))
-                ->subYears($historyYears)
-                ->getTimestamp();
+            // 過去請求履歴を取得
+            $pastInvoices = $this->buildPastInvoicesFromPayments(
+                $group,
+                $chargeSince,
+                $chargeHistoryLimit,
+            );
 
-            $payments = $this->square->listPayments([
-                'customerId' => (string) $group->square_customer_id,
-                'since' => $chargeSince,
-                'limit' => $chargeHistoryLimit,
-            ]);
-
-            foreach ($payments as $payment) {
-                if (! $this->square->isPaymentCompleted($payment)) {
-                    continue;
-                }
-
-                $createdAt = $this->paymentCreatedAt($payment);
-                if ($createdAt === null) {
-                    continue;
-                }
-
-                $pastInvoices[] = [
-                    'id' => (string) $payment->getId(),
-                    'date' => $createdAt->toIso8601String(),
-                    'description' => $this->buildPaymentDescription($payment),
-                    'total' => $this->paymentTotalAmount($payment),
-                ];
-            }
+            $this->mergePastInvoicesFromBillingHistories(
+                $group,
+                $pastInvoices,
+                $chargeSince,
+                $chargeHistoryLimit,
+            );
         } catch (SquareApiException) {
-            // Square 取得不可時は upcoming は DB 由来のまま・pastInvoices=取得できた分のみ
+            // Square 取得不可時は取得できた分のみ返す
         }
 
         return [
             'upcomingInvoice' => $upcomingInvoice,
             'pastInvoices' => $pastInvoices,
         ];
+    }
+
+    /**
+     * 継続中かつ current_period_end 未設定のとき、Square からサブスクを再取得してローカルに同期する。
+     * 同期後に継続中でなくなっていたらプランを FREE に戻す。
+     */
+    private function syncSubscriptionIfPeriodEndMissing(Group $group, ?Subscription $subscription): void
+    {
+        if (
+            ! $subscription?->isActive() // 継続中でない
+            || $subscription->current_period_end !== null // 周期終了日が設定されている
+            || ! is_string($subscription->square_subscription_id) // Square Subscription ID が未設定
+        ) {
+            return;
+        }
+
+        try {
+            // Square から再取得して補完する
+            $squareSubscription = $this->square->retrieveSubscription(
+                $subscription->square_subscription_id,
+            );
+            // ローカル DB に反映する
+            $this->syncLocalSubscription($group, $squareSubscription);
+            $subscription->refresh();
+
+            if (! $subscription->isActive()) {
+                $this->groupPlanService->update($group, GroupPlan::FREE);
+            }
+        } catch (SquareApiException) {
+            // 補完失敗は無視
+        }
     }
 
     /**
@@ -652,6 +659,117 @@ class BillingService
     }
 
     /**
+     * サブスク申込直後の初回決済を billing_histories に記録する（Square listPayments 反映前の表示用）。
+     */
+    private function recordInitialSubscriptionBillingHistory(
+        Group $group,
+        BillingSubscriptionType $subscriptionType,
+        SquareSubscription $squareSubscription,
+    ): void {
+        $invoice = $this->square->retrieveLatestSubscriptionInvoice($squareSubscription);
+        if ($invoice === null) {
+            return;
+        }
+
+        $paymentId = $this->square->paymentIdFromInvoice($invoice);
+        if ($paymentId === null) {
+            return;
+        }
+
+        $amount = null;
+        $paidAt = null;
+
+        try {
+            $payment = $this->square->retrievePayment($paymentId);
+            $amount = $this->paymentTotalAmount($payment);
+            $paidAt = $this->paymentCreatedAt($payment);
+        } catch (SquareApiException) {
+            $amount = $this->amountFromInvoice($invoice);
+            $paidAt = $this->paidAtFromInvoice($invoice);
+        }
+
+        if ($amount === null) {
+            $amount = $this->amountFromInvoice($invoice);
+        }
+
+        if ($amount === null) {
+            return;
+        }
+
+        BillingHistory::updateOrCreate(
+            ['square_payment_id' => $paymentId],
+            [
+                'group_id' => $group->id,
+                'type' => 'subscription',
+                'description' => $subscriptionType->label(),
+                'amount' => $amount,
+                'paid_at' => $paidAt ?? Carbon::now(config('app.timezone')),
+            ],
+        );
+    }
+
+    /**
+     * Payments API で金額が取れないとき、Invoice から billing_histories 用の金額（円・最小通貨単位）を推定する。
+     *
+     * 呼び出し元は recordInitialSubscriptionBillingHistory のみ。正確な入金額は retrievePayment が優先され、
+     * 本メソッドはその API 失敗時・0 円だったときのフォールバック。
+     *
+     * サブスク初回 Invoice は payment_requests が BALANCE 1 件である想定。複数依頼がある請求書では
+     * 配列先頭から最初に金額が取れた依頼だけを使う（2 件目以降は見ない）。
+     */
+    private function amountFromInvoice(Invoice $invoice): ?int
+    {
+        foreach ($invoice->getPaymentRequests() ?? [] as $paymentRequest) {
+            if (! $paymentRequest instanceof InvoicePaymentRequest) {
+                continue;
+            }
+
+            // この支払い依頼に対して Square が記録した入金済み額（決済後に入る）
+            $amount = $this->moneyAmount($paymentRequest->getTotalCompletedAmountMoney());
+            if ($amount !== null && $amount > 0) {
+                return $amount;
+            }
+
+            // 上記が無いときの請求予定額（依頼作成時から入る。未入金でも > 0 になりうる）
+            $amount = $this->moneyAmount($paymentRequest->getComputedAmountMoney());
+            if ($amount !== null && $amount > 0) {
+                return $amount;
+            }
+        }
+
+        // payment_requests から取れないとき: 請求書全体の「いま未払いの残額」（次の due 分＋延滞分）
+        // 全額入金済みだと 0 になりやすい
+        return $this->moneyAmount($invoice->getNextPaymentAmountMoney());
+    }
+
+    /**
+     * Invoice の更新日時を決済日時のフォールバックとして返す。
+     */
+    private function paidAtFromInvoice(Invoice $invoice): ?Carbon
+    {
+        $updatedAt = $invoice->getUpdatedAt();
+        if ($updatedAt === null || $updatedAt === '') {
+            return null;
+        }
+
+        return Carbon::parse($updatedAt, config('app.timezone'));
+    }
+
+    /**
+     * Square Money から整数金額を返す。
+     */
+    private function moneyAmount(?Money $money): ?int
+    {
+        if ($money === null) {
+            return null;
+        }
+
+        $amount = $money->getAmount();
+
+        return is_int($amount) ? $amount : null;
+    }
+
+    /**
      * パック購入 Payment の note（JSON）を組み立てる。
      */
     private function encodePackPaymentNote(Group $group, BillingPackType $packType): string
@@ -661,6 +779,109 @@ class BillingService
             'group_id' => (string) $group->id,
             'pack_type' => $packType->value,
         ], JSON_THROW_ON_ERROR);
+    }
+
+    /**
+     * 過去請求の取得開始タイムスタンプと件数上限を config から求める。
+     *
+     * @return array{int, int} [$chargeSince, $chargeHistoryLimit]
+     */
+    private function chargeHistoryParams(): array
+    {
+        $limit = (int) config('billing.charge_history_limit', 100);
+        $limit = max(1, min(100, $limit));
+
+        $years = max(1, (int) config('billing.charge_history_since_years', 2));
+        $since = Carbon::now(config('app.timezone'))
+            ->subYears($years)
+            ->getTimestamp();
+
+        return [$since, $limit];
+    }
+
+    /**
+     * Square Payment 一覧から過去請求の配列を構築する。
+     *
+     * @return array<int, array{id: string, date: string, description: string, total: int}>
+     */
+    private function buildPastInvoicesFromPayments(
+        Group $group,
+        int $chargeSince,
+        int $limit,
+    ): array {
+        $payments = $this->square->listPayments([
+            'customerId' => (string) $group->square_customer_id,
+            'since' => $chargeSince,
+            'limit' => $limit,
+        ]);
+
+        $invoices = [];
+
+        // listPayments から取得した Payment を処理
+        foreach ($payments as $payment) {
+            // 支払いが完了していない場合はスキップ
+            if (! $this->square->isPaymentCompleted($payment)) {
+                continue;
+            }
+
+            // 支払い日時が取得できない場合はスキップ
+            $createdAt = $this->paymentCreatedAt($payment);
+            if ($createdAt === null) {
+                continue;
+            }
+
+            $invoices[] = [
+                'id' => (string) $payment->getId(),
+                'date' => $createdAt->toIso8601String(),
+                'description' => $this->buildPaymentDescription($payment),
+                'total' => $this->paymentTotalAmount($payment) ?? 0,
+            ];
+        }
+
+        return $invoices;
+    }
+
+    /**
+     * listPayments に含まれない billing_histories を pastInvoices に補完し、日付降順で件数上限まで整える。
+     *
+     * @param array<int, array{id: string, date: string, description: string, total: int}> $pastInvoices
+     */
+    private function mergePastInvoicesFromBillingHistories(
+        Group $group,
+        array &$pastInvoices,
+        int $chargeSince,
+        int $chargeHistoryLimit,
+    ): void {
+        $listedPaymentIds = array_column($pastInvoices, 'id');
+        $chargeSinceAt = Carbon::createFromTimestamp($chargeSince, config('app.timezone'));
+
+        // billing_histories を取得する
+        $query = BillingHistory::query()
+            ->where('group_id', $group->id)
+            ->whereNotNull('amount')
+            ->whereNotNull('paid_at')
+            ->where('paid_at', '>=', $chargeSinceAt);
+
+        // listPayments に含まれる billing_histories を除外する
+        if ($listedPaymentIds !== []) {
+            $query->whereNotIn('square_payment_id', $listedPaymentIds);
+        }
+
+        foreach ($query->get() as $history) {
+            $pastInvoices[] = [
+                'id' => (string) $history->square_payment_id,
+                'date' => $history->paid_at->toIso8601String(),
+                'description' => $history->description,
+                'total' => $history->amount,
+            ];
+        }
+
+        usort(
+            $pastInvoices,
+            static fn(array $a, array $b): int => strcmp($b['date'], $a['date']),
+        );
+
+        $pastInvoices = array_slice($pastInvoices, 0, $chargeHistoryLimit);
     }
 
     /**
@@ -691,14 +912,14 @@ class BillingService
     }
 
     /**
-     * Square Payment の合計金額を返す。
+     * Square Payment の合計金額を返す。取れない、または 0 以下のときは null。
      */
-    private function paymentTotalAmount(Payment $payment): int
+    private function paymentTotalAmount(Payment $payment): ?int
     {
         $totalMoney = $payment->getTotalMoney() ?? $payment->getAmountMoney();
         $amount = $totalMoney?->getAmount();
 
-        return is_int($amount) ? $amount : 0;
+        return is_int($amount) && $amount > 0 ? $amount : null;
     }
 
     /**

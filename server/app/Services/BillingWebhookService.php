@@ -6,9 +6,11 @@ use App\Enums\BillingSubscriptionType;
 use App\Enums\GroupPlan;
 use App\Models\BillingHistory;
 use App\Models\Group;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Square\Exceptions\SquareApiException;
+use Square\Types\Payment;
 
 class BillingWebhookService
 {
@@ -23,7 +25,7 @@ class BillingWebhookService
      *
      * プランは Retrieve したサブスクリプションの plan variation から決める。
      * 利用回数のリセットは charged_through_date（請求周期終了日）が取れたときに行う。
-     * 請求履歴表示用に決済時点の description を billing_histories に保存する。
+     * 請求履歴表示用に決済時点の description・金額・決済日時を billing_histories に保存する。
      */
     public function handleInvoicePaymentMade(array $payload): void
     {
@@ -130,6 +132,7 @@ class BillingWebhookService
         // ACTIVE の場合は有料プランを付与する
         if ($this->grantsPaidPlan($subscription)) {
             $this->updateGroupPlanFromSquareSubscription($group, $subscription);
+
             return;
         }
 
@@ -158,7 +161,10 @@ class BillingWebhookService
     }
 
     /**
-     * サブスク請求成功時に、決済時点の description を billing_histories に保存する。
+     * サブスク請求成功時に、決済時点の description・金額・決済日時を billing_histories に保存する。
+     *
+     * 金額と決済日時は Square Payment を優先し、取得できないときは Invoice ペイロードにフォールバックする。
+     * 料金定数は使わない。どちらからも金額が取れないときは amount / paid_at を更新せず、事前記録を残す。
      *
      * @param  array<string, mixed>  $invoice
      * @param  array<string, mixed>  $subscription
@@ -169,8 +175,10 @@ class BillingWebhookService
         array $subscription,
         string $eventId,
     ): void {
-        $paymentId = $this->squarePaymentIdFromInvoice($invoice, $eventId);
+        $paymentId = $this->square->paymentIdFromInvoicePayload($invoice);
         if ($paymentId === null) {
+            $this->logMissingPaymentIdFromInvoice($invoice, $eventId);
+
             return;
         }
 
@@ -182,32 +190,164 @@ class BillingWebhookService
             return;
         }
 
+        $attributes = [
+            'group_id' => $group->id,
+            'type' => 'subscription',
+            'description' => $subscriptionType->label(),
+        ];
+
+        $charge = $this->subscriptionChargeAmountAndPaidAt($paymentId, $invoice);
+        if ($charge['amount'] !== null) {
+            $attributes['amount'] = $charge['amount'];
+            $attributes['paid_at'] = $charge['paid_at'] ?? Carbon::now(config('app.timezone'));
+        }
+
         BillingHistory::updateOrCreate(
             ['square_payment_id' => $paymentId],
-            [
-                'group_id' => $group->id,
-                'type' => 'subscription',
-                'description' => $subscriptionType->label(),
-            ],
+            $attributes,
         );
     }
 
     /**
-     * invoice.payment_made の Invoice から Square Payment ID を得る。
+     * billing_histories に書く金額と決済日時を Square の決済情報から決める。
+     *
+     * Payment の合計を優先する。API 失敗時や 0 円のときは Invoice の入金額・更新日時を使う。
+     *
+     * @param  array<string, mixed>  $invoice
+     * @return array{amount: int|null, paid_at: Carbon|null}
+     */
+    private function subscriptionChargeAmountAndPaidAt(string $paymentId, array $invoice): array
+    {
+        $amount = null;
+        $paidAt = null;
+
+        try {
+            $payment = $this->square->retrievePayment($paymentId);
+            $amount = $this->paymentTotalAmount($payment);
+            $paidAt = $this->paymentCreatedAt($payment);
+        } catch (SquareApiException) {
+            $amount = null;
+            $paidAt = null;
+        }
+
+        if ($amount === null) {
+            $amount = $this->amountFromInvoicePayload($invoice);
+        }
+
+        if ($paidAt === null) {
+            $paidAt = $this->paidAtFromInvoicePayload($invoice);
+        }
+
+        if ($amount === null) {
+            return ['amount' => null, 'paid_at' => null];
+        }
+
+        return [
+            'amount' => $amount,
+            'paid_at' => $paidAt,
+        ];
+    }
+
+    /**
+     * Square Payment の合計金額を返す。取れない、または 0 以下のときは null。
+     */
+    private function paymentTotalAmount(Payment $payment): ?int
+    {
+        $totalMoney = $payment->getTotalMoney() ?? $payment->getAmountMoney();
+        $amount = $totalMoney?->getAmount();
+
+        return is_int($amount) && $amount > 0 ? $amount : null;
+    }
+
+    /**
+     * Square Payment の作成日時を返す。
+     */
+    private function paymentCreatedAt(Payment $payment): ?Carbon
+    {
+        $createdAt = $payment->getCreatedAt();
+        if ($createdAt === null || $createdAt === '') {
+            return null;
+        }
+
+        return Carbon::parse($createdAt, config('app.timezone'));
+    }
+
+    /**
+     * Invoice の更新日時を決済日時のフォールバックとして返す。
      *
      * @param  array<string, mixed>  $invoice
      */
-    private function squarePaymentIdFromInvoice(array $invoice, string $eventId): ?string
+    private function paidAtFromInvoicePayload(array $invoice): ?Carbon
     {
-        $paymentIds = $invoice['payment_ids'] ?? null;
-        if (is_array($paymentIds)) {
-            foreach ($paymentIds as $candidate) {
-                if (is_string($candidate) && $candidate !== '') {
-                    return $candidate;
+        $updatedAt = $invoice['updated_at'] ?? null;
+        if (! is_string($updatedAt) || $updatedAt === '') {
+            return null;
+        }
+
+        return Carbon::parse($updatedAt, config('app.timezone'));
+    }
+
+    /**
+     * Invoice ペイロードから billing_histories 用の金額（最小通貨単位）を返す。
+     *
+     * payment_requests の入金済み額、なければ請求予定額、最後に請求書の次回支払額を見る。
+     * 複数依頼があるときは配列先頭から最初に正の金額が取れた依頼だけを使う。
+     *
+     * @param  array<string, mixed>  $invoice
+     */
+    private function amountFromInvoicePayload(array $invoice): ?int
+    {
+        $paymentRequests = $invoice['payment_requests'] ?? null;
+        if (is_array($paymentRequests)) {
+            foreach ($paymentRequests as $paymentRequest) {
+                if (! is_array($paymentRequest)) {
+                    continue;
+                }
+
+                // 入金済み額
+                $completed = $this->moneyAmountFromPayload($paymentRequest['total_completed_amount_money'] ?? null);
+                if ($completed !== null && $completed > 0) {
+                    return $completed;
+                }
+
+                // 請求予定額
+                $computed = $this->moneyAmountFromPayload($paymentRequest['computed_amount_money'] ?? null);
+                if ($computed !== null && $computed > 0) {
+                    return $computed;
                 }
             }
         }
 
+        // 請求書の次回支払額
+        $nextPayment = $this->moneyAmountFromPayload($invoice['next_payment_amount_money'] ?? null);
+        if ($nextPayment !== null && $nextPayment > 0) {
+            return $nextPayment;
+        }
+
+        return null;
+    }
+
+    /**
+     * Webhook の Money 配列から整数金額を返す。
+     */
+    private function moneyAmountFromPayload(mixed $money): ?int
+    {
+        if (! is_array($money) || ! array_key_exists('amount', $money)) {
+            return null;
+        }
+
+        $amount = $money['amount'];
+
+        return is_int($amount) ? $amount : null;
+    }
+
+    /**
+     * invoice.payment_made で Payment ID が取れなかったときの診断ログ。
+     *
+     * @param  array<string, mixed>  $invoice
+     */
+    private function logMissingPaymentIdFromInvoice(array $invoice, string $eventId): void
+    {
         $orderId = $invoice['order_id'] ?? null;
         if (! is_string($orderId) || $orderId === '') {
             Log::warning('Square invoice.payment_made: invoice has no order_id for payment id.', [
@@ -215,30 +355,22 @@ class BillingWebhookService
                 'invoice_id' => $invoice['id'] ?? null,
             ]);
 
-            return null;
+            return;
         }
 
         try {
-            $order = $this->square->retrieveOrder($orderId);
+            $this->square->retrieveOrder($orderId);
+            Log::warning('Square invoice.payment_made: order has no payment tender.', [
+                'event_id' => $eventId,
+                'order_id' => $orderId,
+            ]);
         } catch (SquareApiException $exception) {
             Log::warning('Square invoice.payment_made: failed to retrieve order for payment id.', [
                 'event_id' => $eventId,
                 'order_id' => $orderId,
                 'status_code' => $exception->getCode(),
             ]);
-
-            return null;
         }
-
-        $paymentId = $this->square->paymentIdFromOrder($order);
-        if ($paymentId === null) {
-            Log::warning('Square invoice.payment_made: order has no payment tender.', [
-                'event_id' => $eventId,
-                'order_id' => $orderId,
-            ]);
-        }
-
-        return $paymentId;
     }
 
     /**

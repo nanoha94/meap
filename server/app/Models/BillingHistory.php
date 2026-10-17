@@ -12,6 +12,13 @@ class BillingHistory extends Model
         'square_payment_id',
         'type',
         'description',
+        'amount',
+        'paid_at',
+    ];
+
+    protected $casts = [
+        'amount' => 'integer',
+        'paid_at' => 'datetime',
     ];
 
     /**

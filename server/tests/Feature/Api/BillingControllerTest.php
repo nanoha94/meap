@@ -307,7 +307,7 @@ test('3-15-11: 【サブスク開始】 正常にサブスクリプションを�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-15-57: 【サブスク開始】 verificationToken をサービスに渡す', function () {
+test('3-15-12: 【サブスク開始】 verificationToken をサービスに渡す', function () {
     $status = array_merge(sampleBillingStatus(), [
         'plan' => 'standard',
         'isSubscribed' => true,
@@ -342,7 +342,7 @@ test('3-15-57: 【サブスク開始】 verificationToken をサービスに渡�
     ]);
 });
 
-test('3-15-12: 【サブスク開始】 未認証', function () {
+test('3-15-13: 【サブスク開始】 未認証', function () {
     $response = $this->postJson('/billing/subscription/standard', [
         'cardToken' => 'tok_test_subscribe',
     ]);
@@ -354,7 +354,7 @@ test('3-15-12: 【サブスク開始】 未認証', function () {
     ]);
 });
 
-test('3-15-13: 【サブスク開始】 メール未認証', function () {
+test('3-15-14: 【サブスク開始】 メール未認証', function () {
     $user = User::factory()->create([
         'email_verified_at' => null,
     ]);
@@ -370,7 +370,7 @@ test('3-15-13: 【サブスク開始】 メール未認証', function () {
     ]);
 });
 
-test('3-15-14: 【サブスク開始】 ルート不一致（subscriptionType 不正）', function () {
+test('3-15-15: 【サブスク開始】 ルート不一致（subscriptionType 不正）', function () {
     $response = $this->actingAs($this->user)->postJson('/billing/subscription/pro', [
         'cardToken' => 'tok_test_subscribe',
     ]);
@@ -378,7 +378,7 @@ test('3-15-14: 【サブスク開始】 ルート不一致（subscriptionType �
     $response->assertStatus(404);
 });
 
-test('3-15-15: 【サブスク開始】 グループに所属していない', function () {
+test('3-15-16: 【サブスク開始】 グループに所属していない', function () {
     $user = User::factory()->create([
         'email_verified_at' => now(),
     ]);
@@ -394,7 +394,7 @@ test('3-15-15: 【サブスク開始】 グループに所属していない', f
     ]);
 });
 
-test('3-15-16: 【サブスク開始】 cardToken なしでサブスクリプションを開始できる', function () {
+test('3-15-17: 【サブスク開始】 cardToken なしでサブスクリプションを開始できる', function () {
     $status = array_merge(sampleBillingStatus(), [
         'plan' => 'standard',
         'isSubscribed' => true,
@@ -430,7 +430,7 @@ test('3-15-16: 【サブスク開始】 cardToken なしでサブスクリプシ
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-15-17: 【サブスク開始】 バリデーションエラー（cardToken が文字列でない）', function () {
+test('3-15-18: 【サブスク開始】 バリデーションエラー（cardToken が文字列でない）', function () {
     $response = $this->actingAs($this->user)->postJson('/billing/subscription/standard', [
         'cardToken' => 12345,
     ]);
@@ -439,7 +439,7 @@ test('3-15-17: 【サブスク開始】 バリデーションエラー（cardTok
     $response->assertJsonValidationErrors(['cardToken']);
 });
 
-test('3-15-54: 【サブスク開始】 バリデーションエラー（verificationToken が文字列でない）', function () {
+test('3-15-19: 【サブスク開始】 バリデーションエラー（verificationToken が文字列でない）', function () {
     $response = $this->actingAs($this->user)->postJson('/billing/subscription/standard', [
         'cardToken' => 'tok_test_subscribe',
         'verificationToken' => 12345,
@@ -449,7 +449,7 @@ test('3-15-54: 【サブスク開始】 バリデーションエラー（verific
     $response->assertJsonValidationErrors(['verificationToken']);
 });
 
-test('3-15-18: 【サブスク開始】 既にサブスク済み', function () {
+test('3-15-20: 【サブスク開始】 既にサブスク済み', function () {
     $this->mock(BillingService::class, function ($mock) {
         $mock->shouldReceive('createSubscription')
             ->once()
@@ -467,7 +467,7 @@ test('3-15-18: 【サブスク開始】 既にサブスク済み', function () {
     ]);
 });
 
-test('3-15-19: 【サブスク開始】 サービス例外', function () {
+test('3-15-21: 【サブスク開始】 サービス例外', function () {
     $this->mock(BillingService::class, function ($mock) {
         $mock->shouldReceive('createSubscription')
             ->once()
@@ -487,7 +487,7 @@ test('3-15-19: 【サブスク開始】 サービス例外', function () {
 
 // ===== cancel() メソッドのテストケース =====
 
-test('3-15-20: 【サブスク解約】 正常にサブスクリプションの解約を受け付けできる', function () {
+test('3-15-22: 【サブスク解約】 正常にサブスクリプションの解約を受け付けできる', function () {
     $status = array_merge(sampleBillingStatus(), [
         'plan' => 'standard',
         'isSubscribed' => true,
@@ -521,7 +521,7 @@ test('3-15-20: 【サブスク解約】 正常にサブスクリプションの�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-15-21: 【サブスク解約】 未認証', function () {
+test('3-15-23: 【サブスク解約】 未認証', function () {
     $response = $this->postJson('/billing/subscription/cancel');
 
     $response->assertStatus(401);
@@ -531,7 +531,7 @@ test('3-15-21: 【サブスク解約】 未認証', function () {
     ]);
 });
 
-test('3-15-22: 【サブスク解約】 メール未認証', function () {
+test('3-15-24: 【サブスク解約】 メール未認証', function () {
     $user = User::factory()->create([
         'email_verified_at' => null,
     ]);
@@ -545,7 +545,7 @@ test('3-15-22: 【サブスク解約】 メール未認証', function () {
     ]);
 });
 
-test('3-15-23: 【サブスク解約】 グループに所属していない', function () {
+test('3-15-25: 【サブスク解約】 グループに所属していない', function () {
     $user = User::factory()->create([
         'email_verified_at' => now(),
     ]);
@@ -559,7 +559,7 @@ test('3-15-23: 【サブスク解約】 グループに所属していない', f
     ]);
 });
 
-test('3-15-24: 【サブスク解約】 有効なサブスクなし', function () {
+test('3-15-26: 【サブスク解約】 有効なサブスクなし', function () {
     $this->mock(BillingService::class, function ($mock) {
         $mock->shouldReceive('cancelSubscription')
             ->once()
@@ -575,7 +575,7 @@ test('3-15-24: 【サブスク解約】 有効なサブスクなし', function (
     ]);
 });
 
-test('3-15-25: 【サブスク解約】 サービス例外', function () {
+test('3-15-27: 【サブスク解約】 サービス例外', function () {
     $this->mock(BillingService::class, function ($mock) {
         $mock->shouldReceive('cancelSubscription')
             ->once()
@@ -593,7 +593,7 @@ test('3-15-25: 【サブスク解約】 サービス例外', function () {
 
 // ===== resume() メソッドのテストケース =====
 
-test('3-15-26: 【プラン変更予定取り消し】 正常にプラン変更予定を取り消せる', function () {
+test('3-15-28: 【プラン変更予定取り消し】 正常にプラン変更予定を取り消せる', function () {
     $status = array_merge(sampleBillingStatus(), [
         'plan' => 'standard',
         'isSubscribed' => true,
@@ -621,7 +621,7 @@ test('3-15-26: 【プラン変更予定取り消し】 正常にプラン変更�
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-15-27: 【プラン変更予定取り消し】 未認証', function () {
+test('3-15-29: 【プラン変更予定取り消し】 未認証', function () {
     $response = $this->postJson('/billing/subscription/resume');
 
     $response->assertStatus(401);
@@ -631,7 +631,7 @@ test('3-15-27: 【プラン変更予定取り消し】 未認証', function () {
     ]);
 });
 
-test('3-15-28: 【プラン変更予定取り消し】 メール未認証', function () {
+test('3-15-30: 【プラン変更予定取り消し】 メール未認証', function () {
     $user = User::factory()->create([
         'email_verified_at' => null,
     ]);
@@ -645,7 +645,7 @@ test('3-15-28: 【プラン変更予定取り消し】 メール未認証', func
     ]);
 });
 
-test('3-15-29: 【プラン変更予定取り消し】 グループに所属していない', function () {
+test('3-15-31: 【プラン変更予定取り消し】 グループに所属していない', function () {
     $user = User::factory()->create([
         'email_verified_at' => now(),
     ]);
@@ -659,7 +659,7 @@ test('3-15-29: 【プラン変更予定取り消し】 グループに所属し�
     ]);
 });
 
-test('3-15-30: 【プラン変更予定取り消し】 予定変更なし', function () {
+test('3-15-32: 【プラン変更予定取り消し】 予定変更なし', function () {
     $this->mock(BillingService::class, function ($mock) {
         $mock->shouldReceive('resumeSubscription')
             ->once()
@@ -675,7 +675,7 @@ test('3-15-30: 【プラン変更予定取り消し】 予定変更なし', func
     ]);
 });
 
-test('3-15-31: 【プラン変更予定取り消し】 サービス例外', function () {
+test('3-15-33: 【プラン変更予定取り消し】 サービス例外', function () {
     $this->mock(BillingService::class, function ($mock) {
         $mock->shouldReceive('resumeSubscription')
             ->once()
@@ -693,7 +693,7 @@ test('3-15-31: 【プラン変更予定取り消し】 サービス例外', func
 
 // ===== purchasePack() メソッドのテストケース =====
 
-test('3-15-32: 【パック購入】 正常にパックを購入できる（light、cardToken あり）', function () {
+test('3-15-34: 【パック購入】 正常にパックを購入できる（light、cardToken あり）', function () {
     $status = array_merge(sampleBillingStatus(), [
         'pmType' => 'Visa',
         'pmLastFour' => '4242',
@@ -729,7 +729,7 @@ test('3-15-32: 【パック購入】 正常にパックを購入できる（ligh
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-15-33: 【パック購入】 正常にパックを購入できる（value、cardToken なし）', function () {
+test('3-15-35: 【パック購入】 正常にパックを購入できる（value、cardToken なし）', function () {
     $status = array_merge(sampleBillingStatus(), [
         'pmType' => 'Visa',
         'pmLastFour' => '4242',
@@ -762,7 +762,7 @@ test('3-15-33: 【パック購入】 正常にパックを購入できる（valu
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-15-58: 【パック購入】 verificationToken をサービスに渡す', function () {
+test('3-15-36: 【パック購入】 verificationToken をサービスに渡す', function () {
     $status = sampleBillingStatus();
     $cardToken = 'tok_test_pack';
     $verificationToken = 'verf_test_pack';
@@ -793,7 +793,7 @@ test('3-15-58: 【パック購入】 verificationToken をサービスに渡す'
     ]);
 });
 
-test('3-15-34: 【パック購入】 未認証', function () {
+test('3-15-37: 【パック購入】 未認証', function () {
     $response = $this->postJson('/billing/packs/light');
 
     $response->assertStatus(401);
@@ -803,7 +803,7 @@ test('3-15-34: 【パック購入】 未認証', function () {
     ]);
 });
 
-test('3-15-35: 【パック購入】 メール未認証', function () {
+test('3-15-38: 【パック購入】 メール未認証', function () {
     $user = User::factory()->create([
         'email_verified_at' => null,
     ]);
@@ -817,13 +817,13 @@ test('3-15-35: 【パック購入】 メール未認証', function () {
     ]);
 });
 
-test('3-15-36: 【パック購入】 ルート不一致（packType 不正）', function () {
+test('3-15-39: 【パック購入】 ルート不一致（packType 不正）', function () {
     $response = $this->actingAs($this->user)->postJson('/billing/packs/premium');
 
     $response->assertStatus(404);
 });
 
-test('3-15-37: 【パック購入】 グループに所属していない', function () {
+test('3-15-40: 【パック購入】 グループに所属していない', function () {
     $user = User::factory()->create([
         'email_verified_at' => now(),
     ]);
@@ -837,7 +837,7 @@ test('3-15-37: 【パック購入】 グループに所属していない', func
     ]);
 });
 
-test('3-15-38: 【パック購入】 バリデーションエラー（cardToken が文字列でない）', function () {
+test('3-15-41: 【パック購入】 バリデーションエラー（cardToken が文字列でない）', function () {
     $response = $this->actingAs($this->user)->postJson('/billing/packs/light', [
         'cardToken' => 12345,
     ]);
@@ -846,7 +846,7 @@ test('3-15-38: 【パック購入】 バリデーションエラー（cardToken 
     $response->assertJsonValidationErrors(['cardToken']);
 });
 
-test('3-15-55: 【パック購入】 バリデーションエラー（verificationToken が文字列でない）', function () {
+test('3-15-42: 【パック購入】 バリデーションエラー（verificationToken が文字列でない）', function () {
     $response = $this->actingAs($this->user)->postJson('/billing/packs/light', [
         'cardToken' => 'tok_test_pack',
         'verificationToken' => 12345,
@@ -856,7 +856,7 @@ test('3-15-55: 【パック購入】 バリデーションエラー（verificati
     $response->assertJsonValidationErrors(['verificationToken']);
 });
 
-test('3-15-39: 【パック購入】 支払い方法未登録', function () {
+test('3-15-43: 【パック購入】 支払い方法未登録', function () {
     $this->mock(BillingService::class, function ($mock) {
         $mock->shouldReceive('purchasePack')
             ->once()
@@ -872,7 +872,7 @@ test('3-15-39: 【パック購入】 支払い方法未登録', function () {
     ]);
 });
 
-test('3-15-40: 【パック購入】 サービス例外', function () {
+test('3-15-44: 【パック購入】 サービス例外', function () {
     $this->mock(BillingService::class, function ($mock) {
         $mock->shouldReceive('purchasePack')
             ->once()
@@ -890,7 +890,7 @@ test('3-15-40: 【パック購入】 サービス例外', function () {
 
 // ===== updateCard() メソッドのテストケース =====
 
-test('3-15-41: 【カード更新】 正常にカード情報を更新できる', function () {
+test('3-15-45: 【カード更新】 正常にカード情報を更新できる', function () {
     $status = array_merge(sampleBillingStatus(), [
         'pmType' => 'Visa',
         'pmLastFour' => '4242',
@@ -925,7 +925,7 @@ test('3-15-41: 【カード更新】 正常にカード情報を更新できる'
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-15-59: 【カード更新】 verificationToken をサービスに渡す', function () {
+test('3-15-46: 【カード更新】 verificationToken をサービスに渡す', function () {
     $status = sampleBillingStatus();
     $cardToken = 'tok_test_card';
     $verificationToken = 'verf_test_card';
@@ -955,7 +955,7 @@ test('3-15-59: 【カード更新】 verificationToken をサービスに渡す'
     ]);
 });
 
-test('3-15-42: 【カード更新】 未認証', function () {
+test('3-15-47: 【カード更新】 未認証', function () {
     $response = $this->postJson('/billing/card', [
         'cardToken' => 'tok_test_card',
     ]);
@@ -967,7 +967,7 @@ test('3-15-42: 【カード更新】 未認証', function () {
     ]);
 });
 
-test('3-15-43: 【カード更新】 メール未認証', function () {
+test('3-15-48: 【カード更新】 メール未認証', function () {
     $user = User::factory()->create([
         'email_verified_at' => null,
     ]);
@@ -983,7 +983,7 @@ test('3-15-43: 【カード更新】 メール未認証', function () {
     ]);
 });
 
-test('3-15-44: 【カード更新】 グループに所属していない', function () {
+test('3-15-49: 【カード更新】 グループに所属していない', function () {
     $user = User::factory()->create([
         'email_verified_at' => now(),
     ]);
@@ -999,7 +999,7 @@ test('3-15-44: 【カード更新】 グループに所属していない', func
     ]);
 });
 
-test('3-15-45: 【カード更新】 バリデーションエラー（cardToken 未入力）', function () {
+test('3-15-50: 【カード更新】 バリデーションエラー（cardToken 未入力）', function () {
     $response = $this->actingAs($this->user)->postJson('/billing/card', [
         'cardToken' => '',
     ]);
@@ -1008,7 +1008,7 @@ test('3-15-45: 【カード更新】 バリデーションエラー（cardToken 
     $response->assertJsonValidationErrors(['cardToken']);
 });
 
-test('3-15-46: 【カード更新】 バリデーションエラー（cardToken が文字列でない）', function () {
+test('3-15-51: 【カード更新】 バリデーションエラー（cardToken が文字列でない）', function () {
     $response = $this->actingAs($this->user)->postJson('/billing/card', [
         'cardToken' => 12345,
     ]);
@@ -1017,7 +1017,7 @@ test('3-15-46: 【カード更新】 バリデーションエラー（cardToken 
     $response->assertJsonValidationErrors(['cardToken']);
 });
 
-test('3-15-56: 【カード更新】 バリデーションエラー（verificationToken が文字列でない）', function () {
+test('3-15-52: 【カード更新】 バリデーションエラー（verificationToken が文字列でない）', function () {
     $response = $this->actingAs($this->user)->postJson('/billing/card', [
         'cardToken' => 'tok_test_card',
         'verificationToken' => 12345,
@@ -1027,7 +1027,7 @@ test('3-15-56: 【カード更新】 バリデーションエラー（verificati
     $response->assertJsonValidationErrors(['verificationToken']);
 });
 
-test('3-15-47: 【カード更新】 サービス例外', function () {
+test('3-15-53: 【カード更新】 サービス例外', function () {
     $this->mock(BillingService::class, function ($mock) {
         $mock->shouldReceive('updateCard')
             ->once()
@@ -1047,7 +1047,7 @@ test('3-15-47: 【カード更新】 サービス例外', function () {
 
 // ===== deleteCard() メソッドのテストケース =====
 
-test('3-15-48: 【カード削除】 正常にカード情報を削除できる', function () {
+test('3-15-54: 【カード削除】 正常にカード情報を削除できる', function () {
     $this->mock(BillingService::class, function ($mock) {
         $mock->shouldReceive('deleteCard')
             ->once()
@@ -1065,7 +1065,7 @@ test('3-15-48: 【カード削除】 正常にカード情報を削除できる'
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-15-49: 【カード削除】 未認証', function () {
+test('3-15-55: 【カード削除】 未認証', function () {
     $response = $this->deleteJson('/billing/card');
 
     $response->assertStatus(401);
@@ -1075,7 +1075,7 @@ test('3-15-49: 【カード削除】 未認証', function () {
     ]);
 });
 
-test('3-15-50: 【カード削除】 メール未認証', function () {
+test('3-15-56: 【カード削除】 メール未認証', function () {
     $user = User::factory()->create([
         'email_verified_at' => null,
     ]);
@@ -1089,7 +1089,7 @@ test('3-15-50: 【カード削除】 メール未認証', function () {
     ]);
 });
 
-test('3-15-51: 【カード削除】 グループに所属していない', function () {
+test('3-15-57: 【カード削除】 グループに所属していない', function () {
     $user = User::factory()->create([
         'email_verified_at' => now(),
     ]);
@@ -1103,7 +1103,7 @@ test('3-15-51: 【カード削除】 グループに所属していない', func
     ]);
 });
 
-test('3-15-52: 【カード削除】 課金アカウント未登録', function () {
+test('3-15-58: 【カード削除】 課金アカウント未登録', function () {
     $this->mock(BillingService::class, function ($mock) {
         $mock->shouldReceive('deleteCard')
             ->once()
@@ -1119,7 +1119,7 @@ test('3-15-52: 【カード削除】 課金アカウント未登録', function (
     ]);
 });
 
-test('3-15-53: 【カード削除】 サービス例外', function () {
+test('3-15-59: 【カード削除】 サービス例外', function () {
     $this->mock(BillingService::class, function ($mock) {
         $mock->shouldReceive('deleteCard')
             ->once()

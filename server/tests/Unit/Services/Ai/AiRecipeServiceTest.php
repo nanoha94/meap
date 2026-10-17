@@ -247,6 +247,29 @@ test('4-4-9: 【normalizeParsedRecipe】 quantityDisplay に混入した suffix 
     expect($ingredient->quantityDisplay)->toBe('1');
 });
 
+test('4-4-10: 【normalizeParsedRecipe】 全角 quantityDisplay を半角に正規化する', function () {
+    $parsedRecipe = ParsedRecipe::fromArray([
+        'name' => '全角分数レシピ',
+        'servingCount' => 2,
+        'ingredients' => [
+            [
+                'name' => '塩',
+                'quantity' => 1.5,
+                'quantityDisplay' => '１と１／２',
+                'unitName' => '大さじ',
+                'categoryName' => '調味料',
+            ],
+        ],
+        'steps' => [],
+    ]);
+
+    $normalized = $this->service->normalizeParsedRecipe($parsedRecipe, $this->group);
+    $ingredient = $normalized->ingredients[0];
+
+    expect($ingredient->quantity)->toBe(1.5);
+    expect($ingredient->quantityDisplay)->toBe('1と1/2');
+});
+
 test('4-4-11: 【normalizeParsedRecipe】 帯分数 display の分数部分だけ quantity に入っている場合は display を優先する', function () {
     $parsedRecipe = ParsedRecipe::fromArray([
         'name' => '照り煮',
@@ -276,27 +299,4 @@ test('4-4-11: 【normalizeParsedRecipe】 帯分数 display の分数部分だ�
     expect($normalized->ingredients[0]->quantityDisplay)->toBe('1/2');
     expect($normalized->ingredients[1]->quantity)->toBe(1.5);
     expect($normalized->ingredients[1]->quantityDisplay)->toBe('1と1/2');
-});
-
-test('4-4-10: 【normalizeParsedRecipe】 全角 quantityDisplay を半角に正規化する', function () {
-    $parsedRecipe = ParsedRecipe::fromArray([
-        'name' => '全角分数レシピ',
-        'servingCount' => 2,
-        'ingredients' => [
-            [
-                'name' => '塩',
-                'quantity' => 1.5,
-                'quantityDisplay' => '１と１／２',
-                'unitName' => '大さじ',
-                'categoryName' => '調味料',
-            ],
-        ],
-        'steps' => [],
-    ]);
-
-    $normalized = $this->service->normalizeParsedRecipe($parsedRecipe, $this->group);
-    $ingredient = $normalized->ingredients[0];
-
-    expect($ingredient->quantity)->toBe(1.5);
-    expect($ingredient->quantityDisplay)->toBe('1と1/2');
 });

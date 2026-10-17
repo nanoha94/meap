@@ -382,7 +382,7 @@ test('3-1-14: 【一括アップロード】 バリデーションエラー（�
     $this->assertContains('images.*には、10240 kb以下のファイルを指定してください。', $responseData['errors']['images.0']);
 });
 
-test('3-1-17: 【一括アップロード】 グループが存在しない', function () {
+test('3-1-15: 【一括アップロード】 グループが存在しない', function () {
     $user = User::factory()->create([
         'email_verified_at' => now()
     ]);
@@ -401,7 +401,7 @@ test('3-1-17: 【一括アップロード】 グループが存在しない', fu
     ]);
 });
 
-test('3-1-18: 【一括アップロード】 ImageService 例外（データベースエラー）', function () {
+test('3-1-16: 【一括アップロード】 ImageService 例外（データベースエラー）', function () {
     // ImageServiceのメソッドで例外を発生させる
     $this->mock(ImageService::class, function ($mock) {
         $mock->shouldReceive('getValidImageFiles')
@@ -420,7 +420,7 @@ test('3-1-18: 【一括アップロード】 ImageService 例外（データベ�
     ]);
 });
 
-test('3-1-19: 【一括アップロード】 ImageService 例外', function () {
+test('3-15-18: 【一括アップロード】 ImageService 例外', function () {
     // ImageServiceのメソッドで例外を発生させる
     $this->mock(ImageService::class, function ($mock) {
         $mock->shouldReceive('getValidImageFiles')
@@ -439,7 +439,7 @@ test('3-1-19: 【一括アップロード】 ImageService 例外', function () {
     ]);
 });
 
-test('3-1-20: 【一括アップロード】 ファイルアップロード失敗', function () {
+test('3-15-20: 【一括アップロード】 ファイルアップロード失敗', function () {
     // ストレージの書き込みを失敗させる
     Storage::shouldReceive('disk')
         ->with(config('filesystems.image_disk'))
@@ -461,7 +461,7 @@ test('3-1-20: 【一括アップロード】 ファイルアップロード失�
 
 // ===== uploadForUser() メソッドのテストケース =====
 
-test('3-1-21: 【アップロード】 正常な画像アップロード', function () {
+test('3-15-21: 【アップロード】 正常な画像アップロード', function () {
     $file = UploadedFile::fake()->image('avatar.jpg', 100, 100);
 
     $response = $this->actingAs($this->user)->post('/images/users/upload', [
@@ -500,7 +500,7 @@ test('3-1-21: 【アップロード】 正常な画像アップロード', funct
     expect($data['src'])->toBe(Storage::disk($this->imageDisk)->url($image->src));
 });
 
-test('3-1-22: 【アップロード】 メール未確認ユーザー', function () {
+test('3-15-22: 【アップロード】 メール未確認ユーザー', function () {
     $unverifiedUser = User::factory()->create([
         'email_verified_at' => null,
     ]);
@@ -523,7 +523,7 @@ test('3-1-22: 【アップロード】 メール未確認ユーザー', function
     $response->assertHeader('Content-Type', 'application/json');
 });
 
-test('3-1-23: 【アップロード】 未認証ユーザー', function () {
+test('3-15-23: 【アップロード】 未認証ユーザー', function () {
     $file = UploadedFile::fake()->image('avatar.jpg', 100, 100);
 
     $response = $this->post('/images/users/upload', [
@@ -537,7 +537,7 @@ test('3-1-23: 【アップロード】 未認証ユーザー', function () {
     ]);
 });
 
-test('3-1-24: 【アップロード】 バリデーションエラー（image 必須）', function () {
+test('3-15-24: 【アップロード】 バリデーションエラー（image 必須）', function () {
     $response = $this->actingAs($this->user)->post('/images/users/upload', []);
 
     $response->assertStatus(422);
@@ -547,7 +547,7 @@ test('3-1-24: 【アップロード】 バリデーションエラー（image �
     $this->assertContains('imageは必ず指定してください。', $responseData['errors']['image']);
 });
 
-test('3-1-25: 【アップロード】 バリデーションエラー（ファイル形式不正）', function () {
+test('3-15-25: 【アップロード】 バリデーションエラー（ファイル形式不正）', function () {
     $file = UploadedFile::fake()->create('document.pdf', 100);
 
     $response = $this->actingAs($this->user)->post('/images/users/upload', [
