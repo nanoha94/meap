@@ -880,9 +880,48 @@ test('4-3-21: 【サブスク開始】 再取得が CANCELED なら FREE に戻�
         ->and($group->subscription()?->status)->toBe('canceled');
 });
 
+test('4-3-22: 【サブスク開始】 ローカル同期に失敗したらプランを更新せず例外を投げる', function () {
+    $group = createBillingGroup([
+        'square_customer_id' => 'cus_subscribe_sync_fail',
+        'square_card_id' => 'ccof_subscribe_sync_fail',
+        'plan' => GroupPlan::FREE,
+        'ai_monthly_remaining' => 0,
+    ]);
+    $createdSubscription = makeSquareSubscription([
+        'id' => 'sub_subscribe_sync_fail',
+        'status' => 'active',
+    ]);
+    $retrievedSubscription = makeSquareSubscription([
+        'id' => '',
+        'status' => 'active',
+    ]);
+
+    $this->mock(SquareBillingClient::class, function ($mock) use ($createdSubscription, $retrievedSubscription) {
+        $mock->shouldReceive('createSubscription')
+            ->once()
+            ->andReturn($createdSubscription);
+        $mock->shouldReceive('retrieveSubscription')
+            ->once()
+            ->with('sub_subscribe_sync_fail')
+            ->andReturn($retrievedSubscription);
+    });
+
+    expect(fn() => billingService()->createSubscription(
+        $group,
+        $this->user,
+        BillingSubscriptionType::STANDARD,
+    ))->toThrow(HttpException::class, 'サブスクリプションの開始に失敗しました。');
+
+    $group->refresh();
+
+    expect($group->plan)->toBe(GroupPlan::FREE)
+        ->and($group->ai_monthly_remaining)->toBe(0)
+        ->and($group->subscription())->toBeNull();
+});
+
 // ===== cancelSubscription() メソッドのテストケース =====
 
-test('4-3-22: 【サブスク解約】 期間終了解約し課金状態配列を返す', function () {
+test('4-3-23: 【サブスク解約】 期間終了解約し課金状態配列を返す', function () {
     $periodEnd = now()->addDays(30)->startOfDay()->startOfSecond();
     $squareSubscriptionId = 'sub_cancel_test';
     $group = createBillingGroup(['plan' => GroupPlan::STANDARD, 'square_customer_id' => 'cus_sub_cancel']);
@@ -916,14 +955,14 @@ test('4-3-22: 【サブスク解約】 期間終了解約し課金状態配列�
         ->and($status['subscriptionEndsAt'])->toBe($periodEnd->toIso8601String());
 });
 
-test('4-3-23: 【サブスク解約】 未加入なら 422 を投げる', function () {
+test('4-3-24: 【サブスク解約】 未加入なら 422 を投げる', function () {
     $group = createBillingGroup(['plan' => GroupPlan::FREE]);
 
     expect(fn() => billingService()->cancelSubscription($group))
         ->toThrow(HttpException::class, '有効なサブスクリプションがありません。');
 });
 
-test('4-3-24: 【サブスク解約】 Square API 失敗時は HttpException を投げる', function () {
+test('4-3-25: 【サブスク解約】 Square API 失敗時は HttpException を投げる', function () {
     $squareSubscriptionId = 'sub_cancel_fail';
     $group = createBillingGroup(['plan' => GroupPlan::STANDARD]);
     createSubscriptionRecord($group, [
@@ -944,7 +983,7 @@ test('4-3-24: 【サブスク解約】 Square API 失敗時は HttpException を
 
 // ===== purchasePack() メソッドのテストケース =====
 
-test('4-3-25: 【パック購入】 カードトークンでライトパックを購入し ai_pack_remaining を加算する', function () {
+test('4-3-26: 【パック購入】 カードトークンでライトパックを購入し ai_pack_remaining を加算する', function () {
     $group = createBillingGroup(['square_customer_id' => null, 'ai_pack_remaining' => 5]);
     $customer = makeSquareCustomer(['id' => 'cus_pack_light']);
     $card = makeSquareCard('ccof_pack_light', ['customerId' => 'cus_pack_light']);
@@ -996,7 +1035,7 @@ test('4-3-25: 【パック購入】 カードトークンでライトパック�
         ->and($status['isSubscribed'])->toBeFalse();
 });
 
-test('4-3-26: 【パック購入】 カードトークンでバリューパックを購入する', function () {
+test('4-3-27: 【パック購入】 カードトークンでバリューパックを購入する', function () {
     $group = createBillingGroup(['square_customer_id' => null, 'ai_pack_remaining' => 0]);
     $customer = makeSquareCustomer(['id' => 'cus_pack_value']);
     $card = makeSquareCard('ccof_pack_value', ['customerId' => 'cus_pack_value']);
@@ -1039,7 +1078,7 @@ test('4-3-26: 【パック購入】 カードトークンでバリューパッ�
     expect($group->fresh()->ai_pack_remaining)->toBe(30);
 });
 
-test('4-3-27: 【パック購入】 登録済みカードでトークンなし購入する', function () {
+test('4-3-28: 【パック購入】 登録済みカードでトークンなし購入する', function () {
     $group = createBillingGroup([
         'square_customer_id' => 'cus_pack_existing',
         'square_card_id' => 'ccof_pack_existing',
@@ -1064,7 +1103,7 @@ test('4-3-27: 【パック購入】 登録済みカードでトークンなし�
     expect($group->fresh()->ai_pack_remaining)->toBe(12);
 });
 
-test('4-3-28: 【パック購入】 verificationToken を createCard に渡す', function () {
+test('4-3-29: 【パック購入】 verificationToken を createCard に渡す', function () {
     $group = createBillingGroup(['square_customer_id' => null, 'ai_pack_remaining' => 0]);
     $customer = makeSquareCustomer(['id' => 'cus_pack_verify']);
     $card = makeSquareCard('ccof_pack_verify', ['customerId' => 'cus_pack_verify']);
@@ -1096,7 +1135,7 @@ test('4-3-28: 【パック購入】 verificationToken を createCard に渡す',
     );
 });
 
-test('4-3-29: 【パック購入】 空文字トークンは未指定として扱い登録済み Customer で課金する', function () {
+test('4-3-30: 【パック購入】 空文字トークンは未指定として扱い登録済み Customer で課金する', function () {
     $group = createBillingGroup([
         'square_customer_id' => 'cus_pack_empty_token',
         'square_card_id' => 'ccof_pack_empty_token',
@@ -1119,7 +1158,7 @@ test('4-3-29: 【パック購入】 空文字トークンは未指定として�
     expect($group->fresh()->ai_pack_remaining)->toBe(10);
 });
 
-test('4-3-30: 【パック購入】 複数回購入で ai_pack_remaining が累積する', function () {
+test('4-3-31: 【パック購入】 複数回購入で ai_pack_remaining が累積する', function () {
     $group = createBillingGroup([
         'square_customer_id' => 'cus_pack_accumulate',
         'square_card_id' => 'ccof_pack_accumulate',
@@ -1147,7 +1186,7 @@ test('4-3-30: 【パック購入】 複数回購入で ai_pack_remaining が累�
     expect($group->fresh()->ai_pack_remaining)->toBe(25);
 });
 
-test('4-3-31: 【パック購入】 billing_histories にライトパックの description を保存する', function () {
+test('4-3-32: 【パック購入】 billing_histories にライトパックの description を保存する', function () {
     $group = createBillingGroup([
         'square_customer_id' => 'cus_pack_history_light',
         'square_card_id' => 'ccof_pack_history_light',
@@ -1177,7 +1216,7 @@ test('4-3-31: 【パック購入】 billing_histories にライトパックの d
         ->and($history->paid_at?->timestamp)->toBe($paidAt->timestamp);
 });
 
-test('4-3-32: 【パック購入】 billing_histories にバリューパックの description を保存する', function () {
+test('4-3-33: 【パック購入】 billing_histories にバリューパックの description を保存する', function () {
     $group = createBillingGroup([
         'square_customer_id' => 'cus_pack_history_value',
         'square_card_id' => 'ccof_pack_history_value',
@@ -1206,14 +1245,14 @@ test('4-3-32: 【パック購入】 billing_histories にバリューパック�
         ->and($history->paid_at?->timestamp)->toBe($paidAt->timestamp);
 });
 
-test('4-3-33: 【パック購入】 Customer 未登録かつトークンなしなら 422 を投げる', function () {
+test('4-3-34: 【パック購入】 Customer 未登録かつトークンなしなら 422 を投げる', function () {
     $group = createBillingGroup(['square_customer_id' => null]);
 
     expect(fn() => billingService()->purchasePack($group, $this->user, BillingPackType::LIGHT))
         ->toThrow(HttpException::class, '支払い方法が登録されていません。カード情報を登録してください。');
 });
 
-test('4-3-34: 【パック購入】 Square API 失敗時は HttpException を投げる', function () {
+test('4-3-35: 【パック購入】 Square API 失敗時は HttpException を投げる', function () {
     $group = createBillingGroup([
         'square_customer_id' => 'cus_pack_charge_fail',
         'square_card_id' => 'ccof_pack_charge_fail',
@@ -1229,7 +1268,7 @@ test('4-3-34: 【パック購入】 Square API 失敗時は HttpException を投
         ->toThrow(HttpException::class, '買い切りパックの購入処理に失敗しました。');
 });
 
-test('4-3-35: 【パック購入】 カード登録時の Square API 失敗時は HttpException を投げる', function () {
+test('4-3-36: 【パック購入】 カード登録時の Square API 失敗時は HttpException を投げる', function () {
     $group = createBillingGroup(['square_customer_id' => null]);
 
     $this->mock(SquareBillingClient::class, function ($mock) {
@@ -1248,7 +1287,7 @@ test('4-3-35: 【パック購入】 カード登録時の Square API 失敗時�
 
 // ===== getBillingStatus() メソッドのテストケース =====
 
-test('4-3-36: 【課金状態取得】 未加入（FREE）の状態を返す', function () {
+test('4-3-37: 【課金状態取得】 未加入（FREE）の状態を返す', function () {
     $group = createBillingGroup(['plan' => GroupPlan::FREE]);
 
     $status = billingService()->getBillingStatus($group);
@@ -1266,7 +1305,7 @@ test('4-3-36: 【課金状態取得】 未加入（FREE）の状態を返す', f
     ]);
 });
 
-test('4-3-37: 【課金状態取得】 サブスク中（active）の状態を返す', function () {
+test('4-3-38: 【課金状態取得】 サブスク中（active）の状態を返す', function () {
     $group = createBillingGroup(['plan' => GroupPlan::STANDARD]);
     createSubscriptionRecord($group, [
         'status' => 'active',
@@ -1282,7 +1321,7 @@ test('4-3-37: 【課金状態取得】 サブスク中（active）の状態を�
         ->and($status['subscriptionEndsAt'])->toBeNull();
 });
 
-test('4-3-38: 【課金状態取得】 猶予期間中（Grace Period）の状態を返す', function () {
+test('4-3-39: 【課金状態取得】 猶予期間中（Grace Period）の状態を返す', function () {
     $endsAt = now()->addDays(7)->startOfSecond();
     $group = createBillingGroup(['plan' => GroupPlan::STANDARD]);
     createSubscriptionRecord($group, [
@@ -1300,7 +1339,7 @@ test('4-3-38: 【課金状態取得】 猶予期間中（Grace Period）の状�
         ->and($status['subscriptionEndsAt'])->toBe($endsAt->toIso8601String());
 });
 
-test('4-3-39: 【課金状態取得】 キャンセル済み（猶予期間終了後）の状態を返す', function () {
+test('4-3-40: 【課金状態取得】 キャンセル済み（猶予期間終了後）の状態を返す', function () {
     $endsAt = now()->subDay()->startOfSecond();
     $group = createBillingGroup(['plan' => GroupPlan::STANDARD]);
     createSubscriptionRecord($group, [
@@ -1316,7 +1355,7 @@ test('4-3-39: 【課金状態取得】 キャンセル済み（猶予期間終�
         ->and($status['subscriptionEndsAt'])->toBe($endsAt->toIso8601String());
 });
 
-test('4-3-40: 【課金状態取得】 pmType / pmLastFour / pmExpMonth / pmExpYear を返す', function () {
+test('4-3-41: 【課金状態取得】 pmType / pmLastFour / pmExpMonth / pmExpYear を返す', function () {
     $group = createBillingGroup([
         'square_customer_id' => 'cus_pm_test',
         'pm_type' => 'Visa',
@@ -1333,7 +1372,7 @@ test('4-3-40: 【課金状態取得】 pmType / pmLastFour / pmExpMonth / pmExpY
         ->and($status['pmExpYear'])->toBe(2028);
 });
 
-test('4-3-41: 【課金状態取得】 plan が null のとき FREE を返す', function () {
+test('4-3-42: 【課金状態取得】 plan が null のとき FREE を返す', function () {
     $group = createBillingGroup();
     $group->forceFill(['plan' => null]);
 
@@ -1342,7 +1381,7 @@ test('4-3-41: 【課金状態取得】 plan が null のとき FREE を返す', 
     expect($status['plan'])->toBe('free');
 });
 
-test('4-3-42: 【課金状態取得】 FREE に戻った後は ends_at が未来でも pendingPlanChange=null', function () {
+test('4-3-43: 【課金状態取得】 FREE に戻った後は ends_at が未来でも pendingPlanChange=null', function () {
     $endsAt = now()->addDays(7)->startOfSecond();
     $group = createBillingGroup(['plan' => GroupPlan::FREE]);
     createSubscriptionRecord($group, [
@@ -1357,7 +1396,7 @@ test('4-3-42: 【課金状態取得】 FREE に戻った後は ends_at が未来
         ->and($status['subscriptionEndsAt'])->toBe($endsAt->toIso8601String());
 });
 
-test('4-3-43: 【課金状態取得】 解約取り消し同期後は pendingPlanChange=null かつ ends_at をクリアする', function () {
+test('4-3-44: 【課金状態取得】 解約取り消し同期後は pendingPlanChange=null かつ ends_at をクリアする', function () {
     $group = createBillingGroup(['plan' => GroupPlan::STANDARD]);
     createSubscriptionRecord($group, [
         'status' => 'active',
@@ -1370,7 +1409,7 @@ test('4-3-43: 【課金状態取得】 解約取り消し同期後は pendingPla
         ->and($status['subscriptionEndsAt'])->toBeNull();
 });
 
-test('4-3-44: 【課金状態取得】 active かつ ends_at が未来のとき解約予定を返す', function () {
+test('4-3-45: 【課金状態取得】 active かつ ends_at が未来のとき解約予定を返す', function () {
     $endsAt = now()->addDays(14)->startOfSecond();
     $group = createBillingGroup(['plan' => GroupPlan::STANDARD]);
     createSubscriptionRecord($group, [
@@ -1387,7 +1426,7 @@ test('4-3-44: 【課金状態取得】 active かつ ends_at が未来のとき�
         ->and($status['subscriptionEndsAt'])->toBe($endsAt->toIso8601String());
 });
 
-test('4-3-45: 【課金状態取得】 canceled かつ ends_at が未来のとき解約予定を返す', function () {
+test('4-3-46: 【課金状態取得】 canceled かつ ends_at が未来のとき解約予定を返す', function () {
     $endsAt = now()->addDays(7)->startOfSecond();
     $group = createBillingGroup(['plan' => GroupPlan::STANDARD]);
     createSubscriptionRecord($group, [
@@ -1403,7 +1442,7 @@ test('4-3-45: 【課金状態取得】 canceled かつ ends_at が未来のと�
     ]);
 });
 
-test('4-3-46: 【課金状態取得】 予定変更なしのとき pendingPlanChange=null', function () {
+test('4-3-47: 【課金状態取得】 予定変更なしのとき pendingPlanChange=null', function () {
     $group = createBillingGroup(['plan' => GroupPlan::STANDARD]);
     createSubscriptionRecord($group, [
         'status' => 'active',
@@ -1417,7 +1456,7 @@ test('4-3-46: 【課金状態取得】 予定変更なしのとき pendingPlanCh
 
 // ===== resumeSubscription() メソッドのテストケース =====
 
-test('4-3-47: 【プラン変更予定取り消し】 解約予定を取り消してサブスクを継続する', function () {
+test('4-3-48: 【プラン変更予定取り消し】 解約予定を取り消してサブスクを継続する', function () {
     $endsAt = now()->addDays(7)->startOfSecond();
     $squareSubscriptionId = 'sub_resume_test';
     $group = createBillingGroup(['plan' => GroupPlan::STANDARD]);
@@ -1446,7 +1485,7 @@ test('4-3-47: 【プラン変更予定取り消し】 解約予定を取り消�
         ->and($subscription->ends_at)->toBeNull();
 });
 
-test('4-3-48: 【プラン変更予定取り消し】 予定変更なしなら 422 を投げる', function () {
+test('4-3-49: 【プラン変更予定取り消し】 予定変更なしなら 422 を投げる', function () {
     $group = createBillingGroup(['plan' => GroupPlan::STANDARD]);
     createSubscriptionRecord($group, [
         'status' => 'active',
@@ -1457,7 +1496,7 @@ test('4-3-48: 【プラン変更予定取り消し】 予定変更なしなら 4
         ->toThrow(HttpException::class, '取り消すプラン変更予定がありません。');
 });
 
-test('4-3-49: 【プラン変更予定取り消し】 Square API 失敗時は HttpException を投げる', function () {
+test('4-3-50: 【プラン変更予定取り消し】 Square API 失敗時は HttpException を投げる', function () {
     $endsAt = now()->addDays(7)->startOfSecond();
     $squareSubscriptionId = 'sub_resume_fail';
     $group = createBillingGroup(['plan' => GroupPlan::STANDARD]);
@@ -1480,7 +1519,7 @@ test('4-3-49: 【プラン変更予定取り消し】 Square API 失敗時は Ht
 
 // ===== getInvoices() メソッドのテストケース =====
 
-test('4-3-50: 【請求履歴取得】 次回お支払い予定と過去 Payment 履歴を返す', function () {
+test('4-3-51: 【請求履歴取得】 次回お支払い予定と過去 Payment 履歴を返す', function () {
     $periodEnd = now()->addDays(30)->startOfSecond();
     $chargeCreated = now()->subMonth()->startOfSecond();
     $group = createBillingGroup(['square_customer_id' => 'cus_invoices', 'plan' => GroupPlan::STANDARD]);
@@ -1538,7 +1577,7 @@ test('4-3-50: 【請求履歴取得】 次回お支払い予定と過去 Payment
         ]);
 });
 
-test('4-3-51: 【請求履歴取得】 Customer 未登録なら空を返す', function () {
+test('4-3-52: 【請求履歴取得】 Customer 未登録なら空を返す', function () {
     $group = createBillingGroup(['square_customer_id' => null]);
 
     $result = billingService()->getInvoices($group);
@@ -1549,7 +1588,7 @@ test('4-3-51: 【請求履歴取得】 Customer 未登録なら空を返す', fu
     ]);
 });
 
-test('4-3-52: 【請求履歴取得】 解約猶予中（!isActive）は upcomingInvoice は null', function () {
+test('4-3-53: 【請求履歴取得】 解約猶予中（!isActive）は upcomingInvoice は null', function () {
     $endsAt = now()->addDays(7)->startOfSecond();
     $group = createBillingGroup(['square_customer_id' => 'cus_grace', 'plan' => GroupPlan::STANDARD]);
     createSubscriptionRecord($group, [
@@ -1579,7 +1618,7 @@ test('4-3-52: 【請求履歴取得】 解約猶予中（!isActive）は upcomin
         ->and($result['pastInvoices'][0]['id'])->toBe('pay_grace_paid');
 });
 
-test('4-3-53: 【請求履歴取得】 未完了 Payment は pastInvoices に含めない', function () {
+test('4-3-54: 【請求履歴取得】 未完了 Payment は pastInvoices に含めない', function () {
     $periodEnd = now()->addDays(30)->startOfSecond();
     $group = createBillingGroup(['square_customer_id' => 'cus_paid_filter', 'plan' => GroupPlan::STANDARD]);
     createSubscriptionRecord($group, [
@@ -1622,7 +1661,7 @@ test('4-3-53: 【請求履歴取得】 未完了 Payment は pastInvoices に含
         ->and($result['pastInvoices'][0]['id'])->toBe('pay_paid_only');
 });
 
-test('4-3-54: 【請求履歴取得】 Square 取得失敗時は upcoming と past を安全に返す', function () {
+test('4-3-55: 【請求履歴取得】 Square 取得失敗時は upcoming と past を安全に返す', function () {
     $periodEnd = now()->addDays(30)->startOfSecond();
     $group = createBillingGroup(['square_customer_id' => 'cus_list_fail', 'plan' => GroupPlan::STANDARD]);
     createSubscriptionRecord($group, [
@@ -1643,7 +1682,7 @@ test('4-3-54: 【請求履歴取得】 Square 取得失敗時は upcoming と pa
         ->and($result['pastInvoices'])->toBe([]);
 });
 
-test('4-3-55: 【請求履歴取得】 Payment がない場合 pastInvoices は空配列', function () {
+test('4-3-56: 【請求履歴取得】 Payment がない場合 pastInvoices は空配列', function () {
     $periodEnd = now()->addDays(30)->startOfSecond();
     $group = createBillingGroup(['square_customer_id' => 'cus_no_charges', 'plan' => GroupPlan::STANDARD]);
     createSubscriptionRecord($group, [
@@ -1663,7 +1702,7 @@ test('4-3-55: 【請求履歴取得】 Payment がない場合 pastInvoices は�
         ->and($result['pastInvoices'])->toBe([]);
 });
 
-test('4-3-56: 【請求履歴取得】 パック購入 Payment の description が billing_histories から取得される', function () {
+test('4-3-57: 【請求履歴取得】 パック購入 Payment の description が billing_histories から取得される', function () {
     $chargeCreated = now()->subDays(5)->startOfSecond();
     $periodEnd = now()->addDays(30)->startOfSecond();
     $group = createBillingGroup(['square_customer_id' => 'cus_pack_desc', 'plan' => GroupPlan::STANDARD]);
@@ -1700,7 +1739,7 @@ test('4-3-56: 【請求履歴取得】 パック購入 Payment の description �
         ->and($result['pastInvoices'][0]['description'])->toBe('買い切りパック ライト');
 });
 
-test('4-3-57: 【請求履歴取得】 billing_histories にない Payment は unknown の description を返す', function () {
+test('4-3-58: 【請求履歴取得】 billing_histories にない Payment は unknown の description を返す', function () {
     $chargeCreated = now()->subDays(2)->startOfSecond();
     $periodEnd = now()->addDays(30)->startOfSecond();
     $group = createBillingGroup(['square_customer_id' => 'cus_no_history', 'plan' => GroupPlan::STANDARD]);
@@ -1734,7 +1773,7 @@ test('4-3-57: 【請求履歴取得】 billing_histories にない Payment は u
         ->and($result['pastInvoices'][0]['description'])->toBe('その他のお支払い');
 });
 
-test('4-3-58: 【請求履歴取得】 current_period_end 未設定時に再取得で補完する', function () {
+test('4-3-59: 【請求履歴取得】 current_period_end 未設定時に再取得で補完する', function () {
     $periodEnd = now()->addDays(30)->startOfDay()->startOfSecond();
     $group = createBillingGroup(['square_customer_id' => 'cus_invoices_refresh', 'plan' => GroupPlan::STANDARD]);
     createSubscriptionRecord($group, [
@@ -1766,7 +1805,7 @@ test('4-3-58: 【請求履歴取得】 current_period_end 未設定時に再取�
         ->toBe($periodEnd->toIso8601String());
 });
 
-test('4-3-59: 【サブスク同期】 status 欠落の SquareSubscription では subscriptions を更新しない', function () {
+test('4-3-60: 【サブスク同期】 status 欠落の SquareSubscription では subscriptions を更新しない', function () {
     $group = createBillingGroup([
         'square_customer_id' => 'cus_sync_status_missing',
         'plan' => GroupPlan::STANDARD,
@@ -1797,7 +1836,7 @@ test('4-3-59: 【サブスク同期】 status 欠落の SquareSubscription で�
     expect($group->fresh()->subscription()?->status)->toBe('active');
 });
 
-test('4-3-60: 【請求履歴取得】 再取得で DEACTIVATED なら plan を FREE に戻す', function () {
+test('4-3-61: 【請求履歴取得】 再取得で DEACTIVATED なら plan を FREE に戻す', function () {
     $group = createBillingGroup([
         'square_customer_id' => 'cus_invoices_deactivated',
         'plan' => GroupPlan::STANDARD,
@@ -1830,7 +1869,7 @@ test('4-3-60: 【請求履歴取得】 再取得で DEACTIVATED なら plan を 
         ->and($group->fresh()->subscription()?->status)->toBe('canceled');
 });
 
-test('4-3-61: 【請求履歴取得】 listPayments にない billing_histories を pastInvoices に補完する', function () {
+test('4-3-62: 【請求履歴取得】 listPayments にない billing_histories を pastInvoices に補完する', function () {
     $periodEnd = now()->addDays(30)->startOfSecond();
     $paidAt = now()->subHour()->startOfSecond();
     $group = createBillingGroup(['square_customer_id' => 'cus_history_fallback', 'plan' => GroupPlan::STANDARD]);

@@ -104,6 +104,10 @@ export const getPlanActionButtonConfig = (
         };
     }
 
+    if (!billingStatus.isSubscribed) {
+        return null;
+    }
+
     return {
         label: 'ダウングレード',
         onClick: () => handlers.onDowngrade(),

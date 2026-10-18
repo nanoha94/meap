@@ -246,6 +246,15 @@ class BillingService
                 $this->syncLocalSubscription($group, $squareSubscription);
             }
 
+            // ローカルの有効な subscription が確認できてから plan を更新する
+            $group->refresh();
+            if (! $group->isSubscribed()) {
+                throw new HttpException(
+                    HttpStatusCode::UNPROCESSABLE_ENTITY->value,
+                    __('api.billing.subscribe_failed'),
+                );
+            }
+
             $this->groupPlanService->update($group, $groupPlan);
 
             // 初回請求周期の終了日を ai_usage_reset_at に反映（月間残数の満タン化は update() 側）

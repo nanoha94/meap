@@ -140,7 +140,7 @@ test('4-10-9: 【サブスク upsert】 正規化配列から subscriptions を�
     $group = Group::factory()->create();
     $periodEnd = '2026-06-30';
 
-    SubscriptionHelper::upsertSubscriptionRecord($group, [
+    $upserted = SubscriptionHelper::upsertSubscriptionRecord($group, [
         'id' => 'sub_upsert_new',
         'plan_variation_id' => 'pln_standard_test',
         'status' => 'ACTIVE',
@@ -151,7 +151,8 @@ test('4-10-9: 【サブスク upsert】 正規化配列から subscriptions を�
 
     $subscription = Subscription::query()->where('square_subscription_id', 'sub_upsert_new')->first();
 
-    expect($subscription)->not->toBeNull()
+    expect($upserted)->toBeTrue()
+        ->and($subscription)->not->toBeNull()
         ->and($subscription->group_id)->toBe($group->id)
         ->and($subscription->status)->toBe('active')
         ->and($subscription->ends_at)->toBeNull()
@@ -163,7 +164,7 @@ test('4-10-10: 【サブスク upsert】 解約予定（canceled_date 付き ACT
     $group = Group::factory()->create();
     $periodEnd = '2026-07-31';
 
-    SubscriptionHelper::upsertSubscriptionRecord($group, [
+    $upserted = SubscriptionHelper::upsertSubscriptionRecord($group, [
         'id' => 'sub_upsert_cancel_scheduled',
         'plan_variation_id' => 'pln_standard_test',
         'status' => 'ACTIVE',
@@ -174,7 +175,8 @@ test('4-10-10: 【サブスク upsert】 解約予定（canceled_date 付き ACT
 
     $subscription = Subscription::query()->where('square_subscription_id', 'sub_upsert_cancel_scheduled')->first();
 
-    expect($subscription?->status)->toBe('canceled')
+    expect($upserted)->toBeTrue()
+        ->and($subscription?->status)->toBe('canceled')
         ->and($subscription?->ends_at?->eq(subscriptionHelperExpectedCarbon($periodEnd)))->toBeTrue()
         ->and($subscription?->canceled_at?->eq(subscriptionHelperExpectedCarbon($periodEnd)))->toBeTrue();
 });
@@ -183,7 +185,7 @@ test('4-10-11: 【サブスク upsert】 charged_through_date 欠落時 canceled
     $group = Group::factory()->create();
     $canceledDate = '2026-08-15';
 
-    SubscriptionHelper::upsertSubscriptionRecord($group, [
+    $upserted = SubscriptionHelper::upsertSubscriptionRecord($group, [
         'id' => 'sub_upsert_period_fallback',
         'plan_variation_id' => 'pln_standard_test',
         'status' => 'ACTIVE',
@@ -194,7 +196,8 @@ test('4-10-11: 【サブスク upsert】 charged_through_date 欠落時 canceled
 
     $subscription = Subscription::query()->where('square_subscription_id', 'sub_upsert_period_fallback')->first();
 
-    expect($subscription?->current_period_end?->eq(subscriptionHelperExpectedCarbon($canceledDate)))->toBeTrue();
+    expect($upserted)->toBeTrue()
+        ->and($subscription?->current_period_end?->eq(subscriptionHelperExpectedCarbon($canceledDate)))->toBeTrue();
 });
 
 test('4-10-12: 【サブスク upsert】 既存レコードを square_subscription_id で更新する', function () {
@@ -207,7 +210,7 @@ test('4-10-12: 【サブスク upsert】 既存レコードを square_subscripti
         'current_period_end' => null,
     ]);
 
-    SubscriptionHelper::upsertSubscriptionRecord($group, [
+    $upserted = SubscriptionHelper::upsertSubscriptionRecord($group, [
         'id' => 'sub_upsert_update',
         'plan_variation_id' => 'pln_standard_test',
         'status' => 'CANCELED',
@@ -216,7 +219,8 @@ test('4-10-12: 【サブスク upsert】 既存レコードを square_subscripti
         'canceled_date' => '2026-09-30',
     ]);
 
-    expect(Subscription::query()->where('square_subscription_id', 'sub_upsert_update')->count())->toBe(1);
+    expect($upserted)->toBeTrue()
+        ->and(Subscription::query()->where('square_subscription_id', 'sub_upsert_update')->count())->toBe(1);
 
     $subscription = Subscription::query()->where('square_subscription_id', 'sub_upsert_update')->first();
 
@@ -227,22 +231,24 @@ test('4-10-12: 【サブスク upsert】 既存レコードを square_subscripti
 test('4-10-13: 【サブスク upsert】 subscription id 欠落時は DB を更新しない', function () {
     $group = Group::factory()->create();
 
-    SubscriptionHelper::upsertSubscriptionRecord($group, [
+    $upserted = SubscriptionHelper::upsertSubscriptionRecord($group, [
         'id' => '',
         'status' => 'ACTIVE',
     ]);
 
-    expect(Subscription::query()->count())->toBe(0);
+    expect($upserted)->toBeFalse()
+        ->and(Subscription::query()->count())->toBe(0);
 });
 
 test('4-10-14: 【サブスク upsert】 status 欠落時は DB を更新しない', function () {
     $group = Group::factory()->create();
 
-    SubscriptionHelper::upsertSubscriptionRecord($group, [
+    $upserted = SubscriptionHelper::upsertSubscriptionRecord($group, [
         'id' => 'sub_no_status',
         'status' => null,
         'charged_through_date' => '2026-10-01',
     ]);
 
-    expect(Subscription::query()->count())->toBe(0);
+    expect($upserted)->toBeFalse()
+        ->and(Subscription::query()->count())->toBe(0);
 });

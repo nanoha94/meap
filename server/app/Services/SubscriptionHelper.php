@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Group;
 use App\Models\Subscription;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 use Square\Types\Subscription as SquareSubscription;
 
 /**
@@ -117,14 +118,19 @@ class SubscriptionHelper
 
     /**
      * 正規化済みサブスクリプション配列で subscriptions テーブルを upsert する。
+     * ID または status が不正なときは保存せず false を返す。
      *
      * @param  array<string, mixed>  $subscription
      */
-    public static function upsertSubscriptionRecord(Group $group, array $subscription): void
+    public static function upsertSubscriptionRecord(Group $group, array $subscription): bool
     {
         $subscriptionId = $subscription['id'] ?? null;
         if (! is_string($subscriptionId) || $subscriptionId === '') {
-            return;
+            Log::warning('upsertSubscriptionRecord skipped: subscription ID is missing.', [
+                'group_id' => $group->id,
+            ]);
+
+            return false;
         }
 
         $status = self::normalizeStatus(
@@ -132,7 +138,12 @@ class SubscriptionHelper
             $subscription['canceled_date'] ?? null,
         );
         if ($status === null) {
-            return;
+            Log::warning('upsertSubscriptionRecord skipped: status is invalid.', [
+                'group_id' => $group->id,
+                'raw_status' => $subscription['status'] ?? null,
+            ]);
+
+            return false;
         }
 
         $periodEnd = self::periodEnd(
@@ -159,5 +170,7 @@ class SubscriptionHelper
                 'canceled_at' => self::billingDateToCarbon($subscription['canceled_date'] ?? null),
             ],
         );
+
+        return true;
     }
 }

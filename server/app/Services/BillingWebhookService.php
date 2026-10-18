@@ -61,6 +61,7 @@ class BillingWebhookService
                 return;
             }
 
+            SubscriptionHelper::upsertSubscriptionRecord($group, $subscription);
             $this->updateGroupPlanFromSquareSubscription($group, $subscription);
 
             $this->recordSubscriptionBillingHistory($group, $invoice, $subscription, $eventId);
@@ -92,8 +93,10 @@ class BillingWebhookService
             return;
         }
 
-        SubscriptionHelper::upsertSubscriptionRecord($group, $subscription);
-        $this->syncGroupPlanFromSubscription($group, $subscription);
+        $upserted = SubscriptionHelper::upsertSubscriptionRecord($group, $subscription);
+        if ($upserted) {
+            $this->syncGroupPlanFromSubscription($group, $subscription);
+        }
     }
 
     /**

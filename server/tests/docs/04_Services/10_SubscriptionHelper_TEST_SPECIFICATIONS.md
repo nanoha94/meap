@@ -10,7 +10,7 @@
 - `config('app.timezone')` は `Asia/Tokyo` を `beforeEach` で設定する
 - Square SDK オブジェクトは `makeSubscriptionHelperSquareSdk` で構築する
 - 日付の期待値は `billingDateToCarbon()` と同様に、タイムゾーン付き `startOfDay()->startOfSecond()` の Carbon と比較する
-- `upsertSubscriptionRecord()` は `RefreshDatabase` で DB 状態を検証する
+- `upsertSubscriptionRecord()` は `RefreshDatabase` で DB 状態を検証する。成功時は `true`、ID または status が不正でスキップしたときは `false` を返す
 
 ## テストケース一覧表
 
@@ -24,12 +24,12 @@
 | 4-10-6 | 【契約終了日】 canceled_date ありなら periodEnd を返す | 正常系 | `status=active`、`canceled_date` あり、periodEnd あり | periodEnd | `SubscriptionHelper::resolveEndsAt()` |
 | 4-10-7 | 【Square 正規化】 Subscription の各フィールドを配列に変換する | 正常系 | 全フィールドを持つ `SquareSubscription` | id / customer_id / plan_variation_id / status / start_date / charged_through_date / canceled_date の配列 | `SubscriptionHelper::normalizeFromSquare()` |
 | 4-10-8 | 【Square 正規化】 id が空文字なら null にする | 異常系 | `id=''` の `SquareSubscription` | 配列の `id` が null | `SubscriptionHelper::normalizeFromSquare()` |
-| 4-10-9 | 【サブスク upsert】 正規化配列から subscriptions を新規作成する | 正常系 | Group、`status=ACTIVE`、charged_through_date / start_date 付き配列 | `subscriptions` に active、ends_at=null、current_period_* が日付と一致 | `SubscriptionHelper::upsertSubscriptionRecord()` |
-| 4-10-10 | 【サブスク upsert】 解約予定（canceled_date 付き ACTIVE）で ends_at を設定する | 正常系 | `status=ACTIVE`、`canceled_date` と charged_through_date が同一 | status=canceled、ends_at / canceled_at が周期終了日 | `SubscriptionHelper::upsertSubscriptionRecord()` |
-| 4-10-11 | 【サブスク upsert】 charged_through_date 欠落時 canceled_date で current_period_end を補完する | 正常系 | charged_through_date 欠落、canceled_date のみ | current_period_end が canceled_date と一致 | `SubscriptionHelper::upsertSubscriptionRecord()` |
-| 4-10-12 | 【サブスク upsert】 既存レコードを square_subscription_id で更新する | 正常系 | 既存 Subscription、同一 square_subscription_id で upsert | レコード 1 件のまま status / plan_variation が更新される | `SubscriptionHelper::upsertSubscriptionRecord()` |
-| 4-10-13 | 【サブスク upsert】 subscription id 欠落時は DB を更新しない | 異常系 | `id=''` | subscriptions 件数 0 | `SubscriptionHelper::upsertSubscriptionRecord()` |
-| 4-10-14 | 【サブスク upsert】 status 欠落時は DB を更新しない | 異常系 | `status=null` | subscriptions 件数 0 | `SubscriptionHelper::upsertSubscriptionRecord()` |
+| 4-10-9 | 【サブスク upsert】 正規化配列から subscriptions を新規作成する | 正常系 | Group、`status=ACTIVE`、charged_through_date / start_date 付き配列 | true を返し、`subscriptions` に active、ends_at=null、current_period_* が日付と一致 | `SubscriptionHelper::upsertSubscriptionRecord()` |
+| 4-10-10 | 【サブスク upsert】 解約予定（canceled_date 付き ACTIVE）で ends_at を設定する | 正常系 | `status=ACTIVE`、`canceled_date` と charged_through_date が同一 | true を返し、status=canceled、ends_at / canceled_at が周期終了日 | `SubscriptionHelper::upsertSubscriptionRecord()` |
+| 4-10-11 | 【サブスク upsert】 charged_through_date 欠落時 canceled_date で current_period_end を補完する | 正常系 | charged_through_date 欠落、canceled_date のみ | true を返し、current_period_end が canceled_date と一致 | `SubscriptionHelper::upsertSubscriptionRecord()` |
+| 4-10-12 | 【サブスク upsert】 既存レコードを square_subscription_id で更新する | 正常系 | 既存 Subscription、同一 square_subscription_id で upsert | true を返し、レコード 1 件のまま status / plan_variation が更新される | `SubscriptionHelper::upsertSubscriptionRecord()` |
+| 4-10-13 | 【サブスク upsert】 subscription id 欠落時は DB を更新しない | 異常系 | `id=''` | false を返し、subscriptions 件数 0 | `SubscriptionHelper::upsertSubscriptionRecord()` |
+| 4-10-14 | 【サブスク upsert】 status 欠落時は DB を更新しない | 異常系 | `status=null` | false を返し、subscriptions 件数 0 | `SubscriptionHelper::upsertSubscriptionRecord()` |
 
 ## テスト実行方法
 
