@@ -15,17 +15,25 @@ const VerifiedHandler = () => {
      * メールアドレス認証が完了した場合に成功メッセージを表示
      */
     React.useEffect(() => {
-        if (!hasProcessed.current) {
-            if (searchParams?.get('verified') === '1') {
-                addSnackbar('success', 'メールアドレス認証が完了しました');
-            }
-
-            const newParams = new URLSearchParams(searchParams?.toString());
-            newParams.delete('verified');
-            router.replace(`${pathname}?${newParams.toString()}`);
-
-            hasProcessed.current = true;
+        if (hasProcessed.current) {
+            return;
         }
+        hasProcessed.current = true;
+
+        if (searchParams?.get('verified') !== '1') {
+            return;
+        }
+
+        if (!pathname || !searchParams) {
+            return;
+        }
+
+        addSnackbar('success', 'メールアドレス認証が完了しました');
+
+        const newParams = new URLSearchParams(searchParams.toString());
+        newParams.delete('verified');
+        const query = newParams.toString();
+        router.replace(query ? `${pathname}?${query}` : pathname);
     }, [addSnackbar, pathname, router, searchParams]);
 
     return <></>;
