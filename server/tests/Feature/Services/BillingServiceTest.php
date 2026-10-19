@@ -366,7 +366,7 @@ test('4-3-9: 【サブスク開始】 Customer 未作成時にサブスクを開
     $group = createBillingGroup(['square_customer_id' => null, 'ai_monthly_remaining' => 0]);
     $customer = makeSquareCustomer(['id' => 'cus_subscribe_new']);
     $card = makeSquareCard('ccof_subscribe_new', ['customerId' => 'cus_subscribe_new']);
-    $periodEnd = now()->addMonth()->startOfDay()->startOfSecond();
+    $periodEnd = now()->addMonth()->endOfDay()->startOfSecond();
     $squareSubscription = makeSquareSubscription([
         'id' => 'sub_subscribe_new',
         'current_period_end' => $periodEnd->timestamp,
@@ -452,7 +452,7 @@ test('4-3-10: 【サブスク開始】 既存 Customer でサブスクを開始�
 });
 
 test('4-3-11: 【サブスク開始】 current_period_end ありで月間残数をリセットする', function () {
-    $periodEnd = now()->addMonth()->startOfDay()->startOfSecond();
+    $periodEnd = now()->addMonth()->endOfDay()->startOfSecond();
     $group = createBillingGroup([
         'square_customer_id' => null,
         'ai_monthly_remaining' => 0,
@@ -536,7 +536,7 @@ test('4-3-12: 【サブスク開始】 verificationToken を createCard に渡�
 });
 
 test('4-3-13: 【サブスク開始】 再取得で current_period_end を補完する', function () {
-    $periodEnd = now()->addMonth()->startOfDay()->startOfSecond();
+    $periodEnd = now()->addMonth()->endOfDay()->startOfSecond();
     $group = createBillingGroup([
         'square_customer_id' => 'cus_subscribe_refresh',
         'square_card_id' => 'ccof_subscribe_refresh',
@@ -583,7 +583,7 @@ test('4-3-13: 【サブスク開始】 再取得で current_period_end を補完
 });
 
 test('4-3-14: 【サブスク開始】 再取得失敗時は初回応答で続行する', function () {
-    $periodEnd = now()->addMonth()->startOfDay()->startOfSecond();
+    $periodEnd = now()->addMonth()->endOfDay()->startOfSecond();
     $group = createBillingGroup([
         'square_customer_id' => 'cus_subscribe_retrieve_fail',
         'square_card_id' => 'ccof_subscribe_retrieve_fail',
@@ -922,7 +922,7 @@ test('4-3-22: 【サブスク開始】 ローカル同期に失敗したらプ�
 // ===== cancelSubscription() メソッドのテストケース =====
 
 test('4-3-23: 【サブスク解約】 期間終了解約し課金状態配列を返す', function () {
-    $periodEnd = now()->addDays(30)->startOfDay()->startOfSecond();
+    $periodEnd = now()->addDays(30)->endOfDay()->startOfSecond();
     $squareSubscriptionId = 'sub_cancel_test';
     $group = createBillingGroup(['plan' => GroupPlan::STANDARD, 'square_customer_id' => 'cus_sub_cancel']);
     createSubscriptionRecord($group, [
@@ -1349,10 +1349,12 @@ test('4-3-40: 【課金状態取得】 キャンセル済み（猶予期間終�
 
     $status = billingService()->getBillingStatus($group->fresh());
 
-    expect($status['isSubscribed'])->toBeFalse()
+    expect($status['plan'])->toBe('free')
+        ->and($status['isSubscribed'])->toBeFalse()
         ->and($status['pendingPlanChange'])->toBeNull()
         ->and($status['subscriptionStatus'])->toBe('canceled')
-        ->and($status['subscriptionEndsAt'])->toBe($endsAt->toIso8601String());
+        ->and($status['subscriptionEndsAt'])->toBe($endsAt->toIso8601String())
+        ->and($group->fresh()->plan)->toBe(GroupPlan::FREE);
 });
 
 test('4-3-41: 【課金状態取得】 pmType / pmLastFour / pmExpMonth / pmExpYear を返す', function () {
@@ -1774,7 +1776,7 @@ test('4-3-58: 【請求履歴取得】 billing_histories にない Payment は u
 });
 
 test('4-3-59: 【請求履歴取得】 current_period_end 未設定時に再取得で補完する', function () {
-    $periodEnd = now()->addDays(30)->startOfDay()->startOfSecond();
+    $periodEnd = now()->addDays(30)->endOfDay()->startOfSecond();
     $group = createBillingGroup(['square_customer_id' => 'cus_invoices_refresh', 'plan' => GroupPlan::STANDARD]);
     createSubscriptionRecord($group, [
         'square_subscription_id' => 'sub_invoices_refresh',

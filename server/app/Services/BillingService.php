@@ -406,6 +406,12 @@ class BillingService
         $subscription = $group->subscription();
         $plan = $group->plan ?? GroupPlan::FREE;
 
+        if (! $group->isSubscribed() && $plan !== GroupPlan::FREE) {
+            $this->groupPlanService->update($group, GroupPlan::FREE);
+            $group->refresh();
+            $plan = $group->plan ?? GroupPlan::FREE;
+        }
+
         $pendingPlanChange = $this->getPendingPlanChange($subscription, $plan);
         $cardExpiration = $this->getCardExpiration($group);
 

@@ -46,32 +46,51 @@ class SubscriptionHelper
     }
 
     /**
-     * Square API の YYYY-MM-DD 日付をアプリタイムゾーンの Carbon（日始まり）に変換する。
+     * Square API の YYYY-MM-DD 日付をアプリタイムゾーンの日始 Carbon に変換する。
+     * current_period_start と canceled_at のように、その日の始まりを表す項目に使う。
      */
-    public static function billingDateToCarbon(mixed $date): ?Carbon
+    public static function billingDateToStartOfDay(mixed $date): ?Carbon
     {
-        if (! is_string($date) || $date === '') {
-            return null;
-        }
-
-        return Carbon::parse($date, config('app.timezone'))->startOfDay()->startOfSecond();
+        return self::parseBillingDate($date)?->startOfDay()->startOfSecond();
     }
 
     /**
-     * 請求周期終了日（charged_through_date）を Carbon に変換する。
+     * Square API の YYYY-MM-DD 日付をアプリタイムゾーンの日末 Carbon に変換する。
+     * charged_through_date は「その日まで利用可能」なので、周期末日の 23:59:59 として扱う。
+     */
+    public static function billingDateToEndOfDay(mixed $date): ?Carbon
+    {
+        return self::parseBillingDate($date)?->endOfDay()->startOfSecond();
+    }
+
+    /**
+     * 請求周期終了日（charged_through_date）を日末の Carbon に変換する。
      * charged_through_date が無い場合は canceled_date へフォールバックする（Billing / Webhook 共通）。
      */
     public static function periodEnd(mixed $chargedThroughDate, mixed $canceledDate = null): ?Carbon
     {
         if (is_string($chargedThroughDate) && $chargedThroughDate !== '') {
-            return self::billingDateToCarbon($chargedThroughDate);
+            return self::billingDateToEndOfDay($chargedThroughDate);
         }
 
         if ($canceledDate !== null && $canceledDate !== '') {
-            return self::billingDateToCarbon($canceledDate);
+            return self::billingDateToEndOfDay($canceledDate);
         }
 
         return null;
+    }
+
+    /**
+     * Square API の YYYY-MM-DD をアプリタイムゾーンの Carbon に変換する。
+     * 空文字・非文字列は null。
+     */
+    private static function parseBillingDate(mixed $date): ?Carbon
+    {
+        if (! is_string($date) || $date === '') {
+            return null;
+        }
+
+        return Carbon::parse($date, config('app.timezone'));
     }
 
     /**
@@ -165,9 +184,9 @@ class SubscriptionHelper
                 'square_plan_variation_id' => is_string($planVariationId) ? $planVariationId : null,
                 'status' => $status,
                 'ends_at' => $endsAt,
-                'current_period_start' => self::billingDateToCarbon($subscription['start_date'] ?? null),
+                'current_period_start' => self::billingDateToStartOfDay($subscription['start_date'] ?? null),
                 'current_period_end' => $periodEnd,
-                'canceled_at' => self::billingDateToCarbon($subscription['canceled_date'] ?? null),
+                'canceled_at' => self::billingDateToStartOfDay($subscription['canceled_date'] ?? null),
             ],
         );
 

@@ -18,6 +18,11 @@ function subscriptionHelperExpectedCarbon(string $date): Carbon
     return Carbon::parse($date, config('app.timezone'))->startOfDay()->startOfSecond();
 }
 
+function subscriptionHelperExpectedEndOfDay(string $date): Carbon
+{
+    return Carbon::parse($date, config('app.timezone'))->endOfDay()->startOfSecond();
+}
+
 function makeSubscriptionHelperSquareSdk(array $overrides = []): SquareSubscription
 {
     if (isset($overrides['plan_variation_id'])) {
@@ -64,13 +69,13 @@ function makeSubscriptionHelperSquareSdk(array $overrides = []): SquareSubscript
 test('4-10-1: 【請求周期終了日】 charged_through_date を Carbon に変換する', function () {
     $result = SubscriptionHelper::periodEnd('2026-03-20', null);
 
-    expect($result?->eq(subscriptionHelperExpectedCarbon('2026-03-20')))->toBeTrue();
+    expect($result?->eq(subscriptionHelperExpectedEndOfDay('2026-03-20')))->toBeTrue();
 });
 
 test('4-10-2: 【請求周期終了日】 charged_through_date 欠落時 canceled_date にフォールバックする', function () {
     $result = SubscriptionHelper::periodEnd(null, '2026-04-01');
 
-    expect($result?->eq(subscriptionHelperExpectedCarbon('2026-04-01')))->toBeTrue();
+    expect($result?->eq(subscriptionHelperExpectedEndOfDay('2026-04-01')))->toBeTrue();
 });
 
 test('4-10-3: 【請求周期終了日】 日付が両方欠落なら null を返す', function () {
@@ -156,7 +161,7 @@ test('4-10-9: 【サブスク upsert】 正規化配列から subscriptions を�
         ->and($subscription->group_id)->toBe($group->id)
         ->and($subscription->status)->toBe('active')
         ->and($subscription->ends_at)->toBeNull()
-        ->and($subscription->current_period_end?->eq(subscriptionHelperExpectedCarbon($periodEnd)))->toBeTrue()
+        ->and($subscription->current_period_end?->eq(subscriptionHelperExpectedEndOfDay($periodEnd)))->toBeTrue()
         ->and($subscription->current_period_start?->eq(subscriptionHelperExpectedCarbon('2026-06-01')))->toBeTrue();
 });
 
@@ -177,7 +182,7 @@ test('4-10-10: 【サブスク upsert】 解約予定（canceled_date 付き ACT
 
     expect($upserted)->toBeTrue()
         ->and($subscription?->status)->toBe('canceled')
-        ->and($subscription?->ends_at?->eq(subscriptionHelperExpectedCarbon($periodEnd)))->toBeTrue()
+        ->and($subscription?->ends_at?->eq(subscriptionHelperExpectedEndOfDay($periodEnd)))->toBeTrue()
         ->and($subscription?->canceled_at?->eq(subscriptionHelperExpectedCarbon($periodEnd)))->toBeTrue();
 });
 
@@ -197,7 +202,7 @@ test('4-10-11: 【サブスク upsert】 charged_through_date 欠落時 canceled
     $subscription = Subscription::query()->where('square_subscription_id', 'sub_upsert_period_fallback')->first();
 
     expect($upserted)->toBeTrue()
-        ->and($subscription?->current_period_end?->eq(subscriptionHelperExpectedCarbon($canceledDate)))->toBeTrue();
+        ->and($subscription?->current_period_end?->eq(subscriptionHelperExpectedEndOfDay($canceledDate)))->toBeTrue();
 });
 
 test('4-10-12: 【サブスク upsert】 既存レコードを square_subscription_id で更新する', function () {
