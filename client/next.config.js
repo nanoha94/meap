@@ -25,6 +25,7 @@ const SQUARE_CONNECT_ORIGINS = [
 const SQUARE_FONT_ORIGINS = [
     'https://square-fonts-production-f.squarecdn.com',
     'https://d1g145x70srn7h.cloudfront.net',
+    'https://cash-f.squarecdn.com',
 ];
 /** Vercel Toolbar（コメント）のオリジン。https://vercel.com/docs/vercel-toolbar/managing-toolbar */
 const VERCEL_LIVE_ORIGIN = 'https://vercel.live';
