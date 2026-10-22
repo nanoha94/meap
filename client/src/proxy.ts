@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-import { LINK_TO } from '@/constants';
-import { buildLoginRedirectUrl } from '@/utils/authHelpers';
+import { LINK_TO } from './constants/links';
+import { buildLoginRedirectUrl } from './utils/authHelpers';
+
+/** proxy は Node 境界で単独コンパイルされるため @/ を使わず、相対 import のみにする */
 
 export function proxy(request: NextRequest) {
     const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_URL;
