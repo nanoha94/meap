@@ -16,10 +16,10 @@ import {
     BILLING_PLAN_DETAILS,
     LINK_TO,
 } from '@/constants';
+import { formatYen } from '@/utils';
 
 const STANDARD_MONTHLY = BILLING_PLAN_DETAILS[BILLING_PLAN.STANDARD].price;
-const formatYenCompact = (amount: number) => `¥${amount.toLocaleString()}`;
-const STANDARD_MONTHLY_LABEL = `${formatYenCompact(STANDARD_MONTHLY)}/月`;
+const STANDARD_MONTHLY_LABEL = `${formatYen(STANDARD_MONTHLY)}/月`;
 
 const Page = () => {
     return (
@@ -33,7 +33,7 @@ const Page = () => {
                             href={LINK_TO.LP}
                             className="flex items-center gap-2 text-primary-main transition-opacity hover:opacity-80">
                             <Image
-                                src="/images/meap-logo2.png"
+                                src="/images/meap-logo.png"
                                 alt="meap"
                                 width={1224}
                                 height={486}
@@ -91,7 +91,7 @@ const Page = () => {
                                     description:
                                         'スタンダードプランのAI機能がすぐに利用できます。\nフリープランに日割り計算の対象となる料金はないため、スタンダードプランの月額（1か月分）が請求されます。',
                                     detail: (
-                                        <BillingAmount amount={formatYenCompact(STANDARD_MONTHLY)} />
+                                        <BillingAmount amount={formatYen(STANDARD_MONTHLY)} />
                                     ),
                                 },
                                 {
@@ -99,7 +99,7 @@ const Page = () => {
                                     title: '次回請求',
                                     description:
                                         '以降、毎月10日が請求日になります。',
-                                    detail: <BillingAmount amount={formatYenCompact(STANDARD_MONTHLY)} />,
+                                    detail: <BillingAmount amount={formatYen(STANDARD_MONTHLY)} />,
                                 },
                             ]}
                         />
@@ -132,7 +132,7 @@ const Page = () => {
                                     title: 'スタンダードプランを契約',
                                     description:
                                         `スタンダードプラン（${STANDARD_MONTHLY_LABEL}）で利用開始。`,
-                                    detail: <BillingAmount amount={formatYenCompact(STANDARD_MONTHLY)} />,
+                                    detail: <BillingAmount amount={formatYen(STANDARD_MONTHLY)} />,
                                 },
                                 {
                                     date: '1/15',
@@ -179,7 +179,7 @@ const Page = () => {
                                     title: 'スタンダードプランを契約',
                                     description:
                                         `スタンダードプラン（${STANDARD_MONTHLY_LABEL}）で利用開始。`,
-                                    detail: <BillingAmount amount={formatYenCompact(STANDARD_MONTHLY)} />,
+                                    detail: <BillingAmount amount={formatYen(STANDARD_MONTHLY)} />,
                                 },
                                 {
                                     date: '6/20',

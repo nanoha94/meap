@@ -29,7 +29,9 @@ const Footer = () => {
                             特定商取引法に基づく表記
                         </Link>
                     </nav>
-                    <p className="text-sm text-gray-main">
+                    <p
+                        className="text-sm text-gray-main"
+                        suppressHydrationWarning>
                         © {new Date().getFullYear()} meap
                     </p>
                 </div>

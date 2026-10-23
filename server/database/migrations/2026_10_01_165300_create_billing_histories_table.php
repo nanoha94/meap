@@ -17,6 +17,8 @@ return new class extends Migration
             $table->string('square_payment_id')->unique();
             $table->string('type');
             $table->string('description');
+            $table->integer('amount')->nullable();
+            $table->timestamp('paid_at')->nullable();
             $table->timestamps();
         });
     }

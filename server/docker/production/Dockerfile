@@ -6,7 +6,7 @@
 # Leave Railway "Start Command" empty — a custom start command replaces ENTRYPOINT
 # and skips docker-entrypoint.sh (nginx config + artisan cache never run).
 
-FROM php:8.3-fpm-bookworm
+FROM php:8.3.36-fpm-bookworm
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \

@@ -21,6 +21,12 @@ const SQUARE_CONNECT_ORIGINS = [
     'https://pci-connect.squareup.com',
     'https://pci-connect.squareupsandbox.com',
 ];
+/** Square Web Payments SDK のフォント（公式 CSP 案内） */
+const SQUARE_FONT_ORIGINS = [
+    'https://square-fonts-production-f.squarecdn.com',
+    'https://d1g145x70srn7h.cloudfront.net',
+    'https://cash-f.squarecdn.com',
+];
 /** Vercel Toolbar（コメント）のオリジン。https://vercel.com/docs/vercel-toolbar/managing-toolbar */
 const VERCEL_LIVE_ORIGIN = 'https://vercel.live';
 
@@ -28,7 +34,7 @@ const VERCEL_LIVE_ORIGIN = 'https://vercel.live';
  * Content-Security-Policy を組み立てる。
  * DiceBear SVG（dangerouslySetInnerHTML）と Next.js のインラインスクリプトのため
  * style-src / script-src に 'unsafe-inline' を含める。
- * Square のカード入力は squarecdn のスクリプト・iframe と pci-connect への通信が必要。
+ * Square のカード入力は squarecdn のスクリプト・iframe・画像・フォントと pci-connect への通信が必要。
  * Vercel Toolbar は vercel.live のスクリプト・iframe と Pusher への通信が必要。
  */
 function buildContentSecurityPolicy() {
@@ -36,13 +42,14 @@ function buildContentSecurityPolicy() {
         parseOrigin(BACKEND_URL) ?? 'https://localhost:8000';
     const squareScriptOrigins = SQUARE_SCRIPT_ORIGINS.join(' ');
     const squareConnectOrigins = SQUARE_CONNECT_ORIGINS.join(' ');
+    const squareFontOrigins = SQUARE_FONT_ORIGINS.join(' ');
 
     const directives = [
         "default-src 'self'",
         `script-src 'self' 'unsafe-inline' ${squareScriptOrigins} ${VERCEL_LIVE_ORIGIN}`,
         `style-src 'self' 'unsafe-inline' ${squareScriptOrigins} ${VERCEL_LIVE_ORIGIN}`,
-        `img-src 'self' blob: data: ${backendOrigin} https://*.r2.cloudflarestorage.com ${VERCEL_LIVE_ORIGIN} https://vercel.com`,
-        `font-src 'self' ${VERCEL_LIVE_ORIGIN} https://assets.vercel.com`,
+        `img-src 'self' blob: data: ${backendOrigin} https://*.r2.cloudflarestorage.com ${squareScriptOrigins} ${VERCEL_LIVE_ORIGIN} https://vercel.com`,
+        `font-src 'self' ${squareFontOrigins} ${VERCEL_LIVE_ORIGIN} https://assets.vercel.com`,
         `connect-src 'self' ${backendOrigin} ${squareConnectOrigins} ${VERCEL_LIVE_ORIGIN} wss://ws-us3.pusher.com`,
         `frame-src ${squareScriptOrigins} ${VERCEL_LIVE_ORIGIN}`,
         "frame-ancestors 'none'",

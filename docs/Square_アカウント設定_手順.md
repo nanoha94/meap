@@ -36,10 +36,82 @@ Developer Console の画面操作の詳細は [Sandbox 概要](https://developer
 
 meap は SaaS の固定月額のため、Square データの「サブスクリプション」UI より **Catalog API で STATIC プラン**を作る方が確実です。
 
-1. `SUBSCRIPTION_PLAN` を 1 件 Upsert（名前例: meap Standard）
-2. 続けて `SUBSCRIPTION_PLAN_VARIATION` を Upsert（月次・580 JPY・STATIC）
+| 順番 | Catalog の type | 役割 | env に入れる？ |
+| ---- | --------------- | ---- | -------------- |
+| 1 回目 | `SUBSCRIPTION_PLAN` | プラン本体（名前だけ） | いいえ（2 回目の `subscription_plan_id` に使う） |
+| 2 回目 | `SUBSCRIPTION_PLAN_VARIATION` | 毎月 580 円（STATIC） | **Variation の id** → `SQUARE_PLAN_VARIATION_STANDARD` |
 
-作成した **Variation の id**（`SUBSCRIPTION_PLAN_VARIATION` の `catalog_object.id`。Plan 本体の id ではない）を `SQUARE_PLAN_VARIATION_STANDARD` に設定します。
+Create subscription に渡すのは **2 回目の Variation id** です。Plan 本体の id を入れると失敗します。
+
+### API Explorer で作る（2 回 Upsert）
+
+1. [API Explorer](https://developer.squareup.com/explorer/square) を開く
+2. **Select API** → **Catalog**、**Select endpoint** → **Upsert catalog object**（POST）
+3. Developer Console の上部トグルと **同じ環境** の Access token を Request の `Authorization: Bearer` に貼る（専用欄が無い UI では cURL 表示の Bearer 行を編集する）。Location ID を取ったときと **同じ口座の token** を使う
+4. Request の URL が次になっていることを確認して **Run Request** する（2 回とも同じ endpoint）
+
+| Square 環境 | Console トグル | Upsert の URL | Access token |
+| ----------- | -------------- | ------------- | ------------ |
+| Sandbox（ローカル・ステージング） | **Sandbox** | `https://connect.squareupsandbox.com/v2/catalog/object` | Sandbox Access token |
+| Production（本番） | **Production** | `https://connect.squareup.com/v2/catalog/object` | Production Access token |
+
+`connect.squareup.com` のまま Sandbox トークンを送ると失敗します。本番用プランは **Production で作り直し**、Sandbox の Variation id は本番 env に使えません。
+
+### 1 回目 — SUBSCRIPTION_PLAN
+
+**Request body** に貼り **Run Request**:
+
+```json
+{
+  "idempotency_key": "meap-plan-standard-001",
+  "object": {
+    "type": "SUBSCRIPTION_PLAN",
+    "id": "#meap-standard-plan",
+    "subscription_plan_data": {
+      "name": "meap Standard",
+      "all_items": true
+    }
+  }
+}
+```
+
+- `idempotency_key`: 同じ作成を二重に送らないキー。やり直すときは別文字列（例: `-002`）にする。
+- `object.id` の `#...`: クライアント側の仮 ID。Response の `catalog_object.id`（正式 ID）を 2 回目で使う。
+- `name`: Square 上の表示用。課金ロジックには影響しない。
+
+Response の `catalog_object.id` を控えます。
+
+### 2 回目 — SUBSCRIPTION_PLAN_VARIATION
+
+同じ endpoint で **Request body** を差し替え、もう一度 **Run Request** します。`subscription_plan_id` に **1 回目の `catalog_object.id`** を入れます。`idempotency_key` は 1 回目と別にします。
+
+```json
+{
+  "idempotency_key": "meap-plan-var-standard-001",
+  "object": {
+    "type": "SUBSCRIPTION_PLAN_VARIATION",
+    "id": "#meap-standard-monthly",
+    "subscription_plan_variation_data": {
+      "name": "meap Standard 580 JPY monthly",
+      "subscription_plan_id": "（1 回目の catalog_object.id）",
+      "phases": [
+        {
+          "cadence": "MONTHLY",
+          "ordinal": 0,
+          "pricing": {
+            "type": "STATIC",
+            "price": { "amount": 580, "currency": "JPY" }
+          }
+        }
+      ]
+    }
+  }
+}
+```
+
+Response で `"type": "SUBSCRIPTION_PLAN_VARIATION"` の **`catalog_object.id`** を `SQUARE_PLAN_VARIATION_STANDARD` に設定します（Railway 本番・ステージング、またはローカル `server/.env`）。
+
+作成済みプランの確認も Explorer で行えます。**Catalog** → **Retrieve catalog object**（GET）で Variation id を指定するか、**List catalog** で `types=SUBSCRIPTION_PLAN` を指定します。Sandbox の Square データ画面にプランが出なくても、Response が成功していれば問題ありません。
 
 公式: [Subscription Plans and Variations](https://developer.squareup.com/docs/subscriptions-api/plans-and-variations)
 

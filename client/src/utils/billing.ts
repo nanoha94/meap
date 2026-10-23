@@ -13,9 +13,9 @@ import {
 
 import { formatDisplayDate } from './date';
 
-/** 金額を円表示にフォーマットする */
+/** 金額を円表示にフォーマットする（SSR/CSR で locale がずれないよう ja-JP 固定） */
 export const formatYen = (amount: number): string =>
-    `¥ ${amount.toLocaleString()}`;
+    `¥ ${amount.toLocaleString('ja-JP')}`;
 
 /** カード有効期限を MM/YYYY 形式で表示する */
 export const formatCardExpiration = (
@@ -102,6 +102,10 @@ export const getPlanActionButtonConfig = (
             variant: BUTTON_VARIANT.FILLED,
             disabled: false,
         };
+    }
+
+    if (!billingStatus.isSubscribed) {
+        return null;
     }
 
     return {

@@ -152,7 +152,7 @@ test('2-6-10: 期限切れの署名', function () {
     $response->assertRedirectContains('/email/verify?error=invalid_link');
 });
 
-test('2-6-19: 無効な署名（JSON リクエスト）', function () {
+test('2-6-11: 無効な署名（JSON リクエスト）', function () {
     $user = User::factory()->unverified()->create();
 
     $url = route('verification.verify', ['id' => $user->id, 'hash' => sha1($user->email)]);
@@ -162,7 +162,7 @@ test('2-6-19: 無効な署名（JSON リクエスト）', function () {
     $response->assertStatus(403);
 });
 
-test('2-6-11: レート制限（1分間に6回超過）', function () {
+test('2-6-12: レート制限（1分間に6回超過）', function () {
     $user = User::factory()->unverified()->create();
 
     // レート制限をクリア
@@ -181,7 +181,7 @@ test('2-6-11: レート制限（1分間に6回超過）', function () {
     $response->assertStatus(429);
 });
 
-test('2-6-12: レート制限リセット', function () {
+test('2-6-13: レート制限リセット', function () {
     $user = User::factory()->unverified()->create();
 
     // レート制限をクリア
@@ -197,7 +197,7 @@ test('2-6-12: レート制限リセット', function () {
     $response->assertStatus(302); // 正常処理
 });
 
-test('2-6-13: markEmailAsVerified() 失敗', function () {
+test('2-6-14: markEmailAsVerified() 失敗', function () {
     $user = User::factory()->unverified()->create();
 
     // markEmailAsVerified() メソッドが QueryException を投げるようにモック
@@ -220,7 +220,7 @@ test('2-6-13: markEmailAsVerified() 失敗', function () {
     \Mockery::close();
 });
 
-test('2-6-14: Verified イベント発火失敗', function () {
+test('2-6-15: Verified イベント発火失敗', function () {
     $user = User::factory()->unverified()->create();
 
     // イベント発火時に例外を発生させる
@@ -237,7 +237,7 @@ test('2-6-14: Verified イベント発火失敗', function () {
     $response->assertRedirectContains('/email/verify?error=verification_failed');
 });
 
-test('2-6-15: データベース接続エラー', function () {
+test('2-6-16: データベース接続エラー', function () {
     $user = User::factory()->unverified()->create();
 
     // markEmailAsVerified() メソッドがデータベース接続エラーを投げるようにモック
@@ -260,7 +260,7 @@ test('2-6-15: データベース接続エラー', function () {
     \Mockery::close();
 });
 
-test('2-6-16: ログ出力とエラーリダイレクト確認', function () {
+test('2-6-17: ログ出力とエラーリダイレクト確認', function () {
     $user = User::factory()->unverified()->create();
 
     // markEmailAsVerified() メソッドが例外を投げるようにモック
@@ -283,7 +283,7 @@ test('2-6-16: ログ出力とエラーリダイレクト確認', function () {
     \Mockery::close();
 });
 
-test('2-6-17: エラー時のリダイレクト URL 確認', function () {
+test('2-6-18: エラー時のリダイレクト URL 確認', function () {
     $user = User::factory()->unverified()->create();
 
     // markEmailAsVerified() メソッドが例外を投げるようにモック
@@ -306,7 +306,7 @@ test('2-6-17: エラー時のリダイレクト URL 確認', function () {
     \Mockery::close();
 });
 
-test('2-6-18: フロントエンド URL 設定なし', function () {
+test('2-6-19: フロントエンド URL 設定なし', function () {
     $user = User::factory()->unverified()->create();
 
     // frontend_url設定をクリア
