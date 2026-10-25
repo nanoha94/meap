@@ -13,6 +13,7 @@ import { LINK_TO } from '@/constants';
 import {
     fetchData,
     fetchDataParallel,
+    redirectIfAnyServiceUnavailable,
     type FetchDataResult,
 } from '@/lib/apiClient';
 import { IAiUsageStatus, IAiUsageStatusResponse, IGetMasterResponse, IGetUserResponse } from '@/types';
@@ -59,11 +60,19 @@ const AppLayout = async ({ children }: Props) => {
     if (parallelError || !parallelData) {
         redirect(LINK_TO.LOGIN);
     } else {
-        const [
-            { data: userData, errorMessage: userError },
-            { data: masterDataResult, errorMessage: masterError },
-            { data: aiUsageResponse, errorMessage: aiUsageError },
-        ] = parallelData;
+        const [userResult, masterResult, aiUsageResult] = parallelData;
+
+        redirectIfAnyServiceUnavailable(
+            userResult,
+            masterResult,
+            aiUsageResult,
+        );
+
+        const { data: userData, errorMessage: userError } = userResult;
+        const { data: masterDataResult, errorMessage: masterError } =
+            masterResult;
+        const { data: aiUsageResponse, errorMessage: aiUsageError } =
+            aiUsageResult;
 
         // ユーザーデータ取得エラー時は /login へ
         if (userError || !userData?.success) {

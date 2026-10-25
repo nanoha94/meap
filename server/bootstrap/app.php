@@ -14,6 +14,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->preventRequestsDuringMaintenance(except: [
+            '/up',
+            'square/webhook',
+        ]);
+
         $middleware->validateCsrfTokens(except: [
             'square/*',
         ]);
