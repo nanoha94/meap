@@ -22,6 +22,7 @@ export const LINK_TO = {
     SHOPPING_LIST: '/shopping-list',
     EMAIL_VERIFY: '/email/verify',
     LOGIN: '/login',
+    MAINTENANCE: '/maintenance',
     PASSWORD_RESET_REQUEST: '/password/reset/request',
     REGISTER: '/register',
     PRIVACY: '/privacy',

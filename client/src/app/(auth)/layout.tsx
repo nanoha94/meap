@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 
 import { SnackbarHandler } from '@/components';
 import { LINK_TO } from '@/constants';
+import { redirectIfServiceUnavailable } from '@/lib/apiClient';
 import { fetchCurrentUser } from '@/lib/fetchCurrentUser';
 
 // 動的レンダリングを強制（クッキーを使用するため）
@@ -14,7 +15,10 @@ interface Props {
 }
 
 const AuthLayout = async ({ children }: Props) => {
-    const { data: user, errorMessage } = await fetchCurrentUser();
+    const result = await fetchCurrentUser();
+    redirectIfServiceUnavailable(result);
+
+    const { data: user, errorMessage } = result;
 
     // 認証済みは /plan へ
     if (user?.data?.email_verified_at) {

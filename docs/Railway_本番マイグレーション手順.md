@@ -199,3 +199,5 @@ curl -s -o /dev/null -w "%{http_code}\n" -H "Host: dev.api.meap-app.com" "http:/
 API の `/up` が `200` になってから、Vercel の `NEXT_PUBLIC_BACKEND_URL=https://dev.api.meap-app.com`（末尾スラッシュなし）を確認し再デプロイする。Railway では `APP_URL` / `FRONTEND_URL` / `SANCTUM_STATEFUL_DOMAINS` / `SESSION_SECURE_COOKIE=true` を設定する。
 
 デプロイと一般公開の切り分け、ステージングの noindex、本番ドメイン切替のタイミングは [ステージングと本番公開の方針](ステージングと本番公開_方針.md) を参照。
+
+メンテナンス中画面の表示制御（サーバー・クライアント両面の仕組み、計画メンテナンス時の手順）は [メンテナンス中画面の表示制御](メンテナンス中画面_表示制御.md) を参照。

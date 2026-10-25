@@ -1,7 +1,8 @@
 import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 import { Agent } from 'undici';
 
-import { API_STATUS_CODE, TIMEOUT_MS } from '@/constants';
+import { API_STATUS_CODE, LINK_TO, TIMEOUT_MS } from '@/constants';
 
 /**
  * APIエラー時にステータスコードを保持するためのエラークラス
@@ -167,6 +168,34 @@ export type FetchDataResult<T> = {
     /** APIがエラーレスポンスを返した場合のHTTPステータスコード */
     statusCode?: number;
 };
+
+/** fetchData の結果が API メンテナンス（503）かどうか */
+export function isServiceUnavailableResult(
+    result: FetchDataResult<unknown>,
+): boolean {
+    return result.statusCode === API_STATUS_CODE.SERVICE_UNAVAILABLE;
+}
+
+/**
+ * API が 503 のとき /maintenance へ遷移する。
+ * タイムアウトや接続エラーでは何もしない。サーバーコンポーネント専用。
+ */
+export function redirectIfServiceUnavailable(
+    result: FetchDataResult<unknown>,
+): void {
+    if (isServiceUnavailableResult(result)) {
+        redirect(LINK_TO.MAINTENANCE);
+    }
+}
+
+/** いずれかが 503 のとき /maintenance へ遷移する。サーバーコンポーネント専用。 */
+export function redirectIfAnyServiceUnavailable(
+    ...results: FetchDataResult<unknown>[]
+): void {
+    if (results.some(isServiceUnavailableResult)) {
+        redirect(LINK_TO.MAINTENANCE);
+    }
+}
 
 export async function fetchData<T>(
     path: string,

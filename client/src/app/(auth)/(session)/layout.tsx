@@ -1,6 +1,7 @@
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
+import { redirectIfServiceUnavailable } from '@/lib/apiClient';
 import { fetchCurrentUser } from '@/lib/fetchCurrentUser';
 import { buildLoginRedirectUrl } from '@/utils';
 
@@ -15,9 +16,10 @@ const SessionAuthLayout = async ({ children }: Props) => {
     const headerList = await headers();
     const search = headerList.get('x-search') ?? '';
 
-    const { data: user } = await fetchCurrentUser();
+    const result = await fetchCurrentUser();
+    redirectIfServiceUnavailable(result);
 
-    if (!user?.data) {
+    if (!result.data?.data) {
         redirect(buildLoginRedirectUrl(search));
     }
 

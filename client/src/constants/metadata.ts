@@ -36,6 +36,7 @@ export const METADATA = {
         TERMS: '利用規約',
         LEGAL_COMMERCIAL: '特定商取引法に基づく表記',
         HELP_PLAN_CHANGE: 'プラン変更の仕組み',
+        MAINTENANCE: 'メンテナンス',
     },
     PAGE_DESCRIPTION: {
         PRIVACY:
